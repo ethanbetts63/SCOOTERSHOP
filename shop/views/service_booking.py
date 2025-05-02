@@ -26,26 +26,24 @@ def service_booking_start(request):
         del request.session[SERVICE_BOOKING_SESSION_KEY]
     request.session.modified = True # Ensure session is saved
 
-    # Redirect based on authentication and anonymous booking setting
-    if request.user.is_authenticated:
-        # Logged-in users always go to the authenticated flow
-        return redirect('shop:service_booking_step1_authenticated')
-    elif settings.allow_anonymous_bookings:
-        # Anonymous users go to the anonymous flow if allowed
-        return redirect('shop:service_booking_step1_anonymous')
-    else:
-        # Anonymous bookings not allowed, prompt login
-        messages.info(request, "Please log in or register to book a service.")
-        return redirect('shop:login') # Assuming 'login' is the name of your login URL pattern
+    return redirect('shop:service_booking_step1') # Assuming 'service_booking_step1' is the name of your URL pattern for the merged view
 
-
-# Step 1: Booking Information (Service Type, Date & Time) - Authenticated
-@login_required
-def service_booking_step1_authenticated(request):
+# Step 1: Booking Information (Service Type, Date & Time) - Merged View
+def service_booking_step1(request):
     settings = SiteSettings.get_settings()
+    # This check is also in service_booking_start, but good to have here too
+    # in case someone accesses step1 directly without going through start.
     if not settings.enable_service_booking:
         messages.error(request, "Service booking is currently disabled.")
         return redirect('shop:index')
+
+    # Check if anonymous bookings are allowed if the user is not authenticated
+    # If not allowed and user is not authenticated, redirect to login.
+    if not request.user.is_authenticated and not settings.allow_anonymous_bookings:
+         messages.info(request, "Please log in or register to book a service.")
+         # Use reverse to get the URL for your login page
+         return redirect(reverse('shop:login')) # Assuming 'login' is the name of your login URL pattern
+
 
     # Retrieve data from session if available
     booking_data = request.session.get(SERVICE_BOOKING_SESSION_KEY, {})
@@ -54,97 +52,103 @@ def service_booking_step1_authenticated(request):
         form = ServiceDetailsForm(request.POST)
         if form.is_valid():
             cleaned_data = form.cleaned_data.copy()
-            cleaned_data['service_type_id'] = cleaned_data['service_type'].id
-            del cleaned_data['service_type']
+            # Safely get service_type ID after validation
+            service_type_instance = cleaned_data.get('service_type')
+            if service_type_instance:
+                cleaned_data['service_type_id'] = service_type_instance.id
+                del cleaned_data['service_type']
+            else:
+                 # This shouldn't happen if form is valid and service_type is required,
+                 # but as a safeguard:
+                 messages.error(request, "Invalid service type selected.")
+                 # Re-render the form with errors
+                 context = {
+                     'form': form,
+                     'step': 1,
+                     'total_steps': 3,
+                     'is_authenticated': request.user.is_authenticated,
+                     'allow_anonymous_bookings': settings.allow_anonymous_bookings,
+                 }
+                 return render(request, 'service_booking/service_details.html', context)
+
 
             if 'appointment_datetime' in cleaned_data and isinstance(cleaned_data['appointment_datetime'], datetime.datetime):
                 cleaned_data['appointment_datetime_str'] = cleaned_data['appointment_datetime'].isoformat()
                 del cleaned_data['appointment_datetime']
+            else:
+                 # This shouldn't happen if form is valid and appointment_datetime is required,
+                 # but as a safeguard:
+                 messages.error(request, "Invalid appointment date/time.")
+                 # Re-render the form with errors
+                 context = {
+                     'form': form,
+                     'step': 1,
+                     'total_steps': 3,
+                     'is_authenticated': request.user.is_authenticated,
+                     'allow_anonymous_bookings': settings.allow_anonymous_bookings,
+                 }
+                 return render(request, 'service_booking/service_details.html', context)
+
 
             # Store ALL cleaned data in session for this step
             booking_data.update(cleaned_data)
             request.session[SERVICE_BOOKING_SESSION_KEY] = booking_data
             request.session.modified = True
 
-            # Proceed to step 2 (Vehicle Details) for authenticated users
-            return redirect('shop:service_booking_step2_authenticated')
-    else:
-        # GET request: Pre-fill form with session data
+            # Redirect based on authentication status to the appropriate step 2
+            if request.user.is_authenticated:
+                return redirect('shop:service_booking_step2_authenticated')
+            else:
+                return redirect('shop:service_booking_step2_anonymous')
+        else:
+            # Form is not valid on POST
+            messages.error(request, "Please correct the errors below.")
+            # Re-render the template with the form containing errors
+            context = {
+                'form': form, # Pass the form with errors
+                'step': 1,
+                'total_steps': 3,
+                'is_authenticated': request.user.is_authenticated,
+                'allow_anonymous_bookings': settings.allow_anonymous_bookings,
+            }
+            return render(request, 'service_booking/service_details.html', context)
+
+    else: # GET request
+        # Pre-fill form with session data if available
         initial_data = booking_data.copy() # Use a copy to avoid modifying session directly
 
+        # Convert the stored datetime string back to a datetime object for form initialization
         if 'appointment_datetime_str' in initial_data:
              try:
                 initial_data['appointment_datetime'] = datetime.datetime.fromisoformat(initial_data['appointment_datetime_str'])
-                del initial_data['appointment_datetime_str'] # Remove the string version after converting
+                # No need to delete 'appointment_datetime_str' from initial_data here, as it's just for form display
              except (ValueError, TypeError):
-                 pass # Handle conversion errors gracefully
-
-
-        form = ServiceDetailsForm(initial=initial_data)
-
-    context = {
-        'form': form,
-        'step': 1,
-        'total_steps': 3,
-        'is_authenticated': True,
-        'allow_anonymous_bookings': settings.allow_anonymous_bookings, # Still pass this for context
-    }
-    return render(request, 'service_booking/service_details_authenticated.html', context)
-
-# Step 1: Booking Information (Service Type, Date & Time) - Anonymous
-def service_booking_step1_anonymous(request):
-    settings = SiteSettings.get_settings()
-    if not settings.enable_service_booking:
-        messages.error(request, "Service booking is currently disabled.")
-        return redirect('shop:index')
-    if not settings.allow_anonymous_bookings:
-         messages.error(request, "Anonymous bookings are not allowed.")
-         return redirect('shop:service_booking_start') # Go back to start, which redirects to login
-
-    # Retrieve data from session if available
-    booking_data = request.session.get(SERVICE_BOOKING_SESSION_KEY, {})
-
-    if request.method == 'POST':
-        form = ServiceDetailsForm(request.POST)
-        if form.is_valid():
-            cleaned_data = form.cleaned_data.copy()
-            cleaned_data['service_type_id'] = cleaned_data['service_type'].id
-            del cleaned_data['service_type']
-
-            if 'appointment_datetime' in cleaned_data and isinstance(cleaned_data['appointment_datetime'], datetime.datetime):
-                cleaned_data['appointment_datetime_str'] = cleaned_data['appointment_datetime'].isoformat()
-                del cleaned_data['appointment_datetime']
-
-            # Store ALL cleaned data in session for this step
-            booking_data.update(cleaned_data)
-            request.session[SERVICE_BOOKING_SESSION_KEY] = booking_data
-            request.session.modified = True
-
-
-            # Proceed to step 2 (Vehicle Details) for anonymous users
-            return redirect('shop:service_booking_step2_anonymous')
-    else:
-         # GET request: Pre-fill form with session data
-        initial_data = booking_data.copy()
-
-        if 'appointment_datetime_str' in initial_data:
-             try:
-                initial_data['appointment_datetime'] = datetime.datetime.fromisoformat(initial_data['appointment_datetime_str'])
-                del initial_data['appointment_datetime_str']
-             except (ValueError, TypeError):
+                 # If conversion fails, just don't pre-fill the datetime field
                  pass
 
+        # Safely get the ServiceType instance for form initialization
+        service_type_id = initial_data.get('service_type_id')
+        if service_type_id:
+            try:
+                initial_data['service_type'] = ServiceType.objects.get(id=service_type_id)
+                # No need to delete 'service_type_id' from initial_data here
+            except ServiceType.DoesNotExist:
+                # If the ServiceType ID from the session is invalid, don't pre-fill the service_type field
+                pass
+
+
         form = ServiceDetailsForm(initial=initial_data)
 
+    # Prepare the context for rendering the template
     context = {
-        'form': form,
+        'form': form, # The form instance (either empty, pre-filled, or with errors)
         'step': 1,
         'total_steps': 3,
-        'is_authenticated': False,
-        'allow_anonymous_bookings': settings.allow_anonymous_bookings,
+        'is_authenticated': request.user.is_authenticated, # Pass authentication status to template
+        'allow_anonymous_bookings': settings.allow_anonymous_bookings, # Still useful in context
     }
-    return render(request, 'service_booking/service_details_anonymous.html', context)
-
+    # Use the single merged template
+    return render(request, 'service_booking/service_details.html', context)
 
 # Step 2: Vehicle Details - Authenticated
 @login_required
@@ -608,4 +612,4 @@ def service_booking_step3_anonymous(request):
 
 # Keep the confirmation view as is
 def service_booking_not_yet_confirmed_view(request):
-    return render(request, 'service_booking/service_not_yet_confirmed.html')
+    return render(request, 'service_booking/service_not_yet_confirmed.html') 

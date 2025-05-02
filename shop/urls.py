@@ -37,14 +37,13 @@ urlpatterns = [
 
     # --- Service Booking Views (Split for Auth/Anonymous) ---
     path('book/start/', views.service_booking_start, name='service_booking_start'),
+    path('book/auth/step1/', views.service_booking_step1, name='service_booking_step1'),
 
     # Authenticated Flow
-    path('book/auth/step1/', views.service_booking_step1_authenticated, name='service_booking_step1_authenticated'),
     path('book/auth/step2/', views.service_booking_step2_authenticated, name='service_booking_step2_authenticated'),
     path('book/auth/step3/', views.service_booking_step3_authenticated, name='service_booking_step3_authenticated'),
 
     # Anonymous Flow
-    path('book/anon/step1/', views.service_booking_step1_anonymous, name='service_booking_step1_anonymous'),
     path('book/anon/step2/', views.service_booking_step2_anonymous, name='service_booking_step2_anonymous'),
     path('book/anon/step3/', views.service_booking_step3_anonymous, name='service_booking_step3_anonymous'),
 
