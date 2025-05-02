@@ -1,0 +1,19 @@
+{# templates/service_booking/service_not_yet_confirmed.html #}
+{% extends 'core/layout.html' %} {# Assuming you have a base template #}
+
+{% block title %}Booking Submitted{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Service Booking Request Received</h2>
+    <hr>
+    <p>Thank you! Your service request has been received.</p>
+    <p>A staff member will review the details and contact you via your preferred method to confirm the booking shortly.</p>
+    <p>You will receive a confirmation email once the booking is confirmed.</p>
+
+    {# Optionally display some details from the booking if available in context, but avoid sensitive info #}
+    {# Example: <p>Your booking reference is: {{ booking.booking_reference }}</p> #}
+
+    <p><a href="{% url 'shop:index' %}" class="btn btn-primary">Return to Home</a></p>
+</div>
+{% endblock %}

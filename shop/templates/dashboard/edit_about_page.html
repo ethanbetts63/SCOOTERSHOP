@@ -1,0 +1,126 @@
+{% extends "core/layout.html" %}
+{% load static %}
+
+{% block title %}Edit About Page{% endblock %}
+
+{% block content %}
+<div class="admin-edit-container">
+    <h1>Edit About Page Content</h1>
+    
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="section-editor">
+            <h2>Introduction</h2>
+            {{ form.intro_text.label_tag }}
+            {{ form.intro_text }}
+            {{ form.intro_text.errors }}
+        </div>
+        
+        <div class="section-editor">
+            <h2>Sales Section</h2>
+            <div class="form-group">
+                {{ form.sales_title.label_tag }}
+                {{ form.sales_title }}
+                {{ form.sales_title.errors }}
+            </div>
+            
+            <div class="form-group">
+                {{ form.sales_content.label_tag }}
+                {{ form.sales_content }}
+                {{ form.sales_content.errors }}
+            </div>
+            
+            <div class="form-group">
+                {{ form.sales_image.label_tag }}
+                {% if about_content.sales_image %}
+                <div class="current-image">
+                    <img src="{{ about_content.sales_image.url }}" alt="Current sales image" width="200">
+                    <p>Current image</p>
+                </div>
+                {% endif %}
+                {{ form.sales_image }}
+                {{ form.sales_image.errors }}
+            </div>
+        </div>
+        
+        <!-- Service Section -->
+        <div class="section-editor">
+            <h2>Service Section</h2>
+            <div class="form-group">
+                {{ form.service_title.label_tag }}
+                {{ form.service_title }}
+                {{ form.service_title.errors }}
+            </div>
+            
+            <div class="form-group">
+                {{ form.service_content.label_tag }}
+                {{ form.service_content }}
+                {{ form.service_content.errors }}
+            </div>
+            
+            <div class="form-group">
+                {{ form.service_image.label_tag }}
+                {% if about_content.service_image %}
+                <div class="current-image">
+                    <img src="{{ about_content.service_image.url }}" alt="Current service image" width="200">
+                    <p>Current image</p>
+                </div>
+                {% endif %}
+                {{ form.service_image }}
+                {{ form.service_image.errors }}
+            </div>
+        </div>
+        
+        <!-- Parts Section -->
+        <div class="section-editor">
+            <h2>Parts & Accessories Section</h2>
+            <div class="form-group">
+                {{ form.parts_title.label_tag }}
+                {{ form.parts_title }}
+                {{ form.parts_title.errors }}
+            </div>
+            
+            <div class="form-group">
+                {{ form.parts_content.label_tag }}
+                {{ form.parts_content }}
+                {{ form.parts_content.errors }}
+            </div>
+            
+            <div class="form-group">
+                {{ form.parts_image.label_tag }}
+                {% if about_content.parts_image %}
+                <div class="current-image">
+                    <img src="{{ about_content.parts_image.url }}" alt="Current parts image" width="200">
+                    <p>Current image</p>
+                </div>
+                {% endif %}
+                {{ form.parts_image }}
+                {{ form.parts_image.errors }}
+            </div>
+        </div>
+        
+        <div class="section-editor">
+            <h2>Call to Action</h2>
+            {{ form.cta_text.label_tag }}
+            {{ form.cta_text }}
+            {{ form.cta_text.errors }}
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="{% url 'shop:about' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

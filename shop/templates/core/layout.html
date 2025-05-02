@@ -1,0 +1,348 @@
+{# core/templates/core/layout.html #}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}Scootershop{% endblock %}</title>
+        {% load static %}
+        <link rel="icon" href="{% static 'core/images/favicon_scooter.png' %}" type="image/png">
+        <link rel="stylesheet" href="{% static 'core/css/styles.css' %}">
+
+        {% block extra_css %}{% endblock %}
+    </head>
+
+    <body>
+        <nav>
+            <div class="logo">
+                <a href="{% url 'shop:index' %}">
+                    <img src="{% static 'core/images/logo_scootershop_tight_crop.png' %}" alt="Scooter Shop Logo">
+                </a>
+            </div>
+
+            <ul>
+                {# Navigation items with visibility checks and admin styling #}
+                {% if settings.enable_sales_new or user.is_staff %}
+                    <li>
+                        <a class="nav-item" href="{% url 'shop:new' %}"
+                           {% if not settings.enable_sales_new and user.is_staff %}
+                               style="color: #08E5D1;" {# Bright turquoise color #}
+                           {% endif %}
+                        >
+                            New Bikes
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% if settings.enable_sales_used or user.is_staff %}
+                    <li>
+                        <a class="nav-item" href="{% url 'shop:used' %}"
+                           {% if not settings.enable_sales_used and user.is_staff %}
+                               style="color: #08E5D1;" {# Bright turquoise color #}
+                           {% endif %}
+                        >
+                            Used Bikes
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% if settings.enable_service_booking or user.is_staff %}
+                    <li>
+                        <a class="nav-item" href="{% url 'shop:service' %}"
+                           {% if not settings.enable_service_booking and user.is_staff %}
+                               style="color: #08E5D1;" {# Bright turquoise color #}
+                           {% endif %}
+                        >
+                            Service Booking
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% if settings.enable_hire or user.is_staff %}
+                    <li>
+                        <a class="nav-item" href="{% url 'shop:hire' %}"
+                           {% if not settings.enable_hire and user.is_staff %}
+                               style="color: #08E5D1;" {# Bright turquoise color #}
+                           {% endif %}
+                        >
+                            Hire Booking
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% if settings.enable_about_page or user.is_staff %}
+                    <li>
+                        <a class="nav-item" href="{% url 'shop:about' %}"
+                           {% if not settings.enable_about_page and user.is_staff %}
+                               style="color: #08E5D1;" {# Bright turquoise color #}
+                           {% endif %}
+                        >
+                            About Us
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% if settings.enable_contact_page or user.is_staff %}
+                    <li>
+                        <a class="nav-item" href="{% url 'shop:contact' %}"
+                           {% if not settings.enable_contact_page and user.is_staff %}
+                               style="color: #08E5D1;" {# Bright turquoise color #}
+                           {% endif %}
+                        >
+                            Contact Us
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+
+            <div class="nav-social-icons">
+                <a href="https://www.facebook.com/ScooterShopAustralia/" target="_blank" rel="noopener">
+                    <img src="{% static 'core/images/svgs/facebook.svg' %}" alt="Facebook">
+                </a>
+                <a href="https://www.instagram.com/scootershop_australia/" target="_blank" rel="noopener">
+                    <img src="{% static 'core/images/svgs/instagram.svg' %}" alt="Instagram">
+                </a>
+                <a href="{% url 'shop:contact' %}">
+                    <img src="{% static 'core/images/svgs/mail.svg' %}" alt="Contact Us">
+                </a>
+            </div>
+        </nav>
+
+        <div>
+            {% block content %}{% endblock %}
+        </div>
+
+        {% block map %}{% endblock %}
+
+        <footer class="site-footer">
+            <div class="footer-container">
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        {# Footer Quick Links with visibility checks and admin styling #}
+                        {% if settings.enable_sales_new or user.is_staff %}
+                            <li>
+                                <a href="{% url 'shop:new' %}"
+                                   {% if not settings.enable_sales_new and user.is_staff %}
+                                       style="color: #08E5D1;" {# Bright turquoise color #}
+                                   {% endif %}
+                                >
+                                    New Bikes
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if settings.enable_sales_used or user.is_staff %}
+                            <li>
+                                <a href="{% url 'shop:used' %}"
+                                   {% if not settings.enable_sales_used and user.is_staff %}
+                                       style="color: #08E5D1;" {# Bright turquoise color #}
+                                   {% endif %}
+                                >
+                                    Used Bikes
+                                </a>
+                            </li>
+                        {% endif %}
+
+                         {% if settings.enable_service_booking or user.is_staff %}
+                            <li>
+                                <a href="{% url 'shop:service' %}"
+                                   {% if not settings.enable_service_booking and user.is_staff %}
+                                       style="color: #08E5D1;" {# Bright turquoise color #}
+                                   {% endif %}
+                                >
+                                    Service Booking
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if settings.enable_hire or user.is_staff %}
+                            <li>
+                                <a href="{% url 'shop:hire' %}"
+                                   {% if not settings.enable_hire and user.is_staff %}
+                                       style="color: #08E5D1;" {# Bright turquoise color #}
+                                   {% endif %}
+                                >
+                                    Hire Booking
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if settings.enable_about_page or user.is_staff %}
+                            <li>
+                                <a href="{% url 'shop:about' %}"
+                                   {% if not settings.enable_about_page and user.is_staff %}
+                                       style="color: #08E5D1;" {# Bright turquoise color #}
+                                   {% endif %}
+                                >
+                                    About Us
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if settings.enable_contact_page or user.is_staff %}
+                            <li>
+                                <a href="{% url 'shop:contact' %}"
+                                   {% if not settings.enable_contact_page and user.is_staff %}
+                                       style="color: #08E5D1;" {# Bright turquoise color #}
+                                   {% endif %}
+                                >
+                                    Contact Us
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {# Login link - Keeping always visible as per original layout #}
+                        <li><a href="{% url 'shop:login' %}">Login</a></li>
+
+                        {# ServiceBook link (applying same logic as Service Booking) #}
+                         {% if settings.enable_service_booking or user.is_staff %}
+                            <li>
+                                <a href="{% url 'shop:service_booking_start' %}"
+                                   {% if not settings.enable_service_booking and user.is_staff %}
+                                       style="color: #08E5D1;" {# Bright turquoise color #}
+                                   {% endif %}
+                                >
+                                    ServiceBook
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if user.is_authenticated and user.is_staff %}
+                        <li><a href="{% url 'shop:dashboard_index' %}">Dashboard</a></li>
+                        <li><a href="{% url 'shop:motorcycle-create' %}">scooter create</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <ul>
+                        {# ADD visibility checks for the new information pages #}
+                        {% if settings.enable_terms_page or user.is_staff %}
+                            <li>
+                                <a href="{% url 'shop:terms' %}"
+                                   {% if not settings.enable_terms_page and user.is_staff %}
+                                       style="color: #08E5D1;" {# Bright turquoise color #}
+                                   {% endif %}
+                                >
+                                    Terms of Use
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if settings.enable_privacy_policy_page or user.is_staff %}
+                            <li>
+                                <a href="{% url 'shop:privacy' %}"
+                                   {% if not settings.enable_privacy_policy_page and user.is_staff %}
+                                       style="color: #08E5D1;" {# Bright turquoise color #}
+                                   {% endif %}
+                                >
+                                    Privacy Policy
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if settings.enable_returns_page or user.is_staff %}
+                            <li>
+                                <a href="{% url 'shop:returns' %}"
+                                    {% if not settings.enable_returns_page and user.is_staff %}
+                                        style="color: #08E5D1;" {# Bright turquoise color #}
+                                    {% endif %}
+                                >
+                                    Returns Policy
+                                </a>
+                            </li>
+                        {% endif %}
+
+                         {% if settings.enable_security_page or user.is_staff %}
+                            <li>
+                                <a href="{% url 'shop:security' %}"
+                                   {% if not settings.enable_security_page and user.is_staff %}
+                                       style="color: #08E5D1;" {# Bright turquoise color #}
+                                   {% endif %}
+                                >
+                                    Security Policy
+                                </a>
+                            </li>
+                        {% endif %}
+                        {# END new visibility checks #}
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Contact Info</h3>
+                    <ul>
+                        {% if settings %}
+                            {% if settings.phone_number %}
+                                <li><strong>Phone:</strong> {{ settings.phone_number }}</li>
+                            {% endif %}
+                            {% if settings.email_address %}
+                                <li><strong>Email:</strong> {{ settings.email_address }}</li>
+                            {% endif %}
+                            {% if settings.storefront_address %}
+                                <li><strong>Address:</strong> {{ settings.storefront_address|linebreaksbr }}</li>
+                            {% endif %}
+                            <li><strong>Hours:</strong></li>
+                            {% if settings.opening_hours_monday %}
+                                <li>Monday: {{ settings.opening_hours_monday }}</li>
+                            {% endif %}
+                            {% if settings.opening_hours_tuesday %}
+                                <li>Tuesday: {{ settings.opening_hours_tuesday }}</li>
+                            {% endif %}
+                            {% if settings.opening_hours_wednesday %}
+                                <li>Wednesday: {{ settings.opening_hours_wednesday }}</li>
+                            {% endif %}
+                            {% if settings.opening_hours_thursday %}
+                                <li>Thursday: {{ settings.opening_hours_thursday }}</li>
+                            {% endif %}
+                            {% if settings.opening_hours_friday %}
+                                <li>Friday: {{ settings.opening_hours_friday }}</li>
+                            {% endif %}
+                            {% if settings.opening_hours_saturday %}
+                                <li>Saturday: {{ settings.opening_hours_saturday }}</li>
+                            {% endif %}
+                            {% if settings.opening_hours_sunday %}
+                                <li>Sunday: {{ settings.opening_hours_sunday }}</li>
+                            {% endif %}
+                        {% else %}
+                            {# Optional: Display default hardcoded info or a message if settings are not available #}
+                            <li><strong>Phone:</strong> (08) 9433 4613</li>
+                            <li><strong>Email:</strong> admin@scootershop.com.au</li>
+                            <li><strong>Address:</strong> Unit 2/95 Queen Victoria St, Fremantle WA, Australia</li>
+                            <li><strong>Hours:</strong></li>
+                            <li>Monday - Friday: 10:30am to 5:00pm</li>
+                            <li>Saturday: 10:30am to 1:00pm (By Appointment only)</li>
+                            <li>Sunday: Closed</li>
+                            <li>Public Holidays: Closed</li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Follow Us</h3>
+                    <div class="social-icons">
+                        <a href="https://www.facebook.com/ScooterShopAustralia/" target="_blank" rel="noopener">
+                            <img src="{% static 'core/images/svgs/facebook.svg' %}" alt="Facebook">
+                        </a>
+                        <a href="https://www.instagram.com/scootershop_australia/" target="_blank" rel="noopener">
+                            <img src="{% static 'core/images/svgs/instagram.svg' %}" alt="Instagram">
+                        </a>
+                        <a href="{% url 'shop:contact' %}">
+                            <img src="{% static 'core/images/svgs/mail.svg' %}" alt="Contact Us">
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>Copyright © {% now "Y" %} Scootershop Australia</p>
+                <p>ABN 46157594161 | MD 27368 | MRB 7961</p>
+            </div>
+        </footer>
+
+        {% block extra_js %}{% endblock %}
+    </body>
+</html>

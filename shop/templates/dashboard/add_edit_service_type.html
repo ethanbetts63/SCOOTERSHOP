@@ -1,0 +1,122 @@
+{% extends "dashboard/admin_layout.html" %}
+
+{% block admin_main_content %}
+<div class="container-fluid">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            {# Use page_title from context, which will be set in the views #}
+            <h6 class="m-0 font-weight-bold text-primary">{{ page_title }}</h6>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {# Render the form fields #}
+                <div class="form-group mb-3">
+                    <label for="{{ form.name.id_for_label }}" class="form-label">Service Name</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.name.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="form-group mb-3">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.description.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="form-group mb-3">
+                    <label for="{{ form.estimated_duration_days.id_for_label }}" class="form-label">Estimated Duration (Days)</label>
+                    {{ form.estimated_duration_days }}
+                    {% if form.estimated_duration_days.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.estimated_duration_days.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="form-group mb-3">
+                    <label for="{{ form.estimated_duration_hours.id_for_label }}" class="form-label">Estimated Duration (Hours)</label>
+                    {{ form.estimated_duration_hours }}
+                     <small class="form-text text-muted">Enter hours (0-23)</small>
+                    {% if form.estimated_duration_hours.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.estimated_duration_hours.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="form-group mb-3">
+                    <label for="{{ form.base_price.id_for_label }}" class="form-label">Base Price ($)</label>
+                    {{ form.base_price }}
+                    {% if form.base_price.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.base_price.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="form-group mb-3">
+                    <label for="{{ form.image.id_for_label }}" class="form-label">Service Icon Image (SVG)</label>
+
+                    {# Start of the box for the image upload section #}
+                    <div style="border: 1px solid var(--border-color); padding: 15px; border-radius: var(--radius-sm); background-color: var(--bg-dark);">
+
+                        {# Display Current image and Clear checkbox first #}
+                        {% if service_type.image %}
+                            <div class="mt-2">
+                                <p>Current image:</p>
+                                {# Displaying an SVG using <img> tag is generally safe if the SVG is from a trusted source like Google Fonts Icons #}
+                                <img src="{{ service_type.image.url }}" alt="{{ service_type.name }}" style="max-width: 100px; max-height: 100px;">
+                                <div class="form-check">
+                                    {{ form.image.delete_checkbox }}
+                                    <label for="{{ form.image.delete_checkbox.id_for_label }}" class="form-check-label">{{ form.image.delete_label }}</label>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {# Then display the change (file input) #}
+                        <div class="mb-2">
+                             {{ form.image }}
+                        </div>
+
+                        {# Then display the instructions on a new line #}
+                        <small class="form-text text-muted">
+                            Go to <a href="https://fonts.google.com/icons" target="_blank">Google Fonts Icons</a> to find an SVG that suits your service type.<br>
+                            When downloading, please use these settings:<br>
+                            Size: 24px<br>
+                            Color: #81c784<br>
+                            Download type: SVG (NOT PNG)<br>
+                            Then upload the downloaded SVG file here.
+                        </small>
+                    </div>
+                     {# End of the box for the image upload section #}
+
+                    {% if form.image.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.image.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="form-check mb-3">
+                    {{ form.is_active }}
+                    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Active</label>
+                    {% if form.is_active.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.is_active.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# Button Group - Added d-flex and gap-2 for better spacing if desired by CSS #}
+                <div class="mt-4 d-flex gap-2">
+                    <a href="{% url 'shop:settings_service_types' %}" class="btn btn-secondary">Cancel</a>
+                    {# Change button text based on whether it's add or edit using context variable service_type #}
+                    <button type="submit" class="btn btn-primary">{{ service_type|yesno:"Save Changes,Add Service Type" }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

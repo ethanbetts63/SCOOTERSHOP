@@ -1,0 +1,78 @@
+{% load static %}
+
+<div class="detail-featured">
+    <h3 class="featured-heading">{{ section_title }}</h3>
+    <div class="featured-grid">
+        {% if condition == "new" %}
+        <div class="featured-item message-card no-hover">
+            <div class="card message-content">
+                <div class="card-body text-center d-flex flex-column">
+                    <h5 class="card-title">We are proud to stock both SYM and Segway scooters.</h5>
+                    <a href="{% url 'shop:new' %}" class="btn-primary mt-3">View New Scooters</a>
+                </div>
+            </div>
+        </div>
+        {% elif condition == "used" %}
+        <div class="featured-item message-card no-hover">
+            <div class="card message-content">
+                <div class="card-body text-center d-flex flex-column">
+                    <h5 class="card-title">Every used scooter we sell has been thoroughly inspected by our mechanics.</h5>
+                    <a href="{% url 'shop:used' %}" class="btn-primary mt-3">View Used Scooters</a>
+                </div>
+            </div>
+        </div>
+        
+        {% endif %}
+        
+        {% for motorcycle in motorcycles %}
+        <div class="featured-item">
+            <a href="{% url 'shop:motorcycle-detail' motorcycle.pk %}" class="card-link">
+                <div class="card">
+                    {% if motorcycle.image %}
+                        <img src="{{ motorcycle.image.url }}" class="card-img-top" alt="{{ motorcycle.title }}">
+                    {% else %}
+                        <img src="{% static 'images/no_image.jpg' %}" class="card-img-top" alt="No Image Available">
+                    {% endif %}
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }}</h5>
+                        
+                        <div class="motorcycle-details">
+                            <!-- Type/Category with SVG icon -->
+                            <div class="detail-item">
+                                <span class="svg-icon svg-icon-md icon-category"></span>
+                                <span class="detail-value">{{ motorcycle.condition|title }}</span>
+                            </div>
+                            
+                            <!-- Engine capacity with SVG icon -->
+                            <div class="detail-item">
+                                <span class="svg-icon svg-icon-md icon-capacity"></span>
+                                <span class="detail-value">{{ motorcycle.engine_size }}cc</span>
+                            </div>
+                            
+                            <!-- Odometer/Mileage with SVG icon -->
+                            <div class="detail-item">
+                                <span class="svg-icon svg-icon-md icon-odometer"></span>
+                                <span class="detail-value">
+                                    {% if motorcycle.odometer %}
+                                        {{ motorcycle.odometer }} km
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <p class="card-text fw-bold">${{ motorcycle.price }}</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% empty %}
+        {% if not condition %}
+        <div class="col-12 text-center py-3">
+            <p>No {{ section_title|lower }} available at this time.</p>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>

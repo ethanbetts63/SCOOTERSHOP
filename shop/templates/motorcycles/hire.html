@@ -1,0 +1,50 @@
+{% extends "core/layout.html" %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/motorcycle_list_styles.css' %}">
+<link rel="stylesheet" href="{% static 'core/css/hire_styles.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="hire-section">
+        <div class="hire-tiles-container">
+            <div class="card card-border card-hover-effect">
+                <div class="card-body"> {# Added card-body here #}
+                    <h3>Experience Freedom on Two Wheels</h3>
+                    <p>Experience the freedom of the open road with our motorcycle hire service. Whether you're a local looking for a weekend adventure or a visitor wanting to explore the region, our fleet of well-maintained scooters is ready for your journey.</p>
+                    <div class="hire-requirements">
+                        <h4>Hire Requirements:</h4>
+                        <ul class="reset-list">
+                            <li>Free delivery and pickup within 50km radius</li>
+                            <li>Insurance included in hire cost</li>
+                            <li>Minimum age: 25 years</li>
+                            <li>Pay 10% of hire amount to book!</li>
+                            <li>Proof of identity (passport or driver's license/international drivers license)</li>
+                        </ul>
+                    </div>
+
+                    <div class="hire-note">
+                        <p><small>We recommend booking in advance during peak seasons to ensure availability.</small></p>
+                    </div>
+                </div> {# Closed card-body here #}
+            </div>
+
+            {% if hire_start_date and hire_end_date %}
+            <div class="card card-border card-hover-effect availability-info">
+                <div class="card-body"> {# Added card-body here #}
+                    <h3>Available Motorcycles</h3>
+                    <p>Showing motorcycles available for hire from <strong>{{ hire_start_date|date:"D, d M Y" }}</strong> to <strong>{{ hire_end_date|date:"D, d M Y" }}</strong> ({{ hire_days }} day{% if hire_days > 1 %}s{% endif %}).</p>
+
+                    <div class="alert alert-info">
+                        <p>Please note that motorcycle availability is subject to confirmation. Use the filters to narrow down your search by date range and other preferences.</p>
+                    </div>
+                </div> {# Closed card-body here #}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% with current_url_name='hire' page_title='Motorcycles Available for Hire' %}
+        {% include "motorcycles/motorcycle_list_include.html" %}
+    {% endwith %}
+{% endblock %}

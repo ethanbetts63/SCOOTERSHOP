@@ -1,0 +1,73 @@
+{% extends "core/layout.html" %}
+{% load static %}
+
+{% block title %}About Us{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/about_styles.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">{# Changed from .about-section #}
+    <h1 class="section-title">About Us</h1>{# Added .section-title #}
+
+    {% if user.is_authenticated and user.is_staff %}
+    <div class="dashboard-controls">
+        <a href="{% url 'shop:edit_about_page' %}" class="dashboard-edit-link">Edit About Page</a>
+    </div>
+    {% endif %}
+
+    <div class="card has-bg-effect intro">
+        <div class="card-body"> {# Added card-body here #}
+            {{ about_content.intro_text|linebreaksbr }}
+        </div> {# Closed card-body here #}
+    </div>
+
+    <div class="services">
+        <div class="card service-type">{# Added .card #}
+            <div class="service-image">
+                <img src="{{ about_content.sales_image.url }}" alt="New scooters in our showroom" class="img-cover">{# Added .img-cover #}
+            </div>
+            <div class="service-content">
+                <h2>{{ about_content.sales_title }}</h2>
+                <p>{{ about_content.sales_content|linebreaksbr }}</p>
+                <div class="sales-buttons" style="margin-top: 15px; display: flex; gap: 10px;">
+                    <a href="{% url 'shop:new' %}" class="btn-primary">New Scooters</a>
+                    <a href="{% url 'shop:used' %}" class="btn-primary">Used Scooters</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card service-type">{# Added .card #}
+            <div class="service-image">
+                <img src="{{ about_content.service_image.url }}" alt="Our scooter workshop" class="img-cover">{# Added .img-cover #}
+            </div>
+            <div class="service-content">
+                <h2>{{ about_content.service_title }}</h2>
+                <p>{{ about_content.service_content|linebreaksbr }}</p>
+                <div class="service-button" style="margin-top: 15px; display: flex; gap: 10px;">
+                    <a href="{% url 'shop:service' %}" class="btn-primary">Service Center</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card service-type">{# Added .card #}
+            <div class="service-image">
+                <img src="{{ about_content.parts_image.url }}" alt="Parts and accessories display" class="img-cover">{# Added .img-cover #}
+            </div>
+            <div class="service-content">
+                <h2>{{ about_content.parts_title }}</h2>
+                <p>{{ about_content.parts_content|linebreaksbr }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="cta">
+        <p>
+            Having thoughts about scooters?
+            <a href="{% url 'shop:contact' %}">Contact Us</a> or come in store today!
+            {{ about_content.cta_text|linebreaksbr }}
+        </p>
+    </div>
+</div>
+{% endblock %}

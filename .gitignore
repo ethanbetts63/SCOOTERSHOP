@@ -1,0 +1,24 @@
+# Byte-code files
+*.pyc
+__pycache__/
+
+# Database files
+# Assuming your database is db.sqlite3 at the project root
+db.sqlite3
+
+# Environment variables file (if you use one)
+.env
+
+# Static files
+static/
+staticfiles/
+
+# Media files
+media/
+
+# IDE-specific files (like VS Code)
+.vscode/
+
+# Operating System files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,63 @@
+{% extends "core/layout.html" %}
+{% load static %}
+
+{% block title %}Scooter Servicing{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/service_styles.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="service-header card has-bg-effect">
+        <div class="card-body">
+            <h1>Scooter Servicing and Repairs by Perth's Only 100% Dedicated Scooter Shop</h1>
+            <p>At Scooter Shop Australia, we offer full workshop facilities from our fully licensed premises.</p>
+            <p>Whether it's factory servicing or tyre changes, we take pride in being your one-stop scooter shop. Our team of qualified technicians consist of life-long scooter enthusiasts. We treat every bike like its our own, so you can rest assured knowing we'll do everything we can to get your bike back out on the road.</p>
+            <p>Our workshop is equipped with the latest diagnostic tools, allowing us to provide thorough, cost-effective servicing and repairs tailored to your scooter's needs.</p>
+        </div>
+    </div>
+
+    <div class="booking-info">
+        <h3>How to book?</h3>
+        <p>There's never a bad time to <a href="{% url 'shop:contact' %}">Contact Us</a>.</p>
+        <p>While we recommend giving as much notice as possible, we understand that breakdowns and unexpected issues can happen at any time. That's why we always do our best to leave room in our schedule for urgent or emergency bookings.</p>
+    </div>
+
+    <div class="service-section">
+        <h2>Our Services</h2>
+
+        <div class="service-cards">
+            {% for service_type in service_types %}
+            <div class="service-card">
+                <div class="service-icon">
+                    {% if service_type.image %}
+                    <img src="{{ service_type.image.url }}" alt="{{ service_type.name }}" class="svg-icon svg-icon-lg">
+                    {% else %}
+                    <span class="svg-icon svg-icon-lg icon-servicing"></span>
+                    {% endif %}
+                </div>
+                <div class="service-card-content">
+                    <h3>{{ service_type.name }}</h3>
+                    <p>{{ service_type.description }}</p>
+                    {% if service_type.base_price %}
+                    <p class="service-price">Starting from ${{ service_type.base_price }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <!-- Fallback in case no service types are defined -->
+            <div class="service-card">
+                <div class="service-icon">
+                    <span class="svg-icon svg-icon-lg icon-servicing"></span>
+                </div>
+                <div class="service-card-content">
+                    <h3>General Servicing</h3>
+                    <p>We offer comprehensive servicing for all scooter makes and models. Contact us for more information.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

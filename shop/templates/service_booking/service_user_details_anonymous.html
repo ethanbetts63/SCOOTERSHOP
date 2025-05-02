@@ -1,0 +1,29 @@
+{# templates/service_booking/service_user_details_anonymous.html #}
+{% extends 'core/layout.html' %} {# Assuming you have a base template #}
+
+{% block title %}Book Service - Step 3{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Book Service - Step {{ step }} of {{ total_steps }}</h2>
+    <hr>
+
+     {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <h3>Your Contact Information</h3>
+        <p>Please provide your contact details.</p>
+
+        {{ form.as_p }} {# This will include the 'is_returning_customer' field #}
+
+        <button type="submit" class="btn btn-success">Submit Booking Request</button>
+    </form>
+</div>
+{% endblock %}

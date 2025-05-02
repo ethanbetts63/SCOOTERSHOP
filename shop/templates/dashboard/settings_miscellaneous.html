@@ -1,0 +1,35 @@
+{% extends "dashboard/admin_layout.html" %}
+
+{% block admin_main_content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-2 text-primary">Miscellaneous Settings</h1>
+    <p class="mb-4 text-secondary">Configure various settings for your dealership website.</p>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header">
+            <h5 class="m-0 mb-0 text-primary">Space for Some Settings</h5>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                
+                
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

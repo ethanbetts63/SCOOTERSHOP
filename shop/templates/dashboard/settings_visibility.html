@@ -1,0 +1,204 @@
+{% extends "dashboard/admin_layout.html" %}
+{% load static %}
+
+{% block admin_main_content %}
+    <div class="card">
+        <div class="card-header bg-darkest">
+            <h1 class="h4 mb-0 text-primary">Visibility Settings</h1>
+        </div>
+        <div class="card-body">
+            <p class="mb-4 text-secondary">Control which features are visible and enabled on your website. Disabled pages will appear blue in the navigation bar from the perspective of an admin account and will not appear at all from the perspective of a user account.</p>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Feature Visibility</h5>
+                            </div>
+                            <div class="card-body">
+                                {# Existing fields #}
+                                <div class="mb-3 form-check">
+                                    {{ form.enable_sales_new }}
+                                    <label class="form-check-label" for="{{ form.enable_sales_new.id_for_label }}">
+                                        Enable New Motorcycle Sales
+                                    </label>
+                                    <small class="form-text text-muted d-block">
+                                        Allow users to browse new motorcycles for sale
+                                    </small>
+                                </div>
+
+                                <div class="mb-3 form-check">
+                                    {{ form.enable_sales_used }}
+                                    <label class="form-check-label" for="{{ form.enable_sales_used.id_for_label }}">
+                                        Enable Used Motorcycle Sales
+                                    </label>
+                                    <small class="form-text text-muted d-block">
+                                        Allow users to browse used motorcycles for sale
+                                    </small>
+                                </div>
+
+                                <div class="mb-3 form-check">
+                                    {{ form.enable_hire }}
+                                    <label class="form-check-label" for="{{ form.enable_hire.id_for_label }}">
+                                        Enable Motorcycle Hire
+                                    </label>
+                                    <small class="form-text text-muted d-block">
+                                        Allow users to browse motorcycles available for hire
+                                    </small>
+                                </div>
+
+                                <div class="mb-3 form-check">
+                                    {{ form.enable_service_booking }}
+                                    <label class="form-check-label" for="{{ form.enable_service_booking.id_for_label }}">
+                                        Enable Service Booking
+                                    </label>
+                                    <small class="form-text text-muted d-block">
+                                        Allow users to book motorcycle services online
+                                    </small>
+                                </div>
+
+                                <div class="mb-3 form-check">
+                                    {{ form.enable_user_accounts }}
+                                    <label class="form-check-label" for="{{ form.enable_user_accounts.id_for_label }}">
+                                        Enable User Accounts
+                                    </label>
+                                    <small class="form-text text-muted d-block">
+                                        Allow users to register and maintain accounts
+                                    </small>
+                                </div>
+
+                                <div class="mb-3 form-check">
+                                    {{ form.enable_contact_page }}
+                                    <label class="form-check-label" for="{{ form.enable_contact_page.id_for_label }}">
+                                        Enable Contact Page
+                                    </label>
+                                    <small class="form-text text-muted d-block">
+                                        Allow users to access the contact us page
+                                    </small>
+                                </div>
+
+                                <div class="mb-3 form-check">
+                                    {{ form.enable_about_page }}
+                                    <label class="form-check-label" for="{{ form.enable_about_page.id_for_label }}">
+                                        Enable About Page
+                                    </label>
+                                    <small class="form-text text-muted d-block">
+                                        Allow users to access the about us page
+                                    </small>
+                                </div>
+
+                                <div class="mb-3 form-check">
+                                    {{ form.enable_map_display }}
+                                    <label class="form-check-label" for="{{ form.enable_map_display.id_for_label }}">
+                                        Enable Map Display
+                                    </label>
+                                    <small class="form-text text-muted d-block">
+                                        Show location map on relevant pages
+                                    </small>
+                                </div>
+
+                                <div class="mb-3 form-check">
+                                    {{ form.enable_featured_section }}
+                                    <label class="form-check-label" for="{{ form.enable_featured_section.id_for_label }}">
+                                        Enable Featured Section
+                                    </label>
+                                    <small class="form-text text-muted d-block">
+                                        Display featured motorcycles or content on the homepage
+                                    </small>
+                                </div>
+
+                                {# ADD THESE NEW FIELDS #}
+                                <div class="mb-3 form-check">
+                                    {{ form.enable_privacy_policy_page }}
+                                    <label class="form-check-label" for="{{ form.enable_privacy_policy_page.id_for_label }}">
+                                        Enable Privacy Policy Page
+                                    </label>
+                                    <small class="form-text text-muted d-block">
+                                        Allow users to access the privacy policy page
+                                    </small>
+                                </div>
+
+                                <div class="mb-3 form-check">
+                                    {{ form.enable_returns_page }}
+                                    <label class="form-check-label" for="{{ form.enable_returns_page.id_for_label }}">
+                                        Enable Returns Page
+                                    </label>
+                                    <small class="form-text text-muted d-block">
+                                        Allow users to access the returns page
+                                    </small>
+                                </div>
+
+                                <div class="mb-3 form-check">
+                                    {{ form.enable_security_page }}
+                                    <label class="form-check-label" for="{{ form.enable_security_page.id_for_label }}">
+                                        Enable Security Page
+                                    </label>
+                                    <small class="form-text text-muted d-block">
+                                        Allow users to access the security page
+                                    </small>
+                                </div>
+
+                                <div class="mb-3 form-check">
+                                    {{ form.enable_terms_page }}
+                                    <label class="form-check-label" for="{{ form.enable_terms_page.id_for_label }}">
+                                        Enable Terms and Conditions Page
+                                    </label>
+                                    <small class="form-text text-muted d-block">
+                                        Allow users to access the terms and conditions page
+                                    </small>
+                                </div>
+                                {# END NEW FIELDS #}
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Price Display Options</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3 form-check">
+                                    {{ form.display_new_prices }}
+                                    <label class="form-check-label" for="{{ form.display_new_prices.id_for_label }}">
+                                        Display Prices for New Motorcycles
+                                    </label>
+                                    <small class="form-text text-muted d-block">
+                                        Show prices on new motorcycle listings
+                                    </small>
+                                </div>
+
+                                <div class="mb-3 form-check">
+                                    {{ form.display_used_prices }}
+                                    <label class="form-check-label" for="{{ form.display_used_prices.id_for_label }}">
+                                        Display Prices for Used Motorcycles
+                                    </label>
+                                    <small class="form-text text-muted d-block">
+                                        Show prices on used motorcycle listings
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

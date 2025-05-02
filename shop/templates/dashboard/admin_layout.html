@@ -1,0 +1,45 @@
+{% extends "core/layout.html" %}
+{% load static %}
+
+{% block title %}Admin Dashboard - Scootershop Australia{% endblock %}
+
+{% block extra_css %}
+{{ block.super }} {# Include CSS from the parent template #}
+<link rel="stylesheet" href="{% static 'core/css/admin_layout_styles.css' %}">
+<link rel="stylesheet" href="{% static 'core/css/form_styles.css' %}">
+<link rel="stylesheet" href="{% static 'core/css/service_type_styles.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <aside class="admin-sidebar">
+        <h2>Admin Navigation</h2>
+        <ul class="reset-list">{# Added .reset-list #}
+            <li><a href="{% url 'shop:dashboard_index' %}">Dashboard Home</a></li>
+            <li class="nav-section">
+                <h3>Settings</h3>
+                <ul class="reset-list">{# Added .reset-list #}
+                    <li><a href="{% url 'shop:settings_business_info' %}">Business Information</a></li>
+                    <li><a href="{% url 'shop:settings_hire_booking' %}">Hire Booking</a></li>
+                    <li><a href="{% url 'shop:settings_service_booking' %}">Service Booking</a></li>
+                    <li><a href="{% url 'shop:settings_service_types' %}">Service Types</a></li>
+                    <li><a href="{% url 'shop:settings_visibility' %}">Visibility</a></li>
+                    <li><a href="{% url 'shop:settings_miscellaneous' %}">Miscellaneous</a></li>
+                </ul>
+            </li>
+        </ul>
+    </aside>
+    <main class="admin-content">
+        {% if messages %}
+            <ul class="reset-list messages">{# Added .reset-list #}
+                {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% block admin_main_content %}
+            {# Child templates will fill this block with their specific content #}
+        {% endblock %}
+    </main>
+</div>
+{% endblock %}

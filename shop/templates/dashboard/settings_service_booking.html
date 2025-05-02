@@ -1,0 +1,157 @@
+{% extends "dashboard/admin_layout.html" %}
+{% load static %}
+
+{% block admin_main_content %}
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h1 class="h4 mb-0">Service Booking Settings</h1>
+        </div>
+        <div class="card-body">
+            <p class="mb-4">Configure how service bookings work on your website.</p>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Booking Options</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3 form-check">
+                                    {{ form.allow_anonymous_bookings }}
+                                    <label class="form-check-label" for="{{ form.allow_anonymous_bookings.id_for_label }}">
+                                        Allow Anonymous Bookings
+                                    </label>
+                                    <small class="form-text text-muted d-block">
+                                        Allow users to book services without creating an account
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-3 form-check">
+                                    {{ form.allow_account_bookings }}
+                                    <label class="form-check-label" for="{{ form.allow_account_bookings.id_for_label }}">
+                                        Allow Account Bookings
+                                    </label>
+                                    <small class="form-text text-muted d-block">
+                                        Allow users to book services with their account
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form.booking_open_days.id_for_label }}" class="form-label">
+                                        Booking Open Days
+                                    </label>
+                                    {{ form.booking_open_days }}
+                                    <small class="form-text text-muted d-block">
+                                        Number of days in advance that bookings can be made
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form.booking_advance_notice.id_for_label }}" class="form-label">
+                                        Booking Advance Notice
+                                    </label>
+                                    {{ form.booking_advance_notice }}
+                                    <small class="form-text text-muted d-block">
+                                        Minimum number of days notice required for a booking
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form.max_visible_slots_per_day.id_for_label }}" class="form-label">
+                                        Max Visible Slots Per Day
+                                    </label>
+                                    {{ form.max_visible_slots_per_day }}
+                                    <small class="form-text text-muted d-block">
+                                        Maximum number of booking slots to show per day
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Booking Time Settings</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="{{ form.booking_start_time.id_for_label }}" class="form-label">
+                                        Booking Start Time
+                                    </label>
+                                    {{ form.booking_start_time }}
+                                    <small class="form-text text-muted d-block">
+                                        Earliest time of day for service bookings
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form.booking_end_time.id_for_label }}" class="form-label">
+                                        Booking End Time
+                                    </label>
+                                    {{ form.booking_end_time }}
+                                    <small class="form-text text-muted d-block">
+                                        Latest time of day for service bookings
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Notification Settings</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="{{ form.service_confirmation_email_subject.id_for_label }}" class="form-label">
+                                        Confirmation Email Subject
+                                    </label>
+                                    {{ form.service_confirmation_email_subject }}
+                                    <small class="form-text text-muted d-block">
+                                        Subject line for booking confirmation emails
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form.service_pending_email_subject.id_for_label }}" class="form-label">
+                                        Pending Email Subject
+                                    </label>
+                                    {{ form.service_pending_email_subject }}
+                                    <small class="form-text text-muted d-block">
+                                        Subject line for booking request emails
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form.admin_service_notification_email.id_for_label }}" class="form-label">
+                                        Admin Notification Email
+                                    </label>
+                                    {{ form.admin_service_notification_email }}
+                                    <small class="form-text text-muted d-block">
+                                        Email address to receive booking notifications
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

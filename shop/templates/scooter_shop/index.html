@@ -1,0 +1,174 @@
+{% extends "core/layout.html" %}
+{% load static %}
+
+{% block title %}Scootershop Australia{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/index_styles.css' %}">
+<link rel="stylesheet" href="{% static 'core/css/map_styles.css' %}">
+<link rel="stylesheet" href="{% static 'core/css/review_styles.css' %}">
+<link rel="stylesheet" href="{% static 'core/css/featured_styles.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="container hero-banner">{# Added .container #}
+        <img src="{% static 'core/images/coffee_run5.png' %}" alt="Fiddle Scooter Wallpaper" class="banner-background img-responsive">{# Added .img-responsive #}
+    </div>
+
+    <div class="container">{# Changed from .index-section #}
+        <h1 class="section-title">About</h1>{# Added .section-title #}
+        <div class="about-container">
+            <div class="card has-bg-effect brand-card about-brand">
+                <div class="card-body"> {# Added card-body here #}
+                    <h3>Scooter Shop Australia</h3>
+                    <p>A family-run business based in Fremantle for over 15 years and Perth's only scooter-exclusive showroom.</p>
+                    <p>We stock new SYM and Segway scooters, plus a rotating selection of second-hand models. Our factory-trained mechanic offers expert servicing with quality parts and accessories on hand.</p>
+                    <p>We also carry genuine Vespa, Piaggio, and Aprilia accessories, along with helmets and maintenance gear.</p>
+                    <p>Drop by for friendly advice, test rides, and all your scooter needs.</p>
+                </div> {# Closed card-body here #}
+            </div>
+
+            <div class="card has-bg-effect brand-card contact-brand">
+                <div class="card-body"> {# Added card-body here #}
+                    <h3>Contact Us</h3>
+                    <div class="contact-info">
+                        {% if settings %}
+                            {% if settings.phone_number %}
+                                <div class="contact-item">
+                                    <span class="svg-icon svg-icon-md icon-phone"></span>
+                                    <span><strong>Phone:</strong> {{ settings.phone_number }}</span>
+                                </div>
+                            {% endif %}
+                            {% if settings.email_address %}
+                                <div class="contact-item">
+                                    <span class="svg-icon svg-icon-md icon-mail"></span>
+                                    <span><strong>Email:</strong> {{ settings.email_address }}</span>
+                                </div>
+                            {% endif %}
+                            {% if settings.storefront_address %}
+                                <div class="contact-item">
+                                    <span class="svg-icon svg-icon-md icon-pin"></span>
+                                    <span><strong>Address:</strong> {{ settings.storefront_address|linebreaksbr }}</span>
+                                </div>
+                            {% endif %}
+                            <div class="contact-item hours">
+                                <span class="svg-icon svg-icon-md icon-clock"></span>
+                                <div>
+                                    <strong>Hours:</strong>
+                                    <ul class="reset-list hours-list">{# Added .reset-list #}
+                                        {% if settings.opening_hours_monday %}
+                                            <li>Monday: {{ settings.opening_hours_monday }}</li>
+                                        {% endif %}
+                                        {% if settings.opening_hours_tuesday %}
+                                            <li>Tuesday: {{ settings.opening_hours_tuesday }}</li>
+                                        {% endif %}
+                                        {% if settings.opening_hours_wednesday %}
+                                            <li>Wednesday: {{ settings.opening_hours_wednesday }}</li>
+                                        {% endif %}
+                                        {% if settings.opening_hours_thursday %}
+                                            <li>Thursday: {{ settings.opening_hours_thursday }}</li>
+                                        {% endif %}
+                                        {% if settings.opening_hours_friday %}
+                                            <li>Friday: {{ settings.opening_hours_friday }}</li>
+                                        {% endif %}
+                                        {% if settings.opening_hours_saturday %}
+                                            <li>Saturday: {{ settings.opening_hours_saturday }}</li>
+                                        {% endif %}
+                                        {% if settings.opening_hours_sunday %}
+                                            <li>Sunday: {{ settings.opening_hours_sunday }}</li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                        {% else %}
+                            {# Optional: Display default hardcoded info or a message if settings are not available #}
+                            <div class="contact-item">
+                                <span class="svg-icon svg-icon-md icon-phone"></span>
+                                <span><strong>Phone:</strong> (08) 9433 4613</span>
+                            </div>
+                            <div class="contact-item">
+                                <span class="svg-icon svg-icon-md icon-mail"></span>
+                                <span><strong>Email:</strong> admin@scootershop.com.au</span>
+                            </div>
+                            <div class="contact-item">
+                                <span class="svg-icon svg-icon-md icon-pin"></span>
+                                <span><strong>Address:</strong> Unit 2/95 Queen Victoria St, Fremantle WA, Australia</span>
+                            </div>
+                            <div class="contact-item hours">
+                                <span class="svg-icon svg-icon-md icon-clock"></span>
+                                <div>
+                                    <strong>Hours:</strong>
+                                    <ul class="reset-list hours-list">{# Added .reset-list #}
+                                        <li>Monday - Friday: 10:30am to 5:00pm</li>
+                                        <li>Saturday: 10:30am to 1:00pm (By Appointment only)</li>
+                                        <li>Sunday: Closed</li>
+                                        <li>Public Holidays: Closed</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div> {# Closed card-body here #}
+            </div>
+        </div>
+    </div>
+
+    {% include "core/reviews.html" %}
+
+    <div class="container">{# Changed from .index-section #}
+        <h2 class="section-title">Our Brands</h2>{# Added .section-title #}
+
+        <div class="brand-cards-container">
+            <div class="card has-bg-effect brand-card sym-brand">
+                <div class="card-body"> {# Added card-body here #}
+                    <h3>SYM Scooters – Reliable, Affordable, and Built to Last</h3>
+                    <p>Founded in 1954, SYM is a trusted Taiwanese motorcycle manufacturer known for exceptional build quality, reliability, and generous warranty coverage. They strike the perfect balance—offering better quality than many low-end Chinese brands, without the high price tag of Japanese or premium European models.</p>
+                    <p>SYM has a strong reputation across Europe, Southeast Asia, and South America. We've proudly partnered with them for years—mainly because it just makes sense. Their scooters come back with fewer issues, and our mechanics enjoy working on them.</p>
+                </div> {# Closed card-body here #}
+            </div>
+
+            <div class="card has-bg-effect brand-card segway-brand">
+                <div class="card-body"> {# Added card-body here #}
+                    <h3>Segway Electric Mopeds – Innovation Meets Reliability</h3>
+                    <p>Best known for their self-balancing transporters, Segway has evolved into a serious player in the electric moped space. As the market continues to grow and change rapidly, Segway stands out with the experience and quality that comes from being an early innovator.</p>
+                    <p>We've tested a lot of brands, but Segway's electric mopeds impressed us with their build quality, design, and performance. After a long search, we're confident these are vehicles we can stand behind—and that you'll love riding.</p>
+                </div> {# Closed card-body here #}
+            </div>
+        </div>
+    </div>
+
+        <div class="container">{# Changed from .index-section #}
+            <h2 class="section-title">Scooter Hire</h2>{# Added .section-title #}
+            <div class="card has-bg-effect brand-card hire-brand">
+                <div class="card-body"> {# Added card-body here #}
+                    <h3>Great Rates & Service</h3>
+                    <p>We're committed to offering the best scooter hire rates in Perth while delivering top-notch service. Our loyal, growing customer base—built mainly through word of mouth— speaks for itself. With consistently positive reviews and a focus on improving our service, we're confident new customers will be more than satisfied.</p>
+
+                    <h4>What we offer:</h4>
+                    <ul class="reset-list hire-features">{# Added .reset-list #}
+                        <li>Long term scooter hire rates</li>
+                        <li>Great Cheap Scooter Hire Rates</li>
+                        <li>Open 6 days a week Monday to Saturday</li>
+                        <li>After Hours Hire scooter Pick up & Drop off</li>
+                        <li>Hire Scooter Insurance included in Hire Rate</li>
+                    </ul>
+
+                    <div class="hire-cta">
+                        <a href="{% url 'shop:hire' %}" class="btn-primary">Check out the fleet</a>
+                    </div>
+                </div> {# Closed card-body here #}
+            </div>
+        </div>
+
+    {% include "core/featured.html" with section_title="Featured New Motorcycles" motorcycles=featured_new_motorcycles condition="new" %}
+
+    {% include "core/featured.html" with section_title="Featured Used Motorcycles" motorcycles=featured_used_motorcycles condition="used" %}
+
+{% endblock %}
+
+{% block map %}
+    <div class="container">{# Changed from .index-section #}
+        <h2 class="section-title map-title">Where to find us:</h2>{# Added .section-title #}
+        {% include "core/map.html" %}
+    </div>
+{% endblock %}

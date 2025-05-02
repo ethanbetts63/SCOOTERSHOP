@@ -1,0 +1,220 @@
+{% extends "core/layout.html" %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/motorcycle_detail_styles.css' %}">
+<link rel="stylesheet" href="{% static 'core/css/featured_styles.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid mt-4">
+        <div class="detail-grid">
+            <div class="detail-gallery card">
+                <div class="main-image-container">
+                    <button class="carousel-arrow gallery-prev-arrow" aria-label="Previous image">&lt;</button>
+
+                    {% if motorcycle.image %}
+                    <img src="{{ motorcycle.image.url }}" class="img-responsive" alt="{{ motorcycle.title }}">
+                    {% else %}
+                    <img src="{% static 'images/no_image.jpg' %}" class="img-responsive" alt="No Image Available">
+                    {% endif %}
+
+                    <button class="carousel-arrow gallery-next-arrow" aria-label="Next image">&gt;</button>
+                </div>
+
+                {% if motorcycle.images.all %}
+                <div class="thumbnail-gallery">
+                    <div class="thumbnail active">
+                        {% if motorcycle.image %}
+                        <img src="{{ motorcycle.image.url }}" alt="{{ motorcycle.brand }} {{ motorcycle.model }}" class="img-cover">
+                        {% else %}
+                        <img src="{% static 'images/no_image.jpg' %}" alt="No Image Available" class="img-cover">
+                        {% endif %}
+                    </div>
+
+                    {% for img in motorcycle.images.all %}
+                    <div class="thumbnail">
+                        <img src="{{ img.image.url }}" alt="Additional image {{ forloop.counter }}" class="img-cover">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+
+        <div class="detail-key-info">
+            <div class="card card-hover-effect">
+                <div class="card-body text-center">
+                    <h1 class="detail-title">{{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }}</h1>
+                    <h2 class="price">
+                        {% if motorcycle.is_for_hire %}
+                            Starting from ${{ motorcycle.daily_hire_rate }}</span>
+                        {% else %}
+                            ${{ motorcycle.price }}
+                        {% endif %}
+                    </h2>
+
+                    <div class="action-buttons">
+                        {% if user == motorcycle.seller %}
+                        <div class="owner-actions">
+                            <a href="{% url 'shop:motorcycle-update' motorcycle.pk %}" class="btn btn-secondary">Edit Listing</a>
+                            <a href="{% url 'shop:motorcycle-delete' motorcycle.pk %}" class="btn btn-danger">Delete Listing</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Key Specifications</h3>
+                </div>
+                <div class="card-body">
+                    <div class="specs-grid">
+                        {% for spec in filtered_specifications %}
+                        <div class="spec-item">
+                            <div class="spec-content">
+                                <span class="svg-icon svg-icon-md {{ spec.icon }}"></span>
+                                <div class="spec-text">
+                                    <div class="spec-label">{{ spec.label }}</div>
+                                    <div class="spec-value">{{ spec.value }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if motorcycle.description %}
+        <div class="detail-description">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Description</h3>
+                </div>
+                <div class="card-body">
+                    <div class="description-content">
+                        {{ motorcycle.description|linebreaks }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if motorcycle.features %}
+        <div class="detail-features">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Features</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="features-list reset-list">
+                        {% for feature in motorcycle.features %}
+                        <li class="feature-item">
+                            <span class="svg-icon svg-icon-md icon-check"></span>
+                            {{ feature }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="detail-featured">
+            {% if featured_motorcycles %}
+                {% include "core/featured.html" with section_title="Featured Listings" motorcycles=featured_motorcycles condition=condition %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .hire-rate-text {
+        color: white;
+    }
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Gallery navigation
+const mainImage = document.querySelector('.main-image-container img');
+const thumbnails = document.querySelectorAll('.thumbnail');
+const prevArrowGallery = document.querySelector('.carousel-arrow.gallery-prev-arrow');
+const nextArrowGallery = document.querySelector('.carousel-arrow.gallery-next-arrow');
+
+// Create an array of all image sources
+const imageSources = [];
+if (mainImage) {
+    // Add main image
+    imageSources.push(mainImage.src);
+
+    // Add all other images from thumbnails (skipping the first one if it's the same as main)
+    thumbnails.forEach((thumbnail, index) => {
+        const thumbnailImg = thumbnail.querySelector('img');
+        if (index === 0 && thumbnailImg.src === mainImage.src) {
+            // Skip if it's the first thumbnail and same as main image
+            return;
+        }
+        imageSources.push(thumbnailImg.src);
+    });
+}
+
+let currentImageIndex = 0;
+
+// Function to update the main image and active thumbnail
+function updateMainImage(index) {
+    if (imageSources.length === 0) return;
+
+    // Ensure index is within bounds
+    currentImageIndex = (index + imageSources.length) % imageSources.length;
+
+    // Update main image
+    mainImage.src = imageSources[currentImageIndex];
+
+    // Update active thumbnail
+    const activeThumb = Array.from(thumbnails).find(
+        thumb => thumb.querySelector('img').src === imageSources[currentImageIndex]
+    );
+
+    if (activeThumb) {
+        document.querySelector('.thumbnail.active')?.classList.remove('active');
+        activeThumb.classList.add('active');
+    }
+
+    // Update arrow disabled states
+    updateGalleryArrows();
+}
+
+// Function to update arrow states
+function updateGalleryArrows() {
+    if (imageSources.length <= 1) {
+        // Disable both arrows if there's only one image
+        prevArrowGallery.disabled = true;
+        nextArrowGallery.disabled = true;
+    } else {
+        prevArrowGallery.disabled = false;
+        nextArrowGallery.disabled = false;
+    }
+}
+
+// Handle previous arrow click
+if (prevArrowGallery) {
+    prevArrowGallery.addEventListener('click', () => {
+        updateMainImage(currentImageIndex - 1);
+    });
+}
+
+// Handle next arrow click
+if (nextArrowGallery) {
+    nextArrowGallery.addEventListener('click', () => {
+        updateMainImage(currentImageIndex + 1);
+    });
+}
+
+// Initialize gallery arrows
+updateGalleryArrows();
+</script>
+{% endblock %}

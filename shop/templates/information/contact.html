@@ -1,0 +1,117 @@
+{% extends "core/layout.html" %}
+{% load static %}
+
+{% block title %}Contact Us{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/contact_styles.css' %}">
+<link rel="stylesheet" href="{% static 'core/css/map_styles.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="section-title">Contact Us</h1>
+
+    <div class="contact-sections">
+        <div class="card contact-info-card">
+            <div class="card-body"> {# Added card-body here #}
+                <h3>Our Details</h3>
+                <div class="contact-info">
+                    {% if settings %}
+                        {% if settings.phone_number %}
+                            <div class="contact-item">
+                                <span class="svg-icon svg-icon-md icon-phone"></span>
+                                <span><strong>Phone:</strong> {{ settings.phone_number }}</span>
+                            </div>
+                        {% endif %}
+                        {% if settings.email_address %}
+                            <div class="contact-item">
+                                <span class="svg-icon svg-icon-md icon-mail"></span>
+                                <span><strong>Email:</strong> {{ settings.email_address }}</span>
+                            </div>
+                        {% endif %}
+                        {% if settings.storefront_address %}
+                            <div class="contact-item">
+                                <span class="svg-icon svg-icon-md icon-pin"></span>
+                                <span><strong>Address:</strong> {{ settings.storefront_address|linebreaksbr }}</span>
+                            </div>
+                        {% endif %}
+                        <div class="contact-item hours">
+                            <span class="svg-icon svg-icon-md icon-clock"></span>
+                            <div>
+                                <strong>Hours:</strong>
+                                <ul class="reset-list hours-list">
+                                    {% if settings.opening_hours_monday %}
+                                        <li>Monday: {{ settings.opening_hours_monday }}</li>
+                                    {% endif %}
+                                    {% if settings.opening_hours_tuesday %}
+                                        <li>Tuesday: {{ settings.opening_hours_tuesday }}</li>
+                                    {% endif %}
+                                    {% if settings.opening_hours_wednesday %}
+                                        <li>Wednesday: {{ settings.opening_hours_wednesday }}</li>
+                                    {% endif %}
+                                    {% if settings.opening_hours_thursday %}
+                                        <li>Thursday: {{ settings.opening_hours_thursday }}</li>
+                                    {% endif %}
+                                    {% if settings.opening_hours_friday %}
+                                        <li>Friday: {{ settings.opening_hours_friday }}</li>
+                                    {% endif %}
+                                    {% if settings.opening_hours_saturday %}
+                                        <li>Saturday: {{ settings.opening_hours_saturday }}</li>
+                                    {% endif %}
+                                    {% if settings.opening_hours_sunday %}
+                                        <li>Sunday: {{ settings.opening_hours_sunday }}</li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% else %}
+                        {# Fallback to hardcoded info if settings are not available #}
+                        <div class="contact-item">
+                            <span class="svg-icon svg-icon-md icon-phone"></span>
+                            <span><strong>Phone:</strong> (08) 9433 4613</span>
+                        </div>
+                        <div class="contact-item">
+                            <span class="svg-icon svg-icon-md icon-mail"></span>
+                            <span><strong>Email:</strong> admin@scootershop.com.au</span>
+                        </div>
+                        <div class="contact-item">
+                            <span class="svg-icon svg-icon-md icon-pin"></span>
+                            <span><strong>Address:</strong> Unit 2/95 Queen Victoria St, Fremantle WA, Australia</span>
+                        </div>
+                        <div class="contact-item hours">
+                            <span class="svg-icon svg-icon-md icon-clock"></span>
+                            <div>
+                                <strong>Hours:</strong>
+                                <ul class="reset-list hours-list">
+                                    <li>Monday - Friday: 10:30am to 5:00pm</li>
+                                    <li>Saturday: 10:30am to 1:00pm (By Appointment only)</li>
+                                    <li>Sunday: Closed</li>
+                                    <li>Public Holidays: Closed</li>
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div> {# Closed card-body here #}
+        </div>
+
+        <div class="card has-bg-effect contact-message">
+            <div class="card-body"> {# Added card-body here #}
+                <h3>We'd Love to See You!</h3>
+                <div class="welcome-message">
+                    <p>Have questions about scooters? Need to book your scooter in? Want to check out our latest arrivals?</p>
+                    <p>We're passionate about scooters and would love to help you out. As Perth's only dedicated scooter shop, our friendly team has the expertise to guide you through every step of your scooter journey.</p>
+                    <p>Drop by our Fremantle showroom, give us a call, or send us an email. We're always happy to chat about all things scooters!</p>
+                    <a href="tel:0894334613" class="contact-cta mobile-only-cta">Call Us Now</a>
+                </div>
+            </div> {# Closed card-body here #}
+        </div>
+    </div>
+
+    <div class="map-container">
+        <h2 class="section-title">Where to find us:</h2>
+        {% include "core/map.html" %}
+    </div>
+</div>
+{% endblock %}

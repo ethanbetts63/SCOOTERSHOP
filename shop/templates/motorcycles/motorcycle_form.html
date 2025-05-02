@@ -1,0 +1,338 @@
+{% extends 'core/layout.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/form_styles.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h4 class="mb-0">{% if form.instance.pk %}Edit Motorcycle Listing{% else %}Create New Motorcycle Listing{% endif %}</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data" id="motorcycleForm">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="condition-section mb-4">
+                    <h5 class="mb-3">Motorcycle Condition <span class="required-indicator">*</span></h5>
+                    <p class="text-muted mb-2">Select the condition(s) that apply to this motorcycle:</p>
+                    <div class="mb-3">
+                        {{ form.conditions.errors }}
+                        <div class="condition-checkboxes border rounded p-3">
+                            {{ form.conditions }}
+                        </div>
+                        <small class="form-text text-muted mt-2">
+                            <strong>Rules:</strong>
+                            <ul class="reset-list mt-1 mb-0">{# Added .reset-list #}
+                                <li>New, Used, and Demo are mutually exclusive</li>
+                                <li>Hire can be combined with Used or Demo (but not New)</li>
+                                <li>Selecting "Hire" will require additional hire rate information</li>
+                            </ul>
+                        </small>
+                    </div>
+                </div>
+
+                <div class="hire-rates-section mb-4" id="hireRatesSection">
+                    <h5 class="mb-3">Hire Rates</h5>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="{{ form.daily_hire_rate.id_for_label }}" class="form-label">
+                                    Daily Rate ($) <span class="required-indicator">*</span>
+                                </label>
+                                {{ form.daily_hire_rate.errors }}
+                                {{ form.daily_hire_rate|add_class:"form-control" }}
+                                <small class="form-text text-muted">Required for hire motorcycles</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="{{ form.weekly_hire_rate.id_for_label }}" class="form-label">Weekly Rate ($)</label>
+                                {{ form.weekly_hire_rate.errors }}
+                                {{ form.weekly_hire_rate|add_class:"form-control" }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="{{ form.monthly_hire_rate.id_for_label }}" class="form-label">Monthly Rate ($)</label>
+                                {{ form.monthly_hire_rate.errors }}
+                                {{ form.monthly_hire_rate|add_class:"form-control" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="mb-3">Basic Information</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="{{ form.brand.id_for_label }}" class="form-label">Brand <span class="required-indicator">*</span></label>
+                                    {{ form.brand.errors }}
+                                    {{ form.brand|add_class:"form-control" }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="{{ form.model.id_for_label }}" class="form-label">Model <span class="required-indicator">*</span></label>
+                                    {{ form.model.errors }}
+                                    {{ form.model|add_class:"form-control" }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="{{ form.year.id_for_label }}" class="form-label">Year <span class="required-indicator">*</span></label>
+                                    {{ form.year.errors }}
+                                    {{ form.year|add_class:"form-control" }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.stock_number.id_for_label }}" class="form-label">Stock Number</label>
+                                    {{ form.stock_number.errors }}
+                                    {{ form.stock_number|add_class:"form-control" }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.price.id_for_label }}" class="form-label">Price ($)</label>
+                                    {{ form.price.errors }}
+                                    {{ form.price|add_class:"form-control" }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.seats.id_for_label }}" class="form-label">
+                                        Number of Seats <span class="required-indicator">*</span>
+                                    </label>
+                                    {{ form.seats.errors }}
+                                    {{ form.seats|add_class:"form-control" }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.transmission.id_for_label }}" class="form-label">
+                                        Transmission <span class="required-indicator">*</span>
+                                    </label>
+                                    {{ form.transmission.errors }}
+                                    {{ form.transmission|add_class:"form-control" }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.odometer.id_for_label }}" class="form-label">Odometer</label>
+                                    {{ form.odometer.errors }}
+                                    {{ form.odometer|add_class:"form-control" }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.engine_size.id_for_label }}" class="form-label">Engine Size <span class="required-indicator">*</span></label>
+                                    {{ form.engine_size.errors }}
+                                    {{ form.engine_size|add_class:"form-control" }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h5 class="mb-3">Additional Details</h5>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.rego.id_for_label }}" class="form-label">Registration Number</label>
+                                    {{ form.rego.errors }}
+                                    {{ form.rego|add_class:"form-control" }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.rego_exp.id_for_label }}" class="form-label">Registration Expiry</label>
+                                    {{ form.rego_exp.errors }}
+                                    {{ form.rego_exp|add_class:"form-control" }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Description <span class="required-indicator">*</span></label>
+                            {{ form.description.errors }}
+                            {{ form.description|add_class:"form-control" }}
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ form.is_available|add_class:"form-check-input" }}
+                                <label class="form-check-label" for="{{ form.is_available.id_for_label }}">
+                                    Available for sale/hire
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        {% if form.instance.pk %}Save Changes{% else %}Create Listing{% endif %}
+                    </button>
+                    <a href="{% if form.instance.pk %}{% url 'shop:motorcycle-detail' form.instance.pk %}{% else %}{% url 'shop:motorcycle-list' %}{% endif %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Define condition IDs - adjust these based on your actual database values
+        const CONDITION_IDS = {
+            NEW: '1',    // ID for "New" condition
+            USED: '2',   // ID for "Used" condition
+            DEMO: '3',   // ID for "Demo" condition
+            HIRE: '4'    // ID for "Hire" condition
+        };
+
+        // Find all condition checkboxes
+        const conditionCheckboxes = document.querySelectorAll('.condition-checkboxes input[type="checkbox"]'); // Corrected selector
+        const newCondition = document.querySelector(`.condition-checkboxes input[value="${CONDITION_IDS.NEW}"]`); // Corrected selector
+        const usedCondition = document.querySelector(`.condition-checkboxes input[value="${CONDITION_IDS.USED}"]`); // Corrected selector
+        const demoCondition = document.querySelector(`.condition-checkboxes input[value="${CONDITION_IDS.DEMO}"]`); // Corrected selector
+        const hireCondition = document.querySelector(`.condition-checkboxes input[value="${CONDITION_IDS.HIRE}"]`); // Corrected selector
+
+        // Get the hire rates section and price field
+        const hireRatesSection = document.getElementById('hireRatesSection');
+        const priceField = document.querySelector('#id_price');
+
+        // Function to update checkbox states based on selection
+        function updateConditionCheckboxes() {
+            // Reset all checkboxes to enabled state first
+            [newCondition, usedCondition, demoCondition, hireCondition].forEach(checkbox => {
+                if (checkbox) checkbox.disabled = false;
+            });
+
+            // Apply rules:
+            // 1. New, Used, and Demo are mutually exclusive
+            // 2. Hire cannot be combined with New
+
+            // If New is selected
+            if (newCondition && newCondition.checked) {
+                if (usedCondition) usedCondition.disabled = true;
+                if (demoCondition) demoCondition.disabled = true;
+                if (hireCondition) hireCondition.disabled = true;
+                // Make price required
+                priceField.required = true;
+                priceField.closest('.mb-3').querySelector('label').innerHTML =
+                    'Price ($) <span class="required-indicator">*</span>';
+            }
+
+            // If Used is selected
+            if (usedCondition && usedCondition.checked) {
+                if (newCondition) newCondition.disabled = true;
+                if (demoCondition) demoCondition.disabled = true;
+                // Make price required
+                priceField.required = true;
+                priceField.closest('.mb-3').querySelector('label').innerHTML =
+                    'Price ($) <span class="required-indicator">*</span>';
+            }
+
+            // If Demo is selected
+            if (demoCondition && demoCondition.checked) {
+                if (newCondition) newCondition.disabled = true;
+                if (usedCondition) usedCondition.disabled = true;
+                // Make price required
+                priceField.required = true;
+                priceField.closest('.mb-3').querySelector('label').innerHTML =
+                    'Price ($) <span class="required-indicator">*</span>';
+            }
+
+            // If Hire is selected
+            if (hireCondition && hireCondition.checked) {
+                if (newCondition) newCondition.disabled = true;
+                // Show hire rates section
+                hireRatesSection.classList.add('visible');
+                // Make daily rate required
+                const dailyRateField = document.querySelector('#id_daily_hire_rate');
+                if (dailyRateField) dailyRateField.required = true; // Added check
+            } else {
+                // Hide hire rates section
+                hireRatesSection.classList.remove('visible');
+                 const dailyRateField = document.querySelector('#id_daily_hire_rate');
+                if (dailyRateField) dailyRateField.required = false; // Added check
+            }
+
+            // Reset price requirement if none of New, Used, or Demo is selected
+            if (!(newCondition && newCondition.checked) &&
+                !(usedCondition && usedCondition.checked) &&
+                !(demoCondition && demoCondition.checked)) {
+                priceField.required = false;
+                priceField.closest('.mb-3').querySelector('label').innerHTML = 'Price ($)';
+            }
+        }
+
+        // Add event listeners to enforce business rules
+        conditionCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateConditionCheckboxes);
+        });
+
+        // Initial check when page loads
+        updateConditionCheckboxes();
+
+        // Form validation
+        document.getElementById('motorcycleForm').addEventListener('submit', function(event) {
+            // If hire is selected, validate the daily hire rate
+            if (hireCondition && hireCondition.checked) {
+                const dailyRateField = document.querySelector('#id_daily_hire_rate');
+                if (dailyRateField && (!dailyRateField.value || parseFloat(dailyRateField.value) <= 0)) { // Added check
+                    event.preventDefault();
+                    alert('Please enter a valid daily hire rate for hire motorcycles.');
+                    dailyRateField.focus();
+                    return;
+                }
+            }
+
+            // If new, used, or demo is selected, validate price
+            if ((newCondition && newCondition.checked) ||
+                (usedCondition && usedCondition.checked) ||
+                (demoCondition && demoCondition.checked)) {
+
+                if (!priceField.value || parseFloat(priceField.value) <= 0) {
+                    event.preventDefault();
+                    alert('Please enter a valid price for New, Used, or Demo motorcycles.');
+                    priceField.focus();
+                    return;
+                }
+            }
+        });
+
+        // Show appropriate fields on page load
+        if (hireCondition && hireCondition.checked) {
+            hireRatesSection.classList.add('visible');
+        }
+    });
+</script>
+{% endblock extra_js %}
+{% endblock %}

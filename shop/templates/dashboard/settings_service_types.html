@@ -1,0 +1,101 @@
+{% extends "dashboard/admin_layout.html" %}
+
+{% block admin_main_content %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/service_type_styles.css' %}">
+
+    <div class="container-fluid">
+        <h1 class="h3 mb-2 text-gray-800">Service Types Management</h1>
+        <p class="mb-4">Manage the service types offered by your dealership.</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Current Service Types</h6>
+                <a href="{% url 'shop:add_service_type' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Add New Service
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table" id="serviceTypesTable" width="100%" cellspacing="0">
+                         {# Table header is hidden on mobile and not strictly necessary for the card layout on desktop, but keeping for semantic structure #}
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Duration</th>
+                                <th>Base Price</th>
+                                <th>Actions</th> {# Keeping Actions header for clarity, though its display is managed by CSS #}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for service_type in service_types %}
+                                <tr>
+                                    <div class="service-details">
+                                        <td data-label="Name">{{ service_type.name }}</td>
+                                        <td data-label="Description">{{ service_type.description|truncatechars:80 }}</td>
+                                        <td data-label="Duration">{{ service_type.estimated_duration }}</td>
+                                        <td data-label="Price">${{ service_type.base_price }}</td>
+                                    </div>
+                                    <div class="service-actions">
+                                        <td data-label="Actions">
+                                            <div class="button-group-spaced">
+                                                {% if service_type.is_active %}
+                                                    <span class="badge badge-success">Active</span>
+                                                {% else %}
+                                                    <span class="badge badge-secondary">Inactive</span>
+                                                {% endif %}
+                                                <a href="{% url 'shop:edit_service_type' pk=service_type.pk %}" class="btn-service-action edit">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                                <button class="btn-service-action delete"
+                                                        data-id="{{ service_type.id }}"
+                                                        data-name="{{ service_type.name }}"
+                                                        data-toggle="modal"
+                                                        data-target="#deleteServiceTypeModal">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </div>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    {# Colspan adjusted to 5 as we now have 4 detail columns + 1 actions column conceptually #}
+                                    <td colspan="5" class="text-center">No service types defined yet.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Delete service type modal setup
+            const deleteButtons = document.querySelectorAll('.delete');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const name = this.getAttribute('data-name');
+
+                    document.getElementById('delete_service_name').textContent = name;
+                    document.getElementById('deleteServiceForm').action = `/dashboard/settings/service-types/delete/${id}/`;
+                });
+            });
+        });
+    </script>
+{% endblock %}

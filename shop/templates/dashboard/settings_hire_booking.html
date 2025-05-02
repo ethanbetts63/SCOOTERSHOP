@@ -1,0 +1,109 @@
+{% extends "dashboard/admin_layout.html" %}
+
+{% block admin_main_content %}
+    <div class="card">
+        <div class="card-header bg-darkest">
+            <h1 class="h4 mb-0 text-primary">Hire Booking Settings</h1>
+        </div>
+        <div class="card-body">
+            <p class="mb-4 text-secondary">Configure how motorcycle hire bookings work on your website.</p>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Booking Duration Settings</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="{{ form.minimum_hire_duration_days.id_for_label }}" class="form-label">
+                                        Minimum Hire Duration (Days)
+                                    </label>
+                                    {{ form.minimum_hire_duration_days }}
+                                    <small class="form-text text-muted d-block">
+                                        Minimum number of days for a hire booking
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form.maximum_hire_duration_days.id_for_label }}" class="form-label">
+                                        Maximum Hire Duration (Days)
+                                    </label>
+                                    {{ form.maximum_hire_duration_days }}
+                                    <small class="form-text text-muted d-block">
+                                        Maximum number of days for a hire booking
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form.hire_booking_advance_notice.id_for_label }}" class="form-label">
+                                        Booking Advance Notice (Days)
+                                    </label>
+                                    {{ form.hire_booking_advance_notice }}
+                                    <small class="form-text text-muted d-block">
+                                        Minimum number of days notice required for a hire booking
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Financial & Notification Settings</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="{{ form.default_hire_deposit_percentage.id_for_label }}" class="form-label">
+                                        Default Deposit Percentage (%)
+                                    </label>
+                                    {{ form.default_hire_deposit_percentage }}
+                                    <small class="form-text text-muted d-block">
+                                        Default deposit percentage for hire bookings
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form.hire_confirmation_email_subject.id_for_label }}" class="form-label">
+                                        Confirmation Email Subject
+                                    </label>
+                                    {{ form.hire_confirmation_email_subject }}
+                                    <small class="form-text text-muted d-block">
+                                        Subject line for hire booking confirmation emails
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form.admin_hire_notification_email.id_for_label }}" class="form-label">
+                                        Admin Notification Email
+                                    </label>
+                                    {{ form.admin_hire_notification_email }}
+                                    <small class="form-text text-muted d-block">
+                                        Email address to receive hire booking notifications
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

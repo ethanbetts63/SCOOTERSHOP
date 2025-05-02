@@ -1,0 +1,47 @@
+{# templates/service_booking/service_bike_details_authenticated.html #}
+{% extends 'core/layout.html' %} {# Assuming you have a base template #}
+{% block title %}Book Service - Step 2{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Book Service - Step {{ step }} of {{ total_steps }}</h2>
+    <hr>
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<h3>Your Motorcycle Details</h3>
+<p>Choose from your existing motorcycles or add a new one for this service.</p>
+
+{% if has_existing_bikes %}
+    <h4>Select an Existing Motorcycle</h4>
+    <form method="post">
+        {% csrf_token %}
+        {{ existing_bike_form.as_p }}
+        <button type="submit" class="btn btn-primary mt-3">Use Selected Motorcycle</button>
+    </form>
+
+    <hr class="my-4"> {# Separator #}
+
+    <h4>Or Add a New Motorcycle</h4>
+    <form method="post">
+        {% csrf_token %}
+        {{ new_bike_form.as_p }}
+        <button type="submit" class="btn btn-secondary mt-3">Add New Motorcycle</button>
+    </form>
+{% else %}
+    {# User has no motorcycles, just show the new motorcycle form #}
+    <h4>Add a New Motorcycle</h4>
+    <p>Please provide the details of the motorcycle you'd like to service.</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ new_bike_form.as_p }}
+        <button type="submit" class="btn btn-primary mt-3">Add Motorcycle</button>
+    </form>
+{% endif %}
+
+</div>
+{% endblock %}
