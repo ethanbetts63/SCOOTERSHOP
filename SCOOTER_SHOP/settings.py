@@ -131,7 +131,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-AUTH_USER_MODEL = 'shop.User'
+AUTH_USER_MODEL = 'core.User'
 
 MAPS_API_KEY = "AIzaSyCOauHlqUBPYdLLsYKYFhaaYAIlxK6pGa4"
 
