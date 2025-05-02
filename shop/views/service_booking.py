@@ -184,27 +184,29 @@ def service_booking_step2_authenticated(request):
         if has_existing_bikes:
             # If yes, show the selection form first
             existing_bike_form = ExistingCustomerMotorcycleForm(user=user)
-            # Do NOT instantiate motorcycle_form with an instance here
+            # Always instantiate an empty motorcycle_form for the 'Add New' option on GET
             motorcycle_form = CustomerMotorcycleForm()
             display_existing_selection = True
             display_motorcycle_details = False
 
-            # Clear any previous vehicle selection from the session for step 2 on GET
+            # Clear any previous vehicle selection or edit mode from the session for step 2 on GET
+            # This is crucial to ensure a clean state when the user arrives at step 2 via GET
             booking_data.pop('vehicle_id', None)
-            # Ensure edit_motorcycle_mode is False on initial GET to default to 'add new' if user clicks it
             booking_data['edit_motorcycle_mode'] = False
             request.session[SERVICE_BOOKING_SESSION_KEY] = booking_data
             request.session.modified = True
 
-
         else:
             # If no existing bikes, show the add new form directly
+            # Instantiate an empty motorcycle_form as there's no existing bike to edit
             motorcycle_form = CustomerMotorcycleForm()
             display_existing_selection = False
             display_motorcycle_details = True
             messages.info(request, "Please provide details for your motorcycle.")
             # Ensure edit_motorcycle_mode is False when adding a new bike
             booking_data['edit_motorcycle_mode'] = False
+            # Remove any vehicle_id just in case (shouldn't be present if no bikes exist, but as safeguard)
+            booking_data.pop('vehicle_id', None)
             request.session[SERVICE_BOOKING_SESSION_KEY] = booking_data
             request.session.modified = True
 
@@ -238,6 +240,7 @@ def service_booking_step2_authenticated(request):
                 # Re-instantiate the selection form with errors
                 existing_bike_form = ExistingCustomerMotorcycleForm(request.POST, user=user)
                 # Instantiate an empty motorcycle form in case the user switches to add new
+                # THIS IS CRUCIAL: provide a blank form if the selection failed
                 motorcycle_form = CustomerMotorcycleForm()
 
 
@@ -330,6 +333,7 @@ def service_booking_step2_authenticated(request):
             if has_existing_bikes:
                  existing_bike_form = ExistingCustomerMotorcycleForm(user=user)
                  # Instantiate an empty motorcycle form in case the user switches to add new
+                 # THIS IS CRUCIAL: provide a blank form for the 'Add New' option
                  motorcycle_form = CustomerMotorcycleForm()
                  display_existing_selection = True
                  display_motorcycle_details = False
