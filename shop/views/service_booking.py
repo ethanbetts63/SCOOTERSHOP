@@ -151,7 +151,6 @@ def service_booking_step1(request):
     return render(request, 'service_booking/service_details.html', context)
 
 # Step 2: Vehicle Details - Authenticated
-# Improved implementation of service_booking_step2_authenticated
 @login_required
 def service_booking_step2_authenticated(request):
     settings = SiteSettings.get_settings()
@@ -173,58 +172,42 @@ def service_booking_step2_authenticated(request):
     existing_bike_form = None
     motorcycle_form = None
     selected_motorcycle = None
-    
-    # Add a mode flag to the session to track if we're adding or editing
-    # This helps with maintaining state between requests
-    edit_mode = booking_data.get('edit_motorcycle_mode', False)
-    
+
     # Determine which section to display initially or after POST
     display_existing_selection = True
     display_motorcycle_details = False
+    editing_motorcycle = None # To pass the instance to the template if editing
 
     # --- GET Request Logic ---
     if request.method == 'GET':
-        # Check if we have a specific mode requested in query params
-        # This allows direct linking to "add new" mode if needed
-        requested_mode = request.GET.get('mode')
-        
-        if requested_mode == 'add_new':
-            # Force "add new" mode regardless of existing bikes
+        # Check if the user has existing bikes
+        if has_existing_bikes:
+            # If yes, show the selection form first
+            existing_bike_form = ExistingCustomerMotorcycleForm(user=user)
+            # Do NOT instantiate motorcycle_form with an instance here
             motorcycle_form = CustomerMotorcycleForm()
-            display_existing_selection = False
-            display_motorcycle_details = True
-            # Update session state
+            display_existing_selection = True
+            display_motorcycle_details = False
+
+            # Clear any previous vehicle selection from the session for step 2 on GET
+            booking_data.pop('vehicle_id', None)
+            # Ensure edit_motorcycle_mode is False on initial GET to default to 'add new' if user clicks it
             booking_data['edit_motorcycle_mode'] = False
             request.session[SERVICE_BOOKING_SESSION_KEY] = booking_data
             request.session.modified = True
-            messages.info(request, "Please provide details for your motorcycle.")
-        elif has_existing_bikes:
-            # Default to the first bike if user has existing bikes
-            selected_motorcycle = user_motorcycles.first()
-            # Store the selected motorcycle's ID in the session
-            booking_data['vehicle_id'] = selected_motorcycle.id
-            booking_data['edit_motorcycle_mode'] = True  # Set edit mode flag
-            request.session[SERVICE_BOOKING_SESSION_KEY] = booking_data
-            request.session.modified = True
 
-            # Pre-fill the details form with the selected bike's data
-            motorcycle_form = CustomerMotorcycleForm(instance=selected_motorcycle)
-            existing_bike_form = ExistingCustomerMotorcycleForm(
-                user=user, 
-                initial={'motorcycle': selected_motorcycle}
-            )
-            display_existing_selection = False
-            display_motorcycle_details = True
-            messages.info(request, f"Details for {selected_motorcycle} loaded. Please confirm or update them if needed.")
+
         else:
             # If no existing bikes, show the add new form directly
             motorcycle_form = CustomerMotorcycleForm()
-            booking_data['edit_motorcycle_mode'] = False  # Set add mode flag
-            request.session[SERVICE_BOOKING_SESSION_KEY] = booking_data
-            request.session.modified = True
             display_existing_selection = False
             display_motorcycle_details = True
             messages.info(request, "Please provide details for your motorcycle.")
+            # Ensure edit_motorcycle_mode is False when adding a new bike
+            booking_data['edit_motorcycle_mode'] = False
+            request.session[SERVICE_BOOKING_SESSION_KEY] = booking_data
+            request.session.modified = True
+
 
     # --- POST Request Logic ---
     elif request.method == 'POST':
@@ -236,20 +219,27 @@ def service_booking_step2_authenticated(request):
                 selected_motorcycle = existing_bike_form.cleaned_data['motorcycle']
                 # Store the selected motorcycle's ID in the session
                 booking_data['vehicle_id'] = selected_motorcycle.id
-                booking_data['edit_motorcycle_mode'] = True  # Set edit mode flag
+                # Set edit mode flag
+                booking_data['edit_motorcycle_mode'] = True
                 request.session[SERVICE_BOOKING_SESSION_KEY] = booking_data
                 request.session.modified = True
 
                 # Instantiate the details form with the selected motorcycle's data
                 motorcycle_form = CustomerMotorcycleForm(instance=selected_motorcycle)
+                editing_motorcycle = selected_motorcycle # Pass instance to template
                 display_existing_selection = False
                 display_motorcycle_details = True
                 messages.info(request, f"Details for {selected_motorcycle} loaded. Please confirm or update them if needed.")
             else:
+                # If selection form is invalid, stay on selection screen
                 messages.error(request, "Please select a valid existing motorcycle.")
                 display_existing_selection = True
                 display_motorcycle_details = False
+                # Re-instantiate the selection form with errors
                 existing_bike_form = ExistingCustomerMotorcycleForm(request.POST, user=user)
+                # Instantiate an empty motorcycle form in case the user switches to add new
+                motorcycle_form = CustomerMotorcycleForm()
+
 
         elif action == 'add_new':
             # Important: Do NOT pass an instance here to ensure a new motorcycle is created
@@ -269,16 +259,17 @@ def service_booking_step2_authenticated(request):
                 new_motorcycle = motorcycle_form.save(commit=False)
                 new_motorcycle.owner = user
                 new_motorcycle.save()
-                
+
                 # Store the new motorcycle's ID in the session
                 booking_data['vehicle_id'] = new_motorcycle.id
                 # Set edit mode for future requests to avoid creating duplicates
                 booking_data['edit_motorcycle_mode'] = True
-                # Remove any anonymous vehicle data
-                for key in ['anon_vehicle_make', 'anon_vehicle_model', 'anon_vehicle_year', 
-                           'anon_vehicle_rego', 'anon_vehicle_vin_number', 
+                 # Remove any anonymous vehicle data (shouldn't be present for auth user, but as safeguard)
+                for key in ['anon_vehicle_make', 'anon_vehicle_model', 'anon_vehicle_year',
+                           'anon_vehicle_rego', 'anon_vehicle_vin_number',
                            'anon_vehicle_odometer', 'anon_vehicle_transmission']:
                     booking_data.pop(key, None)
+
 
                 request.session[SERVICE_BOOKING_SESSION_KEY] = booking_data
                 request.session.modified = True
@@ -287,19 +278,23 @@ def service_booking_step2_authenticated(request):
             else:
                 messages.error(request, "Please correct the errors in the new motorcycle details.")
                 if has_existing_bikes:
+                    # Re-instantiate the selection form for the template
                     existing_bike_form = ExistingCustomerMotorcycleForm(user=user)
+
 
         elif action == 'edit_existing':
             # Ensure a vehicle_id is in the session for this action
             vehicle_id_to_edit = booking_data.get('vehicle_id')
             if not vehicle_id_to_edit:
                 messages.error(request, "No motorcycle selected for editing.")
+                # Redirect back to step 2, which will show selection if available
                 return redirect('shop:service_booking_step2_authenticated')
 
             try:
                 selected_motorcycle = CustomerMotorcycle.objects.get(id=vehicle_id_to_edit, owner=user)
                 # When editing, instantiate the form with the existing instance and POST data
                 motorcycle_form = CustomerMotorcycleForm(request.POST, instance=selected_motorcycle)
+                editing_motorcycle = selected_motorcycle # Pass instance to template
                 display_existing_selection = False
                 display_motorcycle_details = True
 
@@ -315,49 +310,35 @@ def service_booking_step2_authenticated(request):
                 else:
                     messages.error(request, "Please correct the errors in the motorcycle details.")
                     if has_existing_bikes:
+                        # Re-instantiate the selection form, pre-selecting the one being edited
                         existing_bike_form = ExistingCustomerMotorcycleForm(
-                            user=user, 
+                            user=user,
                             initial={'motorcycle': selected_motorcycle}
                         )
             except CustomerMotorcycle.DoesNotExist:
                 messages.error(request, "Motorcycle not found for editing.")
+                # Clear session state related to the edited vehicle
                 booking_data.pop('vehicle_id', None)
                 booking_data['edit_motorcycle_mode'] = False
                 request.session[SERVICE_BOOKING_SESSION_KEY] = booking_data
                 request.session.modified = True
+                # Redirect back to step 2, which will show selection if available
                 return redirect('shop:service_booking_step2_authenticated')
         else:
             messages.error(request, "Invalid request.")
-            # Re-instantiate forms based on current session state or default
+            # Re-instantiate forms based on the user's existing bikes
             if has_existing_bikes:
-                selected_vehicle_id_in_session = booking_data.get('vehicle_id')
-                edit_mode = booking_data.get('edit_motorcycle_mode', False)
-                
-                if selected_vehicle_id_in_session and edit_mode:
-                    try:
-                        selected_motorcycle = CustomerMotorcycle.objects.get(
-                            id=selected_vehicle_id_in_session, 
-                            owner=user
-                        )
-                        motorcycle_form = CustomerMotorcycleForm(instance=selected_motorcycle)
-                        existing_bike_form = ExistingCustomerMotorcycleForm(
-                            user=user, 
-                            initial={'motorcycle': selected_motorcycle}
-                        )
-                        display_existing_selection = False
-                        display_motorcycle_details = True
-                    except CustomerMotorcycle.DoesNotExist:
-                        existing_bike_form = ExistingCustomerMotorcycleForm(user=user)
-                        display_existing_selection = True
-                        display_motorcycle_details = False
-                else:
-                    existing_bike_form = ExistingCustomerMotorcycleForm(user=user)
-                    display_existing_selection = True
-                    display_motorcycle_details = False
+                 existing_bike_form = ExistingCustomerMotorcycleForm(user=user)
+                 # Instantiate an empty motorcycle form in case the user switches to add new
+                 motorcycle_form = CustomerMotorcycleForm()
+                 display_existing_selection = True
+                 display_motorcycle_details = False
             else:
-                motorcycle_form = CustomerMotorcycleForm()
-                display_existing_selection = False
-                display_motorcycle_details = True
+                 motorcycle_form = CustomerMotorcycleForm()
+                 display_existing_selection = False
+                 display_motorcycle_details = True
+                 messages.info(request, "Please provide details for your motorcycle.")
+
 
     # Prepare context for rendering
     context = {
@@ -369,10 +350,11 @@ def service_booking_step2_authenticated(request):
         'has_existing_bikes': has_existing_bikes,
         'display_existing_selection': display_existing_selection,
         'display_motorcycle_details': display_motorcycle_details,
-        'editing_motorcycle': selected_motorcycle,
-        'edit_mode': edit_mode  # Pass the edit mode flag to the template
+        'editing_motorcycle': editing_motorcycle, # Pass the selected/edited instance
+        'edit_mode': booking_data.get('edit_motorcycle_mode', False) # Pass the mode flag
     }
     return render(request, 'service_booking/service_bike_details_authenticated.html', context)
+
 
 # Step 2: Vehicle Details - Anonymous
 def service_booking_step2_anonymous(request):
@@ -388,7 +370,8 @@ def service_booking_step2_anonymous(request):
     booking_data = request.session.get(SERVICE_BOOKING_SESSION_KEY)
     if not booking_data:
         messages.warning(request, "Please start the booking process again.")
-        return redirect('shop:service_booking_step1_anonymous') # Redirect to step 1 anonymous
+        return redirect('shop:service_booking_step1') # Redirect to step 1
+
 
     if request.method == 'POST':
         form = CustomerMotorcycleForm(request.POST)
@@ -404,6 +387,8 @@ def service_booking_step2_anonymous(request):
 
              # Remove any linked vehicle data just in case (shouldn't happen for anon)
             booking_data.pop('vehicle_id', None)
+             # Ensure edit_motorcycle_mode is False for anonymous users
+            booking_data['edit_motorcycle_mode'] = False
 
 
             request.session[SERVICE_BOOKING_SESSION_KEY] = booking_data
@@ -460,7 +445,8 @@ def service_booking_step3_authenticated(request):
     # If session data is missing, redirect to the start of the authenticated flow
     if not booking_data:
         messages.warning(request, "Please start the booking process again.")
-        return redirect('shop:service_booking_step1_authenticated')
+        return redirect('shop:service_booking_step1') # Redirect to step 1
+
 
     user = request.user # Get the logged-in user
 
@@ -536,11 +522,14 @@ def service_booking_step3_authenticated(request):
                 else:
                     # If service_type_id is missing, redirect back to step 1
                     messages.error(request, "Invalid service type selected.")
-                    return redirect('shop:service_booking_step1_authenticated')
+                    return redirect('shop:service_booking_step1') # Redirect to step 1
+
+
             except ServiceType.DoesNotExist:
                 # If the ServiceType ID from the session is invalid, redirect back to step 1
                 messages.error(request, "Invalid service type selected.")
-                return redirect('shop:service_booking_step1_authenticated')
+                return redirect('shop:service_booking_step1') # Redirect to step 1
+
 
             # Convert the stored datetime string back to a datetime object
             if 'appointment_datetime_str' in booking_data:
@@ -550,11 +539,12 @@ def service_booking_step3_authenticated(request):
                 except (ValueError, TypeError):
                     # If the stored datetime string is invalid, show an error and go back to step 1
                     messages.error(request, "Invalid appointment date/time. Please select again.")
-                    return redirect('shop:service_booking_step1_authenticated')
+                    return redirect('shop:service_booking_step1') # Redirect to step 1
+
             else:
                  # If appointment_datetime_str is missing, redirect back to step 1
                  messages.error(request, "Appointment date/time is missing.")
-                 return redirect('shop:service_booking_step1_authenticated')
+                 return redirect('shop:service_booking_step1') # Redirect to step 1
 
 
             # Populate other fields from session data
@@ -641,7 +631,8 @@ def service_booking_step3_anonymous(request):
     booking_data = request.session.get(SERVICE_BOOKING_SESSION_KEY)
     if not booking_data:
         messages.warning(request, "Please start the booking process again.")
-        return redirect('shop:service_booking_step1_anonymous') # Redirect to step 1 anonymous
+        return redirect('shop:service_booking_step1') # Redirect to step 1
+
 
     if request.method == 'POST':
         form = ServiceBookingUserForm(request.POST)
@@ -685,10 +676,11 @@ def service_booking_step3_anonymous(request):
                     service_booking.service_type = ServiceType.objects.get(id=service_type_id)
                 else:
                     messages.error(request, "Invalid service type selected.")
-                    return redirect('shop:service_booking_step1_anonymous')
+                    return redirect('shop:service_booking_step1') # Redirect to step 1
             except ServiceType.DoesNotExist:
                 messages.error(request, "Invalid service type selected.")
-                return redirect('shop:service_booking_step1_anonymous')
+                return redirect('shop:service_booking_step1') # Redirect to step 1
+
 
             # Convert the stored datetime string back to a datetime object
             if 'appointment_datetime_str' in booking_data:
@@ -697,7 +689,8 @@ def service_booking_step3_anonymous(request):
                         booking_data['appointment_datetime_str'])
                 except (ValueError, TypeError):
                     messages.error(request, "Invalid appointment date/time. Please select again.")
-                    return redirect('shop:service_booking_step1_anonymous')
+                    return redirect('shop:service_booking_step1') # Redirect to step 1
+
 
             service_booking.preferred_contact = booking_data.get('preferred_contact')
             service_booking.customer_notes = booking_data.get('booking_comments')

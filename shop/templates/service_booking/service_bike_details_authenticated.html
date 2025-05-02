@@ -58,11 +58,13 @@
             {% csrf_token %}
             {# The action input will be set by JavaScript based on user interaction or initial state #}
             <input type="hidden" name="action" value="{% if editing_motorcycle %}edit_existing{% else %}add_new{% endif %}">
-            
+
             {# Only include motorcycle_id when editing #}
-            {% if editing_motorcycle %}
-                <input type="hidden" name="motorcycle_id" value="{{ editing_motorcycle.id }}">
+            {# Pass the ID if we are editing a specific instance #}
+            {% if editing_motorcycle and editing_motorcycle.pk %}
+                <input type="hidden" name="motorcycle_id" value="{{ editing_motorcycle.pk }}">
             {% endif %}
+
 
             <div class="mb-3">
                 {# Heading changes based on mode #}
@@ -73,7 +75,7 @@
                         New Motorcycle Details
                     {% endif %}
                 </h4>
-                
+
                 {# Paragraph text changes based on mode #}
                 <p id="motorcycle-details-paragraph">
                     {% if editing_motorcycle %}
@@ -89,9 +91,10 @@
 
             <div class="d-flex justify-content-between mt-4">
                 {% if has_existing_bikes %}
-                <button type="button" id="back-to-selection" class="btn btn-outline-secondary">Back to Selection</button>
+                {# Changed button class to btn-primary #}
+                <button type="button" id="back-to-selection" class="btn btn-primary">Back to Selection</button>
                 {% endif %}
-                
+
                 {# Button text changes based on mode #}
                 <button type="submit" class="btn btn-primary">
                     {% if editing_motorcycle %}
@@ -119,56 +122,62 @@ document.addEventListener('DOMContentLoaded', function() {
     const continueSelectedButton = document.getElementById('continue-selected-button');
     const detailsHeading = document.getElementById('motorcycle-details-heading');
     const detailsParagraph = document.getElementById('motorcycle-details-paragraph');
+    const motorcycleIdInput = motorcycleForm ? motorcycleForm.querySelector('input[name="motorcycle_id"]') : null;
+    const actionInput = motorcycleForm ? motorcycleForm.querySelector('input[name="action"]') : null;
+
 
     /**
      * Complete form reset function - properly clears all field types
+     * This is used when switching from viewing an existing bike to adding a new one.
      */
     function resetMotorcycleForm() {
         if (!motorcycleForm) return;
-        
-        // Reset the HTML form element itself (native reset)
+
+        // Use native reset
         motorcycleForm.reset();
-        
+
         // Ensure the action is set to add_new
-        const actionInput = motorcycleForm.querySelector('input[name="action"]');
         if (actionInput) actionInput.value = 'add_new';
-        
-        // Remove any motorcycle_id that might exist
-        const motorcycleIdInput = motorcycleForm.querySelector('input[name="motorcycle_id"]');
-        if (motorcycleIdInput) motorcycleIdInput.remove();
-        
-        // For thoroughness, clear all form fields including hidden ones
+
+        // Remove any motorcycle_id that might exist from editing
+        if (motorcycleIdInput) {
+            motorcycleIdInput.remove();
+             // Recreate the hidden input with empty value and correct name for 'add_new' context
+             const newInput = document.createElement('input');
+             newInput.type = 'hidden';
+             newInput.name = 'motorcycle_id';
+             newInput.value = ''; // Ensure it's empty
+             motorcycleForm.appendChild(newInput);
+             motorcycleIdInput = newInput; // Update the reference
+        } else if (actionInput && actionInput.value === 'add_new') {
+             // If no motorcycle_id input exists but action is add_new, create it
+              const newInput = document.createElement('input');
+              newInput.type = 'hidden';
+              newInput.name = 'motorcycle_id';
+              newInput.value = ''; // Ensure it's empty
+              motorcycleForm.appendChild(newInput);
+              motorcycleIdInput = newInput; // Update the reference
+        }
+
+
+        // For thoroughness, clear any lingering Django validation classes/messages
         const formFields = motorcycleForm.querySelectorAll('input, select, textarea');
         formFields.forEach(field => {
-            if (field.name === 'csrfmiddlewaretoken' || field.name === 'action') {
-                // Skip CSRF token and action fields
-                return;
-            }
-            
-            if (field.type === 'checkbox' || field.type === 'radio') {
-                field.checked = false;
-            } else if (field.tagName === 'SELECT') {
-                field.selectedIndex = 0;
-            } else {
-                field.value = '';
-            }
-            
-            // Remove Django validation classes
             field.classList.remove('is-valid', 'is-invalid');
-            
-            // Clear error messages
+            // Clear error messages (specific to Bootstrap/Django error rendering)
             const errorSpan = field.parentNode.querySelector('.invalid-feedback, .errorlist');
             if (errorSpan) errorSpan.remove();
         });
-        
+
         // Update UI text for adding new
         if (detailsHeading) detailsHeading.textContent = 'New Motorcycle Details';
         if (detailsParagraph) detailsParagraph.textContent = 'Please provide the details of your motorcycle.';
-        
+
         // Update submit button text
         const submitButton = motorcycleForm.querySelector('button[type="submit"]');
         if (submitButton) submitButton.textContent = 'Add Motorcycle & Continue';
     }
+
 
     // Event listener for the "Add New Motorcycle" button
     if (addNewButton) {
@@ -176,9 +185,20 @@ document.addEventListener('DOMContentLoaded', function() {
             // Hide selection, show details form
             if (selectionContainer) selectionContainer.style.display = 'none';
             if (motorcycleDetailsContainer) motorcycleDetailsContainer.style.display = 'block';
-            
-            // Reset the form completely
+
+            // Reset the form completely and set action to add_new
             resetMotorcycleForm();
+
+            // Update the action input value explicitly for the form submission
+             if (actionInput) actionInput.value = 'add_new';
+
+            // Update heading and paragraph text
+            if (detailsHeading) detailsHeading.textContent = 'New Motorcycle Details';
+            if (detailsParagraph) detailsParagraph.textContent = 'Please provide the details of your motorcycle.';
+
+             // Update submit button text
+            const submitButton = motorcycleForm.querySelector('button[type="submit"]');
+            if (submitButton) submitButton.textContent = 'Add Motorcycle & Continue';
         });
     }
 
@@ -188,6 +208,14 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show selection, hide details form
             if (selectionContainer) selectionContainer.style.display = 'block';
             if (motorcycleDetailsContainer) motorcycleDetailsContainer.style.display = 'none';
+
+            // Optional: Reset the details form when going back?
+            // If the user comes back to selection and then picks a different bike,
+            // the form will be re-prefilled correctly on the next POST.
+            // However, if they go back and then click 'Add New', we need a clean form.
+            // The resetMotorcycleForm is called by the 'Add New' button handler.
+            // Resetting here might clear data the user just entered if they hit 'Back' by mistake
+            // and intended to save the new details. Let's keep it simple and reset only on 'Add New' click.
         });
     }
 
@@ -195,45 +223,61 @@ document.addEventListener('DOMContentLoaded', function() {
     const motorcycleSelect = document.querySelector('#existing-bike-form select[name="motorcycle"]');
     if (motorcycleSelect && continueSelectedButton) {
         motorcycleSelect.addEventListener('change', function() {
-            // Enable the submit button only if a motorcycle is selected
+            // Enable the submit button only if a motorcycle is selected (value is not empty)
             continueSelectedButton.disabled = this.value === '';
         });
 
-        // Trigger change event to set initial state on page load
+        // Trigger change event to set initial state on page load if a bike was pre-selected by Django
+        // This happens if the view rendered the details container directly with a pre-selected bike.
+        // However, with the new flow, this might be less relevant on initial load unless returning from error.
+        // The view now controls the initial display state based on context variables.
+        // Keeping this might still be useful if a form submission failed and we return to this step.
         motorcycleSelect.dispatchEvent(new Event('change'));
     }
 
+
     // Handle initial display based on Django context variables
+    // These variables are now set more intentionally by the Django view
     const initialDisplayDetails = '{{ display_motorcycle_details|yesno:"true,false" }}' === 'true';
-    const initialHasExistingBikes = '{{ has_existing_bikes|yesno:"true,false" }}' === 'true';
-    const initialEditingMotorcycle = '{{ editing_motorcycle|yesno:"true,false" }}' === 'true';
+    const initialEditingMotorcycle = '{{ editing_motorcycle|yesno:"true,false" }}' === 'true'; // Check if editing_motorcycle object exists
 
     if (initialDisplayDetails) {
-        // If display_motorcycle_details is true initially
+        // If display_motorcycle_details is true initially (means showing details form)
         if (selectionContainer) selectionContainer.style.display = 'none';
         if (motorcycleDetailsContainer) motorcycleDetailsContainer.style.display = 'block';
 
         // Set initial UI state based on editing vs adding
         if (initialEditingMotorcycle) {
-            // We're in edit mode - don't reset the form
+            // We're in edit mode - UI text should reflect this
             if (detailsHeading) detailsHeading.textContent = 'Please confirm details';
-            
-            // Update submit button text for editing
+             // The paragraph text with the motorcycle name is handled directly in the template HTML
             const submitButton = motorcycleForm.querySelector('button[type="submit"]');
             if (submitButton) submitButton.textContent = 'Save & Continue';
+
+             // Ensure the form action is set correctly for editing on load if needed
+             if (actionInput) actionInput.value = 'edit_existing';
+
         } else {
-            // We're in add new mode
+            // We're in add new mode - UI text should reflect this
             if (detailsHeading) detailsHeading.textContent = 'New Motorcycle Details';
             if (detailsParagraph) detailsParagraph.textContent = 'Please provide the details of your motorcycle.';
-            
-            // Update submit button text for adding
             const submitButton = motorcycleForm.querySelector('button[type="submit"]');
             if (submitButton) submitButton.textContent = 'Add Motorcycle & Continue';
+
+             // Ensure the form action is set correctly for adding on load if needed
+             if (actionInput) actionInput.value = 'add_new';
+
+             // Also ensure the form is reset in case we land here in add_new mode (e.g., validation failed)
+             // resetMotorcycleForm(); // Let's not force a reset on load unless explicitly for 'add_new' initial state after error
         }
     } else {
         // If display_motorcycle_details is false initially (showing selection)
         if (selectionContainer) selectionContainer.style.display = 'block';
         if (motorcycleDetailsContainer) motorcycleDetailsContainer.style.display = 'none';
+
+        // If we are showing the selection, ensure the details form is reset in the background
+        // so that if the user clicks "Add New", they get a clean form.
+        resetMotorcycleForm(); // Reset the details form whenever selection is shown
     }
 });
 </script>
