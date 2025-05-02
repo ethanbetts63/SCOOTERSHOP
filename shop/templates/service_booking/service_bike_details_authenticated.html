@@ -1,47 +1,143 @@
 {# templates/service_booking/service_bike_details_authenticated.html #}
-{% extends 'core/layout.html' %} {# Assuming you have a base template #}
+{% extends 'core/layout.html' %}
 {% block title %}Book Service - Step 2{% endblock %}
 {% block content %}
 <div class="container mt-4">
     <h2>Book Service - Step {{ step }} of {{ total_steps }}</h2>
     <hr>
-{% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
-{% endif %}
+    
+    {% if messages %}
+    <div class="alert alert-info">
+        <ul class="messages mb-0">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
 
-<h3>Your Motorcycle Details</h3>
-<p>Choose from your existing motorcycles or add a new one for this service.</p>
-
-{% if has_existing_bikes %}
-    <h4>Select an Existing Motorcycle</h4>
-    <form method="post">
-        {% csrf_token %}
-        {{ existing_bike_form.as_p }}
-        <button type="submit" class="btn btn-primary mt-3">Use Selected Motorcycle</button>
-    </form>
-
-    <hr class="my-4"> {# Separator #}
-
-    <h4>Or Add a New Motorcycle</h4>
-    <form method="post">
-        {% csrf_token %}
-        {{ new_bike_form.as_p }}
-        <button type="submit" class="btn btn-secondary mt-3">Add New Motorcycle</button>
-    </form>
-{% else %}
-    {# User has no motorcycles, just show the new motorcycle form #}
-    <h4>Add a New Motorcycle</h4>
-    <p>Please provide the details of the motorcycle you'd like to service.</p>
-    <form method="post">
-        {% csrf_token %}
-        {{ new_bike_form.as_p }}
-        <button type="submit" class="btn btn-primary mt-3">Add Motorcycle</button>
-    </form>
-{% endif %}
-
+    <h3>Your Motorcycle Details</h3>
+    
+    {% if has_existing_bikes %}
+        <div id="selection-container" {% if not display_existing_selection %}style="display: none;"{% endif %}>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h4 class="card-title">Use Existing Motorcycle</h4>
+                            <p class="card-text">Select one of your motorcycles from the list below.</p>
+                            <form method="post" id="existing-bike-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="select_existing">
+                                {{ existing_bike_form.as_p }}
+                                <button type="submit" class="btn btn-primary mt-3">Continue with Selected Motorcycle</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h4 class="card-title">Add New Motorcycle</h4>
+                            <p class="card-text">Register a new motorcycle for this service booking.</p>
+                            <button type="button" id="add-new-button" class="btn btn-secondary mt-3">Add New Motorcycle</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    
+    <div id="motorcycle-details-container" {% if not display_motorcycle_details %}style="display: none;"{% endif %}>
+        <form method="post" id="motorcycle-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="{% if editing_motorcycle %}edit_existing{% else %}add_new{% endif %}">
+            
+            <div class="mb-3">
+                <h4>{% if editing_motorcycle %}Edit Motorcycle Details{% else %}New Motorcycle Details{% endif %}</h4>
+                {% if editing_motorcycle %}
+                <p>You are editing: <strong>{{ editing_motorcycle }}</strong></p>
+                {% else %}
+                <p>Please provide the details of your motorcycle.</p>
+                {% endif %}
+            </div>
+            
+            {{ motorcycle_form.as_p }}
+            
+            <div class="d-flex justify-content-between mt-4">
+                {% if has_existing_bikes %}
+                <button type="button" id="back-to-selection" class="btn btn-outline-secondary">Back to Selection</button>
+                {% endif %}
+                <button type="submit" class="btn btn-primary">
+                    {% if editing_motorcycle %}Save Changes{% else %}Add Motorcycle & Continue{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    {% if not has_existing_bikes and not display_motorcycle_details %}
+        {# First-time user with no motorcycles, show the form directly #}
+        <div class="alert alert-info">
+            <p>Looks like this is your first motorcycle registration. Please provide the details below.</p>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_new">
+            {{ motorcycle_form.as_p }}
+            <button type="submit" class="btn btn-primary mt-3">Add Motorcycle & Continue</button>
+        </form>
+    {% endif %}
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get Django template variables using direct insertion
+    const hasExistingBikes = '{{ has_existing_bikes|yesno:"true,false" }}';
+    const displayMotorcycleDetails = '{{ display_motorcycle_details|yesno:"true,false" }}';
+    const isEditingExisting = '{{ editing_motorcycle|yesno:"true,false" }}';
+    
+    // Get DOM elements
+    const selectionContainer = document.getElementById('selection-container');
+    const motorcycleDetailsContainer = document.getElementById('motorcycle-details-container');
+    const addNewButton = document.getElementById('add-new-button');
+    const backToSelectionButton = document.getElementById('back-to-selection');
+    
+    // Event listeners
+    if (addNewButton) {
+        addNewButton.addEventListener('click', function() {
+            // Hide selection, show details form
+            selectionContainer.style.display = 'none';
+            motorcycleDetailsContainer.style.display = 'block';
+            
+            // Update the action for adding a new motorcycle
+            const motorcycleForm = document.getElementById('motorcycle-form');
+            const actionInput = motorcycleForm.querySelector('input[name="action"]');
+            actionInput.value = 'add_new';
+        });
+    }
+    
+    if (backToSelectionButton) {
+        backToSelectionButton.addEventListener('click', function() {
+            // Show selection, hide details form
+            selectionContainer.style.display = 'block';
+            motorcycleDetailsContainer.style.display = 'none';
+        });
+    }
+    
+    // If there's a select element in the existing bike form, make it respond to changes
+    const motorcycleSelect = document.querySelector('#existing-bike-form select[name="motorcycle"]');
+    if (motorcycleSelect) {
+        motorcycleSelect.addEventListener('change', function() {
+            // Enable the submit button only if a motorcycle is selected
+            const submitButton = document.querySelector('#existing-bike-form button[type="submit"]');
+            submitButton.disabled = this.value === '';
+        });
+        
+        // Trigger change event to set initial state
+        motorcycleSelect.dispatchEvent(new Event('change'));
+    }
+});
+</script>
 {% endblock %}

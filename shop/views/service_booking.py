@@ -162,28 +162,76 @@ def service_booking_step2_authenticated(request):
     booking_data = request.session.get(SERVICE_BOOKING_SESSION_KEY)
     if not booking_data:
         messages.warning(request, "Please start the booking process again.")
-        return redirect('shop:service_booking_step1_authenticated')
+        return redirect('shop:service_booking_step1') # Redirect to merged step 1
 
     user = request.user
     user_motorcycles = CustomerMotorcycle.objects.filter(owner=user)
     has_existing_bikes = user_motorcycles.exists()
 
-    # We will have two separate forms on the page, each submitting to this view.
-    # The view logic needs to determine which form was submitted.
-    # A simple way is to check for a field that is unique to each form in POST data.
-    # ExistingCustomerMotorcycleForm has 'motorcycle'. CustomerMotorcycleForm has 'make', 'model', 'year'.
-
+    # Initialize forms - we might need one or both depending on the request
     existing_bike_form = ExistingCustomerMotorcycleForm(user=user) if has_existing_bikes else None
-    new_bike_form = CustomerMotorcycleForm()
+    # The motorcycle_form will be the CustomerMotorcycleForm, instantiated based on action
+    motorcycle_form = None
+    selected_motorcycle = None # To hold the instance if editing existing
+
+    # Determine which section to display initially or after POST
+    display_existing_selection = True # Default
+    display_motorcycle_details = False
+
+    # Check session for a selected vehicle, which means we should show the details form
+    selected_vehicle_id_in_session = booking_data.get('vehicle_id')
+    if selected_vehicle_id_in_session:
+         try:
+            # Verify the motorcycle in the session belongs to the user
+            selected_motorcycle = CustomerMotorcycle.objects.get(id=selected_vehicle_id_in_session, owner=user)
+            # If found, we should display the details form pre-filled
+            motorcycle_form = CustomerMotorcycleForm(instance=selected_motorcycle)
+            display_existing_selection = False
+            display_motorcycle_details = True
+         except CustomerMotorcycle.DoesNotExist:
+            # If the motorcycle in the session is invalid, clear it
+            booking_data.pop('vehicle_id', None)
+            request.session[SERVICE_BOOKING_SESSION_KEY] = booking_data
+            request.session.modified = True
+            messages.warning(request, "Selected motorcycle not found. Please choose again.")
+            # Keep default display
 
     if request.method == 'POST':
-        # Determine which form was likely submitted
-        if 'motorcycle' in request.POST and has_existing_bikes:
-             # User likely submitted the existing bike form
-             existing_bike_form = ExistingCustomerMotorcycleForm(request.POST, user=user)
-             if existing_bike_form.is_valid():
+        action = request.POST.get('action')
+
+        if action == 'select_existing' and has_existing_bikes:
+            existing_bike_form = ExistingCustomerMotorcycleForm(request.POST, user=user)
+            if existing_bike_form.is_valid():
                 selected_motorcycle = existing_bike_form.cleaned_data['motorcycle']
+                # Store the selected motorcycle's ID in the session
                 booking_data['vehicle_id'] = selected_motorcycle.id
+                request.session[SERVICE_BOOKING_SESSION_KEY] = booking_data
+                request.session.modified = True
+
+                # Instantiate the details form with the selected motorcycle's data
+                motorcycle_form = CustomerMotorcycleForm(instance=selected_motorcycle)
+                display_existing_selection = False
+                display_motorcycle_details = True
+                messages.info(request, f"Details for {selected_motorcycle} loaded. You can edit them if needed.")
+
+            else:
+                messages.error(request, "Please select a valid existing motorcycle.")
+                # Stay on the existing selection view, form will show errors
+                display_existing_selection = True
+                display_motorcycle_details = False
+
+
+        elif action == 'add_new':
+            motorcycle_form = CustomerMotorcycleForm(request.POST)
+            display_existing_selection = False
+            display_motorcycle_details = True # Keep details form visible on error
+
+            if motorcycle_form.is_valid():
+                new_motorcycle = motorcycle_form.save(commit=False)
+                new_motorcycle.owner = user # Assign the logged-in user
+                new_motorcycle.save()
+                # Store the new motorcycle's ID in the session
+                booking_data['vehicle_id'] = new_motorcycle.id
                 # Remove any anonymous vehicle data just in case
                 booking_data.pop('anon_vehicle_make', None)
                 booking_data.pop('anon_vehicle_model', None)
@@ -195,65 +243,61 @@ def service_booking_step2_authenticated(request):
 
                 request.session[SERVICE_BOOKING_SESSION_KEY] = booking_data
                 request.session.modified = True
-                return redirect('shop:service_booking_step3_authenticated')
-             else:
-                 messages.error(request, "Please select a valid existing motorcycle.")
-                 # Keep the new_bike_form instantiated for rendering
-                 new_bike_form = CustomerMotorcycleForm()
-
-
-        elif 'make' in request.POST or 'model' in request.POST or 'year' in request.POST:
-            # User likely submitted the new bike form (check for fields present in that form)
-            new_bike_form = CustomerMotorcycleForm(request.POST)
-            # Keep the existing_bike_form instantiated for rendering if applicable
-            existing_bike_form = ExistingCustomerMotorcycleForm(user=user) if has_existing_bikes else None
-
-            if new_bike_form.is_valid():
-                new_motorcycle = new_bike_form.save(commit=False)
-                new_motorcycle.owner = user # Assign the logged-in user
-                new_motorcycle.save()
-                booking_data['vehicle_id'] = new_motorcycle.id
-                 # Remove any anonymous vehicle data just in case
-                booking_data.pop('anon_vehicle_make', None)
-                booking_data.pop('anon_vehicle_model', None)
-                booking_data.pop('anon_vehicle_year', None)
-                booking_data.pop('anon_vehicle_rego', None)
-                booking_data.pop('anon_vehicle_vin_number', None)
-                booking_data.pop('anon_vehicle_odometer', None)
-                booking_data.pop('anon_vehicle_transmission', None)
-
-                request.session[SERVICE_BOOKING_SESSION_KEY] = booking_data
-                request.session.modified = True
+                messages.success(request, "New motorcycle added.")
                 return redirect('shop:service_booking_step3_authenticated')
             else:
                 messages.error(request, "Please correct the errors in the new motorcycle details.")
 
-        else:
-            # Neither form was clearly submitted or POST data is missing
-            messages.error(request, "Invalid form submission.")
+
+        elif action == 'edit_existing':
+            # Ensure a vehicle_id is in the session for this action
+            vehicle_id_to_edit = booking_data.get('vehicle_id')
+            if not vehicle_id_to_edit:
+                 messages.error(request, "No motorcycle selected for editing.")
+                 return redirect('shop:service_booking_step2_authenticated') # Go back to selection
+
+            try:
+                 selected_motorcycle = CustomerMotorcycle.objects.get(id=vehicle_id_to_edit, owner=user)
+                 motorcycle_form = CustomerMotorcycleForm(request.POST, instance=selected_motorcycle)
+                 display_existing_selection = False
+                 display_motorcycle_details = True # Keep details form visible on error
+
+                 if motorcycle_form.is_valid():
+                    motorcycle_form.save() # Save changes to the existing instance
+                    messages.success(request, "Motorcycle details updated.")
+                    # The vehicle_id is already in the session, proceed to step 3
+                    return redirect('shop:service_booking_step3_authenticated')
+                 else:
+                    messages.error(request, "Please correct the errors in the motorcycle details.")
+
+            except CustomerMotorcycle.DoesNotExist:
+                 messages.error(request, "Motorcycle not found for editing.")
+                 # Clear invalid vehicle_id from session
+                 booking_data.pop('vehicle_id', None)
+                 request.session[SERVICE_BOOKING_SESSION_KEY] = booking_data
+                 request.session.modified = True
+                 return redirect('shop:service_booking_step2_authenticated')
 
 
-    # GET request or POST with errors
-    # Check if vehicle_id is in session for initial data (e.g., returning from step 3)
-    initial_vehicle_id = booking_data.get('vehicle_id')
-    if initial_vehicle_id and has_existing_bikes and existing_bike_form:
-         try:
-            # Use explicit filter with the user instance
-            selected_motorcycle = CustomerMotorcycle.objects.get(id=initial_vehicle_id, owner=user)
-            existing_bike_form.initial['motorcycle'] = selected_motorcycle
-         except CustomerMotorcycle.DoesNotExist:
-            pass # Motorcycle not found, leave initial data empty
+        else: # POST without a valid action
+            messages.error(request, "Invalid request.")
+            # Stay on the current step, forms will be re-rendered based on initial state or session
 
 
+    # GET request or POST with errors - prepare context for rendering
     context = {
         'existing_bike_form': existing_bike_form,
-        'new_bike_form': new_bike_form,
+        'motorcycle_form': motorcycle_form, # Pass the details form if instantiated
         'step': 2,
         'total_steps': 3,
         'is_authenticated': True,
         'has_existing_bikes': has_existing_bikes,
+        'display_existing_selection': display_existing_selection, # Control visibility in template
+        'display_motorcycle_details': display_motorcycle_details, # Control visibility in template
+        'editing_motorcycle': selected_motorcycle, # Pass the instance if editing
     }
     return render(request, 'service_booking/service_bike_details_authenticated.html', context)
+
 
 # Step 2: Vehicle Details - Anonymous
 def service_booking_step2_anonymous(request):
@@ -269,7 +313,7 @@ def service_booking_step2_anonymous(request):
     booking_data = request.session.get(SERVICE_BOOKING_SESSION_KEY)
     if not booking_data:
         messages.warning(request, "Please start the booking process again.")
-        return redirect('shop:service_booking_step1_anonymous')
+        return redirect('shop:service_booking_step1_anonymous') # Redirect to step 1 anonymous
 
     if request.method == 'POST':
         form = CustomerMotorcycleForm(request.POST)
@@ -359,6 +403,20 @@ def service_booking_step3_authenticated(request):
 
         # Validate the form
         if form.is_valid():
+            # Update user instance with form data
+            user.first_name = form.cleaned_data.get('first_name', user.first_name)
+            user.last_name = form.cleaned_data.get('last_name', user.last_name)
+            user.email = form.cleaned_data.get('email', user.email)
+            user.phone_number = form.cleaned_data.get('phone_number', getattr(user, 'phone_number', ''))
+
+            # Save the user instance
+            try:
+                user.save()
+                messages.success(request, "Your profile details have been updated.")
+            except Exception as e:
+                 messages.error(request, f"There was an error updating your profile: {e}")
+                 # Decide how to handle this error - perhaps re-render the page with an error message
+
             # If the form is valid, update the session data with the cleaned data from the form.
             # This allows the user to edit their contact details for this specific booking.
             booking_data.update(form.cleaned_data)
@@ -481,6 +539,7 @@ def service_booking_step3_authenticated(request):
         # Remove the 'is_returning_customer' field for display on the GET request
         if 'is_returning_customer' in form.fields:
             form.fields.pop('is_returning_customer')
+
 
     # Prepare the context to render the template
     context = {
@@ -612,4 +671,4 @@ def service_booking_step3_anonymous(request):
 
 # Keep the confirmation view as is
 def service_booking_not_yet_confirmed_view(request):
-    return render(request, 'service_booking/service_not_yet_confirmed.html') 
+    return render(request, 'service_booking/service_not_yet_confirmed.html')
