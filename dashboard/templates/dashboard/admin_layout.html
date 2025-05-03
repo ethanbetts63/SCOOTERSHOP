@@ -15,16 +15,16 @@
     <aside class="admin-sidebar">
         <h2>Admin Navigation</h2>
         <ul class="reset-list">{# Added .reset-list #}
-            <li><a href="{% url 'shop:dashboard_index' %}">Dashboard Home</a></li>
+            <li><a href="{% url 'dashboard:dashboard_index' %}">Dashboard Home</a></li>
             <li class="nav-section">
                 <h3>Settings</h3>
                 <ul class="reset-list">{# Added .reset-list #}
-                    <li><a href="{% url 'shop:settings_business_info' %}">Business Information</a></li>
-                    <li><a href="{% url 'shop:settings_hire_booking' %}">Hire Booking</a></li>
-                    <li><a href="{% url 'shop:settings_service_booking' %}">Service Booking</a></li>
-                    <li><a href="{% url 'shop:settings_service_types' %}">Service Types</a></li>
-                    <li><a href="{% url 'shop:settings_visibility' %}">Visibility</a></li>
-                    <li><a href="{% url 'shop:settings_miscellaneous' %}">Miscellaneous</a></li>
+                    <li><a href="{% url 'dashboard:settings_business_info' %}">Business Information</a></li>
+                    <li><a href="{% url 'dashboard:settings_hire_booking' %}">Hire Booking</a></li>
+                    <li><a href="{% url 'dashboard:settings_service_booking' %}">Service Booking</a></li>
+                    <li><a href="{% url 'dashboard:settings_service_types' %}">Service Types</a></li>
+                    <li><a href="{% url 'dashboard:settings_visibility' %}">Visibility</a></li>
+                    <li><a href="{% url 'dashboard:settings_miscellaneous' %}">Miscellaneous</a></li>
                 </ul>
             </li>
         </ul>

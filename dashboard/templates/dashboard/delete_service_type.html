@@ -12,7 +12,7 @@
             
             <form method="post">
                 {% csrf_token %}
-                <a href="{% url 'shop:settings_service_types' %}" class="btn btn-secondary">Cancel</a>
+                <a href="{% url 'dashboard:settings_service_types' %}" class="btn btn-secondary">Cancel</a>
                 <button type="submit" class="btn btn-danger">Delete</button>
             </form>
         </div>

@@ -22,7 +22,7 @@
         <div class="card shadow mb-4">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-primary">Current Service Types</h6>
-                <a href="{% url 'shop:add_service_type' %}" class="btn btn-primary btn-sm">
+                <a href="{% url 'dashboard:add_service_type' %}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus"></i> Add New Service
                 </a>
             </div>
@@ -56,7 +56,7 @@
                                                 {% else %}
                                                     <span class="badge badge-secondary">Inactive</span>
                                                 {% endif %}
-                                                <a href="{% url 'shop:edit_service_type' pk=service_type.pk %}" class="btn-service-action edit">
+                                                <a href="{% url 'dashboard:edit_service_type' pk=service_type.pk %}" class="btn-service-action edit">
                                                     <i class="fas fa-edit"></i> Edit
                                                 </a>
                                                 <button class="btn-service-action delete"

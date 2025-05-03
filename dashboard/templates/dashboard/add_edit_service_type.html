@@ -111,7 +111,7 @@
 
                 {# Button Group - Added d-flex and gap-2 for better spacing if desired by CSS #}
                 <div class="mt-4 d-flex gap-2">
-                    <a href="{% url 'shop:settings_service_types' %}" class="btn btn-secondary">Cancel</a>
+                    <a href="{% url 'dashboard:settings_service_types' %}" class="btn btn-secondary">Cancel</a>
                     {# Change button text based on whether it's add or edit using context variable service_type #}
                     <button type="submit" class="btn btn-primary">{{ service_type|yesno:"Save Changes,Add Service Type" }}</button>
                 </div>
