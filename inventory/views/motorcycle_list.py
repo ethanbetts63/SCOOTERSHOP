@@ -7,9 +7,11 @@ import datetime
 from django.contrib import messages # Import messages for potential future use
 
 # Import models from the inventory app
-from inventory.models import Motorcycle, MotorcycleCondition, HireBooking
+from inventory.models import Motorcycle, MotorcycleCondition
+from hire.models import HireBooking
+
 # Import utility function from the inventory app
-from inventory.utils import get_featured_motorcycles
+from .utils import get_featured_motorcycles
 
 
 class MotorcycleListView(ListView):

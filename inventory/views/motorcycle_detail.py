@@ -11,7 +11,7 @@ from inventory.models import Motorcycle, MotorcycleImage
 # Import forms from the inventory app
 from inventory.forms import MotorcycleForm, MotorcycleImageFormSet
 # Import utility function from the inventory app
-from inventory.utils import get_featured_motorcycles
+from .utils import get_featured_motorcycles
 
 
 # Displays detailed information about a specific motorcycle

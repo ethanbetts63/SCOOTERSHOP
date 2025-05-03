@@ -41,10 +41,10 @@ INSTALLED_APPS = [
     # List apps using their AppConfig path for better practice
     "core.apps.CoreConfig",
     "users.apps.UsersConfig",
+    "dashboard.apps.DashboardConfig", # Moved dashboard before inventory
     "inventory.apps.InventoryConfig",
     "service.apps.ServiceConfig",
     "hire.apps.HireConfig",
-    "dashboard.apps.DashboardConfig",
 ]
 
 MIDDLEWARE = [
