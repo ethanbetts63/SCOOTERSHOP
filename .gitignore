@@ -22,3 +22,6 @@ media/
 # Operating System files
 .DS_Store
 Thumbs.db
+
+# Virtual environment
+venv/
