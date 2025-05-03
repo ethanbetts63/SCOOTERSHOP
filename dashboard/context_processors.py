@@ -19,4 +19,4 @@ def site_settings(request):
         # logging.exception("Error fetching SiteSettings in context processor")
 
     # Return a dictionary where the key is the variable name in templates
-    return {'site_settings': settings_object}
+    return {'settings': settings_object}

@@ -19,7 +19,7 @@ class MotorcycleListView(ListView):
     # This default template_name might not be used directly if subclasses override it
     # but it's fine to keep as a fallback or for a potential base list view.
     # Updated template path
-    template_name = 'inventory/motorcycles/motorcycle_list.html'
+    template_name = 'inventory/motorcycle_list.html'
     context_object_name = 'motorcycles'
     paginate_by = 12
 
@@ -128,7 +128,7 @@ class MotorcycleListView(ListView):
 
 class NewMotorcycleListView(MotorcycleListView):
     # Updated template path
-    template_name = 'inventory/motorcycles/new.html'
+    template_name = 'inventory/new.html'
 
     def get_queryset(self):
         # Set the condition_name kwarg for the base class's get_queryset
@@ -138,12 +138,12 @@ class NewMotorcycleListView(MotorcycleListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Updated current_url_name to use the app namespace
-        context['current_url_name'] = 'inventory:inventory_new' # Using the specific URL name from inventory/urls.py
+        context['current_url_name'] = 'inventory:new' # Using the specific URL name from inventory/urls.py
         return context
 
 class UsedMotorcycleListView(MotorcycleListView):
     # Updated template path
-    template_name = 'inventory/motorcycles/used.html'
+    template_name = 'inventory/used.html'
 
     def get_queryset(self):
         # Set the condition_name kwarg to 'used' to filter for 'used' and 'demo' in the base class
@@ -158,7 +158,7 @@ class UsedMotorcycleListView(MotorcycleListView):
 
 class HireMotorcycleListView(MotorcycleListView):
     # Updated template path
-    template_name = 'inventory/motorcycles/hire.html'
+    template_name = 'inventory/hire.html'
 
     def get_queryset(self):
         # Set the condition_name kwarg for the base class's get_queryset

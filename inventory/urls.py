@@ -14,7 +14,7 @@ urlpatterns = [
     # --- Motorcycle List Views ---
     # Decide on the root for motorcycle lists - using '' here means /inventory/
     path('', NewMotorcycleListView.as_view(), name='motorcycle-list'), # e.g., /inventory/
-    path('new/', NewMotorcycleListView.as_view(), {'condition': 'new'}, name='inventory_new'), # Example for filtering
+    path('new/', NewMotorcycleListView.as_view(), {'condition': 'new'}, name='new'), # Example for filtering
     path('used/', used, name='used'), # Assuming 'used' view is a simple function
     path('hire/', hire, name='hire'), # Assuming 'hire' view is a simple function
 

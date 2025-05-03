@@ -127,8 +127,7 @@
                         {% endif %}
 
                         <button type="submit" class="btn btn-primary">Apply Filters</button>
-                    <!-- need to have shop: in the url somehow -->
-                    <a href="{% url 'shop:'|add:current_url_name %}" class="btn btn-secondary mt-2">Reset Filters</a>
+                    <a href="{% url 'inventory:'|add:current_url_name %}" class="btn btn-secondary mt-2">Reset Filters</a>
                     </form>
                 </div>
             </div>
@@ -136,7 +135,7 @@
 
         {% for motorcycle in motorcycles %}
         <div class="motorcycle-item">
-            <a href="{% url 'shop:motorcycle-detail' motorcycle.pk %}" class="card-link"></a>
+            <a href="{% url 'inventory:motorcycle-detail' motorcycle.pk %}" class="card-link"></a>
             <div class="card h-100 card-hover-effect">
                 {% if motorcycle.image %}
                     <img src="{{ motorcycle.image.url }}" class="card-img-top img-cover" alt="{{ motorcycle.title }}">
@@ -221,7 +220,7 @@
                     <p class="card-text location"><small class="text-muted">{{ motorcycle.location }}</small></p>
                 </div>
                 <div class="card-footer text-center">
-                    <a href="{% url 'shop:motorcycle-detail' motorcycle.pk %}" class="btn btn-sm btn-primary">View Details</a>
+                    <a href="{% url 'inventory:motorcycle-detail' motorcycle.pk %}" class="btn btn-sm btn-primary">View Details</a>
                 </div>
             </div>
         </div>

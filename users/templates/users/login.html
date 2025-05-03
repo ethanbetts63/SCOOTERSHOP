@@ -11,7 +11,7 @@
         <div>{{ message }}</div>
     {% endif %}
 
-    <form action="{% url 'shop:login' %}" method="post">
+    <form action="{% url 'users:login' %}" method="post">
         {% csrf_token %}
         <div class="form-group">
             <input autofocus class="form-control" type="text" name="username" placeholder="Username">
@@ -22,6 +22,6 @@
         <input class="btn btn-primary" type="submit" value="Login">
     </form>
 
-    Don't have an account? <a href="{% url 'shop:register' %}">Register here.</a>
+    Don't have an account? <a href="{% url 'users:register' %}">Register here.</a>
 
 {% endblock %}

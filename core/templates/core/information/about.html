@@ -32,7 +32,7 @@
                 <h2>{{ about_content.sales_title }}</h2>
                 <p>{{ about_content.sales_content|linebreaksbr }}</p>
                 <div class="sales-buttons" style="margin-top: 15px; display: flex; gap: 10px;">
-                    <a href="{% url  %}" class="btn-primary">New Scooters</a>
+                    <a href="{% url 'inventory:new' %}" class="btn-primary">New Scooters</a>
                     <a href="{% url 'inventory:used' %}" class="btn-primary">Used Scooters</a>
                 </div>
             </div>

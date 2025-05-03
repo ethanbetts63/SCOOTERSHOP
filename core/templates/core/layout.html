@@ -26,7 +26,7 @@
                 {# Navigation items with visibility checks and admin styling #}
                 {% if settings.enable_sales_new or user.is_staff %}
                     <li>
-                        <a class="nav-item" href="{% url 'inventory:inventory_new' %}"
+                        <a class="nav-item" href="{% url 'inventory:new' %}"
                            {% if not settings.enable_sales_new and user.is_staff %}
                                style="color: #08E5D1;" {# Bright turquoise color #}
                            {% endif %}
@@ -64,7 +64,7 @@
                     <li>
                         <a class="nav-item" href="{% url 'inventory:hire' %}"
                            {% if not settings.enable_hire and user.is_staff %}
-                               style="color: #08E5D1;" {# Bright turquoise color #}
+                               style="color: #08E5D1;" 
                            {% endif %}
                         >
                             Hire Booking
@@ -76,7 +76,7 @@
                     <li>
                         <a class="nav-item" href="{% url 'core:about' %}"
                            {% if not settings.enable_about_page and user.is_staff %}
-                               style="color: #08E5D1;" {# Bright turquoise color #}
+                               style="color: #08E5D1;" 
                            {% endif %}
                         >
                             About Us
@@ -88,7 +88,7 @@
                     <li>
                         <a class="nav-item" href="{% url 'core:contact' %}"
                            {% if not settings.enable_contact_page and user.is_staff %}
-                               style="color: #08E5D1;" {# Bright turquoise color #}
+                               style="color: #08E5D1;" 
                            {% endif %}
                         >
                             Contact Us
@@ -124,9 +124,9 @@
                         {# Footer Quick Links with visibility checks and admin styling #}
                         {% if settings.enable_sales_new or user.is_staff %}
                             <li>
-                                <a href="{% url 'inventory:inventory_new' %}"
+                                <a href="{% url 'inventory:new' %}"
                                    {% if not settings.enable_sales_new and user.is_staff %}
-                                       style="color: #08E5D1;" {# Bright turquoise color #}
+                                       style="color: #08E5D1;" 
                                    {% endif %}
                                 >
                                     New Bikes
@@ -138,7 +138,7 @@
                             <li>
                                 <a href="{% url 'inventory:used' %}"
                                    {% if not settings.enable_sales_used and user.is_staff %}
-                                       style="color: #08E5D1;" {# Bright turquoise color #}
+                                       style="color: #08E5D1;"
                                    {% endif %}
                                 >
                                     Used Bikes
@@ -200,7 +200,7 @@
                         {# ServiceBook link (applying same logic as Service Booking) #}
                          {% if settings.enable_service_booking or user.is_staff %}
                             <li>
-                                <a href="{% url 'service:service_booking_start' %}"
+                                <a href="{% url 'service:service_start' %}"
                                    {% if not settings.enable_service_booking and user.is_staff %}
                                        style="color: #08E5D1;" {# Bright turquoise color #}
                                    {% endif %}

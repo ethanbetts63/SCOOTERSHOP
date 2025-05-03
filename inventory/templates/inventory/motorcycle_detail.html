@@ -56,8 +56,8 @@
                     <div class="action-buttons">
                         {% if user == motorcycle.seller %}
                         <div class="owner-actions">
-                            <a href="{% url 'shop:motorcycle-update' motorcycle.pk %}" class="btn btn-secondary">Edit Listing</a>
-                            <a href="{% url 'shop:motorcycle-delete' motorcycle.pk %}" class="btn btn-danger">Delete Listing</a>
+                            <a href="{% url 'inventory:motorcycle-update' motorcycle.pk %}" class="btn btn-secondary">Edit Listing</a>
+                            <a href="{% url 'inventory:motorcycle-delete' motorcycle.pk %}" class="btn btn-danger">Delete Listing</a>
                         </div>
                         {% endif %}
                     </div>
@@ -123,7 +123,7 @@
 
         <div class="detail-featured">
             {% if featured_motorcycles %}
-                {% include "core/featured.html" with section_title="Featured Listings" motorcycles=featured_motorcycles condition=condition %}
+                {% include "core/includes/featured.html" with section_title="Featured Listings" motorcycles=featured_motorcycles condition=condition %}
             {% endif %}
         </div>
     </div>

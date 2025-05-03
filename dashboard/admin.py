@@ -79,7 +79,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         ('Miscellaneous Settings', {
              'fields': (
                  # Add any other miscellaneous fields from SiteSettings model here
-                 'enable_random_featured_ordering', # Example field
+                 #'enable_random_featured_ordering', # Example field
              )
         }),
     )

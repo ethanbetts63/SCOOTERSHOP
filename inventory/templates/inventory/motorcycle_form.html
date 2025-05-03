@@ -198,7 +198,7 @@
                     <button type="submit" class="btn btn-primary">
                         {% if form.instance.pk %}Save Changes{% else %}Create Listing{% endif %}
                     </button>
-                    <a href="{% if form.instance.pk %}{% url 'shop:motorcycle-detail' form.instance.pk %}{% else %}{% url 'shop:motorcycle-list' %}{% endif %}" class="btn btn-secondary">Cancel</a>
+                    <a href="{% if form.instance.pk %}{% url 'inventory:motorcycle-detail' form.instance.pk %}{% else %}{% url 'inventory:motorcycle-list' %}{% endif %}" class="btn btn-secondary">Cancel</a>
                 </div>
             </form>
         </div>

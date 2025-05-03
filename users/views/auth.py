@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
-from django.urls import reverse
+from django.urls import reverse # Keep this import
 from django.contrib.auth import get_user_model
 
 # The User model is now in the 'users' app, but get_user_model() finds it correctly
@@ -21,22 +21,24 @@ def login_view(request):
         # Check if authentication successful
         if user is not None:
             login(request, user)
-            # Redirect to the page the user was trying to access, or index
-            # Updated reverse to point to the core index view without 'shop:' namespace
-            next_url = request.GET.get('next', reverse("index"))
+            # Redirect to the page the user was trying to access, or the core index page
+            # Use the namespaced URL 'core:index'
+            next_url = request.GET.get('next', reverse("core:index"))
             return HttpResponseRedirect(next_url)
         else:
             return render(request, "users/login.html", { # Updated template path
                 "message": "Invalid username and/or password."
             })
     else:
+        # Also ensure the GET request renders the login template correctly
         return render(request, "users/login.html") # Updated template path
 
 # Handles user logout
 def logout_view(request):
     logout(request)
-    # Updated reverse to point to the core index view without 'shop:' namespace
-    return HttpResponseRedirect(reverse("index"))
+    # Redirect to the core index page after logout
+    # Use the namespaced URL 'core:index'
+    return HttpResponseRedirect(reverse("core:index"))
 
 # Handles user registration
 def register(request):
@@ -61,7 +63,8 @@ def register(request):
                 "message": "Username already taken."
             })
         login(request, user)
-        # Updated reverse to point to the core index view without 'shop:' namespace
-        return HttpResponseRedirect(reverse("index"))
+        # Redirect to the core index page after successful registration and login
+        # Use the namespaced URL 'core:index'
+        return HttpResponseRedirect(reverse("core:index"))
     else:
         return render(request, "users/register.html") # Updated template path
