@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages # Import messages
 
 # Import models remaining in the core app
-from core.models import AboutPageContent, SiteSettings # Assuming these remain in core app
+from dashboard.models import AboutPageContent, SiteSettings # Assuming these remain in core app
 
 
 # About Page

@@ -6,13 +6,12 @@ from django.contrib import messages
 import requests
 import json
 
-# Import models remaining in the core app
-from core.models import SiteSettings
+
 # Import models from other apps as needed
+from dashboard.models import SiteSettings # Import SiteSettings from the dashboard app
 from service.models import ServiceType # Assuming ServiceType moved to service app
 # Import utility function from the inventory app
-from inventory.utils import get_featured_motorcycles
-
+from inventory.views.utils import get_featured_motorcycles
 
 # Home Page
 def index(request):

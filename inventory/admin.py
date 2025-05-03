@@ -18,7 +18,7 @@ class MotorcycleAdmin(admin.ModelAdmin):
     list_display = ('title', 'brand', 'model', 'year', 'price', 'is_available', 'display_conditions')
     list_filter = ('is_available', 'conditions')
     search_fields = ('title', 'brand', 'model', 'stock_number', 'rego')
-    prepopulated_fields = {'slug': ('brand', 'model', 'year')} # Assuming you have a slug field
+    # prepopulated_fields = {'slug': ('brand', 'model', 'year')} # Assuming you have a slug field
     filter_horizontal = ('conditions',) # Use a better widget for ManyToManyField
     inlines = [MotorcycleImageInline,] # Include the image inline
 
@@ -30,7 +30,7 @@ class MotorcycleAdmin(admin.ModelAdmin):
 
 @admin.register(MotorcycleCondition)
 class MotorcycleConditionAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description')
+    list_display = ('name', 'display_name')
     search_fields = ('name',)
 
 # MotorcycleImage is managed via the inline in MotorcycleAdmin,
