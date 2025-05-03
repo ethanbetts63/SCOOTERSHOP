@@ -31,7 +31,7 @@ def dashboard_index(request):
         # Add any data you want to display on the admin index here
     }
     # Updated template path
-    return render(request, 'dashboard/dashboard/dashboard_index.html', context)
+    return render(request, 'dashboard/dashboard_index.html', context)
 
 @user_passes_test(is_staff_check)
 def settings_business_info(request):
@@ -54,7 +54,7 @@ def settings_business_info(request):
         'active_tab': 'business_info'
     }
     # Updated template path
-    return render(request, 'dashboard/dashboard/settings_business_info.html', context)
+    return render(request, 'dashboard/settings_business_info.html', context)
 
 @user_passes_test(is_staff_check)
 def settings_hire_booking(request):
@@ -77,7 +77,7 @@ def settings_hire_booking(request):
         'active_tab': 'hire_booking'
     }
     # Updated template path
-    return render(request, 'dashboard/dashboard/settings_hire_booking.html', context)
+    return render(request, 'dashboard/settings_hire_booking.html', context)
 
 @user_passes_test(is_staff_check)
 def settings_service_booking(request):
@@ -100,7 +100,7 @@ def settings_service_booking(request):
         'active_tab': 'service_booking'
     }
     # Updated template path
-    return render(request, 'dashboard/dashboard/settings_service_booking.html', context)
+    return render(request, 'dashboard/settings_service_booking.html', context)
 
 @user_passes_test(is_staff_check)
 def settings_service_types(request):
@@ -113,7 +113,7 @@ def settings_service_types(request):
         'active_tab': 'service_types' # Assuming you use active_tab for highlighting navigation
     }
     # Updated template path
-    return render(request, 'dashboard/dashboard/settings_service_types.html', context)
+    return render(request, 'dashboard/settings_service_types.html', context)
 
 @user_passes_test(is_staff_check)
 def delete_service_type(request, pk):
@@ -131,7 +131,7 @@ def delete_service_type(request, pk):
         'service_type': service_type
     }
     # Updated template path
-    return render(request, 'dashboard/dashboard/delete_service_type.html', context)
+    return render(request, 'dashboard/delete_service_type.html', context)
 
 @user_passes_test(is_staff_check)
 def edit_service_type(request, pk):
@@ -155,7 +155,7 @@ def edit_service_type(request, pk):
         'active_tab': 'service_types' # Assuming you use active_tab for highlighting navigation
     }
     # Updated template path
-    return render(request, 'dashboard/dashboard/add_edit_service_type.html', context)
+    return render(request, 'dashboard/add_edit_service_type.html', context)
 
 @user_passes_test(is_staff_check)
 def add_service_type(request):
@@ -185,7 +185,7 @@ def add_service_type(request):
         'active_tab': 'service_types' # Assuming you use active_tab for highlighting navigation
     }
     # Updated template path
-    return render(request, 'dashboard/dashboard/add_edit_service_type.html', context)
+    return render(request, 'dashboard/add_edit_service_type.html', context)
 
 @user_passes_test(is_staff_check)
 def settings_visibility(request):
@@ -208,7 +208,7 @@ def settings_visibility(request):
         'active_tab': 'visibility'
     }
     # Updated template path
-    return render(request, 'dashboard/dashboard/settings_visibility.html', context)
+    return render(request, 'dashboard/settings_visibility.html', context)
 
 @user_passes_test(is_staff_check)
 def settings_miscellaneous(request):
@@ -231,7 +231,7 @@ def settings_miscellaneous(request):
         'active_tab': 'miscellaneous'
     }
     # Updated template path
-    return render(request, 'dashboard/dashboard/settings_miscellaneous.html', context)
+    return render(request, 'dashboard/settings_miscellaneous.html', context)
 
 @user_passes_test(is_staff_check)
 def edit_about_page(request):
@@ -260,4 +260,4 @@ def edit_about_page(request):
         'active_tab': 'about_page' # Assuming an active tab for this
     }
     # Updated template path
-    return render(request, 'dashboard/dashboard/edit_about_page.html', context)
+    return render(request, 'dashboard/edit_about_page.html', context)
