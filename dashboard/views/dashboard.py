@@ -1,11 +1,23 @@
-# core/views/dashboard.py
+# dashboard/views/dashboard.py
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test # Import the decorator
-from ..models import SiteSettings, ServiceType, AboutPageContent # Import models
-from ..forms import BusinessInfoForm, HireBookingSettingsForm, ServiceBookingSettingsForm, VisibilitySettingsForm, ServiceTypeForm, MiscellaneousSettingsForm, AboutPageContentForm # Import forms
 from django.urls import reverse # Import reverse for redirects
+
+# Import models from the dashboard app
+from dashboard.models import SiteSettings, ServiceType, AboutPageContent
+
+# Import forms from the dashboard app
+from dashboard.forms import (
+    BusinessInfoForm,
+    HireBookingSettingsForm,
+    ServiceBookingSettingsForm,
+    VisibilitySettingsForm,
+    ServiceTypeForm,
+    MiscellaneousSettingsForm,
+    AboutPageContentForm,
+)
 
 # Helper function to check if a user is staff
 def is_staff_check(user):
@@ -17,7 +29,8 @@ def dashboard_index(request):
         'page_title': 'Admin Dashboard',
         # Add any data you want to display on the admin index here
     }
-    return render(request, 'dashboard/dashboard_index.html', context)
+    # Updated template path
+    return render(request, 'dashboard/dashboard/dashboard_index.html', context)
 
 @user_passes_test(is_staff_check)
 def settings_business_info(request):
@@ -29,7 +42,8 @@ def settings_business_info(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Business information updated successfully!')
-            return redirect('shop:settings_business_info')
+            # Updated redirect URL to use dashboard namespace
+            return redirect('dashboard:settings_business_info')
     else:
         form = BusinessInfoForm(instance=settings)
 
@@ -38,8 +52,8 @@ def settings_business_info(request):
         'form': form,
         'active_tab': 'business_info'
     }
-
-    return render(request, 'dashboard/settings_business_info.html', context)
+    # Updated template path
+    return render(request, 'dashboard/dashboard/settings_business_info.html', context)
 
 @user_passes_test(is_staff_check)
 def settings_hire_booking(request):
@@ -51,7 +65,8 @@ def settings_hire_booking(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Hire booking settings updated successfully!')
-            return redirect('shop:settings_hire_booking')
+            # Updated redirect URL to use dashboard namespace
+            return redirect('dashboard:settings_hire_booking')
     else:
         form = HireBookingSettingsForm(instance=settings)
 
@@ -60,7 +75,8 @@ def settings_hire_booking(request):
         'form': form,
         'active_tab': 'hire_booking'
     }
-    return render(request, 'dashboard/settings_hire_booking.html', context)
+    # Updated template path
+    return render(request, 'dashboard/dashboard/settings_hire_booking.html', context)
 
 @user_passes_test(is_staff_check)
 def settings_service_booking(request):
@@ -72,7 +88,8 @@ def settings_service_booking(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Service booking settings updated successfully!')
-            return redirect('shop:settings_service_booking')
+            # Updated redirect URL to use dashboard namespace
+            return redirect('dashboard:settings_service_booking')
     else:
         form = ServiceBookingSettingsForm(instance=settings)
 
@@ -81,9 +98,8 @@ def settings_service_booking(request):
         'form': form,
         'active_tab': 'service_booking'
     }
-    return render(request, 'dashboard/settings_service_booking.html', context)
-
-
+    # Updated template path
+    return render(request, 'dashboard/dashboard/settings_service_booking.html', context)
 
 @user_passes_test(is_staff_check)
 def settings_service_types(request):
@@ -95,8 +111,8 @@ def settings_service_types(request):
         'service_types': service_types,
         'active_tab': 'service_types' # Assuming you use active_tab for highlighting navigation
     }
-    return render(request, 'dashboard/settings_service_types.html', context)
-
+    # Updated template path
+    return render(request, 'dashboard/dashboard/settings_service_types.html', context)
 
 @user_passes_test(is_staff_check)
 def delete_service_type(request, pk):
@@ -106,15 +122,15 @@ def delete_service_type(request, pk):
         name = service_type.name
         service_type.delete()
         messages.success(request, f"Service type '{name}' deleted successfully!")
-        return redirect('shop:settings_service_types')
+        # Updated redirect URL to use dashboard namespace
+        return redirect('dashboard:settings_service_types')
 
     context = {
         'page_title': 'Delete Service Type',
         'service_type': service_type
     }
-    # You might want a dedicated confirmation template for deletion,
-    # or handle the deletion confirmation in the list view template using a modal.
-    return render(request, 'dashboard/delete_service_type.html', context)
+    # Updated template path
+    return render(request, 'dashboard/dashboard/delete_service_type.html', context)
 
 @user_passes_test(is_staff_check)
 def edit_service_type(request, pk):
@@ -126,7 +142,8 @@ def edit_service_type(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, f"Service type '{service_type.name}' updated successfully!")
-            return redirect('shop:settings_service_types') # Redirect to the list view
+            # Updated redirect URL to use dashboard namespace
+            return redirect('dashboard:settings_service_types') # Redirect to the list view
     else:
         form = ServiceTypeForm(instance=service_type)
 
@@ -136,8 +153,8 @@ def edit_service_type(request, pk):
         'service_type': service_type, # Pass the service_type object to the template for the button text logic
         'active_tab': 'service_types' # Assuming you use active_tab for highlighting navigation
     }
-    # Use the common template for add/edit
-    return render(request, 'dashboard/add_edit_service_type.html', context)
+    # Updated template path
+    return render(request, 'dashboard/dashboard/add_edit_service_type.html', context)
 
 @user_passes_test(is_staff_check)
 def add_service_type(request):
@@ -156,7 +173,8 @@ def add_service_type(request):
             service_type.save()
 
             messages.success(request, f"Service type '{service_type.name}' added successfully!")
-            return redirect('shop:settings_service_types') # Redirect to the list view
+            # Updated redirect URL to use dashboard namespace
+            return redirect('dashboard:settings_service_types') # Redirect to the list view
     else:
         form = ServiceTypeForm()
 
@@ -165,8 +183,8 @@ def add_service_type(request):
         'form': form,
         'active_tab': 'service_types' # Assuming you use active_tab for highlighting navigation
     }
-    # Use the common template for add/edit
-    return render(request, 'dashboard/add_edit_service_type.html', context)
+    # Updated template path
+    return render(request, 'dashboard/dashboard/add_edit_service_type.html', context)
 
 @user_passes_test(is_staff_check)
 def settings_visibility(request):
@@ -178,7 +196,8 @@ def settings_visibility(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Visibility settings updated successfully!')
-            return redirect('shop:settings_visibility')
+            # Updated redirect URL to use dashboard namespace
+            return redirect('dashboard:settings_visibility')
     else:
         form = VisibilitySettingsForm(instance=settings)
 
@@ -187,7 +206,8 @@ def settings_visibility(request):
         'form': form,
         'active_tab': 'visibility'
     }
-    return render(request, 'dashboard/settings_visibility.html', context)
+    # Updated template path
+    return render(request, 'dashboard/dashboard/settings_visibility.html', context)
 
 @user_passes_test(is_staff_check)
 def settings_miscellaneous(request):
@@ -199,7 +219,8 @@ def settings_miscellaneous(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Miscellaneous settings updated successfully!')
-            return redirect('shop:settings_miscellaneous')
+            # Updated redirect URL to use dashboard namespace
+            return redirect('dashboard:settings_miscellaneous')
     else:
         form = MiscellaneousSettingsForm(instance=settings)
 
@@ -208,8 +229,8 @@ def settings_miscellaneous(request):
         'form': form,
         'active_tab': 'miscellaneous'
     }
-    return render(request, 'dashboard/settings_miscellaneous.html', context)
-
+    # Updated template path
+    return render(request, 'dashboard/dashboard/settings_miscellaneous.html', context)
 
 @user_passes_test(is_staff_check)
 def edit_about_page(request):
@@ -222,7 +243,8 @@ def edit_about_page(request):
             form.save()
             messages.success(request, "About page content updated successfully!")
             # Redirect back to the edit page or another relevant page
-            return redirect('shop:edit_about_page') # Or 'about' if you want to see the public page
+            # Updated redirect URL - assuming 'about' will be namespaced under 'core'
+            return redirect('core:about') # Redirect to the public about page
         else:
             messages.error(request, "Please correct the errors below.")
             # For debugging
@@ -236,4 +258,5 @@ def edit_about_page(request):
         'about_content': about_content, # Pass the object for potential display
         'active_tab': 'about_page' # Assuming an active tab for this
     }
-    return render(request, 'dashboard/edit_about_page.html', context)
+    # Updated template path
+    return render(request, 'dashboard/dashboard/edit_about_page.html', context)
