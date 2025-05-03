@@ -80,7 +80,7 @@ def index(request):
     }
 
     # Updated template path
-    return render(request, 'core/scooter_shop/index.html', context)
+    return render(request, 'core/index.html', context)
 
 
 # General Service Information Page (not booking flow)
@@ -108,4 +108,4 @@ def service(request):
         'service_types': service_types
     }
     # Updated template path
-    return render(request, "core/scooter_shop/service.html", context)
+    return render(request, "core/service.html", context)

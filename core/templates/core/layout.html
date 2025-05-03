@@ -17,7 +17,7 @@
     <body>
         <nav>
             <div class="logo">
-                <a href="{% url 'shop:index' %}">
+                <a href="{% url 'core:index' %}">
                     <img src="{% static 'core/images/logo_scootershop_tight_crop.png' %}" alt="Scooter Shop Logo">
                 </a>
             </div>
@@ -26,7 +26,7 @@
                 {# Navigation items with visibility checks and admin styling #}
                 {% if settings.enable_sales_new or user.is_staff %}
                     <li>
-                        <a class="nav-item" href="{% url 'shop:new' %}"
+                        <a class="nav-item" href="{% url 'inventory:inventory_new' %}"
                            {% if not settings.enable_sales_new and user.is_staff %}
                                style="color: #08E5D1;" {# Bright turquoise color #}
                            {% endif %}
@@ -38,7 +38,7 @@
 
                 {% if settings.enable_sales_used or user.is_staff %}
                     <li>
-                        <a class="nav-item" href="{% url 'shop:used' %}"
+                        <a class="nav-item" href="{% url 'inventory:used' %}"
                            {% if not settings.enable_sales_used and user.is_staff %}
                                style="color: #08E5D1;" {# Bright turquoise color #}
                            {% endif %}
@@ -50,7 +50,7 @@
 
                 {% if settings.enable_service_booking or user.is_staff %}
                     <li>
-                        <a class="nav-item" href="{% url 'shop:service' %}"
+                        <a class="nav-item" href="{% url 'core:service' %}"
                            {% if not settings.enable_service_booking and user.is_staff %}
                                style="color: #08E5D1;" {# Bright turquoise color #}
                            {% endif %}
@@ -62,7 +62,7 @@
 
                 {% if settings.enable_hire or user.is_staff %}
                     <li>
-                        <a class="nav-item" href="{% url 'shop:hire' %}"
+                        <a class="nav-item" href="{% url 'inventory:hire' %}"
                            {% if not settings.enable_hire and user.is_staff %}
                                style="color: #08E5D1;" {# Bright turquoise color #}
                            {% endif %}
@@ -74,7 +74,7 @@
 
                 {% if settings.enable_about_page or user.is_staff %}
                     <li>
-                        <a class="nav-item" href="{% url 'shop:about' %}"
+                        <a class="nav-item" href="{% url 'core:about' %}"
                            {% if not settings.enable_about_page and user.is_staff %}
                                style="color: #08E5D1;" {# Bright turquoise color #}
                            {% endif %}
@@ -86,7 +86,7 @@
 
                 {% if settings.enable_contact_page or user.is_staff %}
                     <li>
-                        <a class="nav-item" href="{% url 'shop:contact' %}"
+                        <a class="nav-item" href="{% url 'core:contact' %}"
                            {% if not settings.enable_contact_page and user.is_staff %}
                                style="color: #08E5D1;" {# Bright turquoise color #}
                            {% endif %}
@@ -104,7 +104,7 @@
                 <a href="https://www.instagram.com/scootershop_australia/" target="_blank" rel="noopener">
                     <img src="{% static 'core/images/svgs/instagram.svg' %}" alt="Instagram">
                 </a>
-                <a href="{% url 'shop:contact' %}">
+                <a href="{% url 'core:contact' %}">
                     <img src="{% static 'core/images/svgs/mail.svg' %}" alt="Contact Us">
                 </a>
             </div>
@@ -124,7 +124,7 @@
                         {# Footer Quick Links with visibility checks and admin styling #}
                         {% if settings.enable_sales_new or user.is_staff %}
                             <li>
-                                <a href="{% url 'shop:new' %}"
+                                <a href="{% url 'inventory:inventory_new' %}"
                                    {% if not settings.enable_sales_new and user.is_staff %}
                                        style="color: #08E5D1;" {# Bright turquoise color #}
                                    {% endif %}
@@ -136,7 +136,7 @@
 
                         {% if settings.enable_sales_used or user.is_staff %}
                             <li>
-                                <a href="{% url 'shop:used' %}"
+                                <a href="{% url 'inventory:used' %}"
                                    {% if not settings.enable_sales_used and user.is_staff %}
                                        style="color: #08E5D1;" {# Bright turquoise color #}
                                    {% endif %}
@@ -148,7 +148,7 @@
 
                          {% if settings.enable_service_booking or user.is_staff %}
                             <li>
-                                <a href="{% url 'shop:service' %}"
+                                <a href="{% url 'core:service' %}"
                                    {% if not settings.enable_service_booking and user.is_staff %}
                                        style="color: #08E5D1;" {# Bright turquoise color #}
                                    {% endif %}
@@ -160,7 +160,7 @@
 
                         {% if settings.enable_hire or user.is_staff %}
                             <li>
-                                <a href="{% url 'shop:hire' %}"
+                                <a href="{% url 'inventory:hire' %}"
                                    {% if not settings.enable_hire and user.is_staff %}
                                        style="color: #08E5D1;" {# Bright turquoise color #}
                                    {% endif %}
@@ -172,7 +172,7 @@
 
                         {% if settings.enable_about_page or user.is_staff %}
                             <li>
-                                <a href="{% url 'shop:about' %}"
+                                <a href="{% url 'core:about' %}"
                                    {% if not settings.enable_about_page and user.is_staff %}
                                        style="color: #08E5D1;" {# Bright turquoise color #}
                                    {% endif %}
@@ -184,7 +184,7 @@
 
                         {% if settings.enable_contact_page or user.is_staff %}
                             <li>
-                                <a href="{% url 'shop:contact' %}"
+                                <a href="{% url 'core:contact' %}"
                                    {% if not settings.enable_contact_page and user.is_staff %}
                                        style="color: #08E5D1;" {# Bright turquoise color #}
                                    {% endif %}
@@ -195,12 +195,12 @@
                         {% endif %}
 
                         {# Login link - Keeping always visible as per original layout #}
-                        <li><a href="{% url 'shop:login' %}">Login</a></li>
+                        <li><a href="{% url 'users:login' %}">Login</a></li>
 
                         {# ServiceBook link (applying same logic as Service Booking) #}
                          {% if settings.enable_service_booking or user.is_staff %}
                             <li>
-                                <a href="{% url 'shop:service_booking_start' %}"
+                                <a href="{% url 'service:service_booking_start' %}"
                                    {% if not settings.enable_service_booking and user.is_staff %}
                                        style="color: #08E5D1;" {# Bright turquoise color #}
                                    {% endif %}
@@ -211,8 +211,8 @@
                         {% endif %}
 
                         {% if user.is_authenticated and user.is_staff %}
-                        <li><a href="{% url 'shop:dashboard_index' %}">Dashboard</a></li>
-                        <li><a href="{% url 'shop:motorcycle-create' %}">scooter create</a></li>
+                        <li><a href="{% url 'dashboard:dashboard_index' %}">Dashboard</a></li>
+                        <li><a href="{% url 'inventory:motorcycle-create' %}">scooter create</a></li>
                         {% endif %}
                     </ul>
                 </div>
@@ -223,7 +223,7 @@
                         {# ADD visibility checks for the new information pages #}
                         {% if settings.enable_terms_page or user.is_staff %}
                             <li>
-                                <a href="{% url 'shop:terms' %}"
+                                <a href="{% url 'core:terms' %}"
                                    {% if not settings.enable_terms_page and user.is_staff %}
                                        style="color: #08E5D1;" {# Bright turquoise color #}
                                    {% endif %}
@@ -235,7 +235,7 @@
 
                         {% if settings.enable_privacy_policy_page or user.is_staff %}
                             <li>
-                                <a href="{% url 'shop:privacy' %}"
+                                <a href="{% url 'core:privacy' %}"
                                    {% if not settings.enable_privacy_policy_page and user.is_staff %}
                                        style="color: #08E5D1;" {# Bright turquoise color #}
                                    {% endif %}
@@ -247,7 +247,7 @@
 
                         {% if settings.enable_returns_page or user.is_staff %}
                             <li>
-                                <a href="{% url 'shop:returns' %}"
+                                <a href="{% url 'core:returns' %}"
                                     {% if not settings.enable_returns_page and user.is_staff %}
                                         style="color: #08E5D1;" {# Bright turquoise color #}
                                     {% endif %}
@@ -259,7 +259,7 @@
 
                          {% if settings.enable_security_page or user.is_staff %}
                             <li>
-                                <a href="{% url 'shop:security' %}"
+                                <a href="{% url 'core:security' %}"
                                    {% if not settings.enable_security_page and user.is_staff %}
                                        style="color: #08E5D1;" {# Bright turquoise color #}
                                    {% endif %}
@@ -330,7 +330,7 @@
                         <a href="https://www.instagram.com/scootershop_australia/" target="_blank" rel="noopener">
                             <img src="{% static 'core/images/svgs/instagram.svg' %}" alt="Instagram">
                         </a>
-                        <a href="{% url 'shop:contact' %}">
+                        <a href="{% url 'core:contact' %}">
                             <img src="{% static 'core/images/svgs/mail.svg' %}" alt="Contact Us">
                         </a>
                     </div>

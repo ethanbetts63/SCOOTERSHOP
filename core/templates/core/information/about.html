@@ -13,7 +13,7 @@
 
     {% if user.is_authenticated and user.is_staff %}
     <div class="dashboard-controls">
-        <a href="{% url 'shop:edit_about_page' %}" class="dashboard-edit-link">Edit About Page</a>
+        <a href="{% url 'dashboard:edit_about_page' %}" class="dashboard-edit-link">Edit About Page</a>
     </div>
     {% endif %}
 
@@ -32,8 +32,8 @@
                 <h2>{{ about_content.sales_title }}</h2>
                 <p>{{ about_content.sales_content|linebreaksbr }}</p>
                 <div class="sales-buttons" style="margin-top: 15px; display: flex; gap: 10px;">
-                    <a href="{% url 'shop:new' %}" class="btn-primary">New Scooters</a>
-                    <a href="{% url 'shop:used' %}" class="btn-primary">Used Scooters</a>
+                    <a href="{% url  %}" class="btn-primary">New Scooters</a>
+                    <a href="{% url 'inventory:used' %}" class="btn-primary">Used Scooters</a>
                 </div>
             </div>
         </div>
@@ -46,7 +46,7 @@
                 <h2>{{ about_content.service_title }}</h2>
                 <p>{{ about_content.service_content|linebreaksbr }}</p>
                 <div class="service-button" style="margin-top: 15px; display: flex; gap: 10px;">
-                    <a href="{% url 'shop:service' %}" class="btn-primary">Service Center</a>
+                    <a href="{% url 'core:service' %}" class="btn-primary">Service Center</a>
                 </div>
             </div>
         </div>
@@ -65,7 +65,7 @@
     <div class="cta">
         <p>
             Having thoughts about scooters?
-            <a href="{% url 'shop:contact' %}">Contact Us</a> or come in store today!
+            <a href="{% url 'core:contact' %}">Contact Us</a> or come in store today!
             {{ about_content.cta_text|linebreaksbr }}
         </p>
     </div>

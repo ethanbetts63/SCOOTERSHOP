@@ -113,7 +113,7 @@
         </div>
     </div>
 
-    {% include "core/reviews.html" %}
+    {% include "core/includes/reviews.html" %}
 
     <div class="container">{# Changed from .index-section #}
         <h2 class="section-title">Our Brands</h2>{# Added .section-title #}
@@ -154,21 +154,21 @@
                     </ul>
 
                     <div class="hire-cta">
-                        <a href="{% url 'shop:hire' %}" class="btn-primary">Check out the fleet</a>
+                        <a href="{% url 'inventory:hire' %}" class="btn-primary">Check out the fleet</a>
                     </div>
                 </div> {# Closed card-body here #}
             </div>
         </div>
 
-    {% include "core/featured.html" with section_title="Featured New Motorcycles" motorcycles=featured_new_motorcycles condition="new" %}
+    {% include "core/includes/featured.html" with section_title="Featured New Motorcycles" motorcycles=featured_new_motorcycles condition="new" %}
 
-    {% include "core/featured.html" with section_title="Featured Used Motorcycles" motorcycles=featured_used_motorcycles condition="used" %}
+    {% include "core/includes/featured.html" with section_title="Featured Used Motorcycles" motorcycles=featured_used_motorcycles condition="used" %}
 
 {% endblock %}
 
 {% block map %}
     <div class="container">{# Changed from .index-section #}
         <h2 class="section-title map-title">Where to find us:</h2>{# Added .section-title #}
-        {% include "core/map.html" %}
+        {% include "core/includes/map.html" %}
     </div>
 {% endblock %}
