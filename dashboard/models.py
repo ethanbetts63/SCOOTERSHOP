@@ -23,6 +23,7 @@ class SiteSettings(models.Model):
     enable_returns_page = models.BooleanField(default=True, help_text="Enable the returns page")
     enable_security_page = models.BooleanField(default=True, help_text="Enable the security page")
     enable_terms_page = models.BooleanField(default=True, help_text="Enable the terms and conditions page")
+    enable_google_places_reviews = models.BooleanField(default=True, help_text="Enable displaying Google Places reviews")
 
     # Service Booking Fields (Settings related to service booking)
     allow_anonymous_bookings = models.BooleanField(default=True, help_text="Allow service bookings without an account")
@@ -52,6 +53,7 @@ class SiteSettings(models.Model):
     phone_number = models.CharField(max_length=20, blank=True, null=True, default='(08) 9433 4613')
     email_address = models.EmailField(blank=True, null=True, default='admin@scootershop.com.au')
     storefront_address = models.TextField(blank=True, null=True, default='Unit 2/95 Queen Victoria St, Fremantle WA, Australia')
+    google_places_place_id = models.CharField(max_length=255, blank=True, null=True, help_text="Google Places Place ID for the storefront location")
 
     # Business Hours
     opening_hours_monday = models.CharField(max_length=100, blank=True, null=True, help_text="e.g. '9:00 AM - 5:00 PM' or 'Closed'", default='10:30am to 5:00pm')

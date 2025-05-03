@@ -6,7 +6,8 @@ from django.contrib.auth.decorators import user_passes_test # Import the decorat
 from django.urls import reverse # Import reverse for redirects
 
 # Import models from the dashboard app
-from dashboard.models import SiteSettings, ServiceType, AboutPageContent
+from dashboard.models import SiteSettings, AboutPageContent
+from service.models import ServiceType
 
 # Import forms from the dashboard app
 from dashboard.forms import (

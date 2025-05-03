@@ -11,7 +11,7 @@ from django.db.models import Q
 
 # Updated Model Imports (assuming these are correct after your move)
 from service.models import ServiceBooking, CustomerMotorcycle, ServiceType
-from core.models import SiteSettings # SiteSettings remains in the core app
+from dashboard.models import SiteSettings # SiteSettings remains in the core app
 
 # Updated Form Imports (Assuming forms are moved from core/forms.py to service/forms.py)
 # You will need to manually move the relevant forms from core/forms.py to service/forms.py
