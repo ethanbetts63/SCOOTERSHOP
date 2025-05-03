@@ -38,6 +38,11 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "core",
+    "users",      
+    "inventory",  
+    "service",    
+    "hire",
+    "dashboard", 
 ]
 
 MIDDLEWARE = [
@@ -131,7 +136,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-AUTH_USER_MODEL = 'core.User'
+AUTH_USER_MODEL = 'users.User'
 
 MAPS_API_KEY = "AIzaSyCOauHlqUBPYdLLsYKYFhaaYAIlxK6pGa4"
 

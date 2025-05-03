@@ -9,7 +9,12 @@ from django.conf.urls.static import static
 urlpatterns = [
     # Django Admin site URLs
     path('admin/', admin.site.urls),
-    path('', include('shop.urls')),
+    path('accounts/', include('users.urls')),        # URLs for user auth (login, register, etc.)
+    path('inventory/', include('inventory.urls')),  # URLs for motorcycle listings
+    path('service/', include('service.urls')),      # URLs for service booking
+    path('hire/', include('hire.urls')),            # URLs for hire booking
+    path('dashboard/', include('dashboard.urls')),
+    path('', include('core.urls')),
 ]
 
 # Serve static and media files in development mode
@@ -17,4 +22,5 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.path.join(settings.BASE_DIR, 'static'))
 
