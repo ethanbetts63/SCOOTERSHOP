@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from django.urls import reverse_lazy # Import reverse_lazy for URL names
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,12 +38,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "core",
-    "users",      
-    "inventory",  
-    "service",    
-    "hire",
-    "dashboard", 
+    # List apps using their AppConfig path for better practice
+    "core.apps.CoreConfig",
+    "users.apps.UsersConfig",
+    "inventory.apps.InventoryConfig",
+    "service.apps.ServiceConfig",
+    "hire.apps.HireConfig",
+    "dashboard.apps.DashboardConfig",
 ]
 
 MIDDLEWARE = [
@@ -60,15 +62,17 @@ ROOT_URLCONF = "SCOOTER_SHOP.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
+        # Ensure your project-level templates directory is included if you have one
         "DIRS": [BASE_DIR / 'templates'],
-        "APP_DIRS": True,
+        "APP_DIRS": True, # This is crucial for finding templates within app/templates/
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                'core.context_processors.site_settings',
+                # Updated context processor path to dashboard app
+                'dashboard.context_processors.site_settings',
             ],
         },
     },
@@ -124,21 +128,52 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# Add this if you have static files outside of app directories
+# Add this if you have project-level static files outside of app directories
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
+# The directory where 'manage.py collectstatic' will gather static files for deployment
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Media files (user uploads)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Custom User Model
 AUTH_USER_MODEL = 'users.User'
 
-MAPS_API_KEY = "AIzaSyCOauHlqUBPYdLLsYKYFhaaYAIlxK6pGa4"
+# URLs for login/logout - use namespaced URLs if applicable
+# Assuming your login/logout views are in the users app with 'users' namespace
+# LOGIN_URL = reverse_lazy('users:login') # Example if you have a 'login' URL name
+# LOGOUT_URL = reverse_lazy('users:logout') # Example if you have a 'logout' URL name
 
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
+# URL to redirect to after successful login - use namespaced URL if applicable
+# Assuming your core index page URL is named 'index' and core app is namespaced 'core'
+LOGIN_REDIRECT_URL = reverse_lazy('core:index') # Recommended
+# URL to redirect to after logging out - use namespaced URL if applicable
+LOGOUT_REDIRECT_URL = reverse_lazy('core:index') # Recommended
+
+
+# API Keys and external service settings
+MAPS_API_KEY = "AIzaSyCOauHlqUBPYdLLsYKYFhaaYAIlxK6pGa4"
+# Add other API keys or service credentials here
+
+
+# Email Settings (for sending confirmation emails, etc.)
+# Configure these based on your email service provider (e.g., Gmail, SendGrid, etc.)
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'your_smtp_server'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'your_email@example.com'
+# EMAIL_HOST_PASSWORD = 'your_email_password'
+# DEFAULT_FROM_EMAIL = 'your_email@example.com'
+
+# Add other necessary settings here (e.g., security headers, logging, caching)
