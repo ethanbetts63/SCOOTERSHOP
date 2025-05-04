@@ -5,6 +5,7 @@ from .motorcycle_list import (
     NewMotorcycleListView,
     UsedMotorcycleListView,
     HireMotorcycleListView,
+    AllMotorcycleListView,
     new, 
     used, 
     hire, 

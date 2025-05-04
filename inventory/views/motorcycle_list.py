@@ -1,18 +1,14 @@
 # inventory/views/motorcycle_list.py
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.generic import ListView
 from django.db.models import Q
 import datetime
-from django.contrib import messages # Import messages for potential future use
+from django.contrib import messages 
 
 # Import models from the inventory app
-from inventory.models import Motorcycle, MotorcycleCondition
+from inventory.models import Motorcycle
 from hire.models import HireBooking
-
-# Import utility function from the inventory app
-from .utils import get_featured_motorcycles
-
 
 class MotorcycleListView(ListView):
     model = Motorcycle
@@ -51,7 +47,7 @@ class MotorcycleListView(ListView):
         price_max = self.request.GET.get('price_max')
 
         if brand:
-            queryset = queryset.filter(brand__icontains=brand) # Use icontains for case-insensitive
+            queryset = queryset.filter(brand=brand) 
         if model_query:
             queryset = queryset.filter(model__icontains=model_query)
         try:
@@ -124,6 +120,18 @@ class MotorcycleListView(ListView):
 
 
         return context
+    
+class AllMotorcycleListView(MotorcycleListView):
+    template_name = 'inventory/all.html'  # Create this template or reuse an existing one
+    
+    def dispatch(self, request, *args, **kwargs):
+        # Check if user is an admin/staff before proceeding
+        if not request.user.is_staff:
+            # Redirect non-admin users to the homepage or login page
+            return redirect('core:index') 
+        return super().dispatch(request, *args, **kwargs)
+    
+    # No condition filtering - will show all available motorcycles
 
 
 class NewMotorcycleListView(MotorcycleListView):
@@ -157,15 +165,13 @@ class UsedMotorcycleListView(MotorcycleListView):
         return context
 
 class HireMotorcycleListView(MotorcycleListView):
-    # Updated template path
     template_name = 'inventory/hire.html'
 
     def get_queryset(self):
-        # Set the condition_name kwarg for the base class's get_queryset
         self.kwargs['condition_name'] = 'hire'
-        queryset = super().get_queryset() # Start with the base filtered queryset
+        queryset = super().get_queryset()
 
-        # Filter by daily hire rate if provided (add this logic here)
+        # Filter by daily hire rate if provided
         daily_rate_min = self.request.GET.get('daily_rate_min')
         daily_rate_max = self.request.GET.get('daily_rate_max')
 
@@ -179,6 +185,9 @@ class HireMotorcycleListView(MotorcycleListView):
             # messages.error(self.request, "Invalid rate input.")
             pass
 
+        # Initialize self.date_range as None so it's always an attribute
+        self.date_range = None
+        
         # Filter by availability based on selected date range
         hire_start_date_str = self.request.GET.get('hire_start_date')
         hire_end_date_str = self.request.GET.get('hire_end_date')
@@ -190,9 +199,12 @@ class HireMotorcycleListView(MotorcycleListView):
 
                 # Add validation: Ensure start date is not after end date
                 if start_date > end_date:
-                     messages.error(self.request, "Hire start date cannot be after the end date.")
-                     # Return an empty queryset or the queryset before date filtering
-                     return self.model.objects.none() # Return no results if dates are invalid
+                    messages.error(self.request, "Hire start date cannot be after the end date.")
+                    # Return an empty queryset or the queryset before date filtering
+                    return self.model.objects.none()  # Return no results if dates are invalid
+
+                # Set the date_range attribute for use in get_context_data
+                self.date_range = (start_date, end_date, hire_start_date_str, hire_end_date_str)
 
                 # Get motorcycles that don't have conflicting bookings
                 # A booking conflicts if:
@@ -201,10 +213,10 @@ class HireMotorcycleListView(MotorcycleListView):
                 # 3. It completely surrounds our requested period
                 # 4. Our requested period falls within its booking period
                 conflicting_bookings = HireBooking.objects.filter(
-                    status__in=['confirmed', 'pending'], # Consider pending bookings too? Adjust as needed.
+                    status__in=['confirmed', 'pending'],  # Consider pending bookings too? Adjust as needed.
                     motorcycle__in=queryset,
                 ).filter(
-                    Q(start_date__lte=end_date, end_date__gte=start_date)
+                    Q(pickup_datetime__date__lte=end_date, dropoff_datetime__date__gte=start_date)
                     # Simplified check: Booking period overlaps with the requested period
                     # (Booking starts before or on requested end date AND booking ends after or on requested start date)
                 ).values_list('motorcycle_id', flat=True)
@@ -212,40 +224,36 @@ class HireMotorcycleListView(MotorcycleListView):
                 # Exclude motorcycles with conflicting bookings
                 queryset = queryset.exclude(id__in=conflicting_bookings)
 
-                # Add date range to context for display (handled in get_context_data)
-                self.date_range = (start_date, end_date)
             except ValueError:
                 # Invalid date format - filter none and show an error message
                 messages.error(self.request, "Invalid date format. Please use YYYY-MM-DD.")
-                return self.model.objects.none() # Return no results on invalid date format
+                return self.model.objects.none()  # Return no results on invalid date format
             except Exception as e:
                 # Catch any other potential errors during date processing
                 messages.error(self.request, f"An error occurred while filtering by date: {e}")
-                return self.model.objects.none() # Return no results on other errors
-
+                return self.model.objects.none()  # Return no results on other errors
 
         return queryset
-
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Updated current_url_name to use the app namespace
-        context['current_url_name'] = 'inventory:hire' # Using the specific URL name from inventory/urls.py
+        context['current_url_name'] = 'inventory:hire'  # Using the specific URL name from inventory/urls.py
 
         # Add selected date range to context if it exists
-        if hasattr(self, 'date_range'):
-            context['hire_start_date'] = self.date_range[0].strftime('%Y-%m-%d') # Format for input field
-            context['hire_end_date'] = self.date_range[1].strftime('%Y-%m-%d')   # Format for input field
+        if self.date_range:
+            start_date, end_date, hire_start_date_str, hire_end_date_str = self.date_range
+            context['hire_start_date'] = hire_start_date_str  # Use original string from request
+            context['hire_end_date'] = hire_end_date_str      # Use original string from request
 
             # Calculate total days for hire
-            delta = self.date_range[1] - self.date_range[0]
+            delta = end_date - start_date
             context['hire_days'] = delta.days + 1  # Include both start and end day
         else:
             # Provide empty strings if no date range selected, to prevent template errors
             context['hire_start_date'] = ''
             context['hire_end_date'] = ''
             context['hire_days'] = None
-
 
         return context
 

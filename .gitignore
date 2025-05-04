@@ -25,3 +25,9 @@ Thumbs.db
 
 # Virtual environment
 venv/
+
+
+# Coverage
+.coverage
+htmlcov/
+coverage.xml
