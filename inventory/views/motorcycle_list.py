@@ -4,41 +4,21 @@ from django.shortcuts import render, redirect
 from django.views.generic import ListView
 from django.db.models import Q
 import datetime
-from django.contrib import messages 
-
-# Import models from the inventory app
+from django.contrib import messages
 from inventory.models import Motorcycle
 from hire.models import HireBooking
+from decimal import Decimal
 
+
+# Base class for displaying lists of motorcycles
 class MotorcycleListView(ListView):
     model = Motorcycle
-    # This default template_name might not be used directly if subclasses override it
-    # but it's fine to keep as a fallback or for a potential base list view.
-    # Updated template path
     template_name = 'inventory/motorcycle_list.html'
     context_object_name = 'motorcycles'
     paginate_by = 12
 
-    def get_queryset(self):
-        # Start with base queryset (available motorcycles)
-        queryset = super().get_queryset().filter(is_available=True)
-
-        # Apply condition filter if specified in view kwargs or URL parameters
-        # Check both kwargs (from urls.py with {'condition_name': '...'})
-        # and GET parameters (less standard for primary filtering, but could be used)
-        condition_name = self.kwargs.get('condition_name') or self.request.GET.get('condition')
-
-        if condition_name:
-            # Use the new conditions ManyToManyField
-            if condition_name.lower() == 'used':
-                 # Filter for motorcycles that have 'used' OR 'demo' in their conditions
-                 queryset = queryset.filter(conditions__name__in=['used', 'demo']).distinct()
-            elif condition_name.lower() in ['new', 'hire']:
-                 # Filter for motorcycles that have the specific condition
-                 queryset = queryset.filter(conditions__name__iexact=condition_name).distinct()
-            # Note: Consider adding a case for an invalid condition_name
-
-        # --- Apply other filters ---
+    # Applies common GET parameters filters and sorting to a queryset
+    def _apply_common_filters_and_sorting(self, queryset):
         brand = self.request.GET.get('brand')
         model_query = self.request.GET.get('model')
         year_min = self.request.GET.get('year_min')
@@ -47,131 +27,183 @@ class MotorcycleListView(ListView):
         price_max = self.request.GET.get('price_max')
 
         if brand:
-            queryset = queryset.filter(brand=brand) 
+            # Corrected: Use iexact for case-insensitive brand filtering
+            queryset = queryset.filter(brand__iexact=brand)
         if model_query:
             queryset = queryset.filter(model__icontains=model_query)
         try:
             if year_min: queryset = queryset.filter(year__gte=int(year_min))
             if year_max: queryset = queryset.filter(year__lte=int(year_max))
         except (ValueError, TypeError): pass
+        
         try:
-            if price_min: queryset = queryset.filter(price__gte=float(price_min))
-            if price_max: queryset = queryset.filter(price__lte=float(price_max))
-        except (ValueError, TypeError): pass
+            # Use Decimal for price filtering
+            if price_min:
+                 queryset = queryset.filter(price__gte=Decimal(price_min))
+            if price_max:
+                 queryset = queryset.filter(price__lte=Decimal(price_max))
+        # Catch potential errors from Decimal conversion as well
+        except (ValueError, TypeError):
+            pass
 
-        # --- Apply Sorting ---
-        # Get the 'order' parameter, default to 'price_low_to_high'
         order = self.request.GET.get('order', 'price_low_to_high')
 
         if order == 'price_low_to_high':
+            # Handle None prices by ordering them last
             queryset = queryset.order_by('price')
         elif order == 'price_high_to_low':
+            # Handle None prices by ordering them first
             queryset = queryset.order_by('-price')
         elif order == 'age_new_to_old':
-            queryset = queryset.order_by('-year', '-pk') # Added '-pk' for stable sort
+            queryset = queryset.order_by('-year', '-pk')
         elif order == 'age_old_to_new':
-            queryset = queryset.order_by('year', 'pk') # Added 'pk' for stable sort
+            queryset = queryset.order_by('year', 'pk')
         else:
-            queryset = queryset.order_by('price') # Default sort
+            queryset = queryset.order_by('price')
 
+        return queryset
+
+    # Builds the queryset based on filters and conditions
+    def get_queryset(self):
+        # Start with base queryset (available motorcycles) and apply condition filter
+        # This is for the public-facing views (New, Used, Hire)
+        queryset = super().get_queryset().filter(is_available=True)
+
+        condition_name = getattr(self, 'condition_name', None) or self.kwargs.get('condition_name') or self.request.GET.get('condition')
+
+        if condition_name:
+            if condition_name.lower() == 'used':
+                 queryset = queryset.filter(conditions__name__in=['used', 'demo']).distinct()
+            elif condition_name.lower() in ['new', 'hire']:
+                 queryset = queryset.filter(conditions__name__iexact=condition_name).distinct()
+
+        # Apply common filters and sorting using the helper
+        # Common filters (brand, model, year, price) are applied AFTER condition and availability for public views
+        queryset = self._apply_common_filters_and_sorting(queryset)
+
+
+        return queryset
+
+    # Adds common context data like filters and sorting
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        condition_name = getattr(self, 'condition_name', None) or self.kwargs.get('condition_name') or self.request.GET.get('condition')
+
+        if condition_name:
+            context['condition'] = condition_name
+            context['condition_lower'] = condition_name.lower()
+
+        if hasattr(self, 'url_name'):
+             context['current_url_name'] = self.url_name
+
+        # Filter options context should reflect the base queryset before GET filters apply
+        # i.e., available bikes, potentially filtered by condition_name attribute
+        # This logic is for the public-facing views. AllMotorcycleListView will override this.
+        filtered_for_options = Motorcycle.objects.filter(is_available=True)
+        if condition_name: # Use the determined condition_name here
+             if condition_name.lower() == 'used':
+                  filtered_for_options = filtered_for_options.filter(conditions__name__in=['used', 'demo']).distinct()
+             elif condition_name.lower() in ['new', 'hire']:
+                 filtered_for_options = filtered_for_options.filter(conditions__name__iexact=condition_name).distinct()
+
+
+        context['brands'] = sorted(list(filtered_for_options.values_list('brand', flat=True).distinct()))
+
+        years = list(filtered_for_options.values_list('year', flat=True).distinct())
+        if years:
+            min_year = min(years)
+            max_year = max(years)
+            context['years'] = list(range(max_year, min_year - 1, -1))
+        else:
+            context['years'] = []
+
+        context['request'] = self.request
+
+        context['current_order'] = self.request.GET.get('order', 'price_low_to_high')
+
+        return context
+
+# Lists all motorcycles (available or not, for admin view)
+class AllMotorcycleListView(MotorcycleListView):
+    template_name = 'inventory/all.html'
+
+    def get_queryset(self):
+        # Start with ALL motorcycles, available or not, for the admin view
+        queryset = Motorcycle.objects.all()
+
+        # Apply common filters and sorting using the helper from the base class
+        # Common filters (brand, model, year, price) are applied to ALL bikes here
+        queryset = self._apply_common_filters_and_sorting(queryset)
 
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Get condition from kwargs or URL parameters
-        condition_name = self.kwargs.get('condition_name') or self.request.GET.get('condition')
+        # Corrected: For the AllMotorcycleListView, filter options should include all bikes
+        filtered_for_options = Motorcycle.objects.all()
 
-        # Filter motorcycles based on condition for populating filter options
-        # Start with the full set of available motorcycles before applying request filters
-        filtered_for_options = Motorcycle.objects.filter(is_available=True)
-
-        if condition_name:
-            if condition_name.lower() == 'used':
-                 filtered_for_options = filtered_for_options.filter(conditions__name__in=['used', 'demo']).distinct()
-            elif condition_name.lower() in ['new', 'hire']:
-                filtered_for_options = filtered_for_options.filter(conditions__name__iexact=condition_name).distinct()
-
-
-        # Get distinct brands from the filtered motorcycles
         context['brands'] = sorted(list(filtered_for_options.values_list('brand', flat=True).distinct()))
 
-        # Get min and max years from the filtered motorcycles
         years = list(filtered_for_options.values_list('year', flat=True).distinct())
         if years:
             min_year = min(years)
             max_year = max(years)
-            # Generate a continuous range of years from max to min
             context['years'] = list(range(max_year, min_year - 1, -1))
         else:
-            context['years'] = [] # Ensure it's an empty list if no years found
+            context['years'] = []
 
-        context['request'] = self.request # Pass the request object to the template
-
-        # Add condition name to context if it was provided
-        if condition_name:
-            # Pass both the original case and lowercase for flexibility in templates
-            context['condition'] = condition_name
-            context['condition_lower'] = condition_name.lower()
-
-        # Pass the current sorting order to the template for filter persistence
-        context['current_order'] = self.request.GET.get('order', 'price_low_to_high')
+        # The 'condition' context variable might not be needed or should be handled differently
+        # for the 'all' view if filtering by condition isn't the primary purpose.
+        # Removing or adjusting the condition-related context if necessary for this view.
+        context.pop('condition', None)
+        context.pop('condition_lower', None)
 
 
         return context
-    
-class AllMotorcycleListView(MotorcycleListView):
-    template_name = 'inventory/all.html'  # Create this template or reuse an existing one
-    
+
+
     def dispatch(self, request, *args, **kwargs):
-        # Check if user is an admin/staff before proceeding
         if not request.user.is_staff:
-            # Redirect non-admin users to the homepage or login page
-            return redirect('core:index') 
+            # Optionally add a message here before redirecting
+            # messages.warning(request, "You do not have permission to access this page.")
+            return redirect('core:index')
         return super().dispatch(request, *args, **kwargs)
-    
-    # No condition filtering - will show all available motorcycles
 
 
+# Lists new motorcycles
 class NewMotorcycleListView(MotorcycleListView):
-    # Updated template path
     template_name = 'inventory/new.html'
+    condition_name = 'new'
+    url_name = 'inventory:new'
 
-    def get_queryset(self):
-        # Set the condition_name kwarg for the base class's get_queryset
-        self.kwargs['condition_name'] = 'new'
-        return super().get_queryset()
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Updated current_url_name to use the app namespace
-        context['current_url_name'] = 'inventory:new' # Using the specific URL name from inventory/urls.py
-        return context
-
+# Lists used and demo motorcycles
 class UsedMotorcycleListView(MotorcycleListView):
-    # Updated template path
     template_name = 'inventory/used.html'
+    condition_name = 'used'
+    url_name = 'inventory:used'
 
-    def get_queryset(self):
-        # Set the condition_name kwarg to 'used' to filter for 'used' and 'demo' in the base class
-        self.kwargs['condition_name'] = 'used'
-        return super().get_queryset()
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Updated current_url_name to use the app namespace
-        context['current_url_name'] = 'inventory:used' # Using the specific URL name from inventory/urls.py
-        return context
-
+# Lists motorcycles available for hire
 class HireMotorcycleListView(MotorcycleListView):
     template_name = 'inventory/hire.html'
+    condition_name = 'hire'
+    url_name = 'inventory:hire'
 
+    # Adds hire-specific filtering (daily rate, date availability)
     def get_queryset(self):
-        self.kwargs['condition_name'] = 'hire'
+        # Start by getting the base queryset (which applies is_available=True and condition_name='hire')
+        # Then apply common filters and sorting
         queryset = super().get_queryset()
+        # Note: Common filters (like price range) are less relevant for hire bikes based on the model
+        # but the _apply_common_filters_and_sorting method is still called.
+        # If price filtering should *not* apply to hire bikes, you would override
+        # _apply_common_filters_and_sorting specifically in this class or adjust the base method.
+        # For now, keeping the base method call.
 
-        # Filter by daily hire rate if provided
+        # Now apply hire-specific filters (daily rate and date availability)
         daily_rate_min = self.request.GET.get('daily_rate_min')
         daily_rate_max = self.request.GET.get('daily_rate_max')
 
@@ -181,14 +213,10 @@ class HireMotorcycleListView(MotorcycleListView):
             if daily_rate_max:
                 queryset = queryset.filter(daily_hire_rate__lte=float(daily_rate_max))
         except (ValueError, TypeError):
-            # Optionally add a message if the rate input is invalid
-            # messages.error(self.request, "Invalid rate input.")
             pass
 
-        # Initialize self.date_range as None so it's always an attribute
         self.date_range = None
-        
-        # Filter by availability based on selected date range
+
         hire_start_date_str = self.request.GET.get('hire_start_date')
         hire_end_date_str = self.request.GET.get('hire_end_date')
 
@@ -197,79 +225,49 @@ class HireMotorcycleListView(MotorcycleListView):
                 start_date = datetime.datetime.strptime(hire_start_date_str, '%Y-%m-%d').date()
                 end_date = datetime.datetime.strptime(hire_end_date_str, '%Y-%m-%d').date()
 
-                # Add validation: Ensure start date is not after end date
                 if start_date > end_date:
                     messages.error(self.request, "Hire start date cannot be after the end date.")
-                    # Return an empty queryset or the queryset before date filtering
-                    return self.model.objects.none()  # Return no results if dates are invalid
+                    return self.model.objects.none()
 
-                # Set the date_range attribute for use in get_context_data
                 self.date_range = (start_date, end_date, hire_start_date_str, hire_end_date_str)
 
-                # Get motorcycles that don't have conflicting bookings
-                # A booking conflicts if:
-                # 1. Its start date falls within our requested period, or
-                # 2. Its end date falls within our requested period, or
-                # 3. It completely surrounds our requested period
-                # 4. Our requested period falls within its booking period
+                # Find motorcycles booked within the date range
                 conflicting_bookings = HireBooking.objects.filter(
-                    status__in=['confirmed', 'pending'],  # Consider pending bookings too? Adjust as needed.
+                    status__in=['confirmed', 'pending'],
+                    # Only consider bookings for motorcycles that are currently in our filtered queryset
                     motorcycle__in=queryset,
                 ).filter(
+                    # Check for overlapping date ranges
                     Q(pickup_datetime__date__lte=end_date, dropoff_datetime__date__gte=start_date)
-                    # Simplified check: Booking period overlaps with the requested period
-                    # (Booking starts before or on requested end date AND booking ends after or on requested start date)
-                ).values_list('motorcycle_id', flat=True)
+                ).values_list('motorcycle_id', flat=True) # Get the IDs of conflicting motorcycles
 
-                # Exclude motorcycles with conflicting bookings
+                # Exclude motorcycles with conflicting bookings from the queryset
                 queryset = queryset.exclude(id__in=conflicting_bookings)
 
             except ValueError:
-                # Invalid date format - filter none and show an error message
                 messages.error(self.request, "Invalid date format. Please use YYYY-MM-DD.")
-                return self.model.objects.none()  # Return no results on invalid date format
+                return self.model.objects.none()
             except Exception as e:
-                # Catch any other potential errors during date processing
                 messages.error(self.request, f"An error occurred while filtering by date: {e}")
-                return self.model.objects.none()  # Return no results on other errors
+                return self.model.objects.none()
 
         return queryset
 
+    # Adds hire-specific context data (date range, hire days)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Updated current_url_name to use the app namespace
-        context['current_url_name'] = 'inventory:hire'  # Using the specific URL name from inventory/urls.py
 
-        # Add selected date range to context if it exists
         if self.date_range:
             start_date, end_date, hire_start_date_str, hire_end_date_str = self.date_range
-            context['hire_start_date'] = hire_start_date_str  # Use original string from request
-            context['hire_end_date'] = hire_end_date_str      # Use original string from request
+            context['hire_start_date'] = hire_start_date_str
+            context['hire_end_date'] = hire_end_date_str
 
-            # Calculate total days for hire
             delta = end_date - start_date
-            context['hire_days'] = delta.days + 1  # Include both start and end day
+            # Calculate the number of days inclusive of start and end dates
+            context['hire_days'] = delta.days + 1
         else:
-            # Provide empty strings if no date range selected, to prevent template errors
             context['hire_start_date'] = ''
             context['hire_end_date'] = ''
             context['hire_days'] = None
 
         return context
-
-
-# These function views now call the appropriate class-based views
-# Call as_view() without template_name argument, as it's set on the class
-# These are kept to match the provided inventory/urls.py structure.
-# Consider updating urls.py to use ClassName.as_view() directly for simplicity.
-def new(request):
-    view = NewMotorcycleListView.as_view()
-    return view(request)
-
-def used(request):
-    view = UsedMotorcycleListView.as_view()
-    return view(request)
-
-def hire(request):
-    view = HireMotorcycleListView.as_view()
-    return view(request)

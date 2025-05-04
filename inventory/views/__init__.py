@@ -5,10 +5,7 @@ from .motorcycle_list import (
     NewMotorcycleListView,
     UsedMotorcycleListView,
     HireMotorcycleListView,
-    AllMotorcycleListView,
-    new, 
-    used, 
-    hire, 
+    AllMotorcycleListView
 )
 
 # Imports for motorcycle detail and management views (formerly in motorcycle_detail.py)
