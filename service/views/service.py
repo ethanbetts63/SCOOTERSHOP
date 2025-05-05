@@ -30,4 +30,4 @@ def service(request):
         'service_types': service_types
     }
     # Updated template path
-    return render(request, "service:service", context)
+    return render(request, "service/service.html", context)

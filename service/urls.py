@@ -4,21 +4,22 @@ from django.urls import path
 # Import service booking views from the service/views package
 
 from .views import (
-    booking_start, 
+    booking_start,
     booking_step1,
-    booking_step2_authenticated, 
-    booking_step3_authenticated, 
-    booking_step2_anonymous, 
-    booking_step3_anonymous, 
-    service_confirmed_view, 
+    booking_step2_authenticated,
+    booking_step3_authenticated,
+    booking_step2_anonymous,
+    booking_step3_anonymous,
+    service_confirmed_view,
     service
 )
 
 
 
-app_name = 'service' 
+app_name = 'service'
 urlpatterns = [
-    path('service', service, name='service'),
+    # Change 'service' to '' to match the base URL /service/
+    path('', service, name='service'),
     # --- Service Booking Views ---
     # Using '' here means /service/
     # Updated URL name and view function reference
