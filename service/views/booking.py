@@ -33,7 +33,7 @@ def booking_start(request):
     if not settings.enable_service_booking:
         messages.error(request, "Service booking is currently disabled.")
         # Redirect to the core index view (no namespace needed)
-        return redirect(reverse('index'))
+        return redirect(reverse('core:index'))
 
     # Clear any previous booking data from the session
     if SERVICE_BOOKING_SESSION_KEY in request.session:
@@ -52,14 +52,14 @@ def booking_step1(request):
     if not settings.enable_service_booking:
         messages.error(request, "Service booking is currently disabled.")
         # Redirect to the core index view (no namespace needed)
-        return redirect(reverse('index'))
+        return redirect(reverse('core:index'))
 
     # Check if anonymous bookings are allowed if the user is not authenticated
     # If not allowed and user is not authenticated, redirect to login.
     if not request.user.is_authenticated and not settings.allow_anonymous_bookings:
          messages.info(request, "Please log in or register to book a service.")
          # Redirect to the users app's login view (no namespace needed as per main urls)
-         return redirect(reverse('login'))
+         return redirect(reverse('users:login'))
 
 
     # Retrieve data from session if available
@@ -181,7 +181,7 @@ def booking_step2_authenticated(request):
     if not settings.enable_service_booking:
         messages.error(request, "Service booking is currently disabled.")
         # Redirect to the core index view (no namespace needed)
-        return redirect(reverse('index'))
+        return redirect(reverse('core:index'))
 
     # Retrieve data from step 1
     booking_data = request.session.get(SERVICE_BOOKING_SESSION_KEY)
@@ -418,7 +418,7 @@ def booking_step2_anonymous(request):
     if not settings.enable_service_booking:
         messages.error(request, "Service booking is currently disabled.")
         # Redirect to the core index view (no namespace needed)
-        return redirect(reverse('index'))
+        return redirect(reverse('core:index'))
     if not settings.allow_anonymous_bookings:
          messages.error(request, "Anonymous bookings are not allowed.")
          # Redirect with service namespace and new URL name
@@ -503,7 +503,7 @@ def booking_step3_authenticated(request):
     if not settings.enable_service_booking:
         messages.error(request, "Service booking is currently disabled.")
         # Redirect to the core index view (no namespace needed)
-        return redirect(reverse('index'))
+        return redirect(reverse('core:index'))
 
     # Retrieve data from previous steps from the session
     booking_data = request.session.get(SERVICE_BOOKING_SESSION_KEY)
@@ -703,7 +703,7 @@ def booking_step3_anonymous(request):
     if not settings.enable_service_booking:
         messages.error(request, "Service booking is currently disabled.")
         # Redirect to the core index view (no namespace needed)
-        return redirect(reverse('index'))
+        return redirect(reverse('core:index'))
     if not settings.allow_anonymous_bookings:
          messages.error(request, "Anonymous bookings are not allowed.")
          # Redirect with service namespace and new URL name

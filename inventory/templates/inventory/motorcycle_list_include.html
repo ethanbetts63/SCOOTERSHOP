@@ -17,10 +17,23 @@
                             <span class="fw-bold">{{ page_obj.end_index|default:total_count }}</span> of
                         {% endif %}
                         <span class="fw-bold">{{ total_count }}</span> products
-                        {% if current_url_name == 'hire' %}for hire{% else %}for sale{% endif %}
+                        {# Adjusted text based on whether it's the 'all' admin view or a public view #}
+                        {% if current_url_name == 'motorcycle-list' %}
+                            listed
+                        {% elif current_url_name == 'hire' %}
+                            for hire
+                        {% else %}
+                            for sale
+                        {% endif %}
                     {% else %}
                         <span class="fw-bold">0</span> products
-                        {% if current_url_name == 'hire' %}for hire{% else %}for sale{% endif %}
+                         {% if current_url_name == 'motorcycle-list' %}
+                            listed
+                        {% elif current_url_name == 'hire' %}
+                            for hire
+                        {% else %}
+                            for sale
+                        {% endif %}
                     {% endif %}
                 {% endwith %}
             </div>
@@ -39,6 +52,7 @@
                         <option value="age_old_to_new" {% if request.GET.order == 'age_old_to_new' %}selected{% endif %}>Year: Oldest First</option>
                     </select>
 
+                    {# Include hidden inputs for existing GET parameters except 'order' and 'page' #}
                     {% for key, value in request.GET.items %}
                         {% if key != 'order' and key != 'page' %}
                             <input type="hidden" name="{{ key }}" value="{{ value }}">
@@ -55,6 +69,18 @@
                 <div class="card-header">Search Options</div>
                 <div class="card-body">
                     <form method="get" action="">
+                        {# Add Availability Filter - ONLY for the 'motorcycle-list' (All) view #}
+                        {% if current_url_name == 'motorcycle-list' %}
+                            <div class="mb-3">
+                                <label for="availability" class="form-label">Availability:</label>
+                                <select class="form-select" id="availability" name="availability">
+                                    <option value="all" {% if current_availability_filter == 'all' %}selected{% endif %}>All</option>
+                                    <option value="available" {% if current_availability_filter == 'available' %}selected{% endif %}>Available</option>
+                                    <option value="unavailable" {% if current_availability_filter == 'unavailable' %}selected{% endif %}>Unavailable</option>
+                                </select>
+                            </div>
+                        {% endif %}
+
                         {% if current_url_name == 'hire' %}
                         <div class="mb-3">
                             <label class="form-label">Hire Date Range</label>
@@ -126,7 +152,18 @@
                             <input type="hidden" name="order" value="{{ request.GET.order }}">
                         {% endif %}
 
+                        {# Include hidden input for availability if it's set and not 'all' and not the 'motorcycle-list' view #}
+                        {# This is to ensure that other views (new, used, hire) don't keep the availability filter if you switch views #}
+                        {# For the 'motorcycle-list' view, the select field itself handles the 'availability' parameter #}
+                        {% if current_url_name != 'motorcycle-list' %}
+                            {% if request.GET.availability and request.GET.availability != 'all' %}
+                                <input type="hidden" name="availability" value="{{ request.GET.availability }}">
+                            {% endif %}
+                        {% endif %}
+
+
                         <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    {# Updated reset filter URL to use current_url_name #}
                     <a href="{% url 'inventory:'|add:current_url_name %}" class="btn btn-secondary mt-2">Reset Filters</a>
                     </form>
                 </div>
@@ -219,9 +256,17 @@
                     {% endif %}
                     <p class="card-text location"><small class="text-muted">{{ motorcycle.location }}</small></p>
                 </div>
-                <div class="card-footer text-center">
-                    <a href="{% url 'inventory:motorcycle-detail' motorcycle.pk %}" class="btn btn-sm btn-primary">View Details</a>
-                </div>
+                 <div class="card-footer text-center">
+                     <a href="{% url 'inventory:motorcycle-detail' motorcycle.pk %}" class="btn btn-sm btn-primary">View Details</a>
+                     {# Show availability status for admin view #}
+                     {% if current_url_name == 'motorcycle-list' %}
+                         {% if motorcycle.is_available %}
+                             <span class="badge bg-success ms-2">Available</span>
+                         {% else %}
+                             <span class="badge bg-danger ms-2">Unavailable</span>
+                         {% endif %}
+                     {% endif %}
+                 </div>
             </div>
         </div>
         {% empty %}
@@ -237,9 +282,11 @@
         <ul class="pagination justify-content-center reset-list">
             {% if page_obj.has_previous %}
             <li class="page-item">
+                {# Ensure existing GET parameters are carried over #}
                 <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; First</a>
             </li>
             <li class="page-item">
+                 {# Ensure existing GET parameters are carried over #}
                 <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
             </li>
             {% endif %}
@@ -251,6 +298,7 @@
             </li>
             {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
             <li class="page-item">
+                 {# Ensure existing GET parameters are carried over #}
                 <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
             </li>
             {% endif %}
@@ -258,9 +306,11 @@
 
             {% if page_obj.has_next %}
             <li class="page-item">
+                 {# Ensure existing GET parameters are carried over #}
                 <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
             </li>
             <li class="page-item">
+                 {# Ensure existing GET parameters are carried over #}
                 <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last &raquo;</a>
             </li>
             {% endif %}

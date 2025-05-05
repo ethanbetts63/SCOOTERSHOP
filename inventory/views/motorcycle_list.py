@@ -35,7 +35,7 @@ class MotorcycleListView(ListView):
             if year_min: queryset = queryset.filter(year__gte=int(year_min))
             if year_max: queryset = queryset.filter(year__lte=int(year_max))
         except (ValueError, TypeError): pass
-        
+
         try:
             # Use Decimal for price filtering
             if price_min:
@@ -132,6 +132,15 @@ class AllMotorcycleListView(MotorcycleListView):
         # Start with ALL motorcycles, available or not, for the admin view
         queryset = Motorcycle.objects.all()
 
+        # --- Add Availability Filtering ---
+        availability_filter = self.request.GET.get('availability', 'all') # Default to 'all'
+
+        if availability_filter == 'available':
+            queryset = queryset.filter(is_available=True)
+        elif availability_filter == 'unavailable':
+            queryset = queryset.filter(is_available=False)
+        # If 'all' or other value, no additional filtering on is_available is applied here
+
         # Apply common filters and sorting using the helper from the base class
         # Common filters (brand, model, year, price) are applied to ALL bikes here
         queryset = self._apply_common_filters_and_sorting(queryset)
@@ -159,6 +168,9 @@ class AllMotorcycleListView(MotorcycleListView):
         # Removing or adjusting the condition-related context if necessary for this view.
         context.pop('condition', None)
         context.pop('condition_lower', None)
+
+        # --- Add availability filter to context ---
+        context['current_availability_filter'] = self.request.GET.get('availability', 'all')
 
 
         return context

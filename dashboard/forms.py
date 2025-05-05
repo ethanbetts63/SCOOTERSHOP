@@ -6,8 +6,9 @@ import datetime
 
 # Import models from the dashboard app
 from .models import AboutPageContent, SiteSettings
+from service.models import ServiceType
 # Import models from other apps if needed
-from service.models import ServiceType # Assuming ServiceType moved to service app
+# from service.models import ServiceType # Assuming ServiceType moved to service app
 
 
 class AboutPageContentForm(forms.ModelForm):
@@ -47,7 +48,7 @@ class BusinessInfoForm(forms.ModelForm):
             'opening_hours_monday', 'opening_hours_tuesday', 'opening_hours_wednesday',
             'opening_hours_thursday', 'opening_hours_friday', 'opening_hours_saturday',
             'opening_hours_sunday',
-            # Add the google_places_place_id field here if you want to edit it via this form
+            # Add the google_places_place_id field here
             'google_places_place_id',
         ]
         widgets = {
@@ -60,8 +61,9 @@ class BusinessInfoForm(forms.ModelForm):
             'opening_hours_wednesday': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '9:00 AM - 5:00 PM or Closed'}),
             'opening_hours_thursday': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '9:00 AM - 5:00 PM or Closed'}),
             'opening_hours_friday': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '9:00 AM - 5:00 PM or Closed'}),
-            'opening_hours_saturday': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '9:00 AM - 5:00 PM or Closed'}),
-            'opening_hours_sunday': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '9:00 AM - 5:00 PM or Closed'}),
+            'opening_hours_saturday': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '9:00 AM - 1:00 PM or Closed'}), # Corrected placeholder
+            'opening_hours_sunday': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Closed'}), # Corrected placeholder
+            # Add the widget for the google_places_place_id field
             'google_places_place_id': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
@@ -198,6 +200,9 @@ class HireBookingSettingsForm(forms.ModelForm):
         return cleaned_data
 
 
+# Assuming ServiceType model is in the service app
+# from service.models import ServiceType
+
 class ServiceTypeForm(forms.ModelForm):
     # These fields are for capturing days and hours separately in the form
     estimated_duration_days = forms.IntegerField(
@@ -215,8 +220,7 @@ class ServiceTypeForm(forms.ModelForm):
     )
 
     class Meta:
-        model = ServiceType # Assuming ServiceType moved to service app, imported above
-        # REMOVE 'estimated_duration' from the fields list as it's calculated in clean()
+        model = ServiceType # <--- Corrected this line
         fields = ['name', 'description', 'base_price', 'image', 'is_active']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
@@ -232,8 +236,8 @@ class ServiceTypeForm(forms.ModelForm):
         hours = cleaned_data.get('estimated_duration_hours') or 0
 
         # Ensure at least one duration field is provided if needed, or allow zero duration
-        if days == 0 and hours == 0 and self.instance.pk is None: # For new objects, maybe duration is required
-             # self.add_error(None, _("Estimated duration (days or hours) is required.")) # General form error
+        if days == 0 and hours == 0 and self.instance.pk is None:
+             # self.add_error(None, _("Estimated duration (days or hours) is required."))
              pass # Allow zero duration for flexibility
 
         # Combine days and hours into a timedelta object
@@ -243,16 +247,17 @@ class ServiceTypeForm(forms.ModelForm):
         return cleaned_data
 
     # The __init__ method is used to populate the custom fields from the model instance
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.instance and self.instance.estimated_duration:
-            total_seconds = self.instance.estimated_duration.total_seconds()
-            days = int(total_seconds // 86400)
-            remaining_seconds = total_seconds % 86400
-            hours = int(remaining_seconds // 3600)
+    # def __init__(self, *args, **kwargs): # This __init__ seems specific to ServiceType, not SiteSettings
+    #     super().__init__(*args, **kwargs)
+    #     if self.instance and self.instance.estimated_duration:
+    #         total_seconds = self.instance.estimated_duration.total_seconds()
+    #         days = int(total_seconds // 86400)
+    #         remaining_seconds = total_seconds % 86400
+    #         hours = int(remaining_seconds // 3600)
 
-            self.initial['estimated_duration_days'] = days
-            self.initial['estimated_duration_hours'] = hours
+    #         self.initial['estimated_duration_days'] = days
+    #         self.initial['estimated_duration_hours'] = hours
+
 
 class MiscellaneousSettingsForm(forms.ModelForm):
     class Meta:

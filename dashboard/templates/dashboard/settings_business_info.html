@@ -55,6 +55,17 @@
                                 <div class="text-danger">{{ form.storefront_address.errors }}</div>
                             {% endif %}
                         </div>
+
+                        {# Add the Google Places Place ID field here #}
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.google_places_place_id.id_for_label }}" class="form-label">
+                                Google Places Place ID
+                            </label>
+                            {{ form.google_places_place_id }}
+                            {% if form.google_places_place_id.errors %}
+                                <div class="text-danger">{{ form.google_places_place_id.errors }}</div>
+                            {% endif %}
+                        </div>
                     </div>
 
                     <div class="row mb-4">
@@ -131,7 +142,7 @@
             const saveButton = document.querySelector('#saveChangesBtn');
             const resetButton = document.querySelector('#resetButton');
             const formElements = form.querySelectorAll('input, textarea, select');
-    
+
             // Function to set form elements to read-only
             function setReadOnly(readOnly) {
                 formElements.forEach(element => {
@@ -141,7 +152,7 @@
                     }
                 });
             }
-    
+
             // Store initial values when the page loads
             const initialValues = {};
             formElements.forEach(element => {
@@ -149,24 +160,22 @@
                     initialValues[element.name] = element.value;
                 }
             });
-    
+
             // Set initial state to read-only and hide save/reset
             setReadOnly(true);
             saveButton.style.display = 'none';
             resetButton.style.display = 'none';
             editButton.style.display = 'block';
-    
-    
+
+
             // Add event listener to the Edit button
             editButton.addEventListener('click', function() {
                 setReadOnly(false); // Make fields editable
                 editButton.style.display = 'none'; // Hide Edit button
-                // --- MODIFIED LINES BELOW ---
-                saveButton.style.display = ''; // Show Save Changes button - Removed 'block'
-                resetButton.style.display = ''; // Show Reset button - Removed 'block'
-                // --- MODIFIED LINES ABOVE ---
+                saveButton.style.display = ''; // Show Save Changes button
+                resetButton.style.display = ''; // Show Reset button
             });
-    
+
             // Add event listener to the Reset button
             resetButton.addEventListener('click', function() {
                 // Reset form values

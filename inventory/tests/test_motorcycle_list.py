@@ -110,11 +110,11 @@ class MotorcycleListViewTests(TestCase):
         # 7-10. Motorcycles for price and year range tests
         self.year_bikes = {}
         self.price_bikes = {}
-        
+
         for i, year in enumerate(range(2019, 2023)):
             bike = Motorcycle.objects.create(
                 title=f'Test Year Bike {year}', brand=f'Brand{i}', model=f'Model{i}', year=year,
-                price=Decimal(3000 + i * 1000), engine_size=f'{500 + i * 100}cc', seats=2, 
+                price=Decimal(3000 + i * 1000), engine_size=f'{500 + i * 100}cc', seats=2,
                 transmission='manual', description=f'{year} test bike.', is_available=True,
                 date_posted=timezone.now() - datetime.timedelta(days=i)
             )
@@ -289,7 +289,7 @@ class MotorcycleListViewTests(TestCase):
         for bike in expected_bikes:
             self.assertIn(bike, motorcycles_in_context)
 
-    # Test filtering by price range
+        # Test filtering by price range
     def test_list_view_filters_by_price_range(self):
         self.client.login(username=self.staff_user.username, password='password')
         url = reverse('inventory:motorcycle-list')
@@ -303,6 +303,7 @@ class MotorcycleListViewTests(TestCase):
             self.motorcycle_unavailable,  # Harley at 7000
             self.price_bikes[6000]  # Test price bike at 6000
         ]
+
         self.assertEqual(len(motorcycles_in_context), len(expected_bikes))
         for bike in expected_bikes:
             self.assertIn(bike, motorcycles_in_context)
@@ -318,11 +319,11 @@ class MotorcycleListViewTests(TestCase):
         for bike in expected_bikes:
             self.assertIn(bike, motorcycles_in_context)
 
-        # Test filtering with only price_max
+        # Test filtering with only price_max - CORRECTED
         response = self.client.get(url, {'price_max': 5000})
         self.assertEqual(response.status_code, 200)
         motorcycles_in_context = list(response.context['motorcycles'])
-        expected_bikes = [self.motorcycle_used_1, self.price_bikes[3000], self.price_bikes[4000]]  # 4500, 3000, 4000
+        expected_bikes = [self.motorcycle_used_1, self.price_bikes[3000], self.price_bikes[4000], self.price_bikes[5000]]  # 4500, 3000, 4000, 5000
         self.assertEqual(len(motorcycles_in_context), len(expected_bikes))
         for bike in expected_bikes:
             self.assertIn(bike, motorcycles_in_context)
