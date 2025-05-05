@@ -32,83 +32,55 @@
                 <div class="card-body"> {# Added card-body here #}
                     <h3>Contact Us</h3>
                     <div class="contact-info">
-                        {% if settings %}
-                            {% if settings.phone_number %}
-                                <div class="contact-item">
-                                    <span class="svg-icon svg-icon-md icon-phone"></span>
-                                    <span><strong>Phone:</strong> {{ settings.phone_number }}</span>
-                                </div>
-                            {% endif %}
-                            {% if settings.email_address %}
-                                <div class="contact-item">
-                                    <span class="svg-icon svg-icon-md icon-mail"></span>
-                                    <span><strong>Email:</strong> {{ settings.email_address }}</span>
-                                </div>
-                            {% endif %}
-                            {% if settings.storefront_address %}
-                                <div class="contact-item">
-                                    <span class="svg-icon svg-icon-md icon-pin"></span>
-                                    <span><strong>Address:</strong> {{ settings.storefront_address|linebreaksbr }}</span>
-                                </div>
-                            {% endif %}
-                            <div class="contact-item hours">
-                                <span class="svg-icon svg-icon-md icon-clock"></span>
-                                <div>
-                                    <strong>Hours:</strong>
-                                    <ul class="reset-list hours-list">{# Added .reset-list #}
-                                        {% if settings.opening_hours_monday %}
-                                            <li>Monday: {{ settings.opening_hours_monday }}</li>
-                                        {% endif %}
-                                        {% if settings.opening_hours_tuesday %}
-                                            <li>Tuesday: {{ settings.opening_hours_tuesday }}</li>
-                                        {% endif %}
-                                        {% if settings.opening_hours_wednesday %}
-                                            <li>Wednesday: {{ settings.opening_hours_wednesday }}</li>
-                                        {% endif %}
-                                        {% if settings.opening_hours_thursday %}
-                                            <li>Thursday: {{ settings.opening_hours_thursday }}</li>
-                                        {% endif %}
-                                        {% if settings.opening_hours_friday %}
-                                            <li>Friday: {{ settings.opening_hours_friday }}</li>
-                                        {% endif %}
-                                        {% if settings.opening_hours_saturday %}
-                                            <li>Saturday: {{ settings.opening_hours_saturday }}</li>
-                                        {% endif %}
-                                        {% if settings.opening_hours_sunday %}
-                                            <li>Sunday: {{ settings.opening_hours_sunday }}</li>
-                                        {% endif %}
-                                    </ul>
-                                </div>
-                            </div>
-                        {% else %}
-                            {# Optional: Display default hardcoded info or a message if settings are not available #}
+                        {% if settings.phone_number %}
                             <div class="contact-item">
                                 <span class="svg-icon svg-icon-md icon-phone"></span>
-                                <span><strong>Phone:</strong> (08) 9433 4613</span>
-                            </div>
-                            <div class="contact-item">
-                                <span class="svg-icon svg-icon-md icon-mail"></span>
-                                <span><strong>Email:</strong> admin@scootershop.com.au</span>
-                            </div>
-                            <div class="contact-item">
-                                <span class="svg-icon svg-icon-md icon-pin"></span>
-                                <span><strong>Address:</strong> Unit 2/95 Queen Victoria St, Fremantle WA, Australia</span>
-                            </div>
-                            <div class="contact-item hours">
-                                <span class="svg-icon svg-icon-md icon-clock"></span>
-                                <div>
-                                    <strong>Hours:</strong>
-                                    <ul class="reset-list hours-list">{# Added .reset-list #}
-                                        <li>Monday - Friday: 10:30am to 5:00pm</li>
-                                        <li>Saturday: 10:30am to 1:00pm (By Appointment only)</li>
-                                        <li>Sunday: Closed</li>
-                                        <li>Public Holidays: Closed</li>
-                                    </ul>
-                                </div>
+                                <span><strong>Phone:</strong> {{ settings.phone_number }}</span>
                             </div>
                         {% endif %}
+                        {% if settings.email_address %}
+                            <div class="contact-item">
+                                <span class="svg-icon svg-icon-md icon-mail"></span>
+                                <span><strong>Email:</strong> {{ settings.email_address }}</span>
+                            </div>
+                        {% endif %}
+                        {% if settings.storefront_address %}
+                            <div class="contact-item">
+                                <span class="svg-icon svg-icon-md icon-pin"></span>
+                                <span><strong>Address:</strong> {{ settings.storefront_address|linebreaksbr }}</span>
+                            </div>
+                        {% endif %}
+                        <div class="contact-item hours">
+                            <span class="svg-icon svg-icon-md icon-clock"></span>
+                            <div>
+                                <strong>Hours:</strong>
+                                <ul class="reset-list hours-list">{# Added .reset-list #}
+                                    {% if settings.opening_hours_monday %}
+                                        <li>Monday: {{ settings.opening_hours_monday }}</li>
+                                    {% endif %}
+                                    {% if settings.opening_hours_tuesday %}
+                                        <li>Tuesday: {{ settings.opening_hours_tuesday }}</li>
+                                    {% endif %}
+                                    {% if settings.opening_hours_wednesday %}
+                                        <li>Wednesday: {{ settings.opening_hours_wednesday }}</li>
+                                    {% endif %}
+                                    {% if settings.opening_hours_thursday %}
+                                        <li>Thursday: {{ settings.opening_hours_thursday }}</li>
+                                    {% endif %}
+                                    {% if settings.opening_hours_friday %}
+                                        <li>Friday: {{ settings.opening_hours_friday }}</li>
+                                    {% endif %}
+                                    {% if settings.opening_hours_saturday %}
+                                        <li>Saturday: {{ settings.opening_hours_saturday }}</li>
+                                    {% endif %}
+                                    {% if settings.opening_hours_sunday %}
+                                        <li>Sunday: {{ settings.opening_hours_sunday }}</li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
                     </div>
-                </div> {# Closed card-body here #}
+                </div> 
             </div>
         </div>
     </div>
