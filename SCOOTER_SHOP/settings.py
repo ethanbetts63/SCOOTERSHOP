@@ -62,16 +62,14 @@ ROOT_URLCONF = "SCOOTER_SHOP.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        # Ensure your project-level templates directory is included if you have one
         "DIRS": [BASE_DIR / 'templates'],
-        "APP_DIRS": True, # This is crucial for finding templates within app/templates/
+        "APP_DIRS": True, 
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                # Updated context processor path to dashboard app
                 'dashboard.context_processors.site_settings',
             ],
         },
@@ -162,7 +160,7 @@ LOGOUT_REDIRECT_URL = reverse_lazy('core:index') # Recommended
 
 
 # API Keys and external service settings
-MAPS_API_KEY = "AIzaSyCOauHlqUBPYdLLsYKYFhaaYAIlxK6pGa4"
+GOOGLE_API_KEY = "AIzaSyCOauHlqUBPYdLLsYKYFhaaYAIlxK6pGa4"
 # Add other API keys or service credentials here
 
 

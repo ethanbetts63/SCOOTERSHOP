@@ -19,7 +19,7 @@ def index(request):
     # Ensure this is correct or comes from settings/SiteSettings
     site_settings = SiteSettings.get_settings()
     place_id = site_settings.google_places_place_id # Assuming this setting exists
-    api_key = settings.MAPS_API_KEY # Keep API key in settings.py for security
+    api_key = settings.GOOGLE_API_KEY # Keep API key in settings.py for security
 
     all_reviews = []
     five_star_reviews = []
@@ -75,8 +75,7 @@ def index(request):
         'featured_new_motorcycles': featured_new_motorcycles,
         'featured_used_motorcycles': featured_used_motorcycles,
         # Only pass API key and place ID if reviews are enabled, or handle in template
-        'maps_api_key': api_key if site_settings.enable_google_places_reviews else None,
-        'place_id': place_id if site_settings.enable_google_places_reviews else None,
+        'google_api_key': settings.GOOGLE_API_KEY,
     }
 
     # Updated template path

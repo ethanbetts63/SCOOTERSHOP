@@ -1,39 +1,62 @@
-<div id="map-container" style="width: 100%; height: 400px;">
-    <iframe
-        width="100%"
-        height="100%"
-        style="border:0"
-        loading="lazy"
-        allowfullscreen
-        referrerpolicy="no-referrer-when-downgrade"
-        data-src="https://www.google.com/maps/embed/v1/place">
-    </iframe>
-</div>
+{# core/includes/map.html #}
+{% load static %}
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var mapContainer = document.getElementById('map-container');
-        var mapIframe = mapContainer.querySelector('iframe');
-        var apiKey = '{{ maps_api_key }}'; 
-        var placeId = '{{ place_id }}'; 
+{# Check if map display is enabled in site settings #}
+{% if settings.enable_map_display %}
+    <div class="container">{# This container was likely around the include in index.html #}
+        <h2 class="section-title map-title">Where to find us:</h2>{# Added .section-title #}
+        <div id="map-container" style="width: 100%; height: 400px;">
+            <iframe
+                width="100%"
+                height="100%"
+                style="border:0"
+                loading="lazy"
+                allowfullscreen
+                referrerpolicy="no-referrer-when-downgrade"
+                data-src="https://www.google.com/maps/embed/v1/place"> {# Correct base embed URL #}
+            </iframe>
+        </div>
+    </div>
 
-        var observer = new IntersectionObserver(function(entries, observer) {
-            entries.forEach(function(entry) {
-                if (entry.isIntersecting) {
-                    // Element is visible in the viewport
-                    var src = mapIframe.getAttribute('data-src') + '?key=' + apiKey + '&q=place_id:' + placeId;
-                    mapIframe.setAttribute('src', src);
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var mapContainer = document.getElementById('map-container');
+            var mapIframe = mapContainer.querySelector('iframe');
 
-                    // Stop observing once the map is loaded
-                    observer.unobserve(entry.target);
+            // Access values from template variables (passed from the view)
+            var apiKey = '{{ google_api_key }}';
+            // Access Place ID from the settings object provided by the context processor
+            var placeId = '{{ settings.google_places_place_id }}';
+
+            // Only proceed if the map API key and Place ID are available
+            if (apiKey && placeId) {
+                var observer = new IntersectionObserver(function(entries, observer) {
+                    entries.forEach(function(entry) {
+                        if (entry.isIntersecting) {
+                            // Element is visible in the viewport
+                            // Construct the correct embed URL using Place ID
+                            var src = mapIframe.getAttribute('data-src') + '?key=' + apiKey + '&q=place_id:' + placeId;
+                            mapIframe.setAttribute('src', src);
+
+                            // Stop observing once the map is loaded
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, {
+                    rootMargin: '0px', // No margin
+                    threshold: 0.1 // Trigger when 10% of the element is visible
+                });
+
+                // Start observing the map container
+                observer.observe(mapContainer);
+            } else {
+                console.error("Google Maps API key or Place ID is missing. Cannot load map.");
+                // Optionally display a message to the user in the mapContainer div
+                if (mapContainer) {
+                    mapContainer.innerHTML = '<p>Unable to load map. Please check site settings.</p>';
+                    mapContainer.style.height = 'auto'; // Adjust height if content is added
                 }
-            });
-        }, {
-            rootMargin: '0px', // No margin
-            threshold: 0.1 // Trigger when 10% of the element is visible
+            }
         });
-
-        // Start observing the map container
-        observer.observe(mapContainer);
-    });
-</script>
+    </script>
+{% endif %}
