@@ -11,11 +11,14 @@ from .views import (
     booking_step2_anonymous, 
     booking_step3_anonymous, 
     service_confirmed_view, 
+    service
 )
+
 
 
 app_name = 'service' 
 urlpatterns = [
+    path('service', service, name='service'),
     # --- Service Booking Views ---
     # Using '' here means /service/
     # Updated URL name and view function reference

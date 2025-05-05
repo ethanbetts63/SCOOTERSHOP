@@ -10,3 +10,7 @@ from .booking import (
     booking_step3_anonymous, 
     service_confirmed_view, 
 )
+
+from .service import (
+    service
+)
