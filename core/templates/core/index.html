@@ -1,221 +1,174 @@
-{# core/includes/reviews.html #}
+{% extends "core/layout.html" %}
 {% load static %}
 
-{# Check if Google Places reviews are enabled in site settings #}
-{% if settings.enable_google_places_reviews %}
-    <div id="reviews-section" class="reviews-section">
-        <div class="container index-section">
-            <h2>What are customers saying?</h2>
-            <div class="reviews-carousel">
-                <button class="carousel-arrow prev-arrow" aria-label="Previous review"><</button>
+{% block title %}Scootershop Australia{% endblock %}
 
-                <div class="reviews-container">
-                    {% if reviews %} {# Check if reviews data was passed from the view #}
-                        <div class="reviews-list">
-                            {% for review in reviews %}
-                                <div class="review-item card card-border">
-                                    <div class="review-header">
-                                        {% if review.profile_photo_url %}
-                                            <img src="{{ review.profile_photo_url }}" alt="{{ review.author_name }} profile picture" class="reviewer-photo img-cover">
-                                        {% endif %}
-                                        <div class="reviewer-info">
-                                            <div class="reviewer-name">{{ review.author_name }}</div>
-                                            <div class="review-rating">
-                                                <span class="stars">
-                                                    {% for i in "12345"|make_list %}
-                                                        {% if review.rating >= i|add:"0" %}
-                                                            <span class="star filled">★</span>
-                                                        {% else %}
-                                                            <span class="star empty">☆</span>
-                                                        {% endif %}
-                                                    {% endfor %}
-                                                </span>
-                                                <span class="rating-number">{{ review.rating }}</span>
-                                            </div>
-                                            <div class="review-date">{{ review.relative_time_description }}</div>
-                                        </div>
-                                    </div>
-                                    {# Assuming 'review.text' is the full review text #}
-                                    <div class="review-text" data-full-text="{{ review.text }}">{{ review.text }}</div>
-                                    {# Link to the full review on Google, using the Place ID #}
-                                    {% if settings.google_places_place_id %}
-                                        {# The 'review.author_url' often links to the specific review, which is better #}
-                                        {# If review.author_url is not available or not suitable, you can link to the general reviews page #}
-                                        <a href="{{ review.author_url|default:'https://search.google.com/local/reviews?placeid='|add:settings.google_places_place_id }}" target="_blank" class="read-more-link" style="display: none;">Read more...</a>
-                                    {% endif %}
-                                </div>
-                            {% endfor %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/index_styles.css' %}">
+<link rel="stylesheet" href="{% static 'core/css/map_styles.css' %}">
+<link rel="stylesheet" href="{% static 'core/css/review_styles.css' %}">
+<link rel="stylesheet" href="{% static 'core/css/featured_styles.css' %}">
+{% endblock %}
 
-                            {# Add the "See all reviews" box as another review item #}
-                            <div class="review-item see-all-review-item card card-border">
-                                <div class="see-all-content">
-                                    <p>Check out our Google reviews:</p> {# Removed "No reviews found" as this box shows even with reviews #}
-                                     {% if settings.google_places_place_id %}
-                                        <a href="https://search.google.com/local/reviews?placeid={{ settings.google_places_place_id }}" target="_blank" class="btn-primary">See All Reviews</a>
-                                     {% else %}
-                                         <p>Place ID not configured.</p>
-                                     {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    {% else %}
-                         {# Display the "See all reviews" box if reviews are enabled but none are fetched or available #}
-                         <div class="reviews-list">
-                            <div class="review-item see-all-review-item card card-border">
-                                <div class="see-all-content">
-                                    <p>No reviews found, but you can check out our Google reviews:</p>
-                                    {% if settings.google_places_place_id %}
-                                        <a href="https://search.google.com/local/reviews?placeid={{ settings.google_places_place_id }}" target="_blank" class="btn-primary">See All Reviews</a>
-                                    {% else %}
-                                         <p>Place ID not configured.</p>
-                                     {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    {% endif %}
-                </div>
+{% block content %}
+    <div class="container hero-banner">{# Added .container #}
+        <img src="{% static 'images/coffee_run5.png' %}" alt="Fiddle Scooter Wallpaper" class="banner-background img-responsive">{# Added .img-responsive #}
+    </div>
 
-                <button class="carousel-arrow next-arrow" aria-label="Next review">></button>
+    <div class="container">{# Changed from .index-section #}
+        <h1 class="section-title">About</h1>{# Added .section-title #}
+        <div class="about-container">
+            <div class="card has-bg-effect brand-card about-brand">
+                <div class="card-body"> {# Added card-body here #}
+                    <h3>Scooter Shop Australia</h3>
+                    <p>A family-run business based in Fremantle for over 15 years and Perth's only scooter-exclusive showroom.</p>
+                    <p>We stock new SYM and Segway scooters, plus a rotating selection of second-hand models. Our factory-trained mechanic offers expert servicing with quality parts and accessories on hand.</p>
+                    <p>We also carry genuine Vespa, Piaggio, and Aprilia accessories, along with helmets and maintenance gear.</p>
+                    <p>Drop by for friendly advice, test rides, and all your scooter needs.</p>
+                </div> {# Closed card-body here #}
             </div>
 
-            <div class="carousel-dots">
-                {# Dots will be added via JavaScript based on number of slides #}
+            <div class="card has-bg-effect brand-card contact-brand">
+                <div class="card-body"> {# Added card-body here #}
+                    <h3>Contact Us</h3>
+                    <div class="contact-info">
+                        {% if settings %}
+                            {% if settings.phone_number %}
+                                <div class="contact-item">
+                                    <span class="svg-icon svg-icon-md icon-phone"></span>
+                                    <span><strong>Phone:</strong> {{ settings.phone_number }}</span>
+                                </div>
+                            {% endif %}
+                            {% if settings.email_address %}
+                                <div class="contact-item">
+                                    <span class="svg-icon svg-icon-md icon-mail"></span>
+                                    <span><strong>Email:</strong> {{ settings.email_address }}</span>
+                                </div>
+                            {% endif %}
+                            {% if settings.storefront_address %}
+                                <div class="contact-item">
+                                    <span class="svg-icon svg-icon-md icon-pin"></span>
+                                    <span><strong>Address:</strong> {{ settings.storefront_address|linebreaksbr }}</span>
+                                </div>
+                            {% endif %}
+                            <div class="contact-item hours">
+                                <span class="svg-icon svg-icon-md icon-clock"></span>
+                                <div>
+                                    <strong>Hours:</strong>
+                                    <ul class="reset-list hours-list">{# Added .reset-list #}
+                                        {% if settings.opening_hours_monday %}
+                                            <li>Monday: {{ settings.opening_hours_monday }}</li>
+                                        {% endif %}
+                                        {% if settings.opening_hours_tuesday %}
+                                            <li>Tuesday: {{ settings.opening_hours_tuesday }}</li>
+                                        {% endif %}
+                                        {% if settings.opening_hours_wednesday %}
+                                            <li>Wednesday: {{ settings.opening_hours_wednesday }}</li>
+                                        {% endif %}
+                                        {% if settings.opening_hours_thursday %}
+                                            <li>Thursday: {{ settings.opening_hours_thursday }}</li>
+                                        {% endif %}
+                                        {% if settings.opening_hours_friday %}
+                                            <li>Friday: {{ settings.opening_hours_friday }}</li>
+                                        {% endif %}
+                                        {% if settings.opening_hours_saturday %}
+                                            <li>Saturday: {{ settings.opening_hours_saturday }}</li>
+                                        {% endif %}
+                                        {% if settings.opening_hours_sunday %}
+                                            <li>Sunday: {{ settings.opening_hours_sunday }}</li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                        {% else %}
+                            {# Optional: Display default hardcoded info or a message if settings are not available #}
+                            <div class="contact-item">
+                                <span class="svg-icon svg-icon-md icon-phone"></span>
+                                <span><strong>Phone:</strong> (08) 9433 4613</span>
+                            </div>
+                            <div class="contact-item">
+                                <span class="svg-icon svg-icon-md icon-mail"></span>
+                                <span><strong>Email:</strong> admin@scootershop.com.au</span>
+                            </div>
+                            <div class="contact-item">
+                                <span class="svg-icon svg-icon-md icon-pin"></span>
+                                <span><strong>Address:</strong> Unit 2/95 Queen Victoria St, Fremantle WA, Australia</span>
+                            </div>
+                            <div class="contact-item hours">
+                                <span class="svg-icon svg-icon-md icon-clock"></span>
+                                <div>
+                                    <strong>Hours:</strong>
+                                    <ul class="reset-list hours-list">{# Added .reset-list #}
+                                        <li>Monday - Friday: 10:30am to 5:00pm</li>
+                                        <li>Saturday: 10:30am to 1:00pm (By Appointment only)</li>
+                                        <li>Sunday: Closed</li>
+                                        <li>Public Holidays: Closed</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div> {# Closed card-body here #}
             </div>
         </div>
     </div>
 
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Only initialize if the reviews section is present (i.e., reviews are enabled)
-        const reviewsSection = document.getElementById('reviews-section');
-        if (!reviewsSection) {
-            return; // Exit if the section is not rendered
-        }
+    {% include "core/includes/reviews.html" %}
 
-        const reviewsList = reviewsSection.querySelector('.reviews-list');
-        const prevArrow = reviewsSection.querySelector('.prev-arrow');
-        const nextArrow = reviewsSection.querySelector('.next-arrow');
-        const reviewItems = reviewsSection.querySelectorAll('.review-item');
-        const dotsContainer = reviewsSection.querySelector('.carousel-dots');
+    <div class="container">{# Changed from .index-section #}
+        <h2 class="section-title">Our Brands</h2>{# Added .section-title #}
 
-        // Check for text overflow and show/hide Read More links
-        const reviewTextElements = reviewsSection.querySelectorAll('.review-text');
-        reviewTextElements.forEach(textElement => {
-            // Use a small delay to ensure layout is stable, or check after images load
-            setTimeout(() => {
-                if (textElement.scrollHeight > textElement.clientHeight) {
-                    const readMoreLink = textElement.nextElementSibling;
-                    if (readMoreLink && readMoreLink.classList.contains('read-more-link')) {
-                        readMoreLink.style.display = 'inline-block';
-                    }
-                }
-            }, 100); // Small delay
-        });
+        <div class="brand-cards-container">
+            <div class="card has-bg-effect brand-card sym-brand">
+                <div class="card-body"> {# Added card-body here #}
+                    <h3>SYM Scooters – Reliable, Affordable, and Built to Last</h3>
+                    <p>Founded in 1954, SYM is a trusted Taiwanese motorcycle manufacturer known for exceptional build quality, reliability, and generous warranty coverage. They strike the perfect balance—offering better quality than many low-end Chinese brands, without the high price tag of Japanese or premium European models.</p>
+                    <p>SYM has a strong reputation across Europe, Southeast Asia, and South America. We've proudly partnered with them for years—mainly because it just makes sense. Their scooters come back with fewer issues, and our mechanics enjoy working on them.</p>
+                </div> {# Closed card-body here #}
+            </div>
 
-        let currentSlide = 0;
+            <div class="card has-bg-effect brand-card segway-brand">
+                <div class="card-body"> {# Added card-body here #}
+                    <h3>Segway Electric Mopeds – Innovation Meets Reliability</h3>
+                    <p>Best known for their self-balancing transporters, Segway has evolved into a serious player in the electric moped space. As the market continues to grow and change rapidly, Segway stands out with the experience and quality that comes from being an early innovator.</p>
+                    <p>We've tested a lot of brands, but Segway's electric mopeds impressed us with their build quality, design, and performance. After a long search, we're confident these are vehicles we can stand behind—and that you'll love riding.</p>
+                </div> {# Closed card-body here #}
+            </div>
+        </div>
+    </div>
 
-        // Calculate how many items can be shown at once
-        function calculateVisibleItems() {
-            const containerWidth = reviewsSection.querySelector('.reviews-container').offsetWidth;
-            // Ensure reviewItems[0] exists before accessing properties
-            if (reviewItems.length === 0) return 1;
-            const itemWidth = reviewItems[0].offsetWidth + parseInt(getComputedStyle(reviewItems[0]).marginRight || '0');
-            return Math.max(1, Math.floor(containerWidth / itemWidth));
-        }
+        <div class="container">{# Changed from .index-section #}
+            <h2 class="section-title">Scooter Hire</h2>{# Added .section-title #}
+            <div class="card has-bg-effect brand-card hire-brand">
+                <div class="card-body"> {# Added card-body here #}
+                    <h3>Great Rates & Service</h3>
+                    <p>We're committed to offering the best scooter hire rates in Perth while delivering top-notch service. Our loyal, growing customer base—built mainly through word of mouth— speaks for itself. With consistently positive reviews and a focus on improving our service, we're confident new customers will be more than satisfied.</p>
 
-        // Calculate the total number of possible slide positions
-        function calculateTotalSlides() {
-            const visibleItems = calculateVisibleItems();
-            // We need enough positions to show the last item fully
-            return Math.max(0, reviewItems.length - visibleItems + 1);
-        }
+                    <h4>What we offer:</h4>
+                    <ul class="reset-list hire-features">{# Added .reset-list #}
+                        <li>Long term scooter hire rates</li>
+                        <li>Great Cheap Scooter Hire Rates</li>
+                        <li>Open 6 days a week Monday to Saturday</li>
+                        <li>After Hours Hire scooter Pick up & Drop off</li>
+                        <li>Hire Scooter Insurance included in Hire Rate</li>
+                    </ul>
 
-        // Create dots based on total slide positions
-        function createDots() {
-            dotsContainer.innerHTML = '';
-            const totalSlides = calculateTotalSlides();
+                    <div class="hire-cta">
+                        <a href="{% url 'inventory:hire' %}" class="btn-primary">Check out the fleet</a>
+                    </div>
+                </div> {# Closed card-body here #}
+            </div>
+        </div>
 
-            for (let i = 0; i < totalSlides; i++) {
-                const dot = document.createElement('span');
-                dot.classList.add('carousel-dot');
-                if (i === 0) dot.classList.add('active');
-                dot.addEventListener('click', () => goToSlide(i));
-                dotsContainer.appendChild(dot);
-            }
-        }
+    {% include "core/includes/featured.html" with section_title="Featured New Motorcycles" motorcycles=featured_new_motorcycles condition="new" %}
 
-        // Update the position of the carousel
-        function updateSlidePosition() {
-            // Ensure reviewItems[0] exists before accessing properties
-            if (reviewItems.length === 0) return;
-            const slideWidth = reviewItems[0].offsetWidth + parseInt(getComputedStyle(reviewItems[0]).marginRight || '0');
-            reviewsList.style.transform = `translateX(-${currentSlide * slideWidth}px)`;
+    {% include "core/includes/featured.html" with section_title="Featured Used Motorcycles" motorcycles=featured_used_motorcycles condition="used" %}
 
-            // Update dots to show active slide
-            const dots = reviewsSection.querySelectorAll('.carousel-dot');
-            dots.forEach((dot, index) => {
-                dot.classList.toggle('active', index === currentSlide);
-            });
+{% endblock %}
 
-            // Update arrow states - enable/disable based on position
-            const totalSlides = calculateTotalSlides();
-            prevArrow.disabled = currentSlide === 0;
-            nextArrow.disabled = currentSlide >= totalSlides - 1;
-        }
-
-        // Go to a specific slide
-        function goToSlide(slideIndex) {
-            const totalSlides = calculateTotalSlides();
-            currentSlide = Math.max(0, Math.min(slideIndex, totalSlides - 1));
-            updateSlidePosition();
-        }
-
-        // Handle previous arrow click
-        prevArrow.addEventListener('click', () => {
-            if (currentSlide > 0) {
-                currentSlide--;
-                updateSlidePosition();
-            }
-        });
-
-        // Handle next arrow click
-        nextArrow.addEventListener('click', () => {
-            const totalSlides = calculateTotalSlides();
-            if (currentSlide < totalSlides - 1) {
-                currentSlide++;
-                updateSlidePosition();
-            }
-        });
-
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            // Recalculate everything on resize
-            createDots();
-
-            // Make sure current slide is still valid after resize
-            const totalSlides = calculateTotalSlides();
-            currentSlide = Math.min(currentSlide, totalSlides - 1);
-
-            updateSlidePosition();
-
-            // Re-check for overflow after resize
-            reviewTextElements.forEach(textElement => {
-                const readMoreLink = textElement.nextElementSibling;
-                 if (readMoreLink && readMoreLink.classList.contains('read-more-link')) {
-                    // Hide by default
-                    readMoreLink.style.display = 'none';
-
-                    // Check if overflow exists
-                    if (textElement.scrollHeight > textElement.clientHeight) {
-                        readMoreLink.style.display = 'inline-block';
-                    }
-                 }
-            });
-        });
-
-        // Initialize the carousel
-        createDots();
-        updateSlidePosition();
-    });
-    </script>
-{% endif %}
+{% block map %}
+    <div class="container">{# Changed from .index-section #}
+        <h2 class="section-title map-title">Where to find us:</h2>{# Added .section-title #}
+        {% include "core/includes/map.html" %}
+    </div>
+{% endblock %}

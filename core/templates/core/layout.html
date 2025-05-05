@@ -8,8 +8,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{% block title %}Scootershop{% endblock %}</title>
         {% load static %}
-        <link rel="icon" href="{% static 'core/images/favicon_scooter.png' %}" type="image/png">
-        <link rel="stylesheet" href="{% static 'core/css/styles.css' %}">
+        <link rel="icon" href="{% static 'images/favicon_scooter.png' %}" type="image/png">
+        <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 
         {% block extra_css %}{% endblock %}
     </head>
@@ -18,7 +18,7 @@
         <nav>
             <div class="logo">
                 <a href="{% url 'core:index' %}">
-                    <img src="{% static 'core/images/logo_scootershop_tight_crop.png' %}" alt="Scooter Shop Logo">
+                    <img src="{% static 'images/logo_scootershop_tight_crop.png' %}" alt="Scooter Shop Logo">
                 </a>
             </div>
 
@@ -50,7 +50,7 @@
 
                 {% if settings.enable_service_booking or user.is_staff %}
                     <li>
-                        <a class="nav-item" href="{% url 'core:service' %}"
+                        <a class="nav-item" href="{% url 'service:service' %}"
                            {% if not settings.enable_service_booking and user.is_staff %}
                                style="color: #08E5D1;" {# Bright turquoise color #}
                            {% endif %}
@@ -99,13 +99,13 @@
 
             <div class="nav-social-icons">
                 <a href="https://www.facebook.com/ScooterShopAustralia/" target="_blank" rel="noopener">
-                    <img src="{% static 'core/images/svgs/facebook.svg' %}" alt="Facebook">
+                    <img src="{% static 'images/svgs/facebook.svg' %}" alt="Facebook">
                 </a>
                 <a href="https://www.instagram.com/scootershop_australia/" target="_blank" rel="noopener">
-                    <img src="{% static 'core/images/svgs/instagram.svg' %}" alt="Instagram">
+                    <img src="{% static 'images/svgs/instagram.svg' %}" alt="Instagram">
                 </a>
                 <a href="{% url 'core:contact' %}">
-                    <img src="{% static 'core/images/svgs/mail.svg' %}" alt="Contact Us">
+                    <img src="{% static 'images/svgs/mail.svg' %}" alt="Contact Us">
                 </a>
             </div>
         </nav>
@@ -148,7 +148,7 @@
 
                          {% if settings.enable_service_booking or user.is_staff %}
                             <li>
-                                <a href="{% url 'core:service' %}"
+                                <a href="{% url 'service:service' %}"
                                    {% if not settings.enable_service_booking and user.is_staff %}
                                        style="color: #08E5D1;" {# Bright turquoise color #}
                                    {% endif %}
@@ -325,13 +325,13 @@
                     <h3>Follow Us</h3>
                     <div class="social-icons">
                         <a href="https://www.facebook.com/ScooterShopAustralia/" target="_blank" rel="noopener">
-                            <img src="{% static 'core/images/svgs/facebook.svg' %}" alt="Facebook">
+                            <img src="{% static 'images/svgs/facebook.svg' %}" alt="Facebook">
                         </a>
                         <a href="https://www.instagram.com/scootershop_australia/" target="_blank" rel="noopener">
-                            <img src="{% static 'core/images/svgs/instagram.svg' %}" alt="Instagram">
+                            <img src="{% static 'images/svgs/instagram.svg' %}" alt="Instagram">
                         </a>
                         <a href="{% url 'core:contact' %}">
-                            <img src="{% static 'core/images/svgs/mail.svg' %}" alt="Contact Us">
+                            <img src="{% static 'images/svgs/mail.svg' %}" alt="Contact Us">
                         </a>
                     </div>
                 </div>

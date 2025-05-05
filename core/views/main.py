@@ -1,25 +1,19 @@
 # core/views/main.py
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.conf import settings
-from django.contrib import messages
 import requests
-import json
 
 
 # Import models from other apps as needed
-from dashboard.models import SiteSettings # Import SiteSettings from the dashboard app
-from service.models import ServiceType # Assuming ServiceType moved to service app
-# Import utility function from the inventory app
+from dashboard.models import SiteSettings 
 from inventory.views.utils import get_featured_motorcycles
 
 # Home Page
 def index(request):
-    # You might want to get this from SiteSettings
-    # Ensure this is correct or comes from settings/SiteSettings
     site_settings = SiteSettings.get_settings()
-    place_id = site_settings.google_places_place_id # Assuming this setting exists
-    api_key = settings.GOOGLE_API_KEY # Keep API key in settings.py for security
+    place_id = site_settings.google_places_place_id 
+    api_key = settings.GOOGLE_API_KEY 
 
     all_reviews = []
     five_star_reviews = []
@@ -82,29 +76,3 @@ def index(request):
     return render(request, 'core/index.html', context)
 
 
-# General Service Information Page (not booking flow)
-# This view remains in core as a static-like information page about services offered.
-# The actual booking functionality is in the 'service' app.
-def service(request):
-    settings = SiteSettings.get_settings()
-    # Check if the general service info page is enabled (assuming a new setting or using the booking setting)
-    # Let's use the enable_service_booking setting for now, adjust if a dedicated setting is added
-    if not settings.enable_service_booking:
-         messages.error(request, "Service information is currently disabled.")
-         # Updated redirect URL to use the core namespace
-         return redirect('core:index')
-
-    # Get all active service types to display on the info page
-    try:
-        service_types = ServiceType.objects.filter(is_active=True)
-    except Exception as e:
-        print(f"Error fetching service types for service info page: {e}")
-        service_types = [] # Ensure service_types is a list even if fetching fails
-        messages.warning(request, "Could not load service types.")
-
-
-    context = {
-        'service_types': service_types
-    }
-    # Updated template path
-    return render(request, "core/service.html", context)
