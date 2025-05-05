@@ -3,6 +3,7 @@
 from django.shortcuts import render
 from django.conf import settings
 import requests
+import sys
 
 
 # Import models from other apps as needed
@@ -14,6 +15,7 @@ def index(request):
     site_settings = SiteSettings.get_settings()
     place_id = site_settings.google_places_place_id 
     api_key = settings.GOOGLE_API_KEY 
+    is_testing = 'test' in sys.argv or 'manage.py' in sys.argv
 
     all_reviews = []
     five_star_reviews = []
@@ -38,12 +40,19 @@ def index(request):
                 five_star_reviews.sort(key=lambda x: x.get('time', 0), reverse=True)
 
             else:
-                print(f"Google Places API Error: Status is not OK or no reviews found in response. Status: {data.get('status')}")
-
+                # Only print the error if not in a test environment
+                if not is_testing:
+                    print(f"Google Places API Error: Status is not OK or no reviews found in response. Status: {data.get('status')}")
+    
         except requests.exceptions.RequestException as e:
-            print(f"Error fetching reviews from Google Places API: {e}")
+            # Only print the error if not in a test environment
+            if not is_testing:
+                print(f"Error fetching reviews from Google Places API: {e}")
         except Exception as e:
-            print(f"An unexpected error occurred fetching reviews: {e}")
+            # Only print the error if not in a test environment
+            if not is_testing:
+                 print(f"An unexpected error occurred fetching reviews: {e}")
+
 
 
     featured_new_motorcycles = []

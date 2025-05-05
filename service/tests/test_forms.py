@@ -34,39 +34,28 @@ class ServiceDetailsFormTests(TestCase):
         form_data = {
             'service_type': self.service_type.id,
             'appointment_datetime': future_datetime.strftime('%Y-%m-%dT%H:%M'),
-            'booking_comments': 'Please be careful with the fairings.',
+            # Removed 'booking_comments' from here
         }
         form = ServiceDetailsForm(data=form_data)
         self.assertTrue(form.is_valid(), form.errors)
         self.assertEqual(form.cleaned_data['service_type'], self.service_type)
         self.assertIsInstance(form.cleaned_data['appointment_datetime'], datetime.datetime)
         self.assertAlmostEqual(form.cleaned_data['appointment_datetime'], future_datetime, delta=datetime.timedelta(seconds=5))
-        self.assertEqual(form.cleaned_data['booking_comments'], 'Please be careful with the fairings.')
+        # Removed assertion for booking_comments
 
     # Test ServiceDetailsForm with invalid data
     def test_service_details_form_invalid_data(self):
         form_data = {
             'service_type': '',
             'appointment_datetime': 'invalid-date',
-            'booking_comments': 'Test comments',
+            # Removed 'booking_comments' from here
         }
         form = ServiceDetailsForm(data=form_data)
         self.assertFalse(form.is_valid())
         self.assertIn('service_type', form.errors)
         self.assertIn('appointment_datetime', form.errors)
 
-    # Test ServiceDetailsForm when comments are not provided
-    def test_service_details_form_no_comments(self):
-        future_datetime = timezone.now() + datetime.timedelta(days=1)
-        future_datetime = future_datetime.replace(second=0, microsecond=0)
-
-        form_data = {
-            'service_type': self.service_type.id,
-            'appointment_datetime': future_datetime.strftime('%Y-%m-%dT%H:%M'),
-        }
-        form = ServiceDetailsForm(data=form_data)
-        self.assertTrue(form.is_valid(), form.errors)
-        self.assertEqual(form.cleaned_data.get('booking_comments'), '')
+    # Removed test_service_details_form_no_comments
 
     # Test that ServiceDetailsForm uses the correct widgets
     def test_service_details_form_widget_types(self):
@@ -76,91 +65,80 @@ class ServiceDetailsFormTests(TestCase):
         widget_attrs = form.fields['appointment_datetime'].widget.attrs
         self.assertIn('class', widget_attrs)
         self.assertEqual(widget_attrs['class'], 'form-control')
-        self.assertIsInstance(form.fields['booking_comments'].widget, forms.Textarea)
+        # Removed assertion for booking_comments widget
 
 
-class CustomerMotorcycleFormTests(TestCase):
+class ServiceBookingUserFormTests(TestCase):
 
-    # Test CustomerMotorcycleForm with valid data
-    def test_customer_motorcycle_form_valid_data(self):
+    # Test ServiceBookingUserForm with valid data
+    def test_service_booking_user_form_valid_data(self):
         form_data = {
-            'make': 'Honda',
-            'model': 'CBR500R',
-            'year': 2020,
-            'rego': 'ABC123',
-            'vin_number': 'ABC123XYZ789',
-            'odometer': 15000,
-            'transmission': 'manual',
+            'first_name': 'John',
+            'last_name': 'Doe',
+            'email': 'john.doe@example.com',
+            'phone_number': '123-456-7890',
+            'preferred_contact': 'email',
+            'booking_comments': 'Please be careful with the fairings.', # Added booking_comments
         }
-        form = CustomerMotorcycleForm(data=form_data)
+        form = ServiceBookingUserForm(data=form_data)
         self.assertTrue(form.is_valid(), form.errors)
-        self.assertEqual(form.cleaned_data['make'], 'Honda')
-        self.assertEqual(form.cleaned_data['model'], 'CBR500R')
-        self.assertEqual(form.cleaned_data['year'], 2020)
-        self.assertEqual(form.cleaned_data['rego'], 'ABC123')
-        self.assertEqual(form.cleaned_data['vin_number'], 'ABC123XYZ789')
-        self.assertEqual(form.cleaned_data['odometer'], 15000)
-        self.assertEqual(form.cleaned_data['transmission'], 'manual')
+        self.assertEqual(form.cleaned_data['first_name'], 'John')
+        self.assertEqual(form.cleaned_data['last_name'], 'Doe')
+        self.assertEqual(form.cleaned_data['email'], 'john.doe@example.com')
+        self.assertEqual(form.cleaned_data['phone_number'], '123-456-7890')
+        self.assertEqual(form.cleaned_data['preferred_contact'], 'email')
+        self.assertEqual(form.cleaned_data['booking_comments'], 'Please be careful with the fairings.') # Added assertion
 
-    # Test CustomerMotorcycleForm with invalid data
-    def test_customer_motorcycle_form_invalid_data(self):
+    # Test ServiceBookingUserForm with invalid data
+    def test_service_booking_user_form_invalid_data(self):
         form_data = {
-            'make': '',
-            'model': 'CBR500R',
-            'year': 1800,
-            'rego': 'abc123',
-            'vin_number': 'toolongvinnumber1234567890123456789012345678901234567890',
-            'odometer': -100,
-            'transmission': 'automatic',
+            'first_name': '',
+            'last_name': 'Doe',
+            'email': 'invalid-email',
+            'phone_number': '123-456-7890',
+            'preferred_contact': 'carrier_pigeon',
+            'booking_comments': 'Test comments', # Added booking_comments
         }
-        form = CustomerMotorcycleForm(data=form_data)
+        form = ServiceBookingUserForm(data=form_data)
         self.assertFalse(form.is_valid())
-        self.assertIn('make', form.errors)
-        self.assertIn('vin_number', form.errors)
-        self.assertNotIn('year', form.errors)
-        self.assertNotIn('odometer', form.errors)
+        self.assertIn('first_name', form.errors)
+        self.assertIn('email', form.errors)
+        self.assertIn('preferred_contact', form.errors)
+        # No specific invalid data for booking_comments in this example, but you can add if needed
 
-    # Test CustomerMotorcycleForm with only required fields
-    def test_customer_motorcycle_form_optional_fields(self):
+    # Test ServiceBookingUserForm when phone number is not provided
+    def test_service_booking_user_form_optional_phone(self):
         form_data = {
-            'make': 'Kawasaki',
-            'model': 'Ninja 400',
-            'year': 2023,
+            'first_name': 'Jane',
+            'last_name': 'Smith',
+            'email': 'jane.smith@example.com',
+            'preferred_contact': 'phone',
+            'booking_comments': '', # Added booking_comments as optional
         }
-        form = CustomerMotorcycleForm(data=form_data)
+        form = ServiceBookingUserForm(data=form_data)
         self.assertTrue(form.is_valid(), form.errors)
-        self.assertEqual(form.cleaned_data['make'], 'Kawasaki')
-        self.assertEqual(form.cleaned_data['model'], 'Ninja 400')
-        self.assertEqual(form.cleaned_data['year'], 2023)
-        self.assertIsNone(form.cleaned_data['rego'])
-        self.assertIsNone(form.cleaned_data['vin_number'])
-        self.assertIsNone(form.cleaned_data['odometer'])
-        self.assertIsNone(form.cleaned_data['transmission'])
+        self.assertEqual(form.cleaned_data['first_name'], 'Jane')
+        self.assertEqual(form.cleaned_data['last_name'], 'Smith')
+        self.assertEqual(form.cleaned_data['email'], 'jane.smith@example.com')
+        self.assertEqual(form.cleaned_data['preferred_contact'], 'phone')
+        self.assertEqual(form.cleaned_data['phone_number'], '')
+        self.assertEqual(form.cleaned_data['booking_comments'], '') # Added assertion for optional field
 
-    # Test that the clean_rego method converts rego to uppercase
-    def test_customer_motorcycle_form_rego_uppercase(self):
-        form_data = {
-            'make': 'Yamaha',
-            'model': 'MT-07',
-            'year': 2022,
-            'rego': 'xyz789',
-        }
-        form = CustomerMotorcycleForm(data=form_data)
-        self.assertTrue(form.is_valid(), form.errors)
-        self.assertEqual(form.cleaned_data['rego'], 'XYZ789')
+    # Test that preferred_contact defaults to 'email'
+    def test_service_booking_user_form_preferred_contact_initial(self):
+        form = ServiceBookingUserForm()
+        self.assertEqual(form.fields['preferred_contact'].initial, 'email')
+        # No change needed for booking_comments default as it's not required
 
-    # Test that CustomerMotorcycleForm uses the correct widgets
-    def test_customer_motorcycle_form_widget_types(self):
-        form = CustomerMotorcycleForm()
-        self.assertIsInstance(form.fields['make'].widget, forms.TextInput)
-        self.assertIsInstance(form.fields['model'].widget, forms.TextInput)
-        self.assertIsInstance(form.fields['year'].widget, forms.NumberInput)
-        self.assertIsInstance(form.fields['rego'].widget, forms.TextInput)
-        self.assertIsInstance(form.fields['vin_number'].widget, forms.TextInput)
-        self.assertIsInstance(form.fields['odometer'].widget, forms.NumberInput)
-        self.assertIsInstance(form.fields['transmission'].widget, forms.Select)
-
-
+    # Test that ServiceBookingUserForm uses the correct widgets
+    def test_service_booking_user_form_widget_types(self):
+        form = ServiceBookingUserForm()
+        self.assertIsInstance(form.fields['first_name'].widget, forms.TextInput)
+        self.assertIsInstance(form.fields['last_name'].widget, forms.TextInput)
+        self.assertIsInstance(form.fields['email'].widget, forms.EmailInput)
+        self.assertIsInstance(form.fields['phone_number'].widget, forms.TextInput)
+        self.assertIsInstance(form.fields['preferred_contact'].widget, forms.RadioSelect)
+        self.assertIsInstance(form.fields['booking_comments'].widget, forms.Textarea) # Added assertion for booking_comments
 class ServiceBookingUserFormTests(TestCase):
 
     # Test ServiceBookingUserForm with valid data

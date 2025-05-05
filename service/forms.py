@@ -22,11 +22,6 @@ class ServiceDetailsForm(forms.Form):
         label="Preferred Date and Time",
         widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'})
     )
-    booking_comments = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
-        required=False,
-        label="Comments or specific requests"
-    )
 
     # Add a clean method for appointment_datetime if you need to validate against business hours or availability
     # def clean_appointment_datetime(self):
@@ -49,11 +44,6 @@ class CustomerMotorcycleForm(forms.ModelForm):
             'make': forms.TextInput(attrs={'class': 'form-control'}),
             'model': forms.TextInput(attrs={'class': 'form-control'}),
         }
-        # Add labels or help text if needed
-        # labels = {
-        #     'rego': _('Registration Plate'),
-        #     'vin_number': _('VIN Number'),
-        # }
 
     def clean_rego(self):
          # Convert registration to uppercase if it exists
@@ -79,7 +69,12 @@ class ServiceBookingUserForm(forms.Form):
         initial='email',
         label="Preferred method of contact"
     )
-    # The booking_comments field is now in ServiceDetailsForm for better grouping of booking-specific info
+    # booking_comments field moved to Step 3
+    booking_comments = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+        required=False,
+        label="Comments or specific requests"
+    )
 
     # is_returning_customer field might be handled by checking if the user is authenticated
     # This field might not be necessary as a form field if the view logic handles it.
