@@ -39,36 +39,29 @@ def index(request):
 
             else:
                 print(f"Google Places API Error: Status is not OK or no reviews found in response. Status: {data.get('status')}")
-                # Optionally add a user-facing message here
-                # messages.warning(request, "Could not fetch recent reviews.")
 
         except requests.exceptions.RequestException as e:
             print(f"Error fetching reviews from Google Places API: {e}")
-            # messages.error(request, "There was an error fetching reviews.")
         except Exception as e:
             print(f"An unexpected error occurred fetching reviews: {e}")
-            # messages.error(request, "An unexpected error occurred.")
 
 
     featured_new_motorcycles = []
     featured_used_motorcycles = []
 
     # Only fetch featured motorcycles if the section is enabled via SiteSettings
-    if site_settings.enable_featured_section: # Assuming this setting exists
+    if site_settings.enable_featured_section: 
         try:
             featured_new_motorcycles = get_featured_motorcycles(condition='new', limit=3)
             featured_used_motorcycles = get_featured_motorcycles(condition='used', limit=3)
         except Exception as e:
             print(f"Error fetching featured motorcycles: {e}")
-            # messages.warning(request, "Could not fetch featured motorcycles.")
-
 
     # Pass the filtered 5-star reviews and featured bikes to the template
     context = {
         'reviews': five_star_reviews,
         'featured_new_motorcycles': featured_new_motorcycles,
         'featured_used_motorcycles': featured_used_motorcycles,
-        # Only pass API key and place ID if reviews are enabled, or handle in template
         'google_api_key': settings.GOOGLE_API_KEY,
     }
 
