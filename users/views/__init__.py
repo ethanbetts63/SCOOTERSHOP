@@ -6,3 +6,8 @@ from .auth import (
     logout_view,
     register,
 )
+
+from .admin_create_user import (
+    admin_create_user_view,
+    
+)
