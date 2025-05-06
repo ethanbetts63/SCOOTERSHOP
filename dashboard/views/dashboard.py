@@ -1,11 +1,19 @@
+# SCOOTER_SHOP/dashboard/views/dashboard.py
+
+import calendar
+from datetime import date, timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth.decorators import user_passes_test # Import the decorator
-from django.urls import reverse # Import reverse for redirects
+from django.contrib.auth.decorators import user_passes_test
+from django.urls import reverse
+from django.db.models import Count
+from django.utils import timezone
+from django.conf import settings # Import settings
 
 # Import models from the dashboard app
 from dashboard.models import SiteSettings, AboutPageContent
-from service.models import ServiceType, ServiceBooking # Import ServiceBooking model
+# Import ServiceBooking model
+from service.models import ServiceType, ServiceBooking
 
 # Import forms from the dashboard app
 from dashboard.forms import (
@@ -66,6 +74,43 @@ def service_booking_details_view(request, pk):
     # Render the service_booking_details.html template
     return render(request, 'dashboard/service_booking_details.html', context)
 
+# --- New View for Day View ---
+@user_passes_test(is_staff_check)
+def service_bookings_day_view(request, year, month, day):
+    """
+    View for displaying bookings for a specific day in the admin dashboard.
+    Requires staff user.
+    """
+    try:
+        selected_date = date(year, month, day)
+    except (ValueError, TypeError):
+        messages.error(request, "Invalid date provided.")
+        return redirect(reverse('dashboard:service_bookings')) # Redirect back to month view
+
+    # Define the start and end of the selected day (timezone-aware)
+    from django.conf import settings
+    if settings.USE_TZ:
+        start_of_day = timezone.make_aware(timezone.datetime.combine(selected_date, timezone.datetime.min.time()), timezone.get_current_timezone())
+        end_of_day = timezone.make_aware(timezone.datetime.combine(selected_date, timezone.datetime.max.time()), timezone.get_current_timezone())
+    else:
+        start_of_day = timezone.datetime.combine(selected_date, timezone.datetime.min.time())
+        end_of_day = timezone.datetime.combine(selected_date, timezone.datetime.max.time())
+
+
+    # Fetch bookings for the selected day, ordered by appointment time
+    bookings_for_day = ServiceBooking.objects.filter(
+        appointment_datetime__gte=start_of_day,
+        appointment_datetime__lte=end_of_day
+    ).order_by('appointment_datetime')
+
+    context = {
+        'page_title': f'Bookings for {selected_date.strftime("%Y-%m-%d")}',
+        'selected_date': selected_date,
+        'bookings_for_day': bookings_for_day,
+    }
+
+    # You will need to create a new HTML template for the day view
+    return render(request, 'dashboard/service_bookings_day.html', context)
 
 # --- Existing Settings Views ---
 @user_passes_test(is_staff_check)

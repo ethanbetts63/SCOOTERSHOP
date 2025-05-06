@@ -4,7 +4,8 @@
 from .dashboard import (
     dashboard_index,
     service_bookings_view,
-    service_booking_details_view, 
+    service_booking_details_view,
+    service_bookings_day_view, # Added this import
     settings_business_info,
     settings_hire_booking,
     settings_service_booking,

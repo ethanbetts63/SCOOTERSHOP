@@ -5,7 +5,8 @@ from django.urls import path
 from .views import (
     dashboard_index,
     service_bookings_view,
-    service_booking_details_view, # Import the new view
+    service_booking_details_view, 
+    service_bookings_day_view,
     edit_about_page,
     settings_business_info,
     settings_visibility,
@@ -25,6 +26,7 @@ urlpatterns = [
     # Using '' here means /dashboard/
     path('', dashboard_index, name='dashboard_index'),
     path('service-bookings/', service_bookings_view, name='service_bookings'),
+    path('service-bookings/<int:year>/<int:month>/<int:day>/', service_bookings_day_view, name='service_bookings_day'),
     # Add the new URL pattern for service booking details
     path('service-bookings/<int:pk>/', service_booking_details_view, name='service_booking_details'),
     path('edit-about/', edit_about_page, name='edit_about_page'),

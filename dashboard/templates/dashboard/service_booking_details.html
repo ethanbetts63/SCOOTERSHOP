@@ -2,9 +2,25 @@
 {% load static %}
 
 {% block admin_main_content %}
+{# Link to the main styles.css if not already included in the base layout #}
+{# Assuming styles.css is linked in the base layout (admin_layout.html), no need to link again here #}
 
+<div class="container mt-4"> {# Added a container for basic page structure and spacing #}
+    <h2 class="section-title">Service Booking Details</h2> {# Applied section-title class for consistent heading style #}
 
-<p>Service Bookings detail page</p>
-
+    <div class="card shadow mb-4"> {# Wrapped details in a card for better visual structure #}
+        <div class="card-body"> {# Added card-body padding #}
+            {% if booking %}
+                <p><strong>Booking ID:</strong> {{ booking.pk }}</p>
+                <p><strong>Customer Name:</strong> {{ booking.customer_name }}</p>
+                <p><strong>Appointment Date and Time:</strong> {{ booking.appointment_datetime }}</p>
+                <p><strong>Service Type:</strong> {{ booking.service_type.name }}</p>
+                {# Add more booking details here as needed #}
+            {% else %}
+                <p>Service booking not found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
 
 {% endblock %}
