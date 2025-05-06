@@ -11,6 +11,7 @@ from .views import (
     booking_step2_anonymous,
     booking_step3_anonymous,
     service_confirmed_view,
+    booking_admin_view,
     service
 )
 
@@ -42,6 +43,6 @@ urlpatterns = [
     # Updated URL name and view function reference
     path('book/confirmed/', service_confirmed_view, name='service_confirmed'),
 
-    # Add a base service page if needed, maybe listing service types?
-    # path('', views.service_type_list, name='service_types'),
+    # Admin Booking View
+    path('book/admin/', booking_admin_view, name='admin_booking'), # Added this URL pattern
 ]

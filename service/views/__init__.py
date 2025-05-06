@@ -23,6 +23,11 @@ from .booking_step3 import (
     booking_step3_anonymous,
 )
 
+# Import admin booking view
+from .booking_admin import ( # Added this import block
+    booking_admin_view
+)
+
 # Import other service views (like the 'service' view if it exists)
 from .service import (
     service
