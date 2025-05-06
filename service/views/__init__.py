@@ -28,6 +28,7 @@ from .booking_admin import ( # Added this import block
     booking_admin_view,
     get_user_motorcycles,
     get_user_details,
+    get_motorcycle_details,
 )
 
 # Import other service views (like the 'service' view if it exists)

@@ -12,6 +12,7 @@ from .views import (
     service_confirmed_view,
     booking_admin_view,
     get_user_motorcycles,
+    get_motorcycle_details,
     get_user_details,
     service,
 
@@ -47,6 +48,7 @@ urlpatterns = [
 
     # Admin Booking View
     path('book/admin/', booking_admin_view, name='admin_booking'), # Added this URL pattern
-    path('admin/get_user_details/<int:user_id>/', get_user_details, name='get_user_details'),
-    path('admin/get_user_motorcycles/<int:user_id>/', get_user_motorcycles, name='get_user_motorcycles'),
+    path('service/get_user_details/<int:user_id>/', get_user_details, name='get_user_details'),
+    path('service/get_user_motorcycles/<int:user_id>/', get_user_motorcycles, name='get_user_motorcycles'),
+    path('service/get_motorcycle_details/<int:motorcycle_id>/', get_motorcycle_details, name='get_motorcycle_details'),
 ]

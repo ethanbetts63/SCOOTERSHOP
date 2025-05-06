@@ -56,6 +56,9 @@
             </div>
             <div class="card-body" id="user-details-section">
                 <p id="customer-details-instructions">Details will populate when an existing customer is selected, or can be entered for a one-off booking.</p>
+                <div id="ajax-error-message" class="alert alert-danger" style="display: none;">
+                    Error loading customer details. Please enter manually.
+                </div>
 
                 <div class="form-group">
                     {{ form.one_off_first_name.label_tag }}
@@ -153,8 +156,8 @@
                             <div class="text-danger">
                                 {% for error in form.new_bike_make.errors %}
                                     {{ error }}
-                                {% endfor %}
-                            </div>
+                            {% endfor %}
+                        </div>
                         {% endif %}
                     </div>
                     <div class="form-group">
@@ -347,39 +350,64 @@ document.addEventListener('DOMContentLoaded', function() {
     const anonVehicleSection = document.getElementById('anon-vehicle-section');
     const existingMotorcycleSelect = document.getElementById('id_existing_motorcycle');
     const customerDetailsInstructions = document.getElementById('customer-details-instructions');
+    const ajaxErrorMessage = document.getElementById('ajax-error-message');
+
+    // Get references to the "new bike" detail fields (used for both new and existing display)
+    const newBikeMakeInput = document.getElementById('id_new_bike_make');
+    const newBikeModelInput = document.getElementById('id_new_bike_model');
+    const newBikeYearInput = document.getElementById('id_new_bike_year');
+    const newBikeRegoInput = document.getElementById('id_new_bike_rego');
+    const newBikeVinNumberInput = document.getElementById('id_new_bike_vin_number');
+    const newBikeOdometerInput = document.getElementById('id_new_bike_odometer');
+    const newBikeTransmissionInput = document.getElementById('id_new_bike_transmission');
+
+    // Function to clear motorcycle detail fields
+    function clearMotorcycleDetails() {
+        newBikeMakeInput.value = '';
+        newBikeModelInput.value = '';
+        newBikeYearInput.value = '';
+        newBikeRegoInput.value = '';
+        newBikeVinNumberInput.value = '';
+        newBikeOdometerInput.value = '';
+        newBikeTransmissionInput.value = '';
+    }
 
     function toggleCustomerFields() {
         const selectedCustomerType = document.querySelector('input[name="customer_type"]:checked').value;
 
         if (selectedCustomerType === 'existing') {
             existingCustomerSection.style.display = 'block';
-            
+
             // For existing customers, we'll populate these fields via AJAX but keep them editable
-            // Clear fields but don't disable them
+            // Clear fields but don't disable them initially
             if (!userSelect.value) {
                 oneOffFirstNameInput.value = '';
                 oneOffLastNameInput.value = '';
                 oneOffEmailInput.value = '';
                 oneOffPhoneNumberInput.value = '';
             }
-            
+
             // Always keep fields enabled for editing
             oneOffFirstNameInput.disabled = false;
             oneOffLastNameInput.disabled = false;
             oneOffEmailInput.disabled = false;
             oneOffPhoneNumberInput.disabled = false;
-            
+
             // Update instructions
             customerDetailsInstructions.textContent = "Customer details shown below. You can edit these if needed.";
-            
+
             // Enable user select
             userSelect.disabled = false;
-            
+
             // Hide anonymous vehicle fields
             anonVehicleSection.style.display = 'none';
+
+             // Trigger bike selection toggle as visibility might change
+            toggleBikeFields(); // Call this to handle bike section visibility
+
         } else { // one_off
             existingCustomerSection.style.display = 'none';
-            
+
             // Clear and enable one-off fields
             oneOffFirstNameInput.value = '';
             oneOffLastNameInput.value = '';
@@ -389,22 +417,24 @@ document.addEventListener('DOMContentLoaded', function() {
             oneOffLastNameInput.disabled = false;
             oneOffEmailInput.disabled = false;
             oneOffPhoneNumberInput.disabled = false;
-            
+
             // Update instructions
             customerDetailsInstructions.textContent = "Enter customer details for this one-off booking.";
-            
+
             // Disable user select
             userSelect.disabled = true;
-            userSelect.value = '';
-            
+            userSelect.value = ''; // Clear selected user
+
             // Show anonymous vehicle fields and hide existing/new motorcycle fields
             anonVehicleSection.style.display = 'block';
             existingMotorcycleSection.style.display = 'none';
             newMotorcycleSection.style.display = 'none';
+
+            clearMotorcycleDetails(); // Clear motorcycle fields for one-off
         }
-        
-        // Trigger bike selection toggle as visibility might change
-        toggleBikeFields();
+
+        // Hide any previously shown error messages
+        ajaxErrorMessage.style.display = 'none';
     }
 
     function toggleBikeFields() {
@@ -415,24 +445,36 @@ document.addEventListener('DOMContentLoaded', function() {
             anonVehicleSection.style.display = 'none';
             if (selectedBikeSelectionType === 'existing') {
                 existingMotorcycleSection.style.display = 'block';
-                newMotorcycleSection.style.display = 'none';
+                newMotorcycleSection.style.display = 'block'; // Show fields for populating
+                // If an existing motorcycle is already selected, populate its details
+                 if (existingMotorcycleSelect.value) {
+                     populateMotorcycleDetails(existingMotorcycleSelect.value);
+                 } else {
+                     clearMotorcycleDetails(); // Clear fields if 'existing' but no bike selected
+                 }
+
             } else { // new
-                existingMotorcycleSection.style.display = 'none';
-                newMotorcycleSection.style.display = 'block';
+                existingMotorcycleSection.style.display = 'block'; // Keep dropdown visible for switching
+                newMotorcycleSection.style.display = 'block'; // Show fields for manual entry
+                clearMotorcycleDetails(); // Clear fields for new entry
             }
         } else { // one_off
-            // For one-off, we only show the anonymous vehicle fields
-            anonVehicleSection.style.display = 'block';
+            // For one-off, we only show the anonymous vehicle fields (handled by toggleCustomerFields)
+            // Hide existing/new motorcycle sections
             existingMotorcycleSection.style.display = 'none';
             newMotorcycleSection.style.display = 'none';
+            clearMotorcycleDetails(); // Clear fields for one-off
         }
     }
 
-    // Function to populate user details based on selected user
     function populateUserDetails(userId) {
         if (userId) {
+            // Show loading message
+            customerDetailsInstructions.textContent = "Loading customer details...";
+            ajaxErrorMessage.style.display = 'none';
+
             // Make an AJAX call to fetch user details
-            fetch(`/admin/get_user_details/${userId}/`) // Replace with your actual URL
+            fetch(`/service/service/get_user_details/${userId}/`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
@@ -444,13 +486,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     oneOffLastNameInput.value = data.last_name || '';
                     oneOffEmailInput.value = data.email || '';
                     oneOffPhoneNumberInput.value = data.phone_number || '';
-                    
+
                     // Keep fields enabled so they can be edited and submitted
                     oneOffFirstNameInput.disabled = false;
                     oneOffLastNameInput.disabled = false;
                     oneOffEmailInput.disabled = false;
                     oneOffPhoneNumberInput.disabled = false;
-                    
+
                     // Update instructions
                     customerDetailsInstructions.textContent = "Customer details loaded. You can edit these if needed.";
 
@@ -459,11 +501,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .catch(error => {
                     console.error('Error fetching user details:', error);
-                    // Handle error but don't disable fields
+                    // Display error message to user
+                    ajaxErrorMessage.style.display = 'block';
                     customerDetailsInstructions.textContent = "Error loading customer details. Please enter manually.";
-                    
-                    // Clear existing motorcycle dropdown
+
+                    // Clear existing motorcycle dropdown and motorcycle details
                     existingMotorcycleSelect.innerHTML = '<option value="">---------</option>';
+                    clearMotorcycleDetails();
                 });
         } else {
             // Clear fields if no user is selected
@@ -471,20 +515,20 @@ document.addEventListener('DOMContentLoaded', function() {
             oneOffLastNameInput.value = '';
             oneOffEmailInput.value = '';
             oneOffPhoneNumberInput.value = '';
-            
+
             // Update instructions
             customerDetailsInstructions.textContent = "Please select a customer to load their details.";
-            
-            // Clear existing motorcycle dropdown
+
+            // Clear existing motorcycle dropdown and motorcycle details
             existingMotorcycleSelect.innerHTML = '<option value="">---------</option>';
+            clearMotorcycleDetails();
         }
     }
 
-    // Function to populate existing motorcycles based on selected user
     function populateExistingMotorcycles(userId) {
         if (userId) {
             // Make an AJAX call to fetch user's motorcycles
-            fetch(`/admin/get_user_motorcycles/${userId}/`) // Replace with your actual URL
+            fetch(`/service/service/get_user_motorcycles/${userId}/`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
@@ -493,7 +537,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .then(data => {
                     existingMotorcycleSelect.innerHTML = '<option value="">---------</option>'; // Clear existing options
-                    
+
                     if (data.motorcycles && data.motorcycles.length > 0) {
                         data.motorcycles.forEach(motorcycle => {
                             const option = document.createElement('option');
@@ -501,22 +545,66 @@ document.addEventListener('DOMContentLoaded', function() {
                             option.textContent = `${motorcycle.year} ${motorcycle.make} ${motorcycle.model} (${motorcycle.rego})`;
                             existingMotorcycleSelect.appendChild(option);
                         });
+                        // If the user had a bike previously selected (e.g., form error), re-select it
+                        // and populate its details
+                         if (existingMotorcycleSelect.dataset.selected) {
+                             existingMotorcycleSelect.value = existingMotorcycleSelect.dataset.selected;
+                             populateMotorcycleDetails(existingMotorcycleSelect.value);
+                             delete existingMotorcycleSelect.dataset.selected; // Clean up
+                         } else {
+                            // If no previous selection, clear motorcycle details initially
+                             clearMotorcycleDetails();
+                         }
+
                     } else {
                         // No motorcycles found
                         const option = document.createElement('option');
                         option.disabled = true;
                         option.textContent = 'No motorcycles found for this customer';
                         existingMotorcycleSelect.appendChild(option);
+                        clearMotorcycleDetails(); // Clear motorcycle details if no bikes found
                     }
                 })
                 .catch(error => {
                     console.error('Error fetching user motorcycles:', error);
                     existingMotorcycleSelect.innerHTML = '<option value="">Error loading motorcycles</option>';
+                    clearMotorcycleDetails(); // Clear motorcycle details on error
                 });
         } else {
             existingMotorcycleSelect.innerHTML = '<option value="">---------</option>'; // Clear existing options if no user selected
+            clearMotorcycleDetails(); // Clear motorcycle details if no user selected
         }
     }
+
+    function populateMotorcycleDetails(motorcycleId) {
+        if (motorcycleId) {
+             // Make an AJAX call to fetch single motorcycle details
+            fetch(`/service/service/get_motorcycle_details/${motorcycleId}/`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    newBikeMakeInput.value = data.make || '';
+                    newBikeModelInput.value = data.model || '';
+                    newBikeYearInput.value = data.year || '';
+                    newBikeRegoInput.value = data.rego || '';
+                    newBikeVinNumberInput.value = data.vin_number || '';
+                    newBikeOdometerInput.value = data.odometer || '';
+                    newBikeTransmissionInput.value = data.transmission || '';
+                })
+                .catch(error => {
+                    console.error('Error fetching motorcycle details:', error);
+                    // Optionally, clear the fields or show an error message next to them
+                    clearMotorcycleDetails();
+                });
+        } else {
+            clearMotorcycleDetails(); // Clear fields if no motorcycle is selected from dropdown
+        }
+    }
+
 
     // Event listeners
     customerTypeRadios.forEach(radio => {
@@ -531,14 +619,42 @@ document.addEventListener('DOMContentLoaded', function() {
         radio.addEventListener('change', toggleBikeFields);
     });
 
+    // Event listener for the existing motorcycle dropdown
+    existingMotorcycleSelect.addEventListener('change', function() {
+        populateMotorcycleDetails(this.value);
+    });
+
+
     // Initial state setup
-    document.getElementById('id_customer_type_0').checked = true; // Set to 'existing' as first option
-    toggleCustomerFields(); // Set initial visibility and state
+     // Check the initially selected customer type and trigger the initial toggle
+    const initialCustomerType = document.querySelector('input[name="customer_type"]:checked');
+    if (initialCustomerType) {
+        toggleCustomerFields(); // Set initial visibility and state based on selected radio
+    } else {
+         // If no radio is checked initially (shouldn't happen with a default), set a default and toggle
+         document.getElementById('id_customer_type_0').checked = true; // Assuming 'existing' is the first option
+         toggleCustomerFields();
+    }
+
 
     // If there's an initial user selected (e.g., form submission with errors), populate details
-    if (userSelect.value) {
-        populateUserDetails(userSelect.value);
-    }
+    // Store the initial selected user and motorcycle to try and re-select after populating dropdowns
+     if (userSelect.value) {
+         userSelect.dataset.selected = userSelect.value; // Store selected user ID
+     }
+     if (existingMotorcycleSelect.value) {
+         existingMotorcycleSelect.dataset.selected = existingMotorcycleSelect.value; // Store selected motorcycle ID
+     }
+
+     // Now call populateUserDetails to fetch the motorcycles for the initial user (if any)
+     if (userSelect.value) {
+         populateUserDetails(userSelect.value);
+     } else {
+        // If no initial user, ensure motorcycle fields are cleared
+         clearMotorcycleDetails();
+     }
+
+
 });
 </script>
 {% endblock %}
