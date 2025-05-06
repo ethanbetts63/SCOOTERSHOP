@@ -10,10 +10,13 @@ from .views import (
     booking_step2_anonymous,
     booking_step3_anonymous,
     service_confirmed_view,
-    booking_admin_view,
-    get_user_motorcycles,
-    get_motorcycle_details,
-    get_user_details,
+    # Removed the old booking_admin_view
+    booking_admin_anon_view, # Import the new anonymous admin view
+    booking_admin_user_view, # Import the new user admin view
+    # Updated imports for renamed AJAX helper views
+    get_user_details_for_admin,
+    get_user_motorcycles_for_admin,
+    get_motorcycle_details_for_admin,
     service,
 
 )
@@ -46,9 +49,12 @@ urlpatterns = [
     # Updated URL name and view function reference
     path('book/confirmed/', service_confirmed_view, name='service_confirmed'),
 
-    # Admin Booking View
-    path('book/admin/', booking_admin_view, name='admin_booking'), # Added this URL pattern
-    path('service/get_user_details/<int:user_id>/', get_user_details, name='get_user_details'),
-    path('service/get_user_motorcycles/<int:user_id>/', get_user_motorcycles, name='get_user_motorcycles'),
-    path('service/get_motorcycle_details/<int:motorcycle_id>/', get_motorcycle_details, name='get_motorcycle_details'),
+    # Admin Booking Views
+    path('book/admin/anon/', booking_admin_anon_view, name='admin_booking_anon'), # New URL for anonymous admin booking
+    path('book/admin/user/', booking_admin_user_view, name='admin_booking_user'), # New URL for user admin booking
+
+    # Updated AJAX Helper View URLs
+    path('service/get_user_details/<int:user_id>/', get_user_details_for_admin, name='get_user_details'),
+    path('service/get_user_motorcycles/<int:user_id>/', get_user_motorcycles_for_admin, name='get_user_motorcycles'),
+    path('service/get_motorcycle_details/<int:motorcycle_id>/', get_motorcycle_details_for_admin, name='get_motorcycle_details'),
 ]
