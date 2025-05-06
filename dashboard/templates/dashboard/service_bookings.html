@@ -11,35 +11,21 @@
 
 <h2>Service Bookings Calendar</h2>
 
-{# Container for the search and filtering section (keep or remove as needed) #}
-<div class="card shadow mb-4">
-    <div class="card-header">
-        <h6 class="m-0 font-weight-bold text-primary">Search & Filters</h6>
-    </div>
-    <div class="card-body">
-        {# Search form and filter options will go here #}
-        <p>Search and filter options coming soon...</p>
-    </div>
-</div>
-
 <div class="card shadow mb-4">
     <div class="card-header">
         <h6 class="m-0 font-weight-bold text-primary">Booking Calendar</h6>
     </div>
     <div class="card-body">
-        {# This is the div where FullCalendar will render the calendar.
-           You can replace the existing content of this div. #}
         <div id='fullcalendar'>
             {# FullCalendar will build the calendar inside this div #}
         </div>
     </div>
 </div>
 
-{# The existing recent bookings list can remain below the calendar #}
-{# ... your existing recent bookings list div ... #}
+
 <div class="card shadow mb-4">
     <div class="card-header d-flex flex-column align-items-center">
-        <h6 class="m-0 font-weight-bold text-primary card-header-title">Recent Bookings (List View)</h6>
+        <h6 class="m-0 font-weight-bold text-primary card-header-title">Booking Search</h6>
     </div>
     <div class="card-body">
         {% if bookings %}
@@ -95,13 +81,32 @@
                 right: 'dayGridMonth,timeGridWeek,timeGridDay' // Example: add buttons for different views
             },
 
+            // --- Event Source ---
+            // Fetch events from the Django backend JSON feed
+            events: '{% url "dashboard:get_bookings_json" %}',
+
             // --- Interactivity (Using the interaction plugin) ---
             dateClick: function(info) {
                 // This function is called when a date is clicked
-                alert('Clicked on: ' + info.dateStr); // Example: show the date
-                // You could redirect to your day view here, e.g.:
-                // window.location.href = `/dashboard/bookings/${info.date.getFullYear()}/${info.date.getMonth() + 1}/${info.date.getDate()}/`;
+                console.log('Date clicked:', info.dateStr);
+                // Redirect to your day view
+                const year = info.date.getFullYear();
+                const month = info.date.getMonth() + 1; // Month is 0-indexed
+                const day = info.date.getDate();
+                window.location.href = `/dashboard/service-bookings/${year}/${month}/${day}/`;
             },
+
+            eventClick: function(info) {
+                // This function is called when an event (booking) is clicked
+                console.log('Event clicked:', info.event.title);
+                console.log('Event ID:', info.event.id);
+
+                // Redirect to the booking details page using the event's URL property
+                if (info.event.url) {
+                    window.location.href = info.event.url;
+                }
+            },
+
         });
 
         // Render the calendar on the page
