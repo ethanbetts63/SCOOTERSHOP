@@ -1,8 +1,9 @@
 # dashboard/views/__init__.py
 
 # Imports for dashboard and settings views (formerly in dashboard.py)
-from .dashboard import ( 
+from .dashboard import (
     dashboard_index,
+    service_bookings_view,
     settings_business_info,
     settings_hire_booking,
     settings_service_booking,

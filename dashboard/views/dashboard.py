@@ -1,5 +1,3 @@
-# dashboard/views/dashboard.py
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test # Import the decorator
@@ -33,6 +31,21 @@ def dashboard_index(request):
     # Updated template path
     return render(request, 'dashboard/dashboard_index.html', context)
 
+# --- New View for Bookings ---
+@user_passes_test(is_staff_check)
+def service_bookings_view(request):
+    """
+    View for the service bookings page in the admin dashboard.
+    Requires staff user.
+    """
+    context = {
+        'page_title': 'Manage Service Bookings',
+        # Add any data related to bookings here in the future
+    }
+    # Render the bookings.html template
+    return render(request, 'dashboard/service_bookings.html', context)
+
+# --- Existing Settings Views ---
 @user_passes_test(is_staff_check)
 def settings_business_info(request):
     # Get the singleton SiteSettings instance

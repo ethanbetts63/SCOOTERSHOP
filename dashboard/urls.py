@@ -3,11 +3,10 @@
 from django.urls import path
 # Import dashboard views
 from .views import (
-    dashboard_index, edit_about_page, settings_business_info, settings_visibility,
+    dashboard_index, service_bookings_view, edit_about_page, settings_business_info, settings_visibility, 
     settings_service_booking, settings_hire_booking, settings_miscellaneous,
     settings_service_types, add_service_type, edit_service_type, delete_service_type
-) # Assuming these views are in dashboard/views.py
-
+)
 
 app_name = 'dashboard' # Set the app name for namespacing
 
@@ -15,6 +14,7 @@ urlpatterns = [
     # --- Dashboard Views ---
     # Using '' here means /dashboard/
     path('', dashboard_index, name='dashboard_index'),
+    path('service-bookings/', service_bookings_view, name='service_bookings'), 
     path('edit-about/', edit_about_page, name='edit_about_page'),
 
     # --- Dashboard Settings Views ---
