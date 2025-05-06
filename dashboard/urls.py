@@ -6,9 +6,6 @@ from django.urls import path
 # Import non-booking views from dashboard.py (via __init__.py)
 from .views.dashboard import (
     dashboard_index,
-    # service_bookings_view, # Removed from dashboard.py
-    # service_booking_details_view, # Removed from dashboard.py
-    # service_bookings_day_view, # Removed from dashboard.py
     edit_about_page,
     settings_business_info,
     settings_visibility,
@@ -25,8 +22,7 @@ from .views.dashboard import (
 from .views.bookings import (
     service_bookings_view,
     service_booking_details_view,
-    service_bookings_day_view,
-    get_bookings_json, # Import the new JSON view
+    get_bookings_json, 
 )
 
 
@@ -39,8 +35,6 @@ urlpatterns = [
     # --- Booking Views (Now imported from bookings.py) ---
     # The main calendar view (will use FullCalendar)
     path('service-bookings/', service_bookings_view, name='service_bookings'),
-    # The day view (can still be used or replaced by FullCalendar's day view)
-    path('service-bookings/<int:year>/<int:month>/<int:day>/', service_bookings_day_view, name='service_bookings_day'),
     # The detail view for a single booking
     path('service-bookings/<int:pk>/', service_booking_details_view, name='service_booking_details'),
 

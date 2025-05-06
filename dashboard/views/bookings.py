@@ -56,48 +56,6 @@ def service_booking_details_view(request, pk):
     # Render the service_booking_details.html template
     return render(request, 'dashboard/service_booking_details.html', context)
 
-
-# --- Service Bookings Day View ---
-@user_passes_test(is_staff_check)
-def service_bookings_day_view(request, year, month, day):
-    """
-    View for displaying bookings for a specific day in the admin dashboard.
-    Requires staff user.
-    """
-    try:
-        selected_date = date(year, month, day)
-    except (ValueError, TypeError):
-        messages.error(request, "Invalid date provided.")
-        # Redirect back to the main service bookings view (now using FullCalendar)
-        return redirect(reverse('dashboard:service_bookings'))
-
-    # Define the start and end of the selected day (timezone-aware)
-    # Ensure timezone is handled correctly
-    if settings.USE_TZ:
-        start_of_day = timezone.make_aware(timezone.datetime.combine(selected_date, timezone.datetime.min.time()), timezone.get_current_timezone())
-        end_of_day = timezone.make_aware(timezone.datetime.combine(selected_date, timezone.datetime.max.time()), timezone.get_current_timezone())
-    else:
-        # Handle naive datetimes if USE_TZ is False
-        start_of_day = timezone.datetime.combine(selected_date, timezone.datetime.min.time())
-        end_of_day = timezone.datetime.combine(selected_date, timezone.datetime.max.time())
-
-
-    # Fetch bookings for the selected day, ordered by appointment time
-    bookings_for_day = ServiceBooking.objects.filter(
-        appointment_datetime__gte=start_of_day,
-        appointment_datetime__lte=end_of_day
-    ).order_by('appointment_datetime')
-
-    context = {
-        'page_title': f'Bookings for {selected_date.strftime("%Y-%m-%d")}',
-        'selected_date': selected_date,
-        'bookings_for_day': bookings_for_day,
-    }
-
-    # Render the service_booking_day_view.html template
-    return render(request, 'dashboard/service_booking_day_view.html', context)
-
-
 # --- JSON Feed View for FullCalendar (New) ---
 @user_passes_test(is_staff_check)
 def get_bookings_json(request):

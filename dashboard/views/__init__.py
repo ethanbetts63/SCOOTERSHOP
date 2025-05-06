@@ -3,10 +3,6 @@
 # Imports for dashboard and settings views (formerly in dashboard.py)
 from .dashboard import (
     dashboard_index,
-    # Removed booking views imports from here:
-    # service_bookings_view,
-    # service_booking_details_view,
-    # service_bookings_day_view,
     settings_business_info,
     settings_hire_booking,
     settings_service_booking,
@@ -23,7 +19,6 @@ from .dashboard import (
 from .bookings import (
     service_bookings_view,
     service_booking_details_view,
-    service_bookings_day_view,
     get_bookings_json, 
     is_staff_check,
 )

@@ -37,12 +37,6 @@ def dashboard_index(request):
     # Updated template path
     return render(request, 'dashboard/dashboard_index.html', context)
 
-# --- REMOVED BOOKING VIEWS FROM HERE ---
-# service_bookings_view
-# service_booking_details_view
-# service_bookings_day_view
-
-
 # --- Existing Settings Views (Keep these) ---
 @user_passes_test(is_staff_check)
 def settings_business_info(request):
