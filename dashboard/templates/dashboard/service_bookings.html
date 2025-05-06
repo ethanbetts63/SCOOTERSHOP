@@ -2,13 +2,16 @@
 {% load static %}
 
 {% block admin_main_content %}
+{# Your existing CSS links #}
 <link rel="stylesheet" href="{% static 'css/service_booking_styles.css' %}">
-{# Link for calendar-specific styles #}
 <link rel="stylesheet" href="{% static 'css/calendar_styles.css' %}">
+
+{# Include FullCalendar's core CSS #}
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css' rel='stylesheet' />
 
 <h2>Service Bookings Calendar</h2>
 
-{# Container for the search and filtering section (existing or planned) #}
+{# Container for the search and filtering section (keep or remove as needed) #}
 <div class="card shadow mb-4">
     <div class="card-header">
         <h6 class="m-0 font-weight-bold text-primary">Search & Filters</h6>
@@ -24,56 +27,16 @@
         <h6 class="m-0 font-weight-bold text-primary">Booking Calendar</h6>
     </div>
     <div class="card-body">
-        {# Main container for the calendar #}
-        <div id="booking-calendar">
-            {# Calendar header: Month and Year, Navigation #}
-            <div class="calendar-header">
-                <button id="prev-month">Previous</button>
-                <h3 id="current-month-year">{{ current_month|date:"F Y" }}</h3>
-                <button id="next-month">Next</button>
-            </div>
-
-            {# Day names row #}
-            <div class="calendar-weekdays">
-                <div>Mon</div>
-                <div>Tue</div>
-                <div>Wed</div>
-                <div>Thu</div>
-                <div>Fri</div>
-                <div>Sat</div>
-                <div>Sun</div>
-            </div>
-
-            {# Calendar days grid #}
-            <div class="calendar-days">
-                {% for week in calendar %}
-                    {% for day in week %}
-                        {% comment %}
-                        Check if the day is within the displayed month.
-                        Using day.month and day.year directly from the date object in calendar_data.
-                        {% endcomment %}
-                        {% if day.is_current_month %}
-                            {# Day within the current month - Make it clickable #}
-                            <a href="{% url 'dashboard:service_bookings_day' year=day.day.year month=day.day.month day=day.day.day %}" class="calendar-day current-month {% if day.has_bookings %}has-bookings{% endif %}">
-                                <div class="day-number">{{ day.day.day }}</div>
-                                {% if day.bookings %}
-                                    <div class="booking-count">{{ day.bookings|length }} booking{{ day.bookings|length|pluralize }}</div>
-                                {% endif %}
-                            </a>
-                        {% else %}
-                            {# Day outside the current month - Not clickable #}
-                            <div class="calendar-day other-month">
-                                <div class="day-number">{{ day.day.day }}</div>
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                {% endfor %}
-            </div>
+        {# This is the div where FullCalendar will render the calendar.
+           You can replace the existing content of this div. #}
+        <div id='fullcalendar'>
+            {# FullCalendar will build the calendar inside this div #}
         </div>
     </div>
 </div>
 
-{# The existing recent bookings list can remain below the calendar or be moved #}
+{# The existing recent bookings list can remain below the calendar #}
+{# ... your existing recent bookings list div ... #}
 <div class="card shadow mb-4">
     <div class="card-header d-flex flex-column align-items-center">
         <h6 class="m-0 font-weight-bold text-primary card-header-title">Recent Bookings (List View)</h6>
@@ -103,6 +66,7 @@
     </div>
     <div class="text-center mt-3">
         {# This link might change or be removed once the calendar view is primary #}
+        {# You might remove or adjust this link later #}
         <a href="{% url 'dashboard:service_bookings' %}" class="btn btn-primary btn-sm">
              View All Bookings <i class="fas fa-arrow-right"></i>
         </a>
@@ -110,50 +74,40 @@
 </div>
 
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const bookingTiles = document.querySelectorAll('.booking-tile');
-            bookingTiles.forEach(tile => {
-                tile.addEventListener('click', function() {
-                    const detailUrl = this.getAttribute('data-detail-url');
-                    if (detailUrl) {
-                        window.location.href = detailUrl;
-                    }
-                });
-            });
-             // Basic JavaScript for calendar navigation (will require server-side handling)
-            const prevMonthButton = document.getElementById('prev-month');
-            const nextMonthButton = document.getElementById('next-month');
-            // No need to grab currentMonthYearHeader if we are just redirecting
+{# Include FullCalendar's core JavaScript file #}
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
 
-            // Assuming the current month and year are available from the server context
-            const currentYear = '{{ current_month.year|default:0 }}';
-            const currentMonth = '{{ current_month.month|default:1 }}';
- 
-            prevMonthButton.addEventListener('click', function() {
-                let newMonth = currentMonth - 1;
-                let newYear = currentYear;
-                if (newMonth < 1) {
-                    newMonth = 12;
-                    newYear--;
-                }
-                // Redirect to the same bookings page with previous month/year parameters
-                // Ensure URL is correctly generated
-                window.location.href = "{% url 'dashboard:service_bookings' %}" + `?year=${newYear}&month=${newMonth}`;
-            });
+{# Include the interaction plugin if you plan to use features like clicking dates/events #}
+<script src='https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.11/index.global.min.js'></script>
 
-            nextMonthButton.addEventListener('click', function() {
-                let newMonth = currentMonth + 1;
-                let newYear = currentYear;
-                if (newMonth > 12) {
-                    newMonth = 1;
-                    newYear++;
-                }
-                 // Redirect to the same bookings page with next month/year parameters
-                 // Ensure URL is correctly generated
-                window.location.href = "{% url 'dashboard:service_bookings' %}" + `?year=${newYear}&month=${newMonth}`;
-            });
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('fullcalendar'); // Get the HTML element
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            // ** REQUIRED OPTIONS **
+            initialView: 'dayGridMonth', // Specifies the default view (e.g., month view)
+
+            // ** OPTIONAL CONFIGURATION **
+            headerToolbar: { // Customize the buttons and title at the top
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay' // Example: add buttons for different views
+            },
+
+            // --- Interactivity (Using the interaction plugin) ---
+            dateClick: function(info) {
+                // This function is called when a date is clicked
+                alert('Clicked on: ' + info.dateStr); // Example: show the date
+                // You could redirect to your day view here, e.g.:
+                // window.location.href = `/dashboard/bookings/${info.date.getFullYear()}/${info.date.getMonth() + 1}/${info.date.getDate()}/`;
+            },
         });
-    </script>
+
+        // Render the calendar on the page
+        calendar.render();
+    });
+
+</script>
 
 {% endblock %}
