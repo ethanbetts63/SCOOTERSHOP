@@ -2,7 +2,6 @@
 
 from django.urls import path
 # Import service booking views from the service/views package
-
 from .views import (
     booking_start,
     booking_step1,
@@ -12,7 +11,10 @@ from .views import (
     booking_step3_anonymous,
     service_confirmed_view,
     booking_admin_view,
-    service
+    get_user_motorcycles,
+    get_user_details,
+    service,
+
 )
 
 
@@ -45,4 +47,6 @@ urlpatterns = [
 
     # Admin Booking View
     path('book/admin/', booking_admin_view, name='admin_booking'), # Added this URL pattern
+    path('admin/get_user_details/<int:user_id>/', get_user_details, name='get_user_details'),
+    path('admin/get_user_motorcycles/<int:user_id>/', get_user_motorcycles, name='get_user_motorcycles'),
 ]

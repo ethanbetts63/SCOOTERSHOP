@@ -6,25 +6,539 @@
     <hr>
 
     {% if messages %}
-        <ul class="messages">
+        <div class="alert alert-info">
             {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                <p{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>
             {% endfor %}
-        </ul>
+        </div>
     {% endif %}
 
-    <form method="post">
+    <form method="post" id="admin-booking-form">
         {% csrf_token %}
 
-        {{ form.as_p }}
+        {# Customer Type Selection #}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Customer Selection</h3>
+            </div>
+            <div class="card-body">
+                {# 1. Add "Add Customer" button #}
+                <div class="form-group">
+                    <a href="#" class="btn btn-secondary mb-2" id="add-customer-button">Add New Customer</a>
+                    {# TODO: Replace # with the actual URL to the add customer page when created #}
+                </div>
 
-        {# You might want to add some JavaScript here to dynamically show/hide #}
-        {# the existing_motorcycle and new_bike_* fields based on bike_selection_type #}
-        {# and also to populate the existing_motorcycle queryset based on the selected user. #}
-        {# This dynamic behavior is not implemented in this initial code. #}
+                <div class="form-group">
+                    {{ form.customer_type.label_tag }}
+                    {{ form.customer_type }}
+                </div>
 
-        <button type="submit" class="btn btn-primary">Create Booking</button>
+                <div id="existing-customer-section">
+                    <div class="form-group">
+                        {{ form.user.label_tag }}
+                        {{ form.user }}
+                        {% if form.user.errors %}
+                            <div class="text-danger">
+                                {% for error in form.user.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Customer Details Section #}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Customer Details</h3>
+            </div>
+            <div class="card-body" id="user-details-section">
+                <p id="customer-details-instructions">Details will populate when an existing customer is selected, or can be entered for a one-off booking.</p>
+
+                <div class="form-group">
+                    {{ form.one_off_first_name.label_tag }}
+                    {{ form.one_off_first_name }}
+                    {% if form.one_off_first_name.help_text %}
+                        <small class="form-text text-muted">{{ form.one_off_first_name.help_text }}</small>
+                    {% endif %}
+                    {% if form.one_off_first_name.errors %}
+                        <div class="text-danger">
+                            {% for error in form.one_off_first_name.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.one_off_last_name.label_tag }}
+                    {{ form.one_off_last_name }}
+                    {% if form.one_off_last_name.help_text %}
+                        <small class="form-text text-muted">{{ form.one_off_last_name.help_text }}</small>
+                    {% endif %}
+                    {% if form.one_off_last_name.errors %}
+                        <div class="text-danger">
+                            {% for error in form.one_off_last_name.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.one_off_email.label_tag }}
+                    {{ form.one_off_email }}
+                    {% if form.one_off_email.help_text %}
+                        <small class="form-text text-muted">{{ form.one_off_email.help_text }}</small>
+                    {% endif %}
+                    {% if form.one_off_email.errors %}
+                        <div class="text-danger">
+                            {% for error in form.one_off_email.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.one_off_phone_number.label_tag }}
+                    {{ form.one_off_phone_number }}
+                    {% if form.one_off_phone_number.help_text %}
+                        <small class="form-text text-muted">{{ form.one_off_phone_number.help_text }}</small>
+                    {% endif %}
+                    {% if form.one_off_phone_number.errors %}
+                        <div class="text-danger">
+                            {% for error in form.one_off_phone_number.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# Motorcycle Details Section #}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Motorcycle Details</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    {{ form.bike_selection_type.label_tag }}
+                    {{ form.bike_selection_type }}
+                </div>
+
+                <div id="existing-motorcycle-section">
+                    <div class="form-group">
+                        {{ form.existing_motorcycle.label_tag }}
+                        {{ form.existing_motorcycle }}
+                        {% if form.existing_motorcycle.errors %}
+                            <div class="text-danger">
+                                {% for error in form.existing_motorcycle.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div id="new-motorcycle-section">
+                    <h4>New Motorcycle Details</h4>
+                    <div class="form-group">
+                        {{ form.new_bike_make.label_tag }}
+                        {{ form.new_bike_make }}
+                        {% if form.new_bike_make.errors %}
+                            <div class="text-danger">
+                                {% for error in form.new_bike_make.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.new_bike_model.label_tag }}
+                        {{ form.new_bike_model }}
+                        {% if form.new_bike_model.errors %}
+                            <div class="text-danger">
+                                {% for error in form.new_bike_model.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.new_bike_year.label_tag }}
+                        {{ form.new_bike_year }}
+                        {% if form.new_bike_year.errors %}
+                            <div class="text-danger">
+                                {% for error in form.new_bike_year.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.new_bike_rego.label_tag }}
+                        {{ form.new_bike_rego }}
+                        {% if form.new_bike_rego.errors %}
+                            <div class="text-danger">
+                                {% for error in form.new_bike_rego.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.new_bike_vin_number.label_tag }}
+                        {{ form.new_bike_vin_number }}
+                        {% if form.new_bike_vin_number.errors %}
+                            <div class="text-danger">
+                                {% for error in form.new_bike_vin_number.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.new_bike_odometer.label_tag }}
+                        {{ form.new_bike_odometer }}
+                        {% if form.new_bike_odometer.errors %}
+                            <div class="text-danger">
+                                {% for error in form.new_bike_odometer.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.new_bike_transmission.label_tag }}
+                        {{ form.new_bike_transmission }}
+                        {% if form.new_bike_transmission.errors %}
+                            <div class="text-danger">
+                                {% for error in form.new_bike_transmission.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div id="anon-vehicle-section">
+                    <h4>Vehicle Details (One-off)</h4>
+                    <div class="form-group">
+                        {{ form.anon_vehicle_make.label_tag }}
+                        {{ form.anon_vehicle_make }}
+                        {% if form.anon_vehicle_make.errors %}
+                            <div class="text-danger">
+                                {% for error in form.anon_vehicle_make.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.anon_vehicle_model.label_tag }}
+                        {{ form.anon_vehicle_model }}
+                        {% if form.anon_vehicle_model.errors %}
+                            <div class="text-danger">
+                                {% for error in form.anon_vehicle_model.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.anon_vehicle_year.label_tag }}
+                        {{ form.anon_vehicle_year }}
+                        {% if form.anon_vehicle_year.errors %}
+                            <div class="text-danger">
+                                {% for error in form.anon_vehicle_year.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Add a break between motorcycle and service sections as requested #}
+        <br>
+
+        {# Service Details Section #}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Service Details</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    {{ form.service_type.label_tag }}
+                    {{ form.service_type }}
+                    {% if form.service_type.errors %}
+                        <div class="text-danger">
+                            {% for error in form.service_type.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.appointment_datetime.label_tag }}
+                    {{ form.appointment_datetime }}
+                    {% if form.appointment_datetime.errors %}
+                        <div class="text-danger">
+                            {% for error in form.appointment_datetime.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.preferred_contact.label_tag }}
+                    {{ form.preferred_contact }}
+                    {% if form.preferred_contact.errors %}
+                        <div class="text-danger">
+                            {% for error in form.preferred_contact.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.booking_comments.label_tag }}
+                    {{ form.booking_comments }}
+                    {% if form.booking_comments.errors %}
+                        <div class="text-danger">
+                            {% for error in form.booking_comments.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group mb-4">
+            <button type="submit" class="btn btn-primary">Create Booking</button>
+        </div>
     </form>
-
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const customerTypeRadios = document.querySelectorAll('input[name="customer_type"]');
+    const existingCustomerSection = document.getElementById('existing-customer-section');
+    const userSelect = document.getElementById('id_user');
+    const userDetailsSection = document.getElementById('user-details-section');
+    const oneOffFirstNameInput = document.getElementById('id_one_off_first_name');
+    const oneOffLastNameInput = document.getElementById('id_one_off_last_name');
+    const oneOffEmailInput = document.getElementById('id_one_off_email');
+    const oneOffPhoneNumberInput = document.getElementById('id_one_off_phone_number');
+    const bikeSelectionTypeRadios = document.querySelectorAll('input[name="bike_selection_type"]');
+    const existingMotorcycleSection = document.getElementById('existing-motorcycle-section');
+    const newMotorcycleSection = document.getElementById('new-motorcycle-section');
+    const anonVehicleSection = document.getElementById('anon-vehicle-section');
+    const existingMotorcycleSelect = document.getElementById('id_existing_motorcycle');
+    const customerDetailsInstructions = document.getElementById('customer-details-instructions');
+
+    function toggleCustomerFields() {
+        const selectedCustomerType = document.querySelector('input[name="customer_type"]:checked').value;
+
+        if (selectedCustomerType === 'existing') {
+            existingCustomerSection.style.display = 'block';
+            
+            // For existing customers, we'll populate these fields via AJAX but keep them editable
+            // Clear fields but don't disable them
+            if (!userSelect.value) {
+                oneOffFirstNameInput.value = '';
+                oneOffLastNameInput.value = '';
+                oneOffEmailInput.value = '';
+                oneOffPhoneNumberInput.value = '';
+            }
+            
+            // Always keep fields enabled for editing
+            oneOffFirstNameInput.disabled = false;
+            oneOffLastNameInput.disabled = false;
+            oneOffEmailInput.disabled = false;
+            oneOffPhoneNumberInput.disabled = false;
+            
+            // Update instructions
+            customerDetailsInstructions.textContent = "Customer details shown below. You can edit these if needed.";
+            
+            // Enable user select
+            userSelect.disabled = false;
+            
+            // Hide anonymous vehicle fields
+            anonVehicleSection.style.display = 'none';
+        } else { // one_off
+            existingCustomerSection.style.display = 'none';
+            
+            // Clear and enable one-off fields
+            oneOffFirstNameInput.value = '';
+            oneOffLastNameInput.value = '';
+            oneOffEmailInput.value = '';
+            oneOffPhoneNumberInput.value = '';
+            oneOffFirstNameInput.disabled = false;
+            oneOffLastNameInput.disabled = false;
+            oneOffEmailInput.disabled = false;
+            oneOffPhoneNumberInput.disabled = false;
+            
+            // Update instructions
+            customerDetailsInstructions.textContent = "Enter customer details for this one-off booking.";
+            
+            // Disable user select
+            userSelect.disabled = true;
+            userSelect.value = '';
+            
+            // Show anonymous vehicle fields and hide existing/new motorcycle fields
+            anonVehicleSection.style.display = 'block';
+            existingMotorcycleSection.style.display = 'none';
+            newMotorcycleSection.style.display = 'none';
+        }
+        
+        // Trigger bike selection toggle as visibility might change
+        toggleBikeFields();
+    }
+
+    function toggleBikeFields() {
+        const selectedCustomerType = document.querySelector('input[name="customer_type"]:checked').value;
+        const selectedBikeSelectionType = document.querySelector('input[name="bike_selection_type"]:checked').value;
+
+        if (selectedCustomerType === 'existing') {
+            anonVehicleSection.style.display = 'none';
+            if (selectedBikeSelectionType === 'existing') {
+                existingMotorcycleSection.style.display = 'block';
+                newMotorcycleSection.style.display = 'none';
+            } else { // new
+                existingMotorcycleSection.style.display = 'none';
+                newMotorcycleSection.style.display = 'block';
+            }
+        } else { // one_off
+            // For one-off, we only show the anonymous vehicle fields
+            anonVehicleSection.style.display = 'block';
+            existingMotorcycleSection.style.display = 'none';
+            newMotorcycleSection.style.display = 'none';
+        }
+    }
+
+    // Function to populate user details based on selected user
+    function populateUserDetails(userId) {
+        if (userId) {
+            // Make an AJAX call to fetch user details
+            fetch(`/admin/get_user_details/${userId}/`) // Replace with your actual URL
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    oneOffFirstNameInput.value = data.first_name || '';
+                    oneOffLastNameInput.value = data.last_name || '';
+                    oneOffEmailInput.value = data.email || '';
+                    oneOffPhoneNumberInput.value = data.phone_number || '';
+                    
+                    // Keep fields enabled so they can be edited and submitted
+                    oneOffFirstNameInput.disabled = false;
+                    oneOffLastNameInput.disabled = false;
+                    oneOffEmailInput.disabled = false;
+                    oneOffPhoneNumberInput.disabled = false;
+                    
+                    // Update instructions
+                    customerDetailsInstructions.textContent = "Customer details loaded. You can edit these if needed.";
+
+                    // Populate existing motorcycle dropdown for the selected user
+                    populateExistingMotorcycles(userId);
+                })
+                .catch(error => {
+                    console.error('Error fetching user details:', error);
+                    // Handle error but don't disable fields
+                    customerDetailsInstructions.textContent = "Error loading customer details. Please enter manually.";
+                    
+                    // Clear existing motorcycle dropdown
+                    existingMotorcycleSelect.innerHTML = '<option value="">---------</option>';
+                });
+        } else {
+            // Clear fields if no user is selected
+            oneOffFirstNameInput.value = '';
+            oneOffLastNameInput.value = '';
+            oneOffEmailInput.value = '';
+            oneOffPhoneNumberInput.value = '';
+            
+            // Update instructions
+            customerDetailsInstructions.textContent = "Please select a customer to load their details.";
+            
+            // Clear existing motorcycle dropdown
+            existingMotorcycleSelect.innerHTML = '<option value="">---------</option>';
+        }
+    }
+
+    // Function to populate existing motorcycles based on selected user
+    function populateExistingMotorcycles(userId) {
+        if (userId) {
+            // Make an AJAX call to fetch user's motorcycles
+            fetch(`/admin/get_user_motorcycles/${userId}/`) // Replace with your actual URL
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    existingMotorcycleSelect.innerHTML = '<option value="">---------</option>'; // Clear existing options
+                    
+                    if (data.motorcycles && data.motorcycles.length > 0) {
+                        data.motorcycles.forEach(motorcycle => {
+                            const option = document.createElement('option');
+                            option.value = motorcycle.id;
+                            option.textContent = `${motorcycle.year} ${motorcycle.make} ${motorcycle.model} (${motorcycle.rego})`;
+                            existingMotorcycleSelect.appendChild(option);
+                        });
+                    } else {
+                        // No motorcycles found
+                        const option = document.createElement('option');
+                        option.disabled = true;
+                        option.textContent = 'No motorcycles found for this customer';
+                        existingMotorcycleSelect.appendChild(option);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching user motorcycles:', error);
+                    existingMotorcycleSelect.innerHTML = '<option value="">Error loading motorcycles</option>';
+                });
+        } else {
+            existingMotorcycleSelect.innerHTML = '<option value="">---------</option>'; // Clear existing options if no user selected
+        }
+    }
+
+    // Event listeners
+    customerTypeRadios.forEach(radio => {
+        radio.addEventListener('change', toggleCustomerFields);
+    });
+
+    userSelect.addEventListener('change', function() {
+        populateUserDetails(this.value);
+    });
+
+    bikeSelectionTypeRadios.forEach(radio => {
+        radio.addEventListener('change', toggleBikeFields);
+    });
+
+    // Initial state setup
+    document.getElementById('id_customer_type_0').checked = true; // Set to 'existing' as first option
+    toggleCustomerFields(); // Set initial visibility and state
+
+    // If there's an initial user selected (e.g., form submission with errors), populate details
+    if (userSelect.value) {
+        populateUserDetails(userSelect.value);
+    }
+});
+</script>
 {% endblock %}

@@ -5,9 +5,10 @@ from django.contrib.auth.decorators import user_passes_test
 from django.contrib import messages
 from django.urls import reverse
 from django.utils import timezone
-from service.forms import AdminBookingForm, CustomerMotorcycleForm # Import the new form and CustomerMotorcycleForm
-from service.models import ServiceBooking, CustomerMotorcycle # Import necessary models
-from users.models import User # Import User model
+from django.http import JsonResponse
+from service.forms import AdminBookingForm, CustomerMotorcycleForm
+from service.models import ServiceBooking, CustomerMotorcycle
+from users.models import User
 
 
 def is_staff_or_superuser(user):
@@ -75,3 +76,38 @@ def booking_admin_view(request):
         'form': form,
     }
     return render(request, 'service/service_booking_admin.html', context)
+
+@user_passes_test(is_staff_or_superuser)
+def get_user_details(request, user_id):
+    """AJAX endpoint to get user details for the booking form."""
+    try:
+        user = User.objects.get(id=user_id)
+        data = {
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email,
+            'phone_number': getattr(user, 'phone_number', '')  # In case phone_number field exists on User model
+        }
+        return JsonResponse(data)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=404)
+
+@user_passes_test(is_staff_or_superuser)
+def get_user_motorcycles(request, user_id):
+    """AJAX endpoint to get a user's motorcycles for the booking form."""
+    try:
+        motorcycles = CustomerMotorcycle.objects.filter(owner_id=user_id)
+        data = {
+            'motorcycles': [
+                {
+                    'id': bike.id,
+                    'make': bike.make,
+                    'model': bike.model,
+                    'year': bike.year,
+                    'rego': bike.rego or 'No Rego'
+                } for bike in motorcycles
+            ]
+        }
+        return JsonResponse(data)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

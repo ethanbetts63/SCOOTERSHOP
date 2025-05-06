@@ -25,7 +25,9 @@ from .booking_step3 import (
 
 # Import admin booking view
 from .booking_admin import ( # Added this import block
-    booking_admin_view
+    booking_admin_view,
+    get_user_motorcycles,
+    get_user_details,
 )
 
 # Import other service views (like the 'service' view if it exists)
