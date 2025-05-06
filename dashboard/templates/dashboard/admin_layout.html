@@ -15,8 +15,9 @@
         <h2>Admin Navigation</h2>
         <ul class="reset-list">{# Added .reset-list #}
             <li><a href="{% url 'dashboard:dashboard_index' %}">Dashboard Home</a></li>
-            <li><a href="{% url 'dashboard:service_bookings' %}">Service Bookings</a></li> {# Added link to the new bookings page #}
-            <li><a href="{% url 'inventory:motorcycle-list' %}">All Motorcycles</a></li> {# Added link to All Motorcycles using the URL name from inventory/urls.py #}
+            <li><a href="{% url 'dashboard:service_bookings' %}">Service Bookings</a></li> 
+            <li><a href="{% url 'service:admin_booking' %}">Create Service Booking</a></li> 
+            <li><a href="{% url 'inventory:motorcycle-list' %}">All Motorcycles</a></li> 
             <li class="nav-section">
                 <h3>Settings</h3>
                 <ul class="reset-list">{# Added .reset-list #}

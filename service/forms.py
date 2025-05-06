@@ -2,16 +2,18 @@
 
 from django import forms
 from django.utils.translation import gettext_lazy as _
-import datetime # Needed for timedelta if used for duration
+import datetime
+from django.db.models import Q # Import Q for potential lookups later
 
 # Import models from the service app
 from .models import ServiceType, CustomerMotorcycle, ServiceBooking
 # Import models from other apps if needed
 from inventory.models import Motorcycle # For transmission choices
+from users.models import User # Import the User model
 
-# Service Booking Forms
+# Service Booking Forms (Keep existing forms for other flows)
 class ServiceDetailsForm(forms.Form):
-    # Queryset filtered in the view or in form init if needed based on availability
+    # ... (existing code) ...
     service_type = forms.ModelChoiceField(
         queryset=ServiceType.objects.filter(is_active=True),
         empty_label="Select a Service Type",
@@ -23,21 +25,13 @@ class ServiceDetailsForm(forms.Form):
         widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'})
     )
 
-    # Add a clean method for appointment_datetime if you need to validate against business hours or availability
-    # def clean_appointment_datetime(self):
-    #     appointment_dt = self.cleaned_data['appointment_datetime']
-    #     # Add validation logic here (e.g., check if within business hours, in the future, etc.)
-    #     return appointment_dt
-
-
 class CustomerMotorcycleForm(forms.ModelForm):
     class Meta:
         model = CustomerMotorcycle
         fields = ['make', 'model', 'year', 'rego', 'vin_number', 'odometer', 'transmission']
         widgets = {
-            # Using Motorcycle.TRANSMISSION_CHOICES assumes Motorcycle is accessible and has this attribute
             'transmission': forms.Select(choices=Motorcycle.TRANSMISSION_CHOICES, attrs={'class': 'form-control'}),
-            'year': forms.NumberInput(attrs={'class': 'form-control', 'min': '1900', 'max': datetime.date.today().year}), # Example year validation
+            'year': forms.NumberInput(attrs={'class': 'form-control', 'min': '1900', 'max': datetime.date.today().year}),
             'odometer': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
             'rego': forms.TextInput(attrs={'class': 'form-control'}),
             'vin_number': forms.TextInput(attrs={'class': 'form-control'}),
@@ -46,43 +40,33 @@ class CustomerMotorcycleForm(forms.ModelForm):
         }
 
     def clean_rego(self):
-         # Convert registration to uppercase if it exists
          if self.cleaned_data.get('rego'):
              return self.cleaned_data['rego'].upper()
          return self.cleaned_data.get('rego')
 
     def clean_vin_number(self):
-         # Optional: Add VIN validation if needed
          return self.cleaned_data.get('vin_number')
 
-
 class ServiceBookingUserForm(forms.Form):
-    # These fields might overlap with User or custom user profile fields.
-    # Consider using a ModelForm for a User profile if you collect more details.
+    # ... (existing code) ...
     first_name = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
     last_name = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
     email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control'}))
     phone_number = forms.CharField(max_length=20, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
     preferred_contact = forms.ChoiceField(
-        choices=ServiceBooking.CONTACT_CHOICES, # Assumes CONTACT_CHOICES is defined on the ServiceBooking model
+        choices=ServiceBooking.CONTACT_CHOICES,
         widget=forms.RadioSelect,
         initial='email',
         label="Preferred method of contact"
     )
-    # booking_comments field moved to Step 3
     booking_comments = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
         required=False,
         label="Comments or specific requests"
     )
 
-    # is_returning_customer field might be handled by checking if the user is authenticated
-    # This field might not be necessary as a form field if the view logic handles it.
-    # is_returning_customer = forms.BooleanField(label="Are you a returning customer?", required=False) # For anonymous users
-
-
 class ExistingCustomerMotorcycleForm(forms.Form):
-    # Queryset is set in the __init__ method based on the logged-in user
+    # ... (existing code) ...
     motorcycle = forms.ModelChoiceField(
         queryset=CustomerMotorcycle.objects.none(),
         label="Select your Motorcycle",
@@ -90,14 +74,164 @@ class ExistingCustomerMotorcycleForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
-        # Extract user from kwargs
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-
-        # Set the queryset to show only motorcycles owned by this user
         if user and user.is_authenticated:
-            # Assumes CustomerMotorcycle has a ForeignKey or OneToOneField to User named 'owner'
             self.fields['motorcycle'].queryset = CustomerMotorcycle.objects.filter(owner=user)
         else:
-             # If user is anonymous, there are no existing motorcycles, so the queryset remains empty
-             pass
+             pass # Queryset remains empty for anonymous users
+
+
+# --- Admin Booking Form ---
+class AdminBookingForm(forms.Form):
+    user = forms.ModelChoiceField(
+        queryset=User.objects.filter(is_active=True), # Only active users
+        empty_label="-- Select Customer --",
+        label="Customer",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    BIKE_SELECTION_CHOICES = [
+        ('existing', 'Select Existing Motorcycle'),
+        ('new', 'Add New Motorcycle'),
+    ]
+    bike_selection_type = forms.ChoiceField(
+        choices=BIKE_SELECTION_CHOICES,
+        widget=forms.RadioSelect,
+        initial='existing',
+        label="Motorcycle Options"
+    )
+
+    existing_motorcycle = forms.ModelChoiceField(
+        queryset=CustomerMotorcycle.objects.none(), # Will be populated dynamically
+        required=False, # Make required based on bike_selection_type
+        label="Existing Motorcycle",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    # Fields for adding a new motorcycle (mimicking CustomerMotorcycleForm)
+    new_bike_make = forms.CharField(
+        max_length=100,
+        required=False, # Make required based on bike_selection_type
+        label="Make",
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    new_bike_model = forms.CharField(
+        max_length=100,
+        required=False, # Make required based on bike_selection_type
+        label="Model",
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    new_bike_year = forms.IntegerField(
+        required=False, # Make required based on bike_selection_type
+        label="Year",
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '1900', 'max': datetime.date.today().year})
+    )
+    new_bike_rego = forms.CharField(
+        max_length=20,
+        required=False,
+        label="Registration",
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    new_bike_vin_number = forms.CharField(
+        max_length=50,
+        required=False,
+        label="VIN Number",
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    new_bike_odometer = forms.IntegerField(
+        required=False,
+        label="Odometer",
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '0'})
+    )
+    new_bike_transmission = forms.ChoiceField(
+        choices=[('', '---------')] + list(Motorcycle.TRANSMISSION_CHOICES), # Add an empty choice
+        required=False,
+        label="Transmission",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    # Service Details fields
+    service_type = forms.ModelChoiceField(
+        queryset=ServiceType.objects.filter(is_active=True),
+        empty_label="-- Select Service Type --",
+        label="Service Type",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    appointment_datetime = forms.DateTimeField(
+        label="Preferred Date and Time",
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'})
+    )
+
+    # Customer Contact/Comments fields
+    # For admin booking, we don't need name/email/phone fields as they come from the selected user
+    preferred_contact = forms.ChoiceField(
+        choices=ServiceBooking.CONTACT_CHOICES,
+        widget=forms.RadioSelect,
+        initial='email',
+        label="Preferred method of contact"
+    )
+    booking_comments = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+        required=False,
+        label="Comments or specific requests"
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Initially, the existing_motorcycle queryset is empty.
+        # It will be populated dynamically via JavaScript/AJAX based on the selected user.
+        # Or, if data is posted, we can populate it based on the posted user.
+
+        # If there's data in the form (e.g., POST request or initial data),
+        # try to populate the existing_motorcycle queryset based on the user.
+        user_id = None
+        if 'user' in self.data: # Check POST data
+            try:
+                user_id = int(self.data['user'])
+            except (ValueError, TypeError):
+                pass
+        elif self.initial.get('user'): # Check initial data
+             user_id = self.initial['user'].id if isinstance(self.initial['user'], User) else self.initial['user']
+
+
+        if user_id:
+            try:
+                user = User.objects.get(id=user_id)
+                self.fields['existing_motorcycle'].queryset = CustomerMotorcycle.objects.filter(owner=user)
+            except User.DoesNotExist:
+                # User not found, queryset remains empty
+                pass
+
+    def clean(self):
+        cleaned_data = super().clean()
+        bike_selection_type = cleaned_data.get('bike_selection_type')
+        existing_motorcycle = cleaned_data.get('existing_motorcycle')
+        new_bike_make = cleaned_data.get('new_bike_make')
+        new_bike_model = cleaned_data.get('new_bike_model')
+        new_bike_year = cleaned_data.get('new_bike_year')
+
+        # Conditional validation for bike selection
+        if bike_selection_type == 'existing':
+            if not existing_motorcycle:
+                self.add_error('existing_motorcycle', 'Please select an existing motorcycle.')
+            # Ensure new bike fields are empty if existing is selected
+            if new_bike_make or new_bike_model or new_bike_year is not None:
+                 # Add specific errors or just a general one
+                 self.add_error(None, 'New bike details should not be provided when selecting an existing bike.')
+
+        elif bike_selection_type == 'new':
+            # Ensure new bike fields are provided when adding a new bike
+            if not new_bike_make:
+                self.add_error('new_bike_make', 'Make is required for a new motorcycle.')
+            if not new_bike_model:
+                self.add_error('new_bike_model', 'Model is required for a new motorcycle.')
+            if not new_bike_year:
+                self.add_error('new_bike_year', 'Year is required for a new motorcycle.')
+
+            # Ensure no existing motorcycle is selected when adding a new one
+            if existing_motorcycle:
+                 self.add_error('existing_motorcycle', 'Cannot select an existing motorcycle when adding a new one.')
+
+
+        return cleaned_data

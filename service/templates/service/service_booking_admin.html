@@ -1,11 +1,30 @@
-{% extends 'core/layout.html' %}
+{% extends "dashboard/admin_layout.html" %}
 
-{% block title %}{{ page_title }}{% endblock %}
-
-{% block content %}
+{% block admin_main_content %}
 <div class="container mt-4">
     <h1>{{ page_title }}</h1>
-    <p>This is the placeholder for the admin booking form.</p>
-    {# We will add the form fields here later #}
+    <hr>
+
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        {# You might want to add some JavaScript here to dynamically show/hide #}
+        {# the existing_motorcycle and new_bike_* fields based on bike_selection_type #}
+        {# and also to populate the existing_motorcycle queryset based on the selected user. #}
+        {# This dynamic behavior is not implemented in this initial code. #}
+
+        <button type="submit" class="btn btn-primary">Create Booking</button>
+    </form>
+
 </div>
 {% endblock %}

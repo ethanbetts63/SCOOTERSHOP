@@ -1,17 +1,77 @@
-from django.shortcuts import render
-from django.contrib.auth.decorators import user_passes_test
+# service/booking_admin.py
 
-# This is a placeholder view for the admin booking form.
-# We'll add the form logic here later.
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import user_passes_test
+from django.contrib import messages
+from django.urls import reverse
+from django.utils import timezone
+from service.forms import AdminBookingForm, CustomerMotorcycleForm # Import the new form and CustomerMotorcycleForm
+from service.models import ServiceBooking, CustomerMotorcycle # Import necessary models
+from users.models import User # Import User model
+
 
 def is_staff_or_superuser(user):
+    """Check if the user is staff or a superuser."""
     return user.is_staff or user.is_superuser
 
 @user_passes_test(is_staff_or_superuser)
 def booking_admin_view(request):
-    # In a real application, you would handle form submission here
-    # For now, we just render the template
+    if request.method == 'POST':
+        form = AdminBookingForm(request.POST)
+        if form.is_valid():
+            # Process the valid form data
+            user = form.cleaned_data['user']
+            bike_selection_type = form.cleaned_data['bike_selection_type']
+            service_type = form.cleaned_data['service_type']
+            appointment_datetime = form.cleaned_data['appointment_datetime']
+            preferred_contact = form.cleaned_data['preferred_contact']
+            booking_comments = form.cleaned_data['booking_comments']
+
+            motorcycle_instance = None
+
+            if bike_selection_type == 'existing':
+                motorcycle_instance = form.cleaned_data['existing_motorcycle']
+            elif bike_selection_type == 'new':
+                # Create a new CustomerMotorcycle instance
+                motorcycle_instance = CustomerMotorcycle(
+                    owner=user,
+                    make=form.cleaned_data['new_bike_make'],
+                    model=form.cleaned_data['new_bike_model'],
+                    year=form.cleaned_data['new_bike_year'],
+                    rego=form.cleaned_data.get('new_bike_rego'),
+                    vin_number=form.cleaned_data.get('new_bike_vin_number'),
+                    odometer=form.cleaned_data.get('new_bike_odometer'),
+                    transmission=form.cleaned_data.get('new_bike_transmission'),
+                )
+                motorcycle_instance.save()
+                messages.success(request, f"New motorcycle added for {user.get_full_name() or user.username}.")
+
+
+            # Create the ServiceBooking instance
+            booking = ServiceBooking(
+                customer=user,
+                vehicle=motorcycle_instance,
+                service_type=service_type,
+                appointment_datetime=appointment_datetime,
+                preferred_contact=preferred_contact,
+                customer_notes=booking_comments,
+                status='pending', # Or set a default status appropriate for admin bookings
+            )
+            booking.save()
+
+            messages.success(request, f"Service booking created successfully for {user.get_full_name() or user.username}.")
+            # Redirect to a confirmation page or the admin bookings list
+            return redirect(reverse('service:admin_booking')) # Redirect back to the form for another booking
+
+        else:
+            # Form is invalid, render with errors
+            messages.error(request, "Please correct the errors below.")
+
+    else: # GET request
+        form = AdminBookingForm()
+
     context = {
         'page_title': 'Admin Service Booking',
+        'form': form,
     }
     return render(request, 'service/service_booking_admin.html', context)
