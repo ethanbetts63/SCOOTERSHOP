@@ -5,7 +5,7 @@ from django.urls import reverse # Import reverse for redirects
 
 # Import models from the dashboard app
 from dashboard.models import SiteSettings, AboutPageContent
-from service.models import ServiceType
+from service.models import ServiceType, ServiceBooking # Import ServiceBooking model
 
 # Import forms from the dashboard app
 from dashboard.forms import (
@@ -31,19 +31,41 @@ def dashboard_index(request):
     # Updated template path
     return render(request, 'dashboard/dashboard_index.html', context)
 
-# --- New View for Bookings ---
+# --- New View for Bookings List ---
 @user_passes_test(is_staff_check)
 def service_bookings_view(request):
     """
-    View for the service bookings page in the admin dashboard.
+    View for the service bookings list page in the admin dashboard.
     Requires staff user.
     """
+    # Fetch all service bookings (you might want to filter or order these)
+    # Corrected the order_by field to use 'appointment_datetime'
+    bookings = ServiceBooking.objects.all().order_by('-appointment_datetime')
+
     context = {
         'page_title': 'Manage Service Bookings',
-        # Add any data related to bookings here in the future
+        'bookings': bookings, # Pass the bookings list to the template
     }
     # Render the bookings.html template
     return render(request, 'dashboard/service_bookings.html', context)
+
+# --- New View for Service Booking Details ---
+@user_passes_test(is_staff_check)
+def service_booking_details_view(request, pk):
+    """
+    View for displaying details of a single service booking.
+    Requires staff user.
+    """
+    # Get the specific service booking or return a 404 error
+    booking = get_object_or_404(ServiceBooking, pk=pk)
+
+    context = {
+        'page_title': f'Service Booking Details - {booking.id}', # Use booking ID in title
+        'booking': booking, # Pass the specific booking object to the template
+    }
+    # Render the service_booking_details.html template
+    return render(request, 'dashboard/service_booking_details.html', context)
+
 
 # --- Existing Settings Views ---
 @user_passes_test(is_staff_check)
