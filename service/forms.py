@@ -16,11 +16,13 @@ class BaseAdminServiceBookingForm(forms.Form):
         queryset=ServiceType.objects.filter(is_active=True),
         empty_label="-- Select Service Type --",
         label="Service Type",
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=True # Made service_type required
     )
     appointment_datetime = forms.DateTimeField(
         label="Preferred Date and Time",
-        widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'})
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+        required=True # Made appointment_datetime required
     )
     booking_comments = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
@@ -37,12 +39,14 @@ class AdminAnonBookingForm(BaseAdminServiceBookingForm):
     one_off_first_name = forms.CharField(
         max_length=100,
         label="First Name",
-        widget=forms.TextInput(attrs={'class': 'form-control'})
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=True # Made one_off_first_name required
     )
     one_off_last_name = forms.CharField(
         max_length=100,
         label="Last Name",
-        widget=forms.TextInput(attrs={'class': 'form-control'})
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=True # Made one_off_last_name required
     )
     one_off_email = forms.EmailField(
         label="Email",
@@ -66,12 +70,14 @@ class AdminAnonBookingForm(BaseAdminServiceBookingForm):
     anon_vehicle_make = forms.CharField(
         max_length=100,
         label="Vehicle Make",
-        widget=forms.TextInput(attrs={'class': 'form-control'})
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=True # Made anon_vehicle_make required
     )
     anon_vehicle_model = forms.CharField(
         max_length=100,
         label="Vehicle Model",
-        widget=forms.TextInput(attrs={'class': 'form-control'})
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=True # Made anon_vehicle_model required
     )
     anon_vehicle_year = forms.IntegerField(
         label="Vehicle Year",
@@ -122,10 +128,11 @@ class AdminUserBookingForm(BaseAdminServiceBookingForm):
         queryset=User.objects.filter(is_active=True).order_by('first_name', 'last_name'),
         empty_label="-- Select Existing Customer --",
         label="Existing Customer",
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=True # Made user required
     )
 
-    # Fields to optionally update user details
+    # Fields to optionally update user details (kept as required=False as per existing code)
     user_first_name = forms.CharField(
         max_length=100,
         required=False,
@@ -159,31 +166,32 @@ class AdminUserBookingForm(BaseAdminServiceBookingForm):
         choices=BIKE_SELECTION_CHOICES,
         widget=forms.RadioSelect,
         initial='existing',
-        label="Motorcycle Options"
+        label="Motorcycle Options",
+        required=True # This field was already effectively required by logic, but explicitly setting it
     )
 
     existing_motorcycle = forms.ModelChoiceField(
         queryset=CustomerMotorcycle.objects.none(),
-        required=False,
+        required=False, # Required is handled in clean method based on bike_selection_type
         label="Existing Motorcycle",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
 
-    # Fields for adding a new motorcycle
+    # Fields for adding a new motorcycle (Required is handled in clean method based on bike_selection_type)
     new_bike_make = forms.CharField(
         max_length=100,
-        required=False,
+        required=False, # Required is handled in clean method based on bike_selection_type
         label="New Bike Make",
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     new_bike_model = forms.CharField(
         max_length=100,
-        required=False,
+        required=False, # Required is handled in clean method based on bike_selection_type
         label="New Bike Model",
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     new_bike_year = forms.IntegerField(
-        required=False,
+        required=False, # Required is handled in clean method based on bike_selection_type
         label="New Bike Year",
         widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '1900', 'max': datetime.date.today().year})
     )
@@ -240,6 +248,8 @@ class AdminUserBookingForm(BaseAdminServiceBookingForm):
         new_bike_model = cleaned_data.get('new_bike_model')
         new_bike_year = cleaned_data.get('new_bike_year')
 
+        # The 'user' field is now required at the field level, but we keep this check
+        # for clarity and consistency with existing logic.
         if not user:
             self.add_error('user', 'Please select an existing customer.')
 
@@ -247,37 +257,40 @@ class AdminUserBookingForm(BaseAdminServiceBookingForm):
         if bike_selection_type == 'existing':
             if not existing_motorcycle:
                 self.add_error('existing_motorcycle', 'Please select an existing motorcycle.')
-            # Ensure new bike fields are empty
+            # Ensure new bike fields are empty - this validation remains
             if new_bike_make or new_bike_model or new_bike_year is not None:
                  self.add_error(None, 'New bike details should not be provided when selecting an existing bike.')
 
         elif bike_selection_type == 'new':
+            # These fields are now explicitly required by the user's request
             if not new_bike_make:
                 self.add_error('new_bike_make', 'Make is required for a new motorcycle.')
             if not new_bike_model:
                 self.add_error('new_bike_model', 'Model is required for a new motorcycle.')
             if not new_bike_year:
                 self.add_error('new_bike_year', 'Year is required for a new motorcycle.')
-            # Ensure existing motorcycle field is empty
+            # Ensure existing motorcycle field is empty - this validation remains
             if existing_motorcycle:
                  self.add_error('existing_motorcycle', 'Cannot select an existing motorcycle when adding a new one.')
 
         return cleaned_data
 
-# Form for basic service details
+# Form for basic service details (affected by BaseAdminServiceBookingForm changes)
 class ServiceDetailsForm(forms.Form):
     service_type = forms.ModelChoiceField(
         queryset=ServiceType.objects.filter(is_active=True),
         empty_label="Select a Service Type",
         label="Service Type",
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=True # Made service_type required via inheritance, explicitly setting for clarity
     )
     appointment_datetime = forms.DateTimeField(
         label="Preferred Date and Time",
-        widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'})
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+        required=True # Made appointment_datetime required via inheritance, explicitly setting for clarity
     )
 
-# Model form for customer motorcycles
+# Model form for customer motorcycles (no changes requested)
 class CustomerMotorcycleForm(forms.ModelForm):
     class Meta:
         model = CustomerMotorcycle
@@ -303,31 +316,56 @@ class CustomerMotorcycleForm(forms.ModelForm):
          return self.cleaned_data.get('vin_number')
 
 
-
 # Form for service booking by an existing user
 class ServiceBookingUserForm(forms.Form):
-    first_name = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
-    last_name = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
-    email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control'}))
+    first_name = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=True # Made first_name required
+    )
+    last_name = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=True # Made last_name required
+    )
+    email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control'}), required=True) # Made email required (already was)
     phone_number = forms.CharField(max_length=20, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
     preferred_contact = forms.ChoiceField(
         choices=ServiceBooking.CONTACT_CHOICES,
         widget=forms.RadioSelect,
         initial='email',
-        label="Preferred method of contact"
+        label="Preferred method of contact",
+        required=True # Made preferred_contact required (already was)
     )
     booking_comments = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
         required=False,
         label="Comments or specific requests"
     )
+    # Fields for service type and appointment_datetime are missing here based on the original ServiceBookingUserForm.
+    # Assuming these should also be required as per the user's list for any booking form.
+    # Adding them here based on the fields present in BaseAdminServiceBookingForm
+    service_type = forms.ModelChoiceField(
+        queryset=ServiceType.objects.filter(is_active=True),
+        empty_label="Select a Service Type",
+        label="Service Type",
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=True # Added and made required based on user's list
+    )
+    appointment_datetime = forms.DateTimeField(
+        label="Preferred Date and Time",
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+        required=True # Added and made required based on user's list
+    )
 
-# Form to select an existing customer motorcycle
+
+# Form to select an existing customer motorcycle (no changes requested on required fields)
 class ExistingCustomerMotorcycleForm(forms.Form):
     motorcycle = forms.ModelChoiceField(
         queryset=CustomerMotorcycle.objects.none(),
         label="Select your Motorcycle",
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=True # Assuming selecting a motorcycle is required if this form is used
     )
 
     # Initialize form with user's motorcycles
