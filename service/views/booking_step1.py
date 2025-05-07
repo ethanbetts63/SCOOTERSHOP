@@ -50,10 +50,10 @@ def booking_step1(request):
                  }
                  return render(request, 'service/service_details.html', context)
 
-            # Handle appointment_datetime field
-            appointment_datetime = form.cleaned_data.get('appointment_datetime')
-            if appointment_datetime and isinstance(appointment_datetime, datetime.datetime):
-                booking_data['appointment_datetime_str'] = appointment_datetime.isoformat()
+            # Handle appointment_date field
+            appointment_date = form.cleaned_data.get('appointment_date')
+            if appointment_date and isinstance(appointment_date, datetime.datetime):
+                booking_data['appointment_date_str'] = appointment_date.isoformat()
             else:
                  messages.error(request, "Invalid appointment date/time.")
                  context = {
@@ -90,9 +90,9 @@ def booking_step1(request):
     else:
         initial_data = booking_data.copy()
 
-        if 'appointment_datetime_str' in initial_data:
+        if 'appointment_date_str' in initial_data:
              try:
-                initial_data['appointment_datetime'] = datetime.datetime.fromisoformat(initial_data['appointment_datetime_str'])
+                initial_data['appointment_date'] = datetime.datetime.fromisoformat(initial_data['appointment_date_str'])
              except (ValueError, TypeError):
                  pass
 

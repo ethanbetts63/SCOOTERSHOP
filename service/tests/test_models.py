@@ -136,7 +136,7 @@ class ServiceBookingTest(TestCase):
             customer=self.user,
             vehicle=self.motorcycle,
             service_type=self.service_type,
-            appointment_datetime=self.appointment_time,
+            appointment_date=self.appointment_time,
             customer_notes="Please check brakes too",
             # preferred_contact field was removed
             status="confirmed",
@@ -152,7 +152,7 @@ class ServiceBookingTest(TestCase):
         self.assertEqual(self.booking.customer, self.user)
         self.assertEqual(self.booking.vehicle, self.motorcycle)
         self.assertEqual(self.booking.service_type, self.service_type)
-        self.assertEqual(self.booking.appointment_datetime, self.appointment_time)
+        self.assertEqual(self.booking.appointment_date, self.appointment_time)
         self.assertEqual(self.booking.customer_notes, "Please check brakes too")
         # preferred_contact field was removed, so no assertion needed
         self.assertEqual(self.booking.status, "confirmed")
@@ -194,7 +194,7 @@ class ServiceBookingTest(TestCase):
             anon_vehicle_transmission="manual",
             anon_engine_number="ANONENG456", # Added anon_engine_number
             service_type=self.service_type,
-            appointment_datetime=self.appointment_time,
+            appointment_date=self.appointment_time,
             # preferred_contact field was removed
             status="pending"
         )
@@ -214,7 +214,7 @@ class ServiceBookingTest(TestCase):
         self.assertEqual(anon_booking.anon_vehicle_transmission, "manual")
         self.assertEqual(anon_booking.anon_engine_number, "ANONENG456") # Assert anon_engine_number
         self.assertEqual(anon_booking.service_type, self.service_type)
-        self.assertEqual(anon_booking.appointment_datetime, self.appointment_time)
+        self.assertEqual(anon_booking.appointment_date, self.appointment_time)
         # preferred_contact field was removed, so no assertion needed
         self.assertEqual(anon_booking.status, "pending")
         self.assertIsNotNone(anon_booking.booking_reference)
@@ -224,7 +224,7 @@ class ServiceBookingTest(TestCase):
         parts_only_booking = ServiceBooking.objects.create(
             customer=self.user,
             service_type=self.service_type,
-            appointment_datetime=self.appointment_time,
+            appointment_date=self.appointment_time,
             parts_cost=Decimal('50.00'),
             labor_cost=None,
             customer_name="Test User", # Minimal required fields for booking
@@ -239,7 +239,7 @@ class ServiceBookingTest(TestCase):
         labor_only_booking = ServiceBooking.objects.create(
             customer=self.user,
             service_type=self.service_type,
-            appointment_datetime=self.appointment_time,
+            appointment_date=self.appointment_time,
             parts_cost=None,
             labor_cost=Decimal('75.00'),
              customer_name="Test User", # Minimal required fields for booking
@@ -254,7 +254,7 @@ class ServiceBookingTest(TestCase):
         no_cost_booking = ServiceBooking.objects.create(
             customer=self.user,
             service_type=self.service_type,
-            appointment_datetime=self.appointment_time,
+            appointment_date=self.appointment_time,
             parts_cost=None,
             labor_cost=None,
              customer_name="Test User", # Minimal required fields for booking

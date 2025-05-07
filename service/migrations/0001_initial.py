@@ -145,7 +145,7 @@ class Migration(migrations.Migration):
                         null=True,
                     ),
                 ),
-                ("appointment_datetime", models.DateTimeField()),
+                ("appointment_date", models.DateTimeField()),
                 (
                     "customer_notes",
                     models.TextField(

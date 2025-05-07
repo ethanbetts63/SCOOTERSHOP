@@ -44,7 +44,7 @@ class BookingStep1TestCase(TestCase):
         self.tomorrow = datetime.datetime.now() + datetime.timedelta(days=1)
         self.valid_form_data = {
             'service_type': self.service_type.id,
-            'appointment_datetime': self.tomorrow.strftime('%Y-%m-%d %H:%M:%S'),
+            'appointment_date': self.tomorrow.strftime('%Y-%m-%d %H:%M:%S'),
             # 'booking_comments': 'Test notes', # Removed
         }
 
@@ -116,7 +116,7 @@ class BookingStep1TestCase(TestCase):
         session_data = session[SERVICE_BOOKING_SESSION_KEY]
 
         self.assertEqual(session_data['service_type_id'], self.service_type.id)
-        self.assertIn('appointment_datetime_str', session_data)
+        self.assertIn('appointment_date_str', session_data)
         # Removed assertion for booking_comments in step 1 session data
 
     # Test POST with valid data for anonymous user
@@ -161,7 +161,7 @@ class BookingStep1TestCase(TestCase):
         mock_get_settings.return_value = mock_settings
 
         invalid_data = self.valid_form_data.copy()
-        invalid_data['appointment_datetime'] = 'not-a-date'
+        invalid_data['appointment_date'] = 'not-a-date'
 
         response = self.client.post(self.step1_url, invalid_data)
 
@@ -177,10 +177,10 @@ class BookingStep1TestCase(TestCase):
 
         # Set up session data
         session = self.client.session
-        appointment_datetime = datetime.datetime.now() + datetime.timedelta(days=2)
+        appointment_date = datetime.datetime.now() + datetime.timedelta(days=2)
         session_data = {
             'service_type_id': self.service_type.id,
-            'appointment_datetime_str': appointment_datetime.isoformat(),
+            'appointment_date_str': appointment_date.isoformat(),
             # 'notes': 'Previous notes' # Removed as comments are not saved in step 1 session
         }
         session[SERVICE_BOOKING_SESSION_KEY] = session_data

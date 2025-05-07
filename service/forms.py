@@ -19,10 +19,10 @@ class BaseAdminServiceBookingForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control'}),
         required=True # Made service_type required
     )
-    appointment_datetime = forms.DateTimeField(
+    appointment_date = forms.DateTimeField(
         label="Preferred Date and Time",
         widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
-        required=True # Made appointment_datetime required
+        required=True # Made appointment_date required
     )
     booking_comments = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
@@ -284,10 +284,10 @@ class ServiceDetailsForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control'}),
         required=True # Made service_type required via inheritance, explicitly setting for clarity
     )
-    appointment_datetime = forms.DateTimeField(
+    appointment_date = forms.DateTimeField(
         label="Preferred Date and Time",
         widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
-        required=True # Made appointment_datetime required via inheritance, explicitly setting for clarity
+        required=True # Made appointment_date required via inheritance, explicitly setting for clarity
     )
 
 # Model form for customer motorcycles (no changes requested)
@@ -342,7 +342,7 @@ class ServiceBookingUserForm(forms.Form):
         required=False,
         label="Comments or specific requests"
     )
-    # Fields for service type and appointment_datetime are missing here based on the original ServiceBookingUserForm.
+    # Fields for service type and appointment_date are missing here based on the original ServiceBookingUserForm.
     # Assuming these should also be required as per the user's list for any booking form.
     # Adding them here based on the fields present in BaseAdminServiceBookingForm
     service_type = forms.ModelChoiceField(
@@ -352,7 +352,7 @@ class ServiceBookingUserForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control'}),
         required=True # Added and made required based on user's list
     )
-    appointment_datetime = forms.DateTimeField(
+    appointment_date = forms.DateTimeField(
         label="Preferred Date and Time",
         widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
         required=True # Added and made required based on user's list

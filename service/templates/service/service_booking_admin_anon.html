@@ -117,9 +117,9 @@
                 </div>
 
                 <div class="form-group">
-                    {% if form.appointment_datetime.field.required %}<span class="required-indicator">*</span> {% endif %}<label for="{{ form.appointment_datetime.id_for_label }}" class="form-label">{{ form.appointment_datetime.label }}</label>
-                    {{ form.appointment_datetime }}
-                    {% if form.appointment_datetime.errors %}<div class="text-danger">{% for error in form.appointment_datetime.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    {% if form.appointment_date.field.required %}<span class="required-indicator">*</span> {% endif %}<label for="{{ form.appointment_date.id_for_label }}" class="form-label">{{ form.appointment_date.label }}</label>
+                    {{ form.appointment_date }}
+                    {% if form.appointment_date.errors %}<div class="text-danger">{% for error in form.appointment_date.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
 
 

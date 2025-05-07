@@ -59,7 +59,7 @@ def booking_admin_view(request):
                     vehicle_model=anon_vehicle_model,
                     vehicle_year=anon_vehicle_year,
                     service_type=form.cleaned_data['service_type'],
-                    appointment_datetime=form.cleaned_data['appointment_datetime'],
+                    appointment_date=form.cleaned_data['appointment_date'],
                     preferred_contact=form.cleaned_data['preferred_contact'],
                     customer_notes=form.cleaned_data.get('booking_comments', ''),
                     status='pending',
@@ -73,7 +73,7 @@ def booking_admin_view(request):
             if customer_type == 'existing' and user:
                 bike_selection_type = form.cleaned_data['bike_selection_type']
                 service_type = form.cleaned_data['service_type']
-                appointment_datetime = form.cleaned_data['appointment_datetime']
+                appointment_date = form.cleaned_data['appointment_date']
                 preferred_contact = form.cleaned_data['preferred_contact']
                 booking_comments = form.cleaned_data.get('booking_comments', '')
 
@@ -101,7 +101,7 @@ def booking_admin_view(request):
                     customer=user,
                     vehicle=motorcycle_instance,
                     service_type=service_type,
-                    appointment_datetime=appointment_datetime,
+                    appointment_date=appointment_date,
                     preferred_contact=preferred_contact,
                     customer_notes=booking_comments,
                     status='pending',

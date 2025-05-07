@@ -57,7 +57,7 @@ def booking_admin_user_view(request):
             # Extracts booking details from form
             bike_selection_type = form.cleaned_data['bike_selection_type']
             service_type = form.cleaned_data['service_type']
-            appointment_datetime = form.cleaned_data['appointment_datetime']
+            appointment_date = form.cleaned_data['appointment_date']
             booking_comments = form.cleaned_data.get('booking_comments', '')
 
             motorcycle_instance = None
@@ -91,7 +91,7 @@ def booking_admin_user_view(request):
                 customer_phone=getattr(user, 'phone_number', ''),
                 vehicle=motorcycle_instance,
                 service_type=service_type,
-                appointment_datetime=appointment_datetime,
+                appointment_date=appointment_date,
                 customer_notes=booking_comments,
                 status='pending',
             )

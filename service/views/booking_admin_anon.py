@@ -38,7 +38,7 @@ def booking_admin_anon_view(request):
 
             # Extracts service details from form
             service_type = form.cleaned_data['service_type']
-            appointment_datetime = form.cleaned_data['appointment_datetime']
+            appointment_date = form.cleaned_data['appointment_date']
             # Removed preferred_contact
             booking_comments = form.cleaned_data.get('booking_comments', '')
 
@@ -62,7 +62,7 @@ def booking_admin_anon_view(request):
                 vehicle=None,
 
                 service_type=service_type,
-                appointment_datetime=appointment_datetime,
+                appointment_date=appointment_date,
                 customer_notes=booking_comments,
                 status='pending',
             )

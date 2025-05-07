@@ -22,8 +22,8 @@ class CustomerMotorcycleAdmin(admin.ModelAdmin):
 
 @admin.register(ServiceBooking)
 class ServiceBookingAdmin(admin.ModelAdmin):
-    list_display = ('booking_reference', 'service_type', 'status', 'appointment_datetime', 'customer_name', 'customer_email', 'motorcycle_info')
-    list_filter = ('status', 'service_type', 'appointment_datetime')
+    list_display = ('booking_reference', 'service_type', 'status', 'appointment_date', 'drop_off_time', 'customer_name', 'customer_email', 'motorcycle_info')
+    list_filter = ('status', 'service_type', 'appointment_date')
     search_fields = ('booking_reference', 'customer_name', 'customer_email', 'customer_phone', 'motorcycle__make', 'motorcycle__model')
     # raw_id_fields = ('motorcycle', 'customer_user') # Use for ForeignKey/OneToOne fields if many instances
 

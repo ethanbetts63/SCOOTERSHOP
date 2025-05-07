@@ -36,31 +36,31 @@ class ServiceDetailsFormTests(TestCase):
 
         form_data = {
             'service_type': self.service_type.id,
-            'appointment_datetime': future_datetime.strftime('%Y-%m-%dT%H:%M'),
+            'appointment_date': future_datetime.strftime('%Y-%m-%dT%H:%M'),
         }
         form = ServiceDetailsForm(data=form_data)
         self.assertTrue(form.is_valid(), form.errors)
         self.assertEqual(form.cleaned_data['service_type'], self.service_type)
-        self.assertIsInstance(form.cleaned_data['appointment_datetime'], datetime.datetime)
-        self.assertAlmostEqual(form.cleaned_data['appointment_datetime'], future_datetime, delta=datetime.timedelta(seconds=5))
+        self.assertIsInstance(form.cleaned_data['appointment_date'], datetime.datetime)
+        self.assertAlmostEqual(form.cleaned_data['appointment_date'], future_datetime, delta=datetime.timedelta(seconds=5))
 
     # Test ServiceDetailsForm with invalid data
     def test_service_details_form_invalid_data(self):
         form_data = {
             'service_type': '',
-            'appointment_datetime': 'invalid-date',
+            'appointment_date': 'invalid-date',
         }
         form = ServiceDetailsForm(data=form_data)
         self.assertFalse(form.is_valid())
         self.assertIn('service_type', form.errors)
-        self.assertIn('appointment_datetime', form.errors)
+        self.assertIn('appointment_date', form.errors)
 
     # Test that ServiceDetailsForm uses the correct widgets
     def test_service_details_form_widget_types(self):
         form = ServiceDetailsForm()
         self.assertIsInstance(form.fields['service_type'].widget, forms.Select)
-        self.assertIsInstance(form.fields['appointment_datetime'].widget, forms.DateTimeInput)
-        widget_attrs = form.fields['appointment_datetime'].widget.attrs
+        self.assertIsInstance(form.fields['appointment_date'].widget, forms.DateTimeInput)
+        widget_attrs = form.fields['appointment_date'].widget.attrs
         self.assertIn('class', widget_attrs)
         self.assertEqual(widget_attrs['class'], 'form-control')
 
@@ -231,27 +231,27 @@ class BaseAdminServiceBookingFormTests(TestCase):
 
         form_data = {
             'service_type': self.service_type.id,
-            'appointment_datetime': future_datetime.strftime('%Y-%m-%dT%H:%M'),
+            'appointment_date': future_datetime.strftime('%Y-%m-%dT%H:%M'),
             'booking_comments': 'Please call before starting work.',
         }
         form = BaseAdminServiceBookingForm(data=form_data)
         self.assertTrue(form.is_valid(), form.errors)
         self.assertEqual(form.cleaned_data['service_type'], self.service_type)
-        self.assertIsInstance(form.cleaned_data['appointment_datetime'], datetime.datetime)
-        self.assertAlmostEqual(form.cleaned_data['appointment_datetime'], future_datetime, delta=datetime.timedelta(seconds=5))
+        self.assertIsInstance(form.cleaned_data['appointment_date'], datetime.datetime)
+        self.assertAlmostEqual(form.cleaned_data['appointment_date'], future_datetime, delta=datetime.timedelta(seconds=5))
         self.assertEqual(form.cleaned_data['booking_comments'], 'Please call before starting work.')
 
     # Test BaseAdminServiceBookingForm with invalid data (removed preferred_contact)
     def test_base_admin_form_invalid_data(self):
         form_data = {
             'service_type': '',
-            'appointment_datetime': 'not a date',
+            'appointment_date': 'not a date',
             'booking_comments': 'Some comments',
         }
         form = BaseAdminServiceBookingForm(data=form_data)
         self.assertFalse(form.is_valid())
         self.assertIn('service_type', form.errors)
-        self.assertIn('appointment_datetime', form.errors)
+        self.assertIn('appointment_date', form.errors)
 
 
     # Test that the service_type queryset only includes active services
@@ -265,7 +265,7 @@ class BaseAdminServiceBookingFormTests(TestCase):
     def test_base_admin_form_widget_types(self):
         form = BaseAdminServiceBookingForm()
         self.assertIsInstance(form.fields['service_type'].widget, forms.Select)
-        self.assertIsInstance(form.fields['appointment_datetime'].widget, forms.DateTimeInput)
+        self.assertIsInstance(form.fields['appointment_date'].widget, forms.DateTimeInput)
         self.assertIsInstance(form.fields['booking_comments'].widget, forms.Textarea)
 
 
@@ -287,7 +287,7 @@ class AdminAnonBookingFormTests(TestCase):
 
         form_data = {
             'service_type': self.service_type.id,
-            'appointment_datetime': future_datetime.strftime('%Y-%m-%dT%H:%M'),
+            'appointment_date': future_datetime.strftime('%Y-%m-%dT%H:%M'),
             'booking_comments': 'Bring my old tyres back.',
             'one_off_first_name': 'Anonymous',
             'one_off_last_name': 'Customer',
@@ -306,8 +306,8 @@ class AdminAnonBookingFormTests(TestCase):
         form = AdminAnonBookingForm(data=form_data)
         self.assertTrue(form.is_valid(), form.errors)
         self.assertEqual(form.cleaned_data['service_type'], self.service_type)
-        self.assertIsInstance(form.cleaned_data['appointment_datetime'], datetime.datetime)
-        self.assertAlmostEqual(form.cleaned_data['appointment_datetime'], future_datetime, delta=datetime.timedelta(seconds=5))
+        self.assertIsInstance(form.cleaned_data['appointment_date'], datetime.datetime)
+        self.assertAlmostEqual(form.cleaned_data['appointment_date'], future_datetime, delta=datetime.timedelta(seconds=5))
         self.assertEqual(form.cleaned_data['booking_comments'], 'Bring my old tyres back.')
         self.assertEqual(form.cleaned_data['one_off_first_name'], 'Anonymous')
         self.assertEqual(form.cleaned_data['one_off_last_name'], 'Customer')
@@ -331,7 +331,7 @@ class AdminAnonBookingFormTests(TestCase):
 
         form_data = {
             'service_type': self.service_type.id,
-            'appointment_datetime': future_datetime.strftime('%Y-%m-%dT%H:%M'),
+            'appointment_date': future_datetime.strftime('%Y-%m-%dT%H:%M'),
             'one_off_email': 'anon.customer@example.com', # Now optional
             'one_off_phone_number': '0987654321', # Now optional
             'anon_customer_address': '123 Anonymity Lane', # Now optional
@@ -370,7 +370,7 @@ class AdminAnonBookingFormTests(TestCase):
 
         form_data = {
             'service_type': self.service_type.id,
-            'appointment_datetime': future_datetime.strftime('%Y-%m-%dT%H:%M'),
+            'appointment_date': future_datetime.strftime('%Y-%m-%dT%H:%M'),
             'one_off_first_name': 'Anonymous',
             'one_off_last_name': 'Customer',
             'one_off_email': 'invalid-email', # Invalid format
@@ -390,7 +390,7 @@ class AdminAnonBookingFormTests(TestCase):
 
         form_data = {
             'service_type': self.service_type.id,
-            'appointment_datetime': future_datetime.strftime('%Y-%m-%dT%H:%M'),
+            'appointment_date': future_datetime.strftime('%Y-%m-%dT%H:%M'),
             'booking_comments': '', # Optional
             'one_off_first_name': 'Anonymous',
             'one_off_last_name': 'Customer',
@@ -425,7 +425,7 @@ class AdminAnonBookingFormTests(TestCase):
     def test_anon_booking_form_widget_types(self):
         form = AdminAnonBookingForm()
         self.assertIsInstance(form.fields['service_type'].widget, forms.Select)
-        self.assertIsInstance(form.fields['appointment_datetime'].widget, forms.DateTimeInput)
+        self.assertIsInstance(form.fields['appointment_date'].widget, forms.DateTimeInput)
         self.assertIsInstance(form.fields['booking_comments'].widget, forms.Textarea)
         self.assertIsInstance(form.fields['one_off_first_name'].widget, forms.TextInput)
         self.assertIsInstance(form.fields['one_off_last_name'].widget, forms.TextInput)
@@ -486,7 +486,7 @@ class AdminUserBookingFormTests(TestCase):
 
         form_data = {
             'service_type': self.service_type.id,
-            'appointment_datetime': future_datetime.strftime('%Y-%m-%dT%H:%M'),
+            'appointment_date': future_datetime.strftime('%Y-%m-%dT%H:%M'),
             'booking_comments': 'Check brakes.',
             'user': self.user.id,
             'bike_selection_type': 'existing',
@@ -503,8 +503,8 @@ class AdminUserBookingFormTests(TestCase):
         form = AdminUserBookingForm(data=form_data)
         self.assertTrue(form.is_valid(), form.errors)
         self.assertEqual(form.cleaned_data['service_type'], self.service_type)
-        self.assertIsInstance(form.cleaned_data['appointment_datetime'], datetime.datetime)
-        self.assertAlmostEqual(form.cleaned_data['appointment_datetime'], future_datetime, delta=datetime.timedelta(seconds=5))
+        self.assertIsInstance(form.cleaned_data['appointment_date'], datetime.datetime)
+        self.assertAlmostEqual(form.cleaned_data['appointment_date'], future_datetime, delta=datetime.timedelta(seconds=5))
         self.assertEqual(form.cleaned_data['booking_comments'], 'Check brakes.')
         self.assertEqual(form.cleaned_data['user'], self.user)
         self.assertEqual(form.cleaned_data['bike_selection_type'], 'existing')
@@ -526,7 +526,7 @@ class AdminUserBookingFormTests(TestCase):
 
         form_data = {
             'service_type': self.service_type.id,
-            'appointment_datetime': future_datetime.strftime('%Y-%m-%dT%H:%M'),
+            'appointment_date': future_datetime.strftime('%Y-%m-%dT%H:%M'),
             'booking_comments': 'First service.',
             'user': self.user.id,
             'bike_selection_type': 'new',
@@ -542,8 +542,8 @@ class AdminUserBookingFormTests(TestCase):
         form = AdminUserBookingForm(data=form_data)
         self.assertTrue(form.is_valid(), form.errors)
         self.assertEqual(form.cleaned_data['service_type'], self.service_type)
-        self.assertIsInstance(form.cleaned_data['appointment_datetime'], datetime.datetime)
-        self.assertAlmostEqual(form.cleaned_data['appointment_datetime'], future_datetime, delta=datetime.timedelta(seconds=5))
+        self.assertIsInstance(form.cleaned_data['appointment_date'], datetime.datetime)
+        self.assertAlmostEqual(form.cleaned_data['appointment_date'], future_datetime, delta=datetime.timedelta(seconds=5))
         self.assertEqual(form.cleaned_data['booking_comments'], 'First service.')
         self.assertEqual(form.cleaned_data['user'], self.user)
         self.assertEqual(form.cleaned_data['bike_selection_type'], 'new')
@@ -563,7 +563,7 @@ class AdminUserBookingFormTests(TestCase):
 
         form_data = {
             'service_type': self.service_type.id,
-            'appointment_datetime': future_datetime.strftime('%Y-%m-%dT%H:%M'),
+            'appointment_date': future_datetime.strftime('%Y-%m-%dT%H:%M'),
             'bike_selection_type': 'existing',
             'existing_motorcycle': self.motorcycle1.id,
         }
@@ -578,7 +578,7 @@ class AdminUserBookingFormTests(TestCase):
 
         form_data = {
             'service_type': self.service_type.id,
-            'appointment_datetime': future_datetime.strftime('%Y-%m-%dT%H:%M'),
+            'appointment_date': future_datetime.strftime('%Y-%m-%dT%H:%M'),
             'user': self.user.id,
             'bike_selection_type': 'existing',
             'existing_motorcycle': '', # Missing existing motorcycle ID
@@ -594,7 +594,7 @@ class AdminUserBookingFormTests(TestCase):
 
         form_data = {
             'service_type': self.service_type.id,
-            'appointment_datetime': future_datetime.strftime('%Y-%m-%dT%H:%M'),
+            'appointment_date': future_datetime.strftime('%Y-%m-%dT%H:%M'),
             'user': self.user.id,
             'bike_selection_type': 'new',
             # Missing new_bike_make, new_bike_model, new_bike_year
@@ -613,7 +613,7 @@ class AdminUserBookingFormTests(TestCase):
 
         form_data = {
             'service_type': self.service_type.id,
-            'appointment_datetime': future_datetime.strftime('%Y-%m-%dT%H:%M'),
+            'appointment_date': future_datetime.strftime('%Y-%m-%dT%H:%M'),
             'user': self.user.id,
             'bike_selection_type': 'existing',
             'existing_motorcycle': self.motorcycle1.id,
@@ -630,7 +630,7 @@ class AdminUserBookingFormTests(TestCase):
 
         form_data = {
             'service_type': self.service_type.id,
-            'appointment_datetime': future_datetime.strftime('%Y-%m-%dT%H:%M'),
+            'appointment_date': future_datetime.strftime('%Y-%m-%dT%H:%M'),
             'user': self.user.id,
             'bike_selection_type': 'new',
             'existing_motorcycle': self.motorcycle1.id, # Should not be here
@@ -671,7 +671,7 @@ class AdminUserBookingFormTests(TestCase):
     def test_admin_user_booking_form_widget_types(self):
         form = AdminUserBookingForm()
         self.assertIsInstance(form.fields['service_type'].widget, forms.Select)
-        self.assertIsInstance(form.fields['appointment_datetime'].widget, forms.DateTimeInput)
+        self.assertIsInstance(form.fields['appointment_date'].widget, forms.DateTimeInput)
         self.assertIsInstance(form.fields['booking_comments'].widget, forms.Textarea)
         self.assertIsInstance(form.fields['user'].widget, forms.Select)
         self.assertIsInstance(form.fields['user_first_name'].widget, forms.TextInput)
@@ -695,7 +695,7 @@ class AdminUserBookingFormTests(TestCase):
 
         form_data = {
             'service_type': self.service_type.id,
-            'appointment_datetime': future_datetime.strftime('%Y-%m-%dT%H:%M'),
+            'appointment_date': future_datetime.strftime('%Y-%m-%dT%H:%M'),
             'booking_comments': 'Check brakes.',
             'user': self.user.id,
             'bike_selection_type': 'existing',

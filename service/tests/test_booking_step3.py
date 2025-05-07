@@ -54,7 +54,7 @@ class BookingStep3AuthenticatedTestCase(TestCase):
         # Valid session data for booking
         self.valid_session_data = {
             'service_type_id': self.service_type.id,
-            'appointment_datetime_str': (timezone.now() + datetime.timedelta(days=3)).isoformat(),
+            'appointment_date_str': (timezone.now() + datetime.timedelta(days=3)).isoformat(),
             'vehicle_id': self.motorcycle.id,
             'preferred_contact': 'email',
             # 'booking_comments': 'Test booking comments' # Booking comments collected in step 3 form
@@ -308,9 +308,9 @@ class BookingStep3AuthenticatedTestCase(TestCase):
         mock_settings.enable_service_booking = True
         mock_get_settings.return_value = mock_settings
 
-        # Set session data with invalid appointment_datetime_str
+        # Set session data with invalid appointment_date_str
         invalid_session_data = self.valid_session_data.copy()
-        invalid_session_data['appointment_datetime_str'] = 'not-a-valid-datetime'
+        invalid_session_data['appointment_date_str'] = 'not-a-valid-datetime'
 
         session = self.client.session
         session[SERVICE_BOOKING_SESSION_KEY] = invalid_session_data
@@ -396,7 +396,7 @@ class BookingStep3AnonymousTestCase(TestCase):
         # Valid session data for booking - Fixed to remove vin_number field which doesn't exist in model
         self.valid_session_data = {
             'service_type_id': self.service_type.id,
-            'appointment_datetime_str': (timezone.now() + datetime.timedelta(days=3)).isoformat(),
+            'appointment_date_str': (timezone.now() + datetime.timedelta(days=3)).isoformat(),
             'anon_vehicle_make': 'Honda',
             'anon_vehicle_model': 'CBR600RR',
             'anon_vehicle_year': 2020,

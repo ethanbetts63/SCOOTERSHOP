@@ -5,6 +5,8 @@ from datetime import timedelta, time
 import uuid
 # Need to import the User model from the users app
 from users.models import User
+from datetime import time
+import datetime
 # Need to import Motorcycle from inventory to reference choices
 from inventory.models import Motorcycle
 
@@ -98,7 +100,9 @@ class ServiceBooking(models.Model):
 
     # Service details
     service_type = models.ForeignKey(ServiceType, on_delete=models.PROTECT, related_name='bookings')
-    appointment_datetime = models.DateTimeField()
+    appointment_date = models.DateField(help_text="Date of the service appointment", default=datetime.date.today)
+    drop_off_time = models.TimeField(help_text="Scheduled drop-off time", default=time(9, 0))
+    pickup_date = models.DateField(blank=True, null=True, help_text="Estimated or actual pickup date")
     customer_notes = models.TextField(blank=True, null=True, help_text="Notes from the customer")
     mechanic_notes = models.TextField(blank=True, null=True, help_text="Notes from the mechanic")
 
@@ -113,29 +117,8 @@ class ServiceBooking(models.Model):
     labor_cost = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     total_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
-    def save(self, *args, **kwargs):
-        # Generate booking reference if not provided
-        if not self.booking_reference:
-            self.booking_reference = f"SRV-{uuid.uuid4().hex[:8].upper()}"
-
-        # Update total cost if parts and labor are provided
-        if self.parts_cost is not None and self.labor_cost is not None:
-            self.total_cost = self.parts_cost + self.labor_cost
-        elif self.parts_cost is not None: # Handle only parts cost provided
-             self.total_cost = self.parts_cost
-        elif self.labor_cost is not None: # Handle only labor cost provided
-             self.total_cost = self.labor_cost
-        else: # Ensure total_cost is None if both parts and labor are None
-             self.total_cost = None
-
-        super().save(*args, **kwargs)
-
     def __str__(self):
-        customer_display = self.customer.get_full_name() if self.customer else self.customer_name
-        vehicle_display = ""
-        if self.vehicle:
-            vehicle_display = f" for {self.vehicle}"
-        elif self.anon_vehicle_make and self.anon_vehicle_model:
-             vehicle_display = f" for {self.anon_vehicle_year or ''} {self.anon_vehicle_make} {self.anon_vehicle_model}"
+        return f"Booking {self.booking_reference or self.pk} for {self.customer_name or self.customer} on {self.appointment_date}"
 
-        return f"Service: {self.service_type} for {customer_display}{vehicle_display} - {self.appointment_datetime.strftime('%Y-%m-%d %H:%M')} ({self.status})"
+    class Meta:
+        ordering = ['appointment_date', 'drop_off_time']

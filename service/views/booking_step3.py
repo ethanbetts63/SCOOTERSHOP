@@ -100,19 +100,19 @@ def booking_step3_authenticated(request):
                 return redirect(reverse('service:service_step1')) # Redirect to step 1 if service type is invalid
 
             # Get Appointment Datetime from session
-            if 'appointment_datetime_str' in booking_data:
+            if 'appointment_date_str' in booking_data:
                 try:
                     # Assuming datetime is stored as ISO format string
-                    appointment_datetime = datetime.datetime.fromisoformat(
-                        booking_data['appointment_datetime_str'])
+                    appointment_date = datetime.datetime.fromisoformat(
+                        booking_data['appointment_date_str'])
                     # Make it timezone-aware if your project uses timezones and the string is naive
-                    # if timezone.is_aware(appointment_datetime_str): # This check might not work as expected on a string
+                    # if timezone.is_aware(appointment_date_str): # This check might not work as expected on a string
                     # Instead, parse and then make aware if needed, based on your project's TIME_ZONE
                     # from django.conf import settings
                     # if settings.USE_TZ:
-                    #     appointment_datetime = timezone.make_aware(appointment_datetime, timezone.get_current_timezone())
+                    #     appointment_date = timezone.make_aware(appointment_date, timezone.get_current_timezone())
 
-                    service_booking.appointment_datetime = appointment_datetime
+                    service_booking.appointment_date = appointment_date
 
                 except (ValueError, TypeError):
                     messages.error(request, "Invalid appointment date/time. Please select again.")
@@ -258,23 +258,23 @@ def booking_step3_anonymous(request):
 
 
             # Get Appointment Datetime from session
-            if 'appointment_datetime_str' in booking_data:
+            if 'appointment_date_str' in booking_data:
                 try:
                     # Assuming datetime is stored as ISO format string
-                    appointment_datetime = datetime.datetime.fromisoformat(
-                        booking_data['appointment_datetime_str'])
+                    appointment_date = datetime.datetime.fromisoformat(
+                        booking_data['appointment_date_str'])
                      # Make it timezone-aware if your project uses timezones and the string is naive
                     # from django.conf import settings
                     # if settings.USE_TZ:
-                    #     appointment_datetime = timezone.make_aware(appointment_datetime, timezone.get_current_timezone())
+                    #     appointment_date = timezone.make_aware(appointment_date, timezone.get_current_timezone())
 
-                    service_booking.appointment_datetime = appointment_datetime
+                    service_booking.appointment_date = appointment_date
 
                 except (ValueError, TypeError):
                     messages.error(request, "Invalid appointment date/time. Please select again.")
                     return redirect(reverse('service:service_step1')) # Redirect to step 1 if datetime is invalid
 
-            # Note: If appointment_datetime_str is missing, the test might not cover this specific case,
+            # Note: If appointment_date_str is missing, the test might not cover this specific case,
             # but the redirect ensures the flow doesn't break here.
             # You might want a more explicit check like:
             # else:
