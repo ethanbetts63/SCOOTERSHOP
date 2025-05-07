@@ -19,7 +19,7 @@ def is_staff_check(user):
 # View for the service bookings list page
 @user_passes_test(is_staff_check)
 def service_bookings_view(request):
-    bookings = ServiceBooking.objects.all().order_by('-appointment_datetime')
+    bookings = ServiceBooking.objects.all().order_by('-appointment_date')
 
     context = {
         'page_title': 'Manage Service Bookings',
@@ -55,8 +55,8 @@ def get_bookings_json(request):
 
             if start_date and end_date:
                  bookings = bookings.filter(
-                     appointment_datetime__gte=start_date,
-                     appointment_datetime__lt=end_date
+                     appointment_date__gte=start_date,
+                     appointment_date__lt=end_date
                  )
 
         except (ValueError, TypeError):
@@ -85,7 +85,7 @@ def get_bookings_json(request):
         event = {
             'id': booking.pk,
             'title': event_title, # Standard FullCalendar title (can be used by list view, etc.)
-            'start': booking.appointment_datetime.isoformat(),
+            'start': booking.appointment_date.isoformat(),
             'url': reverse('dashboard:service_booking_details', args=[booking.pk]), # URL for event click
             'extendedProps': extended_props, # Custom data for our eventContent callback
         }
@@ -98,7 +98,7 @@ def get_bookings_json(request):
 def service_booking_search_view(request):
     query = request.GET.get('q')
     # Default sort matches the default option value in the template
-    sort_by = request.GET.get('sort_by', '-appointment_datetime')
+    sort_by = request.GET.get('sort_by', '-appointment_date')
 
     # Get all possible status choices from the model
     booking_statuses = ServiceBooking.STATUS_CHOICES
@@ -148,10 +148,10 @@ def service_booking_search_view(request):
         bookings = bookings.order_by('id')
     elif sort_by == '-id':
         bookings = bookings.order_by('-id')
-    elif sort_by == 'appointment_datetime':
-        bookings = bookings.order_by('appointment_datetime')
-    elif sort_by == '-appointment_datetime': # Default
-        bookings = bookings.order_by('-appointment_datetime')
+    elif sort_by == 'appointment_date':
+        bookings = bookings.order_by('appointment_date')
+    elif sort_by == '-appointment_date': # Default
+        bookings = bookings.order_by('-appointment_date')
     elif sort_by == 'date_created':
         bookings = bookings.order_by('created_at')
     elif sort_by == '-date_created':

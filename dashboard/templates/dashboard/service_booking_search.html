@@ -23,8 +23,8 @@
                 <div class="sort-by-control"> {# Container for sort by dropdown #}
                     <label for="sort_by" class="form-label">Sort By:</label> {# Added form-label class #}
                     <select id="sort_by" name="sort_by" onchange="this.form.submit()" class="form-select"> {# Added form-select class #}
-                        <option value="-appointment_datetime" {% if sort_by == '-appointment_datetime' %}selected{% endif %}>Appointment Date (Latest)</option>
-                        <option value="appointment_datetime" {% if sort_by == 'appointment_datetime' %}selected{% endif %}>Appointment Date (Soonest)</option>
+                        <option value="-appointment_date" {% if sort_by == '-appointment_date' %}selected{% endif %}>Appointment Date (Latest)</option>
+                        <option value="appointment_date" {% if sort_by == 'appointment_date' %}selected{% endif %}>Appointment Date (Soonest)</option>
                         <option value="id" {% if sort_by == 'id' %}selected{% endif %}>Booking ID (Ascending)</option>
                         <option value="-id" {% if sort_by == '-id' %}selected{% endif %}>Booking ID (Descending)</option>
                         <option value="date_created" {% if sort_by == 'date_created' %}selected{% endif %}>Date Created (Soonest)</option>
@@ -64,7 +64,7 @@
                             <div class="booking-details-line">
                                 <span class="booking-customer-name">{{ booking.customer_name }}</span>
                                 <span class="separator">|</span>
-                                <span class="booking-appointment-date">{{ booking.appointment_datetime|date:"Y-m-d H:i" }}</span>
+                                <span class="booking-appointment-date">{{ booking.appointment_date|date:"Y-m-d H:i" }}</span>
                                 <span class="separator">|</span>
                                 <span class="booking-service-type">{{ booking.service_type.name }}</span>
                             </div>
