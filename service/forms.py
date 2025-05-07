@@ -69,42 +69,42 @@ class AdminAnonBookingForm(BaseAdminServiceBookingForm):
     # Anonymous Vehicle Details
     anon_vehicle_make = forms.CharField(
         max_length=100,
-        label="Vehicle Make",
+        label="Make",
         widget=forms.TextInput(attrs={'class': 'form-control'}),
         required=True # Made anon_vehicle_make required
     )
     anon_vehicle_model = forms.CharField(
         max_length=100,
-        label="Vehicle Model",
+        label="Model",
         widget=forms.TextInput(attrs={'class': 'form-control'}),
         required=True # Made anon_vehicle_model required
     )
     anon_vehicle_year = forms.IntegerField(
-        label="Vehicle Year",
+        label="Year",
         widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '1900', 'max': datetime.date.today().year}),
         required=False,
     )
     anon_vehicle_rego = forms.CharField(
         max_length=20,
         required=False,
-        label="Vehicle Registration",
+        label="Registration",
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     anon_vehicle_vin_number = forms.CharField( # Added anon_vehicle_vin_number
         max_length=50,
         required=False,
-        label="Vehicle VIN",
+        label="VIN",
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     anon_vehicle_odometer = forms.IntegerField(
         required=False,
-        label="Vehicle Odometer",
+        label="Odometer",
         widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '0'})
     )
     anon_vehicle_transmission = forms.ChoiceField(
         choices=[('', '---------')] + list(Motorcycle.TRANSMISSION_CHOICES),
         required=False,
-        label="Vehicle Transmission",
+        label="Transmission",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     anon_engine_number = forms.CharField(
@@ -181,41 +181,41 @@ class AdminUserBookingForm(BaseAdminServiceBookingForm):
     new_bike_make = forms.CharField(
         max_length=100,
         required=False, # Required is handled in clean method based on bike_selection_type
-        label="New Bike Make",
+        label="Make",
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     new_bike_model = forms.CharField(
         max_length=100,
         required=False, # Required is handled in clean method based on bike_selection_type
-        label="New Bike Model",
+        label="Model",
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     new_bike_year = forms.IntegerField(
         required=False, # Required is handled in clean method based on bike_selection_type
-        label="New Bike Year",
+        label="Year",
         widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '1900', 'max': datetime.date.today().year})
     )
     new_bike_rego = forms.CharField(
         max_length=20,
         required=False,
-        label="New Bike Registration",
+        label="Registration",
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     new_bike_vin_number = forms.CharField(
         max_length=50,
         required=False,
-        label="New Bike VIN Number",
+        label="VIN Number",
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     new_bike_odometer = forms.IntegerField(
         required=False,
-        label="New Bike Odometer",
+        label="Odometer",
         widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '0'})
     )
     new_bike_transmission = forms.ChoiceField(
         choices=[('', '---------')] + list(Motorcycle.TRANSMISSION_CHOICES),
         required=False,
-        label="New Bike Transmission",
+        label="Transmission",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
 
