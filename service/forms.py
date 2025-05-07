@@ -10,7 +10,6 @@ from inventory.models import Motorcycle
 from users.models import User
 
 
-
 # Abstract base form for common service booking fields
 class BaseAdminServiceBookingForm(forms.Form):
     service_type = forms.ModelChoiceField(
@@ -23,18 +22,11 @@ class BaseAdminServiceBookingForm(forms.Form):
         label="Preferred Date and Time",
         widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'})
     )
-    preferred_contact = forms.ChoiceField(
-        choices=ServiceBooking.CONTACT_CHOICES,
-        widget=forms.RadioSelect,
-        initial='email',
-        label="Preferred method of contact"
-    )
     booking_comments = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
         required=False,
         label="Comments or specific requests"
     )
-
 
 
 # --- Admin Booking Forms ---
@@ -54,7 +46,8 @@ class AdminAnonBookingForm(BaseAdminServiceBookingForm):
     )
     one_off_email = forms.EmailField(
         label="Email",
-        widget=forms.EmailInput(attrs={'class': 'form-control'})
+        widget=forms.EmailInput(attrs={'class': 'form-control'}),
+        required=False,
     )
     one_off_phone_number = forms.CharField(
         max_length=20,
@@ -62,6 +55,12 @@ class AdminAnonBookingForm(BaseAdminServiceBookingForm):
         label="Phone Number",
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
+    anon_customer_address = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+        required=False,
+        label="Address"
+    )
+
 
     # Anonymous Vehicle Details
     anon_vehicle_make = forms.CharField(
@@ -76,12 +75,19 @@ class AdminAnonBookingForm(BaseAdminServiceBookingForm):
     )
     anon_vehicle_year = forms.IntegerField(
         label="Vehicle Year",
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '1900', 'max': datetime.date.today().year})
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '1900', 'max': datetime.date.today().year}),
+        required=False,
     )
     anon_vehicle_rego = forms.CharField(
         max_length=20,
         required=False,
         label="Vehicle Registration",
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    anon_vehicle_vin_number = forms.CharField( # Added anon_vehicle_vin_number
+        max_length=50,
+        required=False,
+        label="Vehicle VIN",
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     anon_vehicle_odometer = forms.IntegerField(
@@ -95,12 +101,19 @@ class AdminAnonBookingForm(BaseAdminServiceBookingForm):
         label="Vehicle Transmission",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
+    anon_engine_number = forms.CharField(
+        max_length=50,
+        required=False,
+        label="Engine Number",
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
 
     # Clean method for the form
     def clean(self):
         cleaned_data = super().clean()
         return cleaned_data
-    
+
 
 
 # Form for creating a service booking for an existing registered user

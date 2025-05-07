@@ -68,8 +68,7 @@ class ServiceBooking(models.Model):
     customer_email = models.EmailField(blank=True, null=True)
     customer_address = models.TextField(blank=True, null=True)
 
-    # Added preferred contact method
-    preferred_contact = models.CharField(max_length=10, choices=CONTACT_CHOICES, blank=True, null=True)
+    # Removed preferred_contact field
 
     # Vehicle details (link to CustomerMotorcycle for logged-in users or store details directly for anonymous)
     vehicle = models.ForeignKey(
@@ -86,6 +85,7 @@ class ServiceBooking(models.Model):
     anon_vehicle_model = models.CharField(max_length=100, blank=True, null=True, help_text="Vehicle Model for anonymous bookings")
     anon_vehicle_year = models.IntegerField(blank=True, null=True, help_text="Vehicle Year for anonymous bookings")
     anon_vehicle_rego = models.CharField(max_length=20, blank=True, null=True, help_text="Vehicle Registration for anonymous bookings")
+    anon_vehicle_vin_number = models.CharField(max_length=50, blank=True, null=True, help_text="Vehicle VIN for anonymous bookings") # Added anon_vehicle_vin_number
     anon_vehicle_odometer = models.IntegerField(blank=True, null=True, help_text="Vehicle Odometer for anonymous bookings")
     anon_vehicle_transmission = models.CharField(
         max_length=20,
@@ -94,6 +94,7 @@ class ServiceBooking(models.Model):
         null=True,
         help_text="Vehicle Transmission for anonymous bookings"
     )
+    anon_engine_number = models.CharField(max_length=50, blank=True, null=True, help_text="Engine Number for anonymous bookings")
 
     # Service details
     service_type = models.ForeignKey(ServiceType, on_delete=models.PROTECT, related_name='bookings')

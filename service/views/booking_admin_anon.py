@@ -22,21 +22,24 @@ def booking_admin_anon_view(request):
             # Extracts customer details from form
             first_name = form.cleaned_data['one_off_first_name']
             last_name = form.cleaned_data['one_off_last_name']
-            email = form.cleaned_data['one_off_email']
+            email = form.cleaned_data.get('one_off_email', '')
             phone_number = form.cleaned_data.get('one_off_phone_number', '')
+            customer_address = form.cleaned_data.get('anon_customer_address', '')
 
             # Extracts vehicle details from form
             anon_vehicle_make = form.cleaned_data.get('anon_vehicle_make')
             anon_vehicle_model = form.cleaned_data.get('anon_vehicle_model')
             anon_vehicle_year = form.cleaned_data.get('anon_vehicle_year')
             anon_vehicle_rego = form.cleaned_data.get('anon_vehicle_rego', '')
+            anon_vehicle_vin_number = form.cleaned_data.get('anon_vehicle_vin_number', '') # Added anon_vehicle_vin_number
             anon_vehicle_odometer = form.cleaned_data.get('anon_vehicle_odometer')
             anon_vehicle_transmission = form.cleaned_data.get('anon_vehicle_transmission', '')
+            anon_engine_number = form.cleaned_data.get('anon_engine_number', '')
 
             # Extracts service details from form
             service_type = form.cleaned_data['service_type']
             appointment_datetime = form.cleaned_data['appointment_datetime']
-            preferred_contact = form.cleaned_data['preferred_contact']
+            # Removed preferred_contact
             booking_comments = form.cleaned_data.get('booking_comments', '')
 
             # Creates a new ServiceBooking instance
@@ -45,19 +48,22 @@ def booking_admin_anon_view(request):
                 customer_name=f"{first_name} {last_name}",
                 customer_email=email,
                 customer_phone=phone_number,
+                customer_address=customer_address,
 
                 anon_vehicle_make=anon_vehicle_make,
                 anon_vehicle_model=anon_vehicle_model,
                 anon_vehicle_year=anon_vehicle_year,
                 anon_vehicle_rego=anon_vehicle_rego,
+                anon_vehicle_vin_number=anon_vehicle_vin_number, # Added anon_vehicle_vin_number
                 anon_vehicle_odometer=anon_vehicle_odometer,
                 anon_vehicle_transmission=anon_vehicle_transmission,
+                anon_engine_number=anon_engine_number,
 
                 vehicle=None,
 
                 service_type=service_type,
                 appointment_datetime=appointment_datetime,
-                preferred_contact=preferred_contact,
+                preferred_contact=None,
                 customer_notes=booking_comments,
                 status='pending',
             )

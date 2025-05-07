@@ -45,6 +45,13 @@
                     {{ form.one_off_phone_number }}
                     {% if form.one_off_phone_number.errors %}<div class="text-danger">{% for error in form.one_off_phone_number.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
+
+                <div class="form-group">
+                    {{ form.anon_customer_address.label_tag }}
+                    {{ form.anon_customer_address }}
+                    {% if form.anon_customer_address.errors %}<div class="text-danger">{% for error in form.anon_customer_address.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                </div>
+
             </div>
         </div>
 
@@ -69,27 +76,31 @@
                     {{ form.anon_vehicle_year }}
                     {% if form.anon_vehicle_year.errors %}<div class="text-danger">{% for error in form.anon_vehicle_year.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
-                {% if form.anon_vehicle_rego %}
                 <div class="form-group">
                     {{ form.anon_vehicle_rego.label_tag }}
                     {{ form.anon_vehicle_rego }}
                     {% if form.anon_vehicle_rego.errors %}<div class="text-danger">{% for error in form.anon_vehicle_rego.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
-                {% endif %}
-                {% if form.anon_vehicle_odometer %}
+                 <div class="form-group"> {# Added VIN field #}
+                    {{ form.anon_vehicle_vin_number.label_tag }}
+                    {{ form.anon_vehicle_vin_number }}
+                    {% if form.anon_vehicle_vin_number.errors %}<div class="text-danger">{% for error in form.anon_vehicle_vin_number.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.anon_engine_number.label_tag }}
+                    {{ form.anon_engine_number }}
+                    {% if form.anon_engine_number.errors %}<div class="text-danger">{% for error in form.anon_engine_number.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                </div>
                 <div class="form-group">
                     {{ form.anon_vehicle_odometer.label_tag }}
                     {{ form.anon_vehicle_odometer }}
                     {% if form.anon_vehicle_odometer.errors %}<div class="text-danger">{% for error in form.anon_vehicle_odometer.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
-                {% endif %}
-                {% if form.anon_vehicle_transmission %}
                  <div class="form-group">
                     {{ form.anon_vehicle_transmission.label_tag }}
                     {{ form.anon_vehicle_transmission }}
                     {% if form.anon_vehicle_transmission.errors %}<div class="text-danger">{% for error in form.anon_vehicle_transmission.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
-                {% endif %}
             </div>
         </div>
         <br>
@@ -111,11 +122,6 @@
                     {% if form.appointment_datetime.errors %}<div class="text-danger">{% for error in form.appointment_datetime.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
 
-                <div class="form-group">
-                    {{ form.preferred_contact.label_tag }}
-                    {{ form.preferred_contact }}
-                    {% if form.preferred_contact.errors %}<div class="text-danger">{% for error in form.preferred_contact.errors %}{{ error }}{% endfor %}</div>{% endif %}
-                </div>
 
                 <div class="form-group">
                     {{ form.booking_comments.label_tag }}
