@@ -7,17 +7,33 @@
         <h6 class="m-0 font-weight-bold text-primary card-header-title">Booking Search</h6>
     </div>
     <div class="card-body">
-        {# Add your search form here later #}
-        <form method="get" action="{% url 'dashboard:service_booking_search' %}">
-            <div class="input-group mb-3">
-                <input type="text" class="form-control" placeholder="Search bookings..." name="q" value="{{ request.GET.q }}">
-                <button class="btn btn-primary" type="submit">Search</button>
+        <form method="get" action="{% url 'dashboard:service_booking_search' %}" class="mb-3">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search bookings..." name="q" value="{{ request.GET.q }}">
+                        <button class="btn btn-primary" type="submit">Search</button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <label class="input-group-text" for="sort_by">Sort By:</label>
+                        <select class="form-select" id="sort_by" name="sort_by" onchange="this.form.submit()">
+                            <option value="-appointment_datetime" {% if sort_by == '-appointment_datetime' %}selected{% endif %}>Appointment Date (Latest)</option>
+                            <option value="appointment_datetime" {% if sort_by == 'appointment_datetime' %}selected{% endif %}>Appointment Date (Soonest)</option>
+                            <option value="id" {% if sort_by == 'id' %}selected{% endif %}>Booking ID (Ascending)</option>
+                            <option value="-id" {% if sort_by == '-id' %}selected{% endif %}>Booking ID (Descending)</option>
+                            <option value="date_created" {% if sort_by == 'date_created' %}selected{% endif %}>Date Created (Soonest)</option>
+                            <option value="-date_created" {% if sort_by == '-date_created' %}selected{% endif %}>Date Created (Latest)</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </form>
 
         {% if bookings %}
             <div class="booking-list">
-                {% for booking in bookings %} {# Display all bookings, not just a slice #}
+                {% for booking in bookings %}
                     <div class="booking-tile card mb-2" data-detail-url="{% url 'dashboard:service_booking_details' pk=booking.pk %}">
                          <div class="card-body py-2 px-3">
                             <div class="booking-details">
@@ -28,16 +44,18 @@
                                     <span class="separator">|</span>
                                     <span class="service-type"><i class="fas fa-tools mr-1"></i> {{ booking.service_type.name }}</span>
                                 </div>
+                                <div class="booking-info-line text-muted small">
+                                    Booking ID: {{ booking.id }} | Created: {{ booking.date_created|date:"Y-m-d H:i" }}
+                                </div>
                             </div>
                         </div>
                     </div>
                 {% endfor %}
             </div>
         {% else %}
-            <p>No service bookings found.</p> {# Update message #}
+            <p>No service bookings found.</p>
         {% endif %}
     </div>
-    {# Removed the "View All Bookings" link as this page now serves that purpose #}
 </div>
 
 <script>

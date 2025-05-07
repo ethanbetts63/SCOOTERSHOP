@@ -1,3 +1,4 @@
+# bookings.py
 import calendar
 from datetime import date, timedelta
 from django.shortcuts import render, redirect, get_object_or_404
@@ -83,7 +84,10 @@ def get_bookings_json(request):
 @user_passes_test(is_staff_check)
 def service_booking_search_view(request):
     query = request.GET.get('q')
-    bookings = ServiceBooking.objects.all().order_by('-appointment_datetime')
+    # Default sort matches the default option value in the template
+    sort_by = request.GET.get('sort_by', '-appointment_datetime')
+
+    bookings = ServiceBooking.objects.all()
 
     if query:
         # Start with an empty Q object for filtering
@@ -116,9 +120,27 @@ def service_booking_search_view(request):
         # Apply the combined filter to the queryset
         bookings = bookings.filter(search_filter)
 
+    # Apply sorting based on values from the template
+    if sort_by == 'id':
+        bookings = bookings.order_by('id')
+    elif sort_by == '-id':
+        bookings = bookings.order_by('-id')
+    elif sort_by == 'appointment_datetime':
+        bookings = bookings.order_by('appointment_datetime')
+    elif sort_by == '-appointment_datetime':
+        bookings = bookings.order_by('-appointment_datetime')
+    elif sort_by == 'date_created':
+        bookings = bookings.order_by('created_at')
+    elif sort_by == '-date_created':
+        bookings = bookings.order_by('-created_at')
+    # If sort_by is none of the above (e.g., initial load without sort_by),
+    # the default '-appointment_datetime' is handled by the initial
+    # setting of the sort_by variable.
+
     context = {
         'page_title': 'Service Booking Search',
         'bookings': bookings,
-        'query': query 
+        'query': query,
+        'sort_by': sort_by # Pass the current sort_by value to the template
     }
     return render(request, 'dashboard/service_booking_search.html', context)
