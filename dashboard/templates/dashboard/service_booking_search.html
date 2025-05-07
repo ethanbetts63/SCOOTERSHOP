@@ -1,0 +1,62 @@
+{% extends "dashboard/admin_layout.html" %}
+{% load static %}
+
+{% block admin_main_content %}
+<div class="card shadow mb-4">
+    <div class="card-header d-flex flex-column align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary card-header-title">Booking Search</h6>
+    </div>
+    <div class="card-body">
+        {# Add your search form here later #}
+        <form method="get" action="{% url 'dashboard:service_booking_search' %}">
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" placeholder="Search bookings..." name="q" value="{{ request.GET.q }}">
+                <button class="btn btn-primary" type="submit">Search</button>
+            </div>
+        </form>
+
+        {% if bookings %}
+            <div class="booking-list">
+                {% for booking in bookings %} {# Display all bookings, not just a slice #}
+                    <div class="booking-tile card mb-2" data-detail-url="{% url 'dashboard:service_booking_details' pk=booking.pk %}">
+                         <div class="card-body py-2 px-3">
+                            <div class="booking-details">
+                                <div class="booking-info-line">
+                                    <span class="customer-name">{{ booking.customer_name }}</span>
+                                    <span class="separator">|</span>
+                                    <span class="booking-datetime"><i class="far fa-calendar-alt mr-1"></i> {{ booking.appointment_datetime|date:"Y-m-d H:i" }}</span>
+                                    <span class="separator">|</span>
+                                    <span class="service-type"><i class="fas fa-tools mr-1"></i> {{ booking.service_type.name }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No service bookings found.</p> {# Update message #}
+        {% endif %}
+    </div>
+    {# Removed the "View All Bookings" link as this page now serves that purpose #}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get all elements with the class 'booking-tile'
+        const bookingTiles = document.querySelectorAll('.booking-tile');
+
+        // Add a click event listener to each tile
+        bookingTiles.forEach(function(tile) {
+            tile.addEventListener('click', function() {
+                // Get the URL from the 'data-detail-url' attribute
+                const detailUrl = this.getAttribute('data-detail-url');
+
+                // If the URL exists, navigate to it
+                if (detailUrl) {
+                    window.location.href = detailUrl;
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

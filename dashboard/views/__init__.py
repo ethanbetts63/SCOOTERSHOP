@@ -19,6 +19,7 @@ from .dashboard import (
 from .bookings import (
     service_bookings_view,
     service_booking_details_view,
-    get_bookings_json, 
+    get_bookings_json,
     is_staff_check,
+    service_booking_search_view, # Import the new search view
 )

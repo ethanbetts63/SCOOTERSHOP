@@ -22,41 +22,11 @@
     </div>
 </div>
 
-
-<div class="card shadow mb-4">
-    <div class="card-header d-flex flex-column align-items-center">
-        <h6 class="m-0 font-weight-bold text-primary card-header-title">Booking Search</h6>
-    </div>
-    <div class="card-body">
-        {% if bookings %}
-            <div class="booking-list">
-                {% for booking in bookings|slice:":5" %}
-                    <div class="booking-tile card mb-2" data-detail-url="{% url 'dashboard:service_booking_details' pk=booking.pk %}">
-                         <div class="card-body py-2 px-3">
-                            <div class="booking-details">
-                                <div class="booking-info-line">
-                                    <span class="customer-name">{{ booking.customer_name }}</span>
-                                    <span class="separator">|</span>
-                                    <span class="booking-datetime"><i class="far fa-calendar-alt mr-1"></i> {{ booking.appointment_datetime|date:"Y-m-d H:i" }}</span>
-                                    <span class="separator">|</span>
-                                    <span class="service-type"><i class="fas fa-tools mr-1"></i> {{ booking.service_type.name }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p>No recent service bookings found.</p>
-        {% endif %}
-    </div>
-    <div class="text-center mt-3">
-        {# This link might change or be removed once the calendar view is primary #}
-        {# You might remove or adjust this link later #}
-        <a href="{% url 'dashboard:service_bookings' %}" class="btn btn-primary btn-sm">
-             View All Bookings <i class="fas fa-arrow-right"></i>
-        </a>
-    </div>
+{# Link to the new search page #}
+<div class="text-center mt-3">
+    <a href="{% url 'dashboard:service_booking_search' %}" class="btn btn-primary btn-sm">
+         Go to Booking Search <i class="fas fa-arrow-right"></i>
+    </a>
 </div>
 
 
