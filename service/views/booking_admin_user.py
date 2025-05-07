@@ -7,40 +7,39 @@ from django.urls import reverse
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 
-# Import the new form
 from service.forms import AdminUserBookingForm
 from service.models import ServiceBooking, CustomerMotorcycle, ServiceType
-from users.models import User # Ensure User model is correctly imported
+from users.models import User
 
+# Checks if the user is staff or a superuser
 def is_staff_or_superuser(user):
-    """Check if the user is staff or a superuser."""
     return user.is_active and (user.is_staff or user.is_superuser)
 
+# Handles admin booking for existing users
 @user_passes_test(is_staff_or_superuser)
 def booking_admin_user_view(request):
     user_id = request.POST.get('user') if request.method == 'POST' else None
     user_instance = None
     if user_id:
         try:
+            # Gets user instance by ID
             user_instance = User.objects.get(id=user_id)
         except User.DoesNotExist:
-            pass # Handle case where user ID is in POST but user doesn't exist
+            pass
 
     if request.method == 'POST':
-        # Use the new form for existing user bookings
+        # Initializes form with POST data
         form = AdminUserBookingForm(request.POST)
-        # If user was selected, ensure their motorcycles are available for validation
         if user_instance:
+             # Filters motorcycles based on user
              form.fields['existing_motorcycle'].queryset = CustomerMotorcycle.objects.filter(owner=user_instance).order_by('make', 'model')
 
         if form.is_valid():
+            # Gets user from cleaned form data
             user = form.cleaned_data.get('user')
 
-            # --- Update User Details ---
-            # Retrieve the user instance again to ensure we have the latest version
+            # Updates user details if provided
             user_to_update = get_object_or_404(User, id=user.id)
-
-            # Update user fields if they are provided in the form
             if form.cleaned_data.get('user_first_name'):
                 user_to_update.first_name = form.cleaned_data['user_first_name']
             if form.cleaned_data.get('user_last_name'):
@@ -48,16 +47,14 @@ def booking_admin_user_view(request):
             if form.cleaned_data.get('user_email'):
                 user_to_update.email = form.cleaned_data['user_email']
             if form.cleaned_data.get('user_phone_number'):
-                 # Assuming 'phone_number' is a field on your User model
-                 # Use setattr for safety if the field might not exist
                  setattr(user_to_update, 'phone_number', form.cleaned_data['user_phone_number'])
 
-            # Save the updated user instance
+            # Saves the updated user
             user_to_update.save()
+            # Displays success message for user update
             messages.success(request, f"User details updated for {user_to_update.get_full_name() or user_to_update.username}.")
-            # --- End Update User Details ---
 
-
+            # Extracts booking details from form
             bike_selection_type = form.cleaned_data['bike_selection_type']
             service_type = form.cleaned_data['service_type']
             appointment_datetime = form.cleaned_data['appointment_datetime']
@@ -66,10 +63,11 @@ def booking_admin_user_view(request):
 
             motorcycle_instance = None
 
+            # Handles existing motorcycle selection
             if bike_selection_type == 'existing':
                 motorcycle_instance = form.cleaned_data.get('existing_motorcycle')
-                 # No need to update existing motorcycle details from the form
 
+            # Handles new motorcycle creation
             elif bike_selection_type == 'new':
                 motorcycle_instance = CustomerMotorcycle(
                     owner=user,
@@ -81,103 +79,108 @@ def booking_admin_user_view(request):
                     odometer=form.cleaned_data.get('new_bike_odometer'),
                     transmission=form.cleaned_data.get('new_bike_transmission', ''),
                 )
+                # Saves the new motorcycle
                 motorcycle_instance.save()
+                # Displays success message for new motorcycle
                 messages.success(request, f"New motorcycle added for {user.get_full_name() or user.username}.")
 
-            # Create the ServiceBooking instance
+            # Creates a new ServiceBooking instance
             booking = ServiceBooking(
                 customer=user,
-                # Fetch current user details to store on the booking (using potentially updated details)
                 customer_name=f"{user.first_name} {user.last_name}",
                 customer_email=user.email,
-                customer_phone=getattr(user, 'phone_number', ''), # Safely get phone_number
-                # Note: Customer address is not captured in this flow, but could be added from user model
+                customer_phone=getattr(user, 'phone_number', ''),
                 vehicle=motorcycle_instance,
                 service_type=service_type,
                 appointment_datetime=appointment_datetime,
                 preferred_contact=preferred_contact,
                 customer_notes=booking_comments,
-                status='pending', # Default status
+                status='pending',
             )
+            # Saves the booking to the database
             booking.save()
 
+            # Displays success message for booking
             messages.success(request, f"Service booking created successfully for {user.get_full_name() or user.username}.")
-            return redirect(reverse('service:admin_booking_user')) # Redirect back to this form or a success page
+            # Redirects to the same view
+            return redirect(reverse('service:admin_booking_user'))
 
         else:
-            # --- Debugging: Print form errors to the console ---
+            # Displays error message for invalid form
             print("Form is invalid. Errors:")
             print(form.errors)
-            # --- End Debugging ---
             messages.error(request, "Please correct the errors below.")
-            # If form is invalid, and a user was selected, pass the user instance
-            # so the template can potentially re-display user details and motorcycles.
-            # The user_instance variable already holds this if user_id was in POST.
-            pass
 
-    else: # GET request
-        # Use the new form for existing user bookings
+    else:
+        # Initializes an empty form for GET requests
         form = AdminUserBookingForm()
 
+    # Prepares context for rendering the template
     context = {
         'page_title': 'Admin Service Booking for Existing User',
         'form': form,
-        'selected_user': user_instance, # Pass the user instance if available (e.g., after failed POST)
+        'selected_user': user_instance,
     }
+    # Renders the booking template
     return render(request, 'service/service_booking_admin_user.html', context)
 
-# --- AJAX Helper Views (Implemented) ---
+# Returns JSON response with user details
 @user_passes_test(is_staff_or_superuser)
 @require_GET
 def get_user_details_for_admin(request, user_id):
-    """Returns JSON response with user details for admin booking form."""
     try:
+        # Gets user instance by ID
         user = get_object_or_404(User, id=user_id)
+        # Prepares user data for JSON response
         data = {
             'first_name': user.first_name,
             'last_name': user.last_name,
             'email': user.email,
-            'phone_number': getattr(user, 'phone_number', ''), # Safely get phone_number
-            # Add other user fields here if needed, e.g., address
-            # 'address_line_1': user.address_line_1,
-            # 'city': user.city,
-            # ...
+            'phone_number': getattr(user, 'phone_number', ''),
         }
+        # Returns JSON response
         return JsonResponse(data)
     except User.DoesNotExist:
+        # Returns 404 if user not found
         return JsonResponse({'error': 'User not found'}, status=404)
     except Exception as e:
-        # Log the error or handle it as appropriate
-        print(f"Error fetching user details: {e}") # Basic logging
+        # Prints error for debugging
+        print(f"Error fetching user details: {e}")
+        # Returns 500 for internal server error
         return JsonResponse({'error': 'Internal server error'}, status=500)
 
-
+# Returns JSON response with user's motorcycles
 @user_passes_test(is_staff_or_superuser)
 @require_GET
 def get_user_motorcycles_for_admin(request, user_id):
-    """Returns JSON response with user's motorcycles for admin booking form."""
     try:
+        # Gets user instance by ID
         user = get_object_or_404(User, id=user_id)
-        # Select specific fields to avoid sending unnecessary data
+        # Filters and orders user's motorcycles
         motorcycles = CustomerMotorcycle.objects.filter(owner=user).values(
             'id', 'make', 'model', 'year', 'rego'
-        ).order_by('year', 'make', 'model') # Order for better display
+        ).order_by('year', 'make', 'model')
+        # Prepares motorcycle data for JSON response
         data = {'motorcycles': list(motorcycles)}
+        # Returns JSON response
         return JsonResponse(data)
     except User.DoesNotExist:
+         # Returns 404 if user not found
          return JsonResponse({'error': 'User not found'}, status=404)
     except Exception as e:
-        # Log the error or handle it as appropriate
-        print(f"Error fetching user motorcycles: {e}") # Basic logging
+        # Prints error for debugging
+        print(f"Error fetching user motorcycles: {e}")
+        # Returns 500 for internal server error
         return JsonResponse({'error': 'Internal server error'}, status=500)
 
-
+# Returns JSON response with motorcycle details
 @user_passes_test(is_staff_or_superuser)
 @require_GET
 def get_motorcycle_details_for_admin(request, motorcycle_id):
-    """Returns JSON response with motorcycle details for admin booking form."""
     try:
+        # Gets motorcycle instance by ID
         motorcycle = get_object_or_404(CustomerMotorcycle, id=motorcycle_id)
+        # Prepares motorcycle data for JSON response
         data = {
             'make': motorcycle.make,
             'model': motorcycle.model,
@@ -187,10 +190,13 @@ def get_motorcycle_details_for_admin(request, motorcycle_id):
             'odometer': motorcycle.odometer,
             'transmission': motorcycle.transmission,
         }
+        # Returns JSON response
         return JsonResponse(data)
     except CustomerMotorcycle.DoesNotExist:
+        # Returns 404 if motorcycle not found
         return JsonResponse({'error': 'Motorcycle not found'}, status=404)
     except Exception as e:
-        # Log the error or handle it as appropriate
-        print(f"Error fetching motorcycle details: {e}") # Basic logging
+        # Prints error for debugging
+        print(f"Error fetching motorcycle details: {e}")
+        # Returns 500 for internal server error
         return JsonResponse({'error': 'Internal server error'}, status=500)

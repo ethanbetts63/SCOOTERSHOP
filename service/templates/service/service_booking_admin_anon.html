@@ -16,7 +16,6 @@
     <form method="post" id="admin-booking-anon-form">
         {% csrf_token %}
 
-        {# Customer Details Section for One-off Booking #}
         <div class="card mb-4">
             <div class="card-header">
                 <h3>Customer Details (One-off)</h3>
@@ -49,16 +48,12 @@
             </div>
         </div>
 
-        {# Anonymous Motorcycle Details Section #}
         <div class="card mb-4">
             <div class="card-header">
                 <h3>Vehicle Details (One-off)</h3>
             </div>
             <div class="card-body">
                 <p>Enter the vehicle details for this one-off booking.</p>
-                {# These fields should exist in your AdminBookingForm or a new AdminAnonBookingForm #}
-                {# Make sure your form includes: anon_vehicle_make, anon_vehicle_model, anon_vehicle_year, #}
-                {# anon_vehicle_rego, anon_vehicle_odometer, anon_vehicle_transmission if needed #}
                 <div class="form-group">
                     {{ form.anon_vehicle_make.label_tag }}
                     {{ form.anon_vehicle_make }}
@@ -74,8 +69,6 @@
                     {{ form.anon_vehicle_year }}
                     {% if form.anon_vehicle_year.errors %}<div class="text-danger">{% for error in form.anon_vehicle_year.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
-                {# Add other anonymous vehicle fields as needed from your form, e.g., rego, odometer, transmission #}
-                {# Example for rego, ensure this field is in your form for anon bookings #}
                 {% if form.anon_vehicle_rego %}
                 <div class="form-group">
                     {{ form.anon_vehicle_rego.label_tag }}
@@ -101,7 +94,6 @@
         </div>
         <br>
 
-        {# Service Details Section - Common #}
         <div class="card mb-4">
             <div class="card-header">
                 <h3>Service Details</h3>
@@ -143,8 +135,7 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // No complex JS needed for this form as it's direct input
-    // You could add client-side validation enhancements if desired
+    // Initializes admin booking form for anonymous customers
     console.log("Admin booking form for anonymous/one-off customers initialized.");
 });
 </script>
