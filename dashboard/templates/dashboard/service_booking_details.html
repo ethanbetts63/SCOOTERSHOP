@@ -2,25 +2,101 @@
 {% load static %}
 
 {% block admin_main_content %}
-{# Link to the main styles.css if not already included in the base layout #}
-{# Assuming styles.css is linked in the base layout (admin_layout.html), no need to link again here #}
+{# Link to the form_styles.css for consistent form-like appearance #}
+{# Ensure you have collected static files so Django can find form_styles.css #}
+<link rel="stylesheet" href="{% static 'css/form_styles.css' %}">
+<link rel="stylesheet" href="{% static 'css/styles.css' %}"> {# Keep styles.css for general layout like container and section-title #}
+
 
 <div class="container mt-4"> {# Added a container for basic page structure and spacing #}
     <h2 class="section-title">Service Booking Details</h2> {# Applied section-title class for consistent heading style #}
 
-    <div class="card shadow mb-4"> {# Wrapped details in a card for better visual structure #}
-        <div class="card-body"> {# Added card-body padding #}
-            {% if booking %}
+    {% if booking %}
+        <div class="card shadow mb-4"> {# Main card for general booking info #}
+            <div class="card-header"> {# Add card-header for the section title #}
+                <h5>Booking Details</h5> {# Add h5 for the title text #}
+            </div>
+            <div class="card-body"> {# Added card-body padding #}
                 <p><strong>Booking ID:</strong> {{ booking.pk }}</p>
-                <p><strong>Customer Name:</strong> {{ booking.customer_name }}</p>
-                <p><strong>Appointment Date and Time:</strong> {{ booking.appointment_datetime }}</p>
-                <p><strong>Service Type:</strong> {{ booking.service_type.name }}</p>
-                {# Add more booking details here as needed #}
-            {% else %}
-                <p>Service booking not found.</p>
-            {% endif %}
+                <p><strong>Booking Reference:</strong> {{ booking.booking_reference }}</p>
+                <p><strong>Status:</strong> {{ booking.status }}</p>
+                <p><strong>Created At:</strong> {{ booking.created_at }}</p>
+                <p><strong>Updated At:</strong> {{ booking.updated_at }}</p>
+            </div>
         </div>
-    </div>
+
+        <div class="card shadow mb-4"> {# Card for Customer Details #}
+             <div class="card-header"> {# Use card-header for the section title #}
+                <h5>Customer Details</h5> {# Use h5 for the title text #}
+            </div>
+            <div class="card-body">
+                {% if booking.customer %}
+                    {# Use the default filter to display full name or username #}
+                    <p><strong>Customer (Registered):</strong> {{ booking.customer.get_full_name|default:booking.customer.username }}</p>
+                    <p><strong>Customer Email:</strong> {{ booking.customer.email }}</p>
+                    <p><strong>Customer Phone:</strong> {{ booking.customer.phone_number }}</p>
+                    <p><strong>Customer Address:</strong> {{ booking.customer.address }}</p>
+                {% else %}
+                    <p><strong>Customer (Anonymous):</strong> {{ booking.customer_name }}</p>
+                    <p><strong>Customer Email:</strong> {{ booking.customer_email }}</p>
+                    <p><strong>Customer Phone:</strong> {{ booking.customer_phone }}</p>
+                    <p><strong>Customer Address:</strong> {{ booking.customer_address }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card shadow mb-4"> {# Card for Service Details #}
+            <div class="card-header"> {# Use card-header for the section title #}
+                <h5>Service Details</h5> {# Use h5 for the title text #}
+            </div>
+            <div class="card-body">
+                <p><strong>Service Type:</strong> {{ booking.service_type.name }}</p>
+                <p><strong>Appointment Date and Time:</strong> {{ booking.appointment_datetime }}</p>
+                <p><strong>Customer Notes:</strong> {{ booking.customer_notes|default:"None" }}</p>
+                <p><strong>Mechanic Notes:</strong> {{ booking.mechanic_notes|default:"None" }}</p>
+            </div>
+        </div>
+
+        <div class="card shadow mb-4"> {# Card for Vehicle Details #}
+            <div class="card-header"> {# Use card-header for the section title #}
+                <h5>Vehicle Details</h5> {# Use h5 for the title text #}
+            </div>
+            <div class="card-body">
+                {% if booking.vehicle %}
+                    <p><strong>Vehicle (Linked):</strong> {{ booking.vehicle.year }} {{ booking.vehicle.make }} {{ booking.vehicle.model }}</p>
+                    <p><strong>VIN:</strong> {{ booking.vehicle.vin_number|default:"N/A" }}</p>
+                    <p><strong>Engine Number:</strong> {{ booking.vehicle.engine_number|default:"N/A" }}</p>
+                    <p><strong>Registration:</strong> {{ booking.vehicle.rego|default:"N/A" }}</p>
+                    <p><strong>Odometer:</strong> {{ booking.vehicle.odometer|default:"N/A" }}</p>
+                    <p><strong>Transmission:</strong> {{ booking.vehicle.transmission|default:"N/A" }}</p>
+                {% elif booking.anon_vehicle_make %}
+                    <p><strong>Vehicle (Anonymous):</strong> {{ booking.anon_vehicle_year|default:"" }} {{ booking.anon_vehicle_make }} {{ booking.anon_vehicle_model }}</p>
+                    <p><strong>VIN:</strong> {{ booking.anon_vehicle_vin_number|default:"N/A" }}</p>
+                    <p><strong>Engine Number:</strong> {{ booking.anon_engine_number|default:"N/A" }}</p>
+                    <p><strong>Registration:</strong> {{ booking.anon_vehicle_rego|default:"N/A" }}</p>
+                    <p><strong>Odometer:</strong> {{ booking.anon_vehicle_odometer|default:"N/A" }}</p>
+                    <p><strong>Transmission:</strong> {{ booking.anon_vehicle_transmission|default:"N/A" }}</p>
+                {% else %}
+                    <p>No vehicle details available.</p>
+                {% endif %}
+            </div>
+        </div>
+
+         <div class="card shadow mb-4"> {# Card for Cost Breakdown #}
+            <div class="card-header"> {# Use card-header for the section title #}
+                <h5>Cost Breakdown</h5> {# Use h5 for the title text #}
+            </div>
+            <div class="card-body">
+                <p><strong>Parts Cost:</strong> {{ booking.parts_cost|default:"N/A" }}</p>
+                <p><strong>Labor Cost:</strong> {{ booking.labor_cost|default:"N/A" }}</p>
+                <p><strong>Total Cost:</strong> {{ booking.total_cost|default:"N/A" }}</p>
+            </div>
+        </div>
+
+
+    {% else %}
+        <p>Service booking not found.</p>
+    {% endif %}
 </div>
 
 {% endblock %}
