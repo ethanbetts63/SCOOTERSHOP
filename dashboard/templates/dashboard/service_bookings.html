@@ -38,8 +38,6 @@
     </div>
 </div>
 
-{# The original search link is now moved into the button group above #}
-
 {# Include FullCalendar's core JavaScript file #}
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
 
@@ -58,12 +56,52 @@
             headerToolbar: { // Customize the buttons and title at the top
                 left: 'prev,next today',
                 center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay' // Example: add buttons for different views
+                right: 'dayGridMonth,timeGridWeek,timeGridDay listWeek' // Added listWeek view
             },
 
             // --- Event Source ---
             // Fetch events from the Django backend JSON feed
             events: '{% url "dashboard:get_bookings_json" %}',
+
+            // --- Event Rendering ---
+            eventContent: function(arg) {
+                // arg.event contains the event object from your JSON feed
+                let customerName = arg.event.extendedProps.customer_name || 'N/A';
+                let vehicleMake = arg.event.extendedProps.vehicle_make || '';
+                let vehicleModel = arg.event.extendedProps.vehicle_model || '';
+                let serviceType = arg.event.extendedProps.service_type || 'Service';
+                let status = arg.event.extendedProps.status || 'pending'; // Default to pending if status is not set
+
+                // Construct the vehicle string, only if make or model exists
+                let vehicleString = '';
+                if (vehicleMake || vehicleModel) {
+                    vehicleString = `${vehicleMake} ${vehicleModel}`.trim();
+                }
+
+                // Use a shorter version of the customer name if it's too long for the tile
+                if (customerName.length > 15) { // Adjust length as needed
+                    customerName = customerName.substring(0, 15) + '...';
+                }
+
+                let html = `
+                    <div class="booking-title">${customerName}</div>
+                    <div class="booking-details">${serviceType}</div>
+                `;
+                if (vehicleString) {
+                     html += `<div class="booking-details">${vehicleString}</div>`;
+                }
+
+
+                // The main container for the custom content
+                // Add a class based on the event status for specific styling
+                let eventEl = document.createElement('div');
+                eventEl.classList.add('fc-event-main-custom');
+                eventEl.classList.add(`status-${status}`); // e.g., status-confirmed
+                eventEl.innerHTML = html;
+
+                return { domNodes: [eventEl] };
+            },
+
 
             // --- Interactivity (Using the interaction plugin) ---
             dateClick: function(info) {
@@ -78,8 +116,11 @@
 
             eventClick: function(info) {
                 // This function is called when an event (booking) is clicked
-                console.log('Event clicked:', info.event.title);
+                console.log('Event clicked:', info.event.title); // Original title
                 console.log('Event ID:', info.event.id);
+                console.log('Event URL:', info.event.url);
+                console.log('Event Extended Props:', info.event.extendedProps);
+
 
                 // Redirect to the booking details page using the event's URL property
                 if (info.event.url) {

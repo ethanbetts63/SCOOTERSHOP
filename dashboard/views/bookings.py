@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.conf import settings
 from django.http import JsonResponse
 
-from service.models import ServiceBooking, ServiceType
+from service.models import ServiceBooking, ServiceType # Ensure your model path is correct
 
 # Helper function to check if a user is staff
 def is_staff_check(user):
@@ -25,7 +25,7 @@ def service_bookings_view(request):
         'page_title': 'Manage Service Bookings',
         'bookings': bookings,
     }
-    return render(request, 'dashboard/service_bookings.html', context)
+    return render(request, 'dashboard/service_bookings.html', context) # Make sure this template name is correct
 
 # View for displaying details of a single service booking
 @user_passes_test(is_staff_check)
@@ -36,7 +36,7 @@ def service_booking_details_view(request, pk):
         'page_title': f'Service Booking Details - {booking.id}',
         'booking': booking,
     }
-    return render(request, 'dashboard/service_booking_details.html', context)
+    return render(request, 'dashboard/service_booking_details.html', context) # Make sure this template name is correct
 
 # Returns service bookings as a JSON feed for FullCalendar
 @user_passes_test(is_staff_check)
@@ -66,15 +66,28 @@ def get_bookings_json(request):
     events = []
     for booking in bookings:
         # Prepare the data in FullCalendar's Event Object format
+        # The 'title' is still useful for FullCalendar's internal use or list views.
+        # We will use extendedProps for the custom display content.
+        event_title = f"{booking.customer_name or 'Anonymous'} - {booking.service_type.name}"
+
+        # Prepare extendedProps for custom rendering
+        extended_props = {
+            'customer_name': booking.customer_name or 'Anonymous',
+            'service_type': booking.service_type.name,
+            'status': booking.status,
+            # Add vehicle details, checking if they exist
+            # Make sure to adjust the following lines based on your actual ServiceBooking model structure
+            'vehicle_make': getattr(booking, 'anon_vehicle_make', None) or (getattr(booking.vehicle, 'make', None) if hasattr(booking, 'vehicle') and booking.vehicle else None) or '',
+            'vehicle_model': getattr(booking, 'anon_vehicle_model', None) or (getattr(booking.vehicle, 'model', None) if hasattr(booking, 'vehicle') and booking.vehicle else None) or '',
+            'booking_id': booking.pk,
+        }
+
         event = {
             'id': booking.pk,
-            'title': f"{booking.customer_name or 'Anonymous'} - {booking.service_type.name}",
+            'title': event_title, # Standard FullCalendar title (can be used by list view, etc.)
             'start': booking.appointment_datetime.isoformat(),
-            'url': reverse('dashboard:service_booking_details', args=[booking.pk]),
-            'status': booking.status,
-            'color': 'blue' if booking.status == 'confirmed' else ('orange' if booking.status == 'pending' else 'red'),
-            'customer_name': booking.customer_name,
-            'service_type': booking.service_type.name,
+            'url': reverse('dashboard:service_booking_details', args=[booking.pk]), # URL for event click
+            'extendedProps': extended_props, # Custom data for our eventContent callback
         }
         events.append(event)
 
@@ -103,14 +116,8 @@ def service_booking_search_view(request):
     bookings = ServiceBooking.objects.all()
 
     # --- Filtering by Status ---
-    # Only filter if there are selected statuses (this will always be true
-    # on initial load or if at least one checkbox is checked on subsequent searches).
     if selected_statuses:
          bookings = bookings.filter(status__in=selected_statuses)
-    # If selected_statuses is empty (meaning the user unchecked ALL boxes and searched),
-    # the queryset remains unfiltered by status, effectively showing no results
-    # unless the search query matches something. If you want to show *no* bookings
-    # when all are unchecked, you would add an else: bookings = bookings.none()
 
     # --- Filtering by Search Query ---
     if query:
@@ -132,9 +139,7 @@ def service_booking_search_view(request):
         search_filter |= Q(anon_vehicle_rego__icontains=query)
         search_filter |= Q(anon_vehicle_transmission__icontains=query)
         search_filter |= Q(booking_reference__icontains=query)
-        # Removed status__icontains=query from here as we have dedicated status filtering
-
-        # Apply the combined filter to the queryset
+        
         bookings = bookings.filter(search_filter)
 
     # --- Sorting ---
@@ -145,22 +150,20 @@ def service_booking_search_view(request):
         bookings = bookings.order_by('-id')
     elif sort_by == 'appointment_datetime':
         bookings = bookings.order_by('appointment_datetime')
-    elif sort_by == '-appointment_datetime':
+    elif sort_by == '-appointment_datetime': # Default
         bookings = bookings.order_by('-appointment_datetime')
     elif sort_by == 'date_created':
         bookings = bookings.order_by('created_at')
     elif sort_by == '-date_created':
         bookings = bookings.order_by('-created_at')
-    # If sort_by is none of the above (e.g., initial load without sort_by),
-    # the default '-appointment_datetime' is handled by the initial
-    # setting of the sort_by variable.
+    # No need for an else here, as sort_by has a default value
 
     context = {
         'page_title': 'Service Booking Search',
         'bookings': bookings,
         'query': query,
-        'sort_by': sort_by, # Pass the current sort_by value to the template
-        'selected_statuses': selected_statuses, # Pass selected statuses to retain checkbox state
-        'booking_statuses': booking_statuses, # Pass all status choices to the template for rendering checkboxes
+        'sort_by': sort_by,
+        'selected_statuses': selected_statuses,
+        'booking_statuses': booking_statuses,
     }
-    return render(request, 'dashboard/service_booking_search.html', context)
+    return render(request, 'dashboard/service_booking_search.html', context) # Make sure this template name is correct
