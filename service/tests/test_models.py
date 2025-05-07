@@ -138,10 +138,13 @@ class ServiceBookingTest(TestCase):
             service_type=self.service_type,
             appointment_datetime=self.appointment_time,
             customer_notes="Please check brakes too",
-            preferred_contact="email",
+            # preferred_contact field was removed
             status="confirmed",
             parts_cost=Decimal('75.50'),
-            labor_cost=Decimal('120.00')
+            labor_cost=Decimal('120.00'),
+            customer_address="123 Main St", # Added customer_address
+            anon_vehicle_vin_number="VIN12345", # Added anon_vehicle_vin_number
+            anon_engine_number="ENG7890", # Added anon_engine_number
         )
 
     # Test that a service booking can be created with all fields
@@ -151,11 +154,15 @@ class ServiceBookingTest(TestCase):
         self.assertEqual(self.booking.service_type, self.service_type)
         self.assertEqual(self.booking.appointment_datetime, self.appointment_time)
         self.assertEqual(self.booking.customer_notes, "Please check brakes too")
-        self.assertEqual(self.booking.preferred_contact, "email")
+        # preferred_contact field was removed, so no assertion needed
         self.assertEqual(self.booking.status, "confirmed")
         self.assertEqual(self.booking.parts_cost, Decimal('75.50'))
         self.assertEqual(self.booking.labor_cost, Decimal('120.00'))
         self.assertEqual(self.booking.total_cost, Decimal('195.50'))
+        self.assertEqual(self.booking.customer_address, "123 Main St") # Assert customer_address
+        self.assertEqual(self.booking.anon_vehicle_vin_number, "VIN12345") # Assert anon_vehicle_vin_number
+        self.assertEqual(self.booking.anon_engine_number, "ENG7890") # Assert anon_engine_number
+
 
     # Test that a booking reference is automatically generated
     def test_booking_reference_generation(self):
@@ -165,34 +172,50 @@ class ServiceBookingTest(TestCase):
 
     # Test the string representation of a service booking
     def test_service_booking_string_representation(self):
+        # The string representation depends on whether it's an anon booking or user booking
+        # This test is for a user booking with a linked vehicle
         expected_str = f"Service: Full Service for Test Customer for 2021 Kawasaki Ninja 650 (owned by Test Customer) - {self.appointment_time.strftime('%Y-%m-%d %H:%M')} (confirmed)"
         self.assertEqual(str(self.booking), expected_str)
 
     # Test creating a booking for an anonymous customer
     def test_anonymous_booking(self):
         anon_booking = ServiceBooking.objects.create(
+            customer=None, # Explicitly set customer to None for anonymous
             customer_name="Jane Smith",
             customer_phone="555-1234",
             customer_email="jane@example.com",
-            customer_address="123 Main St, Anytown",
+            customer_address="123 Main St, Anytown", # Added customer_address
             anon_vehicle_make="Suzuki",
             anon_vehicle_model="GSX-R750",
             anon_vehicle_year=2022,
             anon_vehicle_rego="SUZ750",
+            anon_vehicle_vin_number="ANONVIN123", # Added anon_vehicle_vin_number
             anon_vehicle_odometer=3000,
             anon_vehicle_transmission="manual",
+            anon_engine_number="ANONENG456", # Added anon_engine_number
             service_type=self.service_type,
             appointment_datetime=self.appointment_time,
-            preferred_contact="phone",
+            # preferred_contact field was removed
             status="pending"
         )
 
         self.assertIsNone(anon_booking.customer)
         self.assertEqual(anon_booking.customer_name, "Jane Smith")
         self.assertEqual(anon_booking.customer_phone, "555-1234")
+        self.assertEqual(anon_booking.customer_email, "jane@example.com")
+        self.assertEqual(anon_booking.customer_address, "123 Main St, Anytown") # Assert customer_address
+        self.assertIsNone(anon_booking.vehicle) # Ensure vehicle is None for anonymous
         self.assertEqual(anon_booking.anon_vehicle_make, "Suzuki")
         self.assertEqual(anon_booking.anon_vehicle_model, "GSX-R750")
         self.assertEqual(anon_booking.anon_vehicle_year, 2022)
+        self.assertEqual(anon_booking.anon_vehicle_rego, "SUZ750")
+        self.assertEqual(anon_booking.anon_vehicle_vin_number, "ANONVIN123") # Assert anon_vehicle_vin_number
+        self.assertEqual(anon_booking.anon_vehicle_odometer, 3000)
+        self.assertEqual(anon_booking.anon_vehicle_transmission, "manual")
+        self.assertEqual(anon_booking.anon_engine_number, "ANONENG456") # Assert anon_engine_number
+        self.assertEqual(anon_booking.service_type, self.service_type)
+        self.assertEqual(anon_booking.appointment_datetime, self.appointment_time)
+        # preferred_contact field was removed, so no assertion needed
         self.assertEqual(anon_booking.status, "pending")
         self.assertIsNotNone(anon_booking.booking_reference)
 
@@ -203,7 +226,11 @@ class ServiceBookingTest(TestCase):
             service_type=self.service_type,
             appointment_datetime=self.appointment_time,
             parts_cost=Decimal('50.00'),
-            labor_cost=None
+            labor_cost=None,
+            customer_name="Test User", # Minimal required fields for booking
+            anon_vehicle_make="Test",
+            anon_vehicle_model="Bike",
+            anon_vehicle_year=2000,
         )
         self.assertEqual(parts_only_booking.total_cost, Decimal('50.00'))
 
@@ -214,7 +241,11 @@ class ServiceBookingTest(TestCase):
             service_type=self.service_type,
             appointment_datetime=self.appointment_time,
             parts_cost=None,
-            labor_cost=Decimal('75.00')
+            labor_cost=Decimal('75.00'),
+             customer_name="Test User", # Minimal required fields for booking
+            anon_vehicle_make="Test",
+            anon_vehicle_model="Bike",
+            anon_vehicle_year=2000,
         )
         self.assertEqual(labor_only_booking.total_cost, Decimal('75.00'))
 
@@ -225,7 +256,11 @@ class ServiceBookingTest(TestCase):
             service_type=self.service_type,
             appointment_datetime=self.appointment_time,
             parts_cost=None,
-            labor_cost=None
+            labor_cost=None,
+             customer_name="Test User", # Minimal required fields for booking
+            anon_vehicle_make="Test",
+            anon_vehicle_model="Bike",
+            anon_vehicle_year=2000,
         )
         self.assertIsNone(no_cost_booking.total_cost)
 
