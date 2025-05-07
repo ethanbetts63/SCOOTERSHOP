@@ -23,31 +23,31 @@
             <div class="card-body">
                 <p>Enter the details for the one-off customer.</p>
                 <div class="form-group">
-                    {{ form.one_off_first_name.label_tag }}
+                    {% if form.one_off_first_name.field.required %}<span class="required-indicator">*</span> {% endif %}<label for="{{ form.one_off_first_name.id_for_label }}" class="form-label">{{ form.one_off_first_name.label }}</label>
                     {{ form.one_off_first_name }}
                     {% if form.one_off_first_name.errors %}<div class="text-danger">{% for error in form.one_off_first_name.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
 
                 <div class="form-group">
-                    {{ form.one_off_last_name.label_tag }}
+                    {% if form.one_off_last_name.field.required %}<span class="required-indicator">*</span> {% endif %}<label for="{{ form.one_off_last_name.id_for_label }}" class="form-label">{{ form.one_off_last_name.label }}</label>
                     {{ form.one_off_last_name }}
                     {% if form.one_off_last_name.errors %}<div class="text-danger">{% for error in form.one_off_last_name.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
 
                 <div class="form-group">
-                    {{ form.one_off_email.label_tag }}
+                     {% if form.one_off_email.field.required %}<span class="required-indicator">*</span> {% endif %}<label for="{{ form.one_off_email.id_for_label }}" class="form-label">{{ form.one_off_email.label }}</label>
                     {{ form.one_off_email }}
                     {% if form.one_off_email.errors %}<div class="text-danger">{% for error in form.one_off_email.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
 
                 <div class="form-group">
-                    {{ form.one_off_phone_number.label_tag }}
+                     {% if form.one_off_phone_number.field.required %}<span class="required-indicator">*</span> {% endif %}<label for="{{ form.one_off_phone_number.id_for_label }}" class="form-label">{{ form.one_off_phone_number.label }}</label>
                     {{ form.one_off_phone_number }}
                     {% if form.one_off_phone_number.errors %}<div class="text-danger">{% for error in form.one_off_phone_number.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
 
                 <div class="form-group">
-                    {{ form.anon_customer_address.label_tag }}
+                     {% if form.anon_customer_address.field.required %}<span class="required-indicator">*</span> {% endif %}<label for="{{ form.anon_customer_address.id_for_label }}" class="form-label">{{ form.anon_customer_address.label }}</label>
                     {{ form.anon_customer_address }}
                     {% if form.anon_customer_address.errors %}<div class="text-danger">{% for error in form.anon_customer_address.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
@@ -62,42 +62,42 @@
             <div class="card-body">
                 <p>Enter the vehicle details for this one-off booking.</p>
                 <div class="form-group">
-                    {{ form.anon_vehicle_make.label_tag }}
+                    {% if form.anon_vehicle_make.field.required %}<span class="required-indicator">*</span> {% endif %}<label for="{{ form.anon_vehicle_make.id_for_label }}" class="form-label">{{ form.anon_vehicle_make.label }}</label>
                     {{ form.anon_vehicle_make }}
                     {% if form.anon_vehicle_make.errors %}<div class="text-danger">{% for error in form.anon_vehicle_make.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
                 <div class="form-group">
-                    {{ form.anon_vehicle_model.label_tag }}
+                    {% if form.anon_vehicle_model.field.required %}<span class="required-indicator">*</span> {% endif %}<label for="{{ form.anon_vehicle_model.id_for_label }}" class="form-label">{{ form.anon_vehicle_model.label }}</label>
                     {{ form.anon_vehicle_model }}
                     {% if form.anon_vehicle_model.errors %}<div class="text-danger">{% for error in form.anon_vehicle_model.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
                 <div class="form-group">
-                    {{ form.anon_vehicle_year.label_tag }}
+                     {% if form.anon_vehicle_year.field.required %}<span class="required-indicator">*</span> {% endif %}<label for="{{ form.anon_vehicle_year.id_for_label }}" class="form-label">{{ form.anon_vehicle_year.label }}</label>
                     {{ form.anon_vehicle_year }}
                     {% if form.anon_vehicle_year.errors %}<div class="text-danger">{% for error in form.anon_vehicle_year.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
                 <div class="form-group">
-                    {{ form.anon_vehicle_rego.label_tag }}
+                     {% if form.anon_vehicle_rego.field.required %}<span class="required-indicator">*</span> {% endif %}<label for="{{ form.anon_vehicle_rego.id_for_label }}" class="form-label">{{ form.anon_vehicle_rego.label }}</label>
                     {{ form.anon_vehicle_rego }}
                     {% if form.anon_vehicle_rego.errors %}<div class="text-danger">{% for error in form.anon_vehicle_rego.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
                  <div class="form-group"> {# Added VIN field #}
-                    {{ form.anon_vehicle_vin_number.label_tag }}
+                    {% if form.anon_vehicle_vin_number.field.required %}<span class="required-indicator">*</span> {% endif %}<label for="{{ form.anon_vehicle_vin_number.id_for_label }}" class="form-label">{{ form.anon_vehicle_vin_number.label }}</label>
                     {{ form.anon_vehicle_vin_number }}
                     {% if form.anon_vehicle_vin_number.errors %}<div class="text-danger">{% for error in form.anon_vehicle_vin_number.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
                 <div class="form-group">
-                    {{ form.anon_engine_number.label_tag }}
+                     {% if form.anon_engine_number.field.required %}<span class="required-indicator">*</span> {% endif %}<label for="{{ form.anon_engine_number.id_for_label }}" class="form-label">{{ form.anon_engine_number.label }}</label>
                     {{ form.anon_engine_number }}
                     {% if form.anon_engine_number.errors %}<div class="text-danger">{% for error in form.anon_engine_number.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
                 <div class="form-group">
-                    {{ form.anon_vehicle_odometer.label_tag }}
+                     {% if form.anon_vehicle_odometer.field.required %}<span class="required-indicator">*</span> {% endif %}<label for="{{ form.anon_vehicle_odometer.id_for_label }}" class="form-label">{{ form.anon_vehicle_odometer.label }}</label>
                     {{ form.anon_vehicle_odometer }}
                     {% if form.anon_vehicle_odometer.errors %}<div class="text-danger">{% for error in form.anon_vehicle_odometer.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
                  <div class="form-group">
-                    {{ form.anon_vehicle_transmission.label_tag }}
+                    {% if form.anon_vehicle_transmission.field.required %}<span class="required-indicator">*</span> {% endif %}<label for="{{ form.anon_vehicle_transmission.id_for_label }}" class="form-label">{{ form.anon_vehicle_transmission.label }}</label>
                     {{ form.anon_vehicle_transmission }}
                     {% if form.anon_vehicle_transmission.errors %}<div class="text-danger">{% for error in form.anon_vehicle_transmission.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
@@ -111,20 +111,20 @@
             </div>
             <div class="card-body">
                 <div class="form-group">
-                    {{ form.service_type.label_tag }}
+                    {% if form.service_type.field.required %}<span class="required-indicator">*</span> {% endif %}<label for="{{ form.service_type.id_for_label }}" class="form-label">{{ form.service_type.label }}</label>
                     {{ form.service_type }}
                     {% if form.service_type.errors %}<div class="text-danger">{% for error in form.service_type.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
 
                 <div class="form-group">
-                    {{ form.appointment_datetime.label_tag }}
+                    {% if form.appointment_datetime.field.required %}<span class="required-indicator">*</span> {% endif %}<label for="{{ form.appointment_datetime.id_for_label }}" class="form-label">{{ form.appointment_datetime.label }}</label>
                     {{ form.appointment_datetime }}
                     {% if form.appointment_datetime.errors %}<div class="text-danger">{% for error in form.appointment_datetime.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>
 
 
                 <div class="form-group">
-                    {{ form.booking_comments.label_tag }}
+                    {% if form.booking_comments.field.required %}<span class="required-indicator">*</span> {% endif %}<label for="{{ form.booking_comments.id_for_label }}" class="form-label">{{ form.booking_comments.label }}</label>
                     {{ form.booking_comments }}
                     {% if form.booking_comments.errors %}<div class="text-danger">{% for error in form.booking_comments.errors %}{{ error }}{% endfor %}</div>{% endif %}
                 </div>

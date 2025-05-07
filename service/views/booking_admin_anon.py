@@ -63,7 +63,6 @@ def booking_admin_anon_view(request):
 
                 service_type=service_type,
                 appointment_datetime=appointment_datetime,
-                preferred_contact=None,
                 customer_notes=booking_comments,
                 status='pending',
             )

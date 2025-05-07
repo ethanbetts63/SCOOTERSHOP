@@ -58,7 +58,6 @@ def booking_admin_user_view(request):
             bike_selection_type = form.cleaned_data['bike_selection_type']
             service_type = form.cleaned_data['service_type']
             appointment_datetime = form.cleaned_data['appointment_datetime']
-            preferred_contact = form.cleaned_data['preferred_contact']
             booking_comments = form.cleaned_data.get('booking_comments', '')
 
             motorcycle_instance = None
@@ -93,7 +92,6 @@ def booking_admin_user_view(request):
                 vehicle=motorcycle_instance,
                 service_type=service_type,
                 appointment_datetime=appointment_datetime,
-                preferred_contact=preferred_contact,
                 customer_notes=booking_comments,
                 status='pending',
             )
