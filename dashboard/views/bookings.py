@@ -87,8 +87,32 @@ def service_booking_search_view(request):
     # Default sort matches the default option value in the template
     sort_by = request.GET.get('sort_by', '-appointment_datetime')
 
+    # Get all possible status choices from the model
+    booking_statuses = ServiceBooking.STATUS_CHOICES
+    all_status_values = [status[0] for status in booking_statuses]
+
+    # Determine the selected statuses
+    # If 'status' is not in GET parameters, it's likely the initial load,
+    # so select all statuses by default. Otherwise, get the list of selected statuses.
+    if 'status' not in request.GET:
+        selected_statuses = all_status_values
+    else:
+        selected_statuses = request.GET.getlist('status')
+
+
     bookings = ServiceBooking.objects.all()
 
+    # --- Filtering by Status ---
+    # Only filter if there are selected statuses (this will always be true
+    # on initial load or if at least one checkbox is checked on subsequent searches).
+    if selected_statuses:
+         bookings = bookings.filter(status__in=selected_statuses)
+    # If selected_statuses is empty (meaning the user unchecked ALL boxes and searched),
+    # the queryset remains unfiltered by status, effectively showing no results
+    # unless the search query matches something. If you want to show *no* bookings
+    # when all are unchecked, you would add an else: bookings = bookings.none()
+
+    # --- Filtering by Search Query ---
     if query:
         # Start with an empty Q object for filtering
         search_filter = Q()
@@ -108,18 +132,12 @@ def service_booking_search_view(request):
         search_filter |= Q(anon_vehicle_rego__icontains=query)
         search_filter |= Q(anon_vehicle_transmission__icontains=query)
         search_filter |= Q(booking_reference__icontains=query)
-        search_filter |= Q(status__icontains=query)
-
-        # Attempt to add booking ID search if query is a valid integer
-        try:
-            query_as_int = int(query)
-            search_filter |= Q(pk=query_as_int) # Add exact match for pk
-        except ValueError:
-            pass # Skip pk search if query is not an integer
+        # Removed status__icontains=query from here as we have dedicated status filtering
 
         # Apply the combined filter to the queryset
         bookings = bookings.filter(search_filter)
 
+    # --- Sorting ---
     # Apply sorting based on values from the template
     if sort_by == 'id':
         bookings = bookings.order_by('id')
@@ -141,6 +159,8 @@ def service_booking_search_view(request):
         'page_title': 'Service Booking Search',
         'bookings': bookings,
         'query': query,
-        'sort_by': sort_by # Pass the current sort_by value to the template
+        'sort_by': sort_by, # Pass the current sort_by value to the template
+        'selected_statuses': selected_statuses, # Pass selected statuses to retain checkbox state
+        'booking_statuses': booking_statuses, # Pass all status choices to the template for rendering checkboxes
     }
     return render(request, 'dashboard/service_booking_search.html', context)
