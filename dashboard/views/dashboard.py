@@ -152,6 +152,8 @@ def add_service_type(request):
         if form.is_valid():
             service_type = form.save(commit=False)
             # Ensure estimated_duration is handled if your form logic requires it here
+            # Assign the calculated estimated_duration from the form's cleaned_data
+            service_type.estimated_duration = form.cleaned_data['estimated_duration'] # Add this line
             service_type.save()
             messages.success(request, f"Service type '{service_type.name}' added successfully!")
             return redirect('dashboard:settings_service_types')
