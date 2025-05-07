@@ -2,14 +2,30 @@
 {% load static %}
 
 {% block admin_main_content %}
-{# Your existing CSS links #}
+
 <link rel="stylesheet" href="{% static 'css/service_booking_styles.css' %}">
-<link rel="stylesheet" href="{% static 'css/calendar_styles.css' %}">
 
 {# Include FullCalendar's core CSS #}
 <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css' rel='stylesheet' />
 
 <h2>Service Bookings Calendar</h2>
+
+{# Button group for booking actions #}
+<div class="button-group-spaced mb-4"> {# Using existing class for spacing, added margin-bottom #}
+    {# Link to create booking for existing user #}
+    <a href="{% url 'service:admin_booking_user' %}" class="btn-primary"> {# Using existing button primary style #}
+        Create booking (existing user)
+    </a>
+    {# Link to create booking for one-off user #}
+    <a href="{% url 'service:admin_booking_anon' %}" class="btn-primary"> {# Using existing button primary style #}
+        Create booking (one-off user)
+    </a>
+    {# Link to search bookings - keeping the existing search button, just moving it #}
+    <a href="{% url 'dashboard:service_booking_search' %}" class="btn-primary"> {# Using existing button primary style #}
+         Search bookings
+    </a>
+</div>
+
 
 <div class="card shadow mb-4">
     <div class="card-header">
@@ -22,13 +38,7 @@
     </div>
 </div>
 
-{# Link to the new search page #}
-<div class="text-center mt-3">
-    <a href="{% url 'dashboard:service_booking_search' %}" class="btn btn-primary btn-sm">
-         Go to Booking Search <i class="fas fa-arrow-right"></i>
-    </a>
-</div>
-
+{# The original search link is now moved into the button group above #}
 
 {# Include FullCalendar's core JavaScript file #}
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
