@@ -7,6 +7,7 @@ import datetime # Import datetime for DateField
 # don't directly reference models from the other new apps.
 
 
+# Model for storing site-wide settings and configuration options
 class SiteSettings(models.Model):
     """
     Model for storing site-wide settings and configuration options
@@ -31,8 +32,8 @@ class SiteSettings(models.Model):
     allow_anonymous_bookings = models.BooleanField(default=True, help_text="Allow service bookings without an account")
     allow_account_bookings = models.BooleanField(default=True, help_text="Allow service bookings with an account")
     booking_open_days = models.IntegerField(default=60, help_text="Number of days in advance that bookings can be made")
-    booking_start_time = models.TimeField(default=time(9, 0), help_text="Earliest time of day for service bookings (e.g., 09:00)")
-    booking_end_time = models.TimeField(default=time(17, 0), help_text="Latest time of day for service bookings (e.g., 17:00)")
+    drop_off_start_time = models.TimeField(default=time(9, 0), help_text="Earliest time of day for service drop-offs (e.g., 09:00)")
+    drop_off_end_time = models.TimeField(default=time(17, 0), help_text="Latest time of day for service drop-offs (e.g., 17:00)")
     booking_advance_notice = models.IntegerField(default=1, help_text="Minimum number of days notice required for a booking")
     max_visible_slots_per_day = models.IntegerField(default=6, help_text="Maximum number of booking slots to show per day")
     service_confirmation_email_subject = models.CharField(max_length=200, default="Your service booking has been confirmed")
@@ -117,8 +118,8 @@ class SiteSettings(models.Model):
             'allow_anonymous_bookings': settings.allow_anonymous_bookings,
             'allow_account_bookings': settings.allow_account_bookings,
             'booking_open_days': settings.booking_open_days,
-            'booking_start_time': settings.booking_start_time,
-            'booking_end_time': settings.booking_end_time,
+            'drop_off_start_time': settings.drop_off_start_time,
+            'drop_off_end_time': settings.drop_off_end_time,
             'booking_advance_notice': settings.booking_advance_notice,
             'max_visible_slots_per_day': settings.max_visible_slots_per_day,
         }

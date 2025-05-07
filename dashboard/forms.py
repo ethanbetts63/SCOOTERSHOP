@@ -118,8 +118,8 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             'allow_anonymous_bookings',
             'allow_account_bookings',
             'booking_open_days',
-            'booking_start_time',
-            'booking_end_time',
+            'drop_off_start_time',
+            'drop_off_end_time',
             'booking_advance_notice',
             'max_visible_slots_per_day',
             'service_confirmation_email_subject',
@@ -130,8 +130,8 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             'allow_anonymous_bookings': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'allow_account_bookings': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'booking_open_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '1', 'max': '365'}),
-            'booking_start_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
-            'booking_end_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'drop_off_start_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'drop_off_end_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
             'booking_advance_notice': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'max': '30'}),
             'max_visible_slots_per_day': forms.NumberInput(attrs={'class': 'form-control', 'min': '1', 'max': '24'}),
             'service_confirmation_email_subject': forms.TextInput(attrs={'class': 'form-control'}),
@@ -141,13 +141,13 @@ class ServiceBookingSettingsForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        start_time = cleaned_data.get('booking_start_time')
-        end_time = cleaned_data.get('booking_end_time')
+        start_time = cleaned_data.get('drop_off_start_time')
+        end_time = cleaned_data.get('drop_off_end_time')
 
         if start_time and end_time and start_time >= end_time:
             # Use add_error to associate the error with specific fields if desired
-            self.add_error('booking_start_time', _("Booking start time must be earlier than end time."))
-            self.add_error('booking_end_time', _("Booking end time must be earlier than start time."))
+            self.add_error('drop_off_start_time', _("Booking start time must be earlier than end time."))
+            self.add_error('drop_off_end_time', _("Booking end time must be earlier than start time."))
             # Or raise a general ValidationError
             # raise forms.ValidationError(_("Booking start time must be earlier than end time."))
 

@@ -209,14 +209,14 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "booking_start_time",
+                    "drop_off_start_time",
                     models.TimeField(
                         default=datetime.time(9, 0),
                         help_text="Earliest time of day for service bookings (e.g., 09:00)",
                     ),
                 ),
                 (
-                    "booking_end_time",
+                    "drop_off_end_time",
                     models.TimeField(
                         default=datetime.time(17, 0),
                         help_text="Latest time of day for service bookings (e.g., 17:00)",

@@ -65,7 +65,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         ('Service Booking Settings', {
             'fields': (
                 'allow_anonymous_bookings', 'allow_account_bookings', 'booking_open_days',
-                'booking_start_time', 'booking_end_time', 'booking_advance_notice',
+                'drop_off_start_time', 'drop_off_end_time', 'booking_advance_notice',
                 'max_visible_slots_per_day', 'service_confirmation_email_subject',
                 'service_pending_email_subject', 'admin_service_notification_email',
             )
