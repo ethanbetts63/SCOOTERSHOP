@@ -5,7 +5,8 @@ from django.utils.translation import gettext_lazy as _
 import datetime
 
 # Import models from the dashboard app
-from .models import AboutPageContent, SiteSettings
+# Assuming BlockedDate is in models.py, import it here
+from .models import AboutPageContent, SiteSettings, BlockedDate
 from service.models import ServiceType
 # Import models from other apps if needed
 # from service.models import ServiceType # Assuming ServiceType moved to service app
@@ -272,3 +273,23 @@ class MiscellaneousSettingsForm(forms.ModelForm):
             'display_new_prices': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'display_used_prices': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+
+# New form for adding blocked dates
+class BlockedDateForm(forms.ModelForm):
+    class Meta:
+        model = BlockedDate
+        fields = ['start_date', 'end_date', 'description']
+        widgets = {
+            'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'description': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get("start_date")
+        end_date = cleaned_data.get("end_date")
+
+        if start_date and end_date and start_date > end_date:
+            raise forms.ValidationError("End date cannot be before the start date.")
+        return cleaned_data

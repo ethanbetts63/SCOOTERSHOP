@@ -7,13 +7,15 @@ from django.contrib.auth.decorators import user_passes_test
 from django.urls import reverse
 
 # Import models from the dashboard app
-from dashboard.models import SiteSettings, AboutPageContent
+# Import BlockedDate model
+from dashboard.models import SiteSettings, AboutPageContent, BlockedDate
 # Import models from service app needed by the *remaining* views in this file
 # ServiceBooking was moved, but ServiceType is still needed for settings views
 from service.models import ServiceType # <-- Re-added this import
 
 
 # Import forms from the dashboard app (Keep forms needed by remaining views)
+# Import BlockedDateForm
 from dashboard.forms import (
     BusinessInfoForm,
     HireBookingSettingsForm,
@@ -22,6 +24,7 @@ from dashboard.forms import (
     ServiceTypeForm,
     MiscellaneousSettingsForm,
     AboutPageContentForm,
+    BlockedDateForm, # Import BlockedDateForm
 )
 
 # Import is_staff_check from the new bookings.py file
@@ -79,17 +82,53 @@ def settings_hire_booking(request):
 @user_passes_test(is_staff_check)
 def settings_service_booking(request):
     settings = SiteSettings.get_settings()
+    blocked_dates = BlockedDate.objects.all() # Get all blocked dates
+
+    # Initialize forms outside of POST to have them available for GET or failed POST
+    form = ServiceBookingSettingsForm(instance=settings)
+    blocked_date_form = BlockedDateForm()
+
     if request.method == 'POST':
-        form = ServiceBookingSettingsForm(request.POST, instance=settings)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Service booking settings updated successfully!')
-            return redirect('dashboard:settings_service_booking')
-    else:
-        form = ServiceBookingSettingsForm(instance=settings)
+        # Handle ServiceBookingSettingsForm submission
+        if 'service_settings_submit' in request.POST:
+            form = ServiceBookingSettingsForm(request.POST, instance=settings)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Service booking settings updated successfully!')
+                return redirect('dashboard:settings_service_booking') # Redirect on success
+            else:
+                messages.error(request, 'Error updating service booking settings. Please check the form.')
+        # Handle BlockedDateForm submission
+        elif 'add_blocked_date_submit' in request.POST:
+            blocked_date_form = BlockedDateForm(request.POST)
+            if blocked_date_form.is_valid():
+                blocked_date_form.save()
+                messages.success(request, 'Blocked date added successfully!')
+                return redirect('dashboard:settings_service_booking') # Redirect on success
+            else:
+                 messages.error(request, 'Error adding blocked date. Please check the form.')
+        # Handle Delete Blocked Date
+        elif 'delete_blocked_date' in request.POST:
+            blocked_date_id = request.POST.get('delete_blocked_date')
+            try:
+                blocked_date = get_object_or_404(BlockedDate, pk=blocked_date_id)
+                blocked_date.delete()
+                messages.success(request, 'Blocked date deleted successfully!')
+                return redirect('dashboard:settings_service_booking') # Redirect on success
+            except Exception as e:
+                 messages.error(request, f'Error deleting blocked date: {e}')
+                 return redirect('dashboard:settings_service_booking') # Redirect even on error
+
+        # If none of the specific submit buttons were pressed, maybe handle a general POST error
+        # This part might need refinement depending on how you structure your form submissions
+        # If you have multiple forms submitting to the same view, checking the submit button name is good.
+
+    # Context for GET requests or failed POST requests
     context = {
         'page_title': 'Service Booking Settings',
-        'form': form,
+        'form': form, # Service booking settings form
+        'blocked_date_form': blocked_date_form, # Form for adding blocked dates
+        'blocked_dates': blocked_dates, # List of existing blocked dates
         'active_tab': 'service_booking'
     }
     return render(request, 'dashboard/settings_service_booking.html', context)

@@ -6,7 +6,8 @@
         <div class="card-header bg-primary text-white">
             <h1 class="h4 mb-0">Service Booking Settings</h1>
         </div>
-        <div class="card-body">         
+        <div class="card-body">
+            {# Display messages here #}
             {% if messages %}
                 {% for message in messages %}
                     <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
@@ -15,10 +16,11 @@
                     </div>
                 {% endfor %}
             {% endif %}
-            
+
+            {# Existing Service Booking Settings Form #}
             <form method="post">
                 {% csrf_token %}
-                
+
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <div class="card">
@@ -35,7 +37,7 @@
                                         Allow users to book services without creating an account
                                     </small>
                                 </div>
-                                
+
                                 <div class="mb-3 form-check">
                                     {{ form.allow_account_bookings }}
                                     <label class="form-check-label" for="{{ form.allow_account_bookings.id_for_label }}">
@@ -45,7 +47,7 @@
                                         Allow users to book services with their account
                                     </small>
                                 </div>
-                                
+
                                 <div class="mb-3">
                                     <label for="{{ form.booking_open_days.id_for_label }}" class="form-label">
                                         Booking Open Days
@@ -55,7 +57,7 @@
                                         Number of days in advance that bookings can be made
                                     </small>
                                 </div>
-                                
+
                                 <div class="mb-3">
                                     <label for="{{ form.booking_advance_notice.id_for_label }}" class="form-label">
                                         Booking Advance Notice
@@ -65,7 +67,7 @@
                                         Minimum number of days notice required for a booking
                                     </small>
                                 </div>
-                                
+
                                 <div class="mb-3">
                                     <label for="{{ form.max_visible_slots_per_day.id_for_label }}" class="form-label">
                                         Max Visible Slots Per Day
@@ -78,7 +80,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="col-md-6">
                         <div class="card mb-4">
                             <div class="card-header">
@@ -94,7 +96,7 @@
                                         Earliest time of day for service bookings
                                     </small>
                                 </div>
-                                
+
                                 <div class="mb-3">
                                     <label for="{{ form.booking_end_time.id_for_label }}" class="form-label">
                                         Booking End Time
@@ -106,7 +108,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="card">
                             <div class="card-header">
                                 <h5 class="mb-0">Notification Settings</h5>
@@ -121,7 +123,7 @@
                                         Subject line for booking confirmation emails
                                     </small>
                                 </div>
-                                
+
                                 <div class="mb-3">
                                     <label for="{{ form.service_pending_email_subject.id_for_label }}" class="form-label">
                                         Pending Email Subject
@@ -131,7 +133,7 @@
                                         Subject line for booking request emails
                                     </small>
                                 </div>
-                                
+
                                 <div class="mb-3">
                                     <label for="{{ form.admin_service_notification_email.id_for_label }}" class="form-label">
                                         Admin Notification Email
@@ -145,11 +147,99 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                     {# Add a name to the submit button to distinguish forms in the view #}
+                    <button type="submit" name="service_settings_submit" class="btn btn-primary">Save Service Settings</button>
                 </div>
             </form>
+
+            <hr class="my-4"> {# Add a separator #}
+
+            {# New section for managing Blocked Dates #}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Blocked Service Dates</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Add New Blocked Date or Range:</h6>
+                    <form method="post" class="row g-3 align-items-end">
+                        {% csrf_token %}
+                        {# Render form fields manually for better Bootstrap control #}
+                        <div class="col-md-4">
+                            <label for="{{ blocked_date_form.start_date.id_for_label }}" class="form-label">{{ blocked_date_form.start_date.label }}</label>
+                            {{ blocked_date_form.start_date }}
+                            {% if blocked_date_form.start_date.errors %}
+                                {% for error in blocked_date_form.start_date.errors %}
+                                    <small class="text-danger d-block">{{ error }}</small>
+                                {% endfor %}
+                            {% endif %}
+                             <small class="form-text text-muted">{{ blocked_date_form.start_date.help_text }}</small>
+                        </div>
+                         <div class="col-md-4">
+                            <label for="{{ blocked_date_form.end_date.id_for_label }}" class="form-label">{{ blocked_date_form.end_date.label }}</label>
+                            {{ blocked_date_form.end_date }}
+                             {% if blocked_date_form.end_date.errors %}
+                                {% for error in blocked_date_form.end_date.errors %}
+                                    <small class="text-danger d-block">{{ error }}</small>
+                                {% endfor %}
+                            {% endif %}
+                            <small class="form-text text-muted">{{ blocked_date_form.end_date.help_text }}</small>
+                        </div>
+                         <div class="col-md-4">
+                            <label for="{{ blocked_date_form.description.id_for_label }}" class="form-label">{{ blocked_date_form.description.label }}</label>
+                            {{ blocked_date_form.description }}
+                             {% if blocked_date_form.description.errors %}
+                                {% for error in blocked_date_form.description.errors %}
+                                    <small class="text-danger d-block">{{ error }}</small>
+                                {% endfor %}
+                            {% endif %}
+                            <small class="form-text text-muted">{{ blocked_date_form.description.help_text }}</small>
+                        </div>
+
+                         {# Display non-field errors for the blocked date form #}
+                         {% if blocked_date_form.non_field_errors %}
+                            <div class="col-12">
+                                {% for error in blocked_date_form.non_field_errors %}
+                                    <div class="alert alert-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                         {% endif %}
+
+                        <div class="col-12">
+                            {# Add a name to the submit button to distinguish forms in the view #}
+                            <button type="submit" name="add_blocked_date_submit" class="btn btn-success">Add Blocked Date</button>
+                        </div>
+                    </form>
+
+                    <h6 class="mt-4">Existing Blocked Dates:</h6>
+                    {% if blocked_dates %}
+                        <ul class="list-group">
+                            {% for date in blocked_dates %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {% if date.start_date == date.end_date %}
+                                        {{ date.start_date|date:"Y-m-d" }}
+                                    {% else %}
+                                        {{ date.start_date|date:"Y-m-d" }} to {{ date.end_date|date:"Y-m-d" }}
+                                    {% endif %}
+                                    {% if date.description %}
+                                        - {{ date.description }}
+                                    {% endif %}
+                                    <form method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="delete_blocked_date" value="{{ date.pk }}">
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this blocked date entry?');">Delete</button>
+                                    </form>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No blocked dates currently set.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+
         </div>
     </div>
 {% endblock %}
