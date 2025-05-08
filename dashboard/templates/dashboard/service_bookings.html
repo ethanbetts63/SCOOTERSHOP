@@ -25,6 +25,19 @@
             <a href="{% url 'dashboard:service_booking_search' %}" class="btn-primary"> {# Using existing button primary style #}
                  Search bookings
             </a>
+
+            {# Color Key for Statuses #}
+            <div class="color-key">
+                <div class="color-key-item">
+                    <span class="color-box status-confirmed"></span> Confirmed
+                </div>
+                <div class="color-key-item">
+                    <span class="color-box status-pending"></span> Pending
+                </div>
+                <div class="color-key-item">
+                    <span class="color-box status-completed"></span> Completed
+                </div>
+            </div>
         </div>
     </div>
     <div class="card-body">
