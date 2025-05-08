@@ -73,16 +73,7 @@
             <small id="timeSlotHelp" class="form-text text-muted">Select a date first to see available times.</small>
         </div>
 
-         {# Booking Comments Field #}
-         <div class="form-group">
-            {{ form.booking_comments.label_tag }}
-            {{ form.booking_comments }}
-            {% if form.booking_comments.errors %}
-                {% for error in form.booking_comments.errors %}
-                    <small class="form-text text-danger">{{ error }}</small>
-                {% endfor %}
-            {% endif %}
-        </div>
+         {# Removed Booking Comments Field from Step 1 - Removing the entire block #}
 
 
         <button type="submit" class="btn btn-primary mt-3">Next: Vehicle Details</button>
@@ -100,7 +91,7 @@
             try {
                 // Ensure blockedDateRangesJson is treated as a string before parsing
                 const blockedDateRangesJson = "{{ blocked_date_ranges_json|escapejs }}";
-                if (blockedDateRangesJson) { // Only parse if not empty
+                if (blockedDateRangesJson && blockedDateRangesJson.trim() !== '' && blockedDateRangesJson.trim() !== '[]') { // Only parse if not empty or empty JSON string
                     blockedDateRanges = JSON.parse(blockedDateRangesJson);
                     // Flatpickr expects an array, double check if parsing resulted in an array
                     if (!Array.isArray(blockedDateRanges)) {
@@ -121,7 +112,7 @@
             try {
                  // Ensure availableTimeSlotsJson is treated as a string before parsing
                 const availableTimeSlotsJson = "{{ available_time_slots_json|escapejs }}";
-                 if (availableTimeSlotsJson && availableTimeSlotsJson !== '[]') { // Only parse if not empty JSON string
+                 if (availableTimeSlotsJson && availableTimeSlotsJson.trim() !== '' && availableTimeSlotsJson.trim() !== '[]') { // Only parse if not empty or empty JSON string
                     initialAvailableTimeSlots = JSON.parse(availableTimeSlotsJson);
                      // Ensure the parsed data is an array
                      if (!Array.isArray(initialAvailableTimeSlots)) {

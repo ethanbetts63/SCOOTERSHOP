@@ -31,6 +31,7 @@ class BaseAdminServiceBookingForm(forms.Form):
     #     widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
     #     required=True # Made appointment_date required
     # )
+    # Kept booking_comments here as it might be used in admin forms derived from this base
     booking_comments = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
         required=False,
@@ -282,7 +283,7 @@ class AdminUserBookingForm(BaseAdminServiceBookingForm):
 
         return cleaned_data
 
-# Form for basic service details (frontend customer form)
+# Form for basic service details (frontend customer form - Step 1)
 class ServiceDetailsForm(forms.Form):
     service_type = forms.ModelChoiceField(
         queryset=ServiceType.objects.filter(is_active=True),
@@ -305,11 +306,12 @@ class ServiceDetailsForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control'}),
         required=True
     )
-    booking_comments = forms.CharField( # Added booking_comments field
-        widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
-        required=False,
-        label="Comments or specific requests"
-    )
+    # Removed booking_comments field from ServiceDetailsForm
+    # booking_comments = forms.CharField(
+    #     widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+    #     required=False,
+    #     label="Comments or specific requests"
+    # )
 
     # Add a clean method to validate that a time slot was selected
     def clean(self):
@@ -372,6 +374,7 @@ class ServiceBookingUserForm(forms.Form):
         label="Preferred method of contact",
         required=True # Made preferred_contact required (already was)
     )
+    # Kept booking_comments field in ServiceBookingUserForm for Step 3
     booking_comments = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
         required=False,
