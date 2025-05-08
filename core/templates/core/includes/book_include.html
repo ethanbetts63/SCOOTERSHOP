@@ -1,0 +1,26 @@
+<!-- Include file for booking a service -->
+<div class="container book-service-container">
+    <div class="card has-bg-effect service-booking-card">
+        <div class="card-body">
+            <h2 class="section-title booking-title">Book a service for your bike in less than a minute</h2>
+            
+            <div class="booking-form-container">
+                <div class="booking-form">
+                    <select class="form-select service-type-select" id="serviceTypeSelect">
+                        <option value="" disabled selected>Select a service type</option>
+                        {% for service_type in service_types %}
+                            <option value="{{ service_type.id }}">{{ service_type.name }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    <a href="{% url 'service:service_start' %}" class="btn-primary book-now-btn">Book Online</a>
+                </div>
+                
+                <div class="service-info-container">
+                    <span class="svg-icon svg-icon-md icon-info"></span>
+                    <a href="{% url 'service:service' %}" class="service-info-link">Learn more about our service options</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

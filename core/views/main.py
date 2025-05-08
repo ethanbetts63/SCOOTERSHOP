@@ -5,16 +5,19 @@ from django.conf import settings
 import requests
 import sys
 
-
 # Import models from other apps as needed
-from dashboard.models import SiteSettings 
+from dashboard.models import SiteSettings
+# Assuming you have a model for ServiceType in dashboard.models or another app
+
+# Import the utility function for featured motorcycles if still needed
 from inventory.views.utils import get_featured_motorcycles
+
 
 # Home Page
 def index(request):
     site_settings = SiteSettings.get_settings()
-    place_id = site_settings.google_places_place_id 
-    api_key = settings.GOOGLE_API_KEY 
+    place_id = site_settings.google_places_place_id
+    api_key = settings.GOOGLE_API_KEY
     is_testing = 'test' in sys.argv or 'manage.py' in sys.argv
     places_api_url = f"https://maps.googleapis.com/maps/api/place/details/json?place_id={place_id}&fields=reviews&key={api_key}"
 
@@ -42,7 +45,7 @@ def index(request):
                 # Only print the error if not in a test environment
                 if not is_testing:
                     print(f"Google Places API Error: Status is not OK or no reviews found in response. Status: {data.get('status')}")
-    
+
         except requests.exceptions.RequestException as e:
             # Only print the error if not in a test environment
             if not is_testing:
@@ -58,7 +61,7 @@ def index(request):
     featured_used_motorcycles = []
 
     # Only fetch featured motorcycles if the section is enabled via SiteSettings
-    if site_settings.enable_featured_section: 
+    if site_settings.enable_featured_section:
         try:
             featured_new_motorcycles = get_featured_motorcycles(condition='new', limit=3)
             featured_used_motorcycles = get_featured_motorcycles(condition='used', limit=3)
@@ -75,5 +78,3 @@ def index(request):
 
     # Updated template path
     return render(request, 'core/index.html', context)
-
-

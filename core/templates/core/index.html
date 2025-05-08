@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="{% static 'core/css/map_styles.css' %}">
 <link rel="stylesheet" href="{% static 'core/css/review_styles.css' %}">
 <link rel="stylesheet" href="{% static 'core/css/featured_styles.css' %}">
+<link rel="stylesheet" href="{% static 'core/css/book_include_styles.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -87,6 +88,9 @@
 
     {% include "core/includes/reviews.html" %}
 
+
+    {% include "core/includes/book_include.html" with service_types=service_types %}
+    
     <div class="container">{# Changed from .index-section #}
         <h2 class="section-title">Our Brands</h2>{# Added .section-title #}
 
