@@ -25,27 +25,28 @@
             <a href="{% url 'dashboard:service_booking_search' %}" class="btn-primary"> {# Using existing button primary style #}
                  Search bookings
             </a>
-
-            {# Color Key for Statuses #}
-            <div class="color-key">
-                <div class="color-key-item">
-                    <span class="color-box status-confirmed"></span> Confirmed
-                </div>
-                <div class="color-key-item">
-                    <span class="color-box status-pending"></span> Pending
-                </div>
-                <div class="color-key-item">
-                    <span class="color-box status-completed"></span> Completed
-                </div>
-            </div>
         </div>
     </div>
     <div class="card-body">
         <div id='fullcalendar'>
             {# FullCalendar will build the calendar inside this div #}
         </div>
-    </div>
-</div>
+
+        {# Color Key for Statuses (temporarily placed here, will be moved by JS) #}
+        <div class="color-key" id="status-color-key" style="display: none;">
+            <div class="color-key-item">
+                <span class="color-box status-confirmed"></span> Confirmed
+            </div>
+            <div class="color-key-item">
+                <span class="color-box status-pending"></span> Pending
+            </div>
+            <div class="color-key-item">
+                <span class="color-box status-completed"></span> Completed
+            </div>
+        </div>
+
+    </div> {# End of card-body #}
+</div> {# End of card #}
 
 {# Include FullCalendar's core JavaScript file #}
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
@@ -174,8 +175,20 @@
 
         });
 
-        // Render the calendar on the page
+        // Render the calendar first
         calendar.render();
+
+        // --- Move the color key into the FullCalendar header ---
+        var colorKeyElement = document.getElementById('status-color-key');
+        // Find the right-hand side chunk of the FullCalendar header
+        var headerRightChunk = calendarEl.querySelector('.fc-toolbar-chunk:last-child');
+
+        if (colorKeyElement && headerRightChunk) {
+            // Append the color key element to the right chunk
+            headerRightChunk.appendChild(colorKeyElement);
+            // Make it visible after moving
+            colorKeyElement.style.display = 'flex';
+        }
     });
 
 </script>

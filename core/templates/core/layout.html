@@ -64,7 +64,7 @@
                     <li>
                         <a class="nav-item" href="{% url 'inventory:hire' %}"
                            {% if not settings.enable_hire and user.is_staff %}
-                               style="color: #08E5D1;" 
+                               style="color: #08E5D1;"
                            {% endif %}
                         >
                             Hire Booking
@@ -76,7 +76,7 @@
                     <li>
                         <a class="nav-item" href="{% url 'core:about' %}"
                            {% if not settings.enable_about_page and user.is_staff %}
-                               style="color: #08E5D1;" 
+                               style="color: #08E5D1;"
                            {% endif %}
                         >
                             About Us
@@ -88,10 +88,22 @@
                     <li>
                         <a class="nav-item" href="{% url 'core:contact' %}"
                            {% if not settings.enable_contact_page and user.is_staff %}
-                               style="color: #08E5D1;" 
+                               style="color: #08E5D1;"
                            {% endif %}
                         >
                             Contact Us
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% if settings.enable_user_accounts or user.is_staff %}
+                    <li>
+                        <a class="nav-item" href="{% url 'users:login' %}"
+                            {% if not settings.enable_user_accounts and user.is_staff %}
+                            style="color: #08E5D1;"
+                            {% endif %}
+                        >
+                            Login/Register
                         </a>
                     </li>
                 {% endif %}
@@ -126,7 +138,7 @@
                             <li>
                                 <a href="{% url 'inventory:new' %}"
                                    {% if not settings.enable_sales_new and user.is_staff %}
-                                       style="color: #08E5D1;" 
+                                       style="color: #08E5D1;"
                                    {% endif %}
                                 >
                                     New Bikes
@@ -194,11 +206,7 @@
                             </li>
                         {% endif %}
 
-                        {# Login link - Keeping always visible as per original layout #}
-                        <li><a href="{% url 'users:login' %}">Login</a></li>
-
-                        {# ServiceBook link (applying same logic as Service Booking) #}
-                         {% if settings.enable_service_booking or user.is_staff %}
+                        {% if settings.enable_service_booking or user.is_staff %}
                             <li>
                                 <a href="{% url 'service:service_start' %}"
                                    {% if not settings.enable_service_booking and user.is_staff %}
