@@ -1,10 +1,6 @@
-{% extends "core/layout.html" %}
-{% load static %}
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/motorcycle_list_styles.css' %}">
-{% endblock %}
+{% extends "dashboard/admin_layout.html" %}
 
-{% block content %}
+{% block admin_main_content %}
     {% with current_url_name='motorcycle-list' page_title='All Available Motorcycles (Admin View)' %}
         {% include "inventory/motorcycle_list_include.html" %}
     {% endwith %}
