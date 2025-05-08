@@ -72,9 +72,10 @@
                     `;
 
                     let eventEl = document.createElement('div');
-                    // Apply the base class and the specific blocked date class
+                    // Apply the base class, the custom main class, and the specific blocked status class
                     eventEl.classList.add('calendar-tile-base');
-                    eventEl.classList.add('blocked-date-tile');
+                    eventEl.classList.add('fc-event-main-custom'); // Add this class
+                    eventEl.classList.add('status-blocked'); // Add this class
                     eventEl.innerHTML = html;
 
                     // Optional: Add original title as a title attribute for tooltip if description was used
