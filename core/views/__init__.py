@@ -1,13 +1,9 @@
-# core/views/__init__.py
-
 from .main import index
 
-# From what was previously information.py
 from .information import (
-    about,
-    contact,
-    privacy,
-    returns,
-    security,
-    terms,
+    contact, # Import the combined contact/about view
+    privacy_policy, # Use the correct function name
+    returns_policy,
+    security_policy,
+    terms_of_use
 )

@@ -1,78 +1,72 @@
 # core/views/information.py
 
 from django.shortcuts import render, redirect
-from django.contrib import messages # Import messages
+from django.conf import settings
+from dashboard.models import SiteSettings, AboutPageContent # Assuming models are in core.models
+from django.contrib.auth.decorators import user_passes_test # Import for staff check
 
-# Import models remaining in the core app
-from dashboard.models import AboutPageContent, SiteSettings # Assuming these remain in core app
+# Helper function to check if user is staff
+def is_staff_check(user):
+    return user.is_staff
 
-
-# About Page
-def about(request):
-    settings = SiteSettings.get_settings()
-    if not settings.enable_about_page: # Assuming this setting exists
-        messages.error(request, "The about page is currently disabled.")
-        # Updated redirect URL to use the core namespace
-        return redirect('core:index')
-
-    # Get the about page content (first object, assuming a singleton or order)
-    try:
-        about_content = AboutPageContent.objects.first()
-    except Exception as e:
-        print(f"Error fetching about page content: {e}")
-        about_content = None
-        messages.warning(request, "Could not load about page content.")
-
-    context = {"about_content": about_content}
-    # Updated template path
-    return render(request, "core/information/about.html", context)
-
-# Contact Page
 def contact(request):
-    settings = SiteSettings.get_settings()
-    if not settings.enable_contact_page: # Assuming this setting exists
-        messages.error(request, "The contact page is currently disabled.")
-        # Updated redirect URL to use the core namespace
-        return redirect('core:index')
-    # Updated template path
-    return render(request, "core/information/contact.html")
+    """
+    Handles the Contact Us and About Us page.
+    Displays content based on site settings and user staff status.
+    Redirects to home if neither page is enabled and user is not staff.
+    """
+    site_settings = SiteSettings.get_settings() # Get your site settings
 
-# Privacy Page
-def privacy(request):
-    settings = SiteSettings.get_settings()
-    if not settings.enable_privacy_policy_page: # Assuming this setting exists
-        messages.error(request, "The privacy policy page is currently disabled.")
-        # Updated redirect URL to use the core namespace
-        return redirect('core:index')
-    # Updated template path
-    return render(request, "core/information/privacy.html")
+    # Check if the page should be accessible based on settings and staff status
+    # The page is accessible if contact is enabled OR about is enabled OR the user is staff
+    if not (site_settings.enable_contact_page or site_settings.enable_about_page or request.user.is_staff):
+        return redirect('core:index') 
 
-# Returns Page
-def returns(request):
-    settings = SiteSettings.get_settings()
-    if not settings.enable_returns_page: # Assuming this setting exists
-        messages.error(request, "The returns page is currently disabled.")
-        # Updated redirect URL to use the core namespace
-        return redirect('core:index')
-    # Updated template path
-    return render(request, "core/information/returns.html")
+    # Fetch AboutPageContent if about page is enabled or user is staff
+    about_content = None
+    # Only attempt to fetch if the About section should potentially be displayed
+    if site_settings.enable_about_page or request.user.is_staff:
+        try:
+            # Assuming AboutPageContent has a single instance with pk=1
+            about_content = AboutPageContent.objects.get(pk=1)
+        except AboutPageContent.DoesNotExist:
+             pass 
 
-# Security Page
-def security(request):
-    settings = SiteSettings.get_settings()
-    if not settings.enable_security_page: # Assuming this setting exists
-        messages.error(request, "The security page is currently disabled.")
-        # Updated redirect URL to use the core namespace
-        return redirect('core:index')
-    # Updated template path
-    return render(request, "core/information/security.html")
 
-# Terms Page
-def terms(request):
-    settings = SiteSettings.get_settings()
-    if not settings.enable_terms_page: # Assuming this setting exists
-        messages.error(request, "The terms page is currently disabled.")
-        # Updated redirect URL to use the core namespace
-        return redirect('core:index')
-    # Updated template path
-    return render(request, "core/information/terms.html")
+    context = {
+        'settings': site_settings,
+        'about_content': about_content,
+    }
+
+    # Render the contact template
+    return render(request, 'core/information/contact.html', context)
+
+# Existing information views (ensure these match what you have)
+def privacy_policy(request):
+     site_settings = SiteSettings.get_settings()
+     if not site_settings.enable_privacy_policy_page and not request.user.is_staff:
+         return redirect('core:index')
+     # Render your privacy policy template
+     return render(request, 'core/information/privacy.html', {'settings': site_settings})
+
+def returns_policy(request):
+     site_settings = SiteSettings.get_settings()
+     if not site_settings.enable_returns_page and not request.user.is_staff:
+         return redirect('core:index')
+     # Render your returns policy template
+     return render(request, 'core/information/returns.html', {'settings': site_settings})
+
+def security_policy(request):
+     site_settings = SiteSettings.get_settings()
+     if not site_settings.enable_security_page and not request.user.is_staff:
+         return redirect('core:index')
+     # Render your security policy template
+     return render(request, 'core/information/security.html', {'settings': site_settings})
+
+def terms_of_use(request):
+     site_settings = SiteSettings.get_settings()
+     if not site_settings.enable_terms_page and not request.user.is_staff:
+         return redirect('core:index')
+     # Render your terms of use template
+     return render(request, 'core/information/terms.html', {'settings': site_settings})
+

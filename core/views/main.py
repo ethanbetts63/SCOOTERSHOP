@@ -16,14 +16,13 @@ def index(request):
     place_id = site_settings.google_places_place_id 
     api_key = settings.GOOGLE_API_KEY 
     is_testing = 'test' in sys.argv or 'manage.py' in sys.argv
+    places_api_url = f"https://maps.googleapis.com/maps/api/place/details/json?place_id={place_id}&fields=reviews&key={api_key}"
 
     all_reviews = []
     five_star_reviews = []
 
     # Check if Google Places API is enabled in SiteSettings
     if site_settings.enable_google_places_reviews and place_id and api_key: # Assuming this setting exists
-        places_api_url = f"https://maps.googleapis.com/maps/api/place/details/json?place_id={place_id}&fields=reviews&key={api_key}"
-
         try:
             response = requests.get(places_api_url)
             response.raise_for_status()

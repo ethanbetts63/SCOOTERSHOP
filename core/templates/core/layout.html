@@ -23,7 +23,6 @@
             </div>
 
             <ul>
-                {# Navigation items with visibility checks and admin styling #}
                 {% if settings.enable_sales_new or user.is_staff %}
                     <li>
                         <a class="nav-item" href="{% url 'inventory:new' %}"
@@ -72,26 +71,18 @@
                     </li>
                 {% endif %}
 
-                {% if settings.enable_about_page or user.is_staff %}
+                {% if settings.enable_contact_page or settings.enable_about_page or user.is_staff %}
                     <li>
-                        <a class="nav-item" href="{% url 'core:about' %}"
-                           {% if not settings.enable_about_page and user.is_staff %}
-                               style="color: #08E5D1;"
-                           {% endif %}
+                        <a href="{% url 'core:contact' %}"
+                        {% if not settings.enable_contact_page and not settings.enable_about_page and user.is_staff %}
+                            style="color: #08E5D1;" {# Bright turquoise color #}
+                        {% endif %}
                         >
-                            About Us
-                        </a>
-                    </li>
-                {% endif %}
-
-                {% if settings.enable_contact_page or user.is_staff %}
-                    <li>
-                        <a class="nav-item" href="{% url 'core:contact' %}"
-                           {% if not settings.enable_contact_page and user.is_staff %}
-                               style="color: #08E5D1;"
-                           {% endif %}
-                        >
-                            Contact Us
+                            {% if not settings.enable_contact_page and settings.enable_about_page %}
+                                About us
+                            {% else %}
+                                Contact Us
+                            {% endif %}
                         </a>
                     </li>
                 {% endif %}
@@ -116,9 +107,12 @@
                 <a href="https://www.instagram.com/scootershop_australia/" target="_blank" rel="noopener">
                     <img src="{% static 'images/svgs/instagram.svg' %}" alt="Instagram">
                 </a>
-                <a href="{% url 'core:contact' %}">
-                    <img src="{% static 'images/svgs/mail.svg' %}" alt="Contact Us">
-                </a>
+                 {# Apply visibility check to the contact SVG link #}
+                {% if settings.enable_contact_page or settings.enable_about_page or user.is_staff %}
+                    <a href="{% url 'core:contact' %}">
+                        <img src="{% static 'images/svgs/mail.svg' %}" alt="Contact Us">
+                    </a>
+                {% endif %}
             </div>
         </nav>
 
@@ -133,7 +127,6 @@
                 <div class="footer-section">
                     <h3>Quick Links</h3>
                     <ul>
-                        {# Footer Quick Links with visibility checks and admin styling #}
                         {% if settings.enable_sales_new or user.is_staff %}
                             <li>
                                 <a href="{% url 'inventory:new' %}"
@@ -182,26 +175,18 @@
                             </li>
                         {% endif %}
 
-                        {% if settings.enable_about_page or user.is_staff %}
-                            <li>
-                                <a href="{% url 'core:about' %}"
-                                   {% if not settings.enable_about_page and user.is_staff %}
-                                       style="color: #08E5D1;" {# Bright turquoise color #}
-                                   {% endif %}
-                                >
-                                    About Us
-                                </a>
-                            </li>
-                        {% endif %}
-
-                        {% if settings.enable_contact_page or user.is_staff %}
+                        {% if settings.enable_contact_page or settings.enable_about_page or user.is_staff %}
                             <li>
                                 <a href="{% url 'core:contact' %}"
-                                   {% if not settings.enable_contact_page and user.is_staff %}
-                                       style="color: #08E5D1;" {# Bright turquoise color #}
-                                   {% endif %}
+                                {% if not settings.enable_contact_page and not settings.enable_about_page and user.is_staff %}
+                                    style="color: #08E5D1;" {# Bright turquoise color #}
+                                {% endif %}
                                 >
-                                    Contact Us
+                                    {% if not settings.enable_contact_page and settings.enable_about_page %}
+                                        About us
+                                    {% else %}
+                                        Contact Us
+                                    {% endif %}
                                 </a>
                             </li>
                         {% endif %}
@@ -228,7 +213,6 @@
                 <div class="footer-section">
                     <h3>Resources</h3>
                     <ul>
-                        {# ADD visibility checks for the new information pages #}
                         {% if settings.enable_terms_page or user.is_staff %}
                             <li>
                                 <a href="{% url 'core:terms' %}"
@@ -276,7 +260,6 @@
                                 </a>
                             </li>
                         {% endif %}
-                        {# END new visibility checks #}
                     </ul>
                 </div>
 
@@ -316,7 +299,6 @@
                                 <li>Sunday: {{ settings.opening_hours_sunday }}</li>
                             {% endif %}
                         {% else %}
-                            {# Optional: Display default hardcoded info or a message if settings are not available #}
                             <li><strong>Phone:</strong> (08) 9433 4613</li>
                             <li><strong>Email:</strong> admin@scootershop.com.au</li>
                             <li><strong>Address:</strong> Unit 2/95 Queen Victoria St, Fremantle WA, Australia</li>
@@ -338,9 +320,12 @@
                         <a href="https://www.instagram.com/scootershop_australia/" target="_blank" rel="noopener">
                             <img src="{% static 'images/svgs/instagram.svg' %}" alt="Instagram">
                         </a>
-                        <a href="{% url 'core:contact' %}">
-                            <img src="{% static 'images/svgs/mail.svg' %}" alt="Contact Us">
-                        </a>
+                        {# Apply visibility check to the contact SVG link #}
+                        {% if settings.enable_contact_page or settings.enable_about_page or user.is_staff %}
+                            <a href="{% url 'core:contact' %}">
+                                <img src="{% static 'images/svgs/mail.svg' %}" alt="Contact Us">
+                            </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
