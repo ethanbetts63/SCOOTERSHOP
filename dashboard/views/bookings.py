@@ -9,8 +9,10 @@ from django.db.models import Count, Q
 from django.utils import timezone
 from django.conf import settings
 from django.http import JsonResponse
+from django.utils.dateparse import parse_datetime
 
 from service.models import ServiceBooking, ServiceType # Ensure your model path is correct
+from dashboard.models import BlockedDate # Corrected import
 
 # Helper function to check if a user is staff
 def is_staff_check(user):
@@ -38,36 +40,44 @@ def service_booking_details_view(request, pk):
     }
     return render(request, 'dashboard/service_booking_details.html', context) # Make sure this template name is correct
 
-# Returns service bookings as a JSON feed for FullCalendar
+# Returns service bookings and blocked dates as a JSON feed for FullCalendar
 @user_passes_test(is_staff_check)
 def get_bookings_json(request):
     start_param = request.GET.get('start')
     end_param = request.GET.get('end')
 
     bookings = ServiceBooking.objects.all()
+    blocked_dates = BlockedDate.objects.all() # Fetch all blocked dates initially
 
-    # Filter bookings by the date range FullCalendar requests
+    start_date = None
+    end_date = None
+
+    # Filter bookings and blocked dates by the date range FullCalendar requests
     if start_param and end_param:
         try:
-            from django.utils.dateparse import parse_datetime
             start_date = parse_datetime(start_param)
             end_date = parse_datetime(end_param)
 
             if start_date and end_date:
                  bookings = bookings.filter(
                      appointment_date__gte=start_date,
-                     appointment_date__lt=end_date
+                     appointment_date__lt=end_date # Use lt for end date as FullCalendar end is exclusive
                  )
+                 # Filter blocked dates that overlap with the requested range
+                 blocked_dates = blocked_dates.filter(
+                     start_date__lte=end_date.date(), # Compare date parts
+                     end_date__gte=start_date.date()   # Compare date parts
+                 )
+
 
         except (ValueError, TypeError):
              pass # Handle potential parsing errors
 
 
     events = []
+    # Add booking events
     for booking in bookings:
         # Prepare the data in FullCalendar's Event Object format
-        # The 'title' is still useful for FullCalendar's internal use or list views.
-        # We will use extendedProps for the custom display content.
         event_title = f"{booking.customer_name or 'Anonymous'} - {booking.service_type.name}"
 
         # Prepare extendedProps for custom rendering
@@ -76,7 +86,6 @@ def get_bookings_json(request):
             'service_type': booking.service_type.name,
             'status': booking.status,
             # Add vehicle details, checking if they exist
-            # Make sure to adjust the following lines based on your actual ServiceBooking model structure
             'vehicle_make': getattr(booking, 'anon_vehicle_make', None) or (getattr(booking.vehicle, 'make', None) if hasattr(booking, 'vehicle') and booking.vehicle else None) or '',
             'vehicle_model': getattr(booking, 'anon_vehicle_model', None) or (getattr(booking.vehicle, 'model', None) if hasattr(booking, 'vehicle') and booking.vehicle else None) or '',
             'booking_id': booking.pk,
@@ -90,6 +99,24 @@ def get_bookings_json(request):
             'extendedProps': extended_props, # Custom data for our eventContent callback
         }
         events.append(event)
+
+    # Add blocked date events as regular events with a specific property and class
+    for blocked_date_range in blocked_dates:
+         current_date = blocked_date_range.start_date
+         while current_date <= blocked_date_range.end_date:
+             blocked_event = {
+                 'start': current_date.isoformat(),
+                 'title': 'Blocked Day', # Title for the tile
+                 'extendedProps': {
+                     'is_blocked': True, # Custom property to identify blocked dates
+                     'description': blocked_date_range.description, # Include description
+                 },
+                 'className': 'blocked-date-tile', # Custom class for styling
+                 'display': 'block', # Ensure it's treated as a regular event
+             }
+             events.append(blocked_event)
+             current_date += timedelta(days=1)
+
 
     return JsonResponse(events, safe=False)
 
@@ -139,7 +166,7 @@ def service_booking_search_view(request):
         search_filter |= Q(anon_vehicle_rego__icontains=query)
         search_filter |= Q(anon_vehicle_transmission__icontains=query)
         search_filter |= Q(booking_reference__icontains=query)
-        
+
         bookings = bookings.filter(search_filter)
 
     # --- Sorting ---
