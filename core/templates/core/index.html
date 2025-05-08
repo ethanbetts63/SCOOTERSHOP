@@ -12,9 +12,15 @@
 {% endblock %}
 
 {% block content %}
+    <!--
     <div class="container hero-banner">{# Added .container #}
         <img src="{% static 'images/coffee_run5.png' %}" alt="Fiddle Scooter Wallpaper" class="banner-background img-responsive">{# Added .img-responsive #}
     </div>
+    -->
+    
+    {% include "core/includes/book_include.html" with service_types=service_types %}
+
+    {% include "core/includes/reviews.html" %}
 
     <div class="container">{# Changed from .index-section #}
         <h1 class="section-title">About</h1>{# Added .section-title #}
@@ -86,10 +92,7 @@
         </div>
     </div>
 
-    {% include "core/includes/reviews.html" %}
-
-
-    {% include "core/includes/book_include.html" with service_types=service_types %}
+    
     
     <div class="container">{# Changed from .index-section #}
         <h2 class="section-title">Our Brands</h2>{# Added .section-title #}
@@ -100,7 +103,7 @@
                     <h3>SYM Scooters – Reliable, Affordable, and Built to Last</h3>
                     <p>Founded in 1954, SYM is a trusted Taiwanese motorcycle manufacturer known for exceptional build quality, reliability, and generous warranty coverage. They strike the perfect balance—offering better quality than many low-end Chinese brands, without the high price tag of Japanese or premium European models.</p>
                     <p>SYM has a strong reputation across Europe, Southeast Asia, and South America. We've proudly partnered with them for years—mainly because it just makes sense. Their scooters come back with fewer issues, and our mechanics enjoy working on them.</p>
-                </div> {# Closed card-body here #}
+                </div> 
             </div>
 
             <div class="card has-bg-effect brand-card segway-brand">
@@ -108,7 +111,7 @@
                     <h3>Segway Electric Mopeds – Innovation Meets Reliability</h3>
                     <p>Best known for their self-balancing transporters, Segway has evolved into a serious player in the electric moped space. As the market continues to grow and change rapidly, Segway stands out with the experience and quality that comes from being an early innovator.</p>
                     <p>We've tested a lot of brands, but Segway's electric mopeds impressed us with their build quality, design, and performance. After a long search, we're confident these are vehicles we can stand behind—and that you'll love riding.</p>
-                </div> {# Closed card-body here #}
+                </div> {# Closed card-body here 
             </div>
         </div>
     </div>
