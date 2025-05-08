@@ -281,6 +281,26 @@ def booking_step1(request):
 
         # Instantiate the form for GET request
         form = ServiceDetailsForm(initial=initial_data)
+
+        # --- Retrieve service_type_id from session and set initial value ---
+        # Check if service_type_id is in the session data
+        if 'service_type_id' in booking_data:
+            try:
+                # Get the ServiceType instance
+                service_type_instance = ServiceType.objects.get(id=booking_data['service_type_id'])
+                # Set the initial value for the service_type field
+                form.initial['service_type'] = service_type_instance
+            except ServiceType.DoesNotExist:
+                # Handle the case where the service type ID in the session is invalid
+                messages.warning(request, "The pre-selected service type was not found.")
+                # Optionally remove the invalid service_type_id from the session
+                if 'service_type_id' in request.session.get(SERVICE_BOOKING_SESSION_KEY, {}):
+                     del request.session[SERVICE_BOOKING_SESSION_KEY]['service_type_id']
+                     request.session.modified = True
+
+        # --- End Retrieve service_type_id ---
+
+
         time_slots_for_form_choices = [] # List of (value, text) tuples for form choices
         available_time_slots_json_for_template = [] # Initialize for template context
 

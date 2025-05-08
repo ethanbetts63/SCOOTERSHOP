@@ -23,9 +23,19 @@ def booking_start(request):
         messages.error(request, "Service booking is currently disabled.")
         return redirect(reverse('core:index'))
 
+    # Clear existing session data for a new booking
     if SERVICE_BOOKING_SESSION_KEY in request.session:
         del request.session[SERVICE_BOOKING_SESSION_KEY]
     request.session.modified = True
+
+    # Get service_type_id from URL parameters if present
+    service_type_id = request.GET.get('service_type_id')
+
+    # Store service_type_id in session if found
+    if service_type_id:
+        request.session[SERVICE_BOOKING_SESSION_KEY] = {'service_type_id': service_type_id}
+        request.session.modified = True
+
 
     return redirect(reverse('service:service_step1'))
 
