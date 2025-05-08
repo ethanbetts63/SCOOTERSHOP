@@ -27,10 +27,10 @@
 <div class="service-types-section">
     <h2>Our Services</h2>
 
-    <div class="service-type-container">
+    <div class="service-types-container">
         {% for service_type in service_types %}
-        <div class="service-type-card">
-            <div class="service-type-image">
+        <div class="service-type-tile">
+            <div class="service-type-icon">
                 {% if service_type.image %}
                 <img src="{{ service_type.image.url }}" alt="{{ service_type.name }}">
                 {% else %}
@@ -46,8 +46,8 @@
             </div>
         </div>
         {% empty %}
-        <div class="service-type-card">
-            <div class="service-type-image">
+        <div class="service-type-tile">
+            <div class="service-type-icon">
                 <span></span>
             </div>
             <div class="service-type-content">
