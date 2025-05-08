@@ -121,7 +121,7 @@ def get_available_slots_ajax(request):
         # Parse the date string in the expected Y-m-d format
         selected_date = datetime.datetime.strptime(selected_date_str, '%Y-%m-%d').date()
     except ValueError:
-        return JsonResponse({'error': 'Invalid date format. Use<ctrl97>-MM-DD'}, status=400)
+        return JsonResponse({'error': 'Invalid date format. Use<\ctrl97>-MM-DD'}, status=400)
 
     available_slots = get_available_time_slots(selected_date)
 
@@ -152,6 +152,7 @@ def booking_step1(request):
         # Get the selected date from the POST data
         selected_date_str_from_post = request.POST.get('appointment_date')
         available_time_slots_for_form = [] # List of (value, text) tuples for form choices
+        available_time_slots_json_for_template = [] # Initialize for template context
 
         if selected_date_str_from_post:
             try:
@@ -161,9 +162,13 @@ def booking_step1(request):
                 available_time_slots_for_form = get_available_time_slots(selected_date_from_post)
                 # Populate the choices for the drop_off_time field in the form instance
                 form.fields['drop_off_time'].choices = available_time_slots_for_form
+                 # Also format for the frontend JS if date was valid
+                available_time_slots_json_for_template = [{'value': slot[0], 'text': slot[1]} for slot in available_time_slots_for_form]
+
             except ValueError:
                 # If the date format is invalid, the form will handle it,
                 # but we won't be able to populate time slots dynamically here.
+                # available_time_slots_for_form and available_time_slots_json_for_template remain []
                 pass # Let form validation handle the date error
 
         # --- End Fix ---
@@ -180,7 +185,6 @@ def booking_step1(request):
             else:
                  # This case should ideally be caught by form validation if service_type is required
                  messages.error(request, "Invalid service type selected.")
-                 # On error, re-render the form with the choices populated
                  context = {
                      'form': form, # Form already has choices populated if date was valid
                      'step': 1,
@@ -188,8 +192,7 @@ def booking_step1(request):
                      'is_authenticated': request.user.is_authenticated,
                      'allow_anonymous_bookings': settings.allow_anonymous_bookings,
                      # Pass available time slots to template if form is invalid on POST
-                     # Need to re-format for the frontend JS
-                     'available_time_slots_json': json.dumps([{'value': slot[0], 'text': slot[1]} for slot in available_time_slots_for_form])
+                     'available_time_slots_json': json.dumps(available_time_slots_json_for_template) # Use the variable here
                  }
                  return render(request, 'service/service_details.html', context)
 
@@ -213,9 +216,7 @@ def booking_step1(request):
                      'total_steps': 3,
                      'is_authenticated': request.user.is_authenticated,
                      'allow_anonymous_bookings': settings.allow_anonymous_bookings,
-                     # Pass available time slots to template if form is invalid on POST
-                     # Need to re-format for the frontend JS
-                     'available_time_slots_json': json.dumps([{'value': slot[0], 'text': slot[1]} for slot in available_time_slots_for_form])
+                     'available_time_slots_json': json.dumps(available_time_slots_json_for_template) # Use the variable here
                  }
                  return render(request, 'service/service_details.html', context)
 
@@ -234,20 +235,7 @@ def booking_step1(request):
             messages.error(request, "Please correct the errors below.")
             # The form instance 'form' already has its drop_off_time choices populated
             # by the logic added before form.is_valid().
-            # We just need to ensure the template gets the available time slots
-            # in the JSON format it expects for the frontend JavaScript.
-            selected_date_str_from_post = request.POST.get('appointment_date')
-            available_time_slots_json_for_template = [] # List of {value: 'HH:MM', text: 'HH:MM AM/PM'}
-
-            if selected_date_str_from_post:
-                 try:
-                     selected_date_from_post = datetime.datetime.strptime(selected_date_str_from_post, '%Y-%m-%d').date()
-                     # Get available time slots again, this time formatted for the template JSON
-                     available_time_slots_for_template = get_available_time_slots(selected_date_from_post)
-                     available_time_slots_json_for_template = [{'value': slot[0], 'text': slot[1]} for slot in available_time_slots_for_template]
-                 except ValueError:
-                     pass # Handle invalid date format from POST if necessary
-
+            # available_time_slots_json_for_template was also populated if date was valid.
 
             context = {
                 'form': form, # Pass the form instance with populated choices and errors
@@ -256,7 +244,7 @@ def booking_step1(request):
                 'is_authenticated': request.user.is_authenticated,
                 'allow_anonymous_bookings': settings.allow_anonymous_bookings,
                  # Pass available time slots to template if form is invalid on POST
-                 'available_time_slots_json': json.dumps(available_time_slots_json_for_template)
+                 'available_time_slots_json': json.dumps(available_time_slots_json_for_template) # Use the variable here
             }
             return render(request, 'service/service_details.html', context)
 
@@ -265,8 +253,8 @@ def booking_step1(request):
 
         # Instantiate the form for GET request
         form = ServiceDetailsForm(initial=initial_data)
-        available_time_slots_for_template = [] # List of {value: 'HH:MM', text: 'HH:MM AM/PM'}
         available_time_slots_for_form = [] # List of (value, text) tuples for form choices
+        available_time_slots_json_for_template = [] # Initialize for template context
 
         # On GET, if a date was previously selected (e.g., returning to this step),
         # populate the time slots for that date.
@@ -291,11 +279,13 @@ def booking_step1(request):
 
              except (ValueError, TypeError):
                  # Handle cases where session data is invalid
-                pass
+                 # available_time_slots_json_for_template remains [] due to initial assignment
+                 pass
 
         # Removed handling of 'notes' from session for form initialization
 
     # Pass necessary data to the template for Flatpickr configuration and initial time slot population
+    # This is outside the if appointment_date_str: block
     settings = SiteSettings.get_settings()
     blocked_dates = BlockedDate.objects.all()
     blocked_date_ranges = []
@@ -320,6 +310,6 @@ def booking_step1(request):
         'min_date': min_date.strftime('%Y-%m-%d'), # Pass min date to template
         'max_date': max_date.strftime('%Y-%m-%d'), # Pass max date to template
         # Pass initial available slots to template for frontend JS to populate
-        'available_time_slots_json': json.dumps(available_time_slots_json_for_template)
+        'available_time_slots_json': json.dumps(available_time_slots_json_for_template) # Use the variable here
     }
     return render(request, 'service/service_details.html', context)

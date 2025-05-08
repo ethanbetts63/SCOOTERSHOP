@@ -16,22 +16,20 @@ from datetime import timedelta, time
 
 
 # Abstract base form for common service booking fields
-# We will update this later if needed, but for now, we'll focus on ServiceDetailsForm
+# Kept appointment_date and booking_comments here as they are used in Admin forms
 class BaseAdminServiceBookingForm(forms.Form):
     service_type = forms.ModelChoiceField(
         queryset=ServiceType.objects.filter(is_active=True),
         empty_label="-- Select Service Type --",
         label="Service Type",
         widget=forms.Select(attrs={'class': 'form-control'}),
-        required=True # Made service_type required
+        required=True
     )
-    # Keep DateTimeField for now in admin, will revisit if admin needs date/time splitting
-    # appointment_date = forms.DateTimeField(
-    #     label="Preferred Date and Time",
-    #     widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
-    #     required=True # Made appointment_date required
-    # )
-    # Kept booking_comments here as it might be used in admin forms derived from this base
+    appointment_date = forms.DateTimeField(
+        label="Preferred Date and Time",
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+        required=True
+    )
     booking_comments = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
         required=False,
@@ -48,13 +46,13 @@ class AdminAnonBookingForm(BaseAdminServiceBookingForm):
         max_length=100,
         label="First Name",
         widget=forms.TextInput(attrs={'class': 'form-control'}),
-        required=True # Made one_off_first_name required
+        required=True
     )
     one_off_last_name = forms.CharField(
         max_length=100,
         label="Last Name",
         widget=forms.TextInput(attrs={'class': 'form-control'}),
-        required=True # Made one_off_last_name required
+        required=True
     )
     one_off_email = forms.EmailField(
         label="Email",
@@ -79,13 +77,13 @@ class AdminAnonBookingForm(BaseAdminServiceBookingForm):
         max_length=100,
         label="Make",
         widget=forms.TextInput(attrs={'class': 'form-control'}),
-        required=True # Made anon_vehicle_make required
+        required=True
     )
     anon_vehicle_model = forms.CharField(
         max_length=100,
         label="Model",
         widget=forms.TextInput(attrs={'class': 'form-control'}),
-        required=True # Made anon_vehicle_model required
+        required=True
     )
     anon_vehicle_year = forms.IntegerField(
         label="Year",
@@ -98,7 +96,7 @@ class AdminAnonBookingForm(BaseAdminServiceBookingForm):
         label="Registration",
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
-    anon_vehicle_vin_number = forms.CharField( # Added anon_vehicle_vin_number
+    anon_vehicle_vin_number = forms.CharField(
         max_length=50,
         required=False,
         label="VIN",
@@ -137,7 +135,7 @@ class AdminUserBookingForm(BaseAdminServiceBookingForm):
         empty_label="-- Select Existing Customer --",
         label="Existing Customer",
         widget=forms.Select(attrs={'class': 'form-control'}),
-        required=True # Made user required
+        required=True
     )
 
     # Fields to optionally update user details (kept as required=False as per existing code)
@@ -175,12 +173,12 @@ class AdminUserBookingForm(BaseAdminServiceBookingForm):
         widget=forms.RadioSelect,
         initial='existing',
         label="Motorcycle Options",
-        required=True # This field was already effectively required by logic, but explicitly setting it
+        required=True
     )
 
     existing_motorcycle = forms.ModelChoiceField(
         queryset=CustomerMotorcycle.objects.none(),
-        required=False, # Required is handled in clean method based on bike_selection_type
+        required=False,
         label="Existing Motorcycle",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
@@ -188,18 +186,18 @@ class AdminUserBookingForm(BaseAdminServiceBookingForm):
     # Fields for adding a new motorcycle (Required is handled in clean method based on bike_selection_type)
     new_bike_make = forms.CharField(
         max_length=100,
-        required=False, # Required is handled in clean method based on bike_selection_type
+        required=False,
         label="Make",
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     new_bike_model = forms.CharField(
         max_length=100,
-        required=False, # Required is handled in clean method based on bike_selection_type
+        required=False,
         label="Model",
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     new_bike_year = forms.IntegerField(
-        required=False, # Required is handled in clean method based on bike_selection_type
+        required=False,
         label="Year",
         widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '1900', 'max': datetime.date.today().year})
     )
@@ -306,12 +304,6 @@ class ServiceDetailsForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control'}),
         required=True
     )
-    # Removed booking_comments field from ServiceDetailsForm
-    # booking_comments = forms.CharField(
-    #     widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
-    #     required=False,
-    #     label="Comments or specific requests"
-    # )
 
     # Add a clean method to validate that a time slot was selected
     def clean(self):
@@ -353,65 +345,35 @@ class CustomerMotorcycleForm(forms.ModelForm):
          return self.cleaned_data.get('vin_number')
 
 
-# Form for service booking by an existing user (needs similar date/time updates if used for step 1)
+# Form for service booking by an existing user (Step 3)
 class ServiceBookingUserForm(forms.Form):
+    # Removed service_type, appointment_date, and drop_off_time from this form
     first_name = forms.CharField(
         max_length=100,
         widget=forms.TextInput(attrs={'class': 'form-control'}),
-        required=True # Made first_name required
+        required=True
     )
     last_name = forms.CharField(
         max_length=100,
         widget=forms.TextInput(attrs={'class': 'form-control'}),
-        required=True # Made last_name required
+        required=True
     )
-    email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control'}), required=True) # Made email required (already was)
+    email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control'}), required=True)
     phone_number = forms.CharField(max_length=20, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
     preferred_contact = forms.ChoiceField(
         choices=ServiceBooking.CONTACT_CHOICES,
         widget=forms.RadioSelect,
         initial='email',
         label="Preferred method of contact",
-        required=True # Made preferred_contact required (already was)
+        required=True
     )
-    # Kept booking_comments field in ServiceBookingUserForm for Step 3
     booking_comments = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
         required=False,
         label="Comments or specific requests"
     )
-    # Fields for service type and appointment_date are missing here based on the original ServiceBookingUserForm.
-    # Assuming these should also be required as per the user's list for any booking form.
-    # Adding them here based on the fields present in BaseAdminServiceBookingForm
-    service_type = forms.ModelChoiceField(
-        queryset=ServiceType.objects.filter(is_active=True),
-        empty_label="Select a Service Type",
-        label="Service Type",
-        widget=forms.Select(attrs={'class': 'form-control'}),
-        required=True # Added and made required based on user's list
-    )
-    # Changed from DateTimeField to DateField and added TimeField
-    appointment_date = forms.DateField(
-        label="Preferred Date",
-        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'text'}), # Use type text for Flatpickr
-        required=True
-    )
-    drop_off_time = forms.ChoiceField(
-        label="Preferred Drop-off Time",
-        choices=[], # Choices will be populated dynamically in the view
-        widget=forms.Select(attrs={'class': 'form-control'}),
-        required=True
-    )
-
-    # Add a clean method to validate that a time slot was selected
-    def clean(self):
-        cleaned_data = super().clean()
-        drop_off_time = cleaned_data.get('drop_off_time')
-        if not drop_off_time:
-             self.add_error('drop_off_time', 'Please select a valid drop-off time.')
-
-        return cleaned_data
-
+    # Fields for service type and appointment_date are now removed from this form.
+    # They are collected in Step 1 and stored in the session.
 
 
 # Form to select an existing customer motorcycle (no changes requested on required fields)
@@ -420,7 +382,7 @@ class ExistingCustomerMotorcycleForm(forms.Form):
         queryset=CustomerMotorcycle.objects.none(),
         label="Select your Motorcycle",
         widget=forms.Select(attrs={'class': 'form-control'}),
-        required=True # Assuming selecting a motorcycle is required if this form is used
+        required=True
     )
 
     # Initialize form with user's motorcycles
