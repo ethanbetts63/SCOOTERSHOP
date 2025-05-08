@@ -95,11 +95,45 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Get context data from the Django template
-            const blockedDateRanges = "{{ blocked_date_ranges_json|safe }}";
+            // Get context data from the Django template and explicitly parse JSON
+            let blockedDateRanges = [];
+            try {
+                // Ensure blockedDateRangesJson is treated as a string before parsing
+                const blockedDateRangesJson = "{{ blocked_date_ranges_json|escapejs }}";
+                if (blockedDateRangesJson) { // Only parse if not empty
+                    blockedDateRanges = JSON.parse(blockedDateRangesJson);
+                    // Flatpickr expects an array, double check if parsing resulted in an array
+                    if (!Array.isArray(blockedDateRanges)) {
+                        console.error("Blocked date ranges data is not an array:", blockedDateRanges);
+                        blockedDateRanges = []; // Reset to empty array if parsing failed or data is wrong
+                    }
+                }
+            } catch (e) {
+                console.error("Error parsing blocked date ranges JSON:", e);
+                blockedDateRanges = []; // Reset to empty array if parsing fails
+            }
+
+
             const minDate = "{{ min_date }}";
             const maxDate = "{{ max_date }}";
-            const availableTimeSlotsJson = "{{ available_time_slots_json|safe }}"; // Initial slots if available
+
+            let initialAvailableTimeSlots = [];
+            try {
+                 // Ensure availableTimeSlotsJson is treated as a string before parsing
+                const availableTimeSlotsJson = "{{ available_time_slots_json|escapejs }}";
+                 if (availableTimeSlotsJson && availableTimeSlotsJson !== '[]') { // Only parse if not empty JSON string
+                    initialAvailableTimeSlots = JSON.parse(availableTimeSlotsJson);
+                     // Ensure the parsed data is an array
+                     if (!Array.isArray(initialAvailableTimeSlots)) {
+                         console.error("Initial available time slots data is not an array:", initialAvailableTimeSlots);
+                         initialAvailableTimeSlots = []; // Reset if not an array
+                     }
+                 }
+            } catch (e) {
+                console.error("Error parsing initial available time slots JSON:", e);
+                initialAvailableTimeSlots = []; // Reset if parsing fails
+            }
+
 
             const dateInput = document.getElementById('id_appointment_date');
             const timeSelect = document.getElementById('id_drop_off_time');
@@ -112,7 +146,7 @@
                 altInput: false, // Set to true if you want a separate display input
                 minDate: minDate,
                 maxDate: maxDate,
-                disable: blockedDateRanges, // Disable dates based on backend data
+                disable: blockedDateRanges, // Use the parsed and validated blocked dates
                 onChange: function(selectedDates, dateStr, instance) {
                     // This function fires when a new date is selected
                     if (selectedDates.length > 0) {
@@ -140,12 +174,24 @@
                 fetch(url)
                     .then(response => {
                         if (!response.ok) {
+                            // Log the response text for better debugging in case of non-JSON error
+                            response.text().then(text => {
+                                console.error('Network response was not ok:', response.status, text);
+                            });
                             throw new Error('Network response was not ok ' + response.statusText);
                         }
                         return response.json();
                     })
                     .then(data => {
-                        populateTimeSlots(data.available_slots);
+                         // Check if data and data.available_slots exist and is an array
+                        if (data && Array.isArray(data.available_slots)) {
+                             populateTimeSlots(data.available_slots);
+                         } else {
+                             console.error('Invalid data structure received for available slots:', data);
+                             timeSelect.innerHTML = '<option value="">Error loading slots</option>';
+                             timeSelect.disabled = true;
+                             timeSlotHelp.textContent = 'Could not load available times due to data error.';
+                         }
                     })
                     .catch(error => {
                         console.error('Error fetching time slots:', error);
@@ -184,16 +230,27 @@
                 }
 
                 // If there's an initial time slot from the session, select it
+                // Ensure the initial value is set AFTER populating the options
                 const initialTime = "{{ form.drop_off_time.value|default:'' }}"; // Get initial value from form
                  if (initialTime) {
-                     timeSelect.value = initialTime;
+                     // Find the option with the matching value and select it
+                     const optionToSelect = timeSelect.querySelector(`option[value="${initialTime}"]`);
+                     if (optionToSelect) {
+                          timeSelect.value = initialTime;
+                     } else {
+                         // If the initial time is not in the available slots for the date,
+                         // you might want to handle this (e.g., show an error or clear the value)
+                         console.warn(`Initial time ${initialTime} is not available for the selected date.`);
+                         // Optionally clear the value:
+                         // timeSelect.value = '';
+                     }
                  }
             }
 
             // Initial population of time slots if a date is already selected (e.g., form has errors or returning)
             // Check if there are initial available slots passed from the backend (means date was in session/post)
-            if (availableTimeSlotsJson && availableTimeSlotsJson.length > 0) {
-                 populateTimeSlots(availableTimeSlotsJson);
+            if (initialAvailableTimeSlots.length > 0) {
+                 populateTimeSlots(initialAvailableTimeSlots);
                  // Set the initial date value in Flatpickr if it exists in the form's initial data
                  const initialDate = dateInput.value; // Get the date value from the form input
                  if(initialDate) {
