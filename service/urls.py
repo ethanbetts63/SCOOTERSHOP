@@ -18,6 +18,8 @@ from .views import (
     get_user_motorcycles_for_admin,
     get_motorcycle_details_for_admin,
     service,
+    # Import the new AJAX view for available slots
+    get_available_slots_ajax,
 
 )
 
@@ -57,4 +59,7 @@ urlpatterns = [
     path('service/get_user_details/<int:user_id>/', get_user_details_for_admin, name='get_user_details'),
     path('service/get_user_motorcycles/<int:user_id>/', get_user_motorcycles_for_admin, name='get_user_motorcycles'),
     path('service/get_motorcycle_details/<int:motorcycle_id>/', get_motorcycle_details_for_admin, name='get_motorcycle_details'),
+
+    # New AJAX endpoint for getting available time slots
+    path('book/ajax/available-slots/', get_available_slots_ajax, name='get_available_slots_ajax'),
 ]

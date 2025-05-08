@@ -8,9 +8,15 @@ from django.db.models import Q
 from .models import ServiceType, CustomerMotorcycle, ServiceBooking
 from inventory.models import Motorcycle
 from users.models import User
+# Import the BlockedDate model from the dashboard app
+from dashboard.models import BlockedDate
+# Import SiteSettings from dashboard for time slot generation
+from dashboard.models import SiteSettings
+from datetime import timedelta, time
 
 
 # Abstract base form for common service booking fields
+# We will update this later if needed, but for now, we'll focus on ServiceDetailsForm
 class BaseAdminServiceBookingForm(forms.Form):
     service_type = forms.ModelChoiceField(
         queryset=ServiceType.objects.filter(is_active=True),
@@ -19,11 +25,12 @@ class BaseAdminServiceBookingForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control'}),
         required=True # Made service_type required
     )
-    appointment_date = forms.DateTimeField(
-        label="Preferred Date and Time",
-        widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
-        required=True # Made appointment_date required
-    )
+    # Keep DateTimeField for now in admin, will revisit if admin needs date/time splitting
+    # appointment_date = forms.DateTimeField(
+    #     label="Preferred Date and Time",
+    #     widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+    #     required=True # Made appointment_date required
+    # )
     booking_comments = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
         required=False,
@@ -275,20 +282,48 @@ class AdminUserBookingForm(BaseAdminServiceBookingForm):
 
         return cleaned_data
 
-# Form for basic service details (affected by BaseAdminServiceBookingForm changes)
+# Form for basic service details (frontend customer form)
 class ServiceDetailsForm(forms.Form):
     service_type = forms.ModelChoiceField(
         queryset=ServiceType.objects.filter(is_active=True),
         empty_label="Select a Service Type",
         label="Service Type",
         widget=forms.Select(attrs={'class': 'form-control'}),
-        required=True # Made service_type required via inheritance, explicitly setting for clarity
+        required=True
     )
-    appointment_date = forms.DateTimeField(
-        label="Preferred Date and Time",
-        widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
-        required=True # Made appointment_date required via inheritance, explicitly setting for clarity
+    # Changed from DateTimeField to DateField
+    appointment_date = forms.DateField(
+        label="Preferred Date",
+        # We will use Flatpickr for the date input in the template
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'text'}), # Use type text for Flatpickr
+        required=True
     )
+    # Added a ChoiceField for drop-off time
+    drop_off_time = forms.ChoiceField(
+        label="Preferred Drop-off Time",
+        choices=[], # Choices will be populated dynamically in the view
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=True
+    )
+    booking_comments = forms.CharField( # Added booking_comments field
+        widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+        required=False,
+        label="Comments or specific requests"
+    )
+
+    # Add a clean method to validate that a time slot was selected
+    def clean(self):
+        cleaned_data = super().clean()
+        # Check if a drop_off_time was provided.
+        # The choices are populated in the view, so we just check if a value was selected.
+        drop_off_time = cleaned_data.get('drop_off_time')
+        if not drop_off_time:
+             # This error might be redundant if the field is required and choices are empty,
+             # but it's good for explicit validation if the frontend doesn't handle it perfectly.
+             self.add_error('drop_off_time', 'Please select a valid drop-off time.')
+
+        # Add any other necessary cross-field validation here
+        return cleaned_data
 
 # Model form for customer motorcycles (no changes requested)
 class CustomerMotorcycleForm(forms.ModelForm):
@@ -316,7 +351,7 @@ class CustomerMotorcycleForm(forms.ModelForm):
          return self.cleaned_data.get('vin_number')
 
 
-# Form for service booking by an existing user
+# Form for service booking by an existing user (needs similar date/time updates if used for step 1)
 class ServiceBookingUserForm(forms.Form):
     first_name = forms.CharField(
         max_length=100,
@@ -352,11 +387,28 @@ class ServiceBookingUserForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control'}),
         required=True # Added and made required based on user's list
     )
-    appointment_date = forms.DateTimeField(
-        label="Preferred Date and Time",
-        widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
-        required=True # Added and made required based on user's list
+    # Changed from DateTimeField to DateField and added TimeField
+    appointment_date = forms.DateField(
+        label="Preferred Date",
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'text'}), # Use type text for Flatpickr
+        required=True
     )
+    drop_off_time = forms.ChoiceField(
+        label="Preferred Drop-off Time",
+        choices=[], # Choices will be populated dynamically in the view
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=True
+    )
+
+    # Add a clean method to validate that a time slot was selected
+    def clean(self):
+        cleaned_data = super().clean()
+        drop_off_time = cleaned_data.get('drop_off_time')
+        if not drop_off_time:
+             self.add_error('drop_off_time', 'Please select a valid drop-off time.')
+
+        return cleaned_data
+
 
 
 # Form to select an existing customer motorcycle (no changes requested on required fields)

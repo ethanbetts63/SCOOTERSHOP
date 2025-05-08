@@ -9,6 +9,7 @@ from .booking import (
 # Imports for booking step 1 view
 from .booking_step1 import (
     booking_step1,
+    get_available_slots_ajax,
 )
 
 # Imports for booking step 2 views
@@ -34,15 +35,6 @@ from .booking_admin_user import (
     get_user_details_for_admin,
     get_motorcycle_details_for_admin,
 )
-
-# Removed the old import block for booking_admin
-# from .booking_admin import (
-#     booking_admin_view,
-#     get_user_motorcycles,
-#     get_user_details,
-#     get_motorcycle_details,
-# )
-
 
 # Import other service views (like the 'service' view if it exists)
 from .service import (
