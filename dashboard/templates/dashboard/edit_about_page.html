@@ -3,46 +3,68 @@
 
 {% block title %}Edit About Page{% endblock %}
 
+{% block extra_css %}
+{{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="admin-edit-container">
-    <h1>Edit About Page Content</h1>
+<div class="service-booking-container">
+    <div class="booking-progress">
+        <h2>Edit About Page Content</h2>
+    </div>
+    
+    <hr>
     
     {% if messages %}
-    <div class="messages">
-        {% for message in messages %}
-        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-            {{ message }}
-        </div>
-        {% endfor %}
+    <div class="messages-container">
+        <ul>
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
     </div>
     {% endif %}
     
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         
-        <div class="section-editor">
-            <h2>Introduction</h2>
-            {{ form.intro_text.label_tag }}
+        <div class="form-field">
+            <h3 class="booking-section-title">Introduction</h3>
+            <label for="{{ form.intro_text.id_for_label }}">{{ form.intro_text.label }}</label>
             {{ form.intro_text }}
-            {{ form.intro_text.errors }}
+            {% if form.intro_text.errors %}
+                {% for error in form.intro_text.errors %}
+                    <small>{{ error }}</small>
+                {% endfor %}
+            {% endif %}
         </div>
         
-        <div class="section-editor">
-            <h2>Sales Section</h2>
-            <div class="form-group">
-                {{ form.sales_title.label_tag }}
+        <div class="form-field">
+            <h3 class="booking-section-title">Sales Section</h3>
+            
+            <div class="form-field">
+                <label for="{{ form.sales_title.id_for_label }}">{{ form.sales_title.label }}</label>
                 {{ form.sales_title }}
-                {{ form.sales_title.errors }}
+                {% if form.sales_title.errors %}
+                    {% for error in form.sales_title.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
             </div>
             
-            <div class="form-group">
-                {{ form.sales_content.label_tag }}
+            <div class="form-field">
+                <label for="{{ form.sales_content.id_for_label }}">{{ form.sales_content.label }}</label>
                 {{ form.sales_content }}
-                {{ form.sales_content.errors }}
+                {% if form.sales_content.errors %}
+                    {% for error in form.sales_content.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
             </div>
             
-            <div class="form-group">
-                {{ form.sales_image.label_tag }}
+            <div class="form-field">
+                <label for="{{ form.sales_image.id_for_label }}">{{ form.sales_image.label }}</label>
                 {% if about_content.sales_image %}
                 <div class="current-image">
                     <img src="{{ about_content.sales_image.url }}" alt="Current sales image" width="200">
@@ -50,27 +72,40 @@
                 </div>
                 {% endif %}
                 {{ form.sales_image }}
-                {{ form.sales_image.errors }}
+                {% if form.sales_image.errors %}
+                    {% for error in form.sales_image.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
             </div>
         </div>
         
         <!-- Service Section -->
-        <div class="section-editor">
-            <h2>Service Section</h2>
-            <div class="form-group">
-                {{ form.service_title.label_tag }}
+        <div class="form-field">
+            <h3 class="booking-section-title">Service Section</h3>
+            
+            <div class="form-field">
+                <label for="{{ form.service_title.id_for_label }}">{{ form.service_title.label }}</label>
                 {{ form.service_title }}
-                {{ form.service_title.errors }}
+                {% if form.service_title.errors %}
+                    {% for error in form.service_title.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
             </div>
             
-            <div class="form-group">
-                {{ form.service_content.label_tag }}
+            <div class="form-field">
+                <label for="{{ form.service_content.id_for_label }}">{{ form.service_content.label }}</label>
                 {{ form.service_content }}
-                {{ form.service_content.errors }}
+                {% if form.service_content.errors %}
+                    {% for error in form.service_content.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
             </div>
             
-            <div class="form-group">
-                {{ form.service_image.label_tag }}
+            <div class="form-field">
+                <label for="{{ form.service_image.id_for_label }}">{{ form.service_image.label }}</label>
                 {% if about_content.service_image %}
                 <div class="current-image">
                     <img src="{{ about_content.service_image.url }}" alt="Current service image" width="200">
@@ -78,27 +113,40 @@
                 </div>
                 {% endif %}
                 {{ form.service_image }}
-                {{ form.service_image.errors }}
+                {% if form.service_image.errors %}
+                    {% for error in form.service_image.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
             </div>
         </div>
         
         <!-- Parts Section -->
-        <div class="section-editor">
-            <h2>Parts & Accessories Section</h2>
-            <div class="form-group">
-                {{ form.parts_title.label_tag }}
+        <div class="form-field">
+            <h3 class="booking-section-title">Parts & Accessories Section</h3>
+            
+            <div class="form-field">
+                <label for="{{ form.parts_title.id_for_label }}">{{ form.parts_title.label }}</label>
                 {{ form.parts_title }}
-                {{ form.parts_title.errors }}
+                {% if form.parts_title.errors %}
+                    {% for error in form.parts_title.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
             </div>
             
-            <div class="form-group">
-                {{ form.parts_content.label_tag }}
+            <div class="form-field">
+                <label for="{{ form.parts_content.id_for_label }}">{{ form.parts_content.label }}</label>
                 {{ form.parts_content }}
-                {{ form.parts_content.errors }}
+                {% if form.parts_content.errors %}
+                    {% for error in form.parts_content.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
             </div>
             
-            <div class="form-group">
-                {{ form.parts_image.label_tag }}
+            <div class="form-field">
+                <label for="{{ form.parts_image.id_for_label }}">{{ form.parts_image.label }}</label>
                 {% if about_content.parts_image %}
                 <div class="current-image">
                     <img src="{{ about_content.parts_image.url }}" alt="Current parts image" width="200">
@@ -106,20 +154,28 @@
                 </div>
                 {% endif %}
                 {{ form.parts_image }}
-                {{ form.parts_image.errors }}
+                {% if form.parts_image.errors %}
+                    {% for error in form.parts_image.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
             </div>
         </div>
         
-        <div class="section-editor">
-            <h2>Call to Action</h2>
-            {{ form.cta_text.label_tag }}
+        <div class="form-field">
+            <h3 class="booking-section-title">Call to Action</h3>
+            <label for="{{ form.cta_text.id_for_label }}">{{ form.cta_text.label }}</label>
             {{ form.cta_text }}
-            {{ form.cta_text.errors }}
+            {% if form.cta_text.errors %}
+                {% for error in form.cta_text.errors %}
+                    <small>{{ error }}</small>
+                {% endfor %}
+            {% endif %}
         </div>
         
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Save Changes</button>
-            <a href="{% url 'core:about' %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit">Save Changes</button>
+            <a href="{% url 'core:about' %}" class="btn-secondary">Cancel</a>
         </div>
     </form>
 </div>

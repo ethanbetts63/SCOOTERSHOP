@@ -1,245 +1,196 @@
 {% extends "dashboard/admin_layout.html" %}
 {% load static %}
 
+{% block extra_css %}
+{{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
+{% endblock %}
+
 {% block admin_main_content %}
-    <div class="card">
-        <div class="card-header bg-primary text-white">
-            <h1 class="h4 mb-0">Service Booking Settings</h1>
-        </div>
-        <div class="card-body">
-            {# Display messages here #}
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
+<div class="service-booking-container">
+    <div class="booking-progress">
+        <h2>Service Booking Settings</h2>
+    </div>
 
-            {# Existing Service Booking Settings Form #}
-            <form method="post">
-                {% csrf_token %}
+    <hr>
 
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="mb-0">Booking Options</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3 form-check">
-                                    {{ form.allow_anonymous_bookings }}
-                                    <label class="form-check-label" for="{{ form.allow_anonymous_bookings.id_for_label }}">
-                                        Allow Anonymous Bookings
-                                    </label>
-                                    <small class="form-text text-muted d-block">
-                                        Allow users to book services without creating an account
-                                    </small>
-                                </div>
+    {% if messages %}
+    <div class="messages-container">
+        <ul>
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
 
-                                <div class="mb-3 form-check">
-                                    {{ form.allow_account_bookings }}
-                                    <label class="form-check-label" for="{{ form.allow_account_bookings.id_for_label }}">
-                                        Allow Account Bookings
-                                    </label>
-                                    <small class="form-text text-muted d-block">
-                                        Allow users to book services with their account
-                                    </small>
-                                </div>
+    <form method="post">
+        {% csrf_token %}
 
-                                <div class="mb-3">
-                                    <label for="{{ form.booking_open_days.id_for_label }}" class="form-label">
-                                        Booking Open Days
-                                    </label>
-                                    {{ form.booking_open_days }}
-                                    <small class="form-text text-muted d-block">
-                                        Number of days in advance that bookings can be made
-                                    </small>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="{{ form.booking_advance_notice.id_for_label }}" class="form-label">
-                                        Booking Advance Notice
-                                    </label>
-                                    {{ form.booking_advance_notice }}
-                                    <small class="form-text text-muted d-block">
-                                        Minimum number of days notice required for a booking
-                                    </small>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="{{ form.max_visible_slots_per_day.id_for_label }}" class="form-label">
-                                        Max Visible Slots Per Day
-                                    </label>
-                                    {{ form.max_visible_slots_per_day }}
-                                    <small class="form-text text-muted d-block">
-                                        Maximum number of booking slots to show per day
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <h5 class="mb-0">Booking Time Settings</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <label for="{{ form.drop_off_start_time.id_for_label }}" class="form-label">
-                                        Drop-Off Start Time
-                                    </label>
-                                    {{ form.drop_off_start_time }}
-                                    <small class="form-text text-muted d-block">
-                                        Earliest time of the day for a drop off
-                                    </small>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="{{ form.drop_off_end_time.id_for_label }}" class="form-label">
-                                        Drop-off End Time
-                                    </label>
-                                    {{ form.drop_off_end_time }}
-                                    <small class="form-text text-muted d-block">
-                                        Latest time of day for a drop off
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="mb-0">Notification Settings</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <label for="{{ form.service_confirmation_email_subject.id_for_label }}" class="form-label">
-                                        Confirmation Email Subject
-                                    </label>
-                                    {{ form.service_confirmation_email_subject }}
-                                    <small class="form-text text-muted d-block">
-                                        Subject line for booking confirmation emails
-                                    </small>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="{{ form.service_pending_email_subject.id_for_label }}" class="form-label">
-                                        Pending Email Subject
-                                    </label>
-                                    {{ form.service_pending_email_subject }}
-                                    <small class="form-text text-muted d-block">
-                                        Subject line for booking request emails
-                                    </small>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="{{ form.admin_service_notification_email.id_for_label }}" class="form-label">
-                                        Admin Notification Email
-                                    </label>
-                                    {{ form.admin_service_notification_email }}
-                                    <small class="form-text text-muted d-block">
-                                        Email address to receive booking notifications
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                     {# Add a name to the submit button to distinguish forms in the view #}
-                    <button type="submit" name="service_settings_submit" class="btn btn-primary">Save Service Settings</button>
-                </div>
-            </form>
-
-            <hr class="my-4"> {# Add a separator #}
-
-            {# New section for managing Blocked Dates #}
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Blocked Service Dates</h5>
-                </div>
-                <div class="card-body">
-                    <h6>Add New Blocked Date or Range:</h6>
-                    <form method="post" class="row g-3 align-items-end">
-                        {% csrf_token %}
-                        {# Render form fields manually for better Bootstrap control #}
-                        <div class="col-md-4">
-                            <label for="{{ blocked_date_form.start_date.id_for_label }}" class="form-label">{{ blocked_date_form.start_date.label }}</label>
-                            {{ blocked_date_form.start_date }}
-                            {% if blocked_date_form.start_date.errors %}
-                                {% for error in blocked_date_form.start_date.errors %}
-                                    <small class="text-danger d-block">{{ error }}</small>
-                                {% endfor %}
-                            {% endif %}
-                             <small class="form-text text-muted">{{ blocked_date_form.start_date.help_text }}</small>
-                        </div>
-                         <div class="col-md-4">
-                            <label for="{{ blocked_date_form.end_date.id_for_label }}" class="form-label">{{ blocked_date_form.end_date.label }}</label>
-                            {{ blocked_date_form.end_date }}
-                             {% if blocked_date_form.end_date.errors %}
-                                {% for error in blocked_date_form.end_date.errors %}
-                                    <small class="text-danger d-block">{{ error }}</small>
-                                {% endfor %}
-                            {% endif %}
-                            <small class="form-text text-muted">{{ blocked_date_form.end_date.help_text }}</small>
-                        </div>
-                         <div class="col-md-4">
-                            <label for="{{ blocked_date_form.description.id_for_label }}" class="form-label">{{ blocked_date_form.description.label }}</label>
-                            {{ blocked_date_form.description }}
-                             {% if blocked_date_form.description.errors %}
-                                {% for error in blocked_date_form.description.errors %}
-                                    <small class="text-danger d-block">{{ error }}</small>
-                                {% endfor %}
-                            {% endif %}
-                            <small class="form-text text-muted">{{ blocked_date_form.description.help_text }}</small>
-                        </div>
-
-                         {# Display non-field errors for the blocked date form #}
-                         {% if blocked_date_form.non_field_errors %}
-                            <div class="col-12">
-                                {% for error in blocked_date_form.non_field_errors %}
-                                    <div class="alert alert-danger">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-                         {% endif %}
-
-                        <div class="col-12">
-                            {# Add a name to the submit button to distinguish forms in the view #}
-                            <button type="submit" name="add_blocked_date_submit" class="btn btn-success">Add Blocked Date</button>
-                        </div>
-                    </form>
-
-                    <h6 class="mt-4">Existing Blocked Dates:</h6>
-                    {% if blocked_dates %}
-                        <ul class="list-group">
-                            {% for date in blocked_dates %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    {% if date.start_date == date.end_date %}
-                                        {{ date.start_date|date:"Y-m-d" }}
-                                    {% else %}
-                                        {{ date.start_date|date:"Y-m-d" }} to {{ date.end_date|date:"Y-m-d" }}
-                                    {% endif %}
-                                    {% if date.description %}
-                                        - {{ date.description }}
-                                    {% endif %}
-                                    <form method="post" style="display: inline;">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="delete_blocked_date" value="{{ date.pk }}">
-                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this blocked date entry?');">Delete</button>
-                                    </form>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% else %}
-                        <p>No blocked dates currently set.</p>
-                    {% endif %}
+        <div class="form-field">
+            <h3 class="booking-section-title">Booking Options</h3>
+            
+            <div class="form-field">
+                <div class="form-field">
+                    <input type="checkbox" id="{{ form.allow_anonymous_bookings.id_for_label }}" name="{{ form.allow_anonymous_bookings.html_name }}" {% if form.allow_anonymous_bookings.value %}checked{% endif %}>
+                    <label for="{{ form.allow_anonymous_bookings.id_for_label }}">Allow Anonymous Bookings</label>
+                    <small>Allow users to book services without creating an account</small>
                 </div>
             </div>
 
+            <div class="form-field">
+                <div class="form-field">
+                    <input type="checkbox" id="{{ form.allow_account_bookings.id_for_label }}" name="{{ form.allow_account_bookings.html_name }}" {% if form.allow_account_bookings.value %}checked{% endif %}>
+                    <label for="{{ form.allow_account_bookings.id_for_label }}">Allow Account Bookings</label>
+                    <small>Allow users to book services with their account</small>
+                </div>
+            </div>
 
+            <div class="form-field">
+                <label for="{{ form.booking_open_days.id_for_label }}">Booking Open Days</label>
+                {{ form.booking_open_days }}
+                <small>Number of days in advance that bookings can be made</small>
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.booking_advance_notice.id_for_label }}">Booking Advance Notice</label>
+                {{ form.booking_advance_notice }}
+                <small>Minimum number of days notice required for a booking</small>
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.max_visible_slots_per_day.id_for_label }}">Max Visible Slots Per Day</label>
+                {{ form.max_visible_slots_per_day }}
+                <small>Maximum number of booking slots to show per day</small>
+            </div>
+        </div>
+
+        <div class="form-field">
+            <h3 class="booking-section-title">Booking Time Settings</h3>
+            
+            <div class="form-field">
+                <label for="{{ form.drop_off_start_time.id_for_label }}">Drop-Off Start Time</label>
+                {{ form.drop_off_start_time }}
+                <small>Earliest time of the day for a drop off</small>
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.drop_off_end_time.id_for_label }}">Drop-off End Time</label>
+                {{ form.drop_off_end_time }}
+                <small>Latest time of day for a drop off</small>
+            </div>
+        </div>
+
+        <div class="form-field">
+            <h3 class="booking-section-title">Notification Settings</h3>
+            
+            <div class="form-field">
+                <label for="{{ form.service_confirmation_email_subject.id_for_label }}">Confirmation Email Subject</label>
+                {{ form.service_confirmation_email_subject }}
+                <small>Subject line for booking confirmation emails</small>
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.service_pending_email_subject.id_for_label }}">Pending Email Subject</label>
+                {{ form.service_pending_email_subject }}
+                <small>Subject line for booking request emails</small>
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.admin_service_notification_email.id_for_label }}">Admin Notification Email</label>
+                {{ form.admin_service_notification_email }}
+                <small>Email address to receive booking notifications</small>
+            </div>
+        </div>
+
+        <button type="submit" name="service_settings_submit">Save Service Settings</button>
+    </form>
+
+    <hr>
+
+    <div class="form-field">
+        <h3 class="booking-section-title">Blocked Service Dates</h3>
+        
+        <div class="form-field">
+            <h4 class="sub-section-title">Add New Blocked Date or Range:</h4>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-field">
+                    <label for="{{ blocked_date_form.start_date.id_for_label }}">{{ blocked_date_form.start_date.label }}</label>
+                    {{ blocked_date_form.start_date }}
+                    {% if blocked_date_form.start_date.errors %}
+                        {% for error in blocked_date_form.start_date.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                    <small>{{ blocked_date_form.start_date.help_text }}</small>
+                </div>
+                
+                <div class="form-field">
+                    <label for="{{ blocked_date_form.end_date.id_for_label }}">{{ blocked_date_form.end_date.label }}</label>
+                    {{ blocked_date_form.end_date }}
+                    {% if blocked_date_form.end_date.errors %}
+                        {% for error in blocked_date_form.end_date.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                    <small>{{ blocked_date_form.end_date.help_text }}</small>
+                </div>
+                
+                <div class="form-field">
+                    <label for="{{ blocked_date_form.description.id_for_label }}">{{ blocked_date_form.description.label }}</label>
+                    {{ blocked_date_form.description }}
+                    {% if blocked_date_form.description.errors %}
+                        {% for error in blocked_date_form.description.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                    <small>{{ blocked_date_form.description.help_text }}</small>
+                </div>
+
+                {% if blocked_date_form.non_field_errors %}
+                    <div class="form-field">
+                        {% for error in blocked_date_form.non_field_errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <button type="submit" name="add_blocked_date_submit">Add Blocked Date</button>
+            </form>
+        </div>
+
+        <div class="form-field">
+            <h4 class="sub-section-title">Existing Blocked Dates:</h4>
+            
+            {% if blocked_dates %}
+                <ul class="blocked-dates-list">
+                    {% for date in blocked_dates %}
+                        <li class="blocked-date-item">
+                            <div class="blocked-date-info">
+                                {% if date.start_date == date.end_date %}
+                                    {{ date.start_date|date:"Y-m-d" }}
+                                {% else %}
+                                    {{ date.start_date|date:"Y-m-d" }} to {{ date.end_date|date:"Y-m-d" }}
+                                {% endif %}
+                                {% if date.description %}
+                                    - {{ date.description }}
+                                {% endif %}
+                            </div>
+                            <form method="post" class="inline-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="delete_blocked_date" value="{{ date.pk }}">
+                                <button type="submit" class="btn-delete" onclick="return confirm('Are you sure you want to delete this blocked date entry?');">Delete</button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No blocked dates currently set.</p>
+            {% endif %}
         </div>
     </div>
+</div>
 {% endblock %}
