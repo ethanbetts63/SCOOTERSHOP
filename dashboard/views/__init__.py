@@ -11,7 +11,6 @@ from .dashboard import (
     edit_service_type,
     add_service_type,
     settings_visibility,
-    settings_miscellaneous,
     edit_about_page,
 )
 

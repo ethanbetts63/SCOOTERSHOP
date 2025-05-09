@@ -22,7 +22,6 @@ from dashboard.forms import (
     ServiceBookingSettingsForm,
     VisibilitySettingsForm,
     ServiceTypeForm,
-    MiscellaneousSettingsForm,
     AboutPageContentForm,
     BlockedDateForm, # Import BlockedDateForm
 )
@@ -223,26 +222,6 @@ def settings_visibility(request):
         'active_tab': 'visibility'
     }
     return render(request, 'dashboard/settings_visibility.html', context)
-
-
-@user_passes_test(is_staff_check)
-def settings_miscellaneous(request):
-    settings = SiteSettings.get_settings()
-    if request.method == 'POST':
-        form = MiscellaneousSettingsForm(request.POST, instance=settings)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Miscellaneous settings updated successfully!')
-            return redirect('dashboard:settings_miscellaneous')
-    else:
-        form = MiscellaneousSettingsForm(instance=settings)
-    context = {
-        'page_title': 'Miscellaneous Settings',
-        'form': form,
-        'active_tab': 'miscellaneous'
-    }
-    return render(request, 'dashboard/settings_miscellaneous.html', context)
-
 
 @user_passes_test(is_staff_check)
 def edit_about_page(request):

@@ -247,33 +247,6 @@ class ServiceTypeForm(forms.ModelForm):
 
         return cleaned_data
 
-    # The __init__ method is used to populate the custom fields from the model instance
-    # def __init__(self, *args, **kwargs): # This __init__ seems specific to ServiceType, not SiteSettings
-    #     super().__init__(*args, **kwargs)
-    #     if self.instance and self.instance.estimated_duration:
-    #         total_seconds = self.instance.estimated_duration.total_seconds()
-    #         days = int(total_seconds // 86400)
-    #         remaining_seconds = total_seconds % 86400
-    #         hours = int(remaining_seconds // 3600)
-
-    #         self.initial['estimated_duration_days'] = days
-    #         self.initial['estimated_duration_hours'] = hours
-
-
-class MiscellaneousSettingsForm(forms.ModelForm):
-    class Meta:
-        model = SiteSettings
-        fields = [
-            # Sales Fields
-            'display_new_prices',
-            'display_used_prices',
-            # Can add more miscellaneous fields here in the future
-        ]
-        widgets = {
-            'display_new_prices': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'display_used_prices': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-        }
-
 # New form for adding blocked dates
 class BlockedDateForm(forms.ModelForm):
     class Meta:

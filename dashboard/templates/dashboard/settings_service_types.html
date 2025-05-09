@@ -4,10 +4,16 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/service_type_styles.css' %}">
 
-    <div class="container-fluid">
-        <h1 class="h3 mb-2 text-gray-800">Service Types Management</h1>
+    <div class="service-booking-container"> {# Added wrapper div #}
+        <div class="booking-progress"> {# Added wrapper div for title #}
+            <h2>Service Types Management</h2> {# Changed h1 to h2 and updated text #}
+        </div>
         <p class="mb-4">Manage the service types offered by your dealership.</p>
 
+
+        <a href="{% url 'dashboard:add_service_type' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> Add New Service
+        </a>
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
@@ -19,13 +25,7 @@
             {% endfor %}
         {% endif %}
 
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">Current Service Types</h6>
-                <a href="{% url 'dashboard:add_service_type' %}" class="btn btn-primary btn-sm">
-                    <i class="fas fa-plus"></i> Add New Service
-                </a>
-            </div>
+
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table" id="serviceTypesTable" width="100%" cellspacing="0">
@@ -80,8 +80,8 @@
                     </table>
                 </div>
             </div>
-        </div>
-    </div>
+
+    </div> {# Closed wrapper div #}
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
