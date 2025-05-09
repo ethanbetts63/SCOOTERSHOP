@@ -1,20 +1,28 @@
-{# templates/service_booking/service_user_details_authenticated.html #}
-{% extends 'core/layout.html' %} {# Assuming you have a base template #}
+{% extends 'core/layout.html' %}
+{% load static %}
 
 {% block title %}Book Service - Step 3{% endblock %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/service_booking_styles.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <h2>Book Service - Step {{ step }} of {{ total_steps }}</h2>
+<div class="service-booking-container">
+    <div class="booking-progress">
+        <h2>Book Service - Step {{ step }} of {{ total_steps }}</h2>
+        <span class="step-indicator">Step {{ step }}/{{ total_steps }}</span>
+    </div>
     <hr>
 
-     {# This block displays general messages from the view (like "Please correct the errors below.") #}
-     {% if messages %}
-        <ul class="messages">
+    {% if messages %}
+    <div class="messages-container">
+        <ul>
             {% for message in messages %}
                 <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
             {% endfor %}
         </ul>
+    </div>
     {% endif %}
 
     <form method="post">
@@ -22,20 +30,18 @@
         <h3>Your Contact Information</h3>
         <p>Your details are pre-filled from your account. You can edit them for this booking if needed.</p>
 
-        {# This loop renders each field in the 'form' object passed from the view #}
-        {# It explicitly skips the 'is_returning_customer' field #}
         {% for field in form %}
             {% if field.name != 'is_returning_customer' %}
-                <div class="form-group">
+                <div class="form-field">
                     {{ field.label_tag }}
                     {{ field }}
                     {% if field.help_text %}
-                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                        <small id="{{ field.id_for_label }}_help" class="help-text">{{ field.help_text }}</small>
                     {% endif %}
                     {% if field.errors %}
-                        <div class="text-danger">
+                        <div>
                             {% for error in field.errors %}
-                                {{ error }}
+                                <small class="error-text">{{ error }}</small>
                             {% endfor %}
                         </div>
                     {% endif %}
@@ -43,7 +49,7 @@
             {% endif %}
         {% endfor %}
 
-        <button type="submit" class="btn btn-success">Submit Booking Request</button>
+        <button type="submit">Submit Booking Request</button>
     </form>
 </div>
 {% endblock %}
