@@ -1,18 +1,28 @@
 {% extends 'core/layout.html' %}
+{% load static %}
 
 {% block title %}Book Service - Step 3{% endblock %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/service_booking_styles.css' %}">
+{% endblock %}
+
 {% block content %}
-<div>
-    <h2>Book Service - Step {{ step }} of {{ total_steps }}</h2>
+<div class="service-booking-container">
+    <div class="booking-progress">
+        <h2>Book Service - Step {{ step }} of {{ total_steps }}</h2>
+        <span class="step-indicator">Step {{ step }}/{{ total_steps }}</span>
+    </div>
     <hr>
 
-     {% if messages %}
+    {% if messages %}
+    <div class="messages-container">
         <ul>
             {% for message in messages %}
-                <li>{{ message }}</li>
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
             {% endfor %}
         </ul>
+    </div>
     {% endif %}
 
     <form method="post">
@@ -20,7 +30,20 @@
         <h3>Your Contact Information</h3>
         <p>Please provide your contact details.</p>
 
-        {{ form.as_p }}
+        {% for field in form %}
+            <div class="form-field">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}
+                    <small id="{{ field.id_for_label }}_help" class="help-text">{{ field.help_text }}</small>
+                {% endif %}
+                {% if field.errors %}
+                    {% for error in field.errors %}
+                        <small class="error-text">{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        {% endfor %}
 
         <button type="submit">Submit Booking Request</button>
     </form>

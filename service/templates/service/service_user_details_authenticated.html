@@ -1,17 +1,18 @@
-{% extends 'core/layout.html' %}
+{# templates/service_booking/service_user_details_authenticated.html #}
+{% extends 'core/layout.html' %} {# Assuming you have a base template #}
 
 {% block title %}Book Service - Step 3{% endblock %}
 
 {% block content %}
-<div>
+<div class="container mt-4">
     <h2>Book Service - Step {{ step }} of {{ total_steps }}</h2>
     <hr>
 
-
+     {# This block displays general messages from the view (like "Please correct the errors below.") #}
      {% if messages %}
-        <ul>
+        <ul class="messages">
             {% for message in messages %}
-                <li>{{ message }}</li>
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
             {% endfor %}
         </ul>
     {% endif %}
@@ -21,17 +22,18 @@
         <h3>Your Contact Information</h3>
         <p>Your details are pre-filled from your account. You can edit them for this booking if needed.</p>
 
-
+        {# This loop renders each field in the 'form' object passed from the view #}
+        {# It explicitly skips the 'is_returning_customer' field #}
         {% for field in form %}
             {% if field.name != 'is_returning_customer' %}
-                <div>
+                <div class="form-group">
                     {{ field.label_tag }}
                     {{ field }}
                     {% if field.help_text %}
-                        <small>{{ field.help_text }}</small>
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
                     {% endif %}
                     {% if field.errors %}
-                        <div>
+                        <div class="text-danger">
                             {% for error in field.errors %}
                                 {{ error }}
                             {% endfor %}
@@ -41,7 +43,7 @@
             {% endif %}
         {% endfor %}
 
-        <button type="submit">Submit Booking Request</button>
+        <button type="submit" class="btn btn-success">Submit Booking Request</button>
     </form>
 </div>
 {% endblock %}
