@@ -2,10 +2,10 @@
 {% load static %}
 
 {% block extra_css %}
+{{ block.super }} 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
     <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
-    
 {% endblock %}
 
 {% block admin_main_content %}
