@@ -1,194 +1,291 @@
 {% extends "dashboard/admin_layout.html" %}
+{% load static %}
+
+{% block extra_css %}
+    {# Include Flatpickr CSS #}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+    
+{% endblock %}
 
 {% block admin_main_content %}
-<div class="container mt-4">
-    <h1>{{ page_title }} - Existing User</h1>
+<div class="service-booking-container">
+    <div class="booking-progress">
+        <h2>{{ page_title }} - Existing User</h2>
+        <span class="step-indicator">Admin Booking</span>
+    </div>
+    
     <hr>
-
+    
     {% if messages %}
-        <div class="alert alert-info">
+    <div class="messages-container">
+        <ul>
             {% for message in messages %}
-                <p{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
             {% endfor %}
-        </div>
+        </ul>
+    </div>
     {% endif %}
 
     <form method="post" id="admin-booking-user-form">
         {% csrf_token %}
 
-        <div class="card mb-4">
-            <div class="card-header">
-                <h3>Customer Selection</h3>
+        <div class="form-field">
+            <h3 class="booking-section-title">Customer Selection</h3>
+            
+            <div class="form-field">
+                {% if form.user.field.required %}<span class="required-indicator">*</span>{% endif %}
+                <label for="{{ form.user.id_for_label }}">{{ form.user.label }}</label>
+                {{ form.user }}
+                {% if form.user.errors %}
+                    {% for error in form.user.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
             </div>
-            <div class="card-body">
-                {# Move the existing customer dropdown first #}
-                <div class="form-group">
-                    {% if form.user.field.required %}<span class="required-indicator">*</span> {% endif %}<label for="{{ form.user.id_for_label }}" class="form-label">{{ form.user.label }}</label>
-                    {{ form.user }}
-                    {% if form.user.errors %}
-                        <div class="text-danger">
-                            {% for error in form.user.errors %}
-                                {{ error }}
-                            {% endfor %}
-                        </div>
+
+            <div class="form-field">
+                <a href="{% url 'users:admin_create_user' %}" class="btn-secondary" id="add-customer-button">Add New Customer</a>
+            </div>
+        </div>
+
+        <div class="form-field">
+            <h3 class="booking-section-title">Customer Details (Editable)</h3>
+            <p id="customer-details-instructions">Select an existing customer to load their details. Details can be edited and will update the user's profile upon booking creation.</p>
+            
+            <div id="ajax-error-message" class="error-message" style="display: none;">
+                Error loading customer details. Please enter manually or try again.
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.user_first_name.id_for_label }}">First Name</label>
+                {{ form.user_first_name }}
+                {% if form.user_first_name.errors %}
+                    {% for error in form.user_first_name.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.user_last_name.id_for_label }}">Last Name</label>
+                {{ form.user_last_name }}
+                {% if form.user_last_name.errors %}
+                    {% for error in form.user_last_name.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.user_email.id_for_label }}">Email</label>
+                {{ form.user_email }}
+                {% if form.user_email.errors %}
+                    {% for error in form.user_email.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.user_phone_number.id_for_label }}">Phone Number</label>
+                {{ form.user_phone_number }}
+                {% if form.user_phone_number.errors %}
+                    {% for error in form.user_phone_number.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-field">
+            <h3 class="booking-section-title">Motorcycle Details</h3>
+            
+            <div class="form-field">
+                {% if form.bike_selection_type.field.required %}<span class="required-indicator">*</span>{% endif %}
+                <label for="{{ form.bike_selection_type.id_for_label }}">{{ form.bike_selection_type.label }}</label>
+                {{ form.bike_selection_type }}
+                {% if form.bike_selection_type.errors %}
+                    {% for error in form.bike_selection_type.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div id="existing-motorcycle-section" class="form-field">
+                <div class="form-field">
+                    <span class="required-indicator">*</span>
+                    <label for="{{ form.existing_motorcycle.id_for_label }}">{{ form.existing_motorcycle.label }}</label>
+                    {{ form.existing_motorcycle }}
+                    {% if form.existing_motorcycle.errors %}
+                        {% for error in form.existing_motorcycle.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
                     {% endif %}
                 </div>
+            </div>
 
-                {# Place the Add New Customer button below the dropdown #}
-                <div class="form-group">
-                    <a href="{% url 'users:admin_create_user' %}" class="btn btn-secondary mb-2" id="add-customer-button">Add New Customer</a>
+            <div id="new-motorcycle-section" class="form-field">
+                <h4 class="sub-section-title">New Motorcycle Details</h4>
+                
+                <div class="form-field">
+                    <span class="required-indicator">*</span>
+                    <label for="{{ form.new_bike_make.id_for_label }}">{{ form.new_bike_make.label }}</label>
+                    {{ form.new_bike_make }}
+                    {% if form.new_bike_make.errors %}
+                        {% for error in form.new_bike_make.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="form-field">
+                    <span class="required-indicator">*</span>
+                    <label for="{{ form.new_bike_model.id_for_label }}">{{ form.new_bike_model.label }}</label>
+                    {{ form.new_bike_model }}
+                    {% if form.new_bike_model.errors %}
+                        {% for error in form.new_bike_model.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="form-field">
+                    <span class="required-indicator">*</span>
+                    <label for="{{ form.new_bike_year.id_for_label }}">{{ form.new_bike_year.label }}</label>
+                    {{ form.new_bike_year }}
+                    {% if form.new_bike_year.errors %}
+                        {% for error in form.new_bike_year.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="form-field">
+                    <label for="{{ form.new_bike_rego.id_for_label }}">{{ form.new_bike_rego.label }}</label>
+                    {{ form.new_bike_rego }}
+                    {% if form.new_bike_rego.errors %}
+                        {% for error in form.new_bike_rego.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="form-field">
+                    <label for="{{ form.new_bike_vin_number.id_for_label }}">{{ form.new_bike_vin_number.label }}</label>
+                    {{ form.new_bike_vin_number }}
+                    {% if form.new_bike_vin_number.errors %}
+                        {% for error in form.new_bike_vin_number.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="form-field">
+                    <label for="{{ form.new_bike_odometer.id_for_label }}">{{ form.new_bike_odometer.label }}</label>
+                    {{ form.new_bike_odometer }}
+                    {% if form.new_bike_odometer.errors %}
+                        {% for error in form.new_bike_odometer.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="form-field">
+                    <label for="{{ form.new_bike_transmission.id_for_label }}">{{ form.new_bike_transmission.label }}</label>
+                    {{ form.new_bike_transmission }}
+                    {% if form.new_bike_transmission.errors %}
+                        {% for error in form.new_bike_transmission.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
                 </div>
             </div>
         </div>
 
-        <div class="card mb-4">
-            <div class="card-header">
-                <h3>Customer Details (Editable)</h3>
+        <div class="form-field">
+            <h3 class="booking-section-title">Service Details</h3>
+            
+            <div class="form-field">
+                {% if form.service_type.field.required %}<span class="required-indicator">*</span>{% endif %}
+                <label for="{{ form.service_type.id_for_label }}">{{ form.service_type.label }}</label>
+                {{ form.service_type }}
+                {% if form.service_type.errors %}
+                    {% for error in form.service_type.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
             </div>
-            <div class="card-body" id="user-details-section">
-                <p id="customer-details-instructions">Select an existing customer to load their details. Details can be edited and will update the user's profile upon booking creation.</p>
-                <div id="ajax-error-message" class="alert alert-danger" style="display: none;">
-                    Error loading customer details. Please enter manually or try again.
-                </div>
 
-                <div class="form-group">
-                    {# Removed "Update" from the label #}
-                    <label for="{{ form.user_first_name.id_for_label }}" class="form-label">First Name</label>
-                    {{ form.user_first_name }}
-                    {% if form.user_first_name.errors %}<div class="text-danger">{% for error in form.user_first_name.errors %}{{ error }}{% endfor %}</div>{% endif %}
-                </div>
+            <div class="form-field">
+                {% if form.appointment_date.field.required %}<span class="required-indicator">*</span>{% endif %}
+                <label for="{{ form.appointment_date.id_for_label }}">{{ form.appointment_date.label }}</label>
+                {{ form.appointment_date }}
+                {% if form.appointment_date.errors %}
+                    {% for error in form.appointment_date.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
+            </div>
 
-                <div class="form-group">
-                    {# Removed "Update" from the label #}
-                    <label for="{{ form.user_last_name.id_for_label }}" class="form-label">Last Name</label>
-                    {{ form.user_last_name }}
-                    {% if form.user_last_name.errors %}<div class="text-danger">{% for error in form.user_last_name.errors %}{{ error }}{{% endfor %}</div>{% endif %}
-                </div>
-
-                <div class="form-group">
-                    {# Removed "Update" from the label #}
-                    <label for="{{ form.user_email.id_for_label }}" class="form-label">Email</label>
-                    {{ form.user_email }}
-                    {% if form.user_email.errors %}<div class="text-danger">{% for error in form.user_email.errors %}{{ error }}{% endfor %}</div>{% endif %}
-                </div>
-
-                <div class="form-group">
-                    {# Removed "Update" from the label #}
-                    <label for="{{ form.user_phone_number.id_for_label }}" class="form-label">Phone Number</label>
-                    {{ form.user_phone_number }}
-                    {% if form.user_phone_number.errors %}<div class="text-danger">{% for error in form.user_phone_number.errors %}{{ error }}{% endfor %}</div>{% endif %}
-                </div>
+            <div class="form-field">
+                <label for="{{ form.booking_comments.id_for_label }}">{{ form.booking_comments.label }}</label>
+                {{ form.booking_comments }}
+                {% if form.booking_comments.errors %}
+                    {% for error in form.booking_comments.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
             </div>
         </div>
 
-        <div class="card mb-4">
-            <div class="card-header">
-                <h3>Motorcycle Details</h3>
-            </div>
-            <div class="card-body">
-                <div class="form-group">
-                    {% if form.bike_selection_type.field.required %}<span class="required-indicator">*</span> {% endif %}{{ form.bike_selection_type.label_tag }}
-                    {{ form.bike_selection_type }}
-                </div>
-
-                <div id="existing-motorcycle-section">
-                    <div class="form-group">
-                         {# existing_motorcycle is conditionally required in clean method #}
-                        <span class="required-indicator">*</span> <label for="{{ form.existing_motorcycle.id_for_label }}" class="form-label">{{ form.existing_motorcycle.label }}</label>
-                        {{ form.existing_motorcycle }}
-                        {% if form.existing_motorcycle.errors %}
-                            <div class="text-danger">
-                                {% for error in form.existing_motorcycle.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div id="new-motorcycle-section">
-                    <h4>Motorcycle Details</h4>
-                    <div class="form-group">
-                        {# new_bike_make is conditionally required in clean method #}
-                        <span class="required-indicator">*</span> <label for="{{ form.new_bike_make.id_for_label }}" class="form-label">{{ form.new_bike_make.label }}</label>
-                        {{ form.new_bike_make }}
-                        {% if form.new_bike_make.errors %}<div class="text-danger">{% for error in form.new_bike_make.errors %}{{ error }}{% endfor %}</div>{% endif %}
-                    </div>
-                    <div class="form-group">
-                         {# new_bike_model is conditionally required in clean method #}
-                        <span class="required-indicator">*</span> <label for="{{ form.new_bike_model.id_for_label }}" class="form-label">{{ form.new_bike_model.label }}</label>
-                        {{ form.new_bike_model }}
-                        {% if form.new_bike_model.errors %}<div class="text-danger">{% for error in form.new_bike_model.errors %}{{ error }}{% endfor %}</div>{% endif %}
-                    </div>
-                    <div class="form-group">
-                        {# new_bike_year is conditionally required in clean method #}
-                        <span class="required-indicator">*</span> <label for="{{ form.new_bike_year.id_for_label }}" class="form-label">{{ form.new_bike_year.label }}</label>
-                        {{ form.new_bike_year }}
-                        {% if form.new_bike_year.errors %}<div class="text-danger">{% for error in form.new_bike_year.errors %}{{ error }}{% endfor %}</div>{% endif %}
-                    </div>
-                    <div class="form-group">
-                        {# Rego is not required #}
-                        <label for="{{ form.new_bike_rego.id_for_label }}" class="form-label">{{ form.new_bike_rego.label }}</label>
-                        {{ form.new_bike_rego }}
-                        {% if form.new_bike_rego.errors %}<div class="text-danger">{% for error in form.new_bike_rego.errors %}{{ error }}{% endfor %}</div>{% endif %}
-                    </div>
-                     <div class="form-group">
-                        {# VIN is not required #}
-                        <label for="{{ form.new_bike_vin_number.id_for_label }}" class="form-label">{{ form.new_bike_vin_number.label }}</label>
-                        {{ form.new_bike_vin_number }}
-                        {% if form.new_bike_vin_number.errors %}<div class="text-danger">{% for error in form.new_bike_vin_number.errors %}{{ error }}{% endfor %}</div>{% endif %}
-                    </div>
-                    <div class="form-group">
-                        {# Odometer is not required #}
-                        <label for="{{ form.new_bike_odometer.id_for_label }}" class="form-label">{{ form.new_bike_odometer.label }}</label>
-                        {{ form.new_bike_odometer }}
-                        {% if form.new_bike_odometer.errors %}<div class="text-danger">{% for error in form.new_bike_odometer.errors %}{{ error }}{% endfor %}</div>{% endif %}
-                    </div>
-                    <div class="form-group">
-                        {# Transmission is not required #}
-                        <label for="{{ form.new_bike_transmission.id_for_label }}" class="form-label">{{ form.new_bike_transmission.label }}</label>
-                        {{ form.new_bike_transmission }}
-                        {% if form.new_bike_transmission.errors %}<div class="text-danger">{% for error in form.new_bike_transmission.errors %}{{ error }}{% endfor %}</div>{% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-        <br>
-
-        <div class="card mb-4">
-            <div class="card-header">
-                <h3>Service Details</h3>
-            </div>
-            <div class="card-body">
-                <div class="form-group">
-                    {% if form.service_type.field.required %}<span class="required-indicator">*</span> {% endif %}<label for="{{ form.service_type.id_for_label }}" class="form-label">{{ form.service_type.label }}</label>
-                    {{ form.service_type }}
-                    {% if form.service_type.errors %}<div class="text-danger">{% for error in form.service_type.errors %}{{ error }}{% endfor %}</div>{% endif %}
-                </div>
-
-                <div class="form-group">
-                    {% if form.appointment_date.field.required %}<span class="required-indicator">*</span> {% endif %}<label for="{{ form.appointment_date.id_for_label }}" class="form-label">{{ form.appointment_date.label }}</label>
-                    {{ form.appointment_date }}
-                    {% if form.appointment_date.errors %}<div class="text-danger">{% for error in form.appointment_date.errors %}{{ error }}{% endfor %}</div>{% endif %}
-                </div>
-
-                <div class="form-group">
-                     {# Booking comments are not required #}
-                    <label for="{{ form.booking_comments.id_for_label }}" class="form-label">{{ form.booking_comments.label }}</label>
-                    {{ form.booking_comments }}
-                    {% if form.booking_comments.errors %}<div class="text-danger">{% for error in form.booking_comments.errors %}{{ error }}{% endfor %}</div>{% endif %}
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group mb-4">
-            <button type="submit" class="btn btn-primary">Create Booking for User</button>
-        </div>
+        <button type="submit">Create Booking for User</button>
     </form>
 </div>
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize flatpickr for date input
+        flatpickr("#{{ form.appointment_date.id_for_label }}", {
+            dateFormat: "Y-m-d",
+            minDate: "today",
+            disableMobile: true,
+            theme: "dark"
+        });
+
+        // Handle motorcycle selection type toggle
+        const bikeSelectionType = document.querySelector('#{{ form.bike_selection_type.id_for_label }}');
+        const existingMotorcycleSection = document.querySelector('#existing-motorcycle-section');
+        const newMotorcycleSection = document.querySelector('#new-motorcycle-section');
+
+        function toggleMotorcycleSections() {
+            if (bikeSelectionType.value === 'existing') {
+                existingMotorcycleSection.style.display = 'block';
+                newMotorcycleSection.style.display = 'none';
+            } else {
+                existingMotorcycleSection.style.display = 'none';
+                newMotorcycleSection.style.display = 'block';
+            }
+        }
+
+        // Initial toggle
+        toggleMotorcycleSections();
+
+        // Add event listener
+        bikeSelectionType.addEventListener('change', toggleMotorcycleSections);
+
+        // Handle user selection to fetch user details
+        const userSelect = document.querySelector('#{{ form.user.id_for_label }}');
+        userSelect.addEventListener('change', function() {
+            // You may want to implement AJAX functionality here to fetch user details
+            // This is just a placeholder for your existing AJAX implementation
+        });
+    });
+</script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Get references to form elements

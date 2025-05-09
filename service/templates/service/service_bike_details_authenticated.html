@@ -1,14 +1,25 @@
 {# templates/service_booking/service_bike_details_authenticated.html #}
 {% extends 'core/layout.html' %}
+{% load static %}
+
 {% block title %}Book Service - Step 2{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/service_booking_styles.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <h2>Book Service - Step {{ step }} of {{ total_steps }}</h2>
+<div class="service-booking-container">
+    <div class="booking-progress">
+        <h2>Book Service - Step {{ step }} of {{ total_steps }}</h2>
+        <span class="step-indicator">Step {{ step }}/{{ total_steps }}</span>
+    </div>
+    
     <hr>
 
     {% if messages %}
-    <div class="alert alert-info">
-        <ul class="messages mb-0">
+    <div class="messages-container">
+        <ul>
             {% for message in messages %}
                 <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
             {% endfor %}
@@ -16,39 +27,39 @@
     </div>
     {% endif %}
 
-    {# Removed the general 'Your Motorcycle Details' h3 heading #}
-
     {# Selection container - for choosing existing motorcycles or initiating add new #}
     <div id="selection-container" {% if display_motorcycle_details %}style="display: none;"{% endif %}>
-        <div class="card mb-4">
-            <div class="card-body">
-                <h4 class="card-title">Select or Add Your Motorcycle</h4>
-                <p class="card-text">
-                    {% if has_existing_bikes %}
-                        Select one of your motorcycles from the list below or add a new one.
-                    {% else %}
-                        Please add your motorcycle details below.
-                    {% endif %}
-                </p>
-
+        <div class="motorcycle-selection-card">
+            <h4 class="section-heading">Select or Add Your Motorcycle</h4>
+            <p class="section-description">
                 {% if has_existing_bikes %}
-                    {# Form for selecting an existing bike #}
-                    <form method="post" id="existing-bike-form" class="mb-3">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="select_existing">
-                        {{ existing_bike_form.as_p }}
-                        <div class="d-flex justify-content-start align-items-center gap-3">
-                            <button type="submit" class="btn btn-primary" id="continue-selected-button">Continue with Selected Motorcycle</button>
-                            <button type="button" id="add-new-button" class="btn btn-secondary">Add New Motorcycle</button>
-                        </div>
-                    </form>
+                    Select one of your motorcycles from the list below or add a new one.
                 {% else %}
-                    {# If no existing bikes, show the Add New button directly #}
-                     <div class="d-flex justify-content-start align-items-center gap-3">
-                         <button type="button" id="add-new-button" class="btn btn-primary">Add Your First Motorcycle</button>
-                     </div>
+                    Please add your motorcycle details below.
                 {% endif %}
-            </div>
+            </p>
+
+            {% if has_existing_bikes %}
+                {# Form for selecting an existing bike #}
+                <form method="post" id="existing-bike-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="select_existing">
+                    
+                    <div class="form-field">
+                        {{ existing_bike_form.as_p }}
+                    </div>
+                    
+                    <div class="button-group">
+                        <button type="submit" class="btn-primary" id="continue-selected-button">Continue with Selected Motorcycle</button>
+                        <button type="button" id="add-new-button" class="btn-secondary">Add New Motorcycle</button>
+                    </div>
+                </form>
+            {% else %}
+                {# If no existing bikes, show the Add New button directly #}
+                <div class="button-group">
+                    <button type="button" id="add-new-button" class="btn-primary">Add Your First Motorcycle</button>
+                </div>
+            {% endif %}
         </div>
     </div>
 
@@ -65,28 +76,28 @@
                 <input type="hidden" name="motorcycle_id" value="{{ editing_motorcycle.pk }}">
             {% endif %}
 
-            <div class="mb-3">
-                {# Combined Heading/Description based on mode #}
-                {# Removed the separate h4 and p tags and combined their logic here #}
+            <div class="form-header">
                 <h4 id="motorcycle-details-heading-paragraph">
                     {% if editing_motorcycle %}
                         Please confirm the details for your selected motorcycle: {{ editing_motorcycle }}
                     {% else %}
-                         New Motorcycle Details: Please provide the details of your motorcycle.
+                        New Motorcycle Details: Please provide the details of your motorcycle.
                     {% endif %}
                 </h4>
             </div>
 
             {# The form fields #}
-            {{ motorcycle_form.as_p }}
+            <div class="form-fields-container">
+                {{ motorcycle_form.as_p }}
+            </div>
 
-            <div class="d-flex justify-content-between mt-4">
+            <div class="button-group between">
                 {% if has_existing_bikes %}
-                <button type="button" id="back-to-selection" class="btn btn-primary">Back to Selection</button>
+                <button type="button" id="back-to-selection" class="btn-secondary">Back to Selection</button>
                 {% endif %}
 
                 {# Button text changes based on mode #}
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn-primary">
                     {% if editing_motorcycle %}
                         Save & Continue
                     {% else %}
@@ -96,8 +107,11 @@
             </div>
         </form>
     </div>
-
 </div>
+{% endblock %}
+
+{% block extra_js %}
+
 
 {# Include the improved JavaScript - separate to improve maintainability #}
 <script>
