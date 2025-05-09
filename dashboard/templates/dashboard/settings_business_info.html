@@ -1,196 +1,140 @@
 {% extends "dashboard/admin_layout.html" %}
 {% load static %}
 
+{% block extra_css %}
+{{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
+{% endblock %}
+
 {% block admin_main_content %}
-    <div class="container">
-        <h1 class="mb-4 text-primary">Business Information Settings</h1>
-
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Update Business Information</h5>
-            </div>
-            <div class="card-body">
-                <form method="post" enctype="multipart/form-data" id="businessInfoForm"> {# Added ID here #}
-                    {% csrf_token %}
-
-                    {# Buttons placed directly in HTML with flexbox for alignment #}
-                    <div class="button-group-spaced">
-                        <button type="button" class="btn btn-secondary me-2" id="editButton">Edit</button>
-                        <button type="submit" class="btn btn-primary me-2" id="saveChangesBtn" style="display: none;">Save Changes</button>
-                        <button type="button" class="btn btn-secondary" id="resetButton" style="display: none;">Reset</button>
-                    </div>
-
-
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <h5>Contact Information</h5>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.phone_number.id_for_label }}" class="form-label">
-                                Phone Number {% if form.phone_number.field.required %}<span class="required-indicator">*</span>{% endif %}
-                            </label>
-                            {{ form.phone_number }}
-                            {% if form.phone_number.errors %}
-                                <div class="text-danger">{{ form.phone_number.errors }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.email_address.id_for_label }}" class="form-label">
-                                Email Address {% if form.email_address.field.required %}<span class="required-indicator">*</span>{% endif %}
-                            </label>
-                            {{ form.email_address }}
-                            {% if form.email_address.errors %}
-                                <div class="text-danger">{{ form.email_address.errors }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="col-12 mb-3">
-                            <label for="{{ form.storefront_address.id_for_label }}" class="form-label">
-                                Storefront Address
-                            </label>
-                            {{ form.storefront_address }}
-                            {% if form.storefront_address.errors %}
-                                <div class="text-danger">{{ form.storefront_address.errors }}</div>
-                            {% endif %}
-                        </div>
-
-                        {# Add the Google Places Place ID field here #}
-                        <div class="col-12 mb-3">
-                            <label for="{{ form.google_places_place_id.id_for_label }}" class="form-label">
-                                Google Places Place ID
-                            </label>
-                            {{ form.google_places_place_id }}
-                            {% if form.google_places_place_id.errors %}
-                                <div class="text-danger">{{ form.google_places_place_id.errors }}</div>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <h5>Business Hours</h5>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.opening_hours_monday.id_for_label }}" class="form-label">Monday</label>
-                            {{ form.opening_hours_monday }}
-                            {% if form.opening_hours_monday.errors %}
-                                <div class="text-danger">{{ form.opening_hours_monday.errors }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.opening_hours_tuesday.id_for_label }}" class="form-label">Tuesday</label>
-                            {{ form.opening_hours_tuesday }}
-                            {% if form.opening_hours_tuesday.errors %}
-                                <div class="text-danger">{{ form.opening_hours_tuesday.errors }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.opening_hours_wednesday.id_for_label }}" class="form-label">Wednesday</label>
-                            {{ form.opening_hours_wednesday }}
-                            {% if form.opening_hours_wednesday.errors %}
-                                <div class="text-danger">{{ form.opening_hours_wednesday.errors }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.opening_hours_thursday.id_for_label }}" class="form-label">Thursday</label>
-                            {{ form.opening_hours_thursday }}
-                            {% if form.opening_hours_thursday.errors %}
-                                <div class="text-danger">{{ form.opening_hours_thursday.errors }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.opening_hours_friday.id_for_label }}" class="form-label">Friday</label>
-                            {{ form.opening_hours_friday }}
-                            {% if form.opening_hours_friday.errors %}
-                                <div class="text-danger">{{ form.opening_hours_friday.errors }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.opening_hours_saturday.id_for_label }}" class="form-label">Saturday</label>
-                            {{ form.opening_hours_saturday }}
-                            {% if form.opening_hours_saturday.errors %}
-                                <div class="text-danger">{{ form.opening_hours_saturday.errors }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.opening_hours_sunday.id_for_label }}" class="form-label">Sunday</label>
-                            {{ form.opening_hours_sunday }}
-                            {% if form.opening_hours_sunday.errors %}
-                                <div class="text-danger">{{ form.opening_hours_sunday.errors }}</div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
+<div class="service-booking-container">
+    <div class="booking-progress">
+        <h2>Business Information Settings</h2>
     </div>
 
-    {% block extra_js %}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('#businessInfoForm');
-            const editButton = document.querySelector('#editButton');
-            const saveButton = document.querySelector('#saveChangesBtn');
-            const resetButton = document.querySelector('#resetButton');
-            const formElements = form.querySelectorAll('input, textarea, select');
+    <hr>
 
-            // Function to set form elements to read-only
-            function setReadOnly(readOnly) {
-                formElements.forEach(element => {
-                    // Exclude buttons from being set to read-only
-                    if (element.type !== 'submit' && element.type !== 'button') {
-                        element.readOnly = readOnly;
-                    }
-                });
+    <div class="form-field">
+        <div class="booking-progress">
+            <h3 class="booking-section-title">Update Business Information</h3>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-field" style="flex-direction: row; justify-content: flex-end; margin-bottom: 20px;">
+                <button type="button" class="btn-secondary" style="margin-right: 10px;">Edit</button>
+                <button type="submit">Save Changes</button>
+                <button type="button" class="btn-secondary" style="margin-left: 10px;">Reset</button>
+            </div>
+
+            <div class="form-field">
+                <h3 class="booking-section-title">Contact Information</h3>
+
+                <div class="form-field">
+                    <label for="{{ form.phone_number.id_for_label }}">
+                        Phone Number
+                    </label>
+                    {{ form.phone_number }}
+                </div>
+
+                <div class="form-field">
+                    <label for="{{ form.email_address.id_for_label }}">
+                        Email Address
+                    </label>
+                    {{ form.email_address }}
+                </div>
+
+                <div class="form-field">
+                    <label for="{{ form.storefront_address.id_for_label }}">
+                        Storefront Address
+                    </label>
+                    {{ form.storefront_address }}
+                </div>
+
+                <div class="form-field">
+                    <label for="{{ form.google_places_place_id.id_for_label }}">
+                        Google Places Place ID
+                    </label>
+                    {{ form.google_places_place_id }}
+                </div>
+            </div>
+
+            <div class="form-field">
+                <h3 class="booking-section-title">Business Hours</h3>
+
+                <div class="form-field">
+                    <label for="{{ form.opening_hours_monday.id_for_label }}">Monday</label>
+                    {{ form.opening_hours_monday }}
+                </div>
+
+                <div class="form-field">
+                    <label for="{{ form.opening_hours_tuesday.id_for_label }}">Tuesday</label>
+                    {{ form.opening_hours_tuesday }}
+                </div>
+
+                <div class="form-field">
+                    <label for="{{ form.opening_hours_wednesday.id_for_label }}">Wednesday</label>
+                    {{ form.opening_hours_wednesday }}
+                </div>
+
+                <div class="form-field">
+                    <label for="{{ form.opening_hours_thursday.id_for_label }}">Thursday</label>
+                    {{ form.opening_hours_thursday }}
+                </div>
+
+                <div class="form-field">
+                    <label for="{{ form.opening_hours_friday.id_for_label }}">Friday</label>
+                    {{ form.opening_hours_friday }}
+                </div>
+
+                <div class="form-field">
+                    <label for="{{ form.opening_hours_saturday.id_for_label }}">Saturday</label>
+                    {{ form.opening_hours_saturday }}
+                </div>
+
+                <div class="form-field">
+                    <label for="{{ form.opening_hours_sunday.id_for_label }}">Sunday</label>
+                    {{ form.opening_hours_sunday }}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add any JavaScript functionality here
+        const editButton = document.querySelector('button[type="button"]:first-of-type');
+        const saveButton = document.querySelector('button[type="submit"]');
+        const resetButton = document.querySelector('button[type="button"]:last-of-type');
+        
+        // Make form fields read-only by default
+        const formFields = document.querySelectorAll('input, select, textarea');
+        formFields.forEach(field => {
+            field.setAttribute('readonly', true);
+            if (field.tagName === 'SELECT') {
+                field.setAttribute('disabled', true);
             }
-
-            // Store initial values when the page loads
-            const initialValues = {};
-            formElements.forEach(element => {
-                 if (element.type !== 'submit' && element.type !== 'button') {
-                    initialValues[element.name] = element.value;
+        });
+        
+        // Enable editing when Edit button is clicked
+        editButton.addEventListener('click', function() {
+            formFields.forEach(field => {
+                field.removeAttribute('readonly');
+                if (field.tagName === 'SELECT') {
+                    field.removeAttribute('disabled');
                 }
             });
-
-            // Set initial state to read-only and hide save/reset
-            setReadOnly(true);
-            saveButton.style.display = 'none';
-            resetButton.style.display = 'none';
-            editButton.style.display = 'block';
-
-
-            // Add event listener to the Edit button
-            editButton.addEventListener('click', function() {
-                setReadOnly(false); // Make fields editable
-                editButton.style.display = 'none'; // Hide Edit button
-                saveButton.style.display = ''; // Show Save Changes button
-                resetButton.style.display = ''; // Show Reset button
-            });
-
-            // Add event listener to the Reset button
-            resetButton.addEventListener('click', function() {
-                // Reset form values
-                formElements.forEach(element => {
-                     if (element.type !== 'submit' && element.type !== 'button') {
-                        element.value = initialValues[element.name];
-                    }
-                });
-                setReadOnly(true); // Make fields read-only again
-                editButton.style.display = 'block'; // Show Edit button
-                saveButton.style.display = 'none'; // Hide Save Changes button
-                resetButton.style.display = 'none'; // Hide Reset button
-            });
         });
-    </script>
-    {% endblock %}
+        
+        // Reset form when Reset button is clicked
+        resetButton.addEventListener('click', function() {
+            document.querySelector('form').reset();
+        });
+    });
+</script>
+{% endblock %}
 
 {% endblock %}
