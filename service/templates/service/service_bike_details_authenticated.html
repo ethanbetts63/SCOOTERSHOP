@@ -1,104 +1,339 @@
-{# templates/service_booking/service_bike_details_authenticated.html #}
-{% extends 'core/layout.html' %}
-{% block title %}Book Service - Step 2{% endblock %}
-{% block content %}
-<div class="container mt-4">
-    <h2>Book Service - Step {{ step }} of {{ total_steps }}</h2>
+{% extends "dashboard/admin_layout.html" %}
+
+{% block admin_main_content %}
+<div>
+    <h1>{{ page_title }}</h1>
     <hr>
 
     {% if messages %}
-    <div class="alert alert-info">
-        <ul class="messages mb-0">
+        <div>
             {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                <p>{{ message }}</p>
             {% endfor %}
-        </ul>
-    </div>
+        </div>
     {% endif %}
 
-    {# Removed the general 'Your Motorcycle Details' h3 heading #}
+    <form method="post" id="admin-booking-form">
+        {% csrf_token %}
 
-    {# Selection container - for choosing existing motorcycles or initiating add new #}
-    <div id="selection-container" {% if display_motorcycle_details %}style="display: none;"{% endif %}>
-        <div class="card mb-4">
-            <div class="card-body">
-                <h4 class="card-title">Select or Add Your Motorcycle</h4>
-                <p class="card-text">
-                    {% if has_existing_bikes %}
-                        Select one of your motorcycles from the list below or add a new one.
-                    {% else %}
-                        Please add your motorcycle details below.
-                    {% endif %}
-                </p>
 
-                {% if has_existing_bikes %}
-                    {# Form for selecting an existing bike #}
-                    <form method="post" id="existing-bike-form" class="mb-3">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="select_existing">
-                        {{ existing_bike_form.as_p }}
-                        <div class="d-flex justify-content-start align-items-center gap-3">
-                            <button type="submit" class="btn btn-primary" id="continue-selected-button">Continue with Selected Motorcycle</button>
-                            <button type="button" id="add-new-button" class="btn btn-secondary">Add New Motorcycle</button>
-                        </div>
-                    </form>
-                {% else %}
-                    {# If no existing bikes, show the Add New button directly #}
-                     <div class="d-flex justify-content-start align-items-center gap-3">
-                         <button type="button" id="add-new-button" class="btn btn-primary">Add Your First Motorcycle</button>
-                     </div>
-                {% endif %}
+        <div>
+            <div>
+                <h3>Customer Selection</h3>
+            </div>
+            <div>
+
+                <div>
+                    <a href="#" id="add-customer-button">Add New Customer</a>
+
+                </div>
+
+                <div>
+                    {{ form.customer_type.label_tag }}
+                    {{ form.customer_type }}
+                </div>
+
+                <div>
+                    <div>
+                        {{ form.user.label_tag }}
+                        {{ form.user }}
+                        {% if form.user.errors %}
+                            <div>
+                                {% for error in form.user.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    {# Details container - for adding new or editing existing motorcycles #}
-    <div id="motorcycle-details-container" {% if not display_motorcycle_details %}style="display: none;"{% endif %}>
-        <form method="post" id="motorcycle-form">
-            {% csrf_token %}
-            {# The action input will be set by JavaScript based on user interaction or initial state #}
-            <input type="hidden" name="action" value="{% if editing_motorcycle %}edit_existing{% else %}add_new{% endif %}">
 
-            {# Only include motorcycle_id when editing #}
-            {# Pass the ID if we are editing a specific instance #}
-            {% if editing_motorcycle and editing_motorcycle.pk %}
-                <input type="hidden" name="motorcycle_id" value="{{ editing_motorcycle.pk }}">
-            {% endif %}
-
-            <div class="mb-3">
-                {# Combined Heading/Description based on mode #}
-                {# Removed the separate h4 and p tags and combined their logic here #}
-                <h4 id="motorcycle-details-heading-paragraph">
-                    {% if editing_motorcycle %}
-                        Please confirm the details for your selected motorcycle: {{ editing_motorcycle }}
-                    {% else %}
-                         New Motorcycle Details: Please provide the details of your motorcycle.
-                    {% endif %}
-                </h4>
+        <div>
+            <div>
+                <h3>Customer Details</h3>
             </div>
+            <div>
+                <p id="customer-details-instructions">Details will populate when an existing customer is selected, or can be entered for a one-off booking.</p>
+                <div>
+                    Error loading customer details. Please enter manually.
+                </div>
 
-            {# The form fields #}
-            {{ motorcycle_form.as_p }}
-
-            <div class="d-flex justify-content-between mt-4">
-                {% if has_existing_bikes %}
-                <button type="button" id="back-to-selection" class="btn btn-primary">Back to Selection</button>
-                {% endif %}
-
-                {# Button text changes based on mode #}
-                <button type="submit" class="btn btn-primary">
-                    {% if editing_motorcycle %}
-                        Save & Continue
-                    {% else %}
-                        Add Motorcycle & Continue
+                <div>
+                    {{ form.one_off_first_name.label_tag }}
+                    {{ form.one_off_first_name }}
+                    {% if form.one_off_first_name.help_text %}
+                        <small>{{ form.one_off_first_name.help_text }}</small>
                     {% endif %}
-                </button>
-            </div>
-        </form>
-    </div>
+                    {% if form.one_off_first_name.errors %}
+                        <div>
+                            {% for error in form.one_off_first_name.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
 
+                <div>
+                    {{ form.one_off_last_name.label_tag }}
+                    {{ form.one_off_last_name }}
+                    {% if form.one_off_last_name.help_text %}
+                        <small>{{ form.one_off_last_name.help_text }}</small>
+                    {% endif %}
+                    {% if form.one_off_last_name.errors %}
+                        <div>
+                            {% for error in form.one_off_last_name.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    {{ form.one_off_email.label_tag }}
+                    {{ form.one_off_email }}
+                    {% if form.one_off_email.help_text %}
+                        <small>{{ form.one_off_email.help_text }}</small>
+                    {% endif %}
+                    {% if form.one_off_email.errors %}
+                        <div>
+                            {% for error in form.one_off_email.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    {{ form.one_off_phone_number.label_tag }}
+                    {{ form.one_off_phone_number }}
+                    {% if form.one_off_phone_number.help_text %}
+                        <small>{{ form.one_off_phone_number.help_text }}</small>
+                    {% endif %}
+                    {% if form.one_off_phone_number.errors %}
+                        <div>
+                            {% for error in form.one_off_phone_number.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+
+        <div>
+            <div>
+                <h3>Motorcycle Details</h3>
+            </div>
+            <div>
+                <div>
+                    {{ form.bike_selection_type.label_tag }}
+                    {{ form.bike_selection_type }}
+                </div>
+
+                <div>
+                    <div>
+                        {{ form.existing_motorcycle.label_tag }}
+                        {{ form.existing_motorcycle }}
+                        {% if form.existing_motorcycle.errors %}
+                            <div>
+                                {% for error in form.existing_motorcycle.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div>
+                    <h4>New Motorcycle Details</h4>
+                    <div>
+                        {{ form.new_bike_make.label_tag }}
+                        {{ form.new_bike_make }}
+                        {% if form.new_bike_make.errors %}
+                            <div>
+                                {% for error in form.new_bike_make.errors %}
+                                    {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        {{ form.new_bike_model.label_tag }}
+                        {{ form.new_bike_model }}
+                        {% if form.new_bike_model.errors %}
+                            <div>
+                                {% for error in form.new_bike_model.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        {{ form.new_bike_year.label_tag }}
+                        {{ form.new_bike_year }}
+                        {% if form.new_bike_year.errors %}
+                            <div>
+                                {% for error in form.new_bike_year.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        {{ form.new_bike_rego.label_tag }}
+                        {{ form.new_bike_rego }}
+                        {% if form.new_bike_rego.errors %}
+                            <div>
+                                {% for error in form.new_bike_rego.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        {{ form.new_bike_vin_number.label_tag }}
+                        {{ form.new_bike_vin_number }}
+                        {% if form.new_bike_vin_number.errors %}
+                            <div>
+                                {% for error in form.new_bike_vin_number.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        {{ form.new_bike_odometer.label_tag }}
+                        {{ form.new_bike_odometer }}
+                        {% if form.new_bike_odometer.errors %}
+                            <div>
+                                {% for error in form.new_bike_odometer.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        {{ form.new_bike_transmission.label_tag }}
+                        {{ form.new_bike_transmission }}
+                        {% if form.new_bike_transmission.errors %}
+                            <div>
+                                {% for error in form.new_bike_transmission.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div>
+                    <h4>Vehicle Details (One-off)</h4>
+                    <div>
+                        {{ form.anon_vehicle_make.label_tag }}
+                        {{ form.anon_vehicle_make }}
+                        {% if form.anon_vehicle_make.errors %}
+                            <div>
+                                {% for error in form.anon_vehicle_make.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        {{ form.anon_vehicle_model.label_tag }}
+                        {{ form.anon_vehicle_model }}
+                        {% if form.anon_vehicle_model.errors %}
+                            <div>
+                                {% for error in form.anon_vehicle_model.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        {{ form.anon_vehicle_year.label_tag }}
+                        {{ form.anon_vehicle_year }}
+                        {% if form.anon_vehicle_year.errors %}
+                            <div>
+                                {% for error in form.anon_vehicle_year.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <br>
+
+
+        <div>
+            <div>
+                <h3>Service Details</h3>
+            </div>
+            <div>
+                <div>
+                    {{ form.service_type.label_tag }}
+                    {{ form.service_type }}
+                    {% if form.service_type.errors %}
+                        <div>
+                            {% for error in form.service_type.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    {{ form.appointment_date.label_tag }}
+                    {{ form.appointment_date }}
+                    {% if form.appointment_date.errors %}
+                        <div>
+                            {% for error in form.appointment_date.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    {{ form.preferred_contact.label_tag }}
+                    {{ form.preferred_contact }}
+                    {% if form.preferred_contact.errors %}
+                        <div>
+                            {% for error in form.preferred_contact.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    {{ form.booking_comments.label_tag }}
+                    {{ form.booking_comments }}
+                    {% if form.booking_comments.errors %}
+                        <div>
+                            {% for error in form.booking_comments.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <button type="submit">Create Booking</button>
+        </div>
+    </form>
 </div>
 
-{# Include the improved JavaScript - separate to improve maintainability #}
+{% endblock %}
+
+{% block extra_js %}
 <script src="{% static 'js/service_bike_details_authenticated.js' %}"></script>
 {% endblock %}
