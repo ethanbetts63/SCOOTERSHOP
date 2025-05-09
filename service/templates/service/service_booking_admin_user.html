@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block extra_css %}
-{{ block.super }} 
+{{ block.super }}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
     <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
@@ -13,9 +13,9 @@
     <div class="booking-progress">
         <h2>{{ page_title }}</h2>
     </div>
-    
+
     <hr>
-    
+
     {% if messages %}
     <div class="messages-container">
         <ul>
@@ -31,10 +31,9 @@
 
         <div class="form-field">
             <h3 class="booking-section-title">Customer Selection</h3>
-            
+
             <div class="form-field">
-                {% if form.user.field.required %}<span class="required-indicator">*</span>{% endif %}
-                <label for="{{ form.user.id_for_label }}">{{ form.user.label }}</label>
+                <label for="{{ form.user.id_for_label }}">{{ form.user.label }}{% if form.user.field.required %}<span class="required-indicator">*</span>{% endif %}</label>
                 {{ form.user }}
                 {% if form.user.errors %}
                     {% for error in form.user.errors %}
@@ -51,13 +50,13 @@
         <div class="form-field">
             <h3 class="booking-section-title">Customer Details (Editable)</h3>
             <p id="customer-details-instructions">Select an existing customer to load their details. Details can be edited and will update the user's profile upon booking creation.</p>
-            
+
             <div id="ajax-error-message" class="error-message" style="display: none;">
                 Error loading customer details. Please enter manually or try again.
             </div>
 
             <div class="form-field">
-                <label for="{{ form.user_first_name.id_for_label }}">First Name</label>
+                <label for="{{ form.user_first_name.id_for_label }}">{{ form.user_first_name.label }}</label>
                 {{ form.user_first_name }}
                 {% if form.user_first_name.errors %}
                     {% for error in form.user_first_name.errors %}
@@ -67,7 +66,7 @@
             </div>
 
             <div class="form-field">
-                <label for="{{ form.user_last_name.id_for_label }}">Last Name</label>
+                <label for="{{ form.user_last_name.id_for_label }}">{{ form.user_last_name.label }}</label>
                 {{ form.user_last_name }}
                 {% if form.user_last_name.errors %}
                     {% for error in form.user_last_name.errors %}
@@ -77,7 +76,7 @@
             </div>
 
             <div class="form-field">
-                <label for="{{ form.user_email.id_for_label }}">Email</label>
+                <label for="{{ form.user_email.id_for_label }}">{{ form.user_email.label }}</label>
                 {{ form.user_email }}
                 {% if form.user_email.errors %}
                     {% for error in form.user_email.errors %}
@@ -87,7 +86,7 @@
             </div>
 
             <div class="form-field">
-                <label for="{{ form.user_phone_number.id_for_label }}">Phone Number</label>
+                <label for="{{ form.user_phone_number.id_for_label }}">{{ form.user_phone_number.label }}</label>
                 {{ form.user_phone_number }}
                 {% if form.user_phone_number.errors %}
                     {% for error in form.user_phone_number.errors %}
@@ -99,10 +98,9 @@
 
         <div class="form-field">
             <h3 class="booking-section-title">Motorcycle Details</h3>
-            
+
             <div class="form-field">
-                {% if form.bike_selection_type.field.required %}<span class="required-indicator">*</span>{% endif %}
-                <label for="{{ form.bike_selection_type.id_for_label }}">{{ form.bike_selection_type.label }}</label>
+                <label for="{{ form.bike_selection_type.id_for_label }}">{{ form.bike_selection_type.label }}{% if form.bike_selection_type.field.required %}<span class="required-indicator">*</span>{% endif %}</label>
                 {{ form.bike_selection_type }}
                 {% if form.bike_selection_type.errors %}
                     {% for error in form.bike_selection_type.errors %}
@@ -113,8 +111,7 @@
 
             <div id="existing-motorcycle-section" class="form-field">
                 <div class="form-field">
-                    <span class="required-indicator">*</span>
-                    <label for="{{ form.existing_motorcycle.id_for_label }}">{{ form.existing_motorcycle.label }}</label>
+                    <label for="{{ form.existing_motorcycle.id_for_label }}">{{ form.existing_motorcycle.label }}<span class="required-indicator">*</span></label>
                     {{ form.existing_motorcycle }}
                     {% if form.existing_motorcycle.errors %}
                         {% for error in form.existing_motorcycle.errors %}
@@ -126,10 +123,9 @@
 
             <div id="new-motorcycle-section" class="form-field">
                 <h4 class="sub-section-title">New Motorcycle Details</h4>
-                
+
                 <div class="form-field">
-                    <span class="required-indicator">*</span>
-                    <label for="{{ form.new_bike_make.id_for_label }}">{{ form.new_bike_make.label }}</label>
+                    <label for="{{ form.new_bike_make.id_for_label }}">{{ form.new_bike_make.label }}<span class="required-indicator">*</span></label>
                     {{ form.new_bike_make }}
                     {% if form.new_bike_make.errors %}
                         {% for error in form.new_bike_make.errors %}
@@ -137,10 +133,9 @@
                         {% endfor %}
                     {% endif %}
                 </div>
-                
+
                 <div class="form-field">
-                    <span class="required-indicator">*</span>
-                    <label for="{{ form.new_bike_model.id_for_label }}">{{ form.new_bike_model.label }}</label>
+                    <label for="{{ form.new_bike_model.id_for_label }}">{{ form.new_bike_model.label }}<span class="required-indicator">*</span></label>
                     {{ form.new_bike_model }}
                     {% if form.new_bike_model.errors %}
                         {% for error in form.new_bike_model.errors %}
@@ -148,10 +143,9 @@
                         {% endfor %}
                     {% endif %}
                 </div>
-                
+
                 <div class="form-field">
-                    <span class="required-indicator">*</span>
-                    <label for="{{ form.new_bike_year.id_for_label }}">{{ form.new_bike_year.label }}</label>
+                    <label for="{{ form.new_bike_year.id_for_label }}">{{ form.new_bike_year.label }}<span class="required-indicator">*</span></label>
                     {{ form.new_bike_year }}
                     {% if form.new_bike_year.errors %}
                         {% for error in form.new_bike_year.errors %}
@@ -159,7 +153,7 @@
                         {% endfor %}
                     {% endif %}
                 </div>
-                
+
                 <div class="form-field">
                     <label for="{{ form.new_bike_rego.id_for_label }}">{{ form.new_bike_rego.label }}</label>
                     {{ form.new_bike_rego }}
@@ -169,7 +163,7 @@
                         {% endfor %}
                     {% endif %}
                 </div>
-                
+
                 <div class="form-field">
                     <label for="{{ form.new_bike_vin_number.id_for_label }}">{{ form.new_bike_vin_number.label }}</label>
                     {{ form.new_bike_vin_number }}
@@ -179,7 +173,7 @@
                         {% endfor %}
                     {% endif %}
                 </div>
-                
+
                 <div class="form-field">
                     <label for="{{ form.new_bike_odometer.id_for_label }}">{{ form.new_bike_odometer.label }}</label>
                     {{ form.new_bike_odometer }}
@@ -189,7 +183,7 @@
                         {% endfor %}
                     {% endif %}
                 </div>
-                
+
                 <div class="form-field">
                     <label for="{{ form.new_bike_transmission.id_for_label }}">{{ form.new_bike_transmission.label }}</label>
                     {{ form.new_bike_transmission }}
@@ -204,10 +198,9 @@
 
         <div class="form-field">
             <h3 class="booking-section-title">Service Details</h3>
-            
+
             <div class="form-field">
-                {% if form.service_type.field.required %}<span class="required-indicator">*</span>{% endif %}
-                <label for="{{ form.service_type.id_for_label }}">{{ form.service_type.label }}</label>
+                <label for="{{ form.service_type.id_for_label }}">{{ form.service_type.label }}{% if form.service_type.field.required %}<span class="required-indicator">*</span>{% endif %}</label>
                 {{ form.service_type }}
                 {% if form.service_type.errors %}
                     {% for error in form.service_type.errors %}
@@ -217,8 +210,7 @@
             </div>
 
             <div class="form-field">
-                {% if form.appointment_date.field.required %}<span class="required-indicator">*</span>{% endif %}
-                <label for="{{ form.appointment_date.id_for_label }}">{{ form.appointment_date.label }}</label>
+                <label for="{{ form.appointment_date.id_for_label }}">{{ form.appointment_date.label }}{% if form.appointment_date.field.required %}<span class="required-indicator">*</span>{% endif %}</label>
                 {{ form.appointment_date }}
                 {% if form.appointment_date.errors %}
                     {% for error in form.appointment_date.errors %}
@@ -360,12 +352,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Clears motorcycle details
                 clearMotorcycleDetails();
                 // Enables new bike fields (since no existing bike is selected, a new one might be needed if validation allows)
-                 // Check if a user is selected before enabling/disabling
-                 if(userSelect.value) {
-                     setMotorcycleFieldsDisabled(true); // If existing is selected and no bike, but user is selected, new fields should be disabled
-                 } else {
-                      setMotorcycleFieldsDisabled(false); 
-                 }
+                   // Check if a user is selected before enabling/disabling
+                   if(userSelect.value) {
+                       setMotorcycleFieldsDisabled(true); // If existing is selected and no bike, but user is selected, new fields should be disabled
+                   } else {
+                        setMotorcycleFieldsDisabled(false);
+                   }
             }
         } else { // 'new'
             // Shows existing motorcycle section (user can switch back)
@@ -481,9 +473,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Sets previously selected bike
                         existingMotorcycleSelect.value = previousBikeId;
                         // Populates details if existing type selected
-                         if (document.querySelector('input[name="bike_selection_type"]:checked').value === 'existing') {
-                             populateMotorcycleDetails(previousBikeId);
-                         }
+                           if (document.querySelector('input[name="bike_selection_type"]:checked').value === 'existing') {
+                                populateMotorcycleDetails(previousBikeId);
+                           }
                     }
                     // Updates bike fields display based on selection
                     toggleBikeFields();
