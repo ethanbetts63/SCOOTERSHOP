@@ -7,16 +7,17 @@
 {{ block.super }} {# Include CSS from the parent template #}
 <link rel="stylesheet" href="{% static 'css/admin_layout_styles.css' %}">
 <link rel="stylesheet" href="{% static 'css/form_styles.css' %}">
+
 {% endblock %}
 
 {% block content %}
-<div class="admin-container">
-    <aside class="admin-sidebar">
+<div class="admin-layout-container">
+    <aside class="admin-layout-sidebar">
         <h2>Admin Navigation</h2>
         <ul class="reset-list">{# Added .reset-list #}
             <li><a href="{% url 'dashboard:dashboard_index' %}">Dashboard Home</a></li>
-            <li><a href="{% url 'dashboard:service_bookings' %}">Service Bookings</a></li> 
-            <li><a href="{% url 'inventory:motorcycle-list' %}">All Motorcycles</a></li> 
+            <li><a href="{% url 'dashboard:service_bookings' %}">Service Bookings</a></li>
+            <li><a href="{% url 'inventory:motorcycle-list' %}">All Motorcycles</a></li>
             <li class="nav-section">
                 <h3>Settings</h3>
                 <ul class="reset-list">{# Added .reset-list #}
@@ -30,9 +31,9 @@
             </li>
         </ul>
     </aside>
-    <main class="admin-content">
+    <main class="admin-layout-content">
         {% if messages %}
-            <ul class="reset-list messages">{# Added .reset-list #}
+            <ul class="reset-list admin-layout-messages">{# Added .reset-list #}
                 {% for message in messages %}
                     <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
                 {% endfor %}
