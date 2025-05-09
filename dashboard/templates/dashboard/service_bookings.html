@@ -142,16 +142,17 @@
 
 
             // --- Interactivity (Using the interaction plugin) ---
-            dateClick: function(info) {
-                // This function is called when a date is clicked
-                console.log('Date clicked:', info.dateStr);
-                // Redirect to your day view
-                const year = info.date.getFullYear();
-                const month = info.date.getMonth() + 1; // Month is 0-indexed
-                const day = info.date.getDate();
-                // You might want to add logic here to prevent redirecting if the date is blocked
-                window.location.href = `/dashboard/service-bookings/${year}/${month}/${day}/`;
-            },
+            // The dateClick function has been removed to make days non-clickable.
+            // dateClick: function(info) {
+            //     // This function is called when a date is clicked
+            //     console.log('Date clicked:', info.dateStr);
+            //     // Redirect to your day view
+            //     const year = info.date.getFullYear();
+            //     const month = info.date.getMonth() + 1; // Month is 0-indexed
+            //     const day = info.date.getDate();
+            //     // You might want to add logic here to prevent redirecting if the date is blocked
+            //     window.location.href = `/dashboard/service-bookings/${year}/${month}/${day}/`;
+            // },
 
             eventClick: function(info) {
                 // This function is called when an event (booking) is clicked
