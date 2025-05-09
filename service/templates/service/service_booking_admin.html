@@ -334,6 +334,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/service_details.js' %}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const customerTypeRadios = document.querySelectorAll('input[name="customer_type"]');

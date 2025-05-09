@@ -139,10 +139,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initializes admin booking form for anonymous customers
-    console.log("Admin booking form for anonymous/one-off customers initialized.");
-});
-</script>
+<script src="{% static 'js/service_booking_admin_anon.js' %}"></script>
 {% endblock %}

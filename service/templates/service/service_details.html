@@ -1,82 +1,71 @@
-{# templates/service_booking/service_details.html #}
-{% extends 'core/layout.html' %} {# Assuming you have a base template #}
-{% load static %} {# Load the static files tag #}
+{% extends 'core/layout.html' %}
+{% load static %}
 
 {% block title %}Book Service - Step 1{% endblock %}
 
 {% block extra_css %}
     {# Include Flatpickr CSS #}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    {# Optional: Include a theme CSS if you like #}
-    {# <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css"> #}
-    <style>
-        /* Add some basic styling for required fields */
-        .form-group label.required::after {
-            content: "*";
-            color: red;
-            margin-left: 5px;
-        }
-        /* Style for disabled time slot dropdown */
-        #id_drop_off_time:disabled {
-            background-color: #e9ecef; /* Bootstrap disabled input color */
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+    <link rel="stylesheet" href="{% static 'css/service_booking_styles.css' %}">
+
+
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Book Service - Step {{ step }} of {{ total_steps }}</h2>
+<div class="service-booking-container">
+    <div class="booking-progress">
+        <h2>Book Service - Step {{ step }} of {{ total_steps }}</h2>
+        <span class="step-indicator">Step {{ step }}/{{ total_steps }}</span>
+    </div>
+    
     <hr>
-     {% if messages %}
-        <ul class="messages list-unstyled"> {# Use list-unstyled for basic styling #}
+    
+    {% if messages %}
+    <div class="messages-container">
+        <ul>
             {% for message in messages %}
-                {# Add Bootstrap alert classes based on message tags #}
-                <li class="alert {% if message.tags %} alert-{{ message.tags }}{% endif %}">{{ message }}</li>
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
             {% endfor %}
         </ul>
+    </div>
     {% endif %}
+    
     <form method="post">
         {% csrf_token %}
 
-        {# Manually render form fields for more control #}
-        <div class="form-group">
+        <div class="form-field">
             {{ form.service_type.label_tag }}
             {{ form.service_type }}
             {% if form.service_type.errors %}
                 {% for error in form.service_type.errors %}
-                    <small class="form-text text-danger">{{ error }}</small>
+                    <small>{{ error }}</small>
                 {% endfor %}
             {% endif %}
         </div>
 
-        {# Date Selection Field #}
-        <div class="form-group">
+        <div class="form-field">
             {{ form.appointment_date.label_tag }}
-            {{ form.appointment_date }} {# This is the input field for Flatpickr #}
+            {{ form.appointment_date }}
             {% if form.appointment_date.errors %}
                 {% for error in form.appointment_date.errors %}
-                    <small class="form-text text-danger">{{ error }}</small>
+                    <small>{{ error }}</small>
                 {% endfor %}
             {% endif %}
         </div>
 
-        {# Time Slot Selection Field #}
-        <div class="form-group">
+        <div class="form-field">
             {{ form.drop_off_time.label_tag }}
-            {{ form.drop_off_time }} {# This is the select element for time slots #}
+            {{ form.drop_off_time }}
             {% if form.drop_off_time.errors %}
                 {% for error in form.drop_off_time.errors %}
-                    <small class="form-text text-danger">{{ error }}</small>
+                    <small>{{ error }}</small>
                 {% endfor %}
             {% endif %}
-            {# Add a loading indicator or message for time slots #}
-            <small id="timeSlotHelp" class="form-text text-muted">Select a date first to see available times.</small>
+            <small id="timeSlotHelp">Select a date first to see available times.</small>
         </div>
 
-         {# Removed Booking Comments Field from Step 1 - Removing the entire block #}
-
-
-        <button type="submit" class="btn btn-primary mt-3">Next: Vehicle Details</button>
+        <button type="submit">Next: Vehicle Details</button>
     </form>
 </div>
 {% endblock %}
@@ -84,177 +73,6 @@
 {% block extra_js %}
     {# Include Flatpickr JS #}
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Get context data from the Django template and explicitly parse JSON
-            let blockedDateRanges = [];
-            try {
-                // Ensure blockedDateRangesJson is treated as a string before parsing
-                const blockedDateRangesJson = "{{ blocked_date_ranges_json|escapejs }}";
-                if (blockedDateRangesJson && blockedDateRangesJson.trim() !== '' && blockedDateRangesJson.trim() !== '[]') { // Only parse if not empty or empty JSON string
-                    blockedDateRanges = JSON.parse(blockedDateRangesJson);
-                    // Flatpickr expects an array, double check if parsing resulted in an array
-                    if (!Array.isArray(blockedDateRanges)) {
-                        console.error("Blocked date ranges data is not an array:", blockedDateRanges);
-                        blockedDateRanges = []; // Reset to empty array if parsing failed or data is wrong
-                    }
-                }
-            } catch (e) {
-                console.error("Error parsing blocked date ranges JSON:", e);
-                blockedDateRanges = []; // Reset to empty array if parsing fails
-            }
-
-
-            const minDate = "{{ min_date }}";
-            const maxDate = "{{ max_date }}";
-
-            let initialAvailableTimeSlots = [];
-            try {
-                 // Ensure availableTimeSlotsJson is treated as a string before parsing
-                const availableTimeSlotsJson = "{{ available_time_slots_json|escapejs }}";
-                 if (availableTimeSlotsJson && availableTimeSlotsJson.trim() !== '' && availableTimeSlotsJson.trim() !== '[]') { // Only parse if not empty or empty JSON string
-                    initialAvailableTimeSlots = JSON.parse(availableTimeSlotsJson);
-                     // Ensure the parsed data is an array
-                     if (!Array.isArray(initialAvailableTimeSlots)) {
-                         console.error("Initial available time slots data is not an array:", initialAvailableTimeSlots);
-                         initialAvailableTimeSlots = []; // Reset if not an array
-                     }
-                 }
-            } catch (e) {
-                console.error("Error parsing initial available time slots JSON:", e);
-                initialAvailableTimeSlots = []; // Reset if parsing fails
-            }
-
-
-            const dateInput = document.getElementById('id_appointment_date');
-            const timeSelect = document.getElementById('id_drop_off_time');
-            const timeSlotHelp = document.getElementById('timeSlotHelp');
-
-            // Initialize Flatpickr
-            const fp = flatpickr(dateInput, {
-                dateFormat: "Y-m-d", // Match the date format used in the backend
-                altFormat: "F j, Y", // Nicer format for display (optional)
-                altInput: false, // Set to true if you want a separate display input
-                minDate: minDate,
-                maxDate: maxDate,
-                disable: blockedDateRanges, // Use the parsed and validated blocked dates
-                onChange: function(selectedDates, dateStr, instance) {
-                    // This function fires when a new date is selected
-                    if (selectedDates.length > 0) {
-                        const selectedDate = dateStr; // dateStr is the formatted date (Y-m-d)
-                        fetchAvailableTimeSlots(selectedDate);
-                    } else {
-                        // If date is cleared, disable time select and clear options
-                        timeSelect.innerHTML = '<option value="">Select a date first</option>';
-                        timeSelect.disabled = true;
-                        timeSlotHelp.textContent = 'Select a date first to see available times.';
-                    }
-                }
-            });
-
-            // Function to fetch available time slots via AJAX
-            function fetchAvailableTimeSlots(date) {
-                // Show a loading indicator or message
-                timeSelect.innerHTML = '<option value="">Loading slots...</option>';
-                timeSelect.disabled = true;
-                timeSlotHelp.textContent = 'Loading available times...';
-
-                // Construct the URL for the AJAX endpoint
-                const url = "{% url 'service:get_available_slots_ajax' %}?date=" + date;
-
-                fetch(url)
-                    .then(response => {
-                        if (!response.ok) {
-                            // Log the response text for better debugging in case of non-JSON error
-                            response.text().then(text => {
-                                console.error('Network response was not ok:', response.status, text);
-                            });
-                            throw new Error('Network response was not ok ' + response.statusText);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                         // Check if data and data.available_slots exist and is an array
-                        if (data && Array.isArray(data.available_slots)) {
-                             populateTimeSlots(data.available_slots);
-                         } else {
-                             console.error('Invalid data structure received for available slots:', data);
-                             timeSelect.innerHTML = '<option value="">Error loading slots</option>';
-                             timeSelect.disabled = true;
-                             timeSlotHelp.textContent = 'Could not load available times due to data error.';
-                         }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching time slots:', error);
-                        timeSelect.innerHTML = '<option value="">Error loading slots</option>';
-                        timeSelect.disabled = true;
-                        timeSlotHelp.textContent = 'Could not load available times. Please try again.';
-                        // Optionally, add a message to the user via the messages framework or similar
-                    });
-            }
-
-            // Function to populate the time slot select element
-            function populateTimeSlots(slots) {
-                timeSelect.innerHTML = ''; // Clear existing options
-                if (slots.length > 0) {
-                    // Add a default "Select a time" option
-                    const defaultOption = document.createElement('option');
-                    defaultOption.value = '';
-                    defaultOption.textContent = '-- Select a time --';
-                    timeSelect.appendChild(defaultOption);
-
-                    slots.forEach(slot => {
-                        const option = document.createElement('option');
-                        option.value = slot.value; // e.g., "09:00"
-                        option.textContent = slot.text; // e.g., "09:00 AM" or "9:00 AM" (based on backend formatting)
-                        timeSelect.appendChild(option);
-                    });
-                    timeSelect.disabled = false; // Enable the select element
-                    timeSlotHelp.textContent = ''; // Clear help text
-                } else {
-                    const noSlotsOption = document.createElement('option');
-                    noSlotsOption.value = '';
-                    noSlotsOption.textContent = 'No times available for this date';
-                    timeSelect.appendChild(noSlotsOption);
-                    timeSelect.disabled = true; // Keep the select element disabled
-                    timeSlotHelp.textContent = 'No available times on this date.';
-                }
-
-                // If there's an initial time slot from the session, select it
-                // Ensure the initial value is set AFTER populating the options
-                const initialTime = "{{ form.drop_off_time.value|default:'' }}"; // Get initial value from form
-                 if (initialTime) {
-                     // Find the option with the matching value and select it
-                     const optionToSelect = timeSelect.querySelector(`option[value="${initialTime}"]`);
-                     if (optionToSelect) {
-                          timeSelect.value = initialTime;
-                     } else {
-                         // If the initial time is not in the available slots for the date,
-                         // you might want to handle this (e.g., show an error or clear the value)
-                         console.warn(`Initial time ${initialTime} is not available for the selected date.`);
-                         // Optionally clear the value:
-                         // timeSelect.value = '';
-                     }
-                 }
-            }
-
-            // Initial population of time slots if a date is already selected (e.g., form has errors or returning)
-            // Check if there are initial available slots passed from the backend (means date was in session/post)
-            if (initialAvailableTimeSlots.length > 0) {
-                 populateTimeSlots(initialAvailableTimeSlots);
-                 // Set the initial date value in Flatpickr if it exists in the form's initial data
-                 const initialDate = dateInput.value; // Get the date value from the form input
-                 if(initialDate) {
-                     fp.setDate(initialDate); // Set the date in Flatpickr
-                 }
-            } else {
-                 // Initially disable the time select until a date is chosen
-                 timeSelect.disabled = true;
-                 timeSelect.innerHTML = '<option value="">Select a date first</option>';
-                 timeSlotHelp.textContent = 'Select a date first to see available times.';
-            }
-
-
-        });
-    </script>
+    {# Link to your custom JavaScript file #}
+<script src="{% static 'js/service_details.js' %}"></script>    
 {% endblock %}
