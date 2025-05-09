@@ -12,6 +12,7 @@ from .dashboard import (
     add_service_type,
     settings_visibility,
     edit_about_page,
+    toggle_service_type_active_status
 )
 
 # Import booking views and the helper function from the new bookings.py file

@@ -16,6 +16,7 @@ from .views.dashboard import (
     add_service_type,
     edit_service_type,
     delete_service_type,
+    toggle_service_type_active_status
 )
 
 # Import booking views from the new bookings.py file (via __init__.py)
@@ -56,4 +57,6 @@ urlpatterns = [
     path('settings/service-types/add/', add_service_type, name='add_service_type'),
     path('settings/service-types/edit/<int:pk>/', edit_service_type, name='edit_service_type'),
     path('settings/service-types/delete/<int:pk>/', delete_service_type, name='delete_service_type'),
+     path('settings/service-types/toggle-active/<int:pk>/', toggle_service_type_active_status, name='toggle_service_type_active_status'),
+    
 ]

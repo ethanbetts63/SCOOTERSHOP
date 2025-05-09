@@ -243,3 +243,24 @@ def edit_about_page(request):
         'active_tab': 'about_page'
     }
     return render(request, 'dashboard/edit_about_page.html', context)
+
+    # Add import at the top:
+from django.http import JsonResponse
+
+@user_passes_test(is_staff_check)
+def toggle_service_type_active_status(request, pk):
+    # Ensure only POST requests are accepted
+    if request.method == 'POST':
+        service_type = get_object_or_404(ServiceType, pk=pk)
+        # Toggle the is_active status
+        service_type.is_active = not service_type.is_active
+        service_type.save()
+
+        status_text = "activated" if service_type.is_active else "deactivated"
+        messages.success(request, f"Service type '{service_type.name}' has been {status_text}.")
+
+        # Return a success response (AJAX)
+        return JsonResponse({'status': 'success', 'is_active': service_type.is_active, 'message': f"Service type '{service_type.name}' has been {status_text}."})
+    else:
+        # Return Method Not Allowed for non-POST requests
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
