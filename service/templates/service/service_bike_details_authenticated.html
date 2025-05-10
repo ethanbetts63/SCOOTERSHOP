@@ -1,10 +1,11 @@
 {% extends 'core/layout.html' %}
+
 {% load static %}
 
 {% block title %}Book Service - Step 2{% endblock %}
 
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
+<link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -20,13 +21,12 @@
     <div class="messages-container">
         <ul>
             {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
             {% endfor %}
         </ul>
     </div>
     {% endif %}
 
-    {# Selection container - for choosing existing motorcycles or initiating add new #}
     <div id="selection-container" {% if display_motorcycle_details %}style="display: none;"{% endif %}>
         <div class="motorcycle-selection-card">
             <h4 class="section-heading">Select or Add Your Motorcycle</h4>
@@ -39,57 +39,46 @@
             </p>
 
             {% if has_existing_bikes %}
-                {# Form for selecting an existing bike #}
-                <form method="post" id="existing-bike-form">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="select_existing">
-
-                    {# Manually loop through existing_bike_form fields #}
-                    <div class="form-fields-container">
-                        {% for field in existing_bike_form %}
-                            <div class="form-field">
-                                {# Manual label construction to include required indicator inside #}
-                                <label for="{{ field.id_for_label }}">
-                                    {{ field.label }}
-                                    {% if field.field.required %}<span class="required-indicator">*</span>{% endif %}
-                                </label>
-                                {{ field }}
-                                {% if field.help_text %}
-                                    <small id="{{ field.id_for_label }}_help" class="help-text">{{ field.help_text }}</small>
-                                {% endif %}
-                                {% if field.errors %}
-                                    {% for error in field.errors %}
-                                        <small class="error-text">{{ error }}</small>
-                                    {% endfor %}
-                                {% endif %}
-                            </div>
-                        {% endfor %}
+            <form method="post" id="existing-bike-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="select_existing">
+                <div class="form-fields-container">
+                    {% for field in existing_bike_form %}
+                    <div class="form-field">
+                        <label for="{{ field.id_for_label }}">
+                            {{ field.label }}{% if field.field.required %}<span class="required-indicator">*</span>{% endif %}
+                        </label>
+                        {{ field }}
+                        {% if field.help_text %}
+                        <small id="{{ field.id_for_label }}_help" class="help-text">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% if field.errors %}
+                            {% for error in field.errors %}
+                            <small class="error-text">{{ error }}</small>
+                            {% endfor %}
+                        {% endif %}
                     </div>
-
-                    <div class="button-group">
-                        <button type="submit" class="btn-primary" id="continue-selected-button">Continue with Selected Motorcycle</button>
-                        <button type="button" id="add-new-button" class="btn-secondary">Add New Motorcycle</button>
-                    </div>
-                </form>
-            {% else %}
-                {# If no existing bikes, show the Add New button directly #}
-                <div class="button-group">
-                    <button type="button" id="add-new-button" class="btn-primary">Add Your First Motorcycle</button>
+                    {% endfor %}
                 </div>
+                <div class="button-group">
+                    <button type="submit" class="btn-primary" id="continue-selected-button">Continue with Selected Motorcycle</button>
+                    <button type="button" id="add-new-button" class="btn-secondary">Add New Motorcycle</button>
+                </div>
+            </form>
+            {% else %}
+            <div class="button-group">
+                <button type="button" id="add-new-button" class="btn-primary">Add Your First Motorcycle</button>
+            </div>
             {% endif %}
         </div>
     </div>
 
-    {# Details container - for adding new or editing existing motorcycles #}
     <div id="motorcycle-details-container" {% if not display_motorcycle_details %}style="display: none;"{% endif %}>
         <form method="post" id="motorcycle-form">
             {% csrf_token %}
-            {# The action input will be set by JavaScript based on user interaction or initial state #}
             <input type="hidden" name="action" value="{% if editing_motorcycle %}edit_existing{% else %}add_new{% endif %}">
-
-            {# Only include motorcycle_id when editing #}
             {% if editing_motorcycle and editing_motorcycle.pk %}
-                <input type="hidden" name="motorcycle_id" value="{{ editing_motorcycle.pk }}">
+            <input type="hidden" name="motorcycle_id" value="{{ editing_motorcycle.pk }}">
             {% endif %}
 
             <div class="form-header">
@@ -102,34 +91,29 @@
                 </h4>
             </div>
 
-            {# The form fields #}
             <div class="form-fields-container">
                 {% for field in motorcycle_form %}
-                    <div class="form-field">
-                        {# Manual label construction to include required indicator inside #}
-                        <label for="{{ field.id_for_label }}">
-                            {{ field.label }}
-                            {% if field.field.required %}<span class="required-indicator">*</span>{% endif %}
-                        </label>
-                        {{ field }}
-                        {% if field.help_text %}
-                            <small id="{{ field.id_for_label }}_help" class="help-text">{{ field.help_text }}</small>
-                        {% endif %}
-                        {% if field.errors %}
-                            {% for error in field.errors %}
-                                <small class="error-text">{{ error }}</small>
-                            {% endfor %}
-                        {% endif %}
-                    </div>
+                <div class="form-field">
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}{% if field.field.required %}<span class="required-indicator">*</span>{% endif %}
+                    </label>
+                    {{ field }}
+                    {% if field.help_text %}
+                    <small id="{{ field.id_for_label }}_help" class="help-text">{{ field.help_text }}</small>
+                    {% endif %}
+                    {% if field.errors %}
+                        {% for error in field.errors %}
+                        <small class="error-text">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
                 {% endfor %}
             </div>
 
             <div class="button-group between">
                 {% if has_existing_bikes %}
-                    <button type="button" id="back-to-selection" class="btn-secondary">Back to Selection</button>
+                <button type="button" id="back-to-selection" class="btn-secondary">Back to Selection</button>
                 {% endif %}
-
-                {# Button text changes based on mode #}
                 <button type="submit" class="btn-primary">
                     {% if editing_motorcycle %}
                         Save & Continue
@@ -144,12 +128,8 @@
 {% endblock %}
 
 {% block extra_js %}
-
-
-{# Include the improved JavaScript - separate to improve maintainability #}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Get DOM elements
     const selectionContainer = document.getElementById('selection-container');
     const motorcycleDetailsContainer = document.getElementById('motorcycle-details-container');
     const addNewButton = document.getElementById('add-new-button');
@@ -158,39 +138,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const motorcycleForm = document.getElementById('motorcycle-form');
     const continueSelectedButton = document.getElementById('continue-selected-button');
     const detailsHeadingParagraph = document.getElementById('motorcycle-details-heading-paragraph');
-
     const actionInput = motorcycleForm ? motorcycleForm.querySelector('input[name="action"]') : null;
 
-    /**
-     * Complete form reset function - properly clears all field types
-     * This is used when switching from viewing an existing bike to adding a new one.
-     */
     function resetMotorcycleForm() {
         if (!motorcycleForm) return;
-
-        // Use native reset
         motorcycleForm.reset();
-
-        // Ensure the action is set to add_new
         if (actionInput) actionInput.value = 'add_new';
-
-        // Remove any motorcycle_id that might exist from editing
         const currentMotorcycleIdInput = motorcycleForm.querySelector('input[name="motorcycle_id"]');
-        if (currentMotorcycleIdInput) {
-            currentMotorcycleIdInput.remove();
-        }
-        
-        // Create a new hidden input with empty value for motorcycle_id
+        if (currentMotorcycleIdInput) currentMotorcycleIdInput.remove();
         const newInput = document.createElement('input');
         newInput.type = 'hidden';
         newInput.name = 'motorcycle_id';
-        newInput.value = ''; // Ensure it's empty
+        newInput.value = '';
         motorcycleForm.appendChild(newInput);
-
-        // IMPORTANT FIX: Explicitly clear all form field values
         const formFields = motorcycleForm.querySelectorAll('input, select, textarea');
         formFields.forEach(field => {
-            // Skip the action and motorcycle_id hidden fields
             if (field.name !== 'action' && field.name !== 'csrfmiddlewaretoken') {
                 if (field.type === 'checkbox' || field.type === 'radio') {
                     field.checked = false;
@@ -198,104 +160,61 @@ document.addEventListener('DOMContentLoaded', function() {
                     field.value = '';
                 }
             }
-            // Clear any validation classes
             field.classList.remove('is-valid', 'is-invalid');
-            
-            // Clear error messages
             const errorSpan = field.parentNode.querySelector('.invalid-feedback, .errorlist');
             if (errorSpan) errorSpan.remove();
         });
-
-        // Update UI text for adding new using the combined element
         if (detailsHeadingParagraph) detailsHeadingParagraph.innerHTML = 'New Motorcycle Details: Please provide the details of your motorcycle.';
-
-        // Update submit button text
         const submitButton = motorcycleForm.querySelector('button[type="submit"]');
         if (submitButton) submitButton.textContent = 'Add Motorcycle & Continue';
     }
 
-    // Event listener for the "Add New Motorcycle" button
     if (addNewButton) {
         addNewButton.addEventListener('click', function() {
-            // Hide selection, show details form
             if (selectionContainer) selectionContainer.style.display = 'none';
             if (motorcycleDetailsContainer) motorcycleDetailsContainer.style.display = 'block';
-
-            // Reset the form completely and set action to add_new
             resetMotorcycleForm();
-
-            // Update the action input value explicitly for the form submission
             if (actionInput) actionInput.value = 'add_new';
-
-            // Update heading and paragraph text using the combined element
             if (detailsHeadingParagraph) detailsHeadingParagraph.innerHTML = 'New Motorcycle Details: Please provide the details of your motorcycle.';
-
-            // Update submit button text
             const submitButton = motorcycleForm.querySelector('button[type="submit"]');
             if (submitButton) submitButton.textContent = 'Add Motorcycle & Continue';
         });
     }
 
-    // Event listener for the "Back to Selection" button
     if (backToSelectionButton) {
         backToSelectionButton.addEventListener('click', function() {
-            // Show selection, hide details form
             if (selectionContainer) selectionContainer.style.display = 'block';
             if (motorcycleDetailsContainer) motorcycleDetailsContainer.style.display = 'none';
-
-            // Reset the details form when going back to selection
             resetMotorcycleForm();
         });
     }
 
-    // Enhanced select element handler in the existing bike form
     const motorcycleSelect = document.querySelector('#existing-bike-form select[name="motorcycle"]');
     if (motorcycleSelect && continueSelectedButton) {
         motorcycleSelect.addEventListener('change', function() {
-            // Enable the submit button only if a motorcycle is selected (value is not empty)
             continueSelectedButton.disabled = this.value === '';
         });
-
-        // Set initial button state based on selection
-        if (motorcycleSelect.value !== '') {
-            continueSelectedButton.disabled = false;
-        } else {
-            continueSelectedButton.disabled = true;
-        }
+        continueSelectedButton.disabled = motorcycleSelect.value === '';
     }
 
-    // Handle initial display based on Django context variables
     const initialDisplayDetails = '{{ display_motorcycle_details|yesno:"true,false" }}' === 'true';
     const initialEditingMotorcycle = '{{ editing_motorcycle|yesno:"true,false" }}' === 'true';
 
     if (initialDisplayDetails) {
-        // If display_motorcycle_details is true initially (means showing details form)
         if (selectionContainer) selectionContainer.style.display = 'none';
         if (motorcycleDetailsContainer) motorcycleDetailsContainer.style.display = 'block';
-
-        // Set initial UI state based on editing vs adding
+        const submitButton = motorcycleForm.querySelector('button[type="submit"]');
         if (initialEditingMotorcycle) {
-            // We're in edit mode - UI text should reflect this
-            const submitButton = motorcycleForm.querySelector('button[type="submit"]');
             if (submitButton) submitButton.textContent = 'Save & Continue';
-
-            // Ensure the form action is set correctly for editing on load if needed
             if (actionInput) actionInput.value = 'edit_existing';
         } else {
-            // We're in add new mode - UI text should reflect this
-            const submitButton = motorcycleForm.querySelector('button[type="submit"]');
             if (submitButton) submitButton.textContent = 'Add Motorcycle & Continue';
-
-            // Ensure the form action is set correctly for adding on load if needed
             if (actionInput) actionInput.value = 'add_new';
         }
     } else {
-        // If display_motorcycle_details is false initially (showing selection)
         if (selectionContainer) selectionContainer.style.display = 'block';
         if (motorcycleDetailsContainer) motorcycleDetailsContainer.style.display = 'none';
-
-        // If we are showing the selection, ensure the details form is reset in the background
-        resetMotorcycleForm(); // Reset the details form whenever selection is shown
+        resetMotorcycleForm();
     }
 });
 </script>
