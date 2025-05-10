@@ -177,7 +177,6 @@ def booking_step2_authenticated(request):
     }
     return render(request, 'service/service_bike_details_authenticated.html', context)
 
-# Handles the second step of booking for anonymous users: vehicle details.
 def booking_step2_anonymous(request):
     settings = SiteSettings.get_settings()
     if not settings.enable_service_booking:
@@ -195,6 +194,7 @@ def booking_step2_anonymous(request):
     if request.method == 'POST':
         form = CustomerMotorcycleForm(request.POST)
         if form.is_valid():
+            # The clean_make method in the form ensures form.cleaned_data['make'] is the name string
             booking_data['anon_vehicle_make'] = form.cleaned_data['make']
             booking_data['anon_vehicle_model'] = form.cleaned_data['model']
             booking_data['anon_vehicle_year'] = form.cleaned_data['year']
@@ -210,9 +210,11 @@ def booking_step2_anonymous(request):
             request.session.modified = True
             return redirect(reverse('service:service_step3_anonymous'))
         else:
+            # If form is invalid, render with errors. The form object
+            # automatically retains the submitted values.
             messages.error(request, "Please correct the errors in the vehicle details.")
             context = {
-                'form': form,
+                'form': form, # Pass the form with errors
                 'step': 2,
                 'total_steps': 3,
                 'is_authenticated': False,
@@ -220,9 +222,21 @@ def booking_step2_anonymous(request):
             }
             return render(request, 'service/service_bike_details_anonymous.html', context)
 
-    else:
+    else: # GET request
+        initial_make_name = booking_data.get('anon_vehicle_make')
+        initial_make_object = None
+        # If a make name was stored in the session, try to get the corresponding ServiceBrand object
+        if initial_make_name:
+             try:
+                 initial_make_object = ServiceBrand.objects.get(name=initial_make_name)
+             except ServiceBrand.DoesNotExist:
+                 # Handle case where the stored name doesn't match a current brand
+                 # You might log this or simply let the initial_make_object remain None
+                 pass # For simplicity, we just let it be None
+
         initial_data = {
-            'make': booking_data.get('anon_vehicle_make'),
+            # Pass the ServiceBrand object as the initial value for the make field
+            'make': initial_make_object,
             'model': booking_data.get('anon_vehicle_model'),
             'year': booking_data.get('anon_vehicle_year'),
             'rego': booking_data.get('anon_vehicle_rego'),

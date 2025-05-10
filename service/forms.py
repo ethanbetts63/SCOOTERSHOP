@@ -11,7 +11,7 @@ from users.models import User
 # Import the BlockedDate model from the dashboard app
 from dashboard.models import BlockedDate
 # Import SiteSettings from dashboard for time slot generation
-from dashboard.models import SiteSettings
+from dashboard.models import SiteSettings, ServiceBrand
 from datetime import timedelta, time
 
 
@@ -319,6 +319,15 @@ class ServiceDetailsForm(forms.Form):
 
 # Model form for customer motorcycles (no changes requested)
 class CustomerMotorcycleForm(forms.ModelForm):
+    # Replace the default 'make' field with ModelChoiceField
+    make = forms.ModelChoiceField(
+        queryset=ServiceBrand.objects.all().order_by('name'), # Get all brands, ordered by name
+        empty_label="--- Select Make ---", # Add a default empty option
+        label="Make", # Keep the label
+        widget=forms.Select(attrs={'class': 'form-control'}), # Apply Bootstrap class
+        required=True # Make the make selection required
+    )
+
     class Meta:
         model = CustomerMotorcycle
         fields = ['make', 'model', 'year', 'rego', 'odometer', 'vin_number', 'transmission']
@@ -328,17 +337,24 @@ class CustomerMotorcycleForm(forms.ModelForm):
             'odometer': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
             'rego': forms.TextInput(attrs={'class': 'form-control'}),
             'vin_number': forms.TextInput(attrs={'class': 'form-control'}),
-            'make': forms.TextInput(attrs={'class': 'form-control'}),
-            'model': forms.TextInput(attrs={'class': 'form-control'}),
+            'model': forms.TextInput(attrs={'class': 'form-control'}), # Still need widget for model
         }
 
-    # Clean the rego field
+    # Override the clean_make method to return the *name* string
+    # instead of the ServiceBrand object. This minimizes changes to the view logic
+    # that stores data in the session.
+    def clean_make(self):
+        service_brand = self.cleaned_data.get('make')
+        if service_brand:
+            return service_brand.name # Return the name string
+        return None # Should not happen if required=True, but good practice
+
+    # Keep your existing clean methods
     def clean_rego(self):
          if self.cleaned_data.get('rego'):
              return self.cleaned_data['rego'].upper()
          return self.cleaned_data.get('rego')
 
-    # Clean the vin_number field
     def clean_vin_number(self):
          return self.cleaned_data.get('vin_number')
 
