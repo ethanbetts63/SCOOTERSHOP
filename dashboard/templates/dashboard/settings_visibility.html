@@ -16,22 +16,20 @@
 
         <p>Control which features are visible and enabled on your website. Disabled pages will appear blue in the navigation bar from the perspective of an admin account and will not appear at all from the perspective of a user account.</p>
 
-        {% if messages %}
-            <div class="messages-container">
-                <ul>
-                    {% for message in messages %}
-                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endif %}
-
         <form method="post">
             {% csrf_token %}
 
+            {# Added buttons here #}
+            <div class="form-field" style="flex-direction: row; justify-content: flex-end; margin-bottom: 20px;">
+                <button type="button" class="btn-secondary" id="editButton" style="margin-right: 10px;">Edit</button>
+                <button type="submit" id="saveButton">Save Changes</button>
+                <button type="button" class="btn-secondary" id="resetButton" style="margin-left: 10px;">Reset</button>
+            </div>
+            {# End added buttons #}
+
             <div class="form-field">
                 <h3 class="booking-section-title">Feature Visibility</h3>
-                
+
                 <div class="form-check">
                     {{ form.enable_sales_new }}
                     <label class="form-check-label" for="{{ form.enable_sales_new.id_for_label }}">
@@ -165,7 +163,7 @@
 
             <div class="form-field">
                 <h3 class="booking-section-title">Price Display Options</h3>
-                
+
                 <div class="form-check">
                     {{ form.display_new_prices }}
                     <label class="form-check-label" for="{{ form.display_new_prices.id_for_label }}">
@@ -187,7 +185,88 @@
                 </div>
             </div>
 
-            <button type="submit">Save Changes</button>
+            {# Original Save Changes button is replaced by the one in the added div #}
+            {# <button type="submit">Save Changes</button> #}
         </form>
     </div>
+
+{# Added extra_js block #}
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const editButton = document.getElementById('editButton');
+        const saveButton = document.getElementById('saveButton');
+        const resetButton = document.getElementById('resetButton');
+        // Select form fields within this specific form
+        const mainForm = document.querySelector('form[method="post"]');
+        const formFields = mainForm.querySelectorAll('input, select, textarea');
+
+        // Function to set form fields read-only or enabled
+        function setFormReadonly(readonly) {
+            formFields.forEach(field => {
+                if (readonly) {
+                    field.setAttribute('readonly', true);
+                    // Prevent checkbox interaction when read-only
+                    if (field.type === 'checkbox' || field.tagName === 'SELECT') {
+                         field.setAttribute('disabled', true);
+                    }
+                } else {
+                    field.removeAttribute('readonly');
+                     if (field.type === 'checkbox' || field.tagName === 'SELECT') {
+                        field.removeAttribute('disabled');
+                    }
+                }
+            });
+        }
+
+        // Initial state: only show Edit button, form fields are read-only
+        saveButton.style.display = 'none';
+        resetButton.style.display = 'none';
+        setFormReadonly(true);
+
+        // When Edit button is clicked
+        editButton.addEventListener('click', function() {
+            editButton.style.display = 'none';
+            saveButton.style.display = 'inline-block';
+            resetButton.style.display = 'inline-block';
+            setFormReadonly(false);
+        });
+
+        // When Save Changes or Reset button is clicked
+        function handleSaveOrResetClick() {
+            saveButton.style.display = 'none';
+            resetButton.style.display = 'none';
+            editButton.style.display = 'inline-block';
+             // Form fields will become read-only again *after* the form submission or reset.
+            // For the 'Reset' button, we reset the form before changing button visibility.
+        }
+
+         // Add event listener for Save button (it's a submit button)
+        // The form submission itself will handle the save action.
+        // We attach the click listener to change buttons BEFORE potential submission.
+        saveButton.addEventListener('click', function() {
+             // This will run before the form is submitted
+             // The read-only state will be reset after the page reloads from submission
+        });
+
+        resetButton.addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent the default button click behavior first
+            mainForm.reset(); // Reset the form
+            handleSaveOrResetClick(); // Change button visibility and set form read-only
+            setFormReadonly(true); // Ensure fields are read-only after reset
+        });
+
+        // Re-apply read-only after potential form submission (page load)
+         window.addEventListener('load', function() {
+             setFormReadonly(true);
+         });
+          // Handle the case where the Save button was clicked and the page reloaded without a full navigation
+         if (window.performance && window.performance.getEntriesByType('navigation')[0].type === 'reload') {
+             setFormReadonly(true);
+         }
+    });
+</script>
+{% endblock %}
+{# End added extra_js block #}
+
 {% endblock %}

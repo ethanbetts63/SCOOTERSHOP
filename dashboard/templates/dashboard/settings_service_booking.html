@@ -24,12 +24,21 @@
     </div>
     {% endif %}
 
+    {# Start of the first form for general service settings #}
     <form method="post">
         {% csrf_token %}
 
+        {# Added buttons here, within the first form #}
+        <div class="form-field" style="flex-direction: row; justify-content: flex-end; margin-bottom: 20px;">
+            <button type="button" class="btn-secondary" id="editButton" style="margin-right: 10px;">Edit</button>
+            <button type="submit" id="saveButton" name="service_settings_submit">Save Changes</button> {# Keep the name for submission #}
+            <button type="button" class="btn-secondary" id="resetButton" style="margin-left: 10px;">Reset</button>
+        </div>
+        {# End added buttons #}
+
         <div class="form-field">
             <h3 class="booking-section-title">Booking Options</h3>
-            
+
             <div class="form-field">
                 <div class="form-field">
                     <input type="checkbox" id="{{ form.allow_anonymous_bookings.id_for_label }}" name="{{ form.allow_anonymous_bookings.html_name }}" {% if form.allow_anonymous_bookings.value %}checked{% endif %}>
@@ -67,7 +76,7 @@
 
         <div class="form-field">
             <h3 class="booking-section-title">Booking Time Settings</h3>
-            
+
             <div class="form-field">
                 <label for="{{ form.drop_off_start_time.id_for_label }}">Drop-Off Start Time</label>
                 {{ form.drop_off_start_time }}
@@ -83,7 +92,7 @@
 
         <div class="form-field">
             <h3 class="booking-section-title">Notification Settings</h3>
-            
+
             <div class="form-field">
                 <label for="{{ form.service_confirmation_email_subject.id_for_label }}">Confirmation Email Subject</label>
                 {{ form.service_confirmation_email_subject }}
@@ -103,20 +112,24 @@
             </div>
         </div>
 
-        <button type="submit" name="service_settings_submit">Save Service Settings</button>
+        {# Original Save Service Settings button is replaced by the one in the added div #}
+        {# <button type="submit" name="service_settings_submit">Save Service Settings</button> #}
     </form>
+    {# End of the first form #}
 
     <hr>
 
+    {# Blocked Service Dates section (remains unaffected by the JS for the first form) #}
     <div class="form-field">
         <h3 class="booking-section-title">Blocked Service Dates</h3>
-        
+
         <div class="form-field">
             <h4 class="sub-section-title">Add New Blocked Date or Range:</h4>
-            
+
+            {# This is a separate form for adding blocked dates #}
             <form method="post">
                 {% csrf_token %}
-                
+
                 <div class="form-field">
                     <label for="{{ blocked_date_form.start_date.id_for_label }}">{{ blocked_date_form.start_date.label }}</label>
                     {{ blocked_date_form.start_date }}
@@ -127,7 +140,7 @@
                     {% endif %}
                     <small>{{ blocked_date_form.start_date.help_text }}</small>
                 </div>
-                
+
                 <div class="form-field">
                     <label for="{{ blocked_date_form.end_date.id_for_label }}">{{ blocked_date_form.end_date.label }}</label>
                     {{ blocked_date_form.end_date }}
@@ -138,7 +151,7 @@
                     {% endif %}
                     <small>{{ blocked_date_form.end_date.help_text }}</small>
                 </div>
-                
+
                 <div class="form-field">
                     <label for="{{ blocked_date_form.description.id_for_label }}">{{ blocked_date_form.description.label }}</label>
                     {{ blocked_date_form.description }}
@@ -164,7 +177,7 @@
 
         <div class="form-field">
             <h4 class="sub-section-title">Existing Blocked Dates:</h4>
-            
+
             {% if blocked_dates %}
                 <ul class="blocked-dates-list">
                     {% for date in blocked_dates %}
@@ -179,6 +192,7 @@
                                     - {{ date.description }}
                                 {% endif %}
                             </div>
+                            {# This is a separate form for deleting blocked dates #}
                             <form method="post" class="inline-form">
                                 {% csrf_token %}
                                 <input type="hidden" name="delete_blocked_date" value="{{ date.pk }}">
@@ -192,5 +206,88 @@
             {% endif %}
         </div>
     </div>
+    {# End of Blocked Service Dates section #}
+
 </div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const editButton = document.getElementById('editButton');
+        const saveButton = document.getElementById('saveButton');
+        const resetButton = document.getElementById('resetButton');
+        // Select form fields specifically within the FIRST form on the page
+        const mainForm = document.querySelector('form[method="post"]');
+        const formFields = mainForm.querySelectorAll('input, select, textarea');
+
+        // Function to set form fields read-only or enabled
+        function setFormReadonly(readonly) {
+            formFields.forEach(field => {
+                // Ensure we don't accidentally affect the CSRF token input in the other forms
+                if (field.name !== 'csrfmiddlewaretoken') {
+                    if (readonly) {
+                        field.setAttribute('readonly', true);
+                        // Prevent checkbox interaction when read-only
+                        if (field.type === 'checkbox' || field.tagName === 'SELECT') {
+                            field.setAttribute('disabled', true);
+                        }
+                    } else {
+                        field.removeAttribute('readonly');
+                        if (field.type === 'checkbox' || field.tagName === 'SELECT') {
+                            field.removeAttribute('disabled');
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initial state: only show Edit button, form fields in the first form are read-only
+        saveButton.style.display = 'none';
+        resetButton.style.display = 'none';
+        setFormReadonly(true);
+
+        // When Edit button is clicked
+        editButton.addEventListener('click', function() {
+            editButton.style.display = 'none';
+            saveButton.style.display = 'inline-block';
+            resetButton.style.display = 'inline-block';
+            setFormReadonly(false);
+        });
+
+        // When Save Changes or Reset button is clicked
+        function handleSaveOrResetClick() {
+            saveButton.style.display = 'none';
+            resetButton.style.display = 'none';
+            editButton.style.display = 'inline-block';
+             // Form fields will become read-only again *after* the form submission or reset.
+            // For the 'Reset' button, we reset the form before changing button visibility.
+        }
+
+         // Add event listener for Save button (it's a submit button)
+        // The form submission itself will handle the save action.
+        // We attach the click listener to change buttons BEFORE potential submission.
+        saveButton.addEventListener('click', function() {
+             // This will run before the form is submitted
+             // The read-only state will be reset after the page reloads from submission
+        });
+
+        resetButton.addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent the default button click behavior first
+            mainForm.reset(); // Reset the form
+            handleSaveOrResetClick(); // Change button visibility and set form read-only
+            setFormReadonly(true); // Ensure fields are read-only after reset
+        });
+
+        // Re-apply read-only after potential form submission (page load)
+         window.addEventListener('load', function() {
+             setFormReadonly(true);
+         });
+          // Handle the case where the Save button was clicked and the page reloaded without a full navigation
+         if (window.performance && window.performance.getEntriesByType('navigation')[0].type === 'reload') {
+             setFormReadonly(true);
+         }
+    });
+</script>
+{% endblock %}
+
 {% endblock %}
