@@ -157,47 +157,44 @@ class ServiceBrandManagementViewTest(TestCase):
         # Log in as staff user
         self.client.login(username='staffuser', password='password123')
 
-        # Create a new mock image for this specific test case
+        # Create a small in-memory image
         image_file = io.BytesIO()
-        Image.new('RGB', (10, 10), color = 'blue').save(image_file, 'JPEG')
-        image_file.seek(0)
-        mock_image = SimpleUploadedFile(
-            name='new_primary_image.jpg',
-            content=image_file.read(),
-            content_type='image/jpeg'
-        )
-
-        # Prepare form data
+        Image.new('RGB', (100, 100), color='blue').save(image_file, 'JPEG')
+        image_file.seek(0)  # Reset file pointer
+        
+        # Create form data
         form_data = {
             'name': 'New Primary Brand',
-            'is_primary': True,
-            'add_brand_submit': 'Add'
+            'is_primary': 'on',
+            'add_brand_submit': 'Add',
+            # Include the image file directly in the form data
+            'image': SimpleUploadedFile(
+                'test_image.jpg',
+                image_file.read(),
+                content_type='image/jpeg'
+            )
         }
 
-        form_files = {
-            'image': mock_image # Use the new mock image
-        }
-
-        # Send POST request with files
-        response = self.client.post(self.management_url, form_data, files=form_files)
-
+        # Send POST request with multipart form data
+        response = self.client.post(self.management_url, form_data)
+        
+        # Debug information in case of failure
+        if response.status_code != 302:
+            if 'form' in response.context:
+                print(f"Form errors: {response.context['form'].errors}")
+            else:
+                print("Form not in context")
+        
         # Should redirect after successful addition
-        # The view redirects on successful form submission
         self.assertEqual(response.status_code, 302)
 
-        # Check brand was added as primary and has an image
-        try:
-            new_brand = ServiceBrand.objects.get(name='New Primary Brand')
-            self.assertTrue(new_brand.is_primary)
-            # Check if the image field is populated
-            self.assertTrue(bool(new_brand.image))
-        except ServiceBrand.DoesNotExist:
-            self.fail("Brand was not added.")
-
-        # Clean up the mock image file created by this test if necessary
-        # if new_brand and new_brand.image:
-        #    new_brand.image.delete(save=False)
-
+        # Check if brand was added
+        self.assertTrue(ServiceBrand.objects.filter(name='New Primary Brand').exists())
+        
+        # Verify it's primary and has an image
+        brand = ServiceBrand.objects.get(name='New Primary Brand')
+        self.assertTrue(brand.is_primary)
+        self.assertTrue(brand.image)  # Image field should not be empty
 
     def test_add_primary_brand_without_image_fails(self):
         """Test adding a primary brand without image fails."""
