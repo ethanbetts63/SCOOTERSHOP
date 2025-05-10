@@ -147,12 +147,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Custom User Model
 AUTH_USER_MODEL = 'users.User'
 
-# URLs for login/logout - use namespaced URLs if applicable
-# Assuming your login/logout views are in the users app with 'users' namespace
-# LOGIN_URL = reverse_lazy('users:login') # Example if you have a 'login' URL name
-# LOGOUT_URL = reverse_lazy('users:logout') # Example if you have a 'logout' URL name
-
-# URL to redirect to after successful login - use namespaced URL if applicable
 # Assuming your core index page URL is named 'index' and core app is namespaced 'core'
 LOGIN_REDIRECT_URL = reverse_lazy('core:index') # Recommended
 # URL to redirect to after logging out - use namespaced URL if applicable
