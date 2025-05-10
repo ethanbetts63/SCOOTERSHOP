@@ -1,0 +1,372 @@
+/* =================== SECTION: Motorcycle List Styles =================== */
+
+/* =================== SECTION: General Page Layout =================== */
+/* Styles for the main container with padding and max width */
+.container-fluid.mt-4 {
+    margin-top: 2.5rem !important;
+    max-width: 1400px;
+    padding: 0 2rem;
+}
+
+/* Styles for main headings with bottom margin and accent line */
+h1.mb-4 {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 1.5rem !important;
+    font-size: 2.2rem;
+    position: relative;
+    padding-bottom: 0.75rem;
+}
+
+/* Styles for the accent line after the main heading */
+h1.mb-4:after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 60px;
+    height: 3px;
+    background-color: var(--border-accent);
+}
+
+/* =================== SECTION: Search Options Panel =================== */
+/* Styles for the search options card */
+.search-options .card {
+    background-color: var(--bg-darker);
+    border: none;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    height: 100%;
+}
+
+/* Explicitly remove hover effects for search options card */
+.search-options .card:hover {
+    transform: none !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+/* Styles for the card header in search options */
+.search-options .card-header {
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    background-color: var(--bg-darkest);
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+    padding: 16px 20px;
+}
+
+/* Styles for form labels */
+.form-label {
+    font-size: 0.9rem;
+    letter-spacing: 0.3px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-bottom: 6px;
+    display: block;
+}
+
+/* Styles for form select and control elements */
+.form-select, .form-control {
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    margin-bottom: 0.5rem;
+    transition: all var(--transition-medium);
+}
+
+/* Hover styles for form select and control elements */
+.form-select:hover, .form-control:hover {
+    border-color: var(--border-light);
+}
+
+/* Focus styles for form select and control elements */
+.form-control:focus, .form-select:focus {
+    background-color: var(--bg-highlight);
+    border-color: var(--border-light);
+    color: var(--text-primary);
+    box-shadow: 0 0 0 3px rgba(200, 200, 200, 0.2);
+}
+
+/* Styles for form check labels */
+.form-check-label {
+    color: var(--text-secondary);
+}
+
+/* =================== SECTION: Results Header =================== */
+/* Styles for the results header section */
+.results-header {
+    background-color: var(--bg-darker);
+    padding: 15px;
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-md);
+}
+
+/* Ensures flex properties for horizontal alignment in results header */
+.results-header .d-flex {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+/* Styles for the results count display */
+.results-count {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    padding-left: 10px;
+}
+
+/* Styles for bold text within results count */
+.results-count .fw-bold {
+    color: var(--text-primary);
+}
+
+/* Styles for sort options container */
+.sort-options {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    padding-right: 10px;
+}
+
+/* Styles for form labels within sort options */
+.sort-options .form-label {
+    margin-bottom: 0;
+    margin-right: 8px;
+    display: inline-block;
+}
+
+/* Styles for form select within sort options */
+.sort-options .form-select {
+    width: auto;
+    margin-bottom: 0;
+    padding: 6px 30px 6px 12px;
+    background-color: var(--bg-highlight);
+    min-width: 180px;
+}
+
+/* =================== SECTION: Motorcycle Card Grid =================== */
+/* Styles for the motorcycle grid layout */
+.motorcycle-grid {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -10px;
+}
+
+/* Styles for individual motorcycle items */
+.motorcycle-item {
+    width: 33.33%;
+    padding: 0 10px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+}
+
+/* Styles for the card within motorcycle items */
+.card {
+    transition: transform var(--transition-medium), box-shadow var(--transition-medium);
+    overflow: hidden;
+    height: 100%;
+    background-color: var(--bg-darker);
+    border: none;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+}
+
+/* Hover styles for motorcycle item cards */
+.motorcycle-item:not(.search-options) .card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Styles for the card image at the top */
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+    transition: transform var(--transition-slow);
+    width: 100%;
+}
+
+/* Hover styles for the card image at the top in motorcycle items */
+.motorcycle-item:not(.search-options) .card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+/* Styles for the card body */
+.card-body {
+    padding: 18px;
+}
+
+/* Styles for centered card body text */
+.card-body.text-center {
+    text-align: center;
+}
+
+/* Styles for the card title */
+.card-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 3.2rem;
+}
+
+/* Styles for bold card text */
+.card-text.fw-bold {
+    font-size: 1.25rem;
+    color: var(--color-primary);
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Styles for muted card text */
+.card-text .text-muted {
+    font-size: 0.85rem;
+    color: var(--text-muted) !important;
+}
+
+/* Styles for location card text */
+.card-text.location {
+    margin-top: 8px;
+}
+
+/* =================== SECTION: Motorcycle Details with Icons =================== */
+/* Styles for motorcycle details layout */
+.motorcycle-details {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 -5px 15px -5px;
+    padding: 0;
+}
+
+/* Styles for individual detail items */
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    margin: 0 5px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    width: 33.33%;
+    text-align: center;
+}
+
+/* Styles for detail icons */
+.detail-icon {
+    height: 20px;
+    width: 20px;
+    margin-right: 0;
+    margin-bottom: 4px;
+    opacity: 0.8;
+}
+
+/* Styles for detail labels */
+.detail-label {
+    font-size: 0.75rem;
+    color: var(--text-lighter);
+    margin-bottom: 2px;
+}
+
+/* Styles for detail values */
+.detail-value {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* Styles for badges */
+.badge {
+    padding: 5px 8px;
+    font-weight: 500;
+    margin-right: 5px;
+}
+
+/* Styles for the card footer */
+.card-footer {
+    background-color: rgba(30, 38, 42, 0.7);
+    border-top: 1px solid var(--border-color);
+    padding: 12px 16px;
+    text-align: center;
+}
+
+/* =================== SECTION: Empty State =================== */
+/* Styles for the empty state container */
+.col-12.text-center.py-5 {
+    width: 100%;
+}
+
+/* Styles for heading within empty state */
+.col-12.text-center.py-5 h3 {
+    color: var(--text-lighter);
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+/* Styles for paragraph within empty state */
+.col-12.text-center.py-5 p {
+    color: var(--text-lightest);
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* =================== SECTION: Pagination =================== */
+/* Styles for the pagination container */
+.pagination {
+    margin-top: 2rem;
+}
+
+/* Styles for page links */
+.page-item .page-link {
+    background-color: var(--bg-darker);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+    margin: 0 2px;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-medium);
+}
+
+/* Hover styles for page links */
+.page-item .page-link:hover {
+    background-color: var(--bg-highlight);
+    color: var(--text-primary);
+    border-color: var(--border-light);
+}
+
+/* Styles for active page links */
+.page-item.active .page-link {
+    background-color: var(--btn-bg);
+    border-color: var(--btn-bg);
+    color: #ffffff;
+}
+
+/* =================== SECTION: Responsive Adjustments =================== */
+@media (max-width: 992px) {
+    /* Adjusts motorcycle item width on medium screens */
+    .motorcycle-item {
+        width: 50%;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Adjusts motorcycle item width on small screens */
+    .motorcycle-item {
+        width: 100%;
+    }
+
+    /* Arranges results header elements in a row and allows wrapping on small screens */
+    .results-header .d-flex {
+        flex-direction: row !important;
+        flex-wrap: wrap;
+    }
+
+    /* Adds top margin to sort options on small screens */
+    .sort-options {
+        margin-top: 10px;
+    }
+}

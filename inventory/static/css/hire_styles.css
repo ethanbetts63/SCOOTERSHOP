@@ -1,0 +1,114 @@
+/* =================== SECTION: Hire Page Styles =================== */
+/* Hire page specific styles */
+
+/* Styles for the main hire section container */
+.hire-section {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Styles for headings within the hire section */
+.hire-section h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: var(--text-light);
+}
+
+/* Styles for the container holding hire tiles */
+.hire-tiles-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+/* Styles for individual hire tiles */
+.hire-tile {
+    padding: 25px;
+    margin-top: 30px;
+    flex: 1 1 45%;
+    min-width: 280px;
+}
+
+/* Styles for headings within hire tiles */
+.hire-tile h3 {
+    color: var(--color-primary);
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 10px;
+}
+
+/* Styles for paragraphs within hire tiles */
+.hire-tile p {
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+/* Styles for the hire requirements section */
+.hire-requirements {
+    margin-top: 20px;
+}
+
+/* Styles for headings within hire requirements */
+.hire-requirements h4 {
+    color: var(--text-light);
+    margin-bottom: 12px;
+}
+
+/* Styles for unordered lists within hire requirements */
+.hire-requirements ul li {
+    padding: 8px 0;
+    border-bottom: 1px dotted var(--border-light);
+    display: flex;
+    align-items: center;
+}
+
+/* Styles for the last list item within hire requirements */
+.hire-requirements ul li:last-child {
+    border-bottom: none;
+}
+
+/* Styles for the bullet point pseudo-element in hire requirements list items */
+.hire-requirements ul li:before {
+    content: "•";
+    color: var(--color-primary);
+    font-weight: bold;
+    display: inline-block;
+    width: 1em;
+    margin-right: 10px;
+}
+
+/* Styles for the contact hire section */
+.contact-hire {
+    margin-top: 15px;
+}
+
+/* Styles for contact items within the hire section */
+.contact-hire .contact-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+/* Styles for SVG icons within contact hire items */
+.contact-hire .svg-icon {
+    margin-right: 10px;
+}
+
+/* Styles for the hire note section */
+.hire-note {
+    background-color: var(--bg-highlight);
+    padding: 15px;
+    border-radius: var(--radius-sm);
+    margin-top: 20px;
+    border-left: 3px solid var(--color-primary);
+}
+
+/* =================== SECTION: Responsive Adjustments =================== */
+/* Adjusts hire tile width on smaller screens */
+@media (max-width: 768px) {
+    .hire-tile {
+        flex: 1 1 100%;
+    }
+}

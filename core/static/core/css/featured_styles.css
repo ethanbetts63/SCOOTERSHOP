@@ -1,0 +1,222 @@
+/* =================== SECTION: Featured Listings Structure =================== */
+.detail-featured {
+    grid-area: featured;
+    margin-top: var(--spacing-lg);
+}
+
+.featured-heading {
+    font-size: 1.4rem;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-lg);
+    font-weight: 600;
+    position: relative;
+    padding-bottom: var(--spacing-sm);
+    text-align: center; 
+}
+
+.featured-heading:after {
+    content: "";
+    position: absolute;
+    left: 50%; 
+    transform: translateX(-50%); 
+    bottom: 0;
+    width: 50px;
+    height: 3px;
+    background-color: var(--border-accent);
+}
+
+/* =================== SECTION: Featured Grid Layout =================== */
+.featured-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-lg);
+    justify-content: center;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto; 
+}
+
+@media (max-width: 1200px) {
+    .featured-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 992px) {
+    .featured-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 576px) {
+    .featured-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =================== SECTION: Featured Item Cards =================== */
+.featured-item {
+    transition: transform var(--transition-medium);
+}
+
+.featured-item:not(.no-hover):hover {
+    transform: translateY(-5px);
+}
+
+/* No hover effect for message cards */
+.featured-item.no-hover {
+    transition: none;
+}
+
+.featured-item .card {
+    height: 100%;
+    background-color: var(--bg-darker);
+    border: none;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    transition: box-shadow var(--transition-medium);
+}
+
+.featured-item:not(.no-hover) .card:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.featured-item .card-img-top {
+    height: 150px;
+    object-fit: cover;
+    transition: transform var(--transition-slow);
+    width: 100%; 
+    border-radius: var(--radius-md) var(--radius-md) 0 0; 
+}
+
+.featured-item:not(.no-hover) .card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+/* =================== SECTION: Card Content Styling =================== */
+.featured-item .card-body {
+    padding-top: var(--spacing-xs); 
+    padding-bottom: var(--spacing-sm); 
+}
+
+.featured-item .card-body.d-flex.flex-column {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.featured-item .card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    min-height: auto;
+    text-align: center; /* Center the title */
+}
+
+.featured-item .motorcycle-details {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 -5px 10px -5px;
+}
+
+.featured-item .detail-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 5px;
+    width: 33.33%;
+    text-align: center;
+}
+
+.featured-item .detail-icon {
+    height: 16px;
+    width: 16px;
+    margin-bottom: 2px;
+    opacity: 0.8;
+}
+
+.featured-item .detail-value {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.featured-item .card-text.fw-bold {
+    font-size: 1.15rem;
+    color: var(--highlight-color);
+    margin-top: 0.5rem;
+    margin-bottom: 5px;
+    text-align: center; 
+}
+
+.featured-item .card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+}
+
+/* =================== SECTION: Message Card Styling =================== */
+.message-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.message-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    background-color: var(--bg-darkest);
+    border: 2px solid var(--border-accent);
+}
+
+.message-content .card-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-lg);
+}
+
+.message-content .card-title {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--highlight-color);
+    text-align: center;
+    line-height: 1.4;
+    overflow: visible;
+    text-overflow: initial;
+    display: block;
+    -webkit-line-clamp: initial;
+    -webkit-box-orient: initial;
+    white-space: normal;
+    margin-bottom: var(--spacing-md);
+}
+
+/* Override any inherited styles from parent elements that might cause truncation */
+.featured-item .card-title {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: initial;
+    display: block;
+    -webkit-line-clamp: initial;
+    -webkit-box-orient: initial;
+}
+
+/* Button spacing in message card */
+.message-content .btn-primary {
+    margin-top: var(--spacing-md);
+}
+
+/* Utility classes */
+.mt-3 {
+    margin-top: 15px;
+}

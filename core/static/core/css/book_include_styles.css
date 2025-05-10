@@ -1,0 +1,123 @@
+/* =================== SECTION: Service Booking Styles =================== */
+/* Styles for the service booking container */
+.book-service-container {
+    margin: 40px auto;
+}
+
+/* Styles for the service booking card */
+.service-booking-card {
+    background-color: var(--bg-darker);
+    border-left: 4px solid var(--color-primary);
+    transition: all var(--transition-medium);
+}
+
+/* Background effect for the service booking card */
+.service-booking-card::before {
+    background-image: url('../images/service_bg.png');
+    background-position: right center;
+    opacity: 0.1;
+}
+
+/* Hover effect for the service booking card */
+.service-booking-card:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+/* Styles for the booking title */
+.booking-title {
+    color: var(--text-light);
+    font-size: 1.8rem;
+    border-bottom: none;
+    margin-bottom: 20px;
+    padding-bottom: 0;
+}
+
+/* Styles for the booking form container */
+.booking-form-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+/* Styles for the booking form */
+.booking-form {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: stretch;
+}
+
+/* Styles for the service type select dropdown */
+.service-type-select {
+    flex: 1;
+    min-width: 250px;
+    font-size: 1rem;
+    padding: 12px;
+    background-color: var(--bg-dark);
+}
+
+/* Styles for the book now button */
+.book-now-btn {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 30px;
+    background-color: var(--color-primary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+/* Hover styles for the book now button */
+.book-now-btn:hover {
+    background-color: #6ebb70; /* Slightly darker shade of the primary color */
+    transform: translateY(-2px);
+}
+
+/* Styles for the service info container */
+.service-info-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+/* Specific icon definition for info */
+.icon-info {
+    background-image: url('../images/svgs/info.svg');
+    flex-shrink: 0;
+}
+
+/* Styles for the service info link */
+.service-info-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+    font-size: 0.9rem;
+}
+
+/* Hover styles for the service info link */
+.service-info-link:hover {
+    color: var(--text-light);
+    text-decoration: underline;
+}
+
+/* =================== SECTION: Responsive Styles =================== */
+@media (max-width: 768px) {
+    /* Make the form stack on smaller screens */
+    .booking-form {
+        flex-direction: column;
+    }
+    
+    /* Adjust button width on smaller screens */
+    .book-now-btn {
+        width: 100%;
+        padding: 12px;
+    }
+    
+    /* Adjust title size on smaller screens */
+    .booking-title {
+        font-size: 1.5rem;
+    }
+}

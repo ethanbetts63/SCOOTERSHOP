@@ -1,0 +1,274 @@
+/* =================== SECTION: Form Card Structure =================== */
+/* Styles for the card header */
+.card-header {
+    background-color: var(--bg-darkest);
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+    padding: 16px 20px;
+}
+
+/* Styles for headings within the card header */
+.card-header h4, .card-header h5 {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Styles for the card body */
+.card-body {
+    padding: 24px;
+}
+
+/* Add more space between the main form card sections */
+/* Targets card elements within the container with mb-4 class */
+.container .card.mb-4 {
+    margin-bottom: 30px; /* Adjust this value as needed for more space */
+}
+
+
+/* =================== SECTION: Form Elements =================== */
+/* Styles for form labels */
+.form-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-bottom: 10px; /* Increased space below the label */
+    display: inline-block; /* Changed to inline-block to be on the same line as asterisk */
+    vertical-align: top; /* Align label to the top */
+}
+
+/* Styles for form controls and select elements */
+.form-control, .form-select {
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+}
+
+/* Adds bottom margin */
+/* Note: .mb-4 rule above specifically targets cards for more space */
+.mb-3 {
+    margin-bottom: var(--spacing-lg) !important;
+}
+
+/* Focus styles for form controls and select elements */
+.form-control:focus, .form-select:focus {
+    background-color: var(--bg-highlight);
+    border-color: var(--border-light);
+    color: var(--text-primary);
+    box-shadow: 0 0 0 3px rgba(200, 200, 200, 0.2);
+}
+
+/* Styles for form helper text */
+.form-text {
+    color: var(--text-muted);
+}
+
+/* Styles for form check inputs (checkboxes/radios) */
+.form-check-input {
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-light);
+}
+
+/* Styles for checked form check inputs */
+.form-check-input:checked {
+    background-color: #606060;
+    border-color: #606060;
+}
+
+/* Styles for form check labels */
+.form-check-label {
+    color: var(--text-secondary);
+}
+
+/* =================== SECTION: Section Headers =================== */
+/* Styles for section headings */
+h5 {
+    color: var(--text-light);
+    font-weight: 600;
+    margin-top: var(--spacing-sm);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: var(--spacing-lg);
+}
+
+/* =================== SECTION: Page Headings =================== */
+/* Styles for main page headings */
+h1.mb-4, h1.h3, h1.h4 {
+    color: var(--text-light);
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+}
+
+/* =================== SECTION: Alerts =================== */
+/* Styles for danger alerts */
+.alert-danger {
+    background-color: rgba(150, 75, 75, 0.2);
+    border-color: rgba(150, 75, 75, 0.3);
+    color: #e0a0a0;
+    margin-bottom: var(--spacing-lg);
+}
+
+/* =================== SECTION: Images =================== */
+/* Styles for image thumbnails */
+.img-thumbnail {
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+}
+
+/* =================== SECTION: Form Layout =================== */
+/* Styles for form rows */
+.row {
+    margin-bottom: var(--spacing-sm);
+}
+
+/* Styles for description labels */
+label[for*="description"] {
+    display: block;
+    width: 100%;
+    text-align: left;
+    margin-bottom: 6px;
+}
+
+/* Styles for description textareas */
+textarea#id_description {
+    width: 100%;
+    min-height: 100px;
+}
+
+/* Styles for button groups with spacing */
+.mt-4.d-flex.gap-2 {
+    align-items: center;
+}
+
+/* Styles for buttons within button groups */
+.mt-4.d-flex.gap-2 .btn {
+    margin: 0;
+}
+
+/* =================== SECTION: Multiple Image Upload Styles =================== */
+/* Styles for the multiple image upload area */
+#multipleImageUploadArea {
+    background-color: var(--bg-dark);
+    border: 1px dashed var(--border-light);
+    transition: all var(--transition-medium);
+}
+
+/* Hover styles for the multiple image upload area */
+#multipleImageUploadArea:hover {
+    background-color: var(--bg-highlight);
+    border-color: #606060;
+}
+
+/* Styles for image preview cards */
+#imagePreviewsContainer .card {
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    transition: all var(--transition-medium);
+}
+
+/* Hover styles for image preview cards */
+#imagePreviewsContainer .card:hover {
+    background-color: var(--bg-highlight);
+    border-color: var(--border-light);
+}
+
+/* Styles for items marked for deletion */
+.marked-for-deletion {
+    opacity: 0.5;
+    background-color: rgba(150, 75, 75, 0.1);
+    border: 1px solid rgba(150, 75, 75, 0.3) !important;
+}
+
+/* =================== SECTION: Condition Section Styles =================== */
+/* Styles for the condition section */
+.condition-section {
+    background-color: var(--bg-dark);
+    padding: 18px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 24px;
+    border: 1px solid var(--border-color);
+}
+
+/* Styles for condition checkboxes layout */
+.condition-checkboxes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+/* =================== SECTION: Hire Rates Section =================== */
+/* Styles for the hire rates section (hidden by default) */
+.hire-rates-section {
+    display: none;
+}
+
+/* Styles for the visible hire rates section */
+.hire-rates-section.visible {
+    display: block;
+    background-color: var(--bg-dark);
+    padding: 18px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 24px;
+    border-left: 4px solid #606060;
+}
+
+/* =================== SECTION: Required Field Indicator =================== */
+/* Styles for the required field indicator */
+.required-indicator {
+    color: #e27474;
+    font-weight: bold;
+    display: inline-block; /* Ensure it's inline-block */
+    margin-right: 4px; /* Add some space between the asterisk and the label */
+    vertical-align: top; /* Align to the top */
+}
+
+/* =================== SECTION: Disabled Checkboxes =================== */
+/* Styles for disabled form check inputs */
+.form-check-input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* =================== SECTION: Card Layout Variations =================== */
+/* Styles for nested cards */
+.card .card {
+    box-shadow: var(--shadow-sm);
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Styles for darkest background */
+.bg-darkest {
+    background-color: var(--bg-darkest);
+}
+
+/* =================== SECTION: Button Adjustments =================== */
+/* Styles for button grid with spacing */
+.d-grid.gap-2 {
+    margin-top: var(--spacing-lg);
+}
+
+/* =================== SECTION: Responsive Styles =================== */
+@media (max-width: 768px) {
+    /* Adjusts card margin on smaller screens */
+    .card {
+        margin: 15px 0;
+    }
+
+    /* Adjusts image preview column width on smaller screens */
+    #imagePreviewsContainer .col-md-3 {
+        width: 50%;
+    }
+
+    /* Stacks condition checkboxes vertically on smaller screens */
+    .condition-checkboxes {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Adjusts image preview column width on extra small screens */
+    #imagePreviewsContainer .col-md-3 {
+        width: 100%;
+    }
+}

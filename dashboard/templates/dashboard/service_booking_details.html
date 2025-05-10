@@ -2,10 +2,7 @@
 {% load static %}
 
 {% block admin_main_content %}
-{# Link to the form_styles.css for consistent form-like appearance #}
-{# Ensure you have collected static files so Django can find form_styles.css #}
 <link rel="stylesheet" href="{% static 'css/form_styles.css' %}">
-
 
 <div class="container mt-4"> {# Added a container for basic page structure and spacing #}
     <h2 class="section-title">Service Booking Details</h2> {# Applied section-title class for consistent heading style #}
@@ -50,7 +47,7 @@
             </div>
             <div class="card-body">
                 <p><strong>Service Type:</strong> {{ booking.service_type.name }}</p>
-                <p><strong>Appointment Date and Time:</strong> {{ booking.appointment_date }}</p>
+                <p><strong>Appointment Date and Time:</strong> {{ booking.appointment_datetime }}</p>
                 <p><strong>Customer Notes:</strong> {{ booking.customer_notes|default:"None" }}</p>
                 <p><strong>Mechanic Notes:</strong> {{ booking.mechanic_notes|default:"None" }}</p>
             </div>
