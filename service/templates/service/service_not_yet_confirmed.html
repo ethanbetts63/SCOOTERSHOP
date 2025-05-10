@@ -1,10 +1,26 @@
 {# templates/service_booking/service_not_yet_confirmed.html #}
-{% extends 'core/layout.html' %} {# Assuming you have a base template #}
+{% extends 'core/layout.html' %}
+{% load static %}
 
 {% block title %}Booking Submitted{% endblock %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
+
+{% if messages %}
+    <div class="messages-container">
+        <ul>
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+<div class="service-booking-container">
     <h2>Service Booking Request Received</h2>
     <hr>
     <p>Thank you! Your service request has been received.</p>
@@ -14,6 +30,6 @@
     {# Optionally display some details from the booking if available in context, but avoid sensitive info #}
     {# Example: <p>Your booking reference is: {{ booking.booking_reference }}</p> #}
 
-    <p><a href="{% url 'core:index' %}" class="btn btn-primary">Return to Home</a></p>
+    <p><a href="{% url 'core:index' %}" class="btn-secondary">Return to Home</a></p>
 </div>
 {% endblock %}
