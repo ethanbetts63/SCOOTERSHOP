@@ -1,4 +1,3 @@
-{# templates/service_booking/service_bike_details_authenticated.html #}
 {% extends 'core/layout.html' %}
 {% load static %}
 
@@ -14,7 +13,7 @@
         <h2>Book Service - Step {{ step }} of {{ total_steps }}</h2>
         <span class="step-indicator">Step {{ step }}/{{ total_steps }}</span>
     </div>
-    
+
     <hr>
 
     {% if messages %}
@@ -44,11 +43,27 @@
                 <form method="post" id="existing-bike-form">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="select_existing">
-                    
-                    <div class="form-field">
-                        {{ existing_bike_form.as_p }}
+
+                    {# Manually loop through existing_bike_form fields #}
+                    <div class="form-fields-container">
+                        {% for field in existing_bike_form %}
+                            <div class="form-field">
+                                {{ field.label_tag }}
+                                {% if field.field.required %}*
+                                {% endif %}
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <small id="{{ field.id_for_label }}_help" class="help-text">{{ field.help_text }}</small>
+                                {% endif %}
+                                {% if field.errors %}
+                                    {% for error in field.errors %}
+                                        <small class="error-text">{{ error }}</small>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        {% endfor %}
                     </div>
-                    
+
                     <div class="button-group">
                         <button type="submit" class="btn-primary" id="continue-selected-button">Continue with Selected Motorcycle</button>
                         <button type="button" id="add-new-button" class="btn-secondary">Add New Motorcycle</button>
@@ -71,7 +86,6 @@
             <input type="hidden" name="action" value="{% if editing_motorcycle %}edit_existing{% else %}add_new{% endif %}">
 
             {# Only include motorcycle_id when editing #}
-            {# Pass the ID if we are editing a specific instance #}
             {% if editing_motorcycle and editing_motorcycle.pk %}
                 <input type="hidden" name="motorcycle_id" value="{{ editing_motorcycle.pk }}">
             {% endif %}
@@ -88,12 +102,27 @@
 
             {# The form fields #}
             <div class="form-fields-container">
-                {{ motorcycle_form.as_p }}
+                {% for field in motorcycle_form %}
+                    <div class="form-field">
+                        {{ field.label_tag }}
+                        {% if field.field.required %}*
+                        {% endif %}
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small id="{{ field.id_for_label }}_help" class="help-text">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% if field.errors %}
+                            {% for error in field.errors %}
+                                <small class="error-text">{{ error }}</small>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                {% endfor %}
             </div>
 
             <div class="button-group between">
                 {% if has_existing_bikes %}
-                <button type="button" id="back-to-selection" class="btn-secondary">Back to Selection</button>
+                    <button type="button" id="back-to-selection" class="btn-secondary">Back to Selection</button>
                 {% endif %}
 
                 {# Button text changes based on mode #}
@@ -109,6 +138,7 @@
     </div>
 </div>
 {% endblock %}
+
 
 {% block extra_js %}
 
