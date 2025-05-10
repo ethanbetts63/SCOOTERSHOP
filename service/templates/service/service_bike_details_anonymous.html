@@ -14,30 +14,35 @@
         <span class="step-indicator">Step {{ step }}/{{ total_steps }}</span>
     </div>
     <hr>
-    
+
     {% if messages %}
-    <div class="messages-container">
-        <ul>
-            {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    </div>
+        <div class="messages-container">
+            <ul>
+                {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
     {% endif %}
 
     <h3>Your Motorcycle Details</h3>
     <p>Please provide the details of the motorcycle you'd like to service.</p>
-    
+
     <form method="post">
         {% csrf_token %}
-        
+
         {% for field in form %}
             <div class="form-field">
                 {{ field.label_tag }}
+                {% if field.field.required %}*{% endif %}
                 {{ field }}
+                
                 {% if field.help_text %}
-                    <small id="{{ field.id_for_label }}_help" class="help-text">{{ field.help_text }}</small>
+                    <small id="{{ field.id_for_label }}_help" class="help-text">
+                        {{ field.help_text }}
+                    </small>
                 {% endif %}
+
                 {% if field.errors %}
                     {% for error in field.errors %}
                         <small class="error-text">{{ error }}</small>
@@ -45,7 +50,7 @@
                 {% endif %}
             </div>
         {% endfor %}
-        
+
         <button type="submit">Next: Your Details</button>
     </form>
 </div>

@@ -1,18 +1,14 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.urls import reverse
-import datetime
-from django.db.models import Q
-from service.models import ServiceBooking, CustomerMotorcycle, ServiceType
+from service.models import CustomerMotorcycle
 from dashboard.models import SiteSettings
 from service.forms import (
-    ServiceDetailsForm,
     CustomerMotorcycleForm,
-    ServiceBookingUserForm,
     ExistingCustomerMotorcycleForm,
 )
 from django.contrib.auth.decorators import login_required
-from django.utils import timezone
+
 
 SERVICE_BOOKING_SESSION_KEY = 'service_booking_data'
 

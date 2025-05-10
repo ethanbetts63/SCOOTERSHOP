@@ -312,8 +312,6 @@ class ServiceDetailsForm(forms.Form):
         # The choices are populated in the view, so we just check if a value was selected.
         drop_off_time = cleaned_data.get('drop_off_time')
         if not drop_off_time:
-             # This error might be redundant if the field is required and choices are empty,
-             # but it's good for explicit validation if the frontend doesn't handle it perfectly.
              self.add_error('drop_off_time', 'Please select a valid drop-off time.')
 
         # Add any other necessary cross-field validation here
@@ -323,7 +321,7 @@ class ServiceDetailsForm(forms.Form):
 class CustomerMotorcycleForm(forms.ModelForm):
     class Meta:
         model = CustomerMotorcycle
-        fields = ['make', 'model', 'year', 'rego', 'vin_number', 'odometer', 'transmission']
+        fields = ['make', 'model', 'year', 'rego', 'odometer', 'vin_number', 'transmission']
         widgets = {
             'transmission': forms.Select(choices=Motorcycle.TRANSMISSION_CHOICES, attrs={'class': 'form-control'}),
             'year': forms.NumberInput(attrs={'class': 'form-control', 'min': '1900', 'max': datetime.date.today().year}),
@@ -347,7 +345,6 @@ class CustomerMotorcycleForm(forms.ModelForm):
 
 # Form for service booking by an existing user (Step 3)
 class ServiceBookingUserForm(forms.Form):
-    # Removed service_type, appointment_date, and drop_off_time from this form
     first_name = forms.CharField(
         max_length=100,
         widget=forms.TextInput(attrs={'class': 'form-control'}),
@@ -372,9 +369,6 @@ class ServiceBookingUserForm(forms.Form):
         required=False,
         label="Comments or specific requests"
     )
-    # Fields for service type and appointment_date are now removed from this form.
-    # They are collected in Step 1 and stored in the session.
-
 
 # Form to select an existing customer motorcycle (no changes requested on required fields)
 class ExistingCustomerMotorcycleForm(forms.Form):
