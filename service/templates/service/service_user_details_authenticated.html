@@ -1,3 +1,4 @@
+{# templates/service_booking/service_contact_details_authenticated.html (Assuming this is for authenticated users) #}
 {% extends 'core/layout.html' %}
 {% load static %}
 
@@ -31,14 +32,19 @@
         <p>Your details are pre-filled from your account. You can edit them for this booking if needed.</p>
 
         {% for field in form %}
+            {# Only display fields other than 'is_returning_customer' #}
             {% if field.name != 'is_returning_customer' %}
                 <div class="form-field">
                     {{ field.label_tag }}
+                    {% if field.field.required %}
+                        *
+                    {% endif %}
                     {{ field }}
                     {% if field.help_text %}
                         <small id="{{ field.id_for_label }}_help" class="help-text">{{ field.help_text }}</small>
                     {% endif %}
                     {% if field.errors %}
+                        {# Keeping the extra div around errors as per original template #}
                         <div>
                             {% for error in field.errors %}
                                 <small class="error-text">{{ error }}</small>

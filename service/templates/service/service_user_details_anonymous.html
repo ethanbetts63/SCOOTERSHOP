@@ -1,3 +1,4 @@
+{# templates/service_booking/service_contact_details_anonymous.html (Assuming this is for anonymous users) #}
 {% extends 'core/layout.html' %}
 {% load static %}
 
@@ -33,6 +34,9 @@
         {% for field in form %}
             <div class="form-field">
                 {{ field.label_tag }}
+                {% if field.field.required %}
+                    *
+                {% endif %}
                 {{ field }}
                 {% if field.help_text %}
                     <small id="{{ field.id_for_label }}_help" class="help-text">{{ field.help_text }}</small>
