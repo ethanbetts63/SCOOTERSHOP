@@ -14,17 +14,18 @@
 <div class="admin-layout-container">
     <aside class="admin-layout-sidebar">
         <h2>Admin Navigation</h2>
-        <ul class="reset-list">{# Added .reset-list #}
+        <ul class="reset-list">
             <li><a href="{% url 'dashboard:dashboard_index' %}">Dashboard Home</a></li>
             <li><a href="{% url 'dashboard:service_bookings' %}">Service Bookings</a></li>
             <li><a href="{% url 'inventory:motorcycle-list' %}">All Motorcycles</a></li>
             <li class="nav-section">
                 <h3>Settings</h3>
-                <ul class="reset-list">{# Added .reset-list #}
+                <ul class="reset-list">
                     <li><a href="{% url 'dashboard:settings_business_info' %}">Business Information</a></li>
                     <li><a href="{% url 'dashboard:settings_hire_booking' %}">Hire Booking</a></li>
                     <li><a href="{% url 'dashboard:settings_service_booking' %}">Service Booking</a></li>
                     <li><a href="{% url 'dashboard:settings_service_types' %}">Service Types</a></li>
+                    <li><a href="{% url 'dashboard:service_brands_management' %}">Service Brands</a></li>
                     <li><a href="{% url 'dashboard:settings_visibility' %}">Visibility</a></li>
                 </ul>
             </li>
@@ -32,7 +33,7 @@
     </aside>
     <main class="admin-layout-content">
         {% if messages %}
-            <ul class="reset-list admin-layout-messages">{# Added .reset-list #}
+            <ul class="reset-list admin-layout-messages">
                 {% for message in messages %}
                     <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
                 {% endfor %}
