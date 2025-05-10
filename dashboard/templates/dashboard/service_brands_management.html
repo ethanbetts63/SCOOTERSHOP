@@ -1,9 +1,14 @@
 {% extends "dashboard/admin_layout.html" %}
 {% load static %}
 
+{% block extra_css %}
+{{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
+{% endblock %}
+
 {% block admin_main_content %}
-<div class="service-brands-container">
-    <div class="page-header">
+<div class="service-booking-container"> {# Use the main container class from the example #}
+    <div class="booking-progress"> {# Use the header class from the example #}
         <h2>{{ page_title }}</h2>
     </div>
 
@@ -20,8 +25,8 @@
     {% endif %}
 
     {# Section for adding a new brand #}
-    <div class="add-brand-section form-field"> {# Using form-field class for structure #}
-        <h3 class="section-title">Add New Service Brand</h3>
+    <div class="form-field"> {# Using form-field class for structure #}
+        <h3 class="booking-section-title">Add New Service Brand</h3> {# Use booking-section-title #}
 
         {# Form for adding a new brand - MUST include enctype for file uploads #}
         <form method="post" enctype="multipart/form-data" id="addBrandForm">
@@ -32,7 +37,7 @@
                 {{ form.name }}
                 {% if form.name.errors %}
                     {% for error in form.name.errors %}
-                        <small class="error-text">{{ error }}</small> {# Add a class for error styling #}
+                        <small class="error-text">{{ error }}</small> {# Keep error-text #}
                     {% endfor %}
                 {% endif %}
                  {% if form.name.help_text %}
@@ -45,7 +50,7 @@
                 {{ form.image }}
                 {% if form.image.errors %}
                     {% for error in form.image.errors %}
-                        <small class="error-text">{{ error }}</small>
+                        <small class="error-text">{{ error }}</small> {# Keep error-text #}
                     {% endfor %}
                 {% endif %}
                  {% if form.image.help_text %}
@@ -53,12 +58,12 @@
                  {% endif %}
             </div>
 
-             <div class="form-field checkbox-field"> {# Add a class for checkbox layout if needed #}
+            <div class="form-field checkbox-field"> {# Keep checkbox-field #}
                 <input type="checkbox" id="{{ form.is_primary.id_for_label }}" name="{{ form.is_primary.html_name }}" {% if form.is_primary.value %}checked{% endif %}>
                 <label for="{{ form.is_primary.id_for_label }}">{{ form.is_primary.label }}</label>
                 {% if form.is_primary.errors %}
                     {% for error in form.is_primary.errors %}
-                        <small class="error-text">{{ error }}</small>
+                        <small class="error-text">{{ error }}</small> {# Keep error-text #}
                     {% endfor %}
                 {% endif %}
                  {% if form.is_primary.help_text %}
@@ -70,7 +75,7 @@
             {% if form.non_field_errors %}
                 <div class="form-field">
                     {% for error in form.non_field_errors %}
-                        <small class="error-text">{{ error }}</small>
+                        <small class="error-text">{{ error }}</small> {# Keep error-text #}
                     {% endfor %}
                 </div>
             {% endif %}
@@ -82,18 +87,18 @@
     <hr>
 
     {# Section for listing existing brands #}
-    <div class="existing-brands-section form-field"> {# Using form-field class for structure #}
-        <h3 class="section-title">Existing Service Brands ({{ service_brands.count }})</h3>
+    <div class="form-field"> {# Using form-field class for structure #}
+        <h3 class="booking-section-title">Existing Service Brands ({{ service_brands.count }})</h3> {# Use booking-section-title #}
         {% if primary_brands_count >= max_primary_brands %}
-             <p class="warning-text">You currently have {{ primary_brands_count }} primary brands. The maximum allowed is {{ max_primary_brands }}. You must delete a primary brand before adding another primary brand.</p>
+             <p class="warning-text">You currently have {{ primary_brands_count }} primary brands. The maximum allowed is {{ max_primary_brands }}. You must delete a primary brand before adding another primary brand.</p> {# Keep warning-text #}
         {% endif %}
 
 
         {% if service_brands %}
-            <div class="brands-list">
+            <ul class="brands-list"> {# Changed to ul and added brands-list class #}
                 {% for brand in service_brands %}
                     {# Add 'primary' class if the brand is primary #}
-                    <div class="brand-tile {% if brand.is_primary %}primary{% endif %}">
+                    <li class="brand-item {% if brand.is_primary %}primary{% endif %}"> {# Changed to li and added brand-item class #}
                         {# Display image if available #}
                         {% if brand.image %}
                             <div class="brand-image">
@@ -104,20 +109,19 @@
                             <h4>{{ brand.name }}</h4>
                             <p>Status: {% if brand.is_primary %}Primary{% else %}Standard{% endif %}</p>
                              {% if not brand.image and brand.is_primary %}
-                                <p class="error-text">Error: This primary brand is missing an image!</p> {# Should not happen with server validation, but good fallback #}
+                                <p class="error-text">Error: This primary brand is missing an image!</p> {# Keep error-text #}
                             {% endif %}
                         </div>
                         <div class="brand-actions">
                              {# Form for deleting a brand - separate form for each item #}
                              <form method="post" action="{% url 'dashboard:delete_service_brand' pk=brand.pk %}" class="inline-form">
-                                {% csrf_token %}
-                                {# We are now using a separate delete view, so we don't need the hidden input with pk name used for checking in one view #}
-                                <button type="submit" class="btn-delete" onclick="return confirm('Are you sure you want to delete the service brand \'{{ brand.name }}\'?');">Delete</button>
+                                 {% csrf_token %}
+                                 <button type="submit" class="btn-delete" onclick="return confirm('Are you sure you want to delete the service brand \'{{ brand.name }}\'?');">Delete</button> {# Keep btn-delete #}
                              </form>
                         </div>
-                    </div>
+                    </li>
                 {% endfor %}
-            </div>
+            </ul>
         {% else %}
             <p>No service brands added yet.</p>
         {% endif %}
@@ -141,14 +145,14 @@
 
             // Disable the checkbox if no file is selected OR if the primary limit is reached
             if (!fileSelected || (currentPrimaryBrands >= maxPrimaryBrands && !isPrimaryCheckbox.checked)) {
-                 isPrimaryCheckbox.disabled = true;
-                 // If it was checked but now disabled (because image removed or limit reached), uncheck it
-                 if (!fileSelected && isPrimaryCheckbox.checked) {
-                     isPrimaryCheckbox.checked = false;
-                 }
-                  // If limit reached and user is trying to check it, prevent it
+                isPrimaryCheckbox.disabled = true;
+                // If it was checked but now disabled (because image removed or limit reached), uncheck it
+                if (!fileSelected && isPrimaryCheckbox.checked) {
+                    isPrimaryCheckbox.checked = false;
+                }
+                 // If limit reached and user is trying to check it, prevent it
                  if (currentPrimaryBrands >= maxPrimaryBrands && !isPrimaryCheckbox.checked && fileSelected) {
-                      // This specific case is better handled on click for immediate feedback
+                     // This specific case is better handled on click for immediate feedback
                  }
 
 
@@ -163,18 +167,18 @@
 
          // Add click listener to the checkbox for immediate feedback on limit
         isPrimaryCheckbox.addEventListener('click', function(event) {
-            // If the checkbox is currently unchecked and the limit is reached
-            if (!isPrimaryCheckbox.checked && currentPrimaryBrands >= maxPrimaryBrands) {
-                 // Check if an image is selected - it *should* be enabled if we reach here
-                 const fileSelected = imageInput.files && imageInput.files.length > 0;
-                 if (fileSelected) { // Only show message if they have an image but hit the limit
-                    alert('You have reached the maximum number of primary brands (' + maxPrimaryBrands + '). Please delete a primary brand before adding a new one.');
-                    event.preventDefault(); // Prevent checking the box
-                 }
-                 // If no fileSelected, the updatePrimaryCheckboxState already disabled it.
-            }
+             // If the checkbox is currently unchecked and the limit is reached
+             if (!isPrimaryCheckbox.checked && currentPrimaryBrands >= maxPrimaryBrands) {
+                  // Check if an image is selected - it *should* be enabled if we reach here
+                  const fileSelected = imageInput.files && imageInput.files.length > 0;
+                  if (fileSelected) { // Only show message if they have an image but hit the limit
+                     alert('You have reached the maximum number of primary brands (' + maxPrimaryBrands + '). Please delete a primary brand before adding a new one.');
+                     event.preventDefault(); // Prevent checking the box
+                  }
+                  // If no fileSelected, the updatePrimaryCheckboxState already disabled it.
+             }
              // updatePrimaryCheckboxState will run after this click handler if the state changes
-        });
+         });
 
 
         // Initial state setup on page load

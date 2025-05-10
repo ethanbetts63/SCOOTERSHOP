@@ -681,3 +681,102 @@ input[type="checkbox"]:checked {
     font-size: 1.2rem;
     line-height: 1;
 }
+
+
+
+/* =================== SECTION: Service Brands Management Styles =================== */
+
+/* Style the list container for brands */
+.brands-list {
+    list-style: none; /* Remove default list bullets */
+    padding: 0;
+    margin: 0;
+}
+
+/* Style individual brand list items */
+.brand-item {
+    display: flex; /* Use flexbox for layout */
+    align-items: center; /* Vertically align items */
+    background-color: var(--bg-dark); /* Match blocked date item background */
+    border-left: 3px solid var(--border-color); /* Match blocked date item border */
+    padding: 10px 15px; /* Match blocked date item padding */
+    margin-bottom: 10px; /* Add margin between items */
+    border-radius: var(--radius-sm); /* Match blocked date item border-radius */
+    color: var(--text-light); /* Match blocked date item text color */
+    transition: all var(--transition-medium); /* Add transition for hover */
+}
+
+/* Hover effect for brand items */
+.brand-item:hover {
+    background-color: var(--bg-highlight); /* Match blocked date item hover */
+    border-left-color: var(--color-primary); /* Change border color on hover */
+}
+
+/* Style for primary brand items */
+.brand-item.primary {
+    border-left-color: var(--color-primary); /* Highlight primary brands */
+}
+
+/* Container for the brand image */
+.brand-image {
+    flex-shrink: 0; /* Prevent the image from shrinking */
+    width: 50px; /* Set a fixed width for the image container */
+    height: 50px; /* Set a fixed height for the image container */
+    margin-right: 15px; /* Add space between image and text */
+    border-radius: var(--radius-sm); /* Apply border-radius to image container */
+    overflow: hidden; /* Hide parts of the image outside the container */
+    background-color: var(--bg-darker); /* Add a background for transparency */
+    display: flex; /* Use flexbox to center the image */
+    justify-content: center;
+    align-items: center;
+}
+
+/* Style the actual image */
+.brand-image img {
+    display: block;
+    max-width: 100%; /* Ensure image fits within its container */
+    max-height: 100%; /* Ensure image fits within its container */
+    object-fit: cover; /* Cover the container while maintaining aspect ratio */
+}
+
+/* Container for brand name and status */
+.brand-info {
+    flex-grow: 1; /* Allow brand info to take up available space */
+    margin-right: 15px; /* Add space between info and actions */
+}
+
+.brand-info h4 {
+    margin: 0 0 5px 0; /* Adjust heading margin */
+    color: var(--text-primary); /* Ensure heading color is visible */
+    font-size: 1.1rem;
+}
+
+.brand-info p {
+    margin: 0; /* Adjust paragraph margin */
+    font-size: 0.9rem;
+    color: var(--text-secondary); /* Adjust paragraph color */
+}
+
+/* Container for brand actions (like the delete button) */
+.brand-actions {
+    flex-shrink: 0; /* Prevent actions from shrinking */
+}
+
+/* Ensure inline forms within the list item are handled correctly */
+.brand-item .inline-form {
+    display: inline-block; /* Keep the delete button inline */
+    margin: 0; /* Remove default form margin */
+}
+
+/* Style for the delete button within the list item */
+.brand-item .btn-delete {
+    padding: 5px 10px; /* Adjust padding for a smaller button */
+    font-size: 0.85rem; /* Adjust font size */
+}
+
+/* Error text specifically within brand info */
+.brand-info .error-text {
+     color: #ff6b6b; /* Match error message color */
+     font-size: 0.8rem; /* Adjust font size for inline error */
+     margin-top: 3px;
+}
