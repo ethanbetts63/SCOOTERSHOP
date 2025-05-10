@@ -191,18 +191,6 @@
                             </li>
                         {% endif %}
 
-                        {% if settings.enable_service_booking or user.is_staff %}
-                            <li>
-                                <a href="{% url 'service:service_start' %}"
-                                   {% if not settings.enable_service_booking and user.is_staff %}
-                                       style="color: #08E5D1;" {# Bright turquoise color #}
-                                   {% endif %}
-                                >
-                                    ServiceBook
-                                </a>
-                            </li>
-                        {% endif %}
-
                         {% if user.is_authenticated and user.is_staff %}
                         <li><a href="{% url 'dashboard:dashboard_index' %}">Dashboard</a></li>
                         <li><a href="{% url 'inventory:motorcycle-create' %}">scooter create</a></li>
