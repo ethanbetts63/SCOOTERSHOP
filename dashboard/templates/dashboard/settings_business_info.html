@@ -18,14 +18,14 @@
         <div class="booking-progress">
             <h3 class="booking-section-title">Update Business Information</h3>
         </div>
-        
+
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
 
             <div class="form-field" style="flex-direction: row; justify-content: flex-end; margin-bottom: 20px;">
-                <button type="button" class="btn-secondary" style="margin-right: 10px;">Edit</button>
-                <button type="submit">Save Changes</button>
-                <button type="button" class="btn-secondary" style="margin-left: 10px;">Reset</button>
+                <button type="button" class="btn-secondary" id="editButton" style="margin-right: 10px;">Edit</button>
+                <button type="submit" id="saveButton">Save Changes</button>
+                <button type="button" class="btn-secondary" id="resetButton" style="margin-left: 10px;">Reset</button>
             </div>
 
             <div class="form-field">
@@ -105,33 +105,53 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Add any JavaScript functionality here
-        const editButton = document.querySelector('button[type="button"]:first-of-type');
-        const saveButton = document.querySelector('button[type="submit"]');
-        const resetButton = document.querySelector('button[type="button"]:last-of-type');
-        
-        // Make form fields read-only by default
+        const editButton = document.getElementById('editButton');
+        const saveButton = document.getElementById('saveButton');
+        const resetButton = document.getElementById('resetButton');
         const formFields = document.querySelectorAll('input, select, textarea');
-        formFields.forEach(field => {
-            field.setAttribute('readonly', true);
-            if (field.tagName === 'SELECT') {
-                field.setAttribute('disabled', true);
-            }
-        });
-        
-        // Enable editing when Edit button is clicked
-        editButton.addEventListener('click', function() {
+
+        // Function to set form fields read-only or enabled
+        function setFormReadonly(readonly) {
             formFields.forEach(field => {
-                field.removeAttribute('readonly');
-                if (field.tagName === 'SELECT') {
-                    field.removeAttribute('disabled');
+                if (readonly) {
+                    field.setAttribute('readonly', true);
+                    if (field.tagName === 'SELECT') {
+                        field.setAttribute('disabled', true);
+                    }
+                } else {
+                    field.removeAttribute('readonly');
+                    if (field.tagName === 'SELECT') {
+                        field.removeAttribute('disabled');
+                    }
                 }
             });
+        }
+
+        // Initial state: only show Edit button, form fields are read-only
+        saveButton.style.display = 'none';
+        resetButton.style.display = 'none';
+        setFormReadonly(true);
+
+        // When Edit button is clicked
+        editButton.addEventListener('click', function() {
+            editButton.style.display = 'none';
+            saveButton.style.display = 'inline-block';
+            resetButton.style.display = 'inline-block';
+            setFormReadonly(false);
         });
-        
-        // Reset form when Reset button is clicked
+
+        // When Save Changes or Reset button is clicked
+        function handleSaveOrResetClick() {
+            saveButton.style.display = 'none';
+            resetButton.style.display = 'none';
+            editButton.style.display = 'inline-block';
+            setFormReadonly(true);
+        }
+
+        saveButton.addEventListener('click', handleSaveOrResetClick);
         resetButton.addEventListener('click', function() {
-            document.querySelector('form').reset();
+            document.querySelector('form').reset(); // Reset the form
+            handleSaveOrResetClick();
         });
     });
 </script>
