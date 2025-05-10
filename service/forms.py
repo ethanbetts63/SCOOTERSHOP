@@ -321,11 +321,12 @@ class ServiceDetailsForm(forms.Form):
 class CustomerMotorcycleForm(forms.ModelForm):
     # Replace the default 'make' field with ModelChoiceField
     make = forms.ModelChoiceField(
-        queryset=ServiceBrand.objects.all().order_by('name'), # Get all brands, ordered by name
-        empty_label="--- Select Make ---", # Add a default empty option
+        queryset=ServiceBrand.objects.all().order_by('name'), 
+        empty_label="--- Select Make ---",
         label="Make", # Keep the label
-        widget=forms.Select(attrs={'class': 'form-control'}), # Apply Bootstrap class
-        required=True # Make the make selection required
+        widget=forms.Select(attrs={'class': 'form-control'}), 
+        required=True,
+        help_text="Due to part availability, we can only service the brands available in this drop down menu."
     )
 
     class Meta:

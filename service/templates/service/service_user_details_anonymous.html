@@ -1,158 +1,29 @@
-{# service/service_bike_details_anonymous.html #}
-{% extends 'core/layout.html' %}
-{% load static %}
-{% load widget_tweaks %} {# Optional: for adding classes easily, but not strictly necessary if attrs in form are used #}
+{# templates/service_booking/service_user_details_anonymous.html #}
+{% extends 'core/layout.html' %} {# Assuming you have a base template #}
 
-
-{% block title %}Book Service - Step 2{% endblock %}
-
-{% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
-    <style>
-        /* Optional: Add some basic styling for disabled inputs */
-        .form-field input:disabled,
-        .form-field select:disabled,
-        .form-field textarea:disabled {
-            background-color: #e9ecef; /* Light grey, standard disabled look */
-            cursor: not-allowed;
-        }
-         /* Style for required indicator if needed, but it's already in your template */
-         .required-indicator {
-            color: red;
-            margin-left: 2px;
-            font-weight: normal;
-         }
-    </style>
-{% endblock %}
+{% block title %}Book Service - Step 3{% endblock %}
 
 {% block content %}
-<div class="service-booking-container">
-    <div class="booking-progress">
-        <h2>Book Service - Step {{ step }} of {{ total_steps }}</h2>
-        <span class="step-indicator">Step {{ step }}/{{ total_steps }}</span>
-    </div>
+<div class="container mt-4">
+    <h2>Book Service - Step {{ step }} of {{ total_steps }}</h2>
     <hr>
 
-    {% if messages %}
-        <div class="messages-container">
-            <ul>
-                {% for message in messages %}
-                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        </div>
+     {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
     {% endif %}
 
-    <h3>Your Motorcycle Details</h3>
-    <p>Please provide the details of the motorcycle you'd like to service.</p>
-
-    <form method="post" id="motorcycle-details-form"> {# Add an ID for easy targeting #}
+    <form method="post">
         {% csrf_token %}
+        <h3>Your Contact Information</h3>
+        <p>Please provide your contact details.</p>
 
-        {% for field in form %}
-            <div class="form-field" data-field-name="{{ field.name }}"> {# Add data attribute for easier JS targeting #}
-                <label for="{{ field.id_for_label }}">
-                    {{ field.label }}
-                    {# Manual required indicator #}
-                    {% if field.field.required and field.name != 'make' %}<span class="required-indicator">*</span>{% endif %} {# Make is required by default #}
-                     {# ModelChoiceField is required by default, no need for extra check here if the form field is defined as required=True #}
-                </label>
+        {{ form.as_p }} {# This will include the 'is_returning_customer' field #}
 
-                {# Render the field. The form definition handles the widget and attrs like 'class' #}
-                {{ field }}
-
-                {% if field.help_text %}
-                    <small id="{{ field.id_for_label }}_help" class="help-text">
-                        {{ field.help_text }}
-                    </small>
-                {% endif %}
-
-                {% if field.errors %}
-                    {% for error in field.errors %}
-                        <small class="error-text">{{ error }}</small>
-                    {% endfor %}
-                {% endif %}
-            </div>
-        {% endfor %}
-
-        <button type="submit" id="submit-button">Next: Your Details</button> {# Add ID to button #}
+        <button type="submit" class="btn btn-success">Submit Booking Request</button>
     </form>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Get the make dropdown by its ID (Django generates IDs like 'id_fieldname')
-        const makeSelect = document.getElementById('id_make');
-
-        // Get all form fields that are NOT the 'make' field
-        // We can select all elements inside the form fields div that are inputs, selects, or textareas,
-        // then filter out the make select itself.
-        const form = document.getElementById('motorcycle-details-form');
-        const allFormFields = form.querySelectorAll('input, select, textarea');
-
-        // Fields that should be toggled (all except 'make')
-        const fieldsToToggle = Array.from(allFormFields).filter(field => field.id !== 'id_make');
-
-        const submitButton = document.getElementById('submit-button'); // Get submit button
-
-        function toggleOtherFields() {
-            // Check if the selected value in the 'make' dropdown is not empty
-            // The empty_label option will have an empty string value
-            const isMakeSelected = makeSelect.value !== '';
-
-            fieldsToToggle.forEach(field => {
-                field.disabled = !isMakeSelected; // Disable if no make is selected, enable if it is
-                 // Add/remove a class for potential additional styling if needed
-                if (!isMakeSelected) {
-                    field.classList.add('disabled-input');
-                } else {
-                    field.classList.remove('disabled-input');
-                }
-                // Optional: Clear the value if the field is disabled.
-                // This prevents submitting stale data if the user changed their mind.
-                // if (!isMakeSelected && field.type !== 'hidden') { // Don't clear hidden fields
-                //     field.value = '';
-                // }
-            });
-
-            // Disable the submit button if no make is selected
-            if (submitButton) {
-                 submitButton.disabled = !isMakeSelected;
-            }
-        }
-
-        // Initial state on page load: disable fields if no make is pre-selected
-        toggleOtherFields();
-
-        // Add an event listener to the make dropdown
-        makeSelect.addEventListener('change', toggleOtherFields);
-
-        // Re-enable fields that have errors on page load, regardless of make selection
-        // This ensures the user can correct validation errors.
-        // Find all elements with the 'error-text' class
-        const errorElements = form.querySelectorAll('.error-text');
-        errorElements.forEach(errorSpan => {
-             // Find the closest .form-field parent
-            const formFieldDiv = errorSpan.closest('.form-field');
-            if (formFieldDiv) {
-                 // Find the input/select/textarea within this form-field
-                const inputElement = formFieldDiv.querySelector('input, select, textarea');
-                if (inputElement) {
-                     // If an element is found, ensure it's enabled and remove disabled styling
-                    inputElement.disabled = false;
-                    inputElement.classList.remove('disabled-input');
-                }
-            }
-        });
-
-         // If the make field itself had an error and a valid make was actually selected
-         // before the failed submission, the initial toggleOtherFields() call will
-         // correctly enable the other fields because makeSelect.value will not be empty.
-         // The error re-enabling step above handles the case where fields *other* than
-         // make had errors when make *was* selected.
-
-    });
-</script>
 {% endblock %}
