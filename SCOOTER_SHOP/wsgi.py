@@ -10,7 +10,6 @@ https://docs.djangoproject.com/en/5.1/howto/deployment/wsgi/
 import os
 import sys
 from django.core.wsgi import get_wsgi_application
-
 project_home = '/home/ethanbetts/SCOOTER_SHOP'
 if project_home not in sys.path:
     sys.path.insert(0, project_home)
