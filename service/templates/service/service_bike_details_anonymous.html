@@ -33,10 +33,14 @@
 
         {% for field in form %}
             <div class="form-field">
-                {{ field.label_tag }}
-                {% if field.field.required %}*{% endif %}
+                {# Manually construct label to put required indicator inside #}
+                <label for="{{ field.id_for_label }}">
+                    {{ field.label }}
+                    {% if field.field.required %}<span class="required-indicator">*</span>{% endif %}
+                </label>
+
                 {{ field }}
-                
+
                 {% if field.help_text %}
                     <small id="{{ field.id_for_label }}_help" class="help-text">
                         {{ field.help_text }}
