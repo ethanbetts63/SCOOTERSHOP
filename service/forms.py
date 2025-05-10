@@ -317,14 +317,12 @@ class ServiceDetailsForm(forms.Form):
         # Add any other necessary cross-field validation here
         return cleaned_data
 
-# Model form for customer motorcycles (no changes requested)
 class CustomerMotorcycleForm(forms.ModelForm):
-    # Replace the default 'make' field with ModelChoiceField
-    make = forms.ModelChoiceField(
-        queryset=ServiceBrand.objects.all().order_by('name'), 
-        empty_label="--- Select Make ---",
-        label="Make", # Keep the label
-        widget=forms.Select(attrs={'class': 'form-control'}), 
+    # Change 'make' from ModelChoiceField to a CharField with a Select widget
+    # We will populate the choices dynamically in __init__
+    make = forms.CharField(
+        label="Make",
+        widget=forms.Select(attrs={'class': 'form-control'}),
         required=True,
         help_text="Due to part availability, we can only service the brands available in this drop down menu."
     )
@@ -338,19 +336,83 @@ class CustomerMotorcycleForm(forms.ModelForm):
             'odometer': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
             'rego': forms.TextInput(attrs={'class': 'form-control'}),
             'vin_number': forms.TextInput(attrs={'class': 'form-control'}),
-            'model': forms.TextInput(attrs={'class': 'form-control'}), # Still need widget for model
+            'model': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
-    # Override the clean_make method to return the *name* string
-    # instead of the ServiceBrand object. This minimizes changes to the view logic
-    # that stores data in the session.
-    def clean_make(self):
-        service_brand = self.cleaned_data.get('make')
-        if service_brand:
-            return service_brand.name # Return the name string
-        return None # Should not happen if required=True, but good practice
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    # Keep your existing clean methods
+        # Get the list of valid service brand names
+        valid_brand_names = list(ServiceBrand.objects.all().order_by('name').values_list('name', flat=True))
+
+        # Create choices list for the 'make' CharField
+        # Each choice is a tuple (value, label)
+        brand_choices = [(name, name) for name in valid_brand_names]
+
+        # Add the empty label option at the beginning
+        choices_with_empty = [('', '--- Select Make ---')] + brand_choices
+
+        # If this form is bound to an existing instance
+        if self.instance and self.instance.pk:
+            current_make = self.instance.make
+            # If the instance's make is NOT in the list of valid brands,
+            # add it to the choices so it appears selected in the dropdown.
+            # We add it at the top after the empty choice for visibility,
+            # but it could technically be anywhere.
+            if current_make and current_make not in valid_brand_names:
+                 # Ensure it's not already added if instance.make was empty string etc.
+                 if (current_make, current_make) not in choices_with_empty:
+                     choices_with_empty.insert(1, (current_make, f"{current_make} (Not a standard service brand)")) # Optional: add a label suffix
+
+        # Set the choices for the 'make' field
+        self.fields['make'].widget.choices = choices_with_empty
+
+
+    # Override the clean_make method for custom validation
+    def clean_make(self):
+        submitted_make_name = self.cleaned_data.get('make')
+
+        # Handle empty value if somehow passed despite required=True (defensive)
+        if not submitted_make_name:
+            raise forms.ValidationError("This field is required.")
+
+        # Get the list of valid brand names (case-insensitive comparison is safer)
+        valid_brand_names_lower = {brand.name.lower() for brand in ServiceBrand.objects.all()}
+        submitted_make_lower = submitted_make_name.lower()
+
+        # Case 1: Form is for an existing instance (updating)
+        if self.instance and self.instance.pk:
+            initial_make_name = self.instance.make # Get the original value from the instance
+
+            # Check if the submitted value is the same as the original instance value (case-insensitive)
+            # This allows keeping the original, potentially out-of-list value.
+            if submitted_make_lower == initial_make_name.lower():
+                # Return the original name exactly as it was (or the submitted name, which should be the same case-insensitively)
+                # Returning the submitted name is generally fine here.
+                return submitted_make_name
+
+            # If the submitted value is *different* from the original instance value,
+            # it must be one of the valid brands.
+            if submitted_make_lower not in valid_brand_names_lower:
+                # The user tried to change the make to something that isn't in the valid list
+                raise forms.ValidationError("You can only select a make from the available list or keep the original value.")
+            else:
+                 # The user selected a *different* make, and it is in the valid list.
+                 # Find the ServiceBrand object to return the canonical name (correct casing)
+                 canonical_brand = ServiceBrand.objects.get(name__iexact=submitted_make_name)
+                 return canonical_brand.name
+
+        # Case 2: Form is for a new instance (creating)
+        else: # self.instance is None or has no pk
+             # The submitted make must be one of the valid brands.
+             if submitted_make_lower not in valid_brand_names_lower:
+                 raise forms.ValidationError("Please select a valid motorcycle make from the list.")
+             else:
+                 # A valid brand was selected. Find the ServiceBrand object to return canonical name.
+                 canonical_brand = ServiceBrand.objects.get(name__iexact=submitted_make_name)
+                 return canonical_brand.name
+
+    # Keep your existing clean methods as they are now part of the CharField logic
     def clean_rego(self):
          if self.cleaned_data.get('rego'):
              return self.cleaned_data['rego'].upper()
