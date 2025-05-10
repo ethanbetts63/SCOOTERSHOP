@@ -5,11 +5,8 @@ from django.utils.translation import gettext_lazy as _
 import datetime
 
 # Import models from the dashboard app
-# Assuming BlockedDate is in models.py, import it here
-from .models import AboutPageContent, SiteSettings, BlockedDate
+from .models import AboutPageContent, SiteSettings, BlockedDate, ServiceBrand
 from service.models import ServiceType
-# Import models from other apps if needed
-# from service.models import ServiceType # Assuming ServiceType moved to service app
 
 
 class AboutPageContentForm(forms.ModelForm):
@@ -88,7 +85,6 @@ class VisibilitySettingsForm(forms.ModelForm):
             'enable_returns_page',
             'enable_security_page',
             'enable_terms_page',
-            # Add enable_google_places_reviews here if you want to control it via this form
             'enable_google_places_reviews',
         ]
         widgets = {
@@ -145,11 +141,8 @@ class ServiceBookingSettingsForm(forms.ModelForm):
         end_time = cleaned_data.get('drop_off_end_time')
 
         if start_time and end_time and start_time >= end_time:
-            # Use add_error to associate the error with specific fields if desired
             self.add_error('drop_off_start_time', _("Booking start time must be earlier than end time."))
             self.add_error('drop_off_end_time', _("Booking end time must be earlier than start time."))
-            # Or raise a general ValidationError
-            # raise forms.ValidationError(_("Booking start time must be earlier than end time."))
 
 
         return cleaned_data
@@ -186,11 +179,8 @@ class HireBookingSettingsForm(forms.ModelForm):
         max_days = cleaned_data.get('maximum_hire_duration_days')
 
         if min_days is not None and max_days is not None and min_days > max_days:
-            # Use add_error for specific fields
             self.add_error('minimum_hire_duration_days', _("Minimum duration must be less than or equal to maximum duration."))
             self.add_error('maximum_hire_duration_days', _("Maximum duration must be greater than or equal to minimum duration."))
-            # Or raise a general ValidationError
-            # raise forms.ValidationError(_("Minimum hire duration must be less than or equal to maximum hire duration."))
 
 
         deposit = cleaned_data.get('default_hire_deposit_percentage')
@@ -199,10 +189,6 @@ class HireBookingSettingsForm(forms.ModelForm):
                            _("Deposit percentage must be between 0 and 100."))
 
         return cleaned_data
-
-
-# Assuming ServiceType model is in the service app
-# from service.models import ServiceType
 
 class ServiceTypeForm(forms.ModelForm):
     # These fields are for capturing days and hours separately in the form
@@ -265,4 +251,42 @@ class BlockedDateForm(forms.ModelForm):
 
         if start_date and end_date and start_date > end_date:
             raise forms.ValidationError("End date cannot be before the start date.")
+        return cleaned_data
+    
+
+class ServiceBrandForm(forms.ModelForm):
+    class Meta:
+        model = ServiceBrand
+        fields = ['name', 'image', 'is_primary']
+        widgets = {
+            # Optional: Add widgets if you want specific HTML attributes, e.g.,
+            # 'name': forms.TextInput(attrs={'class': 'my-input-class'}),
+        }
+        help_texts = {
+            'name': "The name of the service brand.",
+            'image': "Upload an image for this brand. Required for 'Primary' brands.",
+            'is_primary': "Check this box to mark the brand as primary. Requires an image."
+        }
+
+    # Add custom validation for the 5 primary brand limit and image requirement
+    def clean(self):
+        cleaned_data = super().clean()
+        is_primary = cleaned_data.get('is_primary')
+        image = cleaned_data.get('image')
+
+        # Server-side validation: Primary requires image
+        if is_primary and not image:
+            # Use add_error for field-specific error
+            self.add_error('is_primary', "Primary brands require an image.")
+            # Or for a non-field error:
+            # raise forms.ValidationError("Primary brands require an image.")
+
+
+        # Server-side validation: 5 primary brand limit
+        # Check the count of existing primary brands *before* saving this one
+        # This check is slightly more complex here because it depends on whether
+        # the form instance is new or existing (though we are only adding here)
+        # Let's refine this check in the view where we know if it's a new object.
+        # The view logic will handle the count check based on the form data.
+
         return cleaned_data

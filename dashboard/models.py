@@ -205,3 +205,29 @@ class BlockedDate(models.Model):
         ordering = ['start_date']
         verbose_name = "Blocked Service Date"
         verbose_name_plural = "Blocked Service Dates"
+
+# Model for brands that can be worked on 
+class ServiceBrand(models.Model):
+    """
+    Model to store brands that the business services.
+    Includes a flag to mark primary brands for prominent display.
+    """
+    name = models.CharField(max_length=100, unique=True, help_text="Name of the service brand (e.g., 'Yamaha', 'Vespa').")
+    is_primary = models.BooleanField(default=False, help_text="Check if this is a primary brand to display prominently (e.g., on the About page).")
+    image = models.ImageField(
+        upload_to='brands/', # Directory inside MEDIA_ROOT to upload images
+        null=True,
+        blank=True,
+        help_text="Optional image for primary brands. Only used if 'Is Primary' is checked."
+    )
+    # Consider adding ordering if needed, e.g., display_order = models.IntegerField(default=0)
+
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Service Brand"
+        verbose_name_plural = "Service Brands"
+        ordering = ['name'] # Order brands alphabetically by default

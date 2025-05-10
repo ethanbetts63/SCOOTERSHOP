@@ -1,0 +1,186 @@
+{% extends "dashboard/admin_layout.html" %}
+{% load static %}
+
+{% block admin_main_content %}
+<div class="service-brands-container">
+    <div class="page-header">
+        <h2>{{ page_title }}</h2>
+    </div>
+
+    <hr>
+
+    {% if messages %}
+    <div class="messages-container">
+        <ul>
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {# Section for adding a new brand #}
+    <div class="add-brand-section form-field"> {# Using form-field class for structure #}
+        <h3 class="section-title">Add New Service Brand</h3>
+
+        {# Form for adding a new brand - MUST include enctype for file uploads #}
+        <form method="post" enctype="multipart/form-data" id="addBrandForm">
+            {% csrf_token %}
+
+            <div class="form-field">
+                {{ form.name.label_tag }}
+                {{ form.name }}
+                {% if form.name.errors %}
+                    {% for error in form.name.errors %}
+                        <small class="error-text">{{ error }}</small> {# Add a class for error styling #}
+                    {% endfor %}
+                {% endif %}
+                 {% if form.name.help_text %}
+                    <small>{{ form.name.help_text }}</small>
+                 {% endif %}
+            </div>
+
+            <div class="form-field">
+                {{ form.image.label_tag }}
+                {{ form.image }}
+                {% if form.image.errors %}
+                    {% for error in form.image.errors %}
+                        <small class="error-text">{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
+                 {% if form.image.help_text %}
+                    <small>{{ form.image.help_text }}</small>
+                 {% endif %}
+            </div>
+
+             <div class="form-field checkbox-field"> {# Add a class for checkbox layout if needed #}
+                <input type="checkbox" id="{{ form.is_primary.id_for_label }}" name="{{ form.is_primary.html_name }}" {% if form.is_primary.value %}checked{% endif %}>
+                <label for="{{ form.is_primary.id_for_label }}">{{ form.is_primary.label }}</label>
+                {% if form.is_primary.errors %}
+                    {% for error in form.is_primary.errors %}
+                        <small class="error-text">{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
+                 {% if form.is_primary.help_text %}
+                    <small>{{ form.is_primary.help_text }}</small>
+                 {% endif %}
+            </div>
+
+            {# Non-field errors for the form #}
+            {% if form.non_field_errors %}
+                <div class="form-field">
+                    {% for error in form.non_field_errors %}
+                        <small class="error-text">{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <button type="submit" name="add_brand_submit">Add Service Brand</button>
+        </form>
+    </div>
+
+    <hr>
+
+    {# Section for listing existing brands #}
+    <div class="existing-brands-section form-field"> {# Using form-field class for structure #}
+        <h3 class="section-title">Existing Service Brands ({{ service_brands.count }})</h3>
+        {% if primary_brands_count >= max_primary_brands %}
+             <p class="warning-text">You currently have {{ primary_brands_count }} primary brands. The maximum allowed is {{ max_primary_brands }}. You must delete a primary brand before adding another primary brand.</p>
+        {% endif %}
+
+
+        {% if service_brands %}
+            <div class="brands-list">
+                {% for brand in service_brands %}
+                    {# Add 'primary' class if the brand is primary #}
+                    <div class="brand-tile {% if brand.is_primary %}primary{% endif %}">
+                        {# Display image if available #}
+                        {% if brand.image %}
+                            <div class="brand-image">
+                                <img src="{{ brand.image.url }}" alt="{{ brand.name }} image">
+                            </div>
+                        {% endif %}
+                        <div class="brand-info">
+                            <h4>{{ brand.name }}</h4>
+                            <p>Status: {% if brand.is_primary %}Primary{% else %}Standard{% endif %}</p>
+                             {% if not brand.image and brand.is_primary %}
+                                <p class="error-text">Error: This primary brand is missing an image!</p> {# Should not happen with server validation, but good fallback #}
+                            {% endif %}
+                        </div>
+                        <div class="brand-actions">
+                             {# Form for deleting a brand - separate form for each item #}
+                             <form method="post" action="{% url 'dashboard:delete_service_brand' pk=brand.pk %}" class="inline-form">
+                                {% csrf_token %}
+                                {# We are now using a separate delete view, so we don't need the hidden input with pk name used for checking in one view #}
+                                <button type="submit" class="btn-delete" onclick="return confirm('Are you sure you want to delete the service brand \'{{ brand.name }}\'?');">Delete</button>
+                             </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No service brands added yet.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const addBrandForm = document.getElementById('addBrandForm');
+        const imageInput = addBrandForm.querySelector('#{{ form.image.id_for_label }}'); // Get the image file input by its generated ID
+        const isPrimaryCheckbox = addBrandForm.querySelector('#{{ form.is_primary.id_for_label }}'); // Get the checkbox by its generated ID
+        const maxPrimaryBrands = '{{ max_primary_brands }}'; // Get limit from context
+        const currentPrimaryBrands = '{{ primary_brands_count }}'; // Get current count from context
+
+        // Function to update the disabled state of the 'is_primary' checkbox
+        function updatePrimaryCheckboxState() {
+            // Check if a file is selected in the image input
+            const fileSelected = imageInput.files && imageInput.files.length > 0;
+
+            // Disable the checkbox if no file is selected OR if the primary limit is reached
+            if (!fileSelected || (currentPrimaryBrands >= maxPrimaryBrands && !isPrimaryCheckbox.checked)) {
+                 isPrimaryCheckbox.disabled = true;
+                 // If it was checked but now disabled (because image removed or limit reached), uncheck it
+                 if (!fileSelected && isPrimaryCheckbox.checked) {
+                     isPrimaryCheckbox.checked = false;
+                 }
+                  // If limit reached and user is trying to check it, prevent it
+                 if (currentPrimaryBrands >= maxPrimaryBrands && !isPrimaryCheckbox.checked && fileSelected) {
+                      // This specific case is better handled on click for immediate feedback
+                 }
+
+
+            } else {
+                // Enable the checkbox if a file IS selected and limit is not reached (or it's already primary)
+                isPrimaryCheckbox.disabled = false;
+            }
+        }
+
+        // Add event listener to the image input
+        imageInput.addEventListener('change', updatePrimaryCheckboxState);
+
+         // Add click listener to the checkbox for immediate feedback on limit
+        isPrimaryCheckbox.addEventListener('click', function(event) {
+            // If the checkbox is currently unchecked and the limit is reached
+            if (!isPrimaryCheckbox.checked && currentPrimaryBrands >= maxPrimaryBrands) {
+                 // Check if an image is selected - it *should* be enabled if we reach here
+                 const fileSelected = imageInput.files && imageInput.files.length > 0;
+                 if (fileSelected) { // Only show message if they have an image but hit the limit
+                    alert('You have reached the maximum number of primary brands (' + maxPrimaryBrands + '). Please delete a primary brand before adding a new one.');
+                    event.preventDefault(); // Prevent checking the box
+                 }
+                 // If no fileSelected, the updatePrimaryCheckboxState already disabled it.
+            }
+             // updatePrimaryCheckboxState will run after this click handler if the state changes
+        });
+
+
+        // Initial state setup on page load
+        updatePrimaryCheckboxState();
+    });
+</script>
+{% endblock %}
+
+{% endblock %}

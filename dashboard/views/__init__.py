@@ -1,6 +1,6 @@
 # dashboard/views/__init__.py
 
-# Imports for dashboard and settings views (formerly in dashboard.py)
+# Imports for dashboard and settings views
 from .dashboard import (
     dashboard_index,
     settings_business_info,
@@ -12,7 +12,9 @@ from .dashboard import (
     add_service_type,
     settings_visibility,
     edit_about_page,
-    toggle_service_type_active_status
+    toggle_service_type_active_status, 
+    service_brands_management
+
 )
 
 # Import booking views and the helper function from the new bookings.py file
@@ -21,5 +23,5 @@ from .bookings import (
     service_booking_details_view,
     get_bookings_json,
     is_staff_check,
-    service_booking_search_view, # Import the new search view
+    service_booking_search_view, 
 )
