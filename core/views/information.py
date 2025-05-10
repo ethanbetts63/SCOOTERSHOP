@@ -16,7 +16,7 @@ def contact(request):
     Redirects to home if neither page is enabled and user is not staff.
     """
     site_settings = SiteSettings.get_settings() # Get your site settings
-
+    api_key = settings.GOOGLE_API_KEY
     # Check if the page should be accessible based on settings and staff status
     # The page is accessible if contact is enabled OR about is enabled OR the user is staff
     if not (site_settings.enable_contact_page or site_settings.enable_about_page or request.user.is_staff):
@@ -36,6 +36,7 @@ def contact(request):
     context = {
         'settings': site_settings,
         'about_content': about_content,
+        'google_api_key': settings.GOOGLE_API_KEY,
     }
 
     # Render the contact template
