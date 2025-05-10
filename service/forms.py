@@ -356,7 +356,7 @@ class ServiceBookingUserForm(forms.Form):
         required=True
     )
     email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control'}), required=True)
-    phone_number = forms.CharField(max_length=20, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    phone_number = forms.CharField(max_length=20, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
     preferred_contact = forms.ChoiceField(
         choices=ServiceBooking.CONTACT_CHOICES,
         widget=forms.RadioSelect,
