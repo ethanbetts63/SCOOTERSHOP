@@ -163,18 +163,6 @@
                             </li>
                         {% endif %}
 
-                         {% if settings.enable_service_booking or user.is_staff %}
-                            <li>
-                                <a href="{% url 'service:service' %}"
-                                   {% if not settings.enable_service_booking and user.is_staff %}
-                                        style="color: #08E5D1;" {# Bright turquoise color #}
-                                   {% endif %}
-                                >
-                                    Service Booking
-                                </a>
-                            </li>
-                        {% endif %}
-
                         {% if settings.enable_hire or user.is_staff %}
                             <li>
                                 <a href="{% url 'inventory:hire' %}"
