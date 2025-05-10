@@ -48,9 +48,11 @@
                     <div class="form-fields-container">
                         {% for field in existing_bike_form %}
                             <div class="form-field">
-                                {{ field.label_tag }}
-                                {% if field.field.required %}*
-                                {% endif %}
+                                {# Manual label construction to include required indicator inside #}
+                                <label for="{{ field.id_for_label }}">
+                                    {{ field.label }}
+                                    {% if field.field.required %}<span class="required-indicator">*</span>{% endif %}
+                                </label>
                                 {{ field }}
                                 {% if field.help_text %}
                                     <small id="{{ field.id_for_label }}_help" class="help-text">{{ field.help_text }}</small>
@@ -104,9 +106,11 @@
             <div class="form-fields-container">
                 {% for field in motorcycle_form %}
                     <div class="form-field">
-                        {{ field.label_tag }}
-                        {% if field.field.required %}*
-                        {% endif %}
+                        {# Manual label construction to include required indicator inside #}
+                        <label for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                            {% if field.field.required %}<span class="required-indicator">*</span>{% endif %}
+                        </label>
                         {{ field }}
                         {% if field.help_text %}
                             <small id="{{ field.id_for_label }}_help" class="help-text">{{ field.help_text }}</small>
@@ -138,7 +142,6 @@
     </div>
 </div>
 {% endblock %}
-
 
 {% block extra_js %}
 
