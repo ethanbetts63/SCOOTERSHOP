@@ -258,13 +258,9 @@ class ServiceBrandForm(forms.ModelForm):
     class Meta:
         model = ServiceBrand
         fields = ['name', 'image', 'is_primary']
-        widgets = {
-            # Optional: Add widgets if you want specific HTML attributes, e.g.,
-            # 'name': forms.TextInput(attrs={'class': 'my-input-class'}),
-        }
         help_texts = {
             'name': "The name of the service brand.",
-            'image': "Upload an image for this brand. Required for 'Primary' brands.",
+            'image': "Upload an image for this brand. Required for 'Primary' brands. Not necessary for regular brand",
             'is_primary': "Check this box to mark the brand as primary. Requires an image."
         }
 
