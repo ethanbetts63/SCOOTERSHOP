@@ -260,29 +260,18 @@ class ServiceBrandForm(forms.ModelForm):
         fields = ['name', 'image', 'is_primary']
         help_texts = {
             'name': "The name of the service brand.",
-            'image': "Upload an image for this brand. Required for 'Primary' brands. Not necessary for regular brand",
-            'is_primary': "Check this box to mark the brand as primary. Requires an image."
+            'image': f"Upload an image for this brand. Required for 'Primary' brands.",
+            'is_primary': f"Check this box to mark the brand as primary (limit: 5). Requires an image."
         }
-
-    # Add custom validation for the 5 primary brand limit and image requirement
+    
     def clean(self):
         cleaned_data = super().clean()
         is_primary = cleaned_data.get('is_primary')
         image = cleaned_data.get('image')
-
+        
         # Server-side validation: Primary requires image
         if is_primary and not image:
-            # Use add_error for field-specific error
-            self.add_error('is_primary', "Primary brands require an image.")
-            # Or for a non-field error:
-            # raise forms.ValidationError("Primary brands require an image.")
-
-
-        # Server-side validation: 5 primary brand limit
-        # Check the count of existing primary brands *before* saving this one
-        # This check is slightly more complex here because it depends on whether
-        # the form instance is new or existing (though we are only adding here)
-        # Let's refine this check in the view where we know if it's a new object.
-        # The view logic will handle the count check based on the form data.
-
+            self.add_error('image', "Primary brands require an image.")
+        
         return cleaned_data
+

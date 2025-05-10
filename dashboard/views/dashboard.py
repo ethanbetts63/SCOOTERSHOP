@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.urls import reverse
+from django.db import transaction
 from dashboard.models import SiteSettings, AboutPageContent, BlockedDate, ServiceBrand
 from service.models import ServiceType 
 
@@ -259,33 +260,40 @@ def toggle_service_type_active_status(request, pk):
 def service_brands_management(request):
     """
     Dashboard view for managing service brands.
-    Handles adding new brands and deleting existing ones.
+    Handles adding new brands and editing existing ones.
     """
-    service_brands = ServiceBrand.objects.all().order_by('is_primary', 'name') # Order primary first, then by name
+    service_brands = ServiceBrand.objects.all().order_by('-is_primary', 'name')  # Order primary first, then by name
     primary_brands_count = ServiceBrand.objects.filter(is_primary=True).count()
-    max_primary_brands = 5 # Define the limit
-
-    # Handle POST requests (Add or Delete)
+    
+    # Initialize form variables
+    form = None
+    edit_brand = None
+    
+    # Handle POST requests (Add, Edit, or Delete)
     if request.method == 'POST':
-        # Handle Add Brand Form Submission
+        # Handle Add/Edit Brand Form Submission
         if 'add_brand_submit' in request.POST:
-            form = ServiceBrandForm(request.POST, request.FILES)
+            # Check if we're editing an existing brand
+            brand_id = request.POST.get('brand_id')
+            if brand_id:
+                edit_brand = get_object_or_404(ServiceBrand, pk=brand_id)
+                form = ServiceBrandForm(request.POST, request.FILES, instance=edit_brand)
+            else:
+                form = ServiceBrandForm(request.POST, request.FILES)
+            
             if form.is_valid():
-                new_brand = form.save(commit=False) # Don't save to DB yet
-
-                # Server-side check for the 5 primary brand limit
-                if new_brand.is_primary and primary_brands_count >= max_primary_brands:
-                    messages.error(request, f"Cannot add more than {max_primary_brands} primary brands.")
-                    # We don't save, render the page with the form data and error
-                else:
-                    try:
-                        new_brand.save()
-                        messages.success(request, f"Service brand '{new_brand.name}' added successfully.")
-                        return redirect('dashboard:settings_service_brands') # Redirect on success
-                    except Exception as e: # Catch potential database errors (e.g., unique constraint)
-                        messages.error(request, f"Error adding service brand: {e}")
-                        # Fall through to render with form data and error
-
+                try:
+                    with transaction.atomic():
+                        brand = form.save()
+                    
+                    action = "updated" if brand_id else "added"
+                    messages.success(request, f"Service brand '{brand.name}' {action} successfully.")
+                    return redirect('dashboard:service_brands_management')
+                except ValueError as e:
+                    # Catch the specific error raised by our model's save method
+                    messages.error(request, str(e))
+                except Exception as e:
+                    messages.error(request, f"Error saving service brand: {e}")
             else:
                 # Form is not valid, errors are attached to the form
                 messages.error(request, "Please correct the errors below.")
@@ -295,48 +303,56 @@ def service_brands_management(request):
             brand_pk = request.POST.get('delete_brand_pk')
             try:
                 brand_to_delete = get_object_or_404(ServiceBrand, pk=brand_pk)
+                brand_name = brand_to_delete.name
                 brand_to_delete.delete()
-                messages.success(request, f"Service brand '{brand_to_delete.name}' deleted successfully.")
+                messages.success(request, f"Service brand '{brand_name}' deleted successfully.")
             except Exception as e:
-                 messages.error(request, f"Error deleting service brand: {e}")
-            finally:
-                 # Always redirect after delete POST to prevent resubmission
-                 return redirect('dashboard:settings_service_brands')
-
+                messages.error(request, f"Error deleting service brand: {e}")
+            return redirect('dashboard:service_brands_management')
+        
+        # Handle Edit Request (GET form for editing)
+        elif 'edit_brand_pk' in request.POST:
+            brand_pk = request.POST.get('edit_brand_pk')
+            edit_brand = get_object_or_404(ServiceBrand, pk=brand_pk)
+            form = ServiceBrandForm(instance=edit_brand)
+        
         else:
             # Unexpected POST request
             messages.error(request, "Invalid request.")
-            # Fall through to render the page
-
-    else: # Handle GET request
-        form = ServiceBrandForm() # Empty form for adding
-
+    
+    # Handle GET request or form preparation after POST
+    if form is None:  # Only create a new form if not already set
+        form = ServiceBrandForm(instance=edit_brand)  # Empty form or populated for editing
+    
     # Prepare context for rendering
     context = {
-        'form': form, # Pass the form (either empty on GET or with errors on POST)
-        'service_brands': service_brands, # List of all brands
+        'form': form,
+        'edit_brand': edit_brand,  # Pass the brand being edited (if any)
+        'service_brands': service_brands,
         'primary_brands_count': primary_brands_count,
-        'max_primary_brands': max_primary_brands,
-        'page_title': 'Manage Service Brands', # Title for the template
+        'max_primary_brands': 5,
+        'page_title': 'Manage Service Brands',
     }
-
+    
     return render(request, 'dashboard/service_brands_management.html', context)
 
 
-# Add a decorator for the delete action specifically for robustness
 @user_passes_test(lambda u: u.is_staff)
 def delete_service_brand(request, pk):
     """
     View to handle deleting a service brand via POST request.
-    Separate view is cleaner for just deletion.
+    Separate view for cleaner URL routing.
     """
+    if request.method != 'POST':
+        messages.error(request, "Invalid request method. Please use the form to delete brands.")
+        return redirect('dashboard:service_brands_management')
+    
     try:
         brand_to_delete = get_object_or_404(ServiceBrand, pk=pk)
-        brand_name = brand_to_delete.name # Get name before deleting
+        brand_name = brand_to_delete.name
         brand_to_delete.delete()
         messages.success(request, f"Service brand '{brand_name}' deleted successfully.")
     except Exception as e:
         messages.error(request, f"Error deleting service brand: {e}")
-
-    # Redirect back to the management page
-    return redirect('dashboard:settings_service_brands')
+    
+    return redirect('dashboard:service_brands_management')

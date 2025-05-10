@@ -94,8 +94,8 @@
     {# Section for listing existing brands #}
     <div class="form-field"> {# Using form-field class for structure #}
         <h3 class="booking-section-title">Existing Service Brands ({{ service_brands.count }})</h3> {# Use booking-section-title #}
-        {% if primary_brands_count >= max_primary_brands %}
-             <p class="warning-text">You currently have {{ primary_brands_count }} primary brands. The maximum allowed is {{ max_primary_brands }}. You must delete a primary brand before adding another primary brand.</p> {# Keep warning-text #}
+        {% if primary_brands_count >= 5 %}
+             <p class="warning-text">You currently have {{ primary_brands_count }} primary brands. The maximum allowed is {{ 5 }}. You must delete a primary brand before adding another primary brand.</p> {# Keep warning-text #}
         {% endif %}
 
 
@@ -140,7 +140,7 @@
         const addBrandForm = document.getElementById('addBrandForm');
         const imageInput = addBrandForm.querySelector('#{{ form.image.id_for_label }}'); // Get the image file input by its generated ID
         const isPrimaryCheckbox = addBrandForm.querySelector('#{{ form.is_primary.id_for_label }}'); // Get the checkbox by its generated ID
-        const maxPrimaryBrands = '{{ max_primary_brands }}'; // Get limit from context
+        const maxPrimaryBrands = 5;
         const currentPrimaryBrands = '{{ primary_brands_count }}'; // Get current count from context
 
         // Function to update the disabled state of the 'is_primary' checkbox
