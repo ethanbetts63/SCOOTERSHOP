@@ -5,15 +5,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.urls import reverse
-
-# Import models from the dashboard app
-# Import BlockedDate model
 from dashboard.models import SiteSettings, AboutPageContent, BlockedDate, ServiceBrand
-from service.models import ServiceType # <-- Re-added this import
+from service.models import ServiceType 
 
-
-# Import forms from the dashboard app (Keep forms needed by remaining views)
-# Import BlockedDateForm
 from dashboard.forms import (
     BusinessInfoForm,
     HireBookingSettingsForm,
@@ -25,11 +19,7 @@ from dashboard.forms import (
     ServiceBrandForm
 )
 
-# Import is_staff_check from the new bookings.py file
-from .bookings import is_staff_check
-
-
-@user_passes_test(is_staff_check)
+@user_passes_test(lambda u: u.is_staff)
 def dashboard_index(request):
     context = {
         'page_title': 'Admin Dashboard',
@@ -39,7 +29,7 @@ def dashboard_index(request):
     return render(request, 'dashboard/dashboard_index.html', context)
 
 # --- Existing Settings Views (Keep these) ---
-@user_passes_test(is_staff_check)
+@user_passes_test(lambda u: u.is_staff)
 def settings_business_info(request):
     settings = SiteSettings.get_settings()
     if request.method == 'POST':
@@ -58,7 +48,7 @@ def settings_business_info(request):
     return render(request, 'dashboard/settings_business_info.html', context)
 
 
-@user_passes_test(is_staff_check)
+@user_passes_test(lambda u: u.is_staff)
 def settings_hire_booking(request):
     settings = SiteSettings.get_settings()
     if request.method == 'POST':
@@ -77,7 +67,7 @@ def settings_hire_booking(request):
     return render(request, 'dashboard/settings_hire_booking.html', context)
 
 
-@user_passes_test(is_staff_check)
+@user_passes_test(lambda u: u.is_staff)
 def settings_service_booking(request):
     settings = SiteSettings.get_settings()
     blocked_dates = BlockedDate.objects.all() # Get all blocked dates
@@ -132,7 +122,7 @@ def settings_service_booking(request):
     return render(request, 'dashboard/settings_service_booking.html', context)
 
 
-@user_passes_test(is_staff_check)
+@user_passes_test(lambda u: u.is_staff)
 def settings_service_types(request):
     # Get all service types - Requires ServiceType model import
     service_types = ServiceType.objects.all().order_by('name')
@@ -144,7 +134,7 @@ def settings_service_types(request):
     return render(request, 'dashboard/settings_service_types.html', context)
 
 
-@user_passes_test(is_staff_check)
+@user_passes_test(lambda u: u.is_staff)
 def delete_service_type(request, pk):
     # Requires get_object_or_404, ServiceType, messages imports
     service_type = get_object_or_404(ServiceType, pk=pk)
@@ -160,7 +150,7 @@ def delete_service_type(request, pk):
     return render(request, 'dashboard/delete_service_type.html', context)
 
 
-@user_passes_test(is_staff_check)
+@user_passes_test(lambda u: u.is_staff)
 def edit_service_type(request, pk):
     # Requires get_object_or_404, ServiceType, ServiceTypeForm, messages imports
     service_type = get_object_or_404(ServiceType, pk=pk)
@@ -181,7 +171,7 @@ def edit_service_type(request, pk):
     return render(request, 'dashboard/add_edit_service_type.html', context)
 
 
-@user_passes_test(is_staff_check)
+@user_passes_test(lambda u: u.is_staff)
 def add_service_type(request):
     # Requires ServiceTypeForm, messages imports
     if request.method == 'POST':
@@ -204,7 +194,7 @@ def add_service_type(request):
     return render(request, 'dashboard/add_edit_service_type.html', context)
 
 
-@user_passes_test(is_staff_check)
+@user_passes_test(lambda u: u.is_staff)
 def settings_visibility(request):
     settings = SiteSettings.get_settings()
     if request.method == 'POST':
@@ -222,7 +212,7 @@ def settings_visibility(request):
     }
     return render(request, 'dashboard/settings_visibility.html', context)
 
-@user_passes_test(is_staff_check)
+@user_passes_test(lambda u: u.is_staff)
 def edit_about_page(request):
     about_content, created = AboutPageContent.objects.get_or_create()
     if request.method == 'POST':
@@ -246,7 +236,7 @@ def edit_about_page(request):
     # Add import at the top:
 from django.http import JsonResponse
 
-@user_passes_test(is_staff_check)
+@user_passes_test(lambda u: u.is_staff)
 def toggle_service_type_active_status(request, pk):
     # Ensure only POST requests are accepted
     if request.method == 'POST':
@@ -265,7 +255,7 @@ def toggle_service_type_active_status(request, pk):
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
-@is_staff_check
+@user_passes_test(lambda u: u.is_staff)
 def service_brands_management(request):
     """
     Dashboard view for managing service brands.
@@ -334,7 +324,7 @@ def service_brands_management(request):
 
 
 # Add a decorator for the delete action specifically for robustness
-@is_staff_check
+@user_passes_test(lambda u: u.is_staff)
 def delete_service_brand(request, pk):
     """
     View to handle deleting a service brand via POST request.

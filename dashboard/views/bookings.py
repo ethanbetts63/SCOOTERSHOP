@@ -3,7 +3,7 @@ import calendar
 from datetime import date, timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import user_passes_test # Import user_passes_test
 from django.urls import reverse
 from django.db.models import Count, Q
 from django.utils import timezone
@@ -14,12 +14,10 @@ from django.utils.dateparse import parse_datetime
 from service.models import ServiceBooking, ServiceType # Ensure your model path is correct
 from dashboard.models import BlockedDate # Corrected import
 
-# Helper function to check if a user is staff
-def is_staff_check(user):
-    return user.is_staff
+# REMOVE the is_staff_check function definition here
 
 # View for the service bookings list page
-@user_passes_test(is_staff_check)
+@user_passes_test(lambda u: u.is_staff) # Use lambda directly
 def service_bookings_view(request):
     bookings = ServiceBooking.objects.all().order_by('-appointment_date')
 
@@ -30,7 +28,7 @@ def service_bookings_view(request):
     return render(request, 'dashboard/service_bookings.html', context) # Make sure this template name is correct
 
 # View for displaying details of a single service booking
-@user_passes_test(is_staff_check)
+@user_passes_test(lambda u: u.is_staff) # Use lambda directly
 def service_booking_details_view(request, pk):
     booking = get_object_or_404(ServiceBooking, pk=pk)
 
@@ -41,7 +39,7 @@ def service_booking_details_view(request, pk):
     return render(request, 'dashboard/service_booking_details.html', context) # Make sure this template name is correct
 
 # Returns service bookings and blocked dates as a JSON feed for FullCalendar
-@user_passes_test(is_staff_check)
+@user_passes_test(lambda u: u.is_staff) # Use lambda directly
 def get_bookings_json(request):
     start_param = request.GET.get('start')
     end_param = request.GET.get('end')
@@ -59,19 +57,19 @@ def get_bookings_json(request):
             end_date = parse_datetime(end_param)
 
             if start_date and end_date:
-                 bookings = bookings.filter(
-                     appointment_date__gte=start_date,
-                     appointment_date__lt=end_date # Use lt for end date as FullCalendar end is exclusive
-                 )
-                 # Filter blocked dates that overlap with the requested range
-                 blocked_dates = blocked_dates.filter(
-                     start_date__lte=end_date.date(), # Compare date parts
-                     end_date__gte=start_date.date()   # Compare date parts
-                 )
+                bookings = bookings.filter(
+                    appointment_date__gte=start_date,
+                    appointment_date__lt=end_date # Use lt for end date as FullCalendar end is exclusive
+                )
+                # Filter blocked dates that overlap with the requested range
+                blocked_dates = blocked_dates.filter(
+                    start_date__lte=end_date.date(), # Compare date parts
+                    end_date__gte=start_date.date()  # Compare date parts
+                )
 
 
         except (ValueError, TypeError):
-             pass # Handle potential parsing errors
+            pass # Handle potential parsing errors
 
 
     events = []
@@ -102,26 +100,27 @@ def get_bookings_json(request):
 
     # Add blocked date events as regular events with a specific property and class
     for blocked_date_range in blocked_dates:
-         current_date = blocked_date_range.start_date
-         while current_date <= blocked_date_range.end_date:
-             blocked_event = {
-                 'start': current_date.isoformat(),
-                 'title': 'Blocked Day', # Title for the tile
-                 'extendedProps': {
-                     'is_blocked': True, # Custom property to identify blocked dates
-                     'description': blocked_date_range.description, # Include description
-                 },
-                 'className': 'blocked-date-tile', # Custom class for styling
-                 'display': 'block', # Ensure it's treated as a regular event
-             }
-             events.append(blocked_event)
-             current_date += timedelta(days=1)
+        current_date = blocked_date_range.start_date
+        # Ensure end_date is included by adding one day for iteration comparison
+        while current_date <= blocked_date_range.end_date:
+            blocked_event = {
+                'start': current_date.isoformat(),
+                'title': 'Blocked Day', # Title for the tile
+                'extendedProps': {
+                    'is_blocked': True, # Custom property to identify blocked dates
+                    'description': blocked_date_range.description, # Include description
+                },
+                'className': 'blocked-date-tile', # Custom class for styling
+                'display': 'block', # Ensure it's treated as a regular event
+            }
+            events.append(blocked_event)
+            current_date += timedelta(days=1)
 
 
     return JsonResponse(events, safe=False)
 
 # View for the service booking search page
-@user_passes_test(is_staff_check)
+@user_passes_test(lambda u: u.is_staff) # Use lambda directly
 def service_booking_search_view(request):
     query = request.GET.get('q')
     # Default sort matches the default option value in the template
@@ -144,7 +143,7 @@ def service_booking_search_view(request):
 
     # --- Filtering by Status ---
     if selected_statuses:
-         bookings = bookings.filter(status__in=selected_statuses)
+        bookings = bookings.filter(status__in=selected_statuses)
 
     # --- Filtering by Search Query ---
     if query:

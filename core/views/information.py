@@ -2,7 +2,7 @@
 
 from django.shortcuts import render, redirect
 from django.conf import settings
-from dashboard.models import SiteSettings, AboutPageContent # Assuming models are in core.models
+from dashboard.models import SiteSettings, AboutPageContent 
 from django.contrib.auth.decorators import user_passes_test # Import for staff check
 
 # Helper function to check if user is staff
