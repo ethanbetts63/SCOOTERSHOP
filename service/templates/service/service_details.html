@@ -4,10 +4,10 @@
 {% block title %}Book Service - Step 1{% endblock %}
 
 {% block extra_css %}
-    {# Include Flatpickr CSS #}
+    <!-- Include Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
-    <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}"> {# Removed duplicate #}
+    <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -20,68 +20,58 @@
     <hr>
 
     {% if messages %}
-    <div class="messages-container">
-        <ul>
-            {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    </div>
+        <div class="messages-container">
+            <ul>
+                {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
     {% endif %}
 
     <form method="post">
         {% csrf_token %}
 
-        {# Service Type Field #}
         <div class="form-field">
             {{ form.service_type.label_tag }}
-            {% if form.service_type.field.required %}
-                *
-            {% endif %}
+            {% if form.service_type.field.required %} *{% endif %}
             {{ form.service_type }}
             {% if form.service_type.help_text %}
-                <small id="{{ form.service_type.id_for_label }}_help" class="help-text">{{ form.service_type.help_text }}</small> {# Wrap help text in <small> #}
+                <small id="{{ form.service_type.id_for_label }}_help" class="help-text">
+                    {{ form.service_type.help_text }}
+                </small>
             {% endif %}
-            {% if form.service_type.errors %}
-                {% for error in form.service_type.errors %}
-                    <small class="error-text">{{ error }}</small> {# Added class for potential styling #}
-                {% endfor %}
-            {% endif %}
+            {% for error in form.service_type.errors %}
+                <small class="error-text">{{ error }}</small>
+            {% endfor %}
         </div>
 
-        {# Appointment Date Field #}
         <div class="form-field">
             {{ form.appointment_date.label_tag }}
-            {% if form.appointment_date.field.required %}
-                *
-            {% endif %}
+            {% if form.appointment_date.field.required %} *{% endif %}
             {{ form.appointment_date }}
             {% if form.appointment_date.help_text %}
-                <small id="{{ form.appointment_date.id_for_label }}_help" class="help-text">{{ form.appointment_date.help_text }}</small> {# Wrap help text in <small> #}
+                <small id="{{ form.appointment_date.id_for_label }}_help" class="help-text">
+                    {{ form.appointment_date.help_text }}
+                </small>
             {% endif %}
-            {% if form.appointment_date.errors %}
-                {% for error in form.appointment_date.errors %}
-                    <small class="error-text">{{ error }}</small> {# Added class for potential styling #}
-                {% endfor %}
-            {% endif %}
+            {% for error in form.appointment_date.errors %}
+                <small class="error-text">{{ error }}</small>
+            {% endfor %}
         </div>
 
-        {# Drop Off Time Field #}
         <div class="form-field">
             {{ form.drop_off_time.label_tag }}
-            {% if form.drop_off_time.field.required %}
-                *
-            {% endif %}
+            {% if form.drop_off_time.field.required %} *{% endif %}
             {{ form.drop_off_time }}
             {% if form.drop_off_time.help_text %}
-                <small id="{{ form.drop_off_time.id_for_label }}_help" class="help-text">{{ form.drop_off_time.help_text }}</small> {# Wrap help text in <small> #}
+                <small id="{{ form.drop_off_time.id_for_label }}_help" class="help-text">
+                    {{ form.drop_off_time.help_text }}
+                </small>
             {% endif %}
-            {% if form.drop_off_time.errors %}
-                {% for error in form.drop_off_time.errors %}
-                    <small class="error-text">{{ error }}</small> {# Added class for potential styling #}
-                {% endfor %}
-            {% endif %}
-            {# Keep the existing custom help text below the field #}
+            {% for error in form.drop_off_time.errors %}
+                <small class="error-text">{{ error }}</small>
+            {% endfor %}
             <small id="timeSlotHelp">Select a date first to see available times.</small>
         </div>
 
