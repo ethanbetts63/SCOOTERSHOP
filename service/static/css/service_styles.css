@@ -1,21 +1,44 @@
-/* =================== SECTION: Service Booking Form Styles =================== */
-
-/* Main container for the service booking process */
-.service-booking-container {
-    max-width: 800px;
+/* =================== SECTION: Hero Section Styles =================== */
+.service-hero-section {
+    display: flex;
     margin: 40px auto;
-    background-color: var(--bg-darker);
+    max-width: 1200px;
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-md);
-    position: relative;
     overflow: hidden;
-    padding: 30px;
-    border-left: 4px solid var(--color-primary);
-    transition: all var(--transition-medium);
+    box-shadow: var(--shadow-md);
+    min-height: 400px;
+    background-color: var(--bg-darker);
+    position: relative;
 }
 
-/* Background effect for the service booking container */
-.service-booking-container::before {
+.service-hero-image {
+    flex: 1;
+    background-image: url('../images/sym_background.png');
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.service-hero-image::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background-color: var(--color-primary);
+}
+
+.service-hero-content {
+    flex: 1;
+    padding: var(--spacing-xl);
+    background-color: var(--bg-darker);
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.service-hero-content::before {
     content: "";
     position: absolute;
     top: 0;
@@ -23,268 +46,161 @@
     width: 100%;
     height: 100%;
     background-image: url('../images/service_bg.png');
-    background-position: right center;
-    background-repeat: no-repeat;
+    background-position: center;
     opacity: 0.05;
     z-index: -1;
 }
 
-/* Hover effect for the service booking container */
-.service-booking-container:hover {
+.service-hero-content h1 {
+    color: var(--text-light);
+    font-size: 2rem;
+    margin-bottom: var(--spacing-md);
+    border-bottom: 2px solid var(--color-primary);
+    padding-bottom: var(--spacing-sm);
+    display: inline-block;
+}
+
+.service-hero-content p {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-md);
+    line-height: 1.6;
+}
+
+/* =================== SECTION: Service Types Section =================== */
+.service-types-section {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 var(--spacing-md);
+}
+
+.service-types-section h2 {
+    font-size: 1.8rem;
+    color: var(--text-light);
+    margin-bottom: var(--spacing-xl);
+    border-bottom: 2px solid var(--border-accent);
+    padding-bottom: var(--spacing-sm);
+    display: inline-block;
+}
+
+/* New styles for service types tiles */
+.service-types-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.service-type-tile {
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-darker);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    position: relative;
+    padding: var(--spacing-lg) var(--spacing-md);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.service-type-tile:hover {
+    transform: translateY(-3px);
     box-shadow: var(--shadow-lg);
 }
 
-/* Progress header styles */
-.booking-progress {
-    display: flex;
-    align-items: center;
-    margin-bottom: 25px;
-}
-
-/* Main heading for the service booking */
-h2 {
-    color: var(--text-light);
-    font-size: 1.8rem;
-    margin: 0 0 5px 0;
-    padding-bottom: 0;
-    flex-grow: 1;
-}
-
-/* Step indicator */
-.step-indicator {
-    background-color: var(--color-primary);
-    color: var(--bg-darkest);
-    font-weight: bold;
-    padding: 5px 15px;
-    border-radius: var(--radius-sm);
-    font-size: 0.9rem;
-}
-
-/* Form styles */
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-/* Form field container */
-.form-field {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-/* Label styles */
-label {
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-    font-weight: 500;
-}
-
-/* Select field styles */
-select {
-    background-color: var(--bg-dark);
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-    border-radius: var(--radius-sm);
-    padding: 12px;
-    font-size: 1rem;
-    transition: all var(--transition-medium);
-}
-
-/* Select hover styles */
-select:hover {
-    border-color: var(--border-light);
-}
-
-/* Select focus styles */
-select:focus {
-    background-color: var(--bg-highlight);
-    border-color: var(--border-light);
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(129, 199, 132, 0.2);
-}
-
-/* Date input styles */
-input[type="text"] {
-    background-color: var(--bg-dark);
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-    border-radius: var(--radius-sm);
-    padding: 12px;
-    font-size: 1rem;
-    transition: all var(--transition-medium);
-}
-
-/* Date input hover styles */
-input[type="text"]:hover {
-    border-color: var(--border-light);
-}
-
-/* Date input focus styles */
-input[type="text"]:focus {
-    background-color: var(--bg-highlight);
-    border-color: var(--border-light);
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(129, 199, 132, 0.2);
-}
-
-/* Error messages */
-small {
-    color: #ff6b6b;
-    font-size: 0.85rem;
-    margin-top: 4px;
-}
-
-/* Help text */
-#timeSlotHelp {
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    margin-top: 4px;
-}
-
-/* Submit button */
-button[type="submit"] {
-    background-color: var(--color-primary);
-    color: var(--bg-darkest);
-    border: none;
-    border-radius: var(--radius-sm);
-    padding: 14px 20px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 10px;
-    transition: all var(--transition-medium);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    align-self: flex-end;
-    display: flex;
-    align-items: center;
-}
-
-/* Icon for the submit button */
-button[type="submit"]::after {
+.service-type-tile::before {
     content: "";
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    background-image: url('../images/svgs/arrow-right.svg');
-    background-size: contain;
-    background-repeat: no-repeat;
-    margin-left: 10px;
-    filter: brightness(0.2);
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background-color: var(--color-primary);
 }
 
-/* Submit button hover styles */
-button[type="submit"]:hover {
-    background-color: #6ebb70;
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
-}
-
-/* Loading indicator for AJAX requests */
-.loading-indicator {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 2px solid rgba(129, 199, 132, 0.3);
+.service-type-icon {
+    flex: 0 0 120px;
+    height: 120px;
+    background-color: rgba(var(--color-primary-rgb), 0.1);
     border-radius: 50%;
-    border-top-color: var(--color-primary);
-    animation: spin 1s ease-in-out infinite;
-    margin-left: 10px;
-    vertical-align: middle;
+    margin-right: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 3px solid rgba(var(--color-primary-rgb), 0.2);
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
+.service-type-icon img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    width: 90px;
+    height: 90px;
 }
 
-/* Messages container */
-.messages-container {
-    margin-bottom: 20px;
+.service-type-icon span {
+    width: 90px;
+    height: 90px;
+    background-color: rgba(var(--color-primary-rgb), 0.2);
+    border-radius: 50%;
 }
 
-/* System messages */
-.messages-container ul {
-    padding: 0;
-    margin: 0;
-    list-style: none;
+.service-type-content {
+    flex: 1;
 }
 
-.messages-container li {
-    background-color: rgba(129, 199, 132, 0.1);
-    border-left: 3px solid var(--color-primary);
-    padding: 10px 15px;
-    margin-bottom: 10px;
-    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+.service-type-content h3 {
     color: var(--text-light);
+    font-size: 1.4rem;
+    margin-bottom: var(--spacing-sm);
 }
 
-/* Error messages */
-.messages-container li.error {
-    background-color: rgba(255, 107, 107, 0.1);
-    border-left: 3px solid #ff6b6b;
+.service-type-content p {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.5;
 }
 
-/* Flatpickr customization */
-.flatpickr-calendar {
-    background-color: var(--bg-darker) !important;
-    box-shadow: var(--shadow-lg) !important;
-    border: 1px solid var(--border-accent) !important;
-}
-
-.flatpickr-day.selected {
-    background-color: var(--color-primary) !important;
-    border-color: var(--color-primary) !important;
-    color: var(--bg-darkest) !important;
-}
-
-.flatpickr-day:hover {
-    background-color: var(--bg-highlight) !important;
-}
-
-.flatpickr-day.disabled {
-    color: var(--text-muted) !important;
-}
-
-/* Time slot selection highlights */
-.time-slot-available {
-    background-color: rgba(129, 199, 132, 0.1);
-    transition: all var(--transition-fast);
-}
-
-.time-slot-available:hover {
-    background-color: rgba(129, 199, 132, 0.2);
-}
-
-.time-slot-selected {
-    background-color: rgba(129, 199, 132, 0.3);
-    border-color: var(--color-primary) !important;
+.service-type-price {
+    font-weight: 600;
+    color: var(--color-primary);
+    font-size: 1.1rem;
 }
 
 /* =================== SECTION: Responsive Styles =================== */
 @media (max-width: 768px) {
-    .service-booking-container {
-        margin: 20px 10px;
-        padding: 20px;
-    }
-    
-    h2 {
-        font-size: 1.5rem;
-    }
-    
-    .booking-progress {
+    .service-hero-section {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
+        min-height: auto;
+    }
+
+    .service-hero-image {
+        min-height: 200px;
     }
     
-    .step-indicator {
-        align-self: flex-start;
-    }
-    
-    button[type="submit"] {
+    .service-hero-image::before {
         width: 100%;
-        justify-content: center;
+        height: 4px;
+        left: 0;
+        top: 0;
+    }
+
+    .service-hero-content {
+        padding: var(--spacing-lg);
+    }
+
+    .service-hero-content h1 {
+        font-size: 1.6rem;
+    }
+    
+    .service-type-tile {
+        flex-direction: column;
+        text-align: center;
+        padding: var(--spacing-lg) var(--spacing-md);
+    }
+    
+    .service-type-icon {
+        margin-right: 0;
+        margin-bottom: var(--spacing-lg);
     }
 }
