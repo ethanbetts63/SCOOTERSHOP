@@ -1,18 +1,13 @@
 from django.db import models
-from datetime import time # time is used in SiteSettings
-import datetime # Import datetime for DateField
-
-# You might need imports for other apps if core models reference them,
-# but based on the split, it seems SiteSettings and PageContentBase/AboutPageContent
-# don't directly reference models from the other new apps.
-
+from datetime import time
+from django.core.exceptions import ImproperlyConfigured
 
 # Model for storing site-wide settings and configuration options
 class SiteSettings(models.Model):
     """
     Model for storing site-wide settings and configuration options
     """
-# Visibility Fields - control which features are enabled on the site
+    # Visibility Fields - control which features are enabled on the site
     enable_sales_new = models.BooleanField(default=True, help_text="Enable new motorcycle sales")
     enable_sales_used = models.BooleanField(default=True, help_text="Enable used motorcycle sales")
     enable_hire = models.BooleanField(default=True, help_text="Enable motorcycle hire services")
@@ -85,7 +80,6 @@ class SiteSettings(models.Model):
         if not self.pk and SiteSettings.objects.exists():
              # Decide how to handle this - maybe raise an error or just return
              # Raising an error is safer to prevent accidental duplicates
-             from django.core.exceptions import ImproperlyConfigured
              raise ImproperlyConfigured("Only one SiteSettings instance is allowed.")
         return super(SiteSettings, self).save(*args, **kwargs)
 
@@ -152,90 +146,3 @@ class SiteSettings(models.Model):
             'saturday': settings.opening_hours_saturday,
             'sunday': settings.opening_hours_sunday,
         }
-
-# Base model for page content
-class PageContentBase(models.Model):
-    """Base model for page content"""
-    last_updated = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        abstract = True # This is a base class, not a database table
-
-# Content for About page
-class AboutPageContent(PageContentBase):
-    intro_text = models.TextField(help_text="Introduction text at the top of the About page")
-    sales_title = models.CharField(max_length=100, default="Sales")
-    sales_content = models.TextField(help_text="Content for the Sales section")
-    sales_image = models.FileField(upload_to='about/', help_text="Image for the Sales section", null=True, blank=True)
-
-    service_title = models.CharField(max_length=100, default="Service")
-    service_content = models.TextField(help_text="Content for the Service section")
-    service_image = models.FileField(upload_to='about/', help_text="Image for the Service section", null=True, blank=True)
-
-    parts_title = models.CharField(max_length=100, default="Parts & Accessories")
-    parts_content = models.TextField(help_text="Content for the Parts & Accessories section")
-    parts_image = models.FileField(upload_to='about/', help_text="Image for the Parts section", null=True, blank=True)
-
-    cta_text = models.TextField(help_text="Call to action text at the bottom of the page")
-
-    def __str__(self):
-        return "About Page Content"
-
-    class Meta:
-        verbose_name = "About Page Content"
-        verbose_name_plural = "About Page Content"
-
-
-# New model for blocked dates
-class BlockedDate(models.Model):
-    """
-    Model to store dates or date ranges when service bookings are not available.
-    """
-    start_date = models.DateField(help_text="The start date of the blocked period.")
-    end_date = models.DateField(help_text="The end date of the blocked period (inclusive).")
-    description = models.CharField(max_length=255, blank=True, null=True, help_text="Optional description for the blocked period.")
-
-    def __str__(self):
-        if self.start_date == self.end_date:
-            return f"Blocked: {self.start_date.strftime('%Y-%m-%d')}"
-        else:
-            return f"Blocked: {self.start_date.strftime('%Y-%m-%d')} to {self.end_date.strftime('%Y-%m-%d')}"
-
-    class Meta:
-        ordering = ['start_date']
-        verbose_name = "Blocked Service Date"
-        verbose_name_plural = "Blocked Service Dates"
-
-# Model for brands that can be worked on 
-class ServiceBrand(models.Model):
-    name = models.CharField(max_length=100, unique=True, help_text="Name of the service brand (e.g., 'Yamaha', 'Vespa').")
-    is_primary = models.BooleanField(default=False, help_text=f"Check if this is a primary brand to display prominently (limited to 5 total).")
-    image = models.ImageField(
-        upload_to='brands/', 
-        null=True,
-        blank=True,
-        help_text="Optional image for primary brands. Only used if 'Is Primary' is checked."
-    )
-    last_updated = models.DateTimeField(auto_now=True)
-    
-    def __str__(self):
-        return self.name
-    
-    def save(self, *args, **kwargs):
-        if self.is_primary:
-            # Only count other primary brands (exclude self if this is an update)
-            query = ServiceBrand.objects.filter(is_primary=True)
-            if self.pk:  # If updating an existing object
-                query = query.exclude(pk=self.pk)
-            
-            if query.count() >= 5:
-                raise ValueError(f"Cannot have more than 5 primary brands.")
-        
-        # Call the original save method
-        super().save(*args, **kwargs)
-    
-    class Meta:
-        verbose_name = "Service Brand"
-        verbose_name_plural = "Service Brands"
-        ordering = ['name'] 
-

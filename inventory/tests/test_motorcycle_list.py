@@ -19,7 +19,7 @@ from inventory.views.motorcycle_list import (
 )
 
 # Import HireBooking if testing hire date availability filtering
-from hire.models import HireBooking
+from .hire_booking import HireBooking
 
 User = get_user_model()
 
