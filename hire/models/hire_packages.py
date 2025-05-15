@@ -1,6 +1,7 @@
-from django.db import models
-# Import the AddOn model
-from .hire_addon import AddOn
+from django.db import models 
+from django.core.exceptions import ValidationError 
+from .hire_addon import AddOn 
+
 
 class Package(models.Model):
     """
@@ -10,7 +11,6 @@ class Package(models.Model):
     description = models.TextField(blank=True, null=True, help_text="Description of the package.")
 
     # Many-to-Many relationship with AddOn
-    # A package can have multiple add-ons, and an add-on can be in multiple packages.
     add_ons = models.ManyToManyField(
         AddOn,
         related_name='packages',
@@ -18,23 +18,39 @@ class Package(models.Model):
         help_text="Select the individual add-ons included in this package."
     )
 
-    # In Package model 
+    # Current price of this package bundle
     package_price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         help_text="The current price of this package bundle."
     )
 
-    # --- Availability/Visibility 
+    # Availability
     is_available = models.BooleanField(default=True, help_text="Is this package currently available for booking?")
 
-    # --- Timestamps ---
+    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
 
     def __str__(self):
         return self.name
+
+    def clean(self):
+        """
+        Custom validation for Package data.
+        """
+        super().clean()
+
+        # Ensure package price is not negative
+        if self.package_price < 0:
+            raise ValidationError({'package_price': "Package price cannot be negative."})
+
+        # Check availability of included add-ons
+        unavailable_addons = [addon.name for addon in self.add_ons.all() if not addon.is_available]
+        if unavailable_addons:
+             raise ValidationError({'add_ons': f"The following add-ons in this package are not available: {', '.join(unavailable_addons)}"})
+
 
     class Meta:
         ordering = ['name']

@@ -1,91 +1,159 @@
 from django.db import models
+from django.core.exceptions import ValidationError
+from django.utils import timezone # Import timezone for date comparison
+import datetime # Import datetime for age calculation
+
 # Assuming your custom User model is in 'users.models'
 from users.models import User
+# Import HireSettings for age validation
+from dashboard.models import HireSettings
 
-# Model to store information about a driver or renter.
-# This profile can be linked to a registered User account or exist independently for anonymous bookings.
 class DriverProfile(models.Model):
-    # Link to a registered User account (optional).
-    # OneToOne ensures a User can only have one driver profile.
+    """
+    Model to store information about a driver or renter.
+    Can be linked to a registered User account or exist independently for anonymous bookings.
+    """
     user = models.OneToOneField(
         User,
-        on_delete=models.CASCADE, # If the User is deleted, delete the profile.
+        on_delete=models.CASCADE,
         related_name='driver_profile',
-        null=True, # Allow profiles that are not linked to a registered user (anonymous).
-        blank=True
+        null=True, blank=True # Allow anonymous profiles
     )
 
     # --- Contact and Identity Information ---
-    # Full name of the driver.
     name = models.CharField(max_length=100, help_text="Full name of the driver.")
-    # Email address of the driver.
-    email = models.EmailField(
-        blank=True,
-        null=True,
-        # Consider if email should be unique=True here. If multiple anonymous profiles
-        # could potentially use the same email over time, maybe not unique.
-        # If you want to try and link future anonymous bookings by email, make it unique.
-        # unique=True,
-        help_text="Email address of the driver."
-    )
-    # Phone number of the driver.
+    email = models.EmailField(blank=True, null=True, help_text="Email address of the driver.")
     phone = models.CharField(max_length=20, blank=True, null=True, help_text="Phone number of the driver.")
-    # Physical address of the driver.
     address = models.TextField(blank=True, null=True, help_text="Physical address of the driver.")
-    # Date of birth of the driver. Useful for age verification.
     date_of_birth = models.DateField(blank=True, null=True, help_text="Date of birth of the driver.")
 
+    # --- Residency and Documentation ---
+    is_australian_resident = models.BooleanField(
+        default=False,
+        help_text="Is the driver an Australian resident?"
+    )
 
-    # --- Driver's License and Documentation ---
-    # Driver's license number.
+    # License details (Australian domestic for residents, International for foreigners)
+    # License number is only strictly required for Australian residents
     license_number = models.CharField(max_length=50, blank=True, null=True, help_text="Driver's license number.")
-    # Country that issued the driver's license.
-    license_issuing_country = models.CharField(max_length=100, blank=True, null=True, help_text="Country that issued the license.")
-    # Expiry date of the driver's license.
+    license_issuing_country = models.CharField(max_length=100, blank=True, null=True, help_text="Country that issued the International Driver's License.")
     license_expiry_date = models.DateField(blank=True, null=True, help_text="Expiry date of the license.")
-    # Uploaded photo/scan of the primary driver's license.
+
+    # Uploads
     license_photo = models.FileField(
         upload_to='driver_profiles/licenses/',
-        blank=True,
-        null=True,
-        help_text="Upload of the driver's primary license."
+        blank=True, null=True, help_text="Upload of the driver's primary license (Australian domestic for residents)."
     )
-    # Uploaded copy of the International Driver's License (if applicable).
     international_license_photo = models.FileField(
         upload_to='driver_profiles/international_licenses/',
-        blank=True,
-        null=True,
-        help_text="Upload of the International Driver's License (if required)."
+        blank=True, null=True, help_text="Upload of the International Driver's License (required for foreigners)."
     )
-    # Flag indicating if international license is required for this profile/driver.
-    # This might be set based on the license_issuing_country and hire location.
-    international_license_required = models.BooleanField(
-        default=False,
-        help_text="Is an International Driver's License required for this driver?"
+    passport_photo = models.FileField(
+        upload_to='driver_profiles/passports/',
+        blank=True, null=True, help_text="Upload of the driver's passport (required for foreigners)."
     )
+
+    # Passport details (required for Foreigners)
+    passport_number = models.CharField(max_length=50, blank=True, null=True, help_text="Passport number.")
+    passport_expiry_date = models.DateField(blank=True, null=True, help_text="Passport expiry date.")
 
 
     # --- Timestamps ---
-    # Timestamp when the profile was created.
     created_at = models.DateTimeField(auto_now_add=True)
-    # Timestamp when the profile was last updated.
     updated_at = models.DateTimeField(auto_now=True)
 
     # --- Methods ---
-    # String representation of the driver profile.
     def __str__(self):
-        # Show the user's email/username if linked, otherwise use name or email/phone from profile.
+        # Use user string or name/email for representation
         if self.user:
-            return str(self.user) # Or self.user.get_full_name() if available
+            return str(self.user)
         return self.name or self.email or self.phone or f"Anonymous Driver {self.pk}"
 
-    # --- Meta Class ---
+    def clean(self):
+        """
+        Custom validation for DriverProfile data.
+        """
+        super().clean()
+
+        today = timezone.now().date()
+
+        # --- Validation for Anonymous Profiles ---
+        if not self.user:
+            if not self.name:
+                raise ValidationError("Name is required for anonymous profiles.")
+            if not self.email and not self.phone:
+                raise ValidationError("Either Email or Phone is required for anonymous profiles.")
+
+        # --- Age Validation ---
+        if self.date_of_birth:
+            try:
+                settings = HireSettings.objects.first() # Get settings
+                if settings and settings.minimum_driver_age is not None:
+                    # Calculate age precisely
+                    age = today.year - self.date_of_birth.year - ((today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day))
+                    if age < settings.minimum_driver_age:
+                        raise ValidationError(f"Driver must be at least {settings.minimum_driver_age} years old.")
+            except HireSettings.DoesNotExist:
+                 # Handle case where settings object doesn't exist (optional)
+                 pass
+            except Exception as e:
+                 # Log or handle other potential errors getting settings
+                 print(f"Error retrieving HireSettings for age validation: {e}")
+                 pass # Allow saving if settings lookup fails unexpectedly
+
+
+        # --- Conditional Validation based on Residency ---
+        if self.is_australian_resident:
+            # Requirements for Australian Residents
+            if not self.license_photo:
+                raise ValidationError("Australian residents must upload their domestic driver's license photo.")
+            if not self.license_number:
+                 raise ValidationError("Australian residents must provide their domestic license number.")
+            if not self.license_expiry_date:
+                raise ValidationError("Australian residents must provide their domestic license expiry date.")
+            if self.license_expiry_date and self.license_expiry_date < today:
+                raise ValidationError("Australian domestic driver's license must not be expired.")
+
+            # Ensure foreigner fields are not used
+            if self.international_license_photo:
+                 raise ValidationError("International Driver's License photo should not be provided for Australian residents.")
+            if self.passport_photo:
+                 raise ValidationError("Passport photo should not be provided for Australian residents.")
+            if self.passport_number:
+                 raise ValidationError("Passport number should not be provided for Australian residents.")
+            if self.passport_expiry_date:
+                 raise ValidationError("Passport expiry date should not be provided for Australian residents.")
+            # license_issuing_country is not required
+
+        else: # Not an Australian Resident (Foreigner)
+            # Requirements for Foreigners
+            if not self.international_license_photo:
+                raise ValidationError("Foreign drivers must upload their International Driver's License photo.")
+            if not self.passport_photo:
+                raise ValidationError("Foreign drivers must upload their passport photo.")
+            if not self.license_issuing_country:
+                 raise ValidationError("Foreign drivers must provide the issuing country of their International Driver's License.")
+            if not self.license_expiry_date:
+                # While license number is not required for international, expiry date is
+                raise ValidationError("Foreign drivers must provide their International Driver's License expiry date.")
+            if self.license_expiry_date and self.license_expiry_date < today:
+                 raise ValidationError("International Driver's License must not be expired.")
+
+            # Passport details required for foreigners
+            if not self.passport_number:
+                raise ValidationError("Foreign drivers must provide their passport number.")
+            if not self.passport_expiry_date:
+                raise ValidationError("Foreign drivers must provide their passport expiry date.")
+            if self.passport_expiry_date and self.passport_expiry_date < today:
+                raise ValidationError("Passport must not be expired.")
+
+            # Ensure Australian resident license photo is not used
+            if self.license_photo:
+                raise ValidationError("Australian domestic driver's license photo should not be provided for foreign drivers.")
+            # license_number is not required for foreigners and doesn't need explicit check here as it's blank=True, null=True
+
+
     class Meta:
-        # Default ordering.
         ordering = ['name', 'email']
-        # Verbose name for the model in the admin.
         verbose_name = "Driver Profile"
         verbose_name_plural = "Driver Profiles"
-
-    # You might add a clean() method here to add validation,
-    # e.g., ensuring name is present if user is null, or checking license expiry.
