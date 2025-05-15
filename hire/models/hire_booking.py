@@ -1,9 +1,15 @@
 from django.db import models
+# Assuming your custom User model is in 'users.models' (still needed for potential admin user linking or future features)
 from users.models import User
 from inventory.models import Motorcycle
 import uuid
-# from models.hire_packages import Package
-# from models.hire_addons import Addons
+# Import the DriverProfile model
+from .driver_profile import DriverProfile
+
+# Note: AddOn and Package imports will be handled by __init__.py or directly if needed in this file for type hinting/validation
+# from .hire_addon import AddOn
+# from .hire_package import Package
+
 
 # Choices for booking status
 STATUS_CHOICES = [
@@ -15,7 +21,7 @@ STATUS_CHOICES = [
     ('no_show', 'No Show'),
 ]
 
-# Choices for payment status (from your initial model)
+# Choices for payment status
 PAYMENT_STATUS_CHOICES = [
     ('unpaid', 'Unpaid'),
     ('deposit_paid', 'Deposit Paid'),
@@ -23,12 +29,12 @@ PAYMENT_STATUS_CHOICES = [
     ('refunded', 'Refunded'),
 ]
 
-# Choices for payment method (from previous discussion)
+# Choices for payment method
 PAYMENT_METHOD_CHOICES = [
     ('cash', 'Cash'),
     ('card', 'Card'),
     ('online', 'Online'),
-    ('at_desk', 'At Desk (Pending Payment)'), # Added option for your flow
+    ('at_desk', 'At Desk (Pending Payment)'),
     ('other', 'Other')
 ]
 
@@ -38,25 +44,25 @@ class HireBooking(models.Model):
     # --- Relationships ---
     # Link to the Motorcycle instance being hired.
     motorcycle = models.ForeignKey(
-        Motorcycle, # Link to the Motorcycle model
+        Motorcycle,
         on_delete=models.CASCADE,
         related_name='hire_bookings',
-        limit_choices_to={'conditions__name': 'hire'} # Keep this filter if you need it
+        # Keep this filter if you need it to only show hireable motorcycles
+        limit_choices_to={'conditions__name': 'hire'}
     )
 
-    # Link to the customer making the booking.
-    # Customer details like name, address, etc., are stored on the User model.
-    customer = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        related_name='hire_bookings',
-        null=True, # Allow booking without a registered user initially (e.g., walk-in)
-        blank=True
+    # Link to the DriverProfile associated with this booking.
+    # This handles both registered and anonymous drivers.
+    driver_profile = models.ForeignKey(
+        DriverProfile,
+        on_delete=models.CASCADE, # If the driver profile is deleted, delete their bookings.
+        related_name='hire_bookings'
     )
 
     # Link to the selected package (Optional).
+    # Using string literal 'Package' because it's defined in a separate file.
     package = models.ForeignKey(
-        'Package', # Use string literal if Package is defined later in the same file
+        'Package',
         on_delete=models.SET_NULL,
         related_name='hire_bookings',
         null=True,
@@ -64,12 +70,15 @@ class HireBooking(models.Model):
     )
 
     # Link to individually selected add-ons (Optional).
-    # If you need quantity per add-on (e.g., 2 helmets), you'll need a 'through' model here.
+    # Using string literal 'AddOn' because it's defined in a separate file.
+    # **Important:** As discussed, consider a 'through' model here if you need quantity per add-on.
+    # For simplicity initially, a direct ManyToMany is shown, but be prepared to change this.
     add_ons = models.ManyToManyField(
-        'AddOn', # Use string literal if AddOn is defined later in the same file
+        'AddOn',
         related_name='hire_bookings',
-        blank=True # Allow bookings with no add-ons
+        blank=True
     )
+
 
     # --- Booking Dates and Times ---
     # Pickup date of the hire.
@@ -86,9 +95,11 @@ class HireBooking(models.Model):
     # Unique reference code for the booking.
     booking_reference = models.CharField(max_length=20, unique=True, blank=True, null=True)
     # Flag if the booking requires international documentation (e.g., IDP).
+    # This might be derived from the driver_profile's requirements.
     is_international_booking = models.BooleanField(default=False, help_text="Indicates if the booking requires international documentation/considerations.")
 
-    # --- Financial Details (from initial model draft) ---
+
+    # --- Financial Details ---
     # Daily rate applied at the time of booking.
     booked_daily_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     # Weekly rate applied at the time of booking.
@@ -110,7 +121,7 @@ class HireBooking(models.Model):
     # --- Status and Notes ---
     # Current status of the booking lifecycle.
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    # Notes provided by the customer during booking.
+    # Notes provided by the customer/driver during booking.
     customer_notes = models.TextField(blank=True, null=True)
     # Internal notes added by staff.
     internal_notes = models.TextField(blank=True, null=True)
