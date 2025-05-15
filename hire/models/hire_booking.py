@@ -69,13 +69,10 @@ class HireBooking(models.Model):
         blank=True
     )
 
-    # Link to individually selected add-ons (Optional).
-    # Using string literal 'AddOn' because it's defined in a separate file.
-    # **Important:** As discussed, consider a 'through' model here if you need quantity per add-on.
-    # For simplicity initially, a direct ManyToMany is shown, but be prepared to change this.
     add_ons = models.ManyToManyField(
         'AddOn',
-        related_name='hire_bookings',
+        through='BookingAddOn', # <-- Specify the through model
+        related_name='hire_bookings', # This related_name is now on the AddOn side going back to the through model
         blank=True
     )
 

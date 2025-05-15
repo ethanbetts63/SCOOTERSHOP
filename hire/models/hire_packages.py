@@ -1,6 +1,6 @@
 from django.db import models
 # Import the AddOn model
-from .hire_addon import AddOn
+from .hire_addons import AddOn
 
 class Package(models.Model):
     """
