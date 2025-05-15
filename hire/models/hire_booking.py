@@ -6,11 +6,6 @@ import uuid
 # Import the DriverProfile model
 from .driver_profile import DriverProfile
 
-# Note: AddOn and Package imports will be handled by __init__.py or directly if needed in this file for type hinting/validation
-# from .hire_addon import AddOn
-# from .hire_package import Package
-
-
 # Choices for booking status
 STATUS_CHOICES = [
     ('pending', 'Pending'),
@@ -67,6 +62,14 @@ class HireBooking(models.Model):
         related_name='hire_bookings',
         null=True,
         blank=True
+    )
+
+    booked_package_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True, # Allow bookings without a package
+        blank=True, # Allow bookings without a package
+        help_text="Price of the selected package at the time of booking."
     )
 
     add_ons = models.ManyToManyField(
@@ -145,6 +148,5 @@ class HireBooking(models.Model):
     class Meta:
         # Default ordering for listings.
         ordering = ['pickup_date', 'pickup_time', 'motorcycle']
-        # Verbose name for the model in the admin.
         verbose_name = "Hire Booking"
         verbose_name_plural = "Hire Bookings"

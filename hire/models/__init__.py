@@ -1,21 +1,17 @@
-# This file makes the 'models' directory a Python package.
+# hire/models/__init__.py
 
-# Import the HireBooking model
-from .hire_booking import HireBooking
-
-# Import the DriverProfile model
 from .driver_profile import DriverProfile
+from .hire_addon import AddOn          # Import the new AddOn model
+from .hire_packages import Package     # This imports Package which now correctly imports AddOn
+from .hire_booking import HireBooking  # This imports HireBooking which now correctly imports Package and BookingAddOn
+from .hire_addons import BookingAddOn  # Import the BookingAddOn model (assuming this file is named hire_addons.py)
 
-# Import Package and AddOn models
-from .hire_packages import Package
-from .hire_addons import AddOn
-
-
-# You can optionally define __all__ to specify what is exported
+# You can add __all__ for explicit export if desired
 __all__ = [
-    'HireBooking',
-    'DriverProfile', 
-    'Package',
+    'HireSettings',
+    'DriverProfile',
     'AddOn',
+    'Package',
+    'BookingAddOn',
+    'HireBooking',
 ]
-

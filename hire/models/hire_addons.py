@@ -2,7 +2,7 @@
 
 from django.db import models
 from .hire_booking import HireBooking
-from .hire_addons import AddOn
+from .hire_addon import AddOn
 
 class BookingAddOn(models.Model):
     """

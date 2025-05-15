@@ -1,6 +1,6 @@
 from django.db import models
 # Import the AddOn model
-from .hire_addons import AddOn
+from .hire_addon import AddOn
 
 class Package(models.Model):
     """
@@ -18,10 +18,14 @@ class Package(models.Model):
         help_text="Select the individual add-ons included in this package."
     )
 
-    # --- Pricing for the package (Optional, could calculate from add-ons or be fixed) ---
-    # package_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Optional fixed price for the package.")
+    # In Package model 
+    package_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="The current price of this package bundle."
+    )
 
-    # --- Availability/Visibility (Optional additions) ---
+    # --- Availability/Visibility 
     is_available = models.BooleanField(default=True, help_text="Is this package currently available for booking?")
 
     # --- Timestamps ---
