@@ -8,6 +8,14 @@ DEPOSIT_CALC_CHOICES = [
 class HireSettings(models.Model):
     # --- Rate Defaults ---
     # Default daily rate for bikes.
+    default_hourly_rate = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True, 
+        help_text="Default hourly rate for bikes if no custom rate is set (optional)."
+    )
+
     default_daily_rate = models.DecimalField(
         max_digits=8, decimal_places=2,
         help_text="Default daily rate for bikes if no custom rate is set."

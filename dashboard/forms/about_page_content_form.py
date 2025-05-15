@@ -16,7 +16,6 @@ class AboutPageContentForm(forms.ModelForm):
             'sales_title': forms.TextInput(attrs={'class': 'form-control'}),
             'service_title': forms.TextInput(attrs={'class': 'form-control'}),
             'parts_title': forms.TextInput(attrs={'class': 'form-control'}),
-            # Use ClearableFileInput for images to allow removing existing files
             'sales_image': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
             'service_image': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
             'parts_image': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
