@@ -35,14 +35,6 @@ class SiteSettings(models.Model):
     service_pending_email_subject = models.CharField(max_length=200, default="Your service booking request has been received")
     admin_service_notification_email = models.EmailField(blank=True, null=True, help_text="Email address for service booking notifications")
 
-    # Hire Booking Fields (Settings related to hire booking)
-    minimum_hire_duration_days = models.IntegerField(default=1, help_text="Minimum number of days for a hire booking")
-    maximum_hire_duration_days = models.IntegerField(default=30, help_text="Maximum number of days for a hire booking")
-    hire_booking_advance_notice = models.IntegerField(default=1, help_text="Minimum number of days notice required for a hire booking")
-    default_hire_deposit_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=25.00, help_text="Default deposit percentage for hire bookings")
-    hire_confirmation_email_subject = models.CharField(max_length=200, default="Your motorcycle hire booking has been confirmed")
-    admin_hire_notification_email = models.EmailField(blank=True, null=True, help_text="Email address for hire booking notifications")
-
     # Sales Fields (Settings related to sales display)
     display_new_prices = models.BooleanField(default=True, help_text="Display prices for new motorcycles")
     display_used_prices = models.BooleanField(default=True, help_text="Display prices for used motorcycles")
@@ -116,19 +108,6 @@ class SiteSettings(models.Model):
             'drop_off_end_time': settings.drop_off_end_time,
             'booking_advance_notice': settings.booking_advance_notice,
             'max_visible_slots_per_day': settings.max_visible_slots_per_day,
-        }
-
-    @classmethod
-    def get_hire_booking_settings(cls):
-        """
-        Returns the hire booking related settings
-        """
-        settings = cls.get_settings()
-        return {
-            'minimum_hire_duration_days': settings.minimum_hire_duration_days,
-            'maximum_hire_duration_days': settings.maximum_hire_duration_days,
-            'hire_booking_advance_notice': settings.hire_booking_advance_notice,
-            'default_hire_deposit_percentage': settings.default_hire_deposit_percentage,
         }
 
     @classmethod

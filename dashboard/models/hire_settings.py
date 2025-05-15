@@ -83,6 +83,11 @@ class HireSettings(models.Model):
     # Grace period for late returns.
     grace_period_minutes = models.PositiveIntegerField(default=0, help_text="Grace period after return time before late fees apply.")
 
+    # --- Additional Hire Settings from SiteSettings ---
+    maximum_hire_duration_days = models.IntegerField(default=30, help_text="Maximum number of days for a hire booking")
+    hire_confirmation_email_subject = models.CharField(max_length=200, default="Your motorcycle hire booking has been confirmed", help_text="Subject line for hire booking confirmation emails")
+    admin_hire_notification_email = models.EmailField(blank=True, null=True, help_text="Email address for hire booking notifications")
+
     # --- Late Fees and Charges ---
     # Fee charged per hour for late returns.
     late_fee_per_hour = models.DecimalField(
