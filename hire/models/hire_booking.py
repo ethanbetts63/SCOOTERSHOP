@@ -1,10 +1,13 @@
-from django.db import models
-# Assuming your custom User model is in 'users.models' (still needed for potential admin user linking or future features)
-from users.models import User
-from inventory.models import Motorcycle
+from django.db import models 
+from django.core.exceptions import ValidationError 
+from django.utils import timezone
 import uuid
-# Import the DriverProfile model
-from .driver_profile import DriverProfile
+import datetime 
+
+from inventory.models import Motorcycle 
+from .driver_profile import DriverProfile 
+from dashboard.models import HireSettings 
+
 
 # Choices for booking status
 STATUS_CHOICES = [
@@ -34,119 +37,182 @@ PAYMENT_METHOD_CHOICES = [
 ]
 
 
-# Model for motorcycle hire bookings
 class HireBooking(models.Model):
-    # --- Relationships ---
-    # Link to the Motorcycle instance being hired.
+    # Relationships
     motorcycle = models.ForeignKey(
         Motorcycle,
         on_delete=models.CASCADE,
         related_name='hire_bookings',
-        # Keep this filter if you need it to only show hireable motorcycles
         limit_choices_to={'conditions__name': 'hire'}
     )
-
-    # Link to the DriverProfile associated with this booking.
-    # This handles both registered and anonymous drivers.
     driver_profile = models.ForeignKey(
         DriverProfile,
-        on_delete=models.CASCADE, # If the driver profile is deleted, delete their bookings.
+        on_delete=models.CASCADE,
         related_name='hire_bookings'
     )
-
-    # Link to the selected package (Optional).
-    # Using string literal 'Package' because it's defined in a separate file.
     package = models.ForeignKey(
-        'Package',
+        'Package', # Using string literal as Package is in another file
         on_delete=models.SET_NULL,
         related_name='hire_bookings',
-        null=True,
-        blank=True
+        null=True, blank=True
     )
 
+    # Package price at booking time
     booked_package_price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        null=True, # Allow bookings without a package
-        blank=True, # Allow bookings without a package
+        max_digits=10, decimal_places=2,
+        null=True, blank=True,
         help_text="Price of the selected package at the time of booking."
     )
 
+    # Add-ons through intermediate model
     add_ons = models.ManyToManyField(
-        'AddOn',
-        through='BookingAddOn', # <-- Specify the through model
-        related_name='hire_bookings', # This related_name is now on the AddOn side going back to the through model
+        'AddOn', # Using string literal as AddOn is in another file
+        through='BookingAddOn',
+        related_name='hire_bookings',
         blank=True
     )
 
-
-    # --- Booking Dates and Times ---
-    # Pickup date of the hire.
+    # Booking Dates and Times
     pickup_date = models.DateField(help_text="Pickup date")
-    # Pickup time of the hire.
     pickup_time = models.TimeField(help_text="Pickup time")
-
-    # Return date of the hire.
     return_date = models.DateField(help_text="Return date")
-    # Return time of the hire.
     return_time = models.TimeField(help_text="Return time")
 
-    # --- Booking Identifiers and Flags ---
-    # Unique reference code for the booking.
+    # Identifiers and Flags
     booking_reference = models.CharField(max_length=20, unique=True, blank=True, null=True)
-    # Flag if the booking requires international documentation (e.g., IDP).
-    # This might be derived from the driver_profile's requirements.
-    is_international_booking = models.BooleanField(default=False, help_text="Indicates if the booking requires international documentation/considerations.")
+    # Indicates if booking requires international documentation/considerations
+    is_international_booking = models.BooleanField(default=False)
 
-
-    # --- Financial Details ---
-    # Daily rate applied at the time of booking.
+    # Financial Details
     booked_daily_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-    # Weekly rate applied at the time of booking.
     booked_weekly_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-    # Monthly rate applied at the time of booking.
     booked_monthly_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-    # Total calculated price for the entire hire booking.
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
-    # Required deposit amount for the booking.
     deposit_amount = models.DecimalField(max_digits=8, decimal_places=2, default=0)
-    # Amount currently paid towards the booking.
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    # Current payment status of the booking.
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='unpaid')
-    # Method used for payment.
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, null=True, blank=True, help_text="Method by which the payment was made.")
 
-
-    # --- Status and Notes ---
-    # Current status of the booking lifecycle.
+    # Status and Notes
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    # Notes provided by the customer/driver during booking.
     customer_notes = models.TextField(blank=True, null=True)
-    # Internal notes added by staff.
     internal_notes = models.TextField(blank=True, null=True)
 
-    # --- Timestamps ---
-    # Timestamp when the booking was created.
+    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
-    # Timestamp when the booking was last updated.
     updated_at = models.DateTimeField(auto_now=True)
 
-    # --- Methods ---
-    # Saves the booking instance.
     def save(self, *args, **kwargs):
         # Generate booking reference if not provided
         if not self.booking_reference:
             self.booking_reference = f"HIRE-{uuid.uuid4().hex[:8].upper()}"
         super().save(*args, **kwargs)
 
-    # String representation of the booking.
     def __str__(self):
         return f"Hire: {self.motorcycle} ({self.pickup_date} to {self.return_date}) - {self.status}"
 
-    # --- Meta Class ---
+    def clean(self):
+        """
+        Custom validation for HireBooking data.
+        """
+        super().clean()
+
+        errors = {}
+        now = timezone.now()
+
+        # --- Date and Time Validation ---
+        pickup_datetime = None
+        return_datetime = None
+
+        if self.pickup_date and self.pickup_time:
+            pickup_datetime = timezone.make_aware(datetime.datetime.combine(self.pickup_date, self.pickup_time))
+
+        if self.return_date and self.return_time:
+            return_datetime = timezone.make_aware(datetime.datetime.combine(self.return_date, self.return_time))
+
+        if pickup_datetime and return_datetime:
+            if return_datetime <= pickup_datetime:
+                errors['return_date'] = "Return date and time must be after pickup date and time."
+                errors['return_time'] = "Return date and time must be after pickup date and time."
+
+            # Check minimum hire duration against settings
+            try:
+                settings = HireSettings.objects.first()
+                if settings and settings.minimum_hire_duration_days is not None:
+                     min_duration = datetime.timedelta(days=settings.minimum_hire_duration_days)
+                     if (return_datetime - pickup_datetime) < min_duration:
+                          errors['return_date'] = f"Hire duration must be at least {settings.minimum_hire_duration_days} days."
+                          errors['return_time'] = f"Hire duration must be at least {settings.minimum_hire_duration_days} days."
+            except HireSettings.DoesNotExist:
+                 # Handle missing settings if necessary
+                 pass
+            except Exception as e:
+                 print(f"Error checking minimum hire duration: {e}")
+                 pass
+
+        if pickup_datetime:
+            # Check booking lead time against settings
+            try:
+                 settings = HireSettings.objects.first()
+                 if settings and settings.booking_lead_time_hours is not None:
+                      min_pickup_time = now + datetime.timedelta(hours=settings.booking_lead_time_hours)
+                      if pickup_datetime < min_pickup_time:
+                           errors['pickup_date'] = f"Pickup must be at least {settings.booking_lead_time_hours} hours from now."
+                           errors['pickup_time'] = f"Pickup must be at least {settings.booking_lead_time_hours} hours from now."
+            except HireSettings.DoesNotExist:
+                 # Handle missing settings if necessary
+                 pass
+            except Exception as e:
+                 print(f"Error checking booking lead time: {e}")
+                 pass
+
+
+        # --- Financial Validation ---
+        if self.total_price is not None and self.total_price < 0:
+            errors['total_price'] = "Total price cannot be negative."
+        if self.deposit_amount is not None and self.deposit_amount < 0:
+             errors['deposit_amount'] = "Deposit amount cannot be negative."
+        if self.amount_paid is not None and self.amount_paid < 0:
+             errors['amount_paid'] = "Amount paid cannot be negative."
+
+        # Consistency between payment status and amount paid
+        if self.payment_status == 'paid' and self.amount_paid != self.total_price:
+            errors['amount_paid'] = "Amount paid must equal total price when payment status is 'Paid'."
+        if self.payment_status == 'deposit_paid':
+            if self.deposit_amount is None or self.deposit_amount <= 0:
+                 errors['deposit_amount'] = "Deposit amount must be set when payment status is 'Deposit Paid'."
+            if self.amount_paid != self.deposit_amount:
+                 errors['amount_paid'] = "Amount paid must equal the deposit amount when payment status is 'Deposit Paid'."
+        if self.payment_status == 'unpaid' and self.amount_paid > 0:
+             # Optionally add a check here if unpaid but amount paid > 0
+             pass # Or raise an error depending on desired strictness
+
+        # Booked rates non-negative
+        if self.booked_daily_rate is not None and self.booked_daily_rate < 0:
+             errors['booked_daily_rate'] = "Booked daily rate cannot be negative."
+        if self.booked_weekly_rate is not None and self.booked_weekly_rate < 0:
+             errors['booked_weekly_rate'] = "Booked weekly rate cannot be negative."
+        if self.booked_monthly_rate is not None and self.booked_monthly_rate < 0:
+             errors['booked_monthly_rate'] = "Booked monthly rate cannot be negative."
+        if self.booked_package_price is not None and self.booked_package_price < 0:
+             errors['booked_package_price'] = "Booked package price cannot be negative."
+
+
+        # --- Relationship Consistency ---
+        # Check package availability if a package is selected
+        if self.package and not self.package.is_available:
+             errors['package'] = f"The selected package '{self.package.name}' is currently not available."
+
+        # Consistency between is_international_booking and driver residency
+        if self.is_international_booking and self.driver_profile and self.driver_profile.is_australian_resident:
+            errors['is_international_booking'] = "Cannot mark as international booking if the driver is an Australian resident."
+
+
+        # --- Raise Errors ---
+        if errors:
+            raise ValidationError(errors)
+
     class Meta:
-        # Default ordering for listings.
         ordering = ['pickup_date', 'pickup_time', 'motorcycle']
         verbose_name = "Hire Booking"
         verbose_name_plural = "Hire Bookings"
