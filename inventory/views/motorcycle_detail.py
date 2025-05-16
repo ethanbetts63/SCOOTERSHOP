@@ -158,7 +158,7 @@ class MotorcycleCreateView(LoginRequiredMixin, UserPassesTestMixin, MotorcycleFo
     model = Motorcycle
     form_class = MotorcycleForm
     # Updated template path
-    template_name = 'inventory/motorcycles/motorcycle_form.html'
+    template_name = 'inventory/motorcycle_form.html'
     # success_url is defined by get_success_url
 
     def test_func(self):
@@ -188,7 +188,7 @@ class MotorcycleUpdateView(LoginRequiredMixin, UserPassesTestMixin, MotorcycleFo
     model = Motorcycle
     form_class = MotorcycleForm
     # Updated template path
-    template_name = 'inventory/motorcycles/motorcycle_form.html'
+    template_name = 'inventory/motorcycle_form.html'
     # success_url is defined by get_success_url
 
     def test_func(self):
