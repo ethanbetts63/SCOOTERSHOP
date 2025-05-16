@@ -20,10 +20,10 @@ from .service_brands_management import service_brands_management
 from .delete_service_brand import delete_service_brand
 
 
-# Import booking views from the bookings.py file (assuming it exists and is correct)
-from .bookings import (
+# Import booking views from the service_bookings.py file (assuming it exists and is correct)
+from .service_bookings import (
     service_bookings_view,
     service_booking_details_view,
-    get_bookings_json,
+    get_service_bookings_json,
     service_booking_search_view,
 )

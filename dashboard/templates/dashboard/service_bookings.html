@@ -71,7 +71,7 @@
 
             // --- Event Source ---
             // Fetch events from the Django backend JSON feed
-            events: '{% url "dashboard:get_bookings_json" %}',
+            events: '{% url "dashboard:get_service_bookings_json" %}',
 
             // --- Event Rendering ---
             eventContent: function(arg) {

@@ -10,13 +10,13 @@ urlpatterns = [
     path('', views.dashboard_index, name='dashboard_index'),
 
     # --- Service Booking Management Views ---
-    # These views are imported via views/__init__.py from views/bookings.py
+    # These views are imported via views/__init__.py from views/service_bookings.py
     path('service-bookings/', views.service_bookings_view, name='service_bookings'),
     path('service-bookings/<int:pk>/', views.service_booking_details_view, name='service_booking_details'),
     path('service-bookings/search/', views.service_booking_search_view, name='service_booking_search'),
 
-    # --- New URL pattern for the FullCalendar JSON feed (from bookings.py) ---
-    path('bookings/json/', views.get_bookings_json, name='get_bookings_json'),
+    # --- New URL pattern for the FullCalendar JSON feed (from service_bookings.py) ---
+    path('bookings/json/', views.get_service_bookings_json, name='get_service_bookings_json'),
 
 
     # --- Other Views (e.g., About Page) ---

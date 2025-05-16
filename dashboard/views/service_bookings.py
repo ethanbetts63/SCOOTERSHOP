@@ -1,4 +1,4 @@
-# bookings.py
+# service_bookings.py
 import calendar
 from datetime import date, timedelta
 from django.shortcuts import render, redirect, get_object_or_404
@@ -40,7 +40,7 @@ def service_booking_details_view(request, pk):
 
 # Returns service bookings and blocked dates as a JSON feed for FullCalendar
 @user_passes_test(lambda u: u.is_staff) # Use lambda directly
-def get_bookings_json(request):
+def get_service_bookings_json(request):
     start_param = request.GET.get('start')
     end_param = request.GET.get('end')
 
