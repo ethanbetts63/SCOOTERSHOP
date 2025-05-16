@@ -3,215 +3,240 @@
 {% load widget_tweaks %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/form_styles.css' %}">
+{# Remove the old form_styles.css link #}
+{# <link rel="stylesheet" href="{% static 'css/form_styles.css' %}"> #}
+{# Link to the new booking_styles.css #}
+<link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="card">
-        <div class="card-header">
-            <h4 class="mb-0">{% if form.instance.pk %}Edit Motorcycle Listing{% else %}Create New Motorcycle Listing{% endif %}</h4>
-        </div>
-        <div class="card-body">
-            <form method="POST" enctype="multipart/form-data" id="motorcycleForm">
-                {% csrf_token %}
-
-                {% if form.non_field_errors %}
-                <div class="alert alert-danger">
-                    {% for error in form.non_field_errors %}
-                        {{ error }}
-                    {% endfor %}
-                </div>
-                {% endif %}
-
-                <div class="condition-section mb-4">
-                    <h5 class="mb-3">Motorcycle Condition <span class="required-indicator">*</span></h5> {# Conditions field remains required by the form #}
-                    <p class="text-muted mb-2">Select the condition(s) that apply to this motorcycle:</p>
-                    <div class="mb-3">
-                        {{ form.conditions.errors }}
-                        <div class="condition-checkboxes border rounded p-3">
-                            {{ form.conditions }}
-                        </div>
-                        <small class="form-text text-muted mt-2">
-                            <strong>Rules:</strong>
-                            <ul class="reset-list mt-1 mb-0">
-                                <li>New, Used, and Demo are mutually exclusive</li>
-                                <li>Hire can be combined with Used or Demo (but not New)</li>
-                                <li>Selecting "Hire" will require additional hire rate information (handled by showing/hiding fields)</li>
-                            </ul>
-                        </small>
-                    </div>
-                </div>
-
-                <div class="general-details-section mb-4">
-                    <h5 class="mb-3">General Details</h5>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="{{ form.brand.id_for_label }}" class="form-label">Brand <span class="required-indicator">*</span></label> {# Brand remains required #}
-                                {{ form.brand.errors }}
-                                {{ form.brand|add_class:"form-control" }}
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="{{ form.model.id_for_label }}" class="form-label">Model <span class="required-indicator">*</span></label> {# Model remains required #}
-                                {{ form.model.errors }}
-                                {{ form.model|add_class:"form-control" }}
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="{{ form.year.id_for_label }}" class="form-label">Year <span class="required-indicator">*</span></label> {# Year remains required #}
-                                {{ form.year.errors }}
-                                {{ form.year|add_class:"form-control" }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="{{ form.engine_size.id_for_label }}" class="form-label">Engine Size <span class="required-indicator">*</span></label> {# Engine Size remains required #}
-                                {{ form.engine_size.errors }}
-                                {{ form.engine_size|add_class:"form-control" }}
-                            </div>
-                        </div>
-                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="{{ form.odometer.id_for_label }}" class="form-label">Odometer <span class="required-indicator">*</span></label> {# Odometer is now always required - added indicator #}
-                                {{ form.odometer.errors }}
-                                {{ form.odometer|add_class:"form-control" }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="{{ form.seats.id_for_label }}" class="form-label">
-                                    Number of Seats
-                                </label> {# Seats is now optional #}
-                                {{ form.seats.errors }}
-                                {{ form.seats|add_class:"form-control" }}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="{{ form.transmission.id_for_label }}" class="form-label">
-                                    Transmission
-                                </label> {# Transmission is now optional #}
-                                {{ form.transmission.errors }}
-                                {{ form.transmission|add_class:"form-control" }}
-                            </div>
-                        </div>
-                    </div>
-
-                     <div class="mb-3">
-                        <label for="{{ form.description.id_for_label }}" class="form-label">Description</label> {# Description is now optional #}
-                        {{ form.description.errors }}
-                        {{ form.description|add_class:"form-control" }}
-                    </div>
-
-                    <div class="mb-3">
-                         <label for="{{ form.image.id_for_label }}" class="form-label">Primary Image</label>
-                         {{ form.image.errors }}
-                         {{ form.image|add_class:"form-control" }}
-                    </div>
-
-
-                    <div class="mb-3">
-                        <div class="form-check">
-                            {{ form.is_available|add_class:"form-check-input" }}
-                            <label class="form-check-label" for="{{ form.is_available.id_for_label }}">
-                                Available for sale/hire
-                            </label>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="sale-details-section mb-4">
-                    <h5 class="mb-3">Sale Related Details</h5>
-                    <div class="row">
-                         <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="{{ form.stock_number.id_for_label }}" class="form-label">Stock Number</label> {# Stock Number remains optional #}
-                                    {{ form.stock_number.errors }}
-                                    {{ form.stock_number|add_class:"form-control" }}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="{{ form.price.id_for_label }}" class="form-label">Price ($)</label> {# Price is now optional #}
-                                    {{ form.price.errors }}
-                                    {{ form.price|add_class:"form-control" }}
-                                </div>
-                            </div>
-                    </div>
-                </div>
-
-                <div class="hire-details-section mb-4" id="hireDetailsSection"> {# ID updated for clarity #}
-                    <h5 class="mb-3">Hire Related Details</h5>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="{{ form.hourly_hire_rate.id_for_label }}" class="form-label">Hourly Rate ($)</label> {# Hourly Rate is now optional #}
-                                {{ form.hourly_hire_rate.errors }}
-                                {{ form.hourly_hire_rate|add_class:"form-control" }}
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="{{ form.daily_hire_rate.id_for_label }}" class="form-label">
-                                    Daily Rate ($)
-                                </label> {# Daily Rate is now optional #}
-                                {{ form.daily_hire_rate.errors }}
-                                {{ form.daily_hire_rate|add_class:"form-control" }}
-                                <small class="form-text text-muted">Enter a rate if different from default</small> {# Updated help text #}
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="{{ form.weekly_hire_rate.id_for_label }}" class="form-label">Weekly Rate ($)</label> {# Weekly Rate is now optional #}
-                                {{ form.weekly_hire_rate.errors }}
-                                {{ form.weekly_hire_rate|add_class:"form-control" }}
-                            </div>
-                        </div>
-                         <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="{{ form.monthly_hire_rate.id_for_label }}" class="form-label">Monthly Rate ($)</label> {# Monthly Rate is now optional #}
-                                {{ form.monthly_hire_rate.errors }}
-                                {{ form.monthly_hire_rate|add_class:"form-control" }}
-                            </div>
-                        </div>
-                         <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="{{ form.rego.id_for_label }}" class="form-label">Registration Number</label> {# Rego remains optional #}
-                                    {{ form.rego.errors }}
-                                    {{ form.rego|add_class:"form-control" }}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="{{ form.rego_exp.id_for_label }}" class="form-label">Registration Expiry</label> {# Rego Expiry remains optional #}
-                                    {{ form.rego_exp.errors }}
-                                    {{ form.rego_exp|add_class:"form-control" }}
-                                </div>
-                            </div>
-                    </div>
-                </div>
-
-
-                <div class="mt-4 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        {% if form.instance.pk %}Save Changes{% else %}Create Listing{% endif %}
-                    </button>
-                    <a href="{% if form.instance.pk %}{% url 'inventory:motorcycle-detail' form.instance.pk %}{% else %}{% url 'inventory:motorcycle-list' %}{% endif %}" class="btn btn-secondary">Cancel</a>
-                </div>
-            </form>
-        </div>
+{# Use the main container class from booking_styles.css #}
+<div class="service-booking-container">
+    {# Add a booking progress header similar to settings page, maybe simplified #}
+    <div class="booking-progress">
+        <h2>{% if form.instance.pk %}Edit Motorcycle Listing{% else %}Create New Motorcycle Listing{% endif %}</h2>
+        {# Optional: Add a step indicator if this is part of a multi-step process #}
+        {# <span class="step-indicator">Step 1 of X</span> #}
     </div>
+
+    <hr>
+
+    {% if form.non_field_errors %}
+    {# Use alert styling from booking_styles.css #}
+    <div class="alert alert-danger">
+        {% for error in form.non_field_errors %}
+            {{ error }}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data" id="motorcycleForm">
+        {% csrf_token %}
+
+        {# Use booking-section-title for main sections #}
+        <div class="form-field"> {# Wrap sections in form-field for consistent spacing #}
+            <h3 class="booking-section-title">Motorcycle Condition <span class="required-indicator">*</span></h3> {# Conditions field remains required by the form #}
+            <p class="text-muted mb-2">Select the condition(s) that apply to this motorcycle:</p>
+            {# Use form-field for the checkbox container #}
+            <div class="form-field">
+                {{ form.conditions.errors }}
+                {# Apply some padding/border if needed, similar to .condition-checkboxes #}
+                <div class="condition-checkboxes" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 15px; background-color: var(--bg-dark);">
+                    {# The individual checkboxes and labels are styled by booking_styles.css via .form-check and .form-check-label #}
+                    {{ form.conditions }}
+                </div>
+                <small class="form-text">
+                    <strong>Rules:</strong>
+                    <ul class="reset-list mt-1 mb-0">
+                        <li>New, Used, and Demo are mutually exclusive</li>
+                        <li>Hire can be combined with Used or Demo (but not New)</li>
+                        <li>Selecting "Hire" will require additional hire rate information (handled by showing/hiding fields)</li>
+                    </ul>
+                </small>
+            </div>
+        </div>
+
+        {# Use booking-section-title for main sections #}
+        <div class="form-field"> {# Wrap sections in form-field for consistent spacing #}
+            <h3 class="booking-section-title">General Details</h3>
+            {# Use form-field for each input row/group #}
+            <div class="form-field">
+                <div class="row">
+                    <div class="col-md-4">
+                        {# Use form-field for each individual field #}
+                        <div class="form-field">
+                            <label for="{{ form.brand.id_for_label }}" class="form-label">Brand <span class="required-indicator">*</span></label> {# Brand remains required #}
+                            {{ form.brand.errors }} {# Error messages styled by small tag #}
+                            {{ form.brand|add_class:"form-control" }} {# Use form-control if booking_styles.css provides generic input styles, otherwise rely on base select/input styles #}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-field">
+                            <label for="{{ form.model.id_for_label }}" class="form-label">Model <span class="required-indicator">*</span></label> {# Model remains required #}
+                            {{ form.model.errors }}
+                            {{ form.model|add_class:"form-control" }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-field">
+                            <label for="{{ form.year.id_for_label }}" class="form-label">Year <span class="required-indicator">*</span></label> {# Year remains required #}
+                            {{ form.year.errors }}
+                            {{ form.year|add_class:"form-control" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-field">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-field">
+                            <label for="{{ form.engine_size.id_for_label }}" class="form-label">Engine Size <span class="required-indicator">*</span></label> {# Engine Size remains required #}
+                            {{ form.engine_size.errors }}
+                            {{ form.engine_size|add_class:"form-control" }}
+                        </div>
+                    </div>
+                     <div class="col-md-6">
+                        <div class="form-field">
+                            <label for="{{ form.odometer.id_for_label }}" class="form-label">Odometer <span class="required-indicator">*</span></label> {# Odometer is now always required - added indicator #}
+                            {{ form.odometer.errors }}
+                            {{ form.odometer|add_class:"form-control" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-field">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-field">
+                            <label for="{{ form.seats.id_for_label }}" class="form-label">
+                                Number of Seats
+                            </label> {# Seats is now optional #}
+                            {{ form.seats.errors }}
+                            {{ form.seats|add_class:"form-control" }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-field">
+                            <label for="{{ form.transmission.id_for_label }}" class="form-label">
+                                Transmission
+                            </label> {# Transmission is now optional #}
+                            {{ form.transmission.errors }}
+                            {{ form.transmission|add_class:"form-control" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+             <div class="form-field">
+                <label for="{{ form.description.id_for_label }}" class="form-label">Description</label> {# Description is now optional #}
+                {{ form.description.errors }}
+                {{ form.description|add_class:"form-control" }} {# Textarea will also be styled #}
+            </div>
+
+            <div class="form-field">
+                 <label for="{{ form.image.id_for_label }}" class="form-label">Primary Image</label>
+                 {{ form.image.errors }}
+                 {{ form.image|add_class:"form-control" }} {# File input might need specific styling if booking_styles.css doesn't cover it #}
+            </div>
+
+            {# Checkbox is already handled by .form-check and .form-check-label #}
+            <div class="form-check">
+                {{ form.is_available|add_class:"form-check-input" }}
+                <label class="form-check-label" for="{{ form.is_available.id_for_label }}">
+                    Available for sale/hire
+                </label>
+            </div>
+
+        </div>
+
+        {# Use booking-section-title for main sections #}
+        <div class="sale-details-section form-field"> {# Add form-field class #}
+            <h3 class="booking-section-title">Sale Related Details</h3>
+            <div class="form-field">
+                <div class="row">
+                     <div class="col-md-6">
+                            <div class="form-field">
+                                <label for="{{ form.stock_number.id_for_label }}" class="form-label">Stock Number</label> {# Stock Number remains optional #}
+                                {{ form.stock_number.errors }}
+                                {{ form.stock_number|add_class:"form-control" }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-field">
+                                <label for="{{ form.price.id_for_label }}" class="form-label">Price ($)</label> {# Price is now optional #}
+                                {{ form.price.errors }}
+                                {{ form.price|add_class:"form-control" }}
+                            </div>
+                        </div>
+                </div>
+            </div>
+        </div>
+
+        {# Use booking-section-title for main sections #}
+        <div class="hire-details-section form-field" id="hireDetailsSection"> {# Add form-field class #}
+            <h3 class="booking-section-title">Hire Related Details</h3>
+            <div class="form-field">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-field">
+                            <label for="{{ form.hourly_hire_rate.id_for_label }}" class="form-label">Hourly Rate ($)</label> {# Hourly Rate is now optional #}
+                            {{ form.hourly_hire_rate.errors }}
+                            {{ form.hourly_hire_rate|add_class:"form-control" }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-field">
+                            <label for="{{ form.daily_hire_rate.id_for_label }}" class="form-label">
+                                Daily Rate ($)
+                            </label> {# Daily Rate is now optional #}
+                            {{ form.daily_hire_rate.errors }}
+                            {{ form.daily_hire_rate|add_class:"form-control" }}
+                            <small class="form-text">Enter a rate if different from default</small> {# Updated help text #}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-field">
+                            <label for="{{ form.weekly_hire_rate.id_for_label }}" class="form-label">Weekly Rate ($)</label> {# Weekly Rate is now optional #}
+                            {{ form.weekly_hire_rate.errors }}
+                            {{ form.weekly_hire_rate|add_class:"form-control" }}
+                        </div>
+                    </div>
+                     <div class="col-md-4">
+                        <div class="form-field">
+                            <label for="{{ form.monthly_hire_rate.id_for_label }}" class="form-label">Monthly Rate ($)</label> {# Monthly Rate is now optional #}
+                            {{ form.monthly_hire_rate.errors }}
+                            {{ form.monthly_hire_rate|add_class:"form-control" }}
+                        </div>
+                    </div>
+                     <div class="col-md-6">
+                            <div class="form-field">
+                                <label for="{{ form.rego.id_for_label }}" class="form-label">Registration Number</label> {# Rego remains optional #}
+                                {{ form.rego.errors }}
+                                {{ form.rego|add_class:"form-control" }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-field">
+                                <label for="{{ form.rego_exp.id_for_label }}" class="form-label">Registration Expiry</label> {# Rego Expiry remains optional #}
+                                {{ form.rego_exp.errors }}
+                                {{ form.rego_exp|add_class:"form-control" }}
+                            </div>
+                        </div>
+                </div>
+            </div>
+        </div>
+
+        {# Use button styling from booking_styles.css and flexbox for layout #}
+        <div class="form-field" style="flex-direction: row; justify-content: flex-end; margin-top: 20px;">
+            {# Apply btn-primary and btn-secondary classes #}
+            <button type="submit" class="btn-primary" style="margin-right: 10px;">
+                {% if form.instance.pk %}Save Changes{% else %}Create Listing{% endif %}
+            </button>
+            <a href="{% if form.instance.pk %}{% url 'inventory:motorcycle-detail' form.instance.pk %}{% else %}{% url 'inventory:motorcycle-list' %}{% endif %}" class="btn-secondary">Cancel</a>
+        </div>
+    </form>
 </div>
 
 {% block extra_js %}
@@ -227,17 +252,17 @@
             HIRE: '4'    // Example ID for "Hire" condition - VERIFY IN YOUR DB
         };
 
-        // Find all condition checkboxes
+        // Find all condition checkboxes - Selector remains the same
         const conditionCheckboxes = document.querySelectorAll('.condition-checkboxes input[type="checkbox"]');
 
-        // Safely get individual condition checkboxes based on potentially correct IDs
+        // Safely get individual condition checkboxes based on potentially correct IDs - Selectors remain the same
         const newCondition = document.querySelector(`.condition-checkboxes input[value="${CONDITION_IDS.NEW}"]`);
         const usedCondition = document.querySelector(`.condition-checkboxes input[value="${CONDITION_IDS.USED}"]`);
         const demoCondition = document.querySelector(`.condition-checkboxes input[value="${CONDITION_IDS.DEMO}"]`);
         const hireCondition = document.querySelector(`.condition-checkboxes input[value="${CONDITION_IDS.HIRE}"]`);
 
 
-        // Get the relevant sections and fields
+        // Get the relevant sections and fields - Selectors remain the same
         const hireDetailsSection = document.getElementById('hireDetailsSection');
         const saleDetailsSection = document.querySelector('.sale-details-section');
         const priceField = document.querySelector('#id_price');
@@ -309,6 +334,7 @@
             // Handle Hire visibility
             // Removed JS logic making Odometer required conditionally
             if (isHireSelectedNow) {
+                // Use display: 'block' and 'none' for visibility as before
                 if (hireDetailsSection) hireDetailsSection.style.display = 'block'; // Show the section
                  // Removed JS logic to add/remove required indicator for Odometer
             } else {
@@ -325,16 +351,16 @@
              // Stock number, Price, and Hire Rate fields are now optional based on model/form, no JS required to enforce
         }
 
-        // Add event listeners to enforce business rules
+        // Add event listeners to enforce business rules - Remains the same
         conditionCheckboxes.forEach(checkbox => {
             checkbox.addEventListener('change', updateFormBasedOnConditions);
         });
 
-        // Initial check when page loads to set correct state based on pre-selected conditions
+        // Initial check when page loads to set correct state based on pre-selected conditions - Remains the same
         updateFormBasedOnConditions();
 
         // Client-side form validation (optional, Django validation is primary)
-        // Odometer validation now runs unconditionally
+        // Odometer validation now runs unconditionally - Remains the same
         document.getElementById('motorcycleForm').addEventListener('submit', function(event) {
              // Re-evaluate checked status right before submit
             const checkedIds = Array.from(conditionCheckboxes)
@@ -352,6 +378,7 @@
              // Check for empty string or value less than 0
              if (odometerField && (odometerField.value === '' || parseInt(odometerField.value) < 0)) {
                  event.preventDefault();
+                 // Use a more styled message box if available, otherwise keep alert for now
                  alert('Please enter a valid odometer reading (cannot be empty or negative).'); // Generic message
                  odometerField.focus();
                  return;
