@@ -1,0 +1,193 @@
+{% extends "dashboard/admin_layout.html" %}
+{% load static %}
+
+{% block admin_main_content %}
+
+{# Link to shared booking styles, or create a new one if needed #}
+<link rel="stylesheet" href="{% static 'css/service_booking_styles.css' %}"> {# Assuming shared styles for now #}
+
+{# Include FullCalendar's core CSS #}
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css' rel='stylesheet' />
+
+<h2>Hire Bookings Calendar</h2>
+
+<div class="card shadow mb-4">
+    <div class="card-header">
+        <div class="button-group-spaced mb-4"> {# Using existing class for spacing, added margin-bottom #}
+            {# Link to create hire booking for existing user - ADJUST URL NAME AS NEEDED #}
+            <a href="" class="btn-primary"> {# Using existing button primary style #}
+                Create booking (existing user)
+            </a>
+            {# Link to create hire booking for one-off user - ADJUST URL NAME AS NEEDED #}
+            <a href="" class="btn-primary"> {# Using existing button primary style #}
+                Create booking (one-off user)
+            </a>
+            {# Link to search hire bookings - keeping the existing search button, just moving it #}
+            <a href="" class="btn-primary"> {# Using existing button primary style #}
+                 Search bookings
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div id='fullcalendar'>
+            {# FullCalendar will build the calendar inside this div #}
+        </div>
+
+        {# Color Key for Statuses (temporarily placed here, will be moved by JS) #}
+        {# Adjust statuses and colors to match your HireBooking model's status choices #}
+        <div class="color-key" id="status-color-key" style="display: none;">
+            <div class="color-key-item">
+                <span class="color-box status-confirmed"></span> Confirmed {# Assuming 'confirmed' status #}
+            </div>
+            <div class="color-key-item">
+                <span class="color-box status-pending"></span> Pending {# Assuming 'pending' status #}
+            </div>
+             <div class="color-key-item">
+                <span class="color-box status-completed"></span> Completed {# Assuming 'completed' status #}
+            </div>
+             <div class="color-key-item">
+                <span class="color-box status-picked-up"></span> Picked Up {# Example hire-specific status #}
+            </div>
+             <div class="color-key-item">
+                <span class="color-box status-returned"></span> Returned {# Example hire-specific status #}
+            </div>
+             <div class="color-key-item">
+                <span class="color-box status-cancelled"></span> Cancelled {# Example hire-specific status #}
+            </div>
+        </div>
+
+    </div> {# End of card-body #}
+</div> {# End of card #}
+
+{# Include FullCalendar's core JavaScript file #}
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+
+{# Include the interaction plugin if you plan to use features like clicking dates/events #}
+<script src='https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.11/index.global.min.js'></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('fullcalendar'); // Get the HTML element
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            // ** REQUIRED OPTIONS **
+            initialView: 'dayGridMonth', // Specifies the default view (e.g., month view)
+
+            // ** OPTIONAL CONFIGURATION **
+            headerToolbar: { // Customize the buttons and title at the top
+                left: 'prev,next today',
+                center: 'title',
+                right: '' // Removed all buttons from the right side
+            },
+
+            // --- Event Source ---
+            // Fetch events from the Django backend JSON feed for HIRE bookings
+            events: '{% url "dashboard:get_hire_bookings_json" %}', 
+
+            // --- Event Rendering ---
+            eventContent: function(arg) {
+                // Check if the event is a blocked date event using the extendedProps.is_blocked flag
+                if (arg.event.extendedProps.is_blocked) {
+                    // This is a blocked date event
+                    let blockedDescription = arg.event.extendedProps.description || ''; // Use description if available
+
+                    let html = `
+                        <div class="blocked-title">Blocked</div>
+                        <div class="blocked-description">${blockedDescription}</div>
+                    `;
+
+                    let eventEl = document.createElement('div');
+                    // Apply the base class, the custom main class, and the specific blocked status class
+                    eventEl.classList.add('calendar-tile-base');
+                    eventEl.classList.add('fc-event-main-custom'); // Add this class
+                    eventEl.classList.add('status-blocked'); // Add this class
+                    eventEl.innerHTML = html;
+
+                    // Optional: Add original title as a title attribute for tooltip if description was used
+                     if (arg.event.extendedProps.description) {
+                         eventEl.setAttribute('title', arg.event.title); // Original title is 'Blocked Day'
+                     }
+
+                    return { domNodes: [eventEl] };
+
+                } else {
+                    // This is a hire booking event - use the existing rendering logic adapted for hire
+                    let customerName = arg.event.extendedProps.customer_name || 'N/A';
+                    let vehicleDisplay = arg.event.extendedProps.vehicle_display || 'Vehicle N/A';
+                    let bookingReference = arg.event.extendedProps.booking_reference || '';
+                    let status = arg.event.extendedProps.status || 'pending'; // Default to pending if status is not set
+
+                    // Use a shorter version of the customer name if it's too long for the tile
+                    if (customerName.length > 15) { // Adjust length as needed
+                        customerName = customerName.substring(0, 15) + '...';
+                    }
+
+                    // Format pickup and return dates/times if available
+                    let pickupDate = arg.event.extendedProps.pickup_date ? new Date(arg.event.extendedProps.pickup_date).toLocaleDateString() : '';
+                    let returnDate = arg.event.extendedProps.return_date ? new Date(arg.event.extendedProps.return_date).toLocaleDateString() : '';
+
+                    let html = `
+                        <div class="booking-title">${customerName}</div>
+                        <div class="booking-details">${vehicleDisplay}</div>
+                    `;
+                     if (pickupDate && returnDate) {
+                         html += `<div class="booking-details">${pickupDate} - ${returnDate}</div>`;
+                     } else if (pickupDate) {
+                         html += `<div class="booking-details">Starts: ${pickupDate}</div>`;
+                     }
+
+
+                    // The main container for the custom content
+                    let eventEl = document.createElement('div');
+                    // Apply the base class and the specific hire booking class
+                    eventEl.classList.add('calendar-tile-base');
+                    eventEl.classList.add('fc-event-main-custom'); // Keep original class for status styling
+                    eventEl.classList.add(`status-${status}`); // e.g., status-confirmed
+                    eventEl.innerHTML = html;
+
+                    return { domNodes: [eventEl] };
+                }
+            },
+
+            // --- Interactivity (Using the interaction plugin) ---
+            eventClick: function(info) {
+                // This function is called when an event (booking) is clicked
+                console.log('Event clicked:', info.event.title); // Original title
+                console.log('Event ID:', info.event.id);
+                console.log('Event URL:', info.event.url);
+                console.log('Event Extended Props:', info.event.extendedProps);
+
+                 // Prevent clicking on blocked date tiles
+                 if (info.event.extendedProps.is_blocked) {
+                     info.jsEvent.preventDefault(); // Prevent the default action (like following a URL)
+                     return; // Stop further execution for blocked events
+                 }
+
+                // Redirect to the booking details page using the event's URL property
+                // This URL is generated in the get_hire_bookings_json view
+                if (info.event.url) {
+                    window.location.href = info.event.url;
+                }
+            },
+
+        });
+
+        // Render the calendar first
+        calendar.render();
+
+        // --- Move the color key into the FullCalendar header ---
+        var colorKeyElement = document.getElementById('status-color-key');
+        // Find the right-hand side chunk of the FullCalendar header
+        var headerRightChunk = calendarEl.querySelector('.fc-toolbar-chunk:last-child');
+
+        if (colorKeyElement && headerRightChunk) {
+            // Append the color key element to the right chunk
+            headerRightChunk.appendChild(colorKeyElement);
+            // Make it visible after moving
+            colorKeyElement.style.display = 'flex';
+        }
+    });
+
+</script>
+
+{% endblock %}

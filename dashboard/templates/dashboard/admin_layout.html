@@ -22,12 +22,10 @@
             <li class="nav-section">
                 <h3>Service Management</h3>
                 <ul class="reset-list">
-                    {# Ensure this URL name matches the one in dashboard/urls.py #}
                     <li><a href="{% url 'dashboard:service_bookings' %}">Service Bookings</a></li>
                     <li><a href="{% url 'dashboard:settings_service_booking' %}">Service Booking Settings</a></li>
                     <li><a href="{% url 'dashboard:settings_service_types' %}">Service Types</a></li>
                     <li><a href="{% url 'dashboard:service_brands_management' %}">Service Brands</a></li>
-                    {# New link for Blocked Service Dates #}
                     <li><a href="{% url 'dashboard:blocked_service_dates_management' %}">Blocked Service Dates</a></li>
                 </ul>
             </li>
@@ -36,10 +34,9 @@
             <li class="nav-section">
                 <h3>Hire Management</h3>
                 <ul class="reset-list">
-                     <li><a href="{% url 'dashboard:settings_hire_booking' %}">Hire Booking Settings</a></li>
-                     {# New link for Blocked Hire Dates #}
+                    <li><a href="{% url 'dashboard:hire_bookings' %}">Hire Bookings</a></li>
+                    <li><a href="{% url 'dashboard:settings_hire_booking' %}">Hire Booking Settings</a></li>
                     <li><a href="{% url 'dashboard:blocked_hire_dates_management' %}">Blocked Hire Dates</a></li>
-                    {# Add other hire-related links here if they exist #}
                 </ul>
             </li>
 

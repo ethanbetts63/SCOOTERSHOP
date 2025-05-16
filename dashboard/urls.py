@@ -14,13 +14,17 @@ urlpatterns = [
     path('service-bookings/', views.service_bookings_view, name='service_bookings'),
     path('service-bookings/<int:pk>/', views.service_booking_details_view, name='service_booking_details'),
     path('service-bookings/search/', views.service_booking_search_view, name='service_booking_search'),
+    path('service-bookings/json/', views.get_service_bookings_json, name='get_service_bookings_json'), # Renamed JSON feed URL
 
-    # --- New URL pattern for the FullCalendar JSON feed (from service_bookings.py) ---
-    path('bookings/json/', views.get_service_bookings_json, name='get_service_bookings_json'),
-
+    # --- Hire Booking Management Views ---
+    # These views will be imported via views/__init__.py from views/hire_bookings.py
+    path('hire-bookings/', views.hire_bookings_view, name='hire_bookings'), # Hire bookings calendar view
+    path('hire-bookings/<int:pk>/', views.hire_booking_details_view, name='hire_booking_details'), # Hire booking details view
+    path('hire-bookings/search/', views.hire_booking_search_view, name='hire_booking_search'), # Hire booking search view
+    path('hire-bookings/json/', views.get_hire_bookings_json, name='get_hire_bookings_json'), # Hire bookings JSON feed
 
     # --- Other Views (e.g., About Page) ---
-    path('edit-about/', views.edit_about_page, name='edit_about_page'), # Note: Changed from /settings/about-page/ in your provided current urls.py
+    path('edit-about/', views.edit_about_page, name='edit_about_page'),
 
     # --- Dashboard Settings Views ---
     path('settings/business-info/', views.settings_business_info, name='settings_business_info'),
