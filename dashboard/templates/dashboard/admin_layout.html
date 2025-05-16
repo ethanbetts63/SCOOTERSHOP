@@ -16,7 +16,8 @@
         <h2>Admin Navigation</h2>
         <ul class="reset-list">
             <li><a href="{% url 'dashboard:dashboard_index' %}">Dashboard Home</a></li>
-            <li><a href="{% url 'inventory:motorcycle-list' %}">All Motorcycles</a></li> {# Keeping this here as it's general inventory #}
+            <li><a href="{% url 'inventory:motorcycle-list' %}">All Motorcycles</a></li> 
+            <li><a href="{% url 'inventory:motorcycle-create' %}">Add Motorcycle</a></li>
 
             {# Service Management Section #}
             <li class="nav-section">
