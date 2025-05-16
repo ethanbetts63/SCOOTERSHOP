@@ -47,9 +47,15 @@
                     <h1 class="detail-title">{{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }}</h1>
                     <h2 class="price">
                         {% if motorcycle.is_for_hire %}
-                            Starting from ${{ motorcycle.daily_hire_rate }}</span>
+                            {# Assuming daily_hire_rate might also be None, add a check here too #}
+                            Starting from {% if motorcycle.daily_hire_rate %}${{ motorcycle.daily_hire_rate|floatformat:2 }}{% else %}Contact for rate{% endif %}
                         {% else %}
-                            ${{ motorcycle.price }}
+                            {# This block is for sale bikes #}
+                            {% if motorcycle.price %}
+                                ${{ motorcycle.price|floatformat:2 }} {# Display price if it exists, formatted to 2 decimal places #}
+                            {% else %}
+                                Contact for price {# Display this text if price is None #}
+                            {% endif %}
                         {% endif %}
                     </h2>
 

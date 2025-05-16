@@ -40,6 +40,7 @@ class Motorcycle(models.Model):
     brand = models.CharField(max_length=100)
     model = models.CharField(max_length=100)
     year = models.IntegerField()
+    # Made price nullable and blankable
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Sale price (if applicable)")
 
     # Additional identification fields
@@ -59,21 +60,25 @@ class Motorcycle(models.Model):
         help_text="Select all applicable conditions (e.g., Used, Hire)",
     )
 
-    odometer = models.IntegerField(null=True, blank=True)
+    odometer = models.IntegerField(null=True, blank=True) # Odometer is not made required based on your list
     engine_size = models.CharField(max_length=50)
 
-    # Required fields for all motorcycles
+    # Made seats nullable and blankable
     seats = models.IntegerField(
         help_text="Number of seats on the motorcycle",
+        null=True, blank=True
     )
 
+    # Made transmission nullable and blankable
     transmission = models.CharField(
         max_length=20,
         choices=TRANSMISSION_CHOICES,
-        help_text="Motorcycle transmission type"
+        help_text="Motorcycle transmission type",
+        null=True, blank=True
     )
 
-    description = models.TextField()
+    # Made description nullable and blankable
+    description = models.TextField(null=True, blank=True)
     image = models.FileField(upload_to='motorcycles/', null=True, blank=True)
     date_posted = models.DateTimeField(auto_now_add=True)
     is_available = models.BooleanField(default=True, help_text="Is this bike generally available for sale or in the active hire fleet?")
@@ -81,7 +86,7 @@ class Motorcycle(models.Model):
     rego_exp = models.DateField(help_text="Registration expiration date", null=True, blank=True)
     stock_number = models.CharField(max_length=50, unique=True, null=True, blank=True)
 
-    # Hire rates
+    # Hire rates made nullable and blankable
     daily_hire_rate = models.DecimalField(
         max_digits=8,
         decimal_places=2,
@@ -90,7 +95,7 @@ class Motorcycle(models.Model):
         help_text="Price per day for hiring (if applicable)"
     )
 
-    # New hire rate fields
+    # New hire rate fields made nullable and blankable
     weekly_hire_rate = models.DecimalField(
         max_digits=8,
         decimal_places=2,

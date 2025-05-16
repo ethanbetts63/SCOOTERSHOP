@@ -1,13 +1,16 @@
+# inventory/views/motorcycle_detail.py
+
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy # Import reverse_lazy for success_url
 from django.contrib import messages # Import messages
 # Import View for dispatch method override
-from django.views import View
+from django.views import View # Import View if you weren't already using it for other reasons
+from django.conf import settings # Import settings to potentially access default hire rates
 
 # Import models from the inventory app
-from inventory.models import Motorcycle, MotorcycleImage, MotorcycleCondition # Import MotorcycleCondition
+from inventory.models import Motorcycle, MotorcycleImage, MotorcycleCondition
 # Import forms from the inventory app
 from inventory.forms import MotorcycleForm, MotorcycleImageFormSet
 # Import utility function from the inventory app
@@ -53,59 +56,51 @@ class MotorcycleDetailView(DetailView):
         # Pass the lowercase for comparison in templates
         context['condition_lower'] = featured_condition
 
-
-        # Define specifications with their labels and icons
-        motorcycle = self.object
-        specifications = [
-            {'field': 'condition', 'label': 'Condition', 'icon': 'icon-category', 'value': ", ".join([c.get_name_display() for c in motorcycle.conditions.all()]) if motorcycle.conditions.exists() else None}, # Display all conditions, handle no conditions
-            {'field': 'year', 'label': 'Year', 'icon': 'icon-year', 'value': motorcycle.year},
-            {'field': 'odometer', 'label': 'Odometer', 'icon': 'icon-odometer', 'value': f"{motorcycle.odometer} km" if motorcycle.odometer is not None else None},
-            {'field': 'engine_size', 'label': 'Engine', 'icon': 'icon-capacity', 'value': f"{motorcycle.engine_size}cc" if motorcycle.engine_size else None},
-            {'field': 'seats', 'label': 'Seats', 'icon': 'icon-seat', 'value': motorcycle.seats},
-            {'field': 'transmission', 'label': 'Transmission', 'icon': 'icon-transmission', 'value': motorcycle.transmission},
-            {'field': 'rego', 'label': 'Registration', 'icon': 'icon-rego', 'value': motorcycle.rego},
-            {'field': 'rego_exp', 'label': 'Rego Expires', 'icon': 'icon-rego-exp', 'value': motorcycle.rego_exp.strftime("%d %b %Y") if motorcycle.rego_exp else None},
-            {'field': 'stock_number', 'label': 'Stock #', 'icon': 'icon-stock', 'value': motorcycle.stock_number},
-            # Add daily_hire_rate if it's a hire bike
-             {'field': 'daily_hire_rate', 'label': 'Daily Hire Rate', 'icon': 'icon-money', 'value': f"${motorcycle.daily_hire_rate:.2f}" if motorcycle.daily_hire_rate is not None and motorcycle.is_for_hire() else None}, # Use .is_for_hire() method
-        ]
-
         # Determine if the motorcycle has the 'hire' or 'new' condition for filtering specs
         is_for_hire = self.object.conditions.filter(name='hire').exists()
         is_new = self.object.conditions.filter(name='new').exists()
+        is_for_sale = self.object.conditions.filter(name__in=['new', 'used', 'demo']).exists() # Check if any sale condition is present
 
-        # Filter out specs based on condition and None values
-        # Revised filtering logic based on conditions selected
-        filtered_specifications = []
-        for spec in specifications:
-            if spec['value'] is not None:
-                # Always include basic specs
-                if spec['field'] in ['year', 'engine_size', 'seats', 'transmission']:
-                    filtered_specifications.append(spec)
-                # Include Odometer if not New
-                elif spec['field'] == 'odometer' and not is_new:
-                     filtered_specifications.append(spec)
-                # Include Stock Number if New, Used, or Demo (i.e., not purely Hire)
-                elif spec['field'] == 'stock_number' and (is_new or self.object.conditions.filter(name__in=['used', 'demo']).exists()):
-                     filtered_specifications.append(spec)
-                 # Include Rego/Rego Expiry if not New
-                elif spec['field'] in ['rego', 'rego_exp'] and not is_new:
-                    filtered_specifications.append(spec)
-                # Include Daily Hire Rate if Hire
-                elif spec['field'] == 'daily_hire_rate' and is_for_hire:
-                    filtered_specifications.append(spec)
-                # The 'condition' field is handled separately if you want it in the specs list
+        # Define specifications with their labels and icons
+        motorcycle = self.object
+        specifications = []
 
-        # You might want to explicitly add the 'Condition' display here if you want it at the top or bottom
-        # of the filtered list, as the above logic filters it based on whether the MotorcycleCondition object exists.
-        # A simpler way might be to always include the 'condition' field if the motorcycle has any conditions.
-        condition_spec = {'field': 'condition', 'label': 'Condition', 'icon': 'icon-category', 'value': self.object.get_conditions_display()}
-        if self.object.conditions.exists():
-            # Add condition at the beginning of the list
-            filtered_specifications.insert(0, condition_spec)
+        # Always include condition if available
+        if motorcycle.conditions.exists():
+             specifications.append({'field': 'condition', 'label': 'Condition', 'icon': 'icon-category', 'value': motorcycle.get_conditions_display()})
+
+        # Conditionally add other specifications
+        if motorcycle.year is not None: specifications.append({'field': 'year', 'label': 'Year', 'icon': 'icon-year', 'value': motorcycle.year})
+        # Include Odometer if not New
+        if motorcycle.odometer is not None and not is_new: specifications.append({'field': 'odometer', 'label': 'Odometer', 'icon': 'icon-odometer', 'value': f"{motorcycle.odometer} km"})
+        if motorcycle.engine_size: specifications.append({'field': 'engine_size', 'label': 'Engine', 'icon': 'icon-capacity', 'value': f"{motorcycle.engine_size}cc"}) # Assuming engine_size remains required/always has a value
+        if motorcycle.seats is not None: specifications.append({'field': 'seats', 'label': 'Seats', 'icon': 'icon-seat', 'value': motorcycle.seats})
+        if motorcycle.transmission: specifications.append({'field': 'transmission', 'label': 'Transmission', 'icon': 'icon-transmission', 'value': motorcycle.transmission})
+        # Include Rego/Rego Expiry if not New
+        if motorcycle.rego and not is_new: specifications.append({'field': 'rego', 'label': 'Registration', 'icon': 'icon-rego', 'value': motorcycle.rego})
+        if motorcycle.rego_exp and not is_new: specifications.append({'field': 'rego_exp', 'label': 'Rego Expires', 'icon': 'icon-rego-exp', 'value': motorcycle.rego_exp.strftime("%d %b %Y")})
+        # Include Stock Number if New, Used, or Demo
+        if motorcycle.stock_number and is_for_sale: specifications.append({'field': 'stock_number', 'label': 'Stock #', 'icon': 'icon-stock', 'value': motorcycle.stock_number})
+
+        # Handle price display logic - always add the price field if any sale condition is present
+        if is_for_sale:
+            price_value = f"${motorcycle.price:.2f}" if motorcycle.price is not None else "Contact for price"
+            specifications.append({'field': 'price', 'label': 'Price', 'icon': 'icon-money', 'value': price_value})
+
+        # Handle hire rate display logic - always add the daily hire rate if hire condition is present
+        if is_for_hire:
+            daily_rate_value = f"${motorcycle.daily_hire_rate:.2f}" if motorcycle.daily_hire_rate is not None else f"Default ({settings.DEFAULT_DAILY_HIRE_RATE:.2f})" # Assuming you have a setting for this
+            specifications.append({'field': 'daily_hire_rate', 'label': 'Daily Hire Rate', 'icon': 'icon-money', 'value': daily_rate_value})
+             # Add other hire rates if they exist
+            if motorcycle.hourly_hire_rate is not None:
+                 specifications.append({'field': 'hourly_hire_rate', 'label': 'Hourly Rate', 'icon': 'icon-money', 'value': f"${motorcycle.hourly_hire_rate:.2f}"})
+            if motorcycle.weekly_hire_rate is not None:
+                 specifications.append({'field': 'weekly_hire_rate', 'label': 'Weekly Rate', 'icon': 'icon-money', 'value': f"${motorcycle.weekly_hire_rate:.2f}"})
+            if motorcycle.monthly_hire_rate is not None:
+                 specifications.append({'field': 'monthly_hire_rate', 'label': 'Monthly Rate', 'icon': 'icon-money', 'value': f"${motorcycle.monthly_hire_rate:.2f}"})
 
 
-        context['filtered_specifications'] = filtered_specifications
+        context['filtered_specifications'] = specifications # Renamed from filtered_specifications as it's built conditionally
 
         return context
 

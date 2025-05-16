@@ -25,7 +25,7 @@
                 {% endif %}
 
                 <div class="condition-section mb-4">
-                    <h5 class="mb-3">Motorcycle Condition <span class="required-indicator">*</span></h5>
+                    <h5 class="mb-3">Motorcycle Condition <span class="required-indicator">*</span></h5> {# Conditions field remains required by the form #}
                     <p class="text-muted mb-2">Select the condition(s) that apply to this motorcycle:</p>
                     <div class="mb-3">
                         {{ form.conditions.errors }}
@@ -37,7 +37,7 @@
                             <ul class="reset-list mt-1 mb-0">
                                 <li>New, Used, and Demo are mutually exclusive</li>
                                 <li>Hire can be combined with Used or Demo (but not New)</li>
-                                <li>Selecting "Hire" will require additional hire rate information</li>
+                                <li>Selecting "Hire" will require additional hire rate information (handled by showing/hiding fields)</li>
                             </ul>
                         </small>
                     </div>
@@ -48,21 +48,21 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="mb-3">
-                                <label for="{{ form.brand.id_for_label }}" class="form-label">Brand <span class="required-indicator">*</span></label>
+                                <label for="{{ form.brand.id_for_label }}" class="form-label">Brand <span class="required-indicator">*</span></label> {# Brand remains required #}
                                 {{ form.brand.errors }}
                                 {{ form.brand|add_class:"form-control" }}
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="mb-3">
-                                <label for="{{ form.model.id_for_label }}" class="form-label">Model <span class="required-indicator">*</span></label>
+                                <label for="{{ form.model.id_for_label }}" class="form-label">Model <span class="required-indicator">*</span></label> {# Model remains required #}
                                 {{ form.model.errors }}
                                 {{ form.model|add_class:"form-control" }}
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="mb-3">
-                                <label for="{{ form.year.id_for_label }}" class="form-label">Year <span class="required-indicator">*</span></label>
+                                <label for="{{ form.year.id_for_label }}" class="form-label">Year <span class="required-indicator">*</span></label> {# Year remains required #}
                                 {{ form.year.errors }}
                                 {{ form.year|add_class:"form-control" }}
                             </div>
@@ -72,14 +72,14 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="{{ form.engine_size.id_for_label }}" class="form-label">Engine Size <span class="required-indicator">*</span></label>
+                                <label for="{{ form.engine_size.id_for_label }}" class="form-label">Engine Size <span class="required-indicator">*</span></label> {# Engine Size remains required #}
                                 {{ form.engine_size.errors }}
                                 {{ form.engine_size|add_class:"form-control" }}
                             </div>
                         </div>
                          <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="{{ form.odometer.id_for_label }}" class="form-label">Odometer</label>
+                                <label for="{{ form.odometer.id_for_label }}" class="form-label">Odometer</label> {# Odometer is now optional #}
                                 {{ form.odometer.errors }}
                                 {{ form.odometer|add_class:"form-control" }}
                             </div>
@@ -90,8 +90,8 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="{{ form.seats.id_for_label }}" class="form-label">
-                                    Number of Seats <span class="required-indicator">*</span>
-                                </label>
+                                    Number of Seats
+                                </label> {# Seats is now optional #}
                                 {{ form.seats.errors }}
                                 {{ form.seats|add_class:"form-control" }}
                             </div>
@@ -99,8 +99,8 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="{{ form.transmission.id_for_label }}" class="form-label">
-                                    Transmission <span class="required-indicator">*</span>
-                                </label>
+                                    Transmission
+                                </label> {# Transmission is now optional #}
                                 {{ form.transmission.errors }}
                                 {{ form.transmission|add_class:"form-control" }}
                             </div>
@@ -108,7 +108,7 @@
                     </div>
 
                      <div class="mb-3">
-                        <label for="{{ form.description.id_for_label }}" class="form-label">Description <span class="required-indicator">*</span></label>
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Description</label> {# Description is now optional #}
                         {{ form.description.errors }}
                         {{ form.description|add_class:"form-control" }}
                     </div>
@@ -136,14 +136,14 @@
                     <div class="row">
                          <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="{{ form.stock_number.id_for_label }}" class="form-label">Stock Number</label>
+                                    <label for="{{ form.stock_number.id_for_label }}" class="form-label">Stock Number</label> {# Stock Number remains optional #}
                                     {{ form.stock_number.errors }}
                                     {{ form.stock_number|add_class:"form-control" }}
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="{{ form.price.id_for_label }}" class="form-label">Price ($)</label>
+                                    <label for="{{ form.price.id_for_label }}" class="form-label">Price ($)</label> {# Price is now optional #}
                                     {{ form.price.errors }}
                                     {{ form.price|add_class:"form-control" }}
                                 </div>
@@ -156,7 +156,7 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="mb-3">
-                                <label for="{{ form.hourly_hire_rate.id_for_label }}" class="form-label">Hourly Rate ($)</label>
+                                <label for="{{ form.hourly_hire_rate.id_for_label }}" class="form-label">Hourly Rate ($)</label> {# Hourly Rate is now optional #}
                                 {{ form.hourly_hire_rate.errors }}
                                 {{ form.hourly_hire_rate|add_class:"form-control" }}
                             </div>
@@ -164,37 +164,37 @@
                         <div class="col-md-4">
                             <div class="mb-3">
                                 <label for="{{ form.daily_hire_rate.id_for_label }}" class="form-label">
-                                    Daily Rate ($) <span class="required-indicator">*</span>
-                                </label>
+                                    Daily Rate ($)
+                                </label> {# Daily Rate is now optional #}
                                 {{ form.daily_hire_rate.errors }}
                                 {{ form.daily_hire_rate|add_class:"form-control" }}
-                                <small class="form-text text-muted">Required for hire motorcycles</small>
+                                <small class="form-text text-muted">Enter a rate if different from default</small> {# Updated help text #}
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="mb-3">
-                                <label for="{{ form.weekly_hire_rate.id_for_label }}" class="form-label">Weekly Rate ($)</label>
+                                <label for="{{ form.weekly_hire_rate.id_for_label }}" class="form-label">Weekly Rate ($)</label> {# Weekly Rate is now optional #}
                                 {{ form.weekly_hire_rate.errors }}
                                 {{ form.weekly_hire_rate|add_class:"form-control" }}
                             </div>
                         </div>
                          <div class="col-md-4">
                             <div class="mb-3">
-                                <label for="{{ form.monthly_hire_rate.id_for_label }}" class="form-label">Monthly Rate ($)</label>
+                                <label for="{{ form.monthly_hire_rate.id_for_label }}" class="form-label">Monthly Rate ($)</label> {# Monthly Rate is now optional #}
                                 {{ form.monthly_hire_rate.errors }}
                                 {{ form.monthly_hire_rate|add_class:"form-control" }}
                             </div>
                         </div>
                          <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="{{ form.rego.id_for_label }}" class="form-label">Registration Number</label>
+                                    <label for="{{ form.rego.id_for_label }}" class="form-label">Registration Number</label> {# Rego remains optional #}
                                     {{ form.rego.errors }}
                                     {{ form.rego|add_class:"form-control" }}
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="{{ form.rego_exp.id_for_label }}" class="form-label">Registration Expiry</label>
+                                    <label for="{{ form.rego_exp.id_for_label }}" class="form-label">Registration Expiry</label> {# Rego Expiry remains optional #}
                                     {{ form.rego_exp.errors }}
                                     {{ form.rego_exp|add_class:"form-control" }}
                                 </div>
@@ -239,13 +239,13 @@
 
         // Get the relevant sections and fields
         const hireDetailsSection = document.getElementById('hireDetailsSection');
-        const saleDetailsSection = document.querySelector('.sale-details-section'); // Assuming you want to hide/show this too
+        const saleDetailsSection = document.querySelector('.sale-details-section');
         const priceField = document.querySelector('#id_price');
         const dailyRateField = document.querySelector('#id_daily_hire_rate');
         const odometerField = document.querySelector('#id_odometer');
 
 
-        // Function to update checkbox states and field visibility/requirements based on selection
+        // Function to update checkbox states and field visibility based on selection
         function updateFormBasedOnConditions() {
             // Get the currently checked condition IDs
             const checkedIds = Array.from(conditionCheckboxes)
@@ -307,17 +307,10 @@
 
 
             // Handle Hire visibility and requirements based on *current* checked state
+            // Removed client-side required validation for hire rate, relies on model now
             if (isHireSelectedNow) {
                 if (hireDetailsSection) hireDetailsSection.style.display = 'block'; // Show the section
-                 if (dailyRateField) {
-                    dailyRateField.required = true; // Make daily rate required
-                    // Update label to show it's required (add only if not already there)
-                    let label = dailyRateField.closest('.mb-3').querySelector('label');
-                    if (label && !label.querySelector('.required-indicator')) {
-                         label.innerHTML += ' <span class="required-indicator">*</span>';
-                    }
-                 }
-                 // Odometer required for hire as per your note in the HTML
+                 // Odometer IS required for hire based on your previous requirement, keeping this JS check
                  if (odometerField) {
                     odometerField.required = true;
                     let label = odometerField.closest('.mb-3').querySelector('label');
@@ -328,16 +321,7 @@
 
             } else {
                 if (hireDetailsSection) hireDetailsSection.style.display = 'none'; // Hide the section
-                 if (dailyRateField) {
-                     dailyRateField.required = false; // Make daily rate not required
-                      // Update label to remove required indicator
-                     let label = dailyRateField.closest('.mb-3').querySelector('label');
-                     if (label) {
-                         let indicator = label.querySelector('.required-indicator');
-                         if (indicator) indicator.remove();
-                     }
-                 }
-                 // Odometer not required when not hire
+                 // Odometer not required when not hire, keeping this JS to remove indicator
                   if (odometerField) {
                     odometerField.required = false;
                     let label = odometerField.closest('.mb-3').querySelector('label');
@@ -349,30 +333,13 @@
             }
 
             // Handle Sale visibility and requirements based on *current* checked state
+            // Removed client-side required validation for price, relies on model now
             if (areSaleConditionsSelected) {
                  if (saleDetailsSection) saleDetailsSection.style.display = 'block'; // Show the section
-                if (priceField) {
-                    priceField.required = true;
-                     // Update label to show it's required (add only if not already there)
-                    let label = priceField.closest('.mb-3').querySelector('label');
-                    if (label && !label.querySelector('.required-indicator')) {
-                         label.innerHTML += ' <span class="required-indicator">*</span>';
-                    }
-                }
             } else {
                  if (saleDetailsSection) saleDetailsSection.style.display = 'none'; // Hide the section
-                if (priceField) {
-                    priceField.required = false;
-                    // Update label to remove required indicator
-                     let label = priceField.closest('.mb-3').querySelector('label');
-                     if (label) {
-                         let indicator = label.querySelector('.required-indicator');
-                         if (indicator) indicator.remove();
-                     }
-                }
             }
-             // Note: stock_number is not made required by this JS logic, matching your request.
-             // Django form validation will handle price requirement if the conditions are met.
+             // Stock number remains optional, no change needed here.
         }
 
         // Add event listeners to enforce business rules
@@ -384,7 +351,8 @@
         updateFormBasedOnConditions();
 
         // Client-side form validation (optional, Django validation is primary)
-        // This provides immediate feedback to the user before server round trip
+        // Removed price and daily rate client-side validation as they are now optional.
+        // Kept odometer validation if hire is selected.
         document.getElementById('motorcycleForm').addEventListener('submit', function(event) {
              // Re-evaluate checked status right before submit
             const areSaleConditionsSelected = (newCondition && newCondition.checked) ||
@@ -393,39 +361,20 @@
             const isHireSelectedNow = (hireCondition && hireCondition.checked);
 
 
-            // Client-side check for daily hire rate if hire is selected
-            if (isHireSelectedNow) {
-                const dailyRateField = document.querySelector('#id_daily_hire_rate');
-                if (dailyRateField && (!dailyRateField.value || parseFloat(dailyRateField.value) <= 0)) {
-                    event.preventDefault();
-                    alert('Please enter a valid daily hire rate for hire motorcycles.');
-                    dailyRateField.focus();
-                    return;
-                }
-                 // Client-side check for odometer if hire is selected
+            // Client-side check for odometer if hire is selected (kept as per previous requirement)
+            // Added back the required indicator for Odometer label when Hire is selected in the updateFormBasedOnConditions function
+             if (isHireSelectedNow) {
                  const odometerField = document.querySelector('#id_odometer');
                  // Check for empty string or value less than 0 (assuming odometer can be 0 for new/demo if not hire)
                  if (odometerField && (odometerField.value === '' || parseInt(odometerField.value) < 0)) {
                      event.preventDefault();
-                     alert('Please enter a valid odometer reading for hire motorcycles (cannot be negative).');
+                     alert('Please enter a valid odometer reading for hire motorcycles (cannot be empty or negative).');
                      odometerField.focus();
                      return;
                  }
-            }
+             }
 
-            // Client-side check for price if sale conditions are selected
-            if (areSaleConditionsSelected) {
-                const priceField = document.querySelector('#id_price');
-                if (priceField && (!priceField.value || parseFloat(priceField.value) <= 0)) {
-                    event.preventDefault();
-                    alert('Please enter a valid price for motorcycles listed for sale (New, Used, or Demo).');
-                    priceField.focus();
-                    return;
-                }
-            }
-
-             // Check for mutual exclusivity on submit just in case JS was bypassed
-             // This is a backup for the JS change event logic
+             // Check for mutual exclusivity on submit just in case JS was bypassed (kept for robustness)
             const checkedIds = Array.from(conditionCheckboxes)
                 .filter(cb => cb.checked)
                 .map(cb => cb.value);
@@ -436,9 +385,15 @@
              const submitIsHireSelected = checkedIds.includes(CONDITION_IDS.HIRE);
 
 
-            if (submitIsNewSelected && (submitIsUsedSelected || submitIsDemoSelected || submitIsHireSelected)) {
+            if (submitIsNewSelected && (submitIsUsedSelected || submitIsDemoSelected)) {
                  event.preventDefault();
-                 alert('A motorcycle cannot be listed as New and also Used, Demo, or Hire.');
+                 alert('A motorcycle cannot be listed as New and also Used or Demo.');
+                 return;
+            }
+             // Hire and New check is also done here
+            if (submitIsNewSelected && submitIsHireSelected) {
+                 event.preventDefault();
+                 alert('A motorcycle cannot be listed as New and also for Hire.');
                  return;
             }
             if (submitIsUsedSelected && submitIsDemoSelected) {
@@ -446,12 +401,8 @@
                  alert('A motorcycle cannot be listed as Used and Demo simultaneously.');
                  return;
             }
-            if (submitIsHireSelected && submitIsNewSelected) {
-                 event.preventDefault();
-                 alert('A motorcycle cannot be listed for Hire and also as New.');
-                 return;
-            }
-            // Django form validation will also enforce rules like price/daily rate requirements
+            // Django form validation will handle price/daily rate requirements if you add them there,
+            // but they are not required at the model level now.
 
         });
 

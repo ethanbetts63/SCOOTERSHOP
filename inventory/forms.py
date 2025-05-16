@@ -17,7 +17,7 @@ class MotorcycleForm(forms.ModelForm):
             # Basic motorcycle details
             'brand', 'model', 'year', 'price',
             'odometer', 'engine_size',
-            # Added required fields
+            # Added required fields (now some are optional)
             'seats', 'transmission',
             # Hire rates
             'daily_hire_rate', 'weekly_hire_rate', 'monthly_hire_rate',
@@ -34,23 +34,64 @@ class MotorcycleForm(forms.ModelForm):
             'daily_hire_rate': forms.NumberInput(attrs={'class': 'hire-field', 'step': '0.01'}),
             'weekly_hire_rate': forms.NumberInput(attrs={'class': 'hire-field', 'step': '0.01'}),
             'monthly_hire_rate': forms.NumberInput(attrs={'class': 'hire-field', 'step': '0.01'}),
-            'seats': forms.NumberInput(attrs={'min': '1', 'max': '3'}),
+            # Seats widget remains, but field is no longer required by model
+            'seats': forms.NumberInput(attrs={'min': '0', 'max': '3'}), # Changed min to 0 since seats can be None
             'transmission': forms.Select(attrs={'class': 'form-control'}),
+             # Description widget remains, but field is no longer required by model
+             # Price widget remains, but field is no longer required by model
         }
 
+    # Engine size remains required as it wasn't listed for removal
     engine_size = forms.IntegerField(min_value=0)
 
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Mark fields that are now optional as not required in the form
+        self.fields['price'].required = False
+        self.fields['daily_hire_rate'].required = False
+        self.fields['weekly_hire_rate'].required = False
+        self.fields['monthly_hire_rate'].required = False
+        self.fields['hourly_hire_rate'].required = False
+        self.fields['description'].required = False
+        self.fields['seats'].required = False
+        self.fields['transmission'].required = False
+        self.fields['odometer'].required = False # Odometer was already optional, but explicitly setting doesn't hurt
+
 
     def clean_brand(self):
-        # Capitalize the brand name
-        return self.cleaned_data['brand'].capitalize() if self.cleaned_data.get('brand') else None
+        # Capitalize the brand name - Brand remains required
+        brand = self.cleaned_data.get('brand')
+        if not brand:
+             raise forms.ValidationError("Brand is required.")
+        return brand.capitalize()
 
     def clean_model(self):
-        # Capitalize the model name
-        return self.cleaned_data['model'].capitalize() if self.cleaned_data.get('model') else None
+        # Capitalize the model name - Model remains required
+        model = self.cleaned_data.get('model')
+        if not model:
+             raise forms.ValidationError("Model is required.")
+        return model.capitalize()
+
+    def clean_year(self):
+        # Year remains required
+        year = self.cleaned_data.get('year')
+        if not year:
+             raise forms.ValidationError("Year is required.")
+        # Optional: Add validation for a reasonable year range
+        current_year = datetime.date.today().year
+        if year < 1885 or year > current_year + 2: # Motorcycles invented ~1885, allow for future models
+             raise forms.ValidationError(f"Please enter a valid year between 1885 and {current_year + 2}.")
+        return year
+
+    def clean_engine_size(self):
+         # Engine Size remains required
+         engine_size = self.cleaned_data.get('engine_size')
+         if engine_size is None: # Use is None for IntegerField
+             raise forms.ValidationError("Engine size is required.")
+         if engine_size < 0:
+              raise forms.ValidationError("Engine size cannot be negative.")
+         return engine_size
 
 
     def clean_rego(self):
@@ -59,41 +100,27 @@ class MotorcycleForm(forms.ModelForm):
             return self.cleaned_data['rego'].upper()
         return self.cleaned_data.get('rego')
 
-    def clean(self):
-        cleaned_data = super().clean()
-
-        # Get selected conditions (use get() with default [] for safety)
-        conditions = cleaned_data.get('conditions', [])
-
-        # Check for specific conditions by name (case-insensitive comparison)
-        condition_names = [c.name.lower() for c in conditions]
-
-        is_new = 'new' in condition_names
-        is_used = 'used' in condition_names
-        is_demo = 'demo' in condition_names
-        is_hire = 'hire' in condition_names
-
-        # If hire condition is selected, daily_hire_rate is required
-        if is_hire and not cleaned_data.get('daily_hire_rate'):
-            self.add_error('daily_hire_rate', 'Daily hire rate is required for hire motorcycles')
-
-        # If new, used, or demo condition is selected, price is required
-        if (is_new or is_used or is_demo) and not cleaned_data.get('price'):
-            self.add_error('price', 'Price is required for motorcycles listed as New, Used, or Demo')
-
-        return cleaned_data
+    # Removed the custom price and daily_hire_rate validation from clean method
 
     def save(self, commit=True):
         instance = super().save(commit=False)
-        if instance.year and instance.brand and instance.model:
-             instance.title = f"{instance.year} {instance.brand} {instance.model}"
-        elif instance.brand and instance.model:
-             instance.title = f"{instance.brand} {instance.model}"
+        # Ensure title is generated even if some fields are optional
+        parts = []
+        if instance.year:
+            parts.append(str(instance.year))
+        if instance.brand:
+            parts.append(instance.brand)
+        if instance.model:
+            parts.append(instance.model)
+
+        if parts:
+            instance.title = " ".join(parts)
         else:
-             instance.title = "Untitled Motorcycle" 
+            instance.title = "Untitled Motorcycle"
+
         if commit:
             instance.save()
-            self.save_m2m() 
+            self.save_m2m()
         return instance
 
 class MotorcycleImageForm(forms.ModelForm):
