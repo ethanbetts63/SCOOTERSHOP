@@ -91,21 +91,21 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Get context data from the Django template and explicitly parse JSON
-            let blockedDateRanges = [];
+            let BlockedServiceDateRanges = [];
             try {
-                // Ensure blockedDateRangesJson is treated as a string before parsing
-                const blockedDateRangesJson = "{{ blocked_date_ranges_json|escapejs }}";
-                if (blockedDateRangesJson && blockedDateRangesJson.trim() !== '' && blockedDateRangesJson.trim() !== '[]') { // Only parse if not empty or empty JSON string
-                    blockedDateRanges = JSON.parse(blockedDateRangesJson);
+                // Ensure BlockedServiceDateRangesJson is treated as a string before parsing
+                const BlockedServiceDateRangesJson = "{{ blocked_service_date_ranges_json|escapejs }}";
+                if (BlockedServiceDateRangesJson && BlockedServiceDateRangesJson.trim() !== '' && BlockedServiceDateRangesJson.trim() !== '[]') { // Only parse if not empty or empty JSON string
+                    BlockedServiceDateRanges = JSON.parse(BlockedServiceDateRangesJson);
                     // Flatpickr expects an array, double check if parsing resulted in an array
-                    if (!Array.isArray(blockedDateRanges)) {
-                        console.error("Blocked date ranges data is not an array:", blockedDateRanges);
-                        blockedDateRanges = []; // Reset to empty array if parsing failed or data is wrong
+                    if (!Array.isArray(BlockedServiceDateRanges)) {
+                        console.error("Blocked date ranges data is not an array:", BlockedServiceDateRanges);
+                        BlockedServiceDateRanges = []; // Reset to empty array if parsing failed or data is wrong
                     }
                 }
             } catch (e) {
                 console.error("Error parsing blocked date ranges JSON:", e);
-                blockedDateRanges = []; // Reset to empty array if parsing fails
+                BlockedServiceDateRanges = []; // Reset to empty array if parsing fails
             }
 
 
@@ -141,7 +141,7 @@
                 altInput: false, // Set to true if you want a separate display input
                 minDate: minDate,
                 maxDate: maxDate,
-                disable: blockedDateRanges, // Use the parsed and validated blocked dates
+                disable: BlockedServiceDateRanges, // Use the parsed and validated blocked dates
                 onChange: function(selectedDates, dateStr, instance) {
                     // This function fires when a new date is selected
                     if (selectedDates.length > 0) {

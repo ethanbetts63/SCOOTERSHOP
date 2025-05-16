@@ -12,7 +12,7 @@ from django.http import JsonResponse
 from django.utils.dateparse import parse_datetime
 
 from service.models import ServiceBooking, ServiceType # Ensure your model path is correct
-from dashboard.models import BlockedDate # Corrected import
+from dashboard.models import BlockedServiceDate # Corrected import
 
 # REMOVE the is_staff_check function definition here
 
@@ -45,7 +45,7 @@ def get_bookings_json(request):
     end_param = request.GET.get('end')
 
     bookings = ServiceBooking.objects.all()
-    blocked_dates = BlockedDate.objects.all() # Fetch all blocked dates initially
+    blocked_service_dates = BlockedServiceDate.objects.all() # Fetch all blocked dates initially
 
     start_date = None
     end_date = None
@@ -62,7 +62,7 @@ def get_bookings_json(request):
                     appointment_date__lt=end_date # Use lt for end date as FullCalendar end is exclusive
                 )
                 # Filter blocked dates that overlap with the requested range
-                blocked_dates = blocked_dates.filter(
+                blocked_service_dates = blocked_service_dates.filter(
                     start_date__lte=end_date.date(), # Compare date parts
                     end_date__gte=start_date.date()  # Compare date parts
                 )
@@ -99,16 +99,16 @@ def get_bookings_json(request):
         events.append(event)
 
     # Add blocked date events as regular events with a specific property and class
-    for blocked_date_range in blocked_dates:
-        current_date = blocked_date_range.start_date
+    for blocked_service_date_range in blocked_service_dates:
+        current_date = blocked_service_date_range.start_date
         # Ensure end_date is included by adding one day for iteration comparison
-        while current_date <= blocked_date_range.end_date:
+        while current_date <= blocked_service_date_range.end_date:
             blocked_event = {
                 'start': current_date.isoformat(),
                 'title': 'Blocked Day', # Title for the tile
                 'extendedProps': {
                     'is_blocked': True, # Custom property to identify blocked dates
-                    'description': blocked_date_range.description, # Include description
+                    'description': blocked_service_date_range.description, # Include description
                 },
                 'className': 'blocked-date-tile', # Custom class for styling
                 'display': 'block', # Ensure it's treated as a regular event

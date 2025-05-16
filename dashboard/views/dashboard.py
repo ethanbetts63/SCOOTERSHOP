@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.urls import reverse
 from django.db import transaction
-from dashboard.models import SiteSettings, AboutPageContent, BlockedDate, ServiceBrand
+from dashboard.models import SiteSettings, AboutPageContent, BlockedServiceDate, ServiceBrand
 from service.models import ServiceType 
 from dashboard.models import HireSettings
 
@@ -17,7 +17,7 @@ from dashboard.forms import (
     VisibilitySettingsForm,
     ServiceTypeForm,
     AboutPageContentForm,
-    BlockedDateForm,
+    BlockedServiceDateForm,
     ServiceBrandForm
 )
 
@@ -85,11 +85,11 @@ def settings_hire_booking(request):
 @user_passes_test(lambda u: u.is_staff)
 def settings_service_booking(request):
     settings = SiteSettings.get_settings()
-    blocked_dates = BlockedDate.objects.all() # Get all blocked dates
+    blocked_service_dates = BlockedServiceDate.objects.all() # Get all blocked dates
 
     # Initialize forms outside of POST to have them available for GET or failed POST
     form = ServiceBookingSettingsForm(instance=settings)
-    blocked_date_form = BlockedDateForm()
+    blocked_service_date_form = BlockedServiceDateForm()
 
     if request.method == 'POST':
         # Handle ServiceBookingSettingsForm submission
@@ -101,21 +101,21 @@ def settings_service_booking(request):
                 return redirect('dashboard:settings_service_booking') # Redirect on success
             else:
                 messages.error(request, 'Error updating service booking settings. Please check the form.')
-        # Handle BlockedDateForm submission
-        elif 'add_blocked_date_submit' in request.POST:
-            blocked_date_form = BlockedDateForm(request.POST)
-            if blocked_date_form.is_valid():
-                blocked_date_form.save()
+        # Handle BlockedServiceDateForm submission
+        elif 'add_blocked_service_date_submit' in request.POST:
+            blocked_service_date_form = BlockedServiceDateForm(request.POST)
+            if blocked_service_date_form.is_valid():
+                blocked_service_date_form.save()
                 messages.success(request, 'Blocked date added successfully!')
                 return redirect('dashboard:settings_service_booking') # Redirect on success
             else:
                  messages.error(request, 'Error adding blocked date. Please check the form.')
         # Handle Delete Blocked Date
-        elif 'delete_blocked_date' in request.POST:
-            blocked_date_id = request.POST.get('delete_blocked_date')
+        elif 'delete_blocked_service_date' in request.POST:
+            blocked_service_date_id = request.POST.get('delete_blocked_service_date')
             try:
-                blocked_date = get_object_or_404(BlockedDate, pk=blocked_date_id)
-                blocked_date.delete()
+                blocked_service_date = get_object_or_404(BlockedServiceDate, pk=blocked_service_date_id)
+                blocked_service_date.delete()
                 messages.success(request, 'Blocked date deleted successfully!')
                 return redirect('dashboard:settings_service_booking') # Redirect on success
             except Exception as e:
@@ -130,8 +130,8 @@ def settings_service_booking(request):
     context = {
         'page_title': 'Service Booking Settings',
         'form': form, # Service booking settings form
-        'blocked_date_form': blocked_date_form, # Form for adding blocked dates
-        'blocked_dates': blocked_dates, # List of existing blocked dates
+        'blocked_service_date_form': blocked_service_date_form, # Form for adding blocked dates
+        'blocked_service_dates': blocked_service_dates, # List of existing blocked dates
         'active_tab': 'service_booking'
     }
     return render(request, 'dashboard/settings_service_booking.html', context)

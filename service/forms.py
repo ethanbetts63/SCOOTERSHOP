@@ -8,8 +8,8 @@ from django.db.models import Q
 from .models import ServiceType, CustomerMotorcycle, ServiceBooking
 from inventory.models import Motorcycle
 from users.models import User
-# Import the BlockedDate model from the dashboard app
-from dashboard.models import BlockedDate
+# Import the BlockedServiceDate model from the dashboard app
+from dashboard.models import BlockedServiceDate
 # Import SiteSettings from dashboard for time slot generation
 from dashboard.models import SiteSettings, ServiceBrand
 from datetime import timedelta, time

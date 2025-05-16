@@ -4,7 +4,7 @@ from django.urls import reverse
 import datetime
 from django.db.models import Q, Count # Import Count for aggregation
 from service.models import ServiceBooking, CustomerMotorcycle, ServiceType
-from dashboard.models import SiteSettings, BlockedDate # Import BlockedDate
+from dashboard.models import SiteSettings, BlockedServiceDate # Import BlockedServiceDate
 from service.forms import (
     ServiceDetailsForm,
     CustomerMotorcycleForm,
@@ -111,7 +111,7 @@ def get_available_slots_ajax(request):
          return JsonResponse({'error': 'Date is outside the allowed booking range'}, status=400)
 
     # Check if the date is blocked by admin
-    is_blocked_by_admin = BlockedDate.objects.filter(
+    is_blocked_by_admin = BlockedServiceDate.objects.filter(
         start_date__lte=selected_date,
         end_date__gte=selected_date
     ).exists()
@@ -355,10 +355,10 @@ def booking_step1(request):
     # Pass necessary data to the template for Flatpickr configuration and initial time slot population
     # This is outside the if appointment_date_str: block
     settings = SiteSettings.get_settings()
-    blocked_dates_by_admin = BlockedDate.objects.all()
-    blocked_date_ranges_admin = []
-    for blocked in blocked_dates_by_admin:
-         blocked_date_ranges_admin.append({
+    blocked_service_dates_by_admin = BlockedServiceDate.objects.all()
+    blocked_service_date_ranges_admin = []
+    for blocked in blocked_service_dates_by_admin:
+         blocked_service_date_ranges_admin.append({
              'from': blocked.start_date.strftime('%Y-%m-%d'),
              'to': blocked.end_date.strftime('%Y-%m-%d')
          })
@@ -367,7 +367,7 @@ def booking_step1(request):
     disabled_dates_by_capacity = get_disabled_dates_by_capacity()
 
     # Combine admin blocked dates and capacity disabled dates for Flatpickr
-    all_disabled_dates_for_flatpickr = blocked_date_ranges_admin + disabled_dates_by_capacity
+    all_disabled_dates_for_flatpickr = blocked_service_date_ranges_admin + disabled_dates_by_capacity
 
 
     # Calculate min and max dates allowed by booking_advance_notice and booking_open_days
@@ -382,7 +382,7 @@ def booking_step1(request):
         'is_authenticated': request.user.is_authenticated,
         'allow_anonymous_bookings': settings.allow_anonymous_bookings,
         # Pass ALL disabled dates (admin + capacity) to template for Flatpickr
-        'blocked_date_ranges_json': json.dumps(all_disabled_dates_for_flatpickr),
+        'blocked_service_date_ranges_json': json.dumps(all_disabled_dates_for_flatpickr),
         'min_date': min_date.strftime('%Y-%m-%d'), # Pass min date to template
         'max_date': max_date.strftime('%Y-%m-%d'), # Pass max date to template
         # Pass initial available slots to template for frontend JS to populate

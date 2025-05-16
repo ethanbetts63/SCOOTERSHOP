@@ -1,8 +1,7 @@
 from django.db import models
-import datetime # Import datetime for DateField
 
 # New model for blocked dates
-class BlockedDate(models.Model):
+class BlockedServiceDate(models.Model):
     """
     Model to store dates or date ranges when service bookings are not available.
     """

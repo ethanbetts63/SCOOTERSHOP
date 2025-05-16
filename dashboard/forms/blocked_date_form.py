@@ -1,9 +1,9 @@
 from django import forms
-from ..models import BlockedDate
+from ..models import BlockedServiceDate
 
-class BlockedDateForm(forms.ModelForm):
+class BlockedServiceDateForm(forms.ModelForm):
     class Meta:
-        model = BlockedDate
+        model = BlockedServiceDate
         fields = ['start_date', 'end_date', 'description']
         widgets = {
             'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),

@@ -90,7 +90,7 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name="BlockedDate",
+            name="BlockedServiceDate",
             fields=[
                 (
                     "id",
