@@ -12,24 +12,27 @@ class HireSettings(models.Model):
         max_digits=8,
         decimal_places=2,
         null=True,
-        blank=True, 
+        blank=True,
         help_text="Default hourly rate for bikes if no custom rate is set (optional)."
     )
 
     default_daily_rate = models.DecimalField(
         max_digits=8, decimal_places=2,
+        default=0.00, # <--- Add a default value
         help_text="Default daily rate for bikes if no custom rate is set."
     )
-    
+
     # Default weekly rate for bikes.
     default_weekly_rate = models.DecimalField(
         max_digits=8, decimal_places=2,
+        default=0.00, # <--- Add a default value
         help_text="Default weekly rate for bikes."
     )
-    
+
     # Default monthly rate for bikes.
     default_monthly_rate = models.DecimalField(
         max_digits=8, decimal_places=2,
+        default=0.00, # <--- Add a default value
         help_text="Default monthly rate for bikes."
     )
 

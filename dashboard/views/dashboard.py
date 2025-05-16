@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.db import transaction
 from dashboard.models import SiteSettings, AboutPageContent, BlockedDate, ServiceBrand
 from service.models import ServiceType 
+from dashboard.models import HireSettings
 
 from dashboard.forms import (
     BusinessInfoForm,
@@ -51,22 +52,35 @@ def settings_business_info(request):
 
 @user_passes_test(lambda u: u.is_staff)
 def settings_hire_booking(request):
-    settings = SiteSettings.get_settings()
+    # Use get_or_create to ensure the HireSettings object exists.
+    # If it doesn't exist, it will be created with default values.
+    settings, created = HireSettings.objects.get_or_create()
+
+    if created:
+        # Optional: Add a message the first time it's created
+        messages.info(request, "Initial Hire Settings object created with default values.")
+
     if request.method == 'POST':
         form = HireBookingSettingsForm(request.POST, instance=settings)
+        # Your print statement to confirm form validity
+        print("Is form valid?", form.is_valid())
         if form.is_valid():
             form.save()
             messages.success(request, 'Hire booking settings updated successfully!')
-            return redirect('dashboard:settings_hire_booking')
+            return redirect('dashboard:settings_hire_booking') # Redirect after successful save
+        else:
+            # Add a message if the form is not valid (though your print showed it was valid)
+            messages.error(request, 'Please correct the errors below.')
     else:
+        # For GET requests, the form is initialized with the retrieved or created settings object
         form = HireBookingSettingsForm(instance=settings)
+
     context = {
         'page_title': 'Hire Booking Settings',
         'form': form,
         'active_tab': 'hire_booking'
     }
     return render(request, 'dashboard/settings_hire_booking.html', context)
-
 
 @user_passes_test(lambda u: u.is_staff)
 def settings_service_booking(request):
