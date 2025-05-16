@@ -1,5 +1,5 @@
 from django import forms
-from models.blocked_hire_date import BlockedHireDate
+from ..models import BlockedHireDate
 
 class BlockedHireDateForm(forms.ModelForm):
     class Meta:

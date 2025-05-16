@@ -12,9 +12,13 @@ from .dashboard import (
     add_service_type,
     settings_visibility,
     edit_about_page,
-    toggle_service_type_active_status, 
+    toggle_service_type_active_status,
     service_brands_management,
-    delete_service_brand
+    delete_service_brand,
+    blocked_service_dates_management,
+    delete_blocked_service_date,
+    blocked_hire_dates_management,
+    delete_blocked_hire_date,
 )
 
 # Import booking views and the helper function from the new bookings.py file
@@ -22,5 +26,5 @@ from .bookings import (
     service_bookings_view,
     service_booking_details_view,
     get_bookings_json,
-    service_booking_search_view, 
+    service_booking_search_view,
 )

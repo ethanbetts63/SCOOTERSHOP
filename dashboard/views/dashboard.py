@@ -6,8 +6,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.urls import reverse
 from django.db import transaction
-from dashboard.models import SiteSettings, AboutPageContent, BlockedServiceDate, ServiceBrand
-from service.models import ServiceType 
+# Import both BlockedServiceDate and BlockedHireDate
+from dashboard.models import SiteSettings, AboutPageContent, BlockedServiceDate, ServiceBrand, BlockedHireDate
+from service.models import ServiceType
 from dashboard.models import HireSettings
 
 from dashboard.forms import (
@@ -18,7 +19,8 @@ from dashboard.forms import (
     ServiceTypeForm,
     AboutPageContentForm,
     BlockedServiceDateForm,
-    ServiceBrandForm
+    ServiceBrandForm,
+    BlockedHireDateForm # Import the BlockedHireDateForm
 )
 
 @user_passes_test(lambda u: u.is_staff)
@@ -82,14 +84,13 @@ def settings_hire_booking(request):
     }
     return render(request, 'dashboard/settings_hire_booking.html', context)
 
+# Modified settings_service_booking view - Removed blocked date logic
 @user_passes_test(lambda u: u.is_staff)
 def settings_service_booking(request):
     settings = SiteSettings.get_settings()
-    blocked_service_dates = BlockedServiceDate.objects.all() # Get all blocked dates
 
-    # Initialize forms outside of POST to have them available for GET or failed POST
+    # Initialize form outside of POST to have it available for GET or failed POST
     form = ServiceBookingSettingsForm(instance=settings)
-    blocked_service_date_form = BlockedServiceDateForm()
 
     if request.method == 'POST':
         # Handle ServiceBookingSettingsForm submission
@@ -98,43 +99,112 @@ def settings_service_booking(request):
             if form.is_valid():
                 form.save()
                 messages.success(request, 'Service booking settings updated successfully!')
-                return redirect('dashboard:settings_service_booking') # Redirect on success
+                # Redirect to the same page after successful save
+                return redirect('dashboard:settings_service_booking')
             else:
                 messages.error(request, 'Error updating service booking settings. Please check the form.')
-        # Handle BlockedServiceDateForm submission
-        elif 'add_blocked_service_date_submit' in request.POST:
-            blocked_service_date_form = BlockedServiceDateForm(request.POST)
-            if blocked_service_date_form.is_valid():
-                blocked_service_date_form.save()
-                messages.success(request, 'Blocked date added successfully!')
-                return redirect('dashboard:settings_service_booking') # Redirect on success
-            else:
-                 messages.error(request, 'Error adding blocked date. Please check the form.')
-        # Handle Delete Blocked Date
-        elif 'delete_blocked_service_date' in request.POST:
-            blocked_service_date_id = request.POST.get('delete_blocked_service_date')
-            try:
-                blocked_service_date = get_object_or_404(BlockedServiceDate, pk=blocked_service_date_id)
-                blocked_service_date.delete()
-                messages.success(request, 'Blocked date deleted successfully!')
-                return redirect('dashboard:settings_service_booking') # Redirect on success
-            except Exception as e:
-                 messages.error(request, f'Error deleting blocked date: {e}')
-                 return redirect('dashboard:settings_service_booking') # Redirect even on error
-
-        # If none of the specific submit buttons were pressed, maybe handle a general POST error
-        # This part might need refinement depending on how you structure your form submissions
-        # If you have multiple forms submitting to the same view, checking the submit button name is good.
+        # Removed the blocked service date handling from this view
 
     # Context for GET requests or failed POST requests
     context = {
         'page_title': 'Service Booking Settings',
         'form': form, # Service booking settings form
-        'blocked_service_date_form': blocked_service_date_form, # Form for adding blocked dates
-        'blocked_service_dates': blocked_service_dates, # List of existing blocked dates
         'active_tab': 'service_booking'
     }
+    # Ensure the template no longer includes the blocked service date section
     return render(request, 'dashboard/settings_service_booking.html', context)
+
+
+# New view for managing blocked service dates
+@user_passes_test(lambda u: u.is_staff)
+def blocked_service_dates_management(request):
+    blocked_service_dates = BlockedServiceDate.objects.all() # Get all blocked dates
+
+    if request.method == 'POST':
+        form = BlockedServiceDateForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Blocked service date added successfully!')
+            # Redirect to the same page to show the updated list
+            return redirect('dashboard:blocked_service_dates_management')
+        else:
+            messages.error(request, 'Error adding blocked service date. Please check the form.')
+    else:
+        form = BlockedServiceDateForm() # Initialize an empty form for GET requests
+
+    context = {
+        'page_title': 'Blocked Service Dates Management',
+        'form': form, # Form for adding blocked dates
+        'blocked_dates': blocked_service_dates, # List of existing blocked dates (renamed for template consistency)
+        'active_tab': 'service_booking' # Keep the same active tab for navigation highlighting
+    }
+    # Render the new template for blocked service dates
+    return render(request, 'dashboard/blocked_service_dates.html', context)
+
+
+# New view for deleting a blocked service date
+@user_passes_test(lambda u: u.is_staff)
+def delete_blocked_service_date(request, pk):
+    # Ensure only POST requests are accepted for deletion
+    if request.method == 'POST':
+        blocked_date = get_object_or_404(BlockedServiceDate, pk=pk)
+        try:
+            blocked_date.delete()
+            messages.success(request, 'Blocked service date deleted successfully!')
+        except Exception as e:
+            messages.error(request, f'Error deleting blocked service date: {e}')
+        # Redirect back to the blocked service dates management page
+        return redirect('dashboard:blocked_service_dates_management')
+    else:
+        # If not a POST request, perhaps show an error or redirect
+        messages.error(request, 'Invalid request method for deleting a blocked date.')
+        return redirect('dashboard:blocked_service_dates_management')
+
+
+# New view for managing blocked hire dates
+@user_passes_test(lambda u: u.is_staff)
+def blocked_hire_dates_management(request):
+    blocked_hire_dates = BlockedHireDate.objects.all() # Get all blocked hire dates
+
+    if request.method == 'POST':
+        form = BlockedHireDateForm(request.POST) # Use the BlockedHireDateForm
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Blocked hire date added successfully!')
+            # Redirect to the same page to show the updated list
+            return redirect('dashboard:blocked_hire_dates_management')
+        else:
+            messages.error(request, 'Error adding blocked hire date. Please check the form.')
+    else:
+        form = BlockedHireDateForm() # Initialize an empty form for GET requests
+
+    context = {
+        'page_title': 'Blocked Hire Dates Management',
+        'form': form, # Form for adding blocked dates
+        'blocked_dates': blocked_hire_dates, # List of existing blocked hire dates (renamed for template consistency)
+        'active_tab': 'hire_booking' # Keep the same active tab for navigation highlighting
+    }
+    # Render the new template for blocked hire dates
+    return render(request, 'dashboard/blocked_hire_dates.html', context)
+
+
+# New view for deleting a blocked hire date
+@user_passes_test(lambda u: u.is_staff)
+def delete_blocked_hire_date(request, pk):
+    # Ensure only POST requests are accepted for deletion
+    if request.method == 'POST':
+        blocked_date = get_object_or_404(BlockedHireDate, pk=pk) # Use BlockedHireDate model
+        try:
+            blocked_date.delete()
+            messages.success(request, 'Blocked hire date deleted successfully!')
+        except Exception as e:
+            messages.error(request, f'Error deleting blocked hire date: {e}')
+        # Redirect back to the blocked hire dates management page
+        return redirect('dashboard:blocked_hire_dates_management')
+    else:
+        # If not a POST request, perhaps show an error or redirect
+        messages.error(request, 'Invalid request method for deleting a blocked date.')
+        return redirect('dashboard:blocked_hire_dates_management')
 
 
 @user_passes_test(lambda u: u.is_staff)
@@ -278,11 +348,11 @@ def service_brands_management(request):
     """
     service_brands = ServiceBrand.objects.all().order_by('-is_primary', 'name')  # Order primary first, then by name
     primary_brands_count = ServiceBrand.objects.filter(is_primary=True).count()
-    
+
     # Initialize form variables
     form = None
     edit_brand = None
-    
+
     # Handle POST requests (Add, Edit, or Delete)
     if request.method == 'POST':
         # Handle Add/Edit Brand Form Submission
@@ -294,12 +364,12 @@ def service_brands_management(request):
                 form = ServiceBrandForm(request.POST, request.FILES, instance=edit_brand)
             else:
                 form = ServiceBrandForm(request.POST, request.FILES)
-            
+
             if form.is_valid():
                 try:
                     with transaction.atomic():
                         brand = form.save()
-                    
+
                     action = "updated" if brand_id else "added"
                     messages.success(request, f"Service brand '{brand.name}' {action} successfully.")
                     return redirect('dashboard:service_brands_management')
@@ -323,21 +393,21 @@ def service_brands_management(request):
             except Exception as e:
                 messages.error(request, f"Error deleting service brand: {e}")
             return redirect('dashboard:service_brands_management')
-        
+
         # Handle Edit Request (GET form for editing)
         elif 'edit_brand_pk' in request.POST:
             brand_pk = request.POST.get('edit_brand_pk')
             edit_brand = get_object_or_404(ServiceBrand, pk=brand_pk)
             form = ServiceBrandForm(instance=edit_brand)
-        
+
         else:
             # Unexpected POST request
             messages.error(request, "Invalid request.")
-    
+
     # Handle GET request or form preparation after POST
     if form is None:  # Only create a new form if not already set
         form = ServiceBrandForm(instance=edit_brand)  # Empty form or populated for editing
-    
+
     # Prepare context for rendering
     context = {
         'form': form,
@@ -347,7 +417,7 @@ def service_brands_management(request):
         'max_primary_brands': 5,
         'page_title': 'Manage Service Brands',
     }
-    
+
     return render(request, 'dashboard/service_brands_management.html', context)
 
 
@@ -360,7 +430,7 @@ def delete_service_brand(request, pk):
     if request.method != 'POST':
         messages.error(request, "Invalid request method. Please use the form to delete brands.")
         return redirect('dashboard:service_brands_management')
-    
+
     try:
         brand_to_delete = get_object_or_404(ServiceBrand, pk=pk)
         brand_name = brand_to_delete.name
@@ -368,5 +438,5 @@ def delete_service_brand(request, pk):
         messages.success(request, f"Service brand '{brand_name}' deleted successfully.")
     except Exception as e:
         messages.error(request, f"Error deleting service brand: {e}")
-    
+
     return redirect('dashboard:service_brands_management')

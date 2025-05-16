@@ -16,17 +16,40 @@
         <h2>Admin Navigation</h2>
         <ul class="reset-list">
             <li><a href="{% url 'dashboard:dashboard_index' %}">Dashboard Home</a></li>
-            <li><a href="{% url 'dashboard:service_bookings' %}">Service Bookings</a></li>
-            <li><a href="{% url 'inventory:motorcycle-list' %}">All Motorcycles</a></li>
+            <li><a href="{% url 'inventory:motorcycle-list' %}">All Motorcycles</a></li> {# Keeping this here as it's general inventory #}
+
+            {# Service Management Section #}
             <li class="nav-section">
-                <h3>Settings</h3>
+                <h3>Service Management</h3>
                 <ul class="reset-list">
-                    <li><a href="{% url 'dashboard:settings_business_info' %}">Business Information</a></li>
-                    <li><a href="{% url 'dashboard:settings_hire_booking' %}">Hire Booking</a></li>
-                    <li><a href="{% url 'dashboard:settings_service_booking' %}">Service Booking</a></li>
+                    <li><a href="{% url 'dashboard:service_bookings' %}">Service Bookings</a></li>
+                    <li><a href="{% url 'dashboard:settings_service_booking' %}">Service Booking Settings</a></li>
                     <li><a href="{% url 'dashboard:settings_service_types' %}">Service Types</a></li>
                     <li><a href="{% url 'dashboard:service_brands_management' %}">Service Brands</a></li>
-                    <li><a href="{% url 'dashboard:settings_visibility' %}">Visibility</a></li>
+                    {# New link for Blocked Service Dates #}
+                    <li><a href="{% url 'dashboard:blocked_service_dates_management' %}">Blocked Service Dates</a></li>
+                </ul>
+            </li>
+
+             {# Hire Management Section #}
+            <li class="nav-section">
+                <h3>Hire Management</h3>
+                <ul class="reset-list">
+                     <li><a href="{% url 'dashboard:settings_hire_booking' %}">Hire Booking Settings</a></li>
+                     {# New link for Blocked Hire Dates #}
+                    <li><a href="{% url 'dashboard:blocked_hire_dates_management' %}">Blocked Hire Dates</a></li>
+                    {# Add other hire-related links here if they exist #}
+                </ul>
+            </li>
+
+
+            {# General Settings Section #}
+            <li class="nav-section">
+                <h3>General Settings</h3>
+                <ul class="reset-list">
+                    <li><a href="{% url 'dashboard:settings_business_info' %}">Business Information</a></li>
+                    <li><a href="{% url 'dashboard:settings_visibility' %}">Visibility Settings</a></li>
+                    <li><a href="{% url 'dashboard:edit_about_page' %}">Edit About Page</a></li> {# Moved About Page here as it's general content #}
                 </ul>
             </li>
         </ul>

@@ -1,66 +1,33 @@
 # SCOOTER_SHOP/dashboard/urls.py
 
 from django.urls import path
+from . import views
 
-
-# Import views from the dashboard.views package
-# Import non-booking views from dashboard.py (via __init__.py)
-from .views.dashboard import (
-    dashboard_index,
-    edit_about_page,
-    settings_business_info,
-    settings_visibility,
-    settings_service_booking,
-    service_brands_management,
-    settings_hire_booking,
-    settings_service_types,
-    add_service_type,
-    edit_service_type,
-    delete_service_type,
-    toggle_service_type_active_status,
-    delete_service_brand
-)
-
-# Import booking views from the new bookings.py file (via __init__.py)
-from .views.bookings import (
-    service_bookings_view,
-    service_booking_details_view,
-    get_bookings_json,
-    service_booking_search_view,
-)
-
-
-app_name = 'dashboard' # Set the app name for namespacing
+app_name = 'dashboard'
 
 urlpatterns = [
-    # --- Dashboard Views ---
-    path('', dashboard_index, name='dashboard_index'),
+    path('', views.dashboard_index, name='dashboard_index'),
 
-    # --- Booking Views (Now imported from bookings.py) ---
-    path('service-bookings/', service_bookings_view, name='service_bookings'),
-    path('service-bookings/<int:pk>/', service_booking_details_view, name='service_booking_details'),
-    path('service-bookings/search/', service_booking_search_view, name='service_booking_search'),
+    # Settings URLs
+    path('settings/business-info/', views.settings_business_info, name='settings_business_info'),
+    path('settings/hire-booking/', views.settings_hire_booking, name='settings_hire_booking'),
+    path('settings/service-booking/', views.settings_service_booking, name='settings_service_booking'),
+    path('settings/service-types/', views.settings_service_types, name='settings_service_types'),
+    path('settings/visibility/', views.settings_visibility, name='settings_visibility'),
+    path('settings/about-page/', views.edit_about_page, name='edit_about_page'),
+    path('settings/service-brands/', views.service_brands_management, name='service_brands_management'),
+
+    # Service Type Actions
+    path('service-types/delete/<int:pk>/', views.delete_service_type, name='delete_service_type'),
+    path('service-types/edit/<int:pk>/', views.edit_service_type, name='edit_service_type'),
+    path('service-types/add/', views.add_service_type, name='add_service_type'),
+    path('service-types/toggle-active/<int:pk>/', views.toggle_service_type_active_status, name='toggle_service_type_active_status'),
+    path('service-brands/delete/<int:pk>/', views.delete_service_brand, name='delete_service_brand'),
 
 
-    # --- New URL pattern for the FullCalendar JSON feed ---
-    path('bookings/json/', get_bookings_json, name='get_bookings_json'),
-
-
-    path('edit-about/', edit_about_page, name='edit_about_page'),
-
-    # --- Dashboard Settings Views (Remain imported from dashboard.py) ---
-    path('settings/business-info/', settings_business_info, name='settings_business_info'),
-    path('settings/visibility/', settings_visibility, name='settings_visibility'),
-    path('settings/service-booking/', settings_service_booking, name='settings_service_booking'),
-    path('settings/service-brands/', service_brands_management, name='service_brands_management'),
-    path('settings/service-brands/delete/<int:pk>/', delete_service_brand, name='delete_service_brand'),
-    path('settings/hire-booking/', settings_hire_booking, name='settings_hire_booking'),
-
-    # --- Dashboard Service Type Management Views (Remain imported from dashboard.py) ---
-    path('settings/service-types/', settings_service_types, name='settings_service_types'),
-    path('settings/service-types/add/', add_service_type, name='add_service_type'),
-    path('settings/service-types/edit/<int:pk>/', edit_service_type, name='edit_service_type'),
-    path('settings/service-types/delete/<int:pk>/', delete_service_type, name='delete_service_type'),
-    path('settings/service-types/toggle-active/<int:pk>/', toggle_service_type_active_status, name='toggle_service_type_active_status'),
-    
+    # New URLs for Blocked Dates
+    path('settings/blocked-service-dates/', views.blocked_service_dates_management, name='blocked_service_dates_management'),
+    path('settings/blocked-service-dates/delete/<int:pk>/', views.delete_blocked_service_date, name='delete_blocked_service_date'),
+    path('settings/blocked-hire-dates/', views.blocked_hire_dates_management, name='blocked_hire_dates_management'),
+    path('settings/blocked-hire-dates/delete/<int:pk>/', views.delete_blocked_hire_date, name='delete_blocked_hire_date'),
 ]
