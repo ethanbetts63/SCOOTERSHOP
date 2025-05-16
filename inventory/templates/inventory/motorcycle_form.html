@@ -217,8 +217,9 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Define condition IDs - adjust these based on your actual database values
-        // You can find these IDs in your Django admin or database for MotorcycleCondition
+        // Define condition IDs - ADJUST THESE BASED ON YOUR ACTUAL DATABASE VALUES
+        // These are example IDs. You MUST verify these match the IDs in your database
+        // for the 'New', 'Used', 'Demo', and 'Hire' MotorcycleCondition objects.
         const CONDITION_IDS = {
             NEW: '1',    // Example ID for "New" condition - VERIFY IN YOUR DB
             USED: '2',   // Example ID for "Used" condition - VERIFY IN YOUR DB
@@ -228,7 +229,8 @@
 
         // Find all condition checkboxes
         const conditionCheckboxes = document.querySelectorAll('.condition-checkboxes input[type="checkbox"]');
-        // Safely get individual condition checkboxes, check if they exist
+
+        // Safely get individual condition checkboxes based on potentially correct IDs
         const newCondition = document.querySelector(`.condition-checkboxes input[value="${CONDITION_IDS.NEW}"]`);
         const usedCondition = document.querySelector(`.condition-checkboxes input[value="${CONDITION_IDS.USED}"]`);
         const demoCondition = document.querySelector(`.condition-checkboxes input[value="${CONDITION_IDS.DEMO}"]`);
@@ -245,66 +247,67 @@
 
         // Function to update checkbox states and field visibility/requirements based on selection
         function updateFormBasedOnConditions() {
-            // Reset all checkboxes to enabled state first
-            [newCondition, usedCondition, demoCondition, hireCondition].forEach(checkbox => {
-                if (checkbox) checkbox.disabled = false;
-            });
-
-            // Get the currently checked condition names
-            const checkedConditions = Array.from(conditionCheckboxes)
+            // Get the currently checked condition IDs
+            const checkedIds = Array.from(conditionCheckboxes)
                 .filter(cb => cb.checked)
-                .map(cb => cb.value); // This gets the value (ID) of the condition
+                .map(cb => cb.value);
 
-             // Find the actual condition names based on their IDs
-            let checkedConditionNames = [];
-            checkedConditions.forEach(id => {
-                // Only add if the checkbox element exists
-                if (newCondition && id === CONDITION_IDS.NEW) checkedConditionNames.push('new');
-                if (usedCondition && id === CONDITION_IDS.USED) checkedConditionNames.push('used');
-                if (demoCondition && id === CONDITION_IDS.DEMO) checkedConditionNames.push('demo');
-                if (hireCondition && id === CONDITION_IDS.HIRE) checkedConditionNames.push('hire');
+            const isNewSelected = checkedIds.includes(CONDITION_IDS.NEW);
+            const isUsedSelected = checkedIds.includes(CONDITION_IDS.USED);
+            const isDemoSelected = checkedIds.includes(CONDITION_IDS.DEMO);
+            const isHireSelected = checkedIds.includes(CONDITION_IDS.HIRE);
+
+            // Reset states for all checkboxes
+            [newCondition, usedCondition, demoCondition, hireCondition].forEach(checkbox => {
+                if (checkbox) {
+                    checkbox.disabled = false; // Re-enable all first
+                }
             });
 
+            // --- Enforce Mutual Exclusivity (New, Used, Demo) and Hire Rules ---
 
-            const isNewSelected = checkedConditionNames.includes('new');
-            const isUsedSelected = checkedConditionNames.includes('used');
-            const isDemoSelected = checkedConditionNames.includes('demo');
-            const isHireSelected = checkedConditionNames.includes('hire');
-
-
-            // Apply mutual exclusivity rules (New vs Used/Demo, Hire vs New)
             if (isNewSelected) {
-                if (usedCondition) usedCondition.disabled = true;
-                if (demoCondition) demoCondition.disabled = true;
-                if (hireCondition) hireCondition.disabled = true; // Hire cannot be with New
-            } else {
-                 // If New is NOT selected, enable Used, Demo, and Hire (unless they are checked)
-                 if (usedCondition && !usedCondition.checked) usedCondition.disabled = false;
-                 if (demoCondition && !demoCondition.checked) demoCondition.disabled = false;
-                 if (hireCondition && !hireCondition.checked) hireCondition.disabled = false;
+                // If New is selected, uncheck and disable Used, Demo, and Hire
+                if (usedCondition) { usedCondition.checked = false; usedCondition.disabled = true; }
+                if (demoCondition) { demoCondition.checked = false; demoCondition.disabled = true; }
+                if (hireCondition) { hireCondition.checked = false; hireCondition.disabled = true; } // Hire cannot be with New
             }
 
             if (isUsedSelected) {
-                if (newCondition) newCondition.disabled = true;
-                if (demoCondition) demoCondition.disabled = true;
-            } else {
-                 // If Used is NOT selected, enable New and Demo (unless they are checked)
-                 if (newCondition && !newCondition.checked) newCondition.disabled = false;
-                 if (demoCondition && !demoCondition.checked) demoCondition.disabled = false;
+                 // If Used is selected, uncheck and disable New and Demo
+                 // (New might already be handled if isNewSelected was true)
+                if (newCondition && newCondition.checked) { newCondition.checked = false; } // Uncheck New if it was somehow also checked
+                if (newCondition) { newCondition.disabled = true; } // Disable New
+                if (demoCondition) { demoCondition.checked = false; demoCondition.disabled = true; } // Uncheck and disable Demo
             }
 
              if (isDemoSelected) {
-                if (newCondition) newCondition.disabled = true;
-                if (usedCondition) usedCondition.disabled = true;
-            } else {
-                 // If Demo is NOT selected, enable New and Used (unless they are checked)
-                 if (newCondition && !newCondition.checked) newCondition.disabled = false;
-                 if (usedCondition && !usedCondition.checked) usedCondition.disabled = false;
+                 // If Demo is selected, uncheck and disable New and Used
+                 // (New/Used might already be handled if their respective flags were true)
+                if (newCondition && newCondition.checked) { newCondition.checked = false; } // Uncheck New if it was somehow also checked
+                if (newCondition) { newCondition.disabled = true; } // Disable New
+                if (usedCondition) { usedCondition.checked = false; usedCondition.disabled = true; } // Uncheck and disable Used
             }
 
+             // Additional check for Hire if it was selected alongside a now-disabled condition
+             // If Hire is checked, but New is selected (which disables Hire), ensure Hire is unchecked/disabled
+             if (isHireSelected && isNewSelected) {
+                 if (hireCondition) {
+                      hireCondition.checked = false;
+                      hireCondition.disabled = true;
+                 }
+             }
 
-            // Handle Hire visibility and requirements
-            if (isHireSelected) {
+
+            // Re-evaluate checked status AFTER enforcing mutual exclusivity and Hire-with-New rule
+             const areSaleConditionsSelected = (newCondition && newCondition.checked) ||
+                                              (usedCondition && usedCondition.checked) ||
+                                              (demoCondition && demoCondition.checked);
+             const isHireSelectedNow = (hireCondition && hireCondition.checked);
+
+
+            // Handle Hire visibility and requirements based on *current* checked state
+            if (isHireSelectedNow) {
                 if (hireDetailsSection) hireDetailsSection.style.display = 'block'; // Show the section
                  if (dailyRateField) {
                     dailyRateField.required = true; // Make daily rate required
@@ -314,9 +317,9 @@
                          label.innerHTML += ' <span class="required-indicator">*</span>';
                     }
                  }
+                 // Odometer required for hire as per your note in the HTML
                  if (odometerField) {
-                    odometerField.required = true; // Make odometer required for hire
-                    // Update label to show it's required (add only if not already there)
+                    odometerField.required = true;
                     let label = odometerField.closest('.mb-3').querySelector('label');
                      if (label && !label.querySelector('.required-indicator')) {
                          label.innerHTML += ' <span class="required-indicator">*</span>';
@@ -334,10 +337,10 @@
                          if (indicator) indicator.remove();
                      }
                  }
+                 // Odometer not required when not hire
                   if (odometerField) {
-                    odometerField.required = false; // Make odometer not required when not hire
-                    // Update label to remove required indicator
-                     let label = odometerField.closest('.mb-3').querySelector('label');
+                    odometerField.required = false;
+                    let label = odometerField.closest('.mb-3').querySelector('label');
                      if (label) {
                          let indicator = label.querySelector('.required-indicator');
                          if (indicator) indicator.remove();
@@ -345,8 +348,8 @@
                  }
             }
 
-            // Handle Sale visibility and requirements
-            if (isNewSelected || isUsedSelected || isDemoSelected) {
+            // Handle Sale visibility and requirements based on *current* checked state
+            if (areSaleConditionsSelected) {
                  if (saleDetailsSection) saleDetailsSection.style.display = 'block'; // Show the section
                 if (priceField) {
                     priceField.required = true;
@@ -377,19 +380,21 @@
             checkbox.addEventListener('change', updateFormBasedOnConditions);
         });
 
-        // Initial check when page loads
+        // Initial check when page loads to set correct state based on pre-selected conditions
         updateFormBasedOnConditions();
 
         // Client-side form validation (optional, Django validation is primary)
         // This provides immediate feedback to the user before server round trip
         document.getElementById('motorcycleForm').addEventListener('submit', function(event) {
-            const isHireSelected = hireCondition && hireCondition.checked;
-             const isSaleSelected = (newCondition && newCondition.checked) ||
-                                   (usedCondition && usedCondition.checked) ||
-                                   (demoCondition && demoCondition.checked);
+             // Re-evaluate checked status right before submit
+            const areSaleConditionsSelected = (newCondition && newCondition.checked) ||
+                                              (usedCondition && usedCondition.checked) ||
+                                              (demoCondition && demoCondition.checked);
+            const isHireSelectedNow = (hireCondition && hireCondition.checked);
+
 
             // Client-side check for daily hire rate if hire is selected
-            if (isHireSelected) {
+            if (isHireSelectedNow) {
                 const dailyRateField = document.querySelector('#id_daily_hire_rate');
                 if (dailyRateField && (!dailyRateField.value || parseFloat(dailyRateField.value) <= 0)) {
                     event.preventDefault();
@@ -399,24 +404,55 @@
                 }
                  // Client-side check for odometer if hire is selected
                  const odometerField = document.querySelector('#id_odometer');
-                 if (odometerField && (odometerField.value === '' || parseInt(odometerField.value) < 0)) { // Check for empty string or negative value
+                 // Check for empty string or value less than 0 (assuming odometer can be 0 for new/demo if not hire)
+                 if (odometerField && (odometerField.value === '' || parseInt(odometerField.value) < 0)) {
                      event.preventDefault();
-                     alert('Please enter a valid odometer reading for hire motorcycles.');
+                     alert('Please enter a valid odometer reading for hire motorcycles (cannot be negative).');
                      odometerField.focus();
                      return;
                  }
             }
 
             // Client-side check for price if sale conditions are selected
-            if (isSaleSelected) {
+            if (areSaleConditionsSelected) {
                 const priceField = document.querySelector('#id_price');
                 if (priceField && (!priceField.value || parseFloat(priceField.value) <= 0)) {
                     event.preventDefault();
-                    alert('Please enter a valid price for New, Used, or Demo motorcycles.');
+                    alert('Please enter a valid price for motorcycles listed for sale (New, Used, or Demo).');
                     priceField.focus();
                     return;
                 }
             }
+
+             // Check for mutual exclusivity on submit just in case JS was bypassed
+             // This is a backup for the JS change event logic
+            const checkedIds = Array.from(conditionCheckboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+
+             const submitIsNewSelected = checkedIds.includes(CONDITION_IDS.NEW);
+             const submitIsUsedSelected = checkedIds.includes(CONDITION_IDS.USED);
+             const submitIsDemoSelected = checkedIds.includes(CONDITION_IDS.DEMO);
+             const submitIsHireSelected = checkedIds.includes(CONDITION_IDS.HIRE);
+
+
+            if (submitIsNewSelected && (submitIsUsedSelected || submitIsDemoSelected || submitIsHireSelected)) {
+                 event.preventDefault();
+                 alert('A motorcycle cannot be listed as New and also Used, Demo, or Hire.');
+                 return;
+            }
+            if (submitIsUsedSelected && submitIsDemoSelected) {
+                 event.preventDefault();
+                 alert('A motorcycle cannot be listed as Used and Demo simultaneously.');
+                 return;
+            }
+            if (submitIsHireSelected && submitIsNewSelected) {
+                 event.preventDefault();
+                 alert('A motorcycle cannot be listed for Hire and also as New.');
+                 return;
+            }
+            // Django form validation will also enforce rules like price/daily rate requirements
+
         });
 
     });
