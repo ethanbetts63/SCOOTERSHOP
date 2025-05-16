@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "inventory.apps.InventoryConfig",
     "service.apps.ServiceConfig",
     "hire.apps.HireConfig",
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
