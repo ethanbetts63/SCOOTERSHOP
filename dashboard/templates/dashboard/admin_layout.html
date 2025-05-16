@@ -22,7 +22,8 @@
             <li class="nav-section">
                 <h3>Service Management</h3>
                 <ul class="reset-list">
-                    <li><a href="{% url 'dashboard:service_bookings' %}">Service Bookings</a></li>
+                    {# Ensure this URL name matches the one in dashboard/urls.py #}
+                    <li><a href="{% url 'dashboard:settings_service_booking' %}">Service Bookings</a></li>
                     <li><a href="{% url 'dashboard:settings_service_booking' %}">Service Booking Settings</a></li>
                     <li><a href="{% url 'dashboard:settings_service_types' %}">Service Types</a></li>
                     <li><a href="{% url 'dashboard:service_brands_management' %}">Service Brands</a></li>
