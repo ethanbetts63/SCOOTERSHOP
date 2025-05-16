@@ -1,14 +1,6 @@
-{% extends "core/layout.html" %}
-{% load static %}
+{% extends "dashboard/admin_layout.html" %}
 
-{% block title %}Edit About Page{% endblock %}
-
-{% block extra_css %}
-{{ block.super }}
-    <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
-{% endblock %}
-
-{% block content %}
+{% block admin_main_content %}
 <div class="service-booking-container">
     <div class="booking-progress">
         <h2>Edit About Page Content</h2>
@@ -175,7 +167,7 @@
         
         <div class="form-actions">
             <button type="submit">Save Changes</button>
-            <a href="{% url 'core:about' %}" class="btn-secondary">Cancel</a>
+            <a href="{% url 'core:contact' %}" class="btn-secondary">Cancel</a>
         </div>
     </form>
 </div>
