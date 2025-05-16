@@ -6,3 +6,4 @@ from .hire_booking_settings_form import HireBookingSettingsForm
 from .service_type_form import ServiceTypeForm
 from .blocked_service_date_form import BlockedServiceDateForm
 from .service_brand_form import ServiceBrandForm
+from .blocked_hire_date_form import BlockedHireDate
