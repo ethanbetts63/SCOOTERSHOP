@@ -21,11 +21,14 @@ class MotorcycleForm(forms.ModelForm):
             'seats', 'transmission',
             # Hire rates
             'daily_hire_rate', 'weekly_hire_rate', 'monthly_hire_rate',
+            'hourly_hire_rate',
             # Other details
             'description', 'image',
             'is_available', 'rego', 'rego_exp', 'stock_number'
         ]
         widgets = {
+            'hourly_hire_rate': forms.NumberInput(attrs={'class': 'hire-field', 'step': '0.01'}),
+
             'rego_exp': forms.DateInput(attrs={'type': 'date'}),
             'conditions': forms.CheckboxSelectMultiple(attrs={'class': 'condition-checkbox-list'}),
             'daily_hire_rate': forms.NumberInput(attrs={'class': 'hire-field', 'step': '0.01'}),

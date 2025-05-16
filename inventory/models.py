@@ -107,6 +107,15 @@ class Motorcycle(models.Model):
         help_text="Price per month for hiring (if applicable)"
     )
 
+    hourly_hire_rate = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Price per hour for hiring (if applicable)"
+    )
+
+
     # Returns a string representation of the motorcycle
     def __str__(self):
         return f"{self.year} {self.brand} {self.model}"

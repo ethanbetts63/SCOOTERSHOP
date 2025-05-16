@@ -1,13 +1,13 @@
-# inventory/views/motorcycle_detail.py
-
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy # Import reverse_lazy for success_url
 from django.contrib import messages # Import messages
+# Import View for dispatch method override
+from django.views import View
 
 # Import models from the inventory app
-from inventory.models import Motorcycle, MotorcycleImage
+from inventory.models import Motorcycle, MotorcycleImage, MotorcycleCondition # Import MotorcycleCondition
 # Import forms from the inventory app
 from inventory.forms import MotorcycleForm, MotorcycleImageFormSet
 # Import utility function from the inventory app
@@ -67,7 +67,7 @@ class MotorcycleDetailView(DetailView):
             {'field': 'rego_exp', 'label': 'Rego Expires', 'icon': 'icon-rego-exp', 'value': motorcycle.rego_exp.strftime("%d %b %Y") if motorcycle.rego_exp else None},
             {'field': 'stock_number', 'label': 'Stock #', 'icon': 'icon-stock', 'value': motorcycle.stock_number},
             # Add daily_hire_rate if it's a hire bike
-             {'field': 'daily_hire_rate', 'label': 'Daily Hire Rate', 'icon': 'icon-money', 'value': f"${motorcycle.daily_hire_rate:.2f}" if motorcycle.daily_hire_rate is not None and is_for_hire else None},
+             {'field': 'daily_hire_rate', 'label': 'Daily Hire Rate', 'icon': 'icon-money', 'value': f"${motorcycle.daily_hire_rate:.2f}" if motorcycle.daily_hire_rate is not None and motorcycle.is_for_hire() else None}, # Use .is_for_hire() method
         ]
 
         # Determine if the motorcycle has the 'hire' or 'new' condition for filtering specs
@@ -75,14 +75,34 @@ class MotorcycleDetailView(DetailView):
         is_new = self.object.conditions.filter(name='new').exists()
 
         # Filter out specs based on condition and None values
-        filtered_specifications = [
-            spec for spec in specifications
-            if spec['value'] is not None and (
-                (is_for_hire and spec['field'] not in ['stock_number', 'rego_exp', 'rego', 'odometer']) or
-                (is_new and spec['field'] not in ['stock_number', 'rego_exp', 'rego']) or
-                (not is_for_hire and not is_new) # For used/demo/other, include all non-None
-            )
-        ]
+        # Revised filtering logic based on conditions selected
+        filtered_specifications = []
+        for spec in specifications:
+            if spec['value'] is not None:
+                # Always include basic specs
+                if spec['field'] in ['year', 'engine_size', 'seats', 'transmission']:
+                    filtered_specifications.append(spec)
+                # Include Odometer if not New
+                elif spec['field'] == 'odometer' and not is_new:
+                     filtered_specifications.append(spec)
+                # Include Stock Number if New, Used, or Demo (i.e., not purely Hire)
+                elif spec['field'] == 'stock_number' and (is_new or self.object.conditions.filter(name__in=['used', 'demo']).exists()):
+                     filtered_specifications.append(spec)
+                 # Include Rego/Rego Expiry if not New
+                elif spec['field'] in ['rego', 'rego_exp'] and not is_new:
+                    filtered_specifications.append(spec)
+                # Include Daily Hire Rate if Hire
+                elif spec['field'] == 'daily_hire_rate' and is_for_hire:
+                    filtered_specifications.append(spec)
+                # The 'condition' field is handled separately if you want it in the specs list
+
+        # You might want to explicitly add the 'Condition' display here if you want it at the top or bottom
+        # of the filtered list, as the above logic filters it based on whether the MotorcycleCondition object exists.
+        # A simpler way might be to always include the 'condition' field if the motorcycle has any conditions.
+        condition_spec = {'field': 'condition', 'label': 'Condition', 'icon': 'icon-category', 'value': self.object.get_conditions_display()}
+        if self.object.conditions.exists():
+            # Add condition at the beginning of the list
+            filtered_specifications.insert(0, condition_spec)
 
 
         context['filtered_specifications'] = filtered_specifications
@@ -164,6 +184,24 @@ class MotorcycleCreateView(LoginRequiredMixin, UserPassesTestMixin, MotorcycleFo
     def test_func(self):
         # Only staff can create motorcycles
         return self.request.user.is_staff
+
+    # Override dispatch to ensure base conditions exist
+    def dispatch(self, request, *args, **kwargs):
+        # Ensure 'New', 'Used', 'Demo', 'Hire' conditions exist
+        conditions_to_create = [
+            ('new', 'New'),
+            ('used', 'Used'),
+            ('demo', 'Demo'),
+            ('hire', 'Hire'),
+        ]
+        for name, display_name in conditions_to_create:
+            MotorcycleCondition.objects.get_or_create(
+                name=name,
+                defaults={'display_name': display_name}
+            )
+        # Call the parent dispatch method to continue the request flow
+        return super().dispatch(request, *args, **kwargs)
+
 
     def form_valid(self, form):
         # Assign the logged-in user as the seller (assuming seller field exists and is a ForeignKey to User)
