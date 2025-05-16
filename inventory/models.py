@@ -60,7 +60,8 @@ class Motorcycle(models.Model):
         help_text="Select all applicable conditions (e.g., Used, Hire)",
     )
 
-    odometer = models.IntegerField(null=True, blank=True) # Odometer is not made required based on your list
+    # Odometer is now required
+    odometer = models.IntegerField() 
     engine_size = models.CharField(max_length=50)
 
     # Made seats nullable and blankable

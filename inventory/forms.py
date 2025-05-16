@@ -17,7 +17,7 @@ class MotorcycleForm(forms.ModelForm):
             # Basic motorcycle details
             'brand', 'model', 'year', 'price',
             'odometer', 'engine_size',
-            # Added required fields (now some are optional)
+            # Added required fields (now some are optional, odometer is required)
             'seats', 'transmission',
             # Hire rates
             'daily_hire_rate', 'weekly_hire_rate', 'monthly_hire_rate',
@@ -39,6 +39,7 @@ class MotorcycleForm(forms.ModelForm):
             'transmission': forms.Select(attrs={'class': 'form-control'}),
              # Description widget remains, but field is no longer required by model
              # Price widget remains, but field is no longer required by model
+             # Odometer widget remains, now required by model
         }
 
     # Engine size remains required as it wasn't listed for removal
@@ -56,7 +57,7 @@ class MotorcycleForm(forms.ModelForm):
         self.fields['description'].required = False
         self.fields['seats'].required = False
         self.fields['transmission'].required = False
-        self.fields['odometer'].required = False # Odometer was already optional, but explicitly setting doesn't hurt
+        # Removed: self.fields['odometer'].required = False # Odometer is now required by the model
 
 
     def clean_brand(self):
@@ -92,6 +93,16 @@ class MotorcycleForm(forms.ModelForm):
          if engine_size < 0:
               raise forms.ValidationError("Engine size cannot be negative.")
          return engine_size
+
+    def clean_odometer(self):
+        # Odometer is now required by the model. Add specific validation if needed
+        odometer = self.cleaned_data.get('odometer')
+        # The model field is an IntegerField without null=True, so Django's form validation
+        # will handle the "required" check. We can add custom validation here if needed,
+        # for example, ensuring it's not negative.
+        if odometer is not None and odometer < 0:
+            raise forms.ValidationError("Odometer reading cannot be negative.")
+        return odometer
 
 
     def clean_rego(self):

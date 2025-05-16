@@ -71,8 +71,8 @@ class MotorcycleDetailView(DetailView):
 
         # Conditionally add other specifications
         if motorcycle.year is not None: specifications.append({'field': 'year', 'label': 'Year', 'icon': 'icon-year', 'value': motorcycle.year})
-        # Include Odometer if not New
-        if motorcycle.odometer is not None and not is_new: specifications.append({'field': 'odometer', 'label': 'Odometer', 'icon': 'icon-odometer', 'value': f"{motorcycle.odometer} km"})
+        # Odometer is now always required, so include it if its value exists (should always exist if required)
+        if motorcycle.odometer is not None: specifications.append({'field': 'odometer', 'label': 'Odometer', 'icon': 'icon-odometer', 'value': f"{motorcycle.odometer} km"})
         if motorcycle.engine_size: specifications.append({'field': 'engine_size', 'label': 'Engine', 'icon': 'icon-capacity', 'value': f"{motorcycle.engine_size}cc"}) # Assuming engine_size remains required/always has a value
         if motorcycle.seats is not None: specifications.append({'field': 'seats', 'label': 'Seats', 'icon': 'icon-seat', 'value': motorcycle.seats})
         if motorcycle.transmission: specifications.append({'field': 'transmission', 'label': 'Transmission', 'icon': 'icon-transmission', 'value': motorcycle.transmission})
@@ -89,7 +89,9 @@ class MotorcycleDetailView(DetailView):
 
         # Handle hire rate display logic - always add the daily hire rate if hire condition is present
         if is_for_hire:
-            daily_rate_value = f"${motorcycle.daily_hire_rate:.2f}" if motorcycle.daily_hire_rate is not None else f"Default ({settings.DEFAULT_DAILY_HIRE_RATE:.2f})" # Assuming you have a setting for this
+            # Assuming you have a settings.DEFAULT_DAILY_HIRE_RATE
+            default_daily_rate = getattr(settings, 'DEFAULT_DAILY_HIRE_RATE', None)
+            daily_rate_value = f"${motorcycle.daily_hire_rate:.2f}" if motorcycle.daily_hire_rate is not None else (f"Default ({default_daily_rate:.2f})" if default_daily_rate is not None else "Contact for rate")
             specifications.append({'field': 'daily_hire_rate', 'label': 'Daily Hire Rate', 'icon': 'icon-money', 'value': daily_rate_value})
              # Add other hire rates if they exist
             if motorcycle.hourly_hire_rate is not None:

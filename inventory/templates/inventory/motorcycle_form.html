@@ -79,7 +79,7 @@
                         </div>
                          <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="{{ form.odometer.id_for_label }}" class="form-label">Odometer</label> {# Odometer is now optional #}
+                                <label for="{{ form.odometer.id_for_label }}" class="form-label">Odometer <span class="required-indicator">*</span></label> {# Odometer is now always required - added indicator #}
                                 {{ form.odometer.errors }}
                                 {{ form.odometer|add_class:"form-control" }}
                             </div>
@@ -306,40 +306,23 @@
              const isHireSelectedNow = (hireCondition && hireCondition.checked);
 
 
-            // Handle Hire visibility and requirements based on *current* checked state
-            // Removed client-side required validation for hire rate, relies on model now
+            // Handle Hire visibility
+            // Removed JS logic making Odometer required conditionally
             if (isHireSelectedNow) {
                 if (hireDetailsSection) hireDetailsSection.style.display = 'block'; // Show the section
-                 // Odometer IS required for hire based on your previous requirement, keeping this JS check
-                 if (odometerField) {
-                    odometerField.required = true;
-                    let label = odometerField.closest('.mb-3').querySelector('label');
-                     if (label && !label.querySelector('.required-indicator')) {
-                         label.innerHTML += ' <span class="required-indicator">*</span>';
-                     }
-                 }
-
+                 // Removed JS logic to add/remove required indicator for Odometer
             } else {
                 if (hireDetailsSection) hireDetailsSection.style.display = 'none'; // Hide the section
-                 // Odometer not required when not hire, keeping this JS to remove indicator
-                  if (odometerField) {
-                    odometerField.required = false;
-                    let label = odometerField.closest('.mb-3').querySelector('label');
-                     if (label) {
-                         let indicator = label.querySelector('.required-indicator');
-                         if (indicator) indicator.remove();
-                     }
-                 }
+                 // Removed JS logic to add/remove required indicator for Odometer
             }
 
-            // Handle Sale visibility and requirements based on *current* checked state
-            // Removed client-side required validation for price, relies on model now
+            // Handle Sale visibility
             if (areSaleConditionsSelected) {
                  if (saleDetailsSection) saleDetailsSection.style.display = 'block'; // Show the section
             } else {
                  if (saleDetailsSection) saleDetailsSection.style.display = 'none'; // Hide the section
             }
-             // Stock number remains optional, no change needed here.
+             // Stock number, Price, and Hire Rate fields are now optional based on model/form, no JS required to enforce
         }
 
         // Add event listeners to enforce business rules
@@ -351,30 +334,9 @@
         updateFormBasedOnConditions();
 
         // Client-side form validation (optional, Django validation is primary)
-        // Removed price and daily rate client-side validation as they are now optional.
-        // Kept odometer validation if hire is selected.
+        // Odometer validation now runs unconditionally
         document.getElementById('motorcycleForm').addEventListener('submit', function(event) {
              // Re-evaluate checked status right before submit
-            const areSaleConditionsSelected = (newCondition && newCondition.checked) ||
-                                              (usedCondition && usedCondition.checked) ||
-                                              (demoCondition && demoCondition.checked);
-            const isHireSelectedNow = (hireCondition && hireCondition.checked);
-
-
-            // Client-side check for odometer if hire is selected (kept as per previous requirement)
-            // Added back the required indicator for Odometer label when Hire is selected in the updateFormBasedOnConditions function
-             if (isHireSelectedNow) {
-                 const odometerField = document.querySelector('#id_odometer');
-                 // Check for empty string or value less than 0 (assuming odometer can be 0 for new/demo if not hire)
-                 if (odometerField && (odometerField.value === '' || parseInt(odometerField.value) < 0)) {
-                     event.preventDefault();
-                     alert('Please enter a valid odometer reading for hire motorcycles (cannot be empty or negative).');
-                     odometerField.focus();
-                     return;
-                 }
-             }
-
-             // Check for mutual exclusivity on submit just in case JS was bypassed (kept for robustness)
             const checkedIds = Array.from(conditionCheckboxes)
                 .filter(cb => cb.checked)
                 .map(cb => cb.value);
@@ -385,6 +347,18 @@
              const submitIsHireSelected = checkedIds.includes(CONDITION_IDS.HIRE);
 
 
+             // Client-side check for odometer (now always required)
+             const odometerField = document.querySelector('#id_odometer');
+             // Check for empty string or value less than 0
+             if (odometerField && (odometerField.value === '' || parseInt(odometerField.value) < 0)) {
+                 event.preventDefault();
+                 alert('Please enter a valid odometer reading (cannot be empty or negative).'); // Generic message
+                 odometerField.focus();
+                 return;
+             }
+
+
+             // Check for mutual exclusivity on submit just in case JS was bypassed (kept for robustness)
             if (submitIsNewSelected && (submitIsUsedSelected || submitIsDemoSelected)) {
                  event.preventDefault();
                  alert('A motorcycle cannot be listed as New and also Used or Demo.');
@@ -401,8 +375,8 @@
                  alert('A motorcycle cannot be listed as Used and Demo simultaneously.');
                  return;
             }
-            // Django form validation will handle price/daily rate requirements if you add them there,
-            // but they are not required at the model level now.
+            // Django form validation will handle the "required" check for Odometer.
+            // Client-side JS is a user convenience but not strictly necessary if model/form validation is in place.
 
         });
 
