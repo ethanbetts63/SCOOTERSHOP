@@ -61,7 +61,7 @@ class Motorcycle(models.Model):
     )
 
     # Odometer is now required
-    odometer = models.IntegerField() 
+    odometer = models.IntegerField(default=0) 
     engine_size = models.CharField(max_length=50)
 
     # Made seats nullable and blankable

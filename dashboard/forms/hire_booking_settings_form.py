@@ -1,10 +1,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
-# Import the new HireSettings model
-# Assuming HireSettings is in your dashboard.models, adjust the import path if needed
-from ..models import HireSettings
+from ..models import HireSettings # Import the new HireSettings model
 
-# Add 'default_hourly_rate' to the fields list
 class HireBookingSettingsForm(forms.ModelForm):
     class Meta:
         model = HireSettings
@@ -12,10 +9,14 @@ class HireBookingSettingsForm(forms.ModelForm):
             'default_daily_rate',
             'default_weekly_rate',
             'default_monthly_rate',
-            'default_hourly_rate', # Add this line
+            'default_hourly_rate',
             'minimum_hire_duration_days',
             'maximum_hire_duration_days',
             'booking_lead_time_hours',
+            'pick_up_start_time', # Added pick-up start time
+            'pick_up_end_time', # Added pick-up end time
+            'return_off_start_time', # Added return start time
+            'return_end_time', # Added return end time
             'deposit_enabled',
             'default_deposit_calculation_method',
             'deposit_percentage',
@@ -41,7 +42,6 @@ class HireBookingSettingsForm(forms.ModelForm):
             'cancellation_minimal_refund_percentage',
         ]
         widgets = {
-            # Add a widget for the new field
             'default_hourly_rate': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
             'default_daily_rate': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
             'default_weekly_rate': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
@@ -49,6 +49,10 @@ class HireBookingSettingsForm(forms.ModelForm):
             'minimum_hire_duration_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
             'maximum_hire_duration_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
             'booking_lead_time_hours': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
+            'pick_up_start_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}), # Widget for pick-up start time
+            'pick_up_end_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}), # Widget for pick-up end time
+            'return_off_start_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}), # Widget for return start time
+            'return_end_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}), # Widget for return end time
             'deposit_enabled': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'default_deposit_calculation_method': forms.Select(attrs={'class': 'form-control'}),
             'deposit_percentage': forms.NumberInput(attrs={
@@ -83,7 +87,6 @@ class HireBookingSettingsForm(forms.ModelForm):
             'cancellation_minimal_refund_percentage': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'max': '100', 'step': '0.01'}),
         }
 
-    # No need to add validation for default_hourly_rate in clean() unless you have specific requirements
     def clean(self):
         cleaned_data = super().clean()
         min_days = cleaned_data.get('minimum_hire_duration_days')
@@ -94,7 +97,6 @@ class HireBookingSettingsForm(forms.ModelForm):
             if not self.has_error('minimum_hire_duration_days'): # Check to avoid duplicate error messages
                  self.add_error('maximum_hire_duration_days', _("Maximum duration must be greater than or equal to minimum duration."))
 
-
         deposit_calculation_method = cleaned_data.get('default_deposit_calculation_method')
         deposit_percentage = cleaned_data.get('deposit_percentage')
         deposit_amount = cleaned_data.get('deposit_amount')
@@ -104,6 +106,18 @@ class HireBookingSettingsForm(forms.ModelForm):
                  self.add_error('deposit_percentage', _("Deposit percentage must be between 0 and 100 when using percentage calculation."))
             if deposit_calculation_method == 'fixed' and (deposit_amount is None or deposit_amount < 0):
                  self.add_error('deposit_amount', _("Deposit amount must be a non-negative value when using fixed amount calculation."))
+
+        # Add validation for time fields if needed, e.g., ensuring end time is after start time
+        pick_up_start_time = cleaned_data.get('pick_up_start_time')
+        pick_up_end_time = cleaned_data.get('pick_up_end_time')
+        return_off_start_time = cleaned_data.get('return_off_start_time')
+        return_end_time = cleaned_data.get('return_end_time')
+
+        if pick_up_start_time and pick_up_end_time and pick_up_start_time > pick_up_end_time:
+             self.add_error('pick_up_end_time', _("Pick up end time must be after pick up start time."))
+
+        if return_off_start_time and return_end_time and return_off_start_time > return_end_time:
+             self.add_error('return_end_time', _("Return end time must be after return start time."))
 
 
         return cleaned_data

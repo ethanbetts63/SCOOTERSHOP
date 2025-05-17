@@ -149,7 +149,34 @@
                 {% if form.grace_period_minutes.help_text %}<small>{{ form.grace_period_minutes.help_text }}</small>{% endif %}
                 {% for error in form.grace_period_minutes.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
             </div>
+
+            {# Added time fields for pickup and return #}
+            <div class="form-field">
+                {{ form.pick_up_start_time.label_tag }}
+                {{ form.pick_up_start_time }}
+                {% if form.pick_up_start_time.help_text %}<small>{{ form.pick_up_start_time.help_text }}</small>{% endif %}
+                {% for error in form.pick_up_start_time.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+            </div>
+            <div class="form-field">
+                {{ form.pick_up_end_time.label_tag }}
+                {{ form.pick_up_end_time }}
+                {% if form.pick_up_end_time.help_text %}<small>{{ form.pick_up_end_time.help_text }}</small>{% endif %}
+                {% for error in form.pick_up_end_time.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+            </div>
+            <div class="form-field">
+                {{ form.return_off_start_time.label_tag }}
+                {{ form.return_off_start_time }}
+                {% if form.return_off_start_time.help_text %}<small>{{ form.return_off_start_time.help_text }}</small>{% endif %}
+                {% for error in form.return_off_start_time.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+            </div>
+            <div class="form-field">
+                {{ form.return_end_time.label_tag }}
+                {{ form.return_end_time }}
+                {% if form.return_end_time.help_text %}<small>{{ form.return_end_time.help_text }}</small>{% endif %}
+                {% for error in form.return_end_time.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+            </div>
         </div>
+
 
         {# --- Notification Settings --- #}
          <div class="form-field">
@@ -233,7 +260,7 @@
                 {{ form.currency_symbol.label_tag }}
                 {{ form.currency_symbol }}
                 {% if form.currency_symbol.help_text %}<small>{{ form.currency_symbol.help_text }}</small>{% endif %}
-                {% for error in form.currency_symbol.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+                {% for error in form.currency_symbol.errors %}<small class="errorlist">{{ error }}</small>{% endcolor %}
             </div>
         </div>
 
