@@ -37,9 +37,6 @@ class MotorcycleForm(forms.ModelForm):
             # Seats widget remains, but field is no longer required by model
             'seats': forms.NumberInput(attrs={'min': '0', 'max': '3'}), # Changed min to 0 since seats can be None
             'transmission': forms.Select(attrs={'class': 'form-control'}),
-             # Description widget remains, but field is no longer required by model
-             # Price widget remains, but field is no longer required by model
-             # Odometer widget remains, now required by model
         }
 
     # Engine size remains required as it wasn't listed for removal

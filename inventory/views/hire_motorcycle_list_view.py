@@ -3,9 +3,12 @@
 from django.db.models import Q
 import datetime
 from django.contrib import messages
+from django.utils import timezone # Import timezone
+from datetime import timedelta # Import timedelta
 from hire.models import HireBooking # Assuming HireBooking is in hire.models
+from dashboard.models import HireSettings # Import HireSettings
 from .motorcycle_list_view import MotorcycleListView # Import the base class
-
+from dashboard.models import BlockedHireDate # Import BlockedHireDate
 
 # Lists motorcycles available for hire
 class HireMotorcycleListView(MotorcycleListView):
@@ -15,16 +18,142 @@ class HireMotorcycleListView(MotorcycleListView):
 
     # Adds hire-specific filtering (daily rate, date availability)
     def get_queryset(self):
-        # Start by getting the base queryset (which applies is_available=True and condition_name='hire')
-        # Then apply common filters and sorting
+        # Start by getting the base queryset
         queryset = super().get_queryset()
-        # Note: Common filters (like price range) are less relevant for hire bikes based on the model
-        # but the _apply_common_filters_and_sorting method is still called.
-        # If price filtering should *not* apply to hire bikes, you would override
-        # _apply_common_filters_and_sorting specifically in this class or adjust the base method.
-        # For now, keeping the base method call.
 
-        # Now apply hire-specific filters (daily rate and date availability)
+        # --- Handle Hire Date and Time Inputs and Validation ---
+        pick_up_date_str = self.request.GET.get('pick_up_date')
+        pick_up_time_str = self.request.GET.get('pick_up_time')
+        return_date_str = self.request.GET.get('return_date')
+        return_time_str = self.request.GET.get('return_time')
+
+        self.pick_up_datetime = None
+        self.return_datetime = None
+        self.duration_days = None # Store calculated duration in days
+
+        # Store original inputs for re-populating the form
+        self.original_inputs = {
+            'pick_up_date': pick_up_date_str,
+            'pick_up_time': pick_up_time_str,
+            'return_date': return_date_str,
+            'return_time': return_time_str,
+            'has_motorcycle_license': self.request.GET.get('has_motorcycle_license') == 'true' # Handle checkbox
+        }
+
+        # Fetch HireSettings
+        try:
+            hire_settings = HireSettings.objects.first() # Assuming singleton pattern or get the first one
+            if not hire_settings:
+                 messages.error(self.request, "Hire settings are not configured.")
+                 return self.model.objects.none()
+        except Exception:
+            messages.error(self.request, "Could not load hire settings.")
+            return self.model.objects.none()
+
+
+        # Only proceed with date/time validation if all four fields are present
+        if pick_up_date_str and pick_up_time_str and return_date_str and return_time_str:
+            try:
+                # Parse dates
+                pick_up_date = datetime.datetime.strptime(pick_up_date_str, '%Y-%m-%d').date()
+                return_date = datetime.datetime.strptime(return_date_str, '%Y-%m-%d').date()
+
+                # Parse times
+                pick_up_time = datetime.datetime.strptime(pick_up_time_str, '%H:%M').time()
+                return_time = datetime.datetime.strptime(return_time_str, '%H:%M').time()
+
+                # Combine date and time into timezone-aware datetime objects
+                # Assuming timezone is configured in settings.py
+                self.pick_up_datetime = timezone.make_aware(datetime.datetime.combine(pick_up_date, pick_up_time))
+                self.return_datetime = timezone.make_aware(datetime.datetime.combine(return_date, return_time))
+
+                # --- Perform Date and Time Validations ---
+
+                # 1. Check if return is after pickup
+                if self.return_datetime <= self.pick_up_datetime:
+                    messages.error(self.request, "Return date and time must be after pickup date and time.")
+                    return self.model.objects.none()
+
+                # 2. Check for Blocked Dates
+                blocked_dates = BlockedHireDate.objects.all()
+                for blocked in blocked_dates:
+                    blocked_start = timezone.make_aware(datetime.datetime.combine(blocked.start_date, datetime.time.min))
+                    blocked_end = timezone.make_aware(datetime.datetime.combine(blocked.end_date, datetime.time.max))
+
+                    # Check if pickup date/time is within a blocked range
+                    if blocked_start <= self.pick_up_datetime <= blocked_end:
+                        messages.error(self.request, f"Pickup date ({pick_up_date_str}) is not available due to a blocked period.")
+                        return self.model.objects.none()
+
+                    # Check if return date/time is within a blocked range
+                    if blocked_start <= self.return_datetime <= blocked_end:
+                        messages.error(self.request, f"Return date ({return_date_str}) is not available due to a blocked period.")
+                        return self.model.objects.none()
+
+
+                # 3. Check Minimum and Maximum Hire Duration
+                duration = self.return_datetime - self.pick_up_datetime
+                # Calculate duration in days, including fractions
+                duration_hours = duration.total_seconds() / 3600
+                duration_days_exact = duration_hours / 24
+
+                if hire_settings.minimum_hire_duration_days is not None and duration_days_exact < hire_settings.minimum_hire_duration_days:
+                     messages.error(self.request, f"Minimum hire duration is {hire_settings.minimum_hire_duration_days} days.")
+                     return self.model.objects.none()
+
+                if hire_settings.maximum_hire_duration_days is not None and duration_days_exact > hire_settings.maximum_hire_duration_days:
+                    messages.error(self.request, f"Maximum hire duration is {hire_settings.maximum_hire_duration_days} days.")
+                    return self.model.objects.none()
+
+                # Store the duration in days (integer, for displaying "X days hire")
+                self.duration_days = duration.days # Use .days for whole days difference
+
+                # 4. Check Booking Lead Time
+                now = timezone.now()
+                min_pickup_time = now + timedelta(hours=hire_settings.booking_lead_time_hours)
+                if self.pick_up_datetime < min_pickup_time:
+                    messages.error(self.request, f"Pickup must be at least {hire_settings.booking_lead_time_hours} hours from now.")
+                    return self.model.objects.none()
+
+
+                # --- Proceed with Bike Availability Filtering if Dates are Valid ---
+
+                # Find motorcycles booked within the validated date range
+                # Updated Q object to use datetime fields and check overlap
+                conflicting_bookings = HireBooking.objects.filter(
+                    status__in=['confirmed', 'pending'],
+                    # Only consider bookings for motorcycles that are currently in our filtered queryset
+                    motorcycle__in=queryset,
+                ).filter(
+                     # Check for overlapping datetime ranges
+                     Q(pickup_date__lte=self.return_datetime.date(), return_date__gte=self.pick_up_datetime.date()),
+                     # Further refine by time if dates overlap
+                     Q(pickup_datetime__lt=self.return_datetime, return_datetime__gt=self.pick_up_datetime) # Use < and > for strict overlap
+                ).values_list('motorcycle_id', flat=True)
+
+                # Exclude motorcycles with conflicting bookings from the queryset
+                queryset = queryset.exclude(id__in=conflicting_bookings)
+
+
+            except ValueError:
+                messages.error(self.request, "Invalid date or time format.")
+                return self.model.objects.none()
+            except Exception as e:
+                # Catch any other unexpected errors during date processing
+                messages.error(self.request, f"An unexpected error occurred: {e}")
+                # Log the exception for debugging
+                import logging
+                logging.exception("Error processing hire dates in HireMotorcycleListView")
+                return self.model.objects.none()
+
+        elif self.request.GET:
+            # If GET request received but dates are missing (after initial load)
+            # This might happen if the user searches without selecting dates
+            messages.info(self.request, "Please select both pickup and return dates and times to search for available motorcycles.")
+            # Return an empty queryset as no search criteria were provided
+            return self.model.objects.none()
+
+        # --- Apply other filters (like daily rate) after date validation ---
         daily_rate_min = self.request.GET.get('daily_rate_min')
         daily_rate_max = self.request.GET.get('daily_rate_max')
 
@@ -34,61 +163,46 @@ class HireMotorcycleListView(MotorcycleListView):
             if daily_rate_max:
                 queryset = queryset.filter(daily_hire_rate__lte=float(daily_rate_max))
         except (ValueError, TypeError):
-            pass
+             messages.error(self.request, "Invalid daily rate value.")
+             # Keep the existing queryset or return empty, depending on desired behavior for invalid rate
+             # For now, let's just add the message and proceed with potentially valid dates
+             pass
 
-        self.date_range = None
-
-        hire_start_date_str = self.request.GET.get('hire_start_date')
-        hire_end_date_str = self.request.GET.get('hire_end_date')
-
-        if hire_start_date_str and hire_end_date_str:
-            try:
-                start_date = datetime.datetime.strptime(hire_start_date_str, '%Y-%m-%d').date()
-                end_date = datetime.datetime.strptime(hire_end_date_str, '%Y-%m-%d').date()
-
-                if start_date > end_date:
-                    messages.error(self.request, "Hire start date cannot be after the end date.")
-                    return self.model.objects.none()
-
-                self.date_range = (start_date, end_date, hire_start_date_str, hire_end_date_str)
-
-                # Find motorcycles booked within the date range
-                conflicting_bookings = HireBooking.objects.filter(
-                    status__in=['confirmed', 'pending'],
-                    # Only consider bookings for motorcycles that are currently in our filtered queryset
-                    motorcycle__in=queryset,
-                ).filter(
-                    # Check for overlapping date ranges
-                    Q(pickup_datetime__date__lte=end_date, dropoff_datetime__date__gte=start_date)
-                ).values_list('motorcycle_id', flat=True) # Get the IDs of conflicting motorcycles
-
-                # Exclude motorcycles with conflicting bookings from the queryset
-                queryset = queryset.exclude(id__in=conflicting_bookings)
-
-            except ValueError:
-                messages.error(self.request, "Invalid date format. Please use YYYY-MM-DD.")
-                return self.model.objects.none()
-            except Exception as e:
-                messages.error(self.request, f"An error occurred while filtering by date: {e}")
-                return self.model.objects.none()
 
         return queryset
 
-    # Adds hire-specific context data (date range, hire days)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        if self.date_range:
-            start_date, end_date, hire_start_date_str, hire_end_date_str = self.date_range
-            context['hire_start_date'] = hire_start_date_str
-            context['hire_end_date'] = hire_end_date_str
+        # Add original inputs back to context to pre-fill the form
+        context['original_inputs'] = self.original_inputs
 
-            delta = end_date - start_date
-            # Calculate the number of days inclusive of start and end dates
-            context['hire_days'] = delta.days + 1
-        else:
-            context['hire_start_date'] = ''
-            context['hire_end_date'] = ''
-            context['hire_days'] = None
+        # Add hire-specific context data
+        if self.pick_up_datetime and self.return_datetime:
+             context['pick_up_date'] = self.pick_up_datetime.strftime('%Y-%m-%d')
+             context['pick_up_time'] = self.pick_up_datetime.strftime('%H:%M') # Format for Flatpickr time input
+             context['return_date'] = self.return_datetime.strftime('%Y-%m-%d')
+             context['return_time'] = self.return_datetime.strftime('%H:%M') # Format for Flatpickr time input
+             context['hire_days'] = self.duration_days # Use the calculated integer duration
+
+        # Pass blocked hire dates to the template for Flatpickr
+        blocked_hire_dates = BlockedHireDate.objects.all()
+        blocked_hire_date_ranges = []
+        for blocked in blocked_hire_dates:
+             blocked_hire_date_ranges.append({
+                 'from': blocked.start_date.strftime('%Y-%m-%d'),
+                 'to': blocked.end_date.strftime('%Y-%m-%d')
+             })
+        import json
+        context['blocked_hire_date_ranges_json'] = json.dumps(blocked_hire_date_ranges)
+
+        # You can also pass HireSettings explicitly here if needed in the template,
+        # although it's already available via the context processor
+        # try:
+        #      context['hire_settings'] = HireSettings.objects.first()
+        # except Exception:
+        #      pass # Handle exception
+
 
         return context
