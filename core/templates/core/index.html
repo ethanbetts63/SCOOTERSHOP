@@ -17,7 +17,8 @@
         <img src="{% static 'images/coffee_run5.png' %}" alt="Fiddle Scooter Wallpaper" class="banner-background img-responsive">{# Added .img-responsive #}
     </div>
     -->
-    
+    {% include "core/includes/hire_book_include.html" with service_types=service_types %}
+
     {% include "core/includes/book_include.html" with service_types=service_types %}
 
     {% include "core/includes/reviews.html" %}
