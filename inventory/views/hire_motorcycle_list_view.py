@@ -1,6 +1,6 @@
 # inventory/views/hire_motorcycle_list_view.py
 
-from django.db.models import Q
+from django.db.models import Q, Min, Max, Case, When, Value, DecimalField # Import Min, Max, Case, When, Value, DecimalField
 import datetime
 from django.contrib import messages
 from django.utils import timezone # Import timezone
@@ -10,6 +10,8 @@ from dashboard.models import HireSettings # Import HireSettings
 from inventory.models import Motorcycle # Ensure Motorcycle is imported if needed for engine_size filter
 from .motorcycle_list_view import MotorcycleListView # Import the base class
 from dashboard.models import BlockedHireDate # Import BlockedHireDate
+import logging # Import logging
+from decimal import Decimal # Import Decimal
 
 # Lists motorcycles available for hire
 class HireMotorcycleListView(MotorcycleListView):
@@ -42,16 +44,23 @@ class HireMotorcycleListView(MotorcycleListView):
             'has_motorcycle_license': has_motorcycle_license # Store boolean status
         }
 
-        # Fetch HireSettings
+        # Fetch HireSettings for duration check
         hire_settings = None
         try:
-            hire_settings = HireSettings.objects.first() # Assuming singleton pattern or get the first one
+            hire_settings = HireSettings.objects.first()
             if not hire_settings:
-                 messages.error(self.request, "Hire settings are not configured.")
-                 return self.model.objects.none()
+                messages.error(self.request, "Hire settings are not configured.")
+                # Return empty queryset if essential settings are missing
+                if pick_up_date_str and pick_up_time_str and return_date_str and return_time_str:
+                     return self.model.objects.none()
+                # If no dates selected, allow showing bikes but without availability/duration checks
+                pass # Proceed with base queryset if no dates selected
         except Exception:
             messages.error(self.request, "Could not load hire settings.")
-            return self.model.objects.none()
+            if pick_up_date_str and pick_up_time_str and return_date_str and return_time_str:
+                 return self.model.objects.none()
+            pass # Proceed with base queryset if no dates selected
+
 
         # Only proceed with date/time validation and bike availability filtering if all four fields are present
         if pick_up_date_str and pick_up_time_str and return_date_str and return_time_str:
@@ -78,12 +87,7 @@ class HireMotorcycleListView(MotorcycleListView):
                 # 2. Check for Blocked Dates
                 blocked_dates = BlockedHireDate.objects.all()
                 for blocked in blocked_dates:
-                    # Create timezone-aware start and end datetimes for the blocked period
-                    blocked_start_dt = timezone.make_aware(datetime.datetime.combine(blocked.start_date, datetime.time.min))
-                    blocked_end_dt = timezone.make_aware(datetime.datetime.combine(blocked.end_date, datetime.time.max))
-
                     # Check if pickup or return datetime falls exactly on or within a blocked day
-                    # It's generally safer to check if the date component falls within the blocked date range
                     if blocked.start_date <= self.pick_up_datetime.date() <= blocked.end_date:
                          messages.error(self.request, f"Pickup date ({pick_up_date_str}) is not available due to a blocked period.")
                          return self.model.objects.none()
@@ -93,29 +97,35 @@ class HireMotorcycleListView(MotorcycleListView):
                          return self.model.objects.none()
 
 
-                # 3. Check Minimum and Maximum Hire Duration
-                duration = self.return_datetime - self.pick_up_datetime
-                duration_hours = duration.total_seconds() / 3600
-                duration_days_exact = duration_hours / 24 # Use exact calculation for comparison
+                # 3. Check Minimum and Maximum Hire Duration (Requires hire_settings)
+                if hire_settings: # Only perform if hire_settings were loaded
+                    duration = self.return_datetime - self.pick_up_datetime
+                    duration_hours = duration.total_seconds() / 3600
+                    duration_days_exact = duration_hours / 24 # Use exact calculation for comparison
 
-                if hire_settings.minimum_hire_duration_days is not None and duration_days_exact < hire_settings.minimum_hire_duration_days:
-                     messages.error(self.request, f"Minimum hire duration is {hire_settings.minimum_hire_duration_days} days.")
-                     return self.model.objects.none()
+                    if hire_settings.minimum_hire_duration_days is not None and duration_days_exact < hire_settings.minimum_hire_duration_days:
+                         messages.error(self.request, f"Minimum hire duration is {hire_settings.minimum_hire_duration_days} days.")
+                         return self.model.objects.none()
 
-                if hire_settings.maximum_hire_duration_days is not None and duration_days_exact > hire_settings.maximum_hire_duration_days:
-                    messages.error(self.request, f"Maximum hire duration is {hire_settings.maximum_hire_duration_days} days.")
-                    return self.model.objects.none()
+                    if hire_settings.maximum_hire_duration_days is not None and duration_days_exact > hire_settings.maximum_hire_duration_days:
+                        messages.error(self.request, f"Maximum hire duration is {hire_settings.maximum_hire_duration_days} days.")
+                        return self.model.objects.none()
 
-                # Store the duration in days (integer, for displaying "X days hire")
-                self.duration_days = duration.days # Use .days for whole days difference
+                    # Store the duration in days (integer, for displaying "X days hire")
+                    self.duration_days = duration.days # Use .days for whole days difference
+                else:
+                     messages.warning(self.request, "Hire duration could not be validated due to missing settings.")
 
 
-                # 4. Check Booking Lead Time
-                now = timezone.now()
-                min_pickup_time = now + timedelta(hours=hire_settings.booking_lead_time_hours)
-                if self.pick_up_datetime < min_pickup_time:
-                    messages.error(self.request, f"Pickup must be at least {hire_settings.booking_lead_time_hours} hours from now.")
-                    return self.model.objects.none()
+                # 4. Check Booking Lead Time (Requires hire_settings)
+                if hire_settings and hire_settings.booking_lead_time_hours is not None:
+                    now = timezone.now()
+                    min_pickup_time = now + timedelta(hours=hire_settings.booking_lead_time_hours)
+                    if self.pick_up_datetime < min_pickup_time:
+                        messages.error(self.request, f"Pickup must be at least {hire_settings.booking_lead_time_hours} hours from now.")
+                        return self.model.objects.none()
+                elif hire_settings:
+                     messages.warning(self.request, "Booking lead time could not be validated due to missing settings.")
 
 
                 # --- Apply Bike Availability Filtering ---
@@ -140,7 +150,6 @@ class HireMotorcycleListView(MotorcycleListView):
                 return self.model.objects.none()
             except Exception as e:
                 messages.error(self.request, f"An unexpected error occurred during date processing: {e}")
-                import logging
                 logging.exception("Error processing hire dates in HireMotorcycleListView")
                 return self.model.objects.none()
 
@@ -186,6 +195,7 @@ class HireMotorcycleListView(MotorcycleListView):
         # Apply the engine size filter
         # Ensure Motorcycle model has an 'engine_size' field (DecimalField or IntegerField)
         try:
+            # Assuming engine_size is stored as a number or can be cast to float/decimal
             queryset = queryset.filter(engine_size__lt=max_engine_size)
         except Exception as e:
             # Handle case where 'engine_size' field might not exist or filtering fails
@@ -197,14 +207,18 @@ class HireMotorcycleListView(MotorcycleListView):
 
 
         # --- Apply other filters (like daily rate) ---
+        # Note: The price filter here applies to the *base* daily hire rate,
+        # not the calculated discounted rate.
         daily_rate_min = self.request.GET.get('daily_rate_min')
         daily_rate_max = self.request.GET.get('daily_rate_max')
 
         try:
             if daily_rate_min:
-                queryset = queryset.filter(daily_hire_rate__gte=float(daily_rate_min))
+                # Filter by the motorcycle's specific daily_hire_rate first
+                queryset = queryset.filter(daily_hire_rate__gte=Decimal(daily_rate_min)) # Use Decimal
             if daily_rate_max:
-                queryset = queryset.filter(daily_hire_rate__lte=float(daily_rate_max))
+                 # Filter by the motorcycle's specific daily_hire_rate first
+                queryset = queryset.filter(daily_hire_rate__lte=Decimal(daily_rate_max)) # Use Decimal
         except (ValueError, TypeError):
              messages.warning(self.request, "Invalid daily rate value ignored.")
              pass
@@ -255,4 +269,112 @@ class HireMotorcycleListView(MotorcycleListView):
         # context['default_engine_size_display'] = default_engine_size_display
 
 
+        # --- Calculate and Add Discounted Monthly Rate to Motorcycles ---
+        hire_settings = None
+        try:
+            hire_settings = HireSettings.objects.first()
+            context['hire_settings'] = hire_settings # Pass hire settings to template
+        except Exception as e:
+            logging.error(f"Error loading hire settings for price calculation: {e}")
+            # Handle gracefully, perhaps set hire_settings to None
+
+        # Iterate through the motorcycles in the context and calculate discounted rate
+        if hire_settings and hire_settings.monthly_discount_percentage is not None:
+            # Ensure calculation uses Decimal for correct arithmetic
+            monthly_discount_factor = (Decimal(100) - hire_settings.monthly_discount_percentage) / Decimal(100)
+
+            # Ensure context['motorcycles'] is a list or can be iterated and modified
+            # The page_obj.object_list is the actual list of items for the current page
+            if 'page_obj' in context and context['page_obj'] is not None:
+                 motorcycles_list = context['page_obj'].object_list
+            else:
+                 # Fallback if not paginated or page_obj is None (shouldn't happen with pagination)
+                 motorcycles_list = context.get('motorcycles', [])
+
+
+            for motorcycle in motorcycles_list:
+                base_daily_rate = None
+                # Use the motorcycle's specific daily rate if available
+                if motorcycle.daily_hire_rate is not None:
+                    base_daily_rate = motorcycle.daily_hire_rate
+                # Otherwise, use the default daily rate from settings
+                elif hire_settings.default_daily_rate is not None:
+                    base_daily_rate = hire_settings.default_daily_rate
+
+                # Calculate discounted rate if a base daily rate exists
+                if base_daily_rate is not None:
+                    # Apply monthly discount
+                    discounted_daily_rate = base_daily_rate * monthly_discount_factor
+                    # Add the calculated rate to the motorcycle object
+                    # Use a new attribute name to avoid conflicts
+                    # Use quantize to maintain decimal places, falling back to 2 if base_daily_rate is from default (which has 2)
+                    if isinstance(base_daily_rate, Decimal):
+                         decimal_places = abs(base_daily_rate.as_tuple().exponent)
+                    else:
+                         # Assume default_daily_rate is Decimal with 2 places if base_daily_rate is not Decimal
+                         decimal_places = 2
+
+                    discounted_daily_rate = discounted_daily_rate.quantize(Decimal(10) ** -decimal_places)
+                    motorcycle.monthly_discounted_daily_rate = discounted_daily_rate
+                else:
+                    # If no base daily rate, no discounted rate can be calculated
+                    motorcycle.monthly_discounted_daily_rate = None
+        else:
+            # If hire settings or monthly discount is missing, set discounted rate to None for all bikes
+            if 'page_obj' in context and context['page_obj'] is not None:
+                 motorcycles_list = context['page_obj'].object_list
+            else:
+                 motorcycles_list = context.get('motorcycles', [])
+
+            for motorcycle in motorcycles_list:
+                 motorcycle.monthly_discounted_daily_rate = None
+
+
+        # --- Calculate Min/Max Daily Rates for Price Filter Pre-fill ---
+        min_price_prefill = None
+        max_price_prefill = None
+
+        # Get all motorcycles that are available for hire and have a daily rate (either specific or default)
+        # Use annotate to add an 'effective_daily_rate' to each motorcycle in the queryset
+        # This handles cases where a bike might not have a specific daily_hire_rate but the system has a default
+        if hire_settings and hire_settings.default_daily_rate is not None:
+             # Annotate with effective daily rate
+             all_hire_motorcycles = Motorcycle.objects.filter(
+                 is_available=True,
+                 conditions__name='hire'
+             ).annotate(
+                 effective_daily_rate=Case(
+                     When(daily_hire_rate__isnull=False, then='daily_hire_rate'),
+                     default=hire_settings.default_daily_rate,
+                     output_field=DecimalField()
+                 )
+             ).filter(effective_daily_rate__isnull=False) # Ensure we only consider bikes with an effective daily rate
+
+             # Find the minimum and maximum effective daily rates
+             rate_aggregation = all_hire_motorcycles.aggregate(min_rate=Min('effective_daily_rate'), max_rate=Max('effective_daily_rate'))
+
+             min_effective_daily_rate = rate_aggregation.get('min_rate')
+             max_effective_daily_rate = rate_aggregation.get('max_rate')
+
+             if min_effective_daily_rate is not None:
+                 # Apply monthly discount to the minimum rate
+                 if hire_settings.monthly_discount_percentage is not None:
+                      monthly_discount_factor = (Decimal(100) - hire_settings.monthly_discount_percentage) / Decimal(100)
+                      min_price_prefill = min_effective_daily_rate * monthly_discount_factor
+                      # Quantize to 2 decimal places for display
+                      min_price_prefill = min_price_prefill.quantize(Decimal('0.01'))
+                 else:
+                      # If no monthly discount setting, min prefill is just the min rate
+                      min_price_prefill = min_effective_daily_rate.quantize(Decimal('0.01')) # Quantize for display
+
+             if max_effective_daily_rate is not None:
+                 # Max prefill is simply the max effective daily rate
+                 max_price_prefill = max_effective_daily_rate.quantize(Decimal('0.01')) # Quantize for display
+
+        # Add the calculated pre-fill values to the context
+        context['min_price_prefill'] = min_price_prefill
+        context['max_price_prefill'] = max_price_prefill
+
+
         return context
+

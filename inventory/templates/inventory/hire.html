@@ -129,12 +129,12 @@
 
                                 {# Price Range (Min/Max) - Keep #}
                                 <div class="mb-3">
-                                    <label for="price_min" class="form-label">Price Range</label>
+                                    <label for="price_min" class="form-label">Price Range (Daily Rate)</label> {# Updated label #}
                                     <div class="d-flex gap-2">
                                         <input type="number" class="form-control form-control-sm" id="price_min" name="price_min"
-                                               placeholder="Min" value="{{ request.GET.price_min|default:'' }}">
+                                               placeholder="Min" value="{{ request.GET.price_min|default:min_price_prefill|floatformat:2|default:'' }}"> {# Pre-fill min price #}
                                         <input type="number" class="form-control form-control-sm" id="price_max" name="price_max"
-                                               placeholder="Max" value="{{ request.GET.price_max|default:'' }}">
+                                               placeholder="Max" value="{{ request.GET.price_max|default:max_price_prefill|floatformat:2|default:'' }}"> {# Pre-fill max price #}
                                     </div>
                                 </div>
 
@@ -221,11 +221,16 @@
                                 {# <div class="detail-item">... Odometer ...</div> #}
                             </div>
 
-                            {# Only show hire price #}
-                            {% if motorcycle.daily_hire_rate %}
+                            {# Display the calculated monthly discounted daily rate if available #}
+                            {% if motorcycle.monthly_discounted_daily_rate is not None %}
+                                <p class="card-text fw-bold">from ${{ motorcycle.monthly_discounted_daily_rate|floatformat:2 }} per day</p>
+                            {# Fallback to daily rate if no monthly discount calculated or applicable #}
+                            {% elif motorcycle.daily_hire_rate %}
                                 <p class="card-text fw-bold">${{ motorcycle.daily_hire_rate }} per day</p>
+                            {# Fallback to hourly rate if no daily rate #}
                             {% elif motorcycle.hourly_hire_rate %}
                                 <p class="card-text fw-bold">${{ motorcycle.hourly_hire_rate }} per hour</p>
+                            {# Final fallback if no rates are set #}
                             {% else %}
                                 <p class="card-text fw-bold">Contact for Hire Rate</p>
                             {% endif %}
