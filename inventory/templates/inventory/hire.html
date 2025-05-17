@@ -234,7 +234,7 @@
                     </li>
                     <li class="page-item">
                          {# Ensure existing GET parameters are carried over #}
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' %}&{{ key }}={{ value }}{% endif %}{% endfor %}>Previous</a>
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
                     </li>
                     {% endif %}
 

@@ -7,6 +7,7 @@ from django.utils import timezone # Import timezone
 from datetime import timedelta # Import timedelta
 from hire.models import HireBooking # Assuming HireBooking is in hire.models
 from dashboard.models import HireSettings # Import HireSettings
+from inventory.models import Motorcycle # Ensure Motorcycle is imported if needed for engine_size filter
 from .motorcycle_list_view import MotorcycleListView # Import the base class
 from dashboard.models import BlockedHireDate # Import BlockedHireDate
 
@@ -16,7 +17,7 @@ class HireMotorcycleListView(MotorcycleListView):
     condition_name = 'hire'
     url_name = 'inventory:hire'
 
-    # Adds hire-specific filtering (daily rate, date availability)
+    # Adds hire-specific filtering (daily rate, date availability, engine size)
     def get_queryset(self):
         # Start by getting the base queryset
         queryset = super().get_queryset()
@@ -26,21 +27,23 @@ class HireMotorcycleListView(MotorcycleListView):
         pick_up_time_str = self.request.GET.get('pick_up_time')
         return_date_str = self.request.GET.get('return_date')
         return_time_str = self.request.GET.get('return_time')
+        has_motorcycle_license = self.request.GET.get('has_motorcycle_license') == 'true' # Get license status
 
         self.pick_up_datetime = None
         self.return_datetime = None
         self.duration_days = None # Store calculated duration in days
 
-        # Store original inputs for re-populating the form
+        # Store original inputs for re-populating the form on inventory/hire.html
         self.original_inputs = {
             'pick_up_date': pick_up_date_str,
             'pick_up_time': pick_up_time_str,
             'return_date': return_date_str,
             'return_time': return_time_str,
-            'has_motorcycle_license': self.request.GET.get('has_motorcycle_license') == 'true' # Handle checkbox
+            'has_motorcycle_license': has_motorcycle_license # Store boolean status
         }
 
         # Fetch HireSettings
+        hire_settings = None
         try:
             hire_settings = HireSettings.objects.first() # Assuming singleton pattern or get the first one
             if not hire_settings:
@@ -50,8 +53,7 @@ class HireMotorcycleListView(MotorcycleListView):
             messages.error(self.request, "Could not load hire settings.")
             return self.model.objects.none()
 
-
-        # Only proceed with date/time validation if all four fields are present
+        # Only proceed with date/time validation and bike availability filtering if all four fields are present
         if pick_up_date_str and pick_up_time_str and return_date_str and return_time_str:
             try:
                 # Parse dates
@@ -63,7 +65,6 @@ class HireMotorcycleListView(MotorcycleListView):
                 return_time = datetime.datetime.strptime(return_time_str, '%H:%M').time()
 
                 # Combine date and time into timezone-aware datetime objects
-                # Assuming timezone is configured in settings.py
                 self.pick_up_datetime = timezone.make_aware(datetime.datetime.combine(pick_up_date, pick_up_time))
                 self.return_datetime = timezone.make_aware(datetime.datetime.combine(return_date, return_time))
 
@@ -77,25 +78,25 @@ class HireMotorcycleListView(MotorcycleListView):
                 # 2. Check for Blocked Dates
                 blocked_dates = BlockedHireDate.objects.all()
                 for blocked in blocked_dates:
-                    blocked_start = timezone.make_aware(datetime.datetime.combine(blocked.start_date, datetime.time.min))
-                    blocked_end = timezone.make_aware(datetime.datetime.combine(blocked.end_date, datetime.time.max))
+                    # Create timezone-aware start and end datetimes for the blocked period
+                    blocked_start_dt = timezone.make_aware(datetime.datetime.combine(blocked.start_date, datetime.time.min))
+                    blocked_end_dt = timezone.make_aware(datetime.datetime.combine(blocked.end_date, datetime.time.max))
 
-                    # Check if pickup date/time is within a blocked range
-                    if blocked_start <= self.pick_up_datetime <= blocked_end:
-                        messages.error(self.request, f"Pickup date ({pick_up_date_str}) is not available due to a blocked period.")
-                        return self.model.objects.none()
+                    # Check if pickup or return datetime falls exactly on or within a blocked day
+                    # It's generally safer to check if the date component falls within the blocked date range
+                    if blocked.start_date <= self.pick_up_datetime.date() <= blocked.end_date:
+                         messages.error(self.request, f"Pickup date ({pick_up_date_str}) is not available due to a blocked period.")
+                         return self.model.objects.none()
 
-                    # Check if return date/time is within a blocked range
-                    if blocked_start <= self.return_datetime <= blocked_end:
-                        messages.error(self.request, f"Return date ({return_date_str}) is not available due to a blocked period.")
-                        return self.model.objects.none()
+                    if blocked.start_date <= self.return_datetime.date() <= blocked.end_date:
+                         messages.error(self.request, f"Return date ({return_date_str}) is not available due to a blocked period.")
+                         return self.model.objects.none()
 
 
                 # 3. Check Minimum and Maximum Hire Duration
                 duration = self.return_datetime - self.pick_up_datetime
-                # Calculate duration in days, including fractions
                 duration_hours = duration.total_seconds() / 3600
-                duration_days_exact = duration_hours / 24
+                duration_days_exact = duration_hours / 24 # Use exact calculation for comparison
 
                 if hire_settings.minimum_hire_duration_days is not None and duration_days_exact < hire_settings.minimum_hire_duration_days:
                      messages.error(self.request, f"Minimum hire duration is {hire_settings.minimum_hire_duration_days} days.")
@@ -108,6 +109,7 @@ class HireMotorcycleListView(MotorcycleListView):
                 # Store the duration in days (integer, for displaying "X days hire")
                 self.duration_days = duration.days # Use .days for whole days difference
 
+
                 # 4. Check Booking Lead Time
                 now = timezone.now()
                 min_pickup_time = now + timedelta(hours=hire_settings.booking_lead_time_hours)
@@ -116,19 +118,16 @@ class HireMotorcycleListView(MotorcycleListView):
                     return self.model.objects.none()
 
 
-                # --- Proceed with Bike Availability Filtering if Dates are Valid ---
+                # --- Apply Bike Availability Filtering ---
 
-                # Find motorcycles booked within the validated date range
-                # Updated Q object to use datetime fields and check overlap
+                # Find motorcycles booked within the validated datetime range
                 conflicting_bookings = HireBooking.objects.filter(
                     status__in=['confirmed', 'pending'],
-                    # Only consider bookings for motorcycles that are currently in our filtered queryset
-                    motorcycle__in=queryset,
+                    motorcycle__in=queryset, # Only consider motorcycles currently in the queryset
                 ).filter(
                      # Check for overlapping datetime ranges
-                     Q(pickup_date__lte=self.return_datetime.date(), return_date__gte=self.pick_up_datetime.date()),
-                     # Further refine by time if dates overlap
-                     Q(pickup_datetime__lt=self.return_datetime, return_datetime__gt=self.pick_up_datetime) # Use < and > for strict overlap
+                     # A booking conflicts if its period starts before our return and ends after our pickup
+                     Q(pickup_datetime__lt=self.return_datetime, return_datetime__gt=self.pick_up_datetime)
                 ).values_list('motorcycle_id', flat=True)
 
                 # Exclude motorcycles with conflicting bookings from the queryset
@@ -137,23 +136,67 @@ class HireMotorcycleListView(MotorcycleListView):
 
             except ValueError:
                 messages.error(self.request, "Invalid date or time format.")
+                # Return empty queryset on error
                 return self.model.objects.none()
             except Exception as e:
-                # Catch any other unexpected errors during date processing
-                messages.error(self.request, f"An unexpected error occurred: {e}")
-                # Log the exception for debugging
+                messages.error(self.request, f"An unexpected error occurred during date processing: {e}")
                 import logging
                 logging.exception("Error processing hire dates in HireMotorcycleListView")
                 return self.model.objects.none()
 
         elif self.request.GET:
-            # If GET request received but dates are missing (after initial load)
-            # This might happen if the user searches without selecting dates
-            messages.info(self.request, "Please select both pickup and return dates and times to search for available motorcycles.")
-            # Return an empty queryset as no search criteria were provided
-            return self.model.objects.none()
+            # If GET request received but dates are missing (e.g., initial load after failed attempt or direct link)
+            # If the user has submitted the form (i.e., there's a GET request with params), but the date fields are empty,
+            # it implies they didn't select dates.
+            # If there are other GET params but no dates, we should indicate dates are required for availability search.
+             # Check if *any* expected hire search params are present (excluding page number etc.)
+             hire_search_params = ['pick_up_date', 'pick_up_time', 'return_date', 'return_time', 'has_motorcycle_license', 'engine_size_lt', 'daily_rate_min', 'daily_rate_max']
+             if any(param in self.request.GET for param in hire_search_params):
+                 # If some hire search params are present but dates/times are missing, show an error
+                 if not (pick_up_date_str and pick_up_time_str and return_date_str and return_time_str):
+                     messages.info(self.request, "Please select both pickup and return dates and times to search for available motorcycles.")
+                     return self.model.objects.none()
+             # If no hire search params are present at all, it's likely the initial load of the inventory/hire page
+             # In this case, we don't show an error but return an empty queryset as no search is performed yet.
+             else:
+                  # Return the base queryset without availability filtering on initial load
+                  return super().get_queryset() # Or return empty if you don't want to show all bikes by default
 
-        # --- Apply other filters (like daily rate) after date validation ---
+
+        # --- Handle Engine Size Filtering ---
+        # Determine the max engine size based on the license checkbox from the hire_book_include form
+        # This filter is applied whether dates were successfully validated or not,
+        # as it's based on the initial form submission.
+        max_engine_size = 50 # Default for no license
+        if has_motorcycle_license:
+            max_engine_size = 2000 # Value for having a license (effectively 'any size')
+
+        # Allow overriding the engine size filter if a specific value is provided in the search form on inventory/hire.html
+        # Assuming an input field named 'engine_size_lt' exists on inventory/hire.html
+        engine_size_lt_str = self.request.GET.get('engine_size_lt')
+        if engine_size_lt_str:
+             try:
+                  # Use the value from the form on inventory/hire.html if provided and valid
+                  max_engine_size = float(engine_size_lt_str)
+             except (ValueError, TypeError):
+                  messages.warning(self.request, "Invalid engine size value ignored.")
+                  # Keep the max_engine_size derived from the license checkbox
+
+
+        # Apply the engine size filter
+        # Ensure Motorcycle model has an 'engine_size' field (DecimalField or IntegerField)
+        try:
+            queryset = queryset.filter(engine_size__lt=max_engine_size)
+        except Exception as e:
+            # Handle case where 'engine_size' field might not exist or filtering fails
+            logging.error(f"Error filtering by engine size: {e}")
+            messages.error(self.request, "Could not apply engine size filter.")
+            # Decide whether to return empty or return without this filter applied
+            # For now, let's proceed without this filter if it fails
+            pass
+
+
+        # --- Apply other filters (like daily rate) ---
         daily_rate_min = self.request.GET.get('daily_rate_min')
         daily_rate_max = self.request.GET.get('daily_rate_max')
 
@@ -163,9 +206,7 @@ class HireMotorcycleListView(MotorcycleListView):
             if daily_rate_max:
                 queryset = queryset.filter(daily_hire_rate__lte=float(daily_rate_max))
         except (ValueError, TypeError):
-             messages.error(self.request, "Invalid daily rate value.")
-             # Keep the existing queryset or return empty, depending on desired behavior for invalid rate
-             # For now, let's just add the message and proceed with potentially valid dates
+             messages.warning(self.request, "Invalid daily rate value ignored.")
              pass
 
 
@@ -175,18 +216,27 @@ class HireMotorcycleListView(MotorcycleListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Add original inputs back to context to pre-fill the form
+        # Add original inputs back to context to pre-fill the form on inventory/hire.html
         context['original_inputs'] = self.original_inputs
 
         # Add hire-specific context data
         if self.pick_up_datetime and self.return_datetime:
+             # Pass formatted dates and times for displaying in the template
              context['pick_up_date'] = self.pick_up_datetime.strftime('%Y-%m-%d')
-             context['pick_up_time'] = self.pick_up_datetime.strftime('%H:%M') # Format for Flatpickr time input
+             context['pick_up_time'] = self.pick_up_datetime.strftime('%H:%M')
              context['return_date'] = self.return_datetime.strftime('%Y-%m-%d')
-             context['return_time'] = self.return_datetime.strftime('%H:%M') # Format for Flatpickr time input
+             context['return_time'] = self.return_datetime.strftime('%H:%M')
              context['hire_days'] = self.duration_days # Use the calculated integer duration
+        else:
+             # Pass empty strings or None if dates were not successfully validated
+             context['pick_up_date'] = ''
+             context['pick_up_time'] = ''
+             context['return_date'] = ''
+             context['return_time'] = ''
+             context['hire_days'] = None
 
-        # Pass blocked hire dates to the template for Flatpickr
+
+        # Pass blocked hire dates to the template for Flatpickr on inventory/hire.html
         blocked_hire_dates = BlockedHireDate.objects.all()
         blocked_hire_date_ranges = []
         for blocked in blocked_hire_dates:
@@ -197,12 +247,12 @@ class HireMotorcycleListView(MotorcycleListView):
         import json
         context['blocked_hire_date_ranges_json'] = json.dumps(blocked_hire_date_ranges)
 
-        # You can also pass HireSettings explicitly here if needed in the template,
-        # although it's already available via the context processor
-        # try:
-        #      context['hire_settings'] = HireSettings.objects.first()
-        # except Exception:
-        #      pass # Handle exception
+        # Pass the calculated max engine size based on the license status for pre-filling the engine size field
+        # Or pass the license status itself, and handle the default value in the template's JS
+        context['has_motorcycle_license'] = self.original_inputs.get('has_motorcycle_license', False) # Pass boolean status
+        # Or calculate and pass the default engine size here:
+        # default_engine_size_display = 2000 if context['has_motorcycle_license'] else 50
+        # context['default_engine_size_display'] = default_engine_size_display
 
 
         return context
