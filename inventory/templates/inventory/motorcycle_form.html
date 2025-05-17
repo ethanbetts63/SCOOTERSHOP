@@ -328,20 +328,6 @@
                             <small class="form-text">Enter a rate if different from default</small> {# Updated help text #}
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="form-field">
-                            <label for="{{ form.weekly_hire_rate.id_for_label }}" class="form-label">Weekly Rate ($)</label> {# Weekly Rate is now optional #}
-                            {{ form.weekly_hire_rate.errors }}
-                            {{ form.weekly_hire_rate|add_class:"form-control" }}
-                        </div>
-                    </div>
-                     <div class="col-md-4">
-                        <div class="form-field">
-                            <label for="{{ form.monthly_hire_rate.id_for_label }}" class="form-label">Monthly Rate ($)</label> {# Monthly Rate is now optional #}
-                            {{ form.monthly_hire_rate.errors }}
-                            {{ form.monthly_hire_rate|add_class:"form-control" }}
-                        </div>
-                    </div>
                      <div class="col-md-6">
                             <div class="form-field">
                                 <label for="{{ form.rego.id_for_label }}" class="form-label">Registration Number</label> {# Rego remains optional #}

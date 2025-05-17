@@ -20,7 +20,7 @@ class MotorcycleForm(forms.ModelForm):
             # Added required fields (now some are optional, odometer is required)
             'seats', 'transmission',
             # Hire rates
-            'daily_hire_rate', 'weekly_hire_rate', 'monthly_hire_rate',
+            'daily_hire_rate',
             'hourly_hire_rate',
             # Other details
             'description', 'image',
@@ -32,8 +32,6 @@ class MotorcycleForm(forms.ModelForm):
             'rego_exp': forms.DateInput(attrs={'type': 'date'}),
             'conditions': forms.CheckboxSelectMultiple(attrs={'class': 'condition-checkbox-list'}),
             'daily_hire_rate': forms.NumberInput(attrs={'class': 'hire-field', 'step': '0.01'}),
-            'weekly_hire_rate': forms.NumberInput(attrs={'class': 'hire-field', 'step': '0.01'}),
-            'monthly_hire_rate': forms.NumberInput(attrs={'class': 'hire-field', 'step': '0.01'}),
             # Seats widget remains, but field is no longer required by model
             'seats': forms.NumberInput(attrs={'min': '0', 'max': '3'}), # Changed min to 0 since seats can be None
             'transmission': forms.Select(attrs={'class': 'form-control'}),
@@ -48,8 +46,6 @@ class MotorcycleForm(forms.ModelForm):
         # Mark fields that are now optional as not required in the form
         self.fields['price'].required = False
         self.fields['daily_hire_rate'].required = False
-        self.fields['weekly_hire_rate'].required = False
-        self.fields['monthly_hire_rate'].required = False
         self.fields['hourly_hire_rate'].required = False
         self.fields['description'].required = False
         self.fields['seats'].required = False

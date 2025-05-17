@@ -83,7 +83,6 @@ class MotorcycleListViewTests(TestCase):
             title='2021 Vespa GTS 300', brand='Vespa', model='GTS 300', year=2021,
             engine_size='300cc', seats=2, transmission='automatic',
             description='Scooter for hire.', is_available=True,
-            daily_hire_rate=Decimal('80.00'), weekly_hire_rate=Decimal('380.00'),
             date_posted=timezone.now() - datetime.timedelta(days=5)
         )
         self.motorcycle_hire.conditions.add(self.hire_condition)
@@ -93,7 +92,6 @@ class MotorcycleListViewTests(TestCase):
             title='Cheap Hire Bike', brand='Honda', model='PCX125', year=2020,
             engine_size='125cc', seats=1, transmission='automatic',
             description='Affordable hire scooter.', is_available=True,
-            daily_hire_rate=Decimal('50.00'), weekly_hire_rate=Decimal('250.00'),
             date_posted=timezone.now() - datetime.timedelta(days=8)
         )
         self.motorcycle_hire_cheap.conditions.add(self.hire_condition)

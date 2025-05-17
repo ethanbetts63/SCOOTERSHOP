@@ -19,23 +19,23 @@ class HireSettings(models.Model):
 
     default_daily_rate = models.DecimalField(
         max_digits=8, decimal_places=2,
-        default=0.00, # <--- Add a default value
+        default=0.00,
         help_text="Default daily rate for bikes if no custom rate is set."
     )
 
-    # Default weekly rate for bikes.
-    default_weekly_rate = models.DecimalField(
-        max_digits=8, decimal_places=2,
-        default=0.00, # <--- Add a default value
-        help_text="Default weekly rate for bikes."
+    # New discount fields
+    weekly_discount_percentage = models.DecimalField(
+        max_digits=5, decimal_places=2,
+        default=0.00,
+        help_text="Discount percentage for hires of 7 days or more."
     )
 
-    # Default monthly rate for bikes.
-    default_monthly_rate = models.DecimalField(
-        max_digits=8, decimal_places=2,
-        default=0.00, # <--- Add a default value
-        help_text="Default monthly rate for bikes."
+    monthly_discount_percentage = models.DecimalField(
+        max_digits=5, decimal_places=2,
+        default=0.00,
+        help_text="Discount percentage for hires of 30 days or more."
     )
+
 
     # --- Deposit Defaults ---
     # Enable deposit option.

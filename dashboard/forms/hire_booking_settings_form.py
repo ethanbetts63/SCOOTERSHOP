@@ -7,16 +7,16 @@ class HireBookingSettingsForm(forms.ModelForm):
         model = HireSettings
         fields = [
             'default_daily_rate',
-            'default_weekly_rate',
-            'default_monthly_rate',
             'default_hourly_rate',
+            'weekly_discount_percentage', # Added new discount field
+            'monthly_discount_percentage', # Added new discount field
             'minimum_hire_duration_days',
             'maximum_hire_duration_days',
             'booking_lead_time_hours',
-            'pick_up_start_time', # Added pick-up start time
-            'pick_up_end_time', # Added pick-up end time
-            'return_off_start_time', # Added return start time
-            'return_end_time', # Added return end time
+            'pick_up_start_time',
+            'pick_up_end_time',
+            'return_off_start_time',
+            'return_end_time',
             'deposit_enabled',
             'default_deposit_calculation_method',
             'deposit_percentage',
@@ -44,15 +44,25 @@ class HireBookingSettingsForm(forms.ModelForm):
         widgets = {
             'default_hourly_rate': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
             'default_daily_rate': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
-            'default_weekly_rate': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
-            'default_monthly_rate': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
+            'weekly_discount_percentage': forms.NumberInput(attrs={ # Widget for new field
+                'class': 'form-control',
+                'min': '0',
+                'max': '100',
+                'step': '0.01'
+            }),
+            'monthly_discount_percentage': forms.NumberInput(attrs={ # Widget for new field
+                'class': 'form-control',
+                'min': '0',
+                'max': '100',
+                'step': '0.01'
+            }),
             'minimum_hire_duration_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
             'maximum_hire_duration_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
             'booking_lead_time_hours': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
-            'pick_up_start_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}), # Widget for pick-up start time
-            'pick_up_end_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}), # Widget for pick-up end time
-            'return_off_start_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}), # Widget for return start time
-            'return_end_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}), # Widget for return end time
+            'pick_up_start_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'pick_up_end_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'return_off_start_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'return_end_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
             'deposit_enabled': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'default_deposit_calculation_method': forms.Select(attrs={'class': 'form-control'}),
             'deposit_percentage': forms.NumberInput(attrs={

@@ -61,7 +61,7 @@ class Motorcycle(models.Model):
     )
 
     # Odometer is now required
-    odometer = models.IntegerField(default=0) 
+    odometer = models.IntegerField(default=0)
     engine_size = models.CharField(max_length=50)
 
     # Made seats nullable and blankable
@@ -94,23 +94,6 @@ class Motorcycle(models.Model):
         null=True,
         blank=True,
         help_text="Price per day for hiring (if applicable)"
-    )
-
-    # New hire rate fields made nullable and blankable
-    weekly_hire_rate = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Price per week for hiring (if applicable)"
-    )
-
-    monthly_hire_rate = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Price per month for hiring (if applicable)"
     )
 
     hourly_hire_rate = models.DecimalField(

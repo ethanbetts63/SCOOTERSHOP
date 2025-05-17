@@ -48,7 +48,7 @@
 
         {# --- Rate Defaults --- #}
         <div class="form-field">
-            <h3 class="booking-section-title">{% translate "Rate Defaults" %}</h3>
+            <h3 class="booking-section-title">{% translate "Rate Defaults and Discounts" %}</h3> {# Updated section title #}
             {# Add the new hourly rate field here #}
              <div class="form-field">
                 {{ form.default_hourly_rate.label_tag }}
@@ -62,17 +62,21 @@
                 {% if form.default_daily_rate.help_text %}<small>{{ form.default_daily_rate.help_text }}</small>{% endif %}
                 {% for error in form.default_daily_rate.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
             </div>
-             <div class="form-field">
-                {{ form.default_weekly_rate.label_tag }}
-                {{ form.default_weekly_rate }}
-                {% if form.default_weekly_rate.help_text %}<small>{{ form.default_weekly_rate.help_text }}</small>{% endif %}
-                {% for error in form.default_weekly_rate.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+            {# Removed old weekly rate field #}
+            {# Removed old monthly rate field #}
+
+            {# Added new discount percentage fields #}
+            <div class="form-field">
+                {{ form.weekly_discount_percentage.label_tag }}
+                {{ form.weekly_discount_percentage }}
+                {% if form.weekly_discount_percentage.help_text %}<small>{{ form.weekly_discount_percentage.help_text }}</small>{% endif %}
+                {% for error in form.weekly_discount_percentage.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
             </div>
              <div class="form-field">
-                {{ form.default_monthly_rate.label_tag }}
-                {{ form.default_monthly_rate }}
-                {% if form.default_monthly_rate.help_text %}<small>{{ form.default_monthly_rate.help_text }}</small>{% endif %}
-                {% for error in form.default_monthly_rate.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+                {{ form.monthly_discount_percentage.label_tag }}
+                {{ form.monthly_discount_percentage }}
+                {% if form.monthly_discount_percentage.help_text %}<small>{{ form.monthly_discount_percentage.help_text }}</small>{% endif %}
+                {% for error in form.monthly_discount_percentage.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
             </div>
         </div>
 
@@ -260,7 +264,7 @@
                 {{ form.currency_symbol.label_tag }}
                 {{ form.currency_symbol }}
                 {% if form.currency_symbol.help_text %}<small>{{ form.currency_symbol.help_text }}</small>{% endif %}
-                {% for error in form.currency_symbol.errors %}<small class="errorlist">{{ error }}</small>{% endcolor %}
+                {% for error in form.currency_symbol.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
             </div>
         </div>
 

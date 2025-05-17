@@ -92,11 +92,6 @@ class MotorcycleDetailView(DetailView):
              # Add other hire rates if they exist
             if motorcycle.hourly_hire_rate is not None:
                  specifications.append({'field': 'hourly_hire_rate', 'label': 'Hourly Rate', 'icon': 'icon-money', 'value': f"${motorcycle.hourly_hire_rate:.2f}"})
-            if motorcycle.weekly_hire_rate is not None:
-                 specifications.append({'field': 'weekly_hire_rate', 'label': 'Weekly Rate', 'icon': 'icon-money', 'value': f"${motorcycle.weekly_hire_rate:.2f}"})
-            if motorcycle.monthly_hire_rate is not None:
-                 specifications.append({'field': 'monthly_hire_rate', 'label': 'Monthly Rate', 'icon': 'icon-money', 'value': f"${motorcycle.monthly_hire_rate:.2f}"})
-
         context['filtered_specifications'] = specifications
 
         return context

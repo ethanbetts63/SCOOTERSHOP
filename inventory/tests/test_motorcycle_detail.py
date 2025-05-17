@@ -59,8 +59,6 @@ class MotorcycleDetailViewTest(TestCase):
             rego='ABC123',
             stock_number='H002',
             daily_hire_rate=Decimal('75.00'),
-            weekly_hire_rate=Decimal('350.00'),
-            monthly_hire_rate=Decimal('1200.00'),
         )
         self.motorcycle.conditions.add(self.used_condition)
 

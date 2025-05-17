@@ -110,16 +110,12 @@ class MotorcycleModelTest(TestCase):
             rego_exp=datetime.date(2025, 12, 31),
             stock_number='K002',
             daily_hire_rate=Decimal('50.00'),
-            weekly_hire_rate=Decimal('250.00'),
-            monthly_hire_rate=Decimal('900.00'),
         )
         # Check optional fields
         self.assertEqual(motorcycle_with_optionals.rego, 'XYZ789')
         self.assertEqual(motorcycle_with_optionals.rego_exp, datetime.date(2025, 12, 31))
         self.assertEqual(motorcycle_with_optionals.stock_number, 'K002')
         self.assertEqual(motorcycle_with_optionals.daily_hire_rate, Decimal('50.00'))
-        self.assertEqual(motorcycle_with_optionals.weekly_hire_rate, Decimal('250.00'))
-        self.assertEqual(motorcycle_with_optionals.monthly_hire_rate, Decimal('900.00'))
         self.assertFalse(motorcycle_with_optionals.is_available) # Verify boolean field
 
     def test_motorcycle_str_representation(self):
@@ -209,7 +205,6 @@ class MotorcycleModelTest(TestCase):
             self.motorcycle.full_clean() # Should raise ValidationError
 
     # Add more tests here as needed for:
-    # - price, daily_hire_rate, weekly_hire_rate, monthly_hire_rate fields (DecimalField properties)
     # - year, odometer, seats (IntegerField properties, min/max might be enforced by forms)
     # - vin_number, engine_number, rego, stock_number uniqueness/constraints if any beyond null/blank
     # - owner relationship (SET_NULL behavior on user deletion - requires deleting a user)
