@@ -1,17 +1,32 @@
 # inventory/views/__init__.py
 
-# Imports for motorcycle list views 
-from .motorcycle_list import (
-    NewMotorcycleListView,
-    UsedMotorcycleListView,
-    HireMotorcycleListView,
-    AllMotorcycleListView
-)
+# Imports for motorcycle detail views
+from .motorcycle_detail_view import MotorcycleDetailView
 
-# Imports for motorcycle detail and management views (formerly in motorcycle_detail.py)
-from .motorcycle_detail import (
-    MotorcycleDetailView,
-    MotorcycleCreateView,
-    MotorcycleUpdateView,
-    MotorcycleDeleteView,
-)
+# Imports for motorcycle management views (Create, Update, Delete)
+from .motorcycle_create_view import MotorcycleCreateView
+from .motorcycle_update_view import MotorcycleUpdateView
+from .motorcycle_delete_view import MotorcycleDeleteView
+
+# Import the form handler mixin if it's used directly elsewhere or just for clarity
+# from .motorcycle_form_handler_mixin import MotorcycleFormHandlerMixin # Usually not imported here unless needed directly
+
+# Imports for motorcycle list views
+from .motorcycle_list_view import MotorcycleListView
+from .all_motorcycle_list_view import AllMotorcycleListView
+from .new_motorcycle_list_view import NewMotorcycleListView
+from .used_motorcycle_list_view import UsedMotorcycleListView
+from .hire_motorcycle_list_view import HireMotorcycleListView
+
+# You might want to list the classes that are intended to be publicly available
+__all__ = [
+    'MotorcycleDetailView',
+    'MotorcycleCreateView',
+    'MotorcycleUpdateView',
+    'MotorcycleDeleteView',
+    'MotorcycleListView',
+    'AllMotorcycleListView',
+    'NewMotorcycleListView',
+    'UsedMotorcycleListView',
+    'HireMotorcycleListView',
+]
