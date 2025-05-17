@@ -18,9 +18,16 @@
                         </div>
                         <div class="form-field">
                             <label for="pick_up_time">Pick Up Time</label>
-                             <input type="text" id="pick_up_time" name="pick_up_time"
-                                    class="form-control"
-                                   placeholder="Select pick up time">
+                             {# Replace input with select for pick up time #}
+                             <select id="pick_up_time" name="pick_up_time"
+                                     class="form-control"
+                                     {# Use data attributes to store time range from settings #}
+                                     {# Assuming 'hire_settings' object is available in the template context #}
+                                     data-start-time="{{ hire_settings.pick_up_start_time|time:'H:i' }}"
+                                     data-end-time="{{ hire_settings.pick_up_end_time|time:'H:i' }}">
+                                 <option value="">Select pick up time</option>
+                                 {# Time options will be populated by JavaScript #}
+                             </select>
                         </div>
                     </div>
 
@@ -33,9 +40,16 @@
                         </div>
                          <div class="form-field">
                             <label for="return_time">Return Time</label>
-                             <input type="text" id="return_time" name="return_time"
-                                    class="form-control"
-                                   placeholder="Select return time">
+                             {# Replace input with select for return time #}
+                             <select id="return_time" name="return_time"
+                                     class="form-control"
+                                     {# Use data attributes to store time range from settings #}
+                                     {# Assuming 'hire_settings' object is available in the template context #}
+                                     data-start-time="{{ hire_settings.return_off_start_time|time:'H:i' }}"
+                                     data-end-time="{{ hire_settings.return_end_time|time:'H:i' }}">
+                                 <option value="">Select return time</option>
+                                 {# Time options will be populated by JavaScript #}
+                             </select>
                         </div>
                     </div>
 
@@ -57,39 +71,189 @@
     </div>
 </div>
 
+{# Keep Flatpickr CSS for date fields #}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 
+{# Keep Flatpickr JS for date fields #}
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    flatpickr("#pick_up_date", {
-        dateFormat: "Y-m-d",
-        minDate: "today",
-        altInput: true,
-        altFormat: "F j, Y",
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Flatpickr for date fields
+        const pickUpDatePicker = flatpickr("#pick_up_date", {
+            dateFormat: "Y-m-d",
+            minDate: "today",
+            altInput: true,
+            altFormat: "F j, Y",
+            // Add onChange to immediately update return date minDate and return times
+            onChange: function(selectedDates, dateStr, instance) {
+                handleDateAndTimeUpdates();
+            }
+        });
+    
+        const returnDatePicker = flatpickr("#return_date", {
+            dateFormat: "Y-m-d",
+            minDate: "today", // Initial minDate, will be updated by pickUpDatePicker
+            altInput: true,
+            altFormat: "F j, Y",
+             // Add onChange to update return times if the date selection changes
+            onChange: function(selectedDates, dateStr, instance) {
+                handleDateAndTimeUpdates();
+            }
+        });
+    
+        // Get the time select elements
+        const pickUpTimeSelect = document.getElementById('pick_up_time');
+        const returnTimeSelect = document.getElementById('return_time');
+    
+        // Get the default start and end times from data attributes
+        const pickUpStartTimeAttr = pickUpTimeSelect ? pickUpTimeSelect.getAttribute('data-start-time') : null;
+        const pickUpEndTimeAttr = pickUpTimeSelect ? pickUpTimeSelect.getAttribute('data-end-time') : null;
+        const returnStartTimeAttr = returnTimeSelect ? returnTimeSelect.getAttribute('data-start-time') : null;
+        const returnEndTimeAttr = returnTimeSelect ? returnTimeSelect.getAttribute('data-end-time') : null;
+    
+    
+        // Function to generate and populate time options in a select dropdown
+        function populateTimeDropdown(selectElement, startTimeStr, endTimeStr, intervalMinutes) {
+            if (!selectElement || !startTimeStr || !endTimeStr) {
+                return; // Exit if missing required info
+            }
+    
+            // Clear existing options except the first one (the placeholder)
+            while (selectElement.options.length > 1) {
+                selectElement.remove(1);
+            }
+    
+            const [startHour, startMinute] = startTimeStr.split(':').map(Number);
+            const [endHour, endMinute] = endTimeStr.split(':').map(Number);
+    
+            // Use Date objects for time arithmetic. The specific date doesn't matter, only the time.
+            let currentTime = new Date();
+            currentTime.setHours(startHour, startMinute, 0, 0);
+    
+            const endTime = new Date();
+            endTime.setHours(endHour, endMinute, 0, 0);
+    
+             // Handle time ranges that cross midnight (e.g., evening pickup, next morning return)
+             // Although for same-day return, this case might not be relevant for the return time range itself,
+             // it's good practice in the time population logic.
+            if (endTime < currentTime) {
+                endTime.setDate(endTime.getDate() + 1);
+            }
+    
+    
+            // Loop from start time to end time with specified interval
+            while (currentTime <= endTime) {
+                const option = document.createElement('option');
+                // Format time as HH:mm
+                const hours = currentTime.getHours().toString().padStart(2, '0');
+                const minutes = currentTime.getMinutes().toString().padStart(2, '0');
+                const timeValue = `${hours}:${minutes}`;
+                option.value = timeValue;
+                option.text = timeValue;
+                selectElement.appendChild(option);
+    
+                // Increment time by the interval minutes
+                currentTime.setMinutes(currentTime.getMinutes() + intervalMinutes);
+            }
+        }
+    
+        // Function to handle updates to date and time selections and refresh time options
+        function handleDateAndTimeUpdates() {
+            const pickUpDate = pickUpDatePicker.selectedDates[0];
+            const returnDate = returnDatePicker.selectedDates[0];
+            const pickUpTime = pickUpTimeSelect ? pickUpTimeSelect.value : null; // Get selected pick up time
+    
+            // Update return date minDate based on pickup date
+            if (pickUpDate) {
+                returnDatePicker.set('minDate', pickUpDate);
+                // Clear return date if it's before the new minDate
+                 if (returnDate && returnDate < pickUpDate) {
+                     returnDatePicker.clear();
+                 }
+            } else {
+                // If pickup date is cleared, reset return date minDate to today
+                returnDatePicker.set('minDate', 'today');
+            }
+    
+            // Determine the actual start time for the return time dropdown
+            let actualReturnStartTime = returnStartTimeAttr;
+    
+            // Check if both dates are selected and are the same day
+            if (pickUpDate && returnDate && pickUpDate.toDateString() === returnDate.toDateString()) {
+                // If dates are the same, the return time must be after the selected pick up time
+                // Use the selected pick up time as the start time, but ensure it's not earlier than the default return start
+                // and not later than the default return end.
+                if (pickUpTime) {
+                    // Parse selected pickup time to HH:mm
+                    const [puHour, puMinute] = pickUpTime.split(':').map(Number);
+                     // Create a Date object for comparison (date doesn't matter)
+                     const pickUpTimeDate = new Date();
+                     pickUpTimeDate.setHours(puHour, puMinute, 0, 0);
+    
+                     // Parse default return start time
+                     const [retStartHour, retStartMinute] = returnStartTimeAttr.split(':').map(Number);
+                     const defaultReturnStartDate = new Date();
+                     defaultReturnStartDate.setHours(retStartHour, retStartMinute, 0, 0);
+    
+                     // Parse default return end time
+                     const [retEndHour, retEndMinute] = returnEndTimeAttr.split(':').map(Number);
+                     const defaultReturnEndDate = new Date();
+                     defaultReturnEndDate.setHours(retEndHour, retEndMinute, 0, 0);
+    
+                     // If selected pickup time is later than default return start time, use selected pickup time
+                     if (pickUpTimeDate >= defaultReturnStartDate) {
+                          actualReturnStartTime = pickUpTime;
+                          // If selected pickup time is later than default return end time, cap it or handle as an invalid scenario
+                          if (pickUpTimeDate > defaultReturnEndDate && defaultReturnEndDate >= defaultReturnStartDate) {
+                               actualReturnStartTime = returnEndTimeAttr; // Cap at the end time
+                               // Optionally, you might want to add a validation message or clear the return time here
+                          } else if (pickUpTimeDate > defaultReturnEndDate && defaultReturnEndDate < defaultReturnStartDate) {
+                               // Handles cases where end time is next day, selected pickup time is after midnight start but before end
+                               actualReturnStartTime = pickUpTime;
+                          }
+    
+    
+                     } else {
+                         // If selected pickup time is earlier than default return start time, use default return start time
+                         actualReturnStartTime = returnStartTimeAttr;
+                     }
+    
+                } else {
+                    // If no pickup time is selected yet but dates are the same, use the default return start time
+                    actualReturnStartTime = returnStartTimeAttr;
+                }
+    
+            } else {
+                // If return date is after pick up date, use the default return start time
+                actualReturnStartTime = returnStartTimeAttr;
+            }
+    
+            // Repopulate the return time dropdown with the determined start time and the original end time
+            populateTimeDropdown(returnTimeSelect, actualReturnStartTime, returnEndTimeAttr, 15);
+    
+             // Optional: Attempt to keep the previously selected return time if it's still valid
+             // This requires storing the selected value before clearing and repopulating.
+             // For now, the selection will reset to the first available option.
+    
+        }
+    
+    
+        // Populate the pick-up time dropdown initially
+        if (pickUpTimeSelect && pickUpStartTimeAttr && pickUpEndTimeAttr) {
+            populateTimeDropdown(pickUpTimeSelect, pickUpStartTimeAttr, pickUpEndTimeAttr, 15);
+        }
+    
+        // Add event listener to the pick up time select to update return time options
+        if (pickUpTimeSelect) {
+            pickUpTimeSelect.addEventListener('change', handleDateAndTimeUpdates);
+        }
+    
+    
+        // Initial call to update return time options based on default selected dates and times
+        // This ensures the return time dropdown is correct on page load.
+        handleDateAndTimeUpdates();
+    
     });
-
-    flatpickr("#return_date", {
-        dateFormat: "Y-m-d",
-        minDate: "today",
-        altInput: true,
-        altFormat: "F j, Y",
-    });
-
-    flatpickr("#pick_up_time", {
-        enableTime: true,
-        noCalendar: true,
-        dateFormat: "H:i",
-        time_24hr: true,
-    });
-
-    flatpickr("#return_time", {
-        enableTime: true,
-        noCalendar: true,
-        dateFormat: "H:i",
-        time_24hr: true,
-    });
-});
-</script>
+    </script>
