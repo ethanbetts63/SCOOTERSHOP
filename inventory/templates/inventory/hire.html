@@ -82,75 +82,96 @@
                         <div class="card-header">Search Options</div>
                         <div class="card-body">
                             <form method="get" action="">
-                                {# Hire Date Range - Keep #}
+                                {# Hire Date Range - Updated Layout #}
                                 <div class="mb-3">
-                                    <label class="form-label">Hire Date Range</label>
-                                    <div class="d-flex gap-2">
+                                    <label class="form-label">Hire Dates</label> {# Main label for the section #}
+                                     <div class="d-flex gap-2"> {# Use d-flex to put inputs side-by-side #}
                                         <div class="flex-fill">
-                                            {# Use original_inputs for pre-filling #}
-                                            <input type="text" class="form-control" id="hire_start_date"
+                                            <label for="hire_start_date" class="form-label">Pick up date</label> {# Label above the input #}
+                                            <input type="text" class="form-control form-control-sm" id="hire_start_date"
                                                    name="hire_start_date" placeholder="Select pick up date"
-                                                   value="{{ original_inputs.pick_up_date|default:'' }}">
+                                                   value="{{ request.GET.hire_start_date|default:'' }}">
                                         </div>
+                                        {# Removed "to" text #}
                                         <div class="flex-fill">
-                                            {# Use original_inputs for pre-filling #}
-                                            <input type="text" class="form-control" id="hire_end_date"
+                                            <label for="hire_end_date" class="form-label">Return date</label> {# Label above the input #}
+                                            <input type="text" class="form-control form-control-sm" id="hire_end_date"
                                                    name="hire_end_date" placeholder="Select return date"
-                                                   value="{{ original_inputs.return_date|default:'' }}">
+                                                   value="{{ request.GET.hire_end_date|default:'' }}">
                                         </div>
                                     </div>
                                 </div>
-                                {# Price Range (Min/Max) - New #}
+
+                                {# Time Inputs - Side by Side with Separate Labels #}
+                                <div class="mb-3">
+                                     <div class="d-flex gap-2"> {# Use d-flex to put selects side-by-side #}
+                                        <div class="flex-fill">
+                                            <label for="pick_up_time" class="form-label">Pick up time</label> {# Label above the select #}
+                                             {# Assuming hire_settings is available via context processor #}
+                                             <select id="pick_up_time" name="pick_up_time"
+                                                     class="form-select form-select-sm"
+                                                     data-start-time="{{ hire_settings.pick_up_start_time|time:'H:i' }}"
+                                                     data-end-time="{{ hire_settings.pick_up_end_time|time:'H:i' }}">
+                                                 <option value="">Select pick up time</option>
+                                                 {# Options populated by JS #}
+                                             </select>
+                                        </div>
+                                         <div class="flex-fill">
+                                             <label for="return_time" class="form-label">Return time</label> {# Label above the select #}
+                                              {# Assuming hire_settings is available via context processor #}
+                                              <select id="return_time" name="return_time"
+                                                      class="form-select form-select-sm"
+                                                      data-start-time="{{ hire_settings.return_off_start_time|time:'H:i' }}"
+                                                      data-end-time="{{ hire_settings.return_end_time|time:'H:i' }}">
+                                                  <option value="">Select return time</option>
+                                                  {# Options populated by JS #}
+                                              </select>
+                                         </div>
+                                    </div>
+                                </div>
+
+
+                                {# Price Range (Min/Max) - Keep #}
                                 <div class="mb-3">
                                     <label for="price_min" class="form-label">Price Range</label>
-                                    <div class="d-flex">
-                                        <input type="number" class="form-control me-2" id="price_min" name="price_min"
+                                    <div class="d-flex gap-2">
+                                        <input type="number" class="form-control form-control-sm" id="price_min" name="price_min"
                                                placeholder="Min" value="{{ request.GET.price_min|default:'' }}">
-                                        <input type="number" class="form-control" id="price_max" name="price_max"
+                                        <input type="number" class="form-control form-control-sm" id="price_max" name="price_max"
                                                placeholder="Max" value="{{ request.GET.price_max|default:'' }}">
                                     </div>
                                 </div>
 
-                                {# Seats - New #}
+                                {# Seats - Keep #}
                                 <div class="mb-3">
                                     <label for="seats" class="form-label">Seats</label>
-                                    <input type="number" class="form-control" id="seats" name="seats" min="0"
+                                    <input type="number" class="form-control form-control-sm" id="seats" name="seats" min="0"
                                            placeholder="Number of seats" value="{{ request.GET.seats|default:'' }}">
                                 </div>
 
-                                {# Engine Size - New #}
+                                {# Engine Size - Keep #}
                                 <div class="mb-3">
                                     <label for="engine_size" class="form-label">Engine Size (cc)</label>
                                     {# Adjust pre-fill logic based on license status if no specific engine_size is in GET #}
-                                    <input type="number" class="form-control" id="engine_size" name="engine_size" min="0"
+                                    <input type="number" class="form-control form-control-sm" id="engine_size" name="engine_size" min="0"
                                            placeholder="Engine size"
-                                           value="{{ request.GET.engine_size|default:'' }}{% if not request.GET.engine_size and not original_inputs.has_motorcycle_license %}50{% endif %}">
+                                           value="{{ request.GET.engine_size|default:'' }}{% if not request.GET.engine_size and request.GET.has_motorcycle_license == 'false' %}50{% endif %}"> {# Updated default logic slightly #}
                                 </div>
 
-                                {# Include hidden inputs for existing GET parameters except those we are removing or 'page' #}
-                                {# Ensure new parameters are carried if already in GET (from a previous submission) #}
+
+                                {# Include hidden inputs for existing GET parameters except those handled explicitly above #}
                                 {% for key, value in request.GET.items %}
-                                    {% if key != 'order' and key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' and key != 'pick_up_date' and key != 'pick_up_time' and key != 'return_date' and key != 'return_time' and key != 'has_motorcycle_license' and key != 'engine_size' %}
+                                    {% if key != 'order' and key != 'page' and key != 'price_min' and key != 'price_max' and key != 'seats' and key != 'engine_size' and key != 'has_motorcycle_license' and key != 'hire_start_date' and key != 'hire_end_date' and key != 'pick_up_time' and key != 'return_time' %}
                                         <input type="hidden" name="{{ key }}" value="{{ value }}">
                                     {% endif %}
                                 {% endfor %}
-                                {# Explicitly include parameters handled by original_inputs to ensure they persist if changed on this form #}
-                                {% if request.GET.pick_up_date %}<input type="hidden" name="pick_up_date" value="{{ request.GET.pick_up_date }}">{% endif %}
-                                {% if request.GET.pick_up_time %}<input type="hidden" name="pick_up_time" value="{{ request.GET.pick_up_time }}">{% endif %}
-                                {% if request.GET.return_date %}<input type="hidden" name="return_date" value="{{ request.GET.return_date }}">{% endif %}
-                                {% if request.GET.return_time %}<input type="hidden" name="return_time" value="{{ request.GET.return_time }}">{% endif %}
-                                {% if request.GET.has_motorcycle_license %}<input type="hidden" name="has_motorcycle_license" value="{{ request.GET.has_motorcycle_license }}">{% endif %}
-                                {% if request.GET.price_min %}<input type="hidden" name="price_min" value="{{ request.GET.price_min }}">{% endif %}
-                                {% if request.GET.price_max %}<input type="hidden" name="price_max" value="{{ request.GET.price_max }}">{% endif %}
-                                {% if request.GET.seats %}<input type="hidden" name="seats" value="{{ request.GET.seats }}">{% endif %}
-                                {% comment %} Add engine_size back if it was in the GET request but not from the default license logic {% endcomment %}
-                                {% if request.GET.engine_size %}<input type="hidden" name="engine_size" value="{{ request.GET.engine_size }}">{% endif %}
+                                {# Ensure the 'order' parameter is always carried over for sorting #}
                                 {% if request.GET.order %}<input type="hidden" name="order" value="{{ request.GET.order }}">{% endif %}
 
 
-                                <button type="submit" class="btn btn-primary">Apply Filters</button>
+                                <button type="submit" class="btn btn-primary btn-sm">Apply Filters</button>
                                 {# Updated reset filter URL to use current_url_name #}
-                                <a href="{% url 'inventory:'|add:current_url_name %}" class="btn btn-secondary mt-2">Reset Filters</a>
+                                <a href="{% url 'inventory:'|add:current_url_name %}" class="btn btn-secondary btn-sm mt-2">Reset Filters</a>
                             </form>
                         </div>
                     </div>
@@ -240,11 +261,11 @@
                     {% if page_obj.has_previous %}
                     <li class="page-item">
                         {# Ensure existing GET parameters are carried over #}
-                        <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' and key != 'pick_up_date' and key != 'pick_up_time' and key != 'return_date' and key != 'return_time' and key != 'has_motorcycle_license' and key != 'engine_size' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; First</a>
+                        <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; First</a>
                     </li>
                     <li class="page-item">
                          {# Ensure existing GET parameters are carried over #}
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' and key != 'pick_up_date' and key != 'pick_up_time' and key != 'return_date' and key != 'return_time' and key != 'has_motorcycle_license' and key != 'engine_size' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
                     </li>
                     {% endif %}
 
@@ -256,7 +277,7 @@
                     {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                     <li class="page-item">
                          {# Ensure existing GET parameters are carried over #}
-                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' and key != 'pick_up_date' and key != 'pick_up_time' and key != 'return_date' and key != 'return_time' and key != 'has_motorcycle_license' and key != 'engine_size' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
                     </li>
                     {% endif %}
                     {% endfor %}
@@ -264,11 +285,11 @@
                     {% if page_obj.has_next %}
                     <li class="page-item">
                          {# Ensure existing GET parameters are carried over #}
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' and key != 'pick_up_date' and key != 'pick_up_time' and key != 'return_date' and key != 'return_time' and key != 'has_motorcycle_license' and key != 'engine_size' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
                     </li>
                     <li class="page-item">
                          {# Ensure existing GET parameters are carried over #}
-                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' and key != 'pick_up_date' and key != 'pick_up_time' and key != 'return_date' and key != 'return_time' and key != 'has_motorcycle_license' and key != 'engine_size' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last &raquo;</a>
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last &raquo;</a>
                     </li>
                     {% endif %}
                 </ul>
@@ -284,32 +305,215 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Parse blocked dates from JSON
+    // Parse blocked dates from JSON (keep this)
     const blockedDateRanges = JSON.parse('{{ blocked_hire_date_ranges_json|escapejs }}');
 
-    flatpickr("#hire_start_date", {
+    // Initialize Flatpickr for date fields on hire.html
+    const hireStartDatePicker = flatpickr("#hire_start_date", {
         dateFormat: "Y-m-d",
         minDate: "today",
         altInput: true,
         altFormat: "F j, Y",
-        // Disable blocked dates
+        // Disable blocked dates (keep this)
         disable: blockedDateRanges.map(range => ({
             from: range.from,
             to: range.to
-        }))
+        })),
+         // Add onChange to immediately update return date minDate and return times
+        onChange: function(selectedDates, dateStr, instance) {
+            handleHireDateAndTimeUpdates();
+        }
     });
 
-    flatpickr("#hire_end_date", {
+    const hireEndDatePicker = flatpickr("#hire_end_date", {
         dateFormat: "Y-m-d",
-        minDate: "today",
+        minDate: "today", // Initial minDate, will be updated by hireStartDatePicker
         altInput: true,
         altFormat: "F j, Y",
-         // Disable blocked dates
+         // Disable blocked dates (keep this)
         disable: blockedDateRanges.map(range => ({
             from: range.from,
             to: range.to
-        }))
+        })),
+         // Add onChange to update return times if the date selection changes
+        onChange: function(selectedDates, dateStr, instance) {
+             handleHireDateAndTimeUpdates();
+        }
     });
+
+    // Get the time select elements (New for hire.html)
+    const pickUpTimeSelect = document.getElementById('pick_up_time');
+    const returnTimeSelect = document.getElementById('return_time');
+
+    // Get the default start and end times from data attributes (New for hire.html)
+    // These come from the hire_settings context variable.
+    const pickUpStartTimeAttr = pickUpTimeSelect ? pickUpTimeSelect.getAttribute('data-start-time') : null;
+    const pickUpEndTimeAttr = pickUpTimeSelect ? pickUpTimeSelect.getAttribute('data-end-time') : null;
+    const returnStartTimeAttr = returnTimeSelect ? returnTimeSelect.getAttribute('data-start-time') : null;
+    const returnEndTimeAttr = returnTimeSelect ? returnTimeSelect.getAttribute('data-end-time') : null;
+
+
+    // Function to generate and populate time options in a select dropdown (Copy-paste)
+    function populateTimeDropdown(selectElement, startTimeStr, endTimeStr, intervalMinutes) {
+        if (!selectElement || !startTimeStr || !endTimeStr) {
+            console.error("populateTimeDropdown missing arguments:", {selectElement, startTimeStr, endTimeStr});
+            return; // Exit if missing required info
+        }
+
+        // Store the currently selected value to attempt to re-select it later
+        const currentValue = selectElement.value;
+
+        // Clear existing options except the first one (the placeholder)
+        while (selectElement.options.length > 1) {
+            selectElement.remove(1);
+        }
+
+        const [startHour, startMinute] = startTimeStr.split(':').map(Number);
+        const [endHour, endMinute] = endTimeStr.split(':').map(Number);
+
+        let currentTime = new Date();
+        currentTime.setHours(startHour, startMinute, 0, 0);
+
+        const endTime = new Date();
+        endTime.setHours(endHour, endMinute, 0, 0);
+
+        if (endTime < currentTime) {
+            endTime.setDate(endTime.getDate() + 1);
+        }
+
+
+        while (currentTime <= endTime) {
+            const option = document.createElement('option');
+            // Format time as HH:mm
+            const hours = currentTime.getHours().toString().padStart(2, '0');
+            const minutes = currentTime.getMinutes().toString().padStart(2, '0');
+            const timeValue = `${hours}:${minutes}`;
+            option.value = timeValue;
+            option.text = timeValue;
+            selectElement.appendChild(option);
+
+            // Increment time by the interval minutes
+            currentTime.setMinutes(currentTime.getMinutes() + intervalMinutes);
+        }
+
+        // Attempt to re-select the previous value if it's still in the options
+        if (currentValue) {
+            const optionToSelect = selectElement.querySelector(`option[value="${currentValue}"]`);
+            if (optionToSelect) {
+                selectElement.value = currentValue;
+            } else {
+                 // If the previous value is no longer valid, select the first option (the placeholder)
+                selectElement.value = "";
+            }
+        } else {
+            // If there was no previous value, ensure the placeholder is selected
+             selectElement.value = "";
+        }
+    }
+
+    // Function to handle updates to date and time selections and refresh time options (Adapted for hire.html)
+    function handleHireDateAndTimeUpdates() {
+        const pickUpDate = hireStartDatePicker.selectedDates[0]; // Use hireStartDatePicker
+        const returnDate = hireEndDatePicker.selectedDates[0];   // Use hireEndDatePicker
+        const pickUpTime = pickUpTimeSelect ? pickUpTimeSelect.value : null;
+
+        // Update return date minDate based on pickup date
+        if (pickUpDate) {
+            hireEndDatePicker.set('minDate', pickUpDate); // Use hireEndDatePicker
+             // If the return date is set and becomes invalid, clear it
+             if (returnDate && returnDate < pickUpDate) {
+                 hireEndDatePicker.clear(); // Use hireEndDatePicker
+             }
+        } else {
+            // If pickup date is cleared, reset return date minDate to today
+            hireEndDatePicker.set('minDate', 'today'); // Use hireEndDatePicker
+             // If pickup date is cleared, it might be best to clear return date too
+             hireEndDatePicker.clear();
+        }
+
+        // Determine the actual start time for the return time dropdown
+        let actualReturnStartTime = returnStartTimeAttr;
+
+        // Check if both dates are selected and are the same day
+        if (pickUpDate && returnDate && pickUpDate.toDateString() === returnDate.toDateString()) {
+            // If dates are the same, the return time must be after the selected pick up time
+            // Use the selected pick up time as the start time, but ensure it's not earlier than the default return start
+            // and not later than the default return end.
+            if (pickUpTime) {
+                // Parse selected pickup time to HH:mm
+                const [puHour, puMinute] = pickUpTime.split(':').map(Number);
+                 // Create a Date object for comparison (date doesn't matter)
+                 const pickUpTimeDate = new Date();
+                 pickUpTimeDate.setHours(puHour, puMinute, 0, 0);
+
+                 // Parse default return start time
+                 const [retStartHour, retStartMinute] = returnStartTimeAttr.split(':').map(Number);
+                 const defaultReturnStartDate = new Date();
+                 defaultReturnStartDate.setHours(retStartHour, retStartMinute, 0, 0);
+
+                 // Parse default return end time
+                 const [retEndHour, retEndMinute] = returnEndTimeAttr.split(':').map(Number);
+                 const defaultReturnEndDate = new Date();
+                 defaultReturnEndDate.setHours(retEndHour, retEndMinute, 0, 0);
+
+                 // Compare selected pickup time with default return times
+                 if (pickUpTimeDate >= defaultReturnStartDate) {
+                      actualReturnStartTime = pickUpTime;
+                       // If selected pickup time is later than default return end time
+                       if (pickUpTimeDate > defaultReturnEndDate && defaultReturnEndDate >= defaultReturnStartDate) {
+                            actualReturnStartTime = returnEndTimeAttr; // Cap at the end time
+                       } else if (pickUpTimeDate > defaultReturnEndDate && defaultReturnEndDate < defaultReturnStartDate) {
+                            // Handles cases where end time is next day, selected pickup time is after midnight start but before end
+                            actualReturnStartTime = pickUpTime;
+                       }
+
+                 } else {
+                     // If selected pickup time is earlier than default return start time, use default return start time
+                     actualReturnStartTime = returnStartTimeAttr;
+                 }
+
+            } else {
+                // If no pickup time is selected yet but dates are the same, use the default return start time
+                actualReturnStartTime = returnStartTimeAttr;
+            }
+
+        } else {
+            // If return date is after pick up date, use the default return start time
+            actualReturnStartTime = returnStartTimeAttr;
+        }
+
+        // Repopulate the return time dropdown with the determined start time and the original end time
+        populateTimeDropdown(returnTimeSelect, actualReturnStartTime, returnEndTimeAttr, 15);
+
+    }
+
+
+    // Populate the pick-up time dropdown initially
+    if (pickUpTimeSelect && pickUpStartTimeAttr && pickUpEndTimeAttr) {
+        populateTimeDropdown(pickUpTimeSelect, pickUpStartTimeAttr, pickUpEndTimeAttr, 15);
+         // Attempt to pre-select value from GET parameters if it exists
+         const initialPickUpTime = "{{ request.GET.pick_up_time|default:'' }}";
+         if (initialPickUpTime) { // Only try to set if initial value is not empty
+              pickUpTimeSelect.value = initialPickUpTime;
+         }
+    }
+
+     // Add event listener to the pick up time select to update return time options
+    if (pickUpTimeSelect) {
+        pickUpTimeSelect.addEventListener('change', handleHireDateAndTimeUpdates);
+    }
+
+
+    // Initial call to update return time options based on default selected dates and times
+    // This ensures the return time dropdown is correct on page load and pre-selects from GET if possible.
+    handleHireDateAndTimeUpdates();
+     // Attempt to pre-select return time value from GET parameters after initial population
+     const initialReturnTime = "{{ request.GET.return_time|default:'' }}";
+     if (initialReturnTime && returnTimeSelect) { // Only try to set if initial value is not empty and returnTimeSelect exists
+         returnTimeSelect.value = initialReturnTime;
+     }
+
+
 });
 </script>
 {% endblock %}

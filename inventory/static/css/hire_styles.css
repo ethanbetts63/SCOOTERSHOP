@@ -1,114 +1,207 @@
-/* =================== SECTION: Hire Page Styles =================== */
-/* Hire page specific styles */
 
-/* Styles for the main hire section container */
-.hire-section {
-    max-width: 1200px;
-    margin: 0 auto;
+
+/* =================== SECTION: Hire Specific Styles =================== */
+
+/* Override styles for the search options section based on motorcycle_list_styles.css (shapes/sizing) and form_styles.css (coloring/buttons) */
+
+.motorcycle-item.search-options {
+    /* Borrowing width and padding from motorcycle_list_styles.css */
+    width: 33.33%;
+    padding: 0 10px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
 }
 
-/* Styles for headings within the hire section */
-.hire-section h1 {
-    text-align: center;
-    margin-bottom: 30px;
-    color: var(--text-light);
+.motorcycle-item.search-options .card {
+    /* Borrowing shapes, sizing, and shadows from motorcycle_list_styles.css */
+    border: none; /* From motorcycle_list_styles.css */
+    border-radius: var(--radius-md); /* From motorcycle_list_styles.css */
+    box-shadow: var(--shadow-md); /* From motorcycle_list_styles.css */
+    height: 100%; /* From motorcycle_list_styles.css */
+    overflow: hidden; /* From motorcycle_list_styles.css card styles */
+
+    /* Borrowing background color from form_styles.css card styles */
+    background-color: var(--bg-darker); /* From motorcycle_list_styles.css search-options card */
 }
 
-/* Styles for the container holding hire tiles */
-.hire-tiles-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
+/* Explicitly remove hover effects for search options card as in motorcycle_list_styles.css */
+.search-options .card:hover {
+    transform: none !important;
+    box-shadow: var(--shadow-md) !important;
 }
 
-/* Styles for individual hire tiles */
-.hire-tile {
-    padding: 25px;
-    margin-top: 30px;
-    flex: 1 1 45%;
-    min-width: 280px;
+.motorcycle-item.search-options .card-header {
+    /* Borrowing styling from motorcycle_list_styles.css search-options card-header */
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 16px 20px;
+
+    /* Borrowing coloring from form_styles.css card-header */
+    background-color: var(--bg-darkest); /* From form_styles.css card-header */
+    color: var(--text-primary); /* From form_styles.css card-header */
+    border-bottom: 1px solid var(--border-color); /* From form_styles.css card-header */
 }
 
-/* Styles for headings within hire tiles */
-.hire-tile h3 {
-    color: var(--color-primary);
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 1.5rem;
-    border-bottom: 1px solid var(--border-light);
-    padding-bottom: 10px;
+.motorcycle-item.search-options .card-body {
+     /* Borrowing padding from form_styles.css card-body */
+    padding: 24px; /* From form_styles.css card-body */
 }
 
-/* Styles for paragraphs within hire tiles */
-.hire-tile p {
-    color: var(--text-primary);
-    line-height: 1.6;
+
+/* Styles for form labels within search options */
+.motorcycle-item.search-options .form-label {
+    /* Borrowing styling from motorcycle_list_styles.css form-label */
+    font-size: 0.9rem;
+    letter-spacing: 0.3px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    display: block;
+
+     /* Borrowing coloring from form_styles.css form-label */
+    color: var(--text-secondary); /* From form_styles.css form-label */
 }
 
-/* Styles for the hire requirements section */
-.hire-requirements {
-    margin-top: 20px;
-}
-
-/* Styles for headings within hire requirements */
-.hire-requirements h4 {
-    color: var(--text-light);
-    margin-bottom: 12px;
-}
-
-/* Styles for unordered lists within hire requirements */
-.hire-requirements ul li {
-    padding: 8px 0;
-    border-bottom: 1px dotted var(--border-light);
-    display: flex;
-    align-items: center;
-}
-
-/* Styles for the last list item within hire requirements */
-.hire-requirements ul li:last-child {
-    border-bottom: none;
-}
-
-/* Styles for the bullet point pseudo-element in hire requirements list items */
-.hire-requirements ul li:before {
-    content: "•";
-    color: var(--color-primary);
-    font-weight: bold;
-    display: inline-block;
-    width: 1em;
-    margin-right: 10px;
-}
-
-/* Styles for the contact hire section */
-.contact-hire {
-    margin-top: 15px;
-}
-
-/* Styles for contact items within the hire section */
-.contact-hire .contact-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-/* Styles for SVG icons within contact hire items */
-.contact-hire .svg-icon {
-    margin-right: 10px;
-}
-
-/* Styles for the hire note section */
-.hire-note {
-    background-color: var(--bg-highlight);
-    padding: 15px;
+/* Styles for form select and control elements within search options */
+.motorcycle-item.search-options .form-select,
+.motorcycle-item.search-options .form-control {
+    /* Borrowing sizing and basic styling from motorcycle_list_styles.css form-select/control */
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
-    margin-top: 20px;
-    border-left: 3px solid var(--color-primary);
+    padding: 10px 12px;
+    transition: all var(--transition-medium);
+    margin-bottom: 0.5rem; /* From motorcycle_list_styles.css form-select/control */
+
+     /* Borrowing coloring from form_styles.css form-control/select */
+    background-color: var(--bg-dark); /* From form_styles.css form-control/select */
+    color: var(--text-primary); /* From form_styles.css form-control/select */
 }
 
-/* =================== SECTION: Responsive Adjustments =================== */
-/* Adjusts hire tile width on smaller screens */
-@media (max-width: 768px) {
-    .hire-tile {
-        flex: 1 1 100%;
+/* Hover styles for form select and control elements within search options */
+.motorcycle-item.search-options .form-select:hover,
+.motorcycle-item.search-options .form-control:hover {
+    border-color: var(--border-light); /* From motorcycle_list_styles.css form-select/control hover */
+}
+
+/* Focus styles for form select and control elements within search options */
+.motorcycle-item.search-options .form-control:focus,
+.motorcycle-item.search-options .form-select:focus {
+    /* Borrowing focus styling from motorcycle_list_styles.css form-select/control focus */
+    border-color: var(--border-light);
+    box-shadow: 0 0 0 3px rgba(200, 200, 200, 0.2);
+
+     /* Borrowing background color from form_styles.css form-control/select focus */
+    background-color: var(--bg-highlight); /* From form_styles.css form-control/select focus */
+    color: var(--text-primary); /* From form_styles.css form-control/select focus */
+}
+
+/* Styles for form check labels within search options */
+.motorcycle-item.search-options .form-check-label {
+     /* Borrowing coloring from form_styles.css form-check-label */
+    color: var(--text-secondary); /* From form_styles.css form-check-label */
+}
+
+/* Styles for form check inputs (checkboxes/radios) within search options */
+.motorcycle-item.search-options .form-check-input {
+    /* Borrowing coloring from form_styles.css form-check-input */
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-light);
+}
+
+/* Styles for checked form check inputs within search options */
+.motorcycle-item.search-options .form-check-input:checked {
+     /* Borrowing coloring from form_styles.css form-check-input:checked */
+    background-color: #606060;
+    border-color: #606060;
+}
+
+
+/* Styles for buttons within search options */
+.motorcycle-item.search-options .btn {
+    /* Borrowing button coloring from form_styles.css */
+    background-color: var(--btn-bg);
+    border-color: var(--btn-bg);
+    color: #ffffff; /* Assuming white text on button */
+    transition: all var(--transition-medium);
+}
+
+/* Hover styles for buttons within search options */
+.motorcycle-item.search-options .btn:hover {
+    /* Borrowing button hover coloring from form_styles.css */
+    background-color: var(--btn-hover);
+    border-color: var(--btn-hover);
+}
+
+/* Primary button specific styles within search options */
+.motorcycle-item.search-options .btn-primary {
+     /* Borrowing primary button coloring from the theme variables */
+     background-color: var(--color-primary);
+     border-color: var(--color-primary);
+     color: var(--bg-darkest); /* Assuming dark text on primary button */
+}
+
+/* Primary button hover styles within search options */
+.motorcycle-item.search-options .btn-primary:hover {
+     /* Adjusting primary button hover for theme */
+     background-color: darken(var(--color-primary), 10%); /* Example darken, adjust as needed */
+     border-color: darken(var(--color-primary), 10%); /* Example darken, adjust as needed */
+}
+
+/* Secondary button specific styles within search options */
+.motorcycle-item.search-options .btn-secondary {
+     /* Borrowing secondary button coloring from the theme variables */
+     background-color: var(--btn-bg);
+     border-color: var(--btn-bg);
+     color: #ffffff; /* Assuming white text on secondary button */
+}
+
+/* Secondary button hover styles within search options */
+.motorcycle-item.search-options .btn-secondary:hover {
+     /* Adjusting secondary button hover for theme */
+     background-color: var(--btn-hover);
+     border-color: var(--btn-hover);
+}
+
+/* Styles to ensure date and time inputs are on the same row */
+.motorcycle-item.search-options .d-flex.gap-2 {
+    display: flex; /* Ensure it's a flex container */
+    gap: var(--spacing-sm); /* Add gap between flex items */
+}
+
+/* Ensure flex-fill children correctly fill space */
+.motorcycle-item.search-options .d-flex.gap-2 .flex-fill {
+    flex: 1 1 0%; /* Allows flex items to grow and shrink, basis 0 */
+}
+
+
+/* Ensure margin bottom for mb-3 is consistent with form_styles.css */
+.motorcycle-item.search-options .mb-3 {
+    margin-bottom: var(--spacing-lg) !important; /* From form_styles.css */
+}
+
+
+/* Responsive adjustments for search options item */
+@media (max-width: 992px) {
+    /* Adjusts motorcycle item width on medium screens */
+    .motorcycle-item.search-options {
+        width: 50%; /* From motorcycle_list_styles.css media query */
     }
+}
+
+@media (max-width: 576px) {
+    /* Adjusts motorcycle item width on small screens */
+    .motorcycle-item.search-options {
+        width: 100%; /* From motorcycle_list_styles.css media query */
+    }
+
+    /* Allows date/time inputs to stack on very small screens if needed, but flex by default */
+    .motorcycle-item.search-options .d-flex.gap-2 {
+        flex-direction: column; /* Stack on small screens */
+        gap: var(--spacing-sm); /* Maintain gap */
+    }
+
+    .motorcycle-item.search-options .d-flex.gap-2 .flex-fill {
+         flex: unset; /* Remove flex-fill on small screens when stacked */
+    }
+
 }
