@@ -71,7 +71,7 @@
 
 /* Hover styles for the book now button */
 .book-now-btn:hover {
-    background-color: #6ebb70; /* Slightly darker shade of the primary color */
+    background-color: #6ebb70;
     transform: translateY(-2px);
 }
 
@@ -81,12 +81,6 @@
     align-items: center;
     gap: 10px;
     margin-top: 5px;
-}
-
-/* Specific icon definition for info */
-.icon-info {
-    background-image: url('../images/svgs/info.svg');
-    flex-shrink: 0;
 }
 
 /* Styles for the service info link */
@@ -104,18 +98,19 @@
 }
 
 /* =================== SECTION: Responsive Styles =================== */
+/* Media query for screens up to 768px */
 @media (max-width: 768px) {
     /* Make the form stack on smaller screens */
     .booking-form {
         flex-direction: column;
     }
-    
+
     /* Adjust button width on smaller screens */
     .book-now-btn {
         width: 100%;
         padding: 12px;
     }
-    
+
     /* Adjust title size on smaller screens */
     .booking-title {
         font-size: 1.5rem;
@@ -123,40 +118,44 @@
 }
 
 /* =================== SECTION: Hire Booking Styles =================== */
-/* Styles for the date and time input fields */
+/* Styles for the hire booking form */
 .hire-booking-form {
-    /* Keep the column direction for the overall form sections */
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
 }
 
+/* Styles for the date and time rows group */
 .date-time-rows-group {
     display: flex;
     gap: var(--spacing-md);
-    align-items: flex-end; /* Align rows and button to the bottom */
-    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    align-items: flex-end;
+    flex-wrap: wrap;
 }
 
+/* Styles for a single date or time row */
 .date-time-row {
-    flex: 1; /* Allow rows to grow */
+    flex: 1;
     display: flex;
     gap: var(--spacing-md);
-    align-items: flex-end; /* Align items to the bottom within the row */
+    align-items: flex-end;
 }
 
+/* Styles for a form field within a date or time row */
 .date-time-row .form-field {
-    flex: 1; /* Allow form fields to grow within the row */
+    flex: 1;
     display: flex;
     flex-direction: column;
 }
 
+/* Styles for form field labels */
 .form-field label {
     color: var(--text-secondary);
     margin-bottom: 5px;
     font-size: 0.9rem;
 }
 
+/* Styles for form controls (inputs) */
 .form-control {
     font-size: 1rem;
     padding: 12px;
@@ -166,22 +165,25 @@
     border-radius: var(--border-radius);
 }
 
+/* Styles for form control placeholders */
 .form-control::placeholder {
     color: var(--text-secondary);
     opacity: 0.7;
 }
 
+/* Styles for the search button column */
 .search-button-column {
-    flex-shrink: 0; /* Prevent the button column from shrinking */
+    flex-shrink: 0;
     display: flex;
-    align-items: flex-end; /* Align the button to the bottom within its column */
+    align-items: flex-end;
 }
 
+/* Styles for the book now button within the hire booking form */
 .hire-booking-form .book-now-btn {
-     width: auto; /* Adjust button width */
-     padding: 10px 50px; /* Adjusted padding to make button shorter */
-     white-space: nowrap; /* Prevent text wrapping */
-     min-height: auto; /* Removed min-height */
+     width: auto;
+     padding: 10px 50px;
+     white-space: nowrap;
+     min-height: auto;
 }
 
 
@@ -192,95 +194,62 @@
     gap: 10px;
     margin-top: 10px;
     color: var(--text-secondary);
-    margin-left: 30px; /* Added margin to the left */
+    margin-left: 30px;
 }
 
+/* Styles for the license checkbox input */
 .license-checkbox-container input[type="checkbox"] {
-    /* Basic styling for checkbox, can be customized further */
     width: 16px;
     height: 16px;
-    accent-color: var(--color-primary); /* Colors the checkbox when checked */
+    accent-color: var(--color-primary);
 }
 
+/* Styles for the checkbox label */
 .checkbox-label {
     font-size: 0.9rem;
     cursor: pointer;
 }
 
-/* Styles for the info tooltip */
-.info-tooltip {
-    position: relative;
-    display: inline-block;
-    cursor: help;
-}
-
-.info-box {
-    visibility: hidden;
-    background-color: var(--bg-dark);
-    color: var(--text-light);
-    text-align: center;
-    border-radius: var(--border-radius);
-    padding: 10px;
-    position: absolute;
-    z-index: 1;
-    bottom: 125%; /* Position the tooltip above the icon */
-    left: 50%;
-    margin-left: -75px; /* Center the tooltip */
-    opacity: 0;
-    transition: opacity var(--transition-fast);
-    width: 150px; /* Adjust width as needed */
-    box-shadow: var(--shadow-md);
-}
-
-.info-box::after {
-    content: "";
-    position: absolute;
-    top: 100%; /* At the bottom of the tooltip */
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: var(--bg-dark) transparent transparent transparent;
-}
-
-.info-tooltip .info-box.visible {
-    visibility: visible;
-    opacity: 1;
-}
-
 
 /* Responsive adjustments for hire booking form */
 @media (max-width: 768px) {
+    /* Stack the entire date/time/button group on smaller screens */
     .date-time-rows-group {
-        flex-direction: column; /* Stack the entire date/time/button group on smaller screens */
-        align-items: stretch; /* Stretch items to fill width */
+        flex-direction: column;
+        align-items: stretch;
     }
 
+    /* Stack date and time within each row on smaller screens */
     .date-time-row {
-        flex-direction: column; /* Stack date and time within each row on smaller screens */
-        align-items: stretch; /* Stretch items to fill width */
+        flex-direction: column;
+        align-items: stretch;
     }
 
+    /* Remove flex grow on small screens */
     .date-time-row .form-field {
-        flex: none; /* Remove flex grow on small screens */
+        flex: none;
     }
 
+    /* Stretch button column */
      .search-button-column {
-        align-items: stretch; /* Stretch button column */
+        align-items: stretch;
     }
 
+    /* Make button full width on small screens */
     .hire-booking-form .book-now-btn {
-        width: 100%; /* Make button full width on small screens */
-        min-height: auto; /* Remove min-height on small screens */
-        align-self: auto; /* Remove specific alignment */
-        padding: 12px 30px; /* Revert to slightly larger padding on small screens for better touch target */
+        width: 100%;
+        min-height: auto;
+        align-self: auto;
+        padding: 12px 30px;
     }
 
+    /* Remove left margin on small screens */
     .license-checkbox-container {
-        margin-left: 0; /* Remove left margin on small screens */
+        margin-left: 0;
     }
 }
 
+/* Media query for screens up to 480px */
 @media (max-width: 480px) {
      /* No specific changes needed here, stacking is handled by the 768px breakpoint */
 }

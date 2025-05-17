@@ -49,13 +49,7 @@
 
                 <div class="license-checkbox-container">
                     <input type="checkbox" id="has_motorcycle_license" name="has_motorcycle_license" value="true">
-                    <label for="has_motorcycle_license" class="checkbox-label">I have a motorcycle license</label>
-                    <span class="info-tooltip">
-                        <span id="info_icon" class="svg-icon svg-icon-sm icon-info"></span>
-                        <div id="license_info_box" class="info-box">
-                            By Australian law, anyone with a car license can drive up to a 50cc scooter, but above that requires a motorcycle license.
-                        </div>
-                    </span>
+                    <label class="checkbox-label" title="Under australian law you are able to ride up to a 50cc without a motorcycle license provided you have a car license.">I have a motorcycle license</label>
                 </div>
 
             </form>
@@ -70,64 +64,32 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Flatpickr for date inputs
     flatpickr("#pick_up_date", {
-        dateFormat: "Y-m-d", // Date format-MM-DD
-        minDate: "today", // Prevent selecting past dates
-        altInput: true, // Use a user-friendly input format
-        altFormat: "F j, Y", // User-friendly date format
-        // Add any disabled dates or other configurations here if needed
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        altInput: true,
+        altFormat: "F j, Y",
     });
 
     flatpickr("#return_date", {
-        dateFormat: "Y-m-d", // Date format-MM-DD
-        minDate: "today", // Prevent selecting past dates
-        altInput: true, // Use a user-friendly input format
-        altFormat: "F j, Y", // User-friendly date format
-        // Add any disabled dates or other configurations here if needed
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        altInput: true,
+        altFormat: "F j, Y",
     });
 
-    // Initialize Flatpickr for time inputs
     flatpickr("#pick_up_time", {
-        enableTime: true, // Enable time picker
-        noCalendar: true, // Disable date picker
-        dateFormat: "H:i", // Time format HH:MM (24 hour)
-        time_24hr: true, // Use 24 hour format
-        // You might want to add minTime/maxTime based on business hours
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i",
+        time_24hr: true,
     });
 
     flatpickr("#return_time", {
-        enableTime: true, // Enable time picker
-        noCalendar: true, // Disable date picker
-        dateFormat: "H:i", // Time format HH:MM (24 hour)
-        time_24hr: true, // Use 24 hour format
-        // You might want to add minTime/maxTime based on business hours
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i",
+        time_24hr: true,
     });
-
-    // License Info Tooltip Logic
-    const infoIcon = document.getElementById('info_icon');
-    const licenseInfoBox = document.getElementById('license_info_box');
-
-    if (infoIcon && licenseInfoBox) {
-        // Show info box on hover
-        infoIcon.addEventListener('mouseenter', function() {
-            licenseInfoBox.classList.add('visible');
-        });
-
-        // Hide info box when mouse leaves icon or box
-        infoIcon.addEventListener('mouseleave', function() {
-             // Add a small delay before hiding in case the user moves to the box
-             setTimeout(() => {
-                if (!licenseInfoBox.matches(':hover')) {
-                     licenseInfoBox.classList.remove('visible');
-                }
-             }, 100); // Adjust delay as needed
-        });
-
-        // Keep box visible if mouse enters the box itself
-         licenseInfoBox.addEventListener('mouseleave', function() {
-             licenseInfoBox.classList.remove('visible');
-         });
-    }
 });
 </script>
