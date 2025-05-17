@@ -3,6 +3,9 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/motorcycle_list_styles.css' %}">
 <link rel="stylesheet" href="{% static 'css/hire_styles.css' %}">
+{# Flatpickr CSS #}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 {% endblock %}
 
 {% block content %}
@@ -84,12 +87,16 @@
                                     <label class="form-label">Hire Date Range</label>
                                     <div class="d-flex gap-2">
                                         <div class="flex-fill">
-                                            <input type="date" class="form-control" id="hire_start_date"
-                                                   name="hire_start_date" value="{{ request.GET.hire_start_date|default:'' }}">
+                                            {# Use original_inputs for pre-filling #}
+                                            <input type="text" class="form-control" id="hire_start_date"
+                                                   name="hire_start_date" placeholder="Select pick up date"
+                                                   value="{{ original_inputs.pick_up_date|default:'' }}">
                                         </div>
                                         <div class="flex-fill">
-                                            <input type="date" class="form-control" id="hire_end_date"
-                                                   name="hire_end_date" value="{{ request.GET.hire_end_date|default:'' }}">
+                                            {# Use original_inputs for pre-filling #}
+                                            <input type="text" class="form-control" id="hire_end_date"
+                                                   name="hire_end_date" placeholder="Select return date"
+                                                   value="{{ original_inputs.return_date|default:'' }}">
                                         </div>
                                     </div>
                                 </div>
@@ -114,26 +121,29 @@
                                 {# Engine Size - New #}
                                 <div class="mb-3">
                                     <label for="engine_size" class="form-label">Engine Size (cc)</label>
+                                    {# Adjust pre-fill logic based on license status if no specific engine_size is in GET #}
                                     <input type="number" class="form-control" id="engine_size" name="engine_size" min="0"
-                                           placeholder="Engine size" value="{{ request.GET.engine_size|default:'' }}">
+                                           placeholder="Engine size"
+                                           value="{{ request.GET.engine_size|default:'' }}{% if not request.GET.engine_size and not original_inputs.has_motorcycle_license %}50{% endif %}">
                                 </div>
 
-                                {# Remove Brand, Model, Year filters #}
-                                {# <div class="mb-3">... Brand filter ...</div> #}
-                                {# <div class="mb-3">... Model filter ...</div> #}
-                                {# <div class="mb-3">... Year filter ...</div> #}
-
-
                                 {# Include hidden inputs for existing GET parameters except those we are removing or 'page' #}
+                                {# Ensure new parameters are carried if already in GET (from a previous submission) #}
                                 {% for key, value in request.GET.items %}
-                                    {% if key != 'order' and key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' %}
+                                    {% if key != 'order' and key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' and key != 'pick_up_date' and key != 'pick_up_time' and key != 'return_date' and key != 'return_time' and key != 'has_motorcycle_license' and key != 'engine_size' %}
                                         <input type="hidden" name="{{ key }}" value="{{ value }}">
                                     {% endif %}
                                 {% endfor %}
-                                {# Ensure new parameters are carried if already in GET (from a previous submission) #}
+                                {# Explicitly include parameters handled by original_inputs to ensure they persist if changed on this form #}
+                                {% if request.GET.pick_up_date %}<input type="hidden" name="pick_up_date" value="{{ request.GET.pick_up_date }}">{% endif %}
+                                {% if request.GET.pick_up_time %}<input type="hidden" name="pick_up_time" value="{{ request.GET.pick_up_time }}">{% endif %}
+                                {% if request.GET.return_date %}<input type="hidden" name="return_date" value="{{ request.GET.return_date }}">{% endif %}
+                                {% if request.GET.return_time %}<input type="hidden" name="return_time" value="{{ request.GET.return_time }}">{% endif %}
+                                {% if request.GET.has_motorcycle_license %}<input type="hidden" name="has_motorcycle_license" value="{{ request.GET.has_motorcycle_license }}">{% endif %}
                                 {% if request.GET.price_min %}<input type="hidden" name="price_min" value="{{ request.GET.price_min }}">{% endif %}
                                 {% if request.GET.price_max %}<input type="hidden" name="price_max" value="{{ request.GET.price_max }}">{% endif %}
                                 {% if request.GET.seats %}<input type="hidden" name="seats" value="{{ request.GET.seats }}">{% endif %}
+                                {% comment %} Add engine_size back if it was in the GET request but not from the default license logic {% endcomment %}
                                 {% if request.GET.engine_size %}<input type="hidden" name="engine_size" value="{{ request.GET.engine_size }}">{% endif %}
                                 {% if request.GET.order %}<input type="hidden" name="order" value="{{ request.GET.order }}">{% endif %}
 
@@ -230,11 +240,11 @@
                     {% if page_obj.has_previous %}
                     <li class="page-item">
                         {# Ensure existing GET parameters are carried over #}
-                        <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; First</a>
+                        <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' and key != 'pick_up_date' and key != 'pick_up_time' and key != 'return_date' and key != 'return_time' and key != 'has_motorcycle_license' and key != 'engine_size' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; First</a>
                     </li>
                     <li class="page-item">
                          {# Ensure existing GET parameters are carried over #}
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' and key != 'pick_up_date' and key != 'pick_up_time' and key != 'return_date' and key != 'return_time' and key != 'has_motorcycle_license' and key != 'engine_size' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
                     </li>
                     {% endif %}
 
@@ -246,7 +256,7 @@
                     {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                     <li class="page-item">
                          {# Ensure existing GET parameters are carried over #}
-                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' and key != 'pick_up_date' and key != 'pick_up_time' and key != 'return_date' and key != 'return_time' and key != 'has_motorcycle_license' and key != 'engine_size' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
                     </li>
                     {% endif %}
                     {% endfor %}
@@ -254,11 +264,11 @@
                     {% if page_obj.has_next %}
                     <li class="page-item">
                          {# Ensure existing GET parameters are carried over #}
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' and key != 'pick_up_date' and key != 'pick_up_time' and key != 'return_date' and key != 'return_time' and key != 'has_motorcycle_license' and key != 'engine_size' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
                     </li>
                     <li class="page-item">
                          {# Ensure existing GET parameters are carried over #}
-                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last &raquo;</a>
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' and key != 'pick_up_date' and key != 'pick_up_time' and key != 'return_date' and key != 'return_time' and key != 'has_motorcycle_license' and key != 'engine_size' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last &raquo;</a>
                     </li>
                     {% endif %}
                 </ul>
@@ -267,4 +277,39 @@
         </div>
         {# Content from motorcycle_list_include.html ends here #}
     {% endwith %}
+{% endblock %}
+
+{% block extra_js %}
+{# Flatpickr JS #}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Parse blocked dates from JSON
+    const blockedDateRanges = JSON.parse('{{ blocked_hire_date_ranges_json|escapejs }}');
+
+    flatpickr("#hire_start_date", {
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        altInput: true,
+        altFormat: "F j, Y",
+        // Disable blocked dates
+        disable: blockedDateRanges.map(range => ({
+            from: range.from,
+            to: range.to
+        }))
+    });
+
+    flatpickr("#hire_end_date", {
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        altInput: true,
+        altFormat: "F j, Y",
+         // Disable blocked dates
+        disable: blockedDateRanges.map(range => ({
+            from: range.from,
+            to: range.to
+        }))
+    });
+});
+</script>
 {% endblock %}
