@@ -77,7 +77,7 @@ class MotorcycleDetailViewTest(TestCase):
         """Test that the detail view uses the correct template."""
         response = self.client.get(self.detail_url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'inventory/motorcycles/motorcycle_detail.html')
+        self.assertTemplateUsed(response, 'inventory/motorcycle_detail.html')
 
     def test_detail_view_uses_correct_object_in_context(self):
         """Test that the detail view passes the correct motorcycle object to the template."""

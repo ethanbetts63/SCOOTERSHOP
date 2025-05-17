@@ -1,14 +1,80 @@
-{% extends "dashboard/admin_layout.html" %}
+{% extends 'core/layout.html' %}
 {% load static %}
-
-{% block extra_css %}
-{{ block.super }}
-    <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
-{% endblock %}
-
-{% block admin_main_content %}
 {% load widget_tweaks %}
 
+{% block extra_css %}
+{# Remove the old form_styles.css link #}
+{# <link rel="stylesheet" href="{% static 'css/form_styles.css' %}"> #}
+{# Link to the new booking_styles.css #}
+<link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
+{# Add any specific styles needed for image previews if not covered by booking_styles.css #}
+<style>
+    .image-preview-container {
+        display: flex;
+        flex-wrap: wrap; /* Allow previews to wrap */
+        gap: 10px; /* Space between images */
+        margin-top: 15px;
+    }
+    .image-preview-item {
+        position: relative; /* Needed for delete button positioning */
+        width: 80px; /* Fixed size for preview thumbnails */
+        height: 80px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        background-color: var(--bg-dark);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .image-preview-item img {
+        display: block;
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+    }
+    .image-preview-item .delete-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent dark overlay */
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        opacity: 0; /* Hidden by default */
+        transition: opacity 0.2s ease-in-out;
+    }
+    .image-preview-item:hover .delete-overlay {
+        opacity: 1; /* Show on hover */
+    }
+    .image-preview-item .delete-overlay input[type="checkbox"] {
+        /* Hide the actual checkbox visually */
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 100%;
+        width: 100%;
+        margin: 0;
+    }
+     /* Style for the delete icon/text */
+    .delete-overlay span {
+        font-size: 0.9rem;
+        font-weight: bold;
+    }
+    /* Style for the label when the checkbox is checked */
+    .image-preview-item .delete-overlay input[type="checkbox"]:checked + span {
+        text-decoration: line-through;
+        color: #ff6b6b; /* Indicate it's marked for deletion */
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
 {# Use the main container class from booking_styles.css #}
 <div class="service-booking-container">
     {# Add a booking progress header similar to settings page, maybe simplified #}
@@ -29,6 +95,19 @@
     </div>
     {% endif %}
 
+    {# Display messages from the view (including formset errors) #}
+    {% if messages %}
+    <div class="messages-container">
+        <ul>
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+
+    {# Ensure enctype="multipart/form-data" is set for file uploads #}
     <form method="POST" enctype="multipart/form-data" id="motorcycleForm">
         {% csrf_token %}
 
@@ -38,7 +117,7 @@
             <p class="text-muted mb-2">Select the condition(s) that apply to this motorcycle:</p>
             {# Use form-field for the checkbox container #}
             <div class="form-field">
-                {{ form.conditions.errors }}
+                {{ form.conditions.errors }} {# Error messages styled by small tag #}
                 {# Apply some padding/border if needed, similar to .condition-checkboxes #}
                 <div class="condition-checkboxes" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 15px; background-color: var(--bg-dark);">
                     {# The individual checkboxes and labels are styled by booking_styles.css via .form-check and .form-check-label #}
@@ -65,7 +144,7 @@
                         {# Use form-field for each individual field #}
                         <div class="form-field">
                             <label for="{{ form.brand.id_for_label }}" class="form-label">Brand <span class="required-indicator">*</span></label> {# Brand remains required #}
-                            {{ form.brand.errors }} {# Error messages styled by small tag #}
+                            {{ form.brand.errors }}
                             {{ form.brand|add_class:"form-control" }} {# Use form-control if booking_styles.css provides generic input styles, otherwise rely on base select/input styles #}
                         </div>
                     </div>
@@ -139,6 +218,60 @@
                  {{ form.image.errors }}
                  {{ form.image|add_class:"form-control" }} {# File input might need specific styling if booking_styles.css doesn't cover it #}
             </div>
+
+            {# --- Secondary Images Section --- #}
+            <div class="form-field">
+                <h3 class="booking-section-title">Secondary Images</h3>
+
+                {# Display existing images with delete option #}
+                {% if images_formset.forms %}
+                    <p class="text-muted mb-2">Existing Images (Check to delete):</p>
+                    <div class="image-preview-container">
+                        {# Loop through the forms in the formset to show existing images #}
+                        {% for image_form in images_formset %}
+                            {# Only render if it's an existing image instance #}
+                            {% if image_form.instance.pk %}
+                                <div class="image-preview-item">
+                                    <img src="{{ image_form.instance.image.url }}" alt="Existing Image">
+                                    {# Overlay for delete checkbox #}
+                                    <label class="delete-overlay" for="{{ image_form.DELETE.id_for_label }}">
+                                        {{ image_form.DELETE }}
+                                        <span>Delete</span>
+                                    </label>
+                                </div>
+                                {# Include the image field and errors, but keep it hidden as we only use the delete checkbox here #}
+                                <div style="display:none;">
+                                     {{ image_form.image }}
+                                     {% for error in image_form.image.errors %}
+                                        <small class="error-message">{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {# Render the formset management form - required even if not rendering individual new forms #}
+                {{ images_formset.management_form }}
+
+                {# Add the separate file input for multiple uploads #}
+                <div class="form-field">
+                    <label for="additional_images" class="form-label">Upload New Additional Images</label>
+                    <input type="file" name="additional_images" id="additional_images" multiple class="form-control">
+                    <small class="form-text">Select multiple files to upload additional images at once.</small>
+                     {# Display errors for the additional_images input if any #}
+                     {# Note: Errors for this specific input are handled in the view's error messages #}
+                     {% comment %}
+                     You might need custom JS or a separate form field in the main form
+                     to display errors specifically for 'additional_images' if Django
+                     doesn't automatically attach them here. The current view logic
+                     adds them to messages.
+                     {% endcomment %}
+                </div>
+
+            </div>
+            {# ------------------------------------------ #}
+
 
             {# Checkbox is already handled by .form-check and .form-check-label #}
             <div class="form-check">
@@ -401,9 +534,13 @@
                  alert('A motorcycle cannot be listed as Used and Demo simultaneously.');
                  return;
             }
+            // Django form validation will handle the "required" check for Odometer.
+            // Client-side JS is a user convenience but not strictly necessary if model/form validation is in place.
+
         });
 
     });
+
 </script>
 {% endblock extra_js %}
 {% endblock %}
