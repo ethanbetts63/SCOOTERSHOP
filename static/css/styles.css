@@ -171,6 +171,12 @@
     background-image: url('../images/svgs/year.svg');
 }
 
+/* Specific icon definition for year */
+.icon-info {
+    background-image: url('../images/svgs/info.svg');
+}
+
+
 /* =================== SECTION: Base and Reset Styles =================== */
 html, body {
     height: 100%;
