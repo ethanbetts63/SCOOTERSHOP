@@ -1,11 +1,5 @@
 
-
-/* =================== SECTION: Hire Specific Styles =================== */
-
-/* Override styles for the search options section based on motorcycle_list_styles.css (shapes/sizing) and form_styles.css (coloring/buttons) */
-
 .motorcycle-item.search-options {
-    /* Borrowing width and padding from motorcycle_list_styles.css */
     width: 33.33%;
     padding: 0 10px;
     margin-bottom: 20px;
@@ -13,195 +7,160 @@
 }
 
 .motorcycle-item.search-options .card {
-    /* Borrowing shapes, sizing, and shadows from motorcycle_list_styles.css */
-    border: none; /* From motorcycle_list_styles.css */
-    border-radius: var(--radius-md); /* From motorcycle_list_styles.css */
-    box-shadow: var(--shadow-md); /* From motorcycle_list_styles.css */
-    height: 100%; /* From motorcycle_list_styles.css */
-    overflow: hidden; /* From motorcycle_list_styles.css card styles */
-
-    /* Borrowing background color from form_styles.css card styles */
-    background-color: var(--bg-darker); /* From motorcycle_list_styles.css search-options card */
+    border: none;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--bg-darker);
 }
 
-/* Explicitly remove hover effects for search options card as in motorcycle_list_styles.css */
 .search-options .card:hover {
     transform: none !important;
     box-shadow: var(--shadow-md) !important;
 }
 
 .motorcycle-item.search-options .card-header {
-    /* Borrowing styling from motorcycle_list_styles.css search-options card-header */
     font-size: 1.2rem;
     font-weight: 600;
     letter-spacing: 0.5px;
     padding: 16px 20px;
-
-    /* Borrowing coloring from form_styles.css card-header */
-    background-color: var(--bg-darkest); /* From form_styles.css card-header */
-    color: var(--text-primary); /* From form_styles.css card-header */
-    border-bottom: 1px solid var(--border-color); /* From form_styles.css card-header */
+    background-color: var(--bg-darkest);
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .motorcycle-item.search-options .card-body {
-     /* Borrowing padding from form_styles.css card-body */
-    padding: 24px; /* From form_styles.css card-body */
+    padding: 24px;
 }
 
-
-/* Styles for form labels within search options */
 .motorcycle-item.search-options .form-label {
-    /* Borrowing styling from motorcycle_list_styles.css form-label */
     font-size: 0.9rem;
     letter-spacing: 0.3px;
     font-weight: 500;
     margin-bottom: 6px;
     display: block;
-
-     /* Borrowing coloring from form_styles.css form-label */
-    color: var(--text-secondary); /* From form_styles.css form-label */
+    color: var(--text-secondary);
 }
 
-/* Styles for form select and control elements within search options */
 .motorcycle-item.search-options .form-select,
 .motorcycle-item.search-options .form-control {
-    /* Borrowing sizing and basic styling from motorcycle_list_styles.css form-select/control */
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     padding: 10px 12px;
     transition: all var(--transition-medium);
-    margin-bottom: 0.5rem; /* From motorcycle_list_styles.css form-select/control */
-
-     /* Borrowing coloring from form_styles.css form-control/select */
-    background-color: var(--bg-dark); /* From form_styles.css form-control/select */
-    color: var(--text-primary); /* From form_styles.css form-control/select */
+    margin-bottom: 0.5rem;
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
 }
 
-/* Hover styles for form select and control elements within search options */
 .motorcycle-item.search-options .form-select:hover,
 .motorcycle-item.search-options .form-control:hover {
-    border-color: var(--border-light); /* From motorcycle_list_styles.css form-select/control hover */
+    border-color: var(--border-light);
 }
 
-/* Focus styles for form select and control elements within search options */
 .motorcycle-item.search-options .form-control:focus,
 .motorcycle-item.search-options .form-select:focus {
-    /* Borrowing focus styling from motorcycle_list_styles.css form-select/control focus */
     border-color: var(--border-light);
     box-shadow: 0 0 0 3px rgba(200, 200, 200, 0.2);
-
-     /* Borrowing background color from form_styles.css form-control/select focus */
-    background-color: var(--bg-highlight); /* From form_styles.css form-control/select focus */
-    color: var(--text-primary); /* From form_styles.css form-control/select focus */
+    background-color: var(--bg-highlight);
+    color: var(--text-primary);
 }
 
-/* Styles for form check labels within search options */
 .motorcycle-item.search-options .form-check-label {
-     /* Borrowing coloring from form_styles.css form-check-label */
-    color: var(--text-secondary); /* From form_styles.css form-check-label */
+    color: var(--text-secondary);
 }
 
-/* Styles for form check inputs (checkboxes/radios) within search options */
 .motorcycle-item.search-options .form-check-input {
-    /* Borrowing coloring from form_styles.css form-check-input */
     background-color: var(--bg-dark);
     border: 1px solid var(--border-light);
 }
 
-/* Styles for checked form check inputs within search options */
 .motorcycle-item.search-options .form-check-input:checked {
-     /* Borrowing coloring from form_styles.css form-check-input:checked */
     background-color: #606060;
     border-color: #606060;
 }
 
-
-/* Styles for buttons within search options */
 .motorcycle-item.search-options .btn {
-    /* Borrowing button coloring from form_styles.css */
     background-color: var(--btn-bg);
     border-color: var(--btn-bg);
-    color: #ffffff; /* Assuming white text on button */
+    color: #ffffff;
     transition: all var(--transition-medium);
 }
 
-/* Hover styles for buttons within search options */
 .motorcycle-item.search-options .btn:hover {
-    /* Borrowing button hover coloring from form_styles.css */
     background-color: var(--btn-hover);
     border-color: var(--btn-hover);
 }
 
-/* Primary button specific styles within search options */
 .motorcycle-item.search-options .btn-primary {
-     /* Borrowing primary button coloring from the theme variables */
      background-color: var(--color-primary);
      border-color: var(--color-primary);
-     color: var(--bg-darkest); /* Assuming dark text on primary button */
+     color: var(--bg-darkest);
 }
 
-/* Primary button hover styles within search options */
+/* Adjusted primary button hover for a darker green */
 .motorcycle-item.search-options .btn-primary:hover {
-     /* Adjusting primary button hover for theme */
-     background-color: darken(var(--color-primary), 10%); /* Example darken, adjust as needed */
-     border-color: darken(var(--color-primary), 10%); /* Example darken, adjust as needed */
+     background-color: darken(var(--color-primary), 15%); /* Darken by 15% */
+     border-color: darken(var(--color-primary), 15%); /* Darken by 15% */
 }
 
-/* Secondary button specific styles within search options */
 .motorcycle-item.search-options .btn-secondary {
-     /* Borrowing secondary button coloring from the theme variables */
      background-color: var(--btn-bg);
      border-color: var(--btn-bg);
-     color: #ffffff; /* Assuming white text on secondary button */
+     color: #ffffff;
 }
 
-/* Secondary button hover styles within search options */
 .motorcycle-item.search-options .btn-secondary:hover {
-     /* Adjusting secondary button hover for theme */
      background-color: var(--btn-hover);
      border-color: var(--btn-hover);
 }
 
-/* Styles to ensure date and time inputs are on the same row */
 .motorcycle-item.search-options .d-flex.gap-2 {
-    display: flex; /* Ensure it's a flex container */
-    gap: var(--spacing-sm); /* Add gap between flex items */
+    display: flex;
+    gap: var(--spacing-sm);
 }
 
-/* Ensure flex-fill children correctly fill space */
 .motorcycle-item.search-options .d-flex.gap-2 .flex-fill {
-    flex: 1 1 0%; /* Allows flex items to grow and shrink, basis 0 */
+    flex: 1 1 0%;
 }
 
-
-/* Ensure margin bottom for mb-3 is consistent with form_styles.css */
 .motorcycle-item.search-options .mb-3 {
-    margin-bottom: var(--spacing-lg) !important; /* From form_styles.css */
+    margin-bottom: var(--spacing-lg) !important;
+}
+
+/* Styles to put Seats and Engine Size on the same row */
+.motorcycle-item.search-options .form-row-inline {
+    display: flex;
+    gap: var(--spacing-sm); /* Adjust gap as needed */
+    margin-bottom: var(--spacing-lg); /* Keep consistent bottom margin */
+}
+
+.motorcycle-item.search-options .form-row-inline > div {
+    flex: 1; /* Allow items to take equal space */
 }
 
 
-/* Responsive adjustments for search options item */
 @media (max-width: 992px) {
-    /* Adjusts motorcycle item width on medium screens */
     .motorcycle-item.search-options {
-        width: 50%; /* From motorcycle_list_styles.css media query */
+        width: 50%;
     }
 }
 
 @media (max-width: 576px) {
-    /* Adjusts motorcycle item width on small screens */
     .motorcycle-item.search-options {
-        width: 100%; /* From motorcycle_list_styles.css media query */
+        width: 100%;
     }
 
-    /* Allows date/time inputs to stack on very small screens if needed, but flex by default */
-    .motorcycle-item.search-options .d-flex.gap-2 {
-        flex-direction: column; /* Stack on small screens */
-        gap: var(--spacing-sm); /* Maintain gap */
+    .motorcycle-item.search-options .d-flex.gap-2,
+    .motorcycle-item.search-options .form-row-inline {
+        flex-direction: column;
+        gap: var(--spacing-sm);
     }
 
-    .motorcycle-item.search-options .d-flex.gap-2 .flex-fill {
-         flex: unset; /* Remove flex-fill on small screens when stacked */
+    .motorcycle-item.search-options .d-flex.gap-2 .flex-fill,
+    .motorcycle-item.search-options .form-row-inline > div {
+         flex: unset;
     }
 
 }

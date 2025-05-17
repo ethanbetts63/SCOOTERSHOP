@@ -84,7 +84,6 @@
                             <form method="get" action="">
                                 {# Hire Date Range - Updated Layout #}
                                 <div class="mb-3">
-                                    <label class="form-label">Hire Dates</label> {# Main label for the section #}
                                      <div class="d-flex gap-2"> {# Use d-flex to put inputs side-by-side #}
                                         <div class="flex-fill">
                                             <label for="hire_start_date" class="form-label">Pick up date</label> {# Label above the input #}
@@ -92,7 +91,6 @@
                                                    name="hire_start_date" placeholder="Select pick up date"
                                                    value="{{ request.GET.hire_start_date|default:'' }}">
                                         </div>
-                                        {# Removed "to" text #}
                                         <div class="flex-fill">
                                             <label for="hire_end_date" class="form-label">Return date</label> {# Label above the input #}
                                             <input type="text" class="form-control form-control-sm" id="hire_end_date"
@@ -118,13 +116,11 @@
                                         </div>
                                          <div class="flex-fill">
                                              <label for="return_time" class="form-label">Return time</label> {# Label above the select #}
-                                              {# Assuming hire_settings is available via context processor #}
                                               <select id="return_time" name="return_time"
                                                       class="form-select form-select-sm"
                                                       data-start-time="{{ hire_settings.return_off_start_time|time:'H:i' }}"
                                                       data-end-time="{{ hire_settings.return_end_time|time:'H:i' }}">
                                                   <option value="">Select return time</option>
-                                                  {# Options populated by JS #}
                                               </select>
                                          </div>
                                     </div>
