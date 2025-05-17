@@ -18,13 +18,253 @@
                     <div class="alert alert-info">
                         <p>Please note that motorcycle availability is subject to confirmation. Use the filters to narrow down your search by date range and other preferences.</p>
                     </div>
-                </div> 
+                </div>
             </div>
             {% endif %}
         </div>
     </div>
 
     {% with current_url_name='hire' page_title='Motorcycles Available for Hire' %}
-        {% include "inventory/motorcycle_list_include.html" %}
+        {# Content from motorcycle_list_include.html starts here #}
+        <div class="container-fluid mt-4">
+            {% if page_title %}
+                <h1 class="mb-4">{{ page_title }}</h1>
+            {% else %}
+                {# This else block should ideally not be reached in hire.html now #}
+                <h1 class="mb-4">Motorcycles</h1>
+            {% endif %}
+
+            <div class="results-header mb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="results-count">
+                        {% with total_count=motorcycles.count %}
+                            {% if motorcycles %}
+                                {% if is_paginated %}
+                                    <span class="fw-bold">{{ page_obj.start_index|default:"1" }}</span> to
+                                    <span class="fw-bold">{{ page_obj.end_index|default:total_count }}</span> of
+                                {% endif %}
+                                <span class="fw-bold">{{ total_count }}</span> products for hire
+                            {% else %}
+                                <span class="fw-bold">0</span> products for hire
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                    <div class="sort-options">
+                        <form method="get" action="" class="d-flex align-items-center">
+                            <label for="order" class="form-label me-2 mb-0">Sort by:</label>
+                            <select class="form-select form-select-sm" id="order" name="order" onchange="this.form.submit()">
+                                {# Hire specific sorting #}
+                                <option value="price_low_to_high" {% if request.GET.order == 'price_low_to_high' or not request.GET.order %}selected{% endif %}>Hire Rate: Low to High</option>
+                                <option value="price_high_to_low" {% if request.GET.order == 'price_high_to_low' %}selected{% endif %}>Hire Rate: High to Low</option>
+                                {# Consider adding sorting by seats or engine size later if needed #}
+                                <option value="age_new_to_old" {% if request.GET.order == 'age_new_to_old' %}selected{% endif %}>Year: Newest First</option>
+                                <option value="age_old_to_new" {% if request.GET.order == 'age_old_to_new' %}selected{% endif %}>Year: Oldest First</option>
+
+                            </select>
+
+                            {# Include hidden inputs for existing GET parameters except 'order' and 'page' #}
+                            {% for key, value in request.GET.items %}
+                                {% if key != 'order' and key != 'page' %}
+                                    <input type="hidden" name="{{ key }}" value="{{ value }}">
+                                {% endif %}
+                            {% endfor %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="motorcycle-grid">
+                <div class="motorcycle-item search-options">
+                    <div class="card h-100 card-hover-effect">
+                        <div class="card-header">Search Options</div>
+                        <div class="card-body">
+                            <form method="get" action="">
+                                {# Hire Date Range - Keep #}
+                                <div class="mb-3">
+                                    <label class="form-label">Hire Date Range</label>
+                                    <div class="d-flex gap-2">
+                                        <div class="flex-fill">
+                                            <input type="date" class="form-control" id="hire_start_date"
+                                                   name="hire_start_date" value="{{ request.GET.hire_start_date|default:'' }}">
+                                        </div>
+                                        <div class="flex-fill">
+                                            <input type="date" class="form-control" id="hire_end_date"
+                                                   name="hire_end_date" value="{{ request.GET.hire_end_date|default:'' }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                {# Price Range (Min/Max) - New #}
+                                <div class="mb-3">
+                                    <label for="price_min" class="form-label">Price Range</label>
+                                    <div class="d-flex">
+                                        <input type="number" class="form-control me-2" id="price_min" name="price_min"
+                                               placeholder="Min" value="{{ request.GET.price_min|default:'' }}">
+                                        <input type="number" class="form-control" id="price_max" name="price_max"
+                                               placeholder="Max" value="{{ request.GET.price_max|default:'' }}">
+                                    </div>
+                                </div>
+
+                                {# Seats - New #}
+                                <div class="mb-3">
+                                    <label for="seats" class="form-label">Seats</label>
+                                    <input type="number" class="form-control" id="seats" name="seats" min="0"
+                                           placeholder="Number of seats" value="{{ request.GET.seats|default:'' }}">
+                                </div>
+
+                                {# Engine Size - New #}
+                                <div class="mb-3">
+                                    <label for="engine_size" class="form-label">Engine Size (cc)</label>
+                                    <input type="number" class="form-control" id="engine_size" name="engine_size" min="0"
+                                           placeholder="Engine size" value="{{ request.GET.engine_size|default:'' }}">
+                                </div>
+
+                                {# Remove Brand, Model, Year filters #}
+                                {# <div class="mb-3">... Brand filter ...</div> #}
+                                {# <div class="mb-3">... Model filter ...</div> #}
+                                {# <div class="mb-3">... Year filter ...</div> #}
+
+
+                                {# Include hidden inputs for existing GET parameters except those we are removing or 'page' #}
+                                {% for key, value in request.GET.items %}
+                                    {% if key != 'order' and key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' %}
+                                        <input type="hidden" name="{{ key }}" value="{{ value }}">
+                                    {% endif %}
+                                {% endfor %}
+                                {# Ensure new parameters are carried if already in GET (from a previous submission) #}
+                                {% if request.GET.price_min %}<input type="hidden" name="price_min" value="{{ request.GET.price_min }}">{% endif %}
+                                {% if request.GET.price_max %}<input type="hidden" name="price_max" value="{{ request.GET.price_max }}">{% endif %}
+                                {% if request.GET.seats %}<input type="hidden" name="seats" value="{{ request.GET.seats }}">{% endif %}
+                                {% if request.GET.engine_size %}<input type="hidden" name="engine_size" value="{{ request.GET.engine_size }}">{% endif %}
+                                {% if request.GET.order %}<input type="hidden" name="order" value="{{ request.GET.order }}">{% endif %}
+
+
+                                <button type="submit" class="btn btn-primary">Apply Filters</button>
+                                {# Updated reset filter URL to use current_url_name #}
+                                <a href="{% url 'inventory:'|add:current_url_name %}" class="btn btn-secondary mt-2">Reset Filters</a>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                {% for motorcycle in motorcycles %}
+                <div class="motorcycle-item">
+                    <a href="{% url 'inventory:motorcycle-detail' motorcycle.pk %}" class="card-link"></a>
+                    <div class="card h-100 card-hover-effect">
+                        {% if motorcycle.image %}
+                            <img src="{{ motorcycle.image.url }}" class="card-img-top img-cover" alt="{{ motorcycle.title }}">
+                        {% else %}
+                            <img src="{% static 'images/no_image.jpg' %}" class="card-img-top img-cover" alt="No Image Available">
+                        {% endif %}
+                        <div class="card-body text-center">
+                            <h5 class="card-title">{{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }}</h5>
+
+                            <div class="motorcycle-details">
+                                {# Only show hire specific details #}
+                                <div class="detail-item">
+                                    <span class="svg-icon svg-icon-md icon-seat"></span>
+                                    <span class="detail-label">Seats</span>
+                                    <span class="detail-value">
+                                        {% if motorcycle.seats %}
+                                            {{ motorcycle.seats }}
+                                        {% else %}
+                                            1 {# Default to 1 if not specified #}
+                                        {% endif %}
+                                    </span>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span class="svg-icon svg-icon-md icon-transmission"></span>
+                                    <span class="detail-label">Transmission</span>
+                                    <span class="detail-value">
+                                        {% if motorcycle.transmission %}
+                                            {{ motorcycle.get_transmission_display }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </span>
+                                </div>
+
+                                <div class="detail-item">
+                                    <span class="svg-icon svg-icon-md icon-capacity"></span>
+                                    <span class="detail-label">Engine</span>
+                                    <span class="detail-value">{{ motorcycle.engine_size }}cc</span>
+                                </div>
+                                {# Remove Type and Odometer details which are sale/general specific #}
+                                {# <div class="detail-item">... Type ...</div> #}
+                                {# <div class="detail-item">... Odometer ...</div> #}
+                            </div>
+
+                            {# Only show hire price #}
+                            {% if motorcycle.daily_hire_rate %}
+                                <p class="card-text fw-bold">${{ motorcycle.daily_hire_rate }} per day</p>
+                            {% elif motorcycle.hourly_hire_rate %}
+                                <p class="card-text fw-bold">${{ motorcycle.hourly_hire_rate }} per hour</p>
+                             {% elif motorcycle.weekly_hire_rate %}
+                                <p class="card-text fw-bold">${{ motorcycle.weekly_hire_rate }} per week</p>
+                             {% elif motorcycle.monthly_hire_rate %}
+                                <p class="card-text fw-bold">${{ motorcycle.monthly_hire_rate }} per month</p>
+                            {% else %}
+                                <p class="card-text fw-bold">Contact for Hire Rate</p>
+                            {% endif %}
+
+                            <p class="card-text location"><small class="text-muted">{{ motorcycle.location }}</small></p>
+                        </div>
+                         <div class="card-footer text-center">
+                             <a href="{% url 'inventory:motorcycle-detail' motorcycle.pk %}" class="btn btn-sm btn-primary">View Details</a>
+                             {# Availability badge is likely not needed on the public hire page #}
+                             {# {% if current_url_name == 'motorcycle-list' %}...{% endif %} #}
+                         </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5">
+                    <h3>No motorcycles found matching your criteria.</h3>
+                    <p>Try adjusting your search filters or check back later.</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if is_paginated %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center reset-list">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        {# Ensure existing GET parameters are carried over #}
+                        <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; First</a>
+                    </li>
+                    <li class="page-item">
+                         {# Ensure existing GET parameters are carried over #}
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' %}&{{ key }}={{ value }}{% endif %}{% endfor %}>Previous</a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                         {# Ensure existing GET parameters are carried over #}
+                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                         {# Ensure existing GET parameters are carried over #}
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                         {# Ensure existing GET parameters are carried over #}
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'brand' and key != 'model' and key != 'year_min' and key != 'year_max' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last &raquo;</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+        {# Content from motorcycle_list_include.html ends here #}
     {% endwith %}
 {% endblock %}

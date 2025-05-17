@@ -20,8 +20,6 @@
                         {# Adjusted text based on whether it's the 'all' admin view or a public view #}
                         {% if current_url_name == 'motorcycle-list' %}
                             listed
-                        {% elif current_url_name == 'hire' %}
-                            for hire
                         {% else %}
                             for sale
                         {% endif %}
@@ -29,8 +27,6 @@
                         <span class="fw-bold">0</span> products
                          {% if current_url_name == 'motorcycle-list' %}
                             listed
-                        {% elif current_url_name == 'hire' %}
-                            for hire
                         {% else %}
                             for sale
                         {% endif %}
@@ -41,13 +37,9 @@
                 <form method="get" action="" class="d-flex align-items-center">
                     <label for="order" class="form-label me-2 mb-0">Sort by:</label>
                     <select class="form-select form-select-sm" id="order" name="order" onchange="this.form.submit()">
-                        {% if current_url_name == 'hire' %}
-                        <option value="price_low_to_high" {% if request.GET.order == 'price_low_to_high' or not request.GET.order %}selected{% endif %}>Hire Rate: Low to High</option>
-                        <option value="price_high_to_low" {% if request.GET.order == 'price_high_to_low' %}selected{% endif %}>Hire Rate: High to Low</option>
-                        {% else %}
+                        {# Sale/General specific sorting #}
                         <option value="price_low_to_high" {% if request.GET.order == 'price_low_to_high' or not request.GET.order %}selected{% endif %}>Price: Low to High</option>
                         <option value="price_high_to_low" {% if request.GET.order == 'price_high_to_low' %}selected{% endif %}>Price: High to Low</option>
-                        {% endif %}
                         <option value="age_new_to_old" {% if request.GET.order == 'age_new_to_old' %}selected{% endif %}>Year: Newest First</option>
                         <option value="age_old_to_new" {% if request.GET.order == 'age_old_to_new' %}selected{% endif %}>Year: Oldest First</option>
                     </select>
@@ -81,30 +73,7 @@
                             </div>
                         {% endif %}
 
-                        {% if current_url_name == 'hire' %}
-                        <div class="mb-3">
-                            <label class="form-label">Hire Date Range</label>
-                            <div class="d-flex gap-2">
-                                <div class="flex-fill">
-                                    <input type="date" class="form-control" id="hire_start_date"
-                                           name="hire_start_date" value="{{ request.GET.hire_start_date|default:'' }}">
-                                </div>
-                                <div class="flex-fill">
-                                    <input type="date" class="form-control" id="hire_end_date"
-                                           name="hire_end_date" value="{{ request.GET.hire_end_date|default:'' }}">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="daily_rate" class="form-label">Daily Rate Range</label>
-                            <div class="d-flex">
-                                <input type="number" class="form-control me-2" id="daily_rate_min" name="daily_rate_min"
-                                       placeholder="Min" value="{{ request.GET.daily_rate_min|default:'' }}">
-                                <input type="number" class="form-control" id="daily_rate_max" name="daily_rate_max"
-                                       placeholder="Max" value="{{ request.GET.daily_rate_max|default:'' }}">
-                            </div>
-                        </div>
-                        {% else %}
+                        {# Price Range #}
                         <div class="mb-3">
                             <label for="price_min" class="form-label">Price Range</label>
                             <div class="d-flex">
@@ -114,8 +83,8 @@
                                        placeholder="Max" value="{{ request.GET.price_max|default:'' }}">
                             </div>
                         </div>
-                        {% endif %}
 
+                        {# Brand #}
                         <div class="mb-3">
                             <label for="brand" class="form-label">Brand</label>
                             <select class="form-select" id="brand" name="brand">
@@ -125,11 +94,13 @@
                                 {% endfor %}
                             </select>
                         </div>
+                        {# Model #}
                         <div class="mb-3">
                             <label for="model" class="form-label">Model</label>
                             <input type="text" class="form-control" id="model" name="model"
                                    placeholder="Any model" value="{{ request.GET.model|default:'' }}">
                         </div>
+                        {# Year #}
                         <div class="mb-3">
                             <label for="year" class="form-label">Year</label>
                             <div class="d-flex">
@@ -183,38 +154,7 @@
                     <h5 class="card-title">{{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }}</h5>
 
                     <div class="motorcycle-details">
-                        {% if current_url_name == 'hire' %}
-                        <div class="detail-item">
-                            <span class="svg-icon svg-icon-md icon-seat"></span>
-                            <span class="detail-label">Seats</span>
-                            <span class="detail-value">
-                                {% if motorcycle.seats %}
-                                    {{ motorcycle.seats }}
-                                {% else %}
-                                    1
-                                {% endif %}
-                            </span>
-                        </div>
-
-                        <div class="detail-item">
-                            <span class="svg-icon svg-icon-md icon-transmission"></span>
-                            <span class="detail-label">Transmission</span>
-                            <span class="detail-value">
-                                {% if motorcycle.transmission %}
-                                    {{ motorcycle.get_transmission_display }}
-                                {% else %}
-                                    N/A
-                                {% endif %}
-                            </span>
-                        </div>
-
-                        <div class="detail-item">
-                            <span class="svg-icon svg-icon-md icon-capacity"></span>
-                            <span class="detail-label">Engine</span>
-                            <span class="detail-value">{{ motorcycle.engine_size }}cc</span>
-                        </div>
-
-                        {% else %}
+                        {# Sale/General specific details #}
                         <div class="detail-item">
                             <span class="svg-icon svg-icon-md icon-category"></span>
                             <span class="detail-label">Type</span>
@@ -246,14 +186,11 @@
                                 {% endif %}
                             </span>
                         </div>
-                        {% endif %}
                     </div>
 
-                    {% if current_url_name == 'hire' %}
-                    <p class="card-text fw-bold">${{ motorcycle.daily_hire_rate }} per day</p>
-                    {% else %}
+                    {# Sale price #}
                     <p class="card-text fw-bold">${{ motorcycle.price }}</p>
-                    {% endif %}
+
                     <p class="card-text location"><small class="text-muted">{{ motorcycle.location }}</small></p>
                 </div>
                  <div class="card-footer text-center">
@@ -283,11 +220,11 @@
             {% if page_obj.has_previous %}
             <li class="page-item">
                 {# Ensure existing GET parameters are carried over #}
-                <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; First</a>
+                <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'hire_start_date' and key != 'hire_end_date' and key != 'seats' and key != 'engine_size' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; First</a>
             </li>
             <li class="page-item">
                  {# Ensure existing GET parameters are carried over #}
-                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'hire_start_date' and key != 'hire_end_date' and key != 'seats' and key != 'engine_size' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
             </li>
             {% endif %}
 
@@ -299,7 +236,7 @@
             {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
             <li class="page-item">
                  {# Ensure existing GET parameters are carried over #}
-                <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'hire_start_date' and key != 'hire_end_date' and key != 'seats' and key != 'engine_size' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
             </li>
             {% endif %}
             {% endfor %}
@@ -307,11 +244,11 @@
             {% if page_obj.has_next %}
             <li class="page-item">
                  {# Ensure existing GET parameters are carried over #}
-                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'hire_start_date' and key != 'hire_end_date' and key != 'seats' and key != 'engine_size' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
             </li>
             <li class="page-item">
                  {# Ensure existing GET parameters are carried over #}
-                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last &raquo;</a>
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'daily_rate_min' and key != 'daily_rate_max' and key != 'hire_start_date' and key != 'hire_end_date' and key != 'seats' and key != 'engine_size' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last &raquo;</a>
             </li>
             {% endif %}
         </ul>
