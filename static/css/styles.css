@@ -580,6 +580,8 @@ nav ul li a.active {
 }
 
 /* =================== SECTION: Button Styles =================== */
+
+
 /* Styles for primary and secondary buttons */
 .btn-primary, .btn-secondary, .btn-sm.btn-primary {
     background-color: var(--btn-bg);

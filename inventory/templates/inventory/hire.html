@@ -3,7 +3,7 @@
 {% load mathfilters %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/list_styles.css' %}">
+<link rel="stylesheet" href="{% static 'css/motorcycle_list_styles.css' %}">
 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -165,10 +165,14 @@
 
                                 {% if request.GET.order %}<input type="hidden" name="order" value="{{ request.GET.order }}">{% endif %}
 
+                                {# Button Container #}
+                                <div class="button-container">
+                                    {# Apply Filters Button #}
+                                    <button type="submit">Apply Filters</button>
 
-                                <button type="submit" class="btn btn-primary btn-sm">Apply Filters</button>
-
-                                <a href="{% url 'inventory:'|add:current_url_name %}" class="btn btn-secondary btn-sm mt-2">Reset Filters</a>
+                                    {# Reset Filters Button #}
+                                    <a href="{% url 'inventory:'|add:current_url_name %}" class="btn-secondary">Reset Filters</a>
+                                </div>
                             </form>
                         </div>
                     </div>
@@ -245,10 +249,12 @@
 
                             <p class="card-text location"><small class="text-muted">{{ motorcycle.location }}</small></p>
                         </div>
-                         <div class="card-footer text-center">
-                             <a href="{% url 'inventory:motorcycle-detail' motorcycle.pk %}" class="btn btn-sm btn-primary">View Details</a>
+                         <div class="card-footer text-center button-container"> {# Added button-container class here #}
+                             {# View Details Button #}
+                             <a href="{% url 'inventory:motorcycle-detail' motorcycle.pk %}" class="btn-secondary">View Details</a>
 
-                             <button class="btn btn-sm btn-success select-motorcycle-btn" data-motorcycle-id="{{ motorcycle.pk }}">Select</button>
+                             {# Select Button #}
+                             <button type="submit" class="select-motorcycle-btn" data-motorcycle-id="{{ motorcycle.pk }}">Select</button>
                          </div>
                     </div>
                 </div>
@@ -509,7 +515,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
      const initialReturnTime = "{{ request.GET.return_time|default:'' }}";
      if (initialReturnTime && returnTimeSelect) {
-         returnTimeSelect.value = initialReturnTime;
+         returnTimeSelect.value = initialReturn;
      }
 
 

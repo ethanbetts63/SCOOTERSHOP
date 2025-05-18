@@ -241,3 +241,85 @@ h1.mb-4:after {
         margin-top: 10px;
     }
 }
+/* Submit button */
+button[type="submit"] {
+    background-color: var(--color-primary);
+    color: var(--bg-darkest);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 12px 24px; /* Adjusted padding */
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    align-items: center; /* Center items vertically */
+    justify-content: center; /* Center content horizontally */
+    width: 180px; /* Fixed width */
+    text-align: center; /* Ensure text is centered */
+    position: relative; /* For icon positioning */
+}
+
+/* Icon for the submit button */
+button[type="submit"]::after {
+    content: "";
+
+    width: 20px;
+    height: 20px;
+    background-image: url('../images/svgs/arrow-right.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin-left: 10px;
+    filter: brightness(0.2);
+}
+
+/* Submit button hover styles */
+button[type="submit"]:hover {
+    background-color: #6ebb70;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Secondary button styling */
+.btn-secondary {
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    padding: 12px 24px; /* Matched padding with submit button */
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all var(--transition-medium);
+    text-decoration: none;
+
+    justify-content: center; /* Center content horizontally */
+    width: 180px; /* Fixed width - same as submit button */
+    text-align: center; /* Ensure text is centered */
+}
+
+.btn-secondary:hover {
+    background-color: var(--bg-highlight);
+    border-color: var(--color-primary);
+}
+
+/* Added styles for button containers */
+.button-container {
+    display: flex; /* Use flexbox */
+    gap: 10px; /* Add space between buttons */
+    margin-top: 15px; /* Add some space above the buttons */
+    justify-content: flex-end; /* Align buttons to the right */
+}
+
+/* When buttons need to be stacked on mobile */
+@media (max-width: 480px) {
+    .button-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    button[type="submit"],
+    .btn-secondary {
+        width: 100%; /* Full width on mobile */
+    }
+}
