@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "service.apps.ServiceConfig",
     "hire.apps.HireConfig",
     'widget_tweaks',
+    'mathfilters',
 ]
 
 MIDDLEWARE = [

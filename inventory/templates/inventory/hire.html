@@ -1,9 +1,11 @@
 {% extends "core/layout.html" %}
 {% load static %}
+{% load mathfilters %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/motorcycle_list_styles.css' %}">
 <link rel="stylesheet" href="{% static 'css/hire_styles.css' %}">
-{# Flatpickr CSS #}
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 {% endblock %}
@@ -14,7 +16,7 @@
 
             {% if hire_start_date and hire_end_date %}
             <div class="card card-border card-hover-effect availability-info">
-                <div class="card-body"> {# Added card-body here #}
+                <div class="card-body">
                     <h3>Available Motorcycles</h3>
                     <p>Showing motorcycles available for hire from <strong>{{ hire_start_date|date:"D, d M Y" }}</strong> to <strong>{{ hire_end_date|date:"D, d M Y" }}</strong> ({{ hire_days }} day{% if hire_days > 1 %}s{% endif %}).</p>
 
@@ -28,12 +30,12 @@
     </div>
 
     {% with current_url_name='hire' page_title='Motorcycles Available for Hire' %}
-        {# Content from motorcycle_list_include.html starts here #}
+
         <div class="container-fluid mt-4">
             {% if page_title %}
                 <h1 class="mb-4">{{ page_title }}</h1>
             {% else %}
-                {# This else block should ideally not be reached in hire.html now #}
+
                 <h1 class="mb-4">Motorcycles</h1>
             {% endif %}
 
@@ -44,7 +46,7 @@
                             {% if motorcycles %}
                                 {% if is_paginated %}
                                     <span class="fw-bold">{{ page_obj.start_index|default:"1" }}</span> to
-                                    <span class="fw-bold">{{ page_obj.end_index|default:total_count }}</span> of
+                                    <span class="fw-obj.end_index|default:total_count }}</span> of
                                 {% endif %}
                                 <span class="fw-bold">{{ total_count }}</span> products for hire
                             {% else %}
@@ -56,16 +58,16 @@
                         <form method="get" action="" class="d-flex align-items-center">
                             <label for="order" class="form-label me-2 mb-0">Sort by:</label>
                             <select class="form-select form-select-sm" id="order" name="order" onchange="this.form.submit()">
-                                {# Hire specific sorting #}
+
                                 <option value="price_low_to_high" {% if request.GET.order == 'price_low_to_high' or not request.GET.order %}selected{% endif %}>Hire Rate: Low to High</option>
                                 <option value="price_high_to_low" {% if request.GET.order == 'price_high_to_low' %}selected{% endif %}>Hire Rate: High to Low</option>
-                                {# Consider adding sorting by seats or engine size later if needed #}
+
                                 <option value="age_new_to_old" {% if request.GET.order == 'age_new_to_old' %}selected{% endif %}>Year: Newest First</option>
                                 <option value="age_old_to_new" {% if request.GET.order == 'age_old_to_new' %}selected{% endif %}>Year: Oldest First</option>
 
                             </select>
 
-                            {# Include hidden inputs for existing GET parameters except 'order' and 'page' #}
+
                             {% for key, value in request.GET.items %}
                                 {% if key != 'order' and key != 'page' %}
                                     <input type="hidden" name="{{ key }}" value="{{ value }}">
@@ -82,17 +84,17 @@
                         <div class="card-header">Search Options</div>
                         <div class="card-body">
                             <form method="get" action="">
-                                {# Hire Date Range - Updated Layout #}
+
                                 <div class="mb-3">
-                                     <div class="d-flex gap-2"> {# Use d-flex to put inputs side-by-side #}
+                                     <div class="d-flex gap-2">
                                         <div class="flex-fill">
-                                            <label for="hire_start_date" class="form-label">Pick up date</label> {# Label above the input #}
+                                            <label for="hire_start_date" class="form-label">Pick up date</label>
                                             <input type="text" class="form-control form-control-sm" id="hire_start_date"
                                                    name="hire_start_date" placeholder="Select pick up date"
                                                    value="{{ request.GET.hire_start_date|default:'' }}">
                                         </div>
                                         <div class="flex-fill">
-                                            <label for="hire_end_date" class="form-label">Return date</label> {# Label above the input #}
+                                            <label for="hire_end_date" class="form-label">Return date</label>
                                             <input type="text" class="form-control form-control-sm" id="hire_end_date"
                                                    name="hire_end_date" placeholder="Select return date"
                                                    value="{{ request.GET.hire_end_date|default:'' }}">
@@ -100,22 +102,22 @@
                                     </div>
                                 </div>
 
-                                {# Time Inputs - Side by Side with Separate Labels #}
+
                                 <div class="mb-3">
-                                     <div class="d-flex gap-2"> {# Use d-flex to put selects side-by-side #}
+                                     <div class="d-flex gap-2">
                                         <div class="flex-fill">
-                                            <label for="pick_up_time" class="form-label">Pick up time</label> {# Label above the select #}
-                                             {# Assuming hire_settings is available via context processor #}
+                                            <label for="pick_up_time" class="form-label">Pick up time</label>
+
                                              <select id="pick_up_time" name="pick_up_time"
                                                      class="form-select form-select-sm"
                                                      data-start-time="{{ hire_settings.pick_up_start_time|time:'H:i' }}"
                                                      data-end-time="{{ hire_settings.pick_up_end_time|time:'H:i' }}">
                                                  <option value="">Select pick up time</option>
-                                                 {# Options populated by JS #}
+
                                              </select>
                                         </div>
                                          <div class="flex-fill">
-                                             <label for="return_time" class="form-label">Return time</label> {# Label above the select #}
+                                             <label for="return_time" class="form-label">Return time</label>
                                               <select id="return_time" name="return_time"
                                                       class="form-select form-select-sm"
                                                       data-start-time="{{ hire_settings.return_off_start_time|time:'H:i' }}"
@@ -127,46 +129,45 @@
                                 </div>
 
 
-                                {# Price Range (Min/Max) - Keep #}
                                 <div class="mb-3">
-                                    <label for="price_min" class="form-label">Price Range (Daily Rate)</label> {# Updated label #}
+                                    <label for="price_min" class="form-label">Price Range (Daily Rate)</label>
                                     <div class="d-flex gap-2">
                                         <input type="number" class="form-control form-control-sm" id="price_min" name="price_min"
-                                               placeholder="Min" value="{{ request.GET.price_min|default:min_price_prefill|floatformat:2|default:'' }}"> {# Pre-fill min price #}
+                                               placeholder="Min" value="{{ request.GET.price_min|default:min_price_prefill|floatformat:2|default:'' }}">
                                         <input type="number" class="form-control form-control-sm" id="price_max" name="price_max"
-                                               placeholder="Max" value="{{ request.GET.price_max|default:max_price_prefill|floatformat:2|default:'' }}"> {# Pre-fill max price #}
+                                               placeholder="Max" value="{{ request.GET.price_max|default:max_price_prefill|floatformat:2|default:'' }}">
                                     </div>
                                 </div>
 
-                                {# Seats - Keep #}
+
                                 <div class="mb-3">
                                     <label for="seats" class="form-label">Seats</label>
                                     <input type="number" class="form-control form-control-sm" id="seats" name="seats" min="0"
                                            placeholder="Number of seats" value="{{ request.GET.seats|default:'' }}">
                                 </div>
 
-                                {# Engine Size - Keep #}
+
                                 <div class="mb-3">
                                     <label for="engine_size" class="form-label">Engine Size (cc)</label>
-                                    {# Adjust pre-fill logic based on license status if no specific engine_size is in GET #}
+
                                     <input type="number" class="form-control form-control-sm" id="engine_size" name="engine_size" min="0"
                                            placeholder="Engine size"
-                                           value="{{ request.GET.engine_size|default:'' }}{% if not request.GET.engine_size and request.GET.has_motorcycle_license == 'false' %}50{% endif %}"> {# Updated default logic slightly #}
+                                           value="{{ request.GET.engine_size|default:'' }}{% if not request.GET.engine_size and request.GET.has_motorcycle_license == 'false' %}50{% endif %}">
                                 </div>
 
 
-                                {# Include hidden inputs for existing GET parameters except those handled explicitly above #}
+
                                 {% for key, value in request.GET.items %}
                                     {% if key != 'order' and key != 'page' and key != 'price_min' and key != 'price_max' and key != 'seats' and key != 'engine_size' and key != 'has_motorcycle_license' and key != 'hire_start_date' and key != 'hire_end_date' and key != 'pick_up_time' and key != 'return_time' %}
                                         <input type="hidden" name="{{ key }}" value="{{ value }}">
                                     {% endif %}
                                 {% endfor %}
-                                {# Ensure the 'order' parameter is always carried over for sorting #}
+
                                 {% if request.GET.order %}<input type="hidden" name="order" value="{{ request.GET.order }}">{% endif %}
 
 
                                 <button type="submit" class="btn btn-primary btn-sm">Apply Filters</button>
-                                {# Updated reset filter URL to use current_url_name #}
+
                                 <a href="{% url 'inventory:'|add:current_url_name %}" class="btn btn-secondary btn-sm mt-2">Reset Filters</a>
                             </form>
                         </div>
@@ -175,7 +176,7 @@
 
                 {% for motorcycle in motorcycles %}
                 <div class="motorcycle-item">
-                    <a href="{% url 'inventory:motorcycle-detail' motorcycle.pk %}" class="card-link"></a>
+
                     <div class="card h-100 card-hover-effect">
                         {% if motorcycle.image %}
                             <img src="{{ motorcycle.image.url }}" class="card-img-top img-cover" alt="{{ motorcycle.title }}">
@@ -186,7 +187,7 @@
                             <h5 class="card-title">{{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }}</h5>
 
                             <div class="motorcycle-details">
-                                {# Only show hire specific details #}
+
                                 <div class="detail-item">
                                     <span class="svg-icon svg-icon-md icon-seat"></span>
                                     <span class="detail-label">Seats</span>
@@ -194,7 +195,7 @@
                                         {% if motorcycle.seats %}
                                             {{ motorcycle.seats }}
                                         {% else %}
-                                            1 {# Default to 1 if not specified #}
+                                            1
                                         {% endif %}
                                     </span>
                                 </div>
@@ -216,31 +217,38 @@
                                     <span class="detail-label">Engine</span>
                                     <span class="detail-value">{{ motorcycle.engine_size }}cc</span>
                                 </div>
-                                {# Remove Type and Odometer details which are sale/general specific #}
-                                {# <div class="detail-item">... Type ...</div> #}
-                                {# <div class="detail-item">... Odometer ...</div> #}
+
                             </div>
 
-                            {# Display the calculated monthly discounted daily rate if available #}
-                            {% if motorcycle.monthly_discounted_daily_rate is not None %}
-                                <p class="card-text fw-bold">from ${{ motorcycle.monthly_discounted_daily_rate|floatformat:2 }} per day</p>
-                            {# Fallback to daily rate if no monthly discount calculated or applicable #}
-                            {% elif motorcycle.daily_hire_rate %}
-                                <p class="card-text fw-bold">${{ motorcycle.daily_hire_rate }} per day</p>
-                            {# Fallback to hourly rate if no daily rate #}
-                            {% elif motorcycle.hourly_hire_rate %}
-                                <p class="card-text fw-bold">${{ motorcycle.hourly_hire_rate }} per hour</p>
-                            {# Final fallback if no rates are set #}
-                            {% else %}
-                                <p class="card-text fw-bold">Contact for Hire Rate</p>
-                            {% endif %}
+
+                            <ul class="list-unstyled features-list">
+                                <li>Unlimited mileage</li>
+                                <li>Fuel efficient</li>
+                            </ul>
+
+
+                            <p class="card-text fw-bold">
+                                {% if motorcycle.daily_hire_rate is not None %}
+                                    {% with discount_factor=hire_settings.monthly_discount_percentage|div:100 %}
+                                        {% with multiplier=1|sub:discount_factor %}
+                                            from ${{ motorcycle.daily_hire_rate|mul:multiplier|floatformat:2 }} per day
+                                        {% endwith %}
+                                    {% endwith %}
+                                {% else %}
+                                    {% with discount_factor=hire_settings.monthly_discount_percentage|div:100 %}
+                                        {% with multiplier=1|sub:discount_factor %}
+                                            from ${{ hire_settings.default_daily_rate|mul:multiplier|floatformat:2 }} per day
+                                        {% endwith %}
+                                    {% endwith %}
+                                {% endif %}
+                            </p>
 
                             <p class="card-text location"><small class="text-muted">{{ motorcycle.location }}</small></p>
                         </div>
                          <div class="card-footer text-center">
                              <a href="{% url 'inventory:motorcycle-detail' motorcycle.pk %}" class="btn btn-sm btn-primary">View Details</a>
-                             {# Availability badge is likely not needed on the public hire page #}
-                             {# {% if current_url_name == 'motorcycle-list' %}...{% endif %} #}
+
+                             <button class="btn btn-sm btn-success select-motorcycle-btn" data-motorcycle-id="{{ motorcycle.pk }}">Select</button>
                          </div>
                     </div>
                 </div>
@@ -257,11 +265,11 @@
                 <ul class="pagination justify-content-center reset-list">
                     {% if page_obj.has_previous %}
                     <li class="page-item">
-                        {# Ensure existing GET parameters are carried over #}
+
                         <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; First</a>
                     </li>
                     <li class="page-item">
-                         {# Ensure existing GET parameters are carried over #}
+
                         <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
                     </li>
                     {% endif %}
@@ -273,7 +281,7 @@
                     </li>
                     {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                     <li class="page-item">
-                         {# Ensure existing GET parameters are carried over #}
+
                         <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
                     </li>
                     {% endif %}
@@ -281,11 +289,11 @@
 
                     {% if page_obj.has_next %}
                     <li class="page-item">
-                         {# Ensure existing GET parameters are carried over #}
+
                         <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
                     </li>
                     <li class="page-item">
-                         {# Ensure existing GET parameters are carried over #}
+
                         <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last &raquo;</a>
                     </li>
                     {% endif %}
@@ -293,30 +301,30 @@
             </nav>
             {% endif %}
         </div>
-        {# Content from motorcycle_list_include.html ends here #}
+
     {% endwith %}
 {% endblock %}
 
 {% block extra_js %}
-{# Flatpickr JS #}
+
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Parse blocked dates from JSON (keep this)
+
     const blockedDateRanges = JSON.parse('{{ blocked_hire_date_ranges_json|escapejs }}');
 
-    // Initialize Flatpickr for date fields on hire.html
+
     const hireStartDatePicker = flatpickr("#hire_start_date", {
         dateFormat: "Y-m-d",
         minDate: "today",
         altInput: true,
         altFormat: "F j, Y",
-        // Disable blocked dates (keep this)
+
         disable: blockedDateRanges.map(range => ({
             from: range.from,
             to: range.to
         })),
-         // Add onChange to immediately update return date minDate and return times
+
         onChange: function(selectedDates, dateStr, instance) {
             handleHireDateAndTimeUpdates();
         }
@@ -324,43 +332,41 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const hireEndDatePicker = flatpickr("#hire_end_date", {
         dateFormat: "Y-m-d",
-        minDate: "today", // Initial minDate, will be updated by hireStartDatePicker
+        minDate: "today",
         altInput: true,
         altFormat: "F j, Y",
-         // Disable blocked dates (keep this)
+
         disable: blockedDateRanges.map(range => ({
             from: range.from,
             to: range.to
         })),
-         // Add onChange to update return times if the date selection changes
+
         onChange: function(selectedDates, dateStr, instance) {
              handleHireDateAndTimeUpdates();
         }
     });
 
-    // Get the time select elements (New for hire.html)
+
     const pickUpTimeSelect = document.getElementById('pick_up_time');
     const returnTimeSelect = document.getElementById('return_time');
 
-    // Get the default start and end times from data attributes (New for hire.html)
-    // These come from the hire_settings context variable.
+
     const pickUpStartTimeAttr = pickUpTimeSelect ? pickUpTimeSelect.getAttribute('data-start-time') : null;
     const pickUpEndTimeAttr = pickUpTimeSelect ? pickUpTimeSelect.getAttribute('data-end-time') : null;
     const returnStartTimeAttr = returnTimeSelect ? returnTimeSelect.getAttribute('data-start-time') : null;
     const returnEndTimeAttr = returnTimeSelect ? returnTimeSelect.getAttribute('data-end-time') : null;
 
 
-    // Function to generate and populate time options in a select dropdown (Copy-paste)
     function populateTimeDropdown(selectElement, startTimeStr, endTimeStr, intervalMinutes) {
         if (!selectElement || !startTimeStr || !endTimeStr) {
             console.error("populateTimeDropdown missing arguments:", {selectElement, startTimeStr, endTimeStr});
-            return; // Exit if missing required info
+            return;
         }
 
-        // Store the currently selected value to attempt to re-select it later
+
         const currentValue = selectElement.value;
 
-        // Clear existing options except the first one (the placeholder)
+
         while (selectElement.options.length > 1) {
             selectElement.remove(1);
         }
@@ -381,7 +387,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         while (currentTime <= endTime) {
             const option = document.createElement('option');
-            // Format time as HH:mm
+
             const hours = currentTime.getHours().toString().padStart(2, '0');
             const minutes = currentTime.getMinutes().toString().padStart(2, '0');
             const timeValue = `${hours}:${minutes}`;
@@ -389,124 +395,120 @@ document.addEventListener('DOMContentLoaded', function() {
             option.text = timeValue;
             selectElement.appendChild(option);
 
-            // Increment time by the interval minutes
+
             currentTime.setMinutes(currentTime.getMinutes() + intervalMinutes);
         }
 
-        // Attempt to re-select the previous value if it's still in the options
+
         if (currentValue) {
             const optionToSelect = selectElement.querySelector(`option[value="${currentValue}"]`);
             if (optionToSelect) {
                 selectElement.value = currentValue;
             } else {
-                 // If the previous value is no longer valid, select the first option (the placeholder)
+
                 selectElement.value = "";
             }
         } else {
-            // If there was no previous value, ensure the placeholder is selected
+
              selectElement.value = "";
         }
     }
 
-    // Function to handle updates to date and time selections and refresh time options (Adapted for hire.html)
+
     function handleHireDateAndTimeUpdates() {
-        const pickUpDate = hireStartDatePicker.selectedDates[0]; // Use hireStartDatePicker
-        const returnDate = hireEndDatePicker.selectedDates[0];   // Use hireEndDatePicker
+        const pickUpDate = hireStartDatePicker.selectedDates[0];
+        const returnDate = hireEndDatePicker.selectedDates[0];
         const pickUpTime = pickUpTimeSelect ? pickUpTimeSelect.value : null;
 
-        // Update return date minDate based on pickup date
+
         if (pickUpDate) {
-            hireEndDatePicker.set('minDate', pickUpDate); // Use hireEndDatePicker
-             // If the return date is set and becomes invalid, clear it
+            hireEndDatePicker.set('minDate', pickUpDate);
+
              if (returnDate && returnDate < pickUpDate) {
-                 hireEndDatePicker.clear(); // Use hireEndDatePicker
+                 hireEndDatePicker.clear();
              }
         } else {
-            // If pickup date is cleared, reset return date minDate to today
-            hireEndDatePicker.set('minDate', 'today'); // Use hireEndDatePicker
-             // If pickup date is cleared, it might be best to clear return date too
+
+            hireEndDatePicker.set('minDate', 'today');
+
              hireEndDatePicker.clear();
         }
 
-        // Determine the actual start time for the return time dropdown
+
         let actualReturnStartTime = returnStartTimeAttr;
 
-        // Check if both dates are selected and are the same day
+
         if (pickUpDate && returnDate && pickUpDate.toDateString() === returnDate.toDateString()) {
-            // If dates are the same, the return time must be after the selected pick up time
-            // Use the selected pick up time as the start time, but ensure it's not earlier than the default return start
-            // and not later than the default return end.
+
             if (pickUpTime) {
-                // Parse selected pickup time to HH:mm
+
                 const [puHour, puMinute] = pickUpTime.split(':').map(Number);
-                 // Create a Date object for comparison (date doesn't matter)
+
                  const pickUpTimeDate = new Date();
                  pickUpTimeDate.setHours(puHour, puMinute, 0, 0);
 
-                 // Parse default return start time
+
                  const [retStartHour, retStartMinute] = returnStartTimeAttr.split(':').map(Number);
                  const defaultReturnStartDate = new Date();
                  defaultReturnStartDate.setHours(retStartHour, retStartMinute, 0, 0);
 
-                 // Parse default return end time
+
                  const [retEndHour, retEndMinute] = returnEndTimeAttr.split(':').map(Number);
                  const defaultReturnEndDate = new Date();
                  defaultReturnEndDate.setHours(retEndHour, retEndMinute, 0, 0);
 
-                 // Compare selected pickup time with default return times
+
                  if (pickUpTimeDate >= defaultReturnStartDate) {
-                      actualReturnStartTime = pickUpTime;
-                       // If selected pickup time is later than default return end time
+                      actualReturnStartTime = returnEndTimeAttr;
+
                        if (pickUpTimeDate > defaultReturnEndDate && defaultReturnEndDate >= defaultReturnStartDate) {
-                            actualReturnStartTime = returnEndTimeAttr; // Cap at the end time
+                            actualReturnStartTime = returnEndTimeAttr;
                        } else if (pickUpTimeDate > defaultReturnEndDate && defaultReturnEndDate < defaultReturnStartDate) {
-                            // Handles cases where end time is next day, selected pickup time is after midnight start but before end
+
                             actualReturnStartTime = pickUpTime;
                        }
 
                  } else {
-                     // If selected pickup time is earlier than default return start time, use default return start time
+
                      actualReturnStartTime = returnStartTimeAttr;
                  }
 
             } else {
-                // If no pickup time is selected yet but dates are the same, use the default return start time
+
                 actualReturnStartTime = returnStartTimeAttr;
             }
 
         } else {
-            // If return date is after pick up date, use the default return start time
+
             actualReturnStartTime = returnStartTimeAttr;
         }
 
-        // Repopulate the return time dropdown with the determined start time and the original end time
+
         populateTimeDropdown(returnTimeSelect, actualReturnStartTime, returnEndTimeAttr, 15);
 
     }
 
 
-    // Populate the pick-up time dropdown initially
     if (pickUpTimeSelect && pickUpStartTimeAttr && pickUpEndTimeAttr) {
         populateTimeDropdown(pickUpTimeSelect, pickUpStartTimeAttr, pickUpEndTimeAttr, 15);
-         // Attempt to pre-select value from GET parameters if it exists
+
          const initialPickUpTime = "{{ request.GET.pick_up_time|default:'' }}";
-         if (initialPickUpTime) { // Only try to set if initial value is not empty
+         if (initialPickUpTime) {
               pickUpTimeSelect.value = initialPickUpTime;
          }
     }
 
-     // Add event listener to the pick up time select to update return time options
+
     if (pickUpTimeSelect) {
         pickUpTimeSelect.addEventListener('change', handleHireDateAndTimeUpdates);
     }
 
 
-    // Initial call to update return time options based on default selected dates and times
-    // This ensures the return time dropdown is correct on page load and pre-selects from GET if possible.
+
     handleHireDateAndTimeUpdates();
-     // Attempt to pre-select return time value from GET parameters after initial population
+
      const initialReturnTime = "{{ request.GET.return_time|default:'' }}";
-     if (initialReturnTime && returnTimeSelect) { // Only try to set if initial value is not empty and returnTimeSelect exists
+     if (initialReturnTime && returnTimeSelect) {
          returnTimeSelect.value = initialReturnTime;
      }
 

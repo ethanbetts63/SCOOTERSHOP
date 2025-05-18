@@ -254,7 +254,7 @@ class HireMotorcycleListView(MotorcycleListView):
         # Get IDs of motorcycles on the current page
         motorcycle_ids_on_page = [motorcycle.id for motorcycle in motorcycles_list]
 
-        # Fetch motorcycles with effective daily rate annotation
+        # Fetch motorcycles with effective daily rate annotation (kept for filtering in get_queryset, but not directly used for display price calculation here)
         if hire_settings and hire_settings.default_daily_rate is not None:
              annotated_motorcycles_queryset = Motorcycle.objects.filter(id__in=motorcycle_ids_on_page).annotate(
                  effective_daily_rate=Case(
@@ -275,33 +275,41 @@ class HireMotorcycleListView(MotorcycleListView):
              # Use annotated object if available
              current_motorcycle = annotated_motorcycle_map.get(motorcycle.id, motorcycle)
 
-             # Determine the base daily rate
-             base_daily_rate = None
-             if hasattr(current_motorcycle, 'effective_daily_rate') and current_motorcycle.effective_daily_rate is not None:
-                  base_daily_rate = current_motorcycle.effective_daily_rate
-             elif current_motorcycle.daily_hire_rate is not None:
-                 base_daily_rate = current_motorcycle.daily_hire_rate
-             elif hire_settings and hire_settings.default_daily_rate is not None:
+             # Determine the base daily rate based on custom rate or default setting
+             base_daily_rate = current_motorcycle.daily_hire_rate
+             if base_daily_rate is None and hire_settings and hire_settings.default_daily_rate is not None:
                  base_daily_rate = hire_settings.default_daily_rate
 
-             # Calculate discounted monthly rate
-             if base_daily_rate is not None and hire_settings and hire_settings.monthly_discount_percentage is not None:
+             # Apply monthly discount if applicable
+             if base_daily_rate is not None and hire_settings and hire_settings.monthly_discount_percentage is not None and hire_settings.monthly_discount_percentage > 0:
                  monthly_discount_factor = (Decimal(100) - hire_settings.monthly_discount_percentage) / Decimal(100)
                  discounted_daily_rate = base_daily_rate * monthly_discount_factor
+                 # Ensure decimal places are handled
                  if isinstance(base_daily_rate, Decimal):
-                      decimal_places = abs(base_daily_rate.as_tuple().exponent)
+                      decimal_places = abs(base_daily_rate.as_tuple().exponent) if base_daily_rate.as_tuple().exponent < 0 else 2
                  else:
                       decimal_places = 2
-                 current_motorcycle.monthly_discounted_daily_rate = discounted_daily_rate.quantize(Decimal(10) ** -decimal_places)
+                 current_motorcycle.display_daily_rate = discounted_daily_rate.quantize(Decimal(10) ** -decimal_places)
+             elif base_daily_rate is not None:
+                  # If no discount, use the base daily rate for display
+                  if isinstance(base_daily_rate, Decimal):
+                       decimal_places = abs(base_daily_rate.as_tuple().exponent) if base_daily_rate.as_tuple().exponent < 0 else 2
+                  else:
+                       decimal_places = 2
+                  current_motorcycle.display_daily_rate = base_daily_rate.quantize(Decimal(10) ** -decimal_places)
              else:
-                 current_motorcycle.monthly_discounted_daily_rate = None
+                 current_motorcycle.display_daily_rate = None # Or a message like "Contact for price"
 
-             # Calculate total hire price if dates are valid
-             if self.pick_up_datetime and self.return_datetime and base_daily_rate is not None and self.duration_days is not None:
-                  total_price = base_daily_rate * Decimal(str(self.duration_days))
-                  current_motorcycle.total_hire_price = total_price.quantize(Decimal('0.01'))
-             else:
-                  current_motorcycle.total_hire_price = None
+
+             # Remove calculations for hourly rate and total hire price if they are not needed based on your description.
+             # current_motorcycle.total_hire_price = None # Remove or modify as needed
+             # Remove or modify hourly rate related logic as needed.
+             # Remove or modify monthly_discounted_daily_rate if display_daily_rate is used instead.
+             if hasattr(current_motorcycle, 'monthly_discounted_daily_rate'):
+                 del current_motorcycle.monthly_discounted_daily_rate
+             if hasattr(current_motorcycle, 'total_hire_price'):
+                 del current_motorcycle.total_hire_price
+
 
              updated_motorcycles_list.append(current_motorcycle)
 
@@ -336,19 +344,29 @@ class HireMotorcycleListView(MotorcycleListView):
              max_effective_daily_rate = rate_aggregation.get('max_rate')
 
              if min_effective_daily_rate is not None:
-                  if hire_settings.monthly_discount_percentage is not None:
+                  # Apply discount to min price prefill if applicable
+                  if hire_settings.monthly_discount_percentage is not None and hire_settings.monthly_discount_percentage > 0:
                        monthly_discount_factor = (Decimal(100) - hire_settings.monthly_discount_percentage) / Decimal(100)
                        min_price_prefill = min_effective_daily_rate * monthly_discount_factor
                        min_price_prefill = min_price_prefill.quantize(Decimal('0.01'))
                   else:
                        min_price_prefill = min_effective_daily_rate.quantize(Decimal('0.01'))
 
+
              if max_effective_daily_rate is not None:
+                  # Max price prefill should probably not have discount applied
                   max_price_prefill = max_effective_daily_rate.quantize(Decimal('0.01'))
         elif initial_hire_queryset.filter(daily_hire_rate__isnull=False).exists():
              rate_aggregation = initial_hire_queryset.filter(daily_hire_rate__isnull=False).aggregate(min_rate=Min('daily_hire_rate'), max_rate=Max('daily_hire_rate'))
              min_price_prefill = rate_aggregation.get('min_rate').quantize(Decimal('0.01')) if rate_aggregation.get('min_rate') else None
              max_price_prefill = rate_aggregation.get('max_rate').quantize(Decimal('0.01')) if rate_aggregation.get('max_rate') else None
+
+             # Apply discount to min price prefill if applicable for cases without default_daily_rate
+             if min_price_prefill is not None and hire_settings and hire_settings.monthly_discount_percentage is not None and hire_settings.monthly_discount_percentage > 0:
+                  monthly_discount_factor = (Decimal(100) - hire_settings.monthly_discount_percentage) / Decimal(100)
+                  min_price_prefill = min_price_prefill * monthly_discount_factor
+                  min_price_prefill = min_price_prefill.quantize(Decimal('0.01'))
+
 
         # Add price pre-fill values to context
         context['min_price_prefill'] = min_price_prefill
