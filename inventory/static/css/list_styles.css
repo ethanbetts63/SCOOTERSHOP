@@ -1,0 +1,243 @@
+/*
+  Isolated styles based on user preferences from motorcycle_list_styles.css.
+  This file contains styles for:
+  1. Shape and size of motorcycle and search option tiles.
+  2. Display of icons inside motorcycle tiles.
+  3. Sizing and placement of the main image inside motorcycle tiles.
+  4. Main page title styling.
+  5. Results header (product count and sort bar) styling.
+  6. Main page container width and padding.
+*/
+
+.container-fluid.mt-4 {
+    margin-top: 2.5rem !important;
+    max-width: 1400px;
+    padding: 0 2rem;
+}
+
+h1.mb-4 {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 1.5rem !important;
+    font-size: 2.2rem;
+    position: relative;
+    padding-bottom: 0.75rem;
+}
+
+h1.mb-4:after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 60px;
+    height: 3px;
+    background-color: var(--border-accent);
+}
+
+.search-options .card {
+    background-color: var(--bg-darker);
+    border: none;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    height: 100%;
+}
+
+.search-options .card:hover {
+    transform: none !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+.search-options .card-header {
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    background-color: var(--bg-darkest);
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+    padding: 16px 20px;
+}
+
+.form-label {
+    font-size: 0.9rem;
+    letter-spacing: 0.3px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.form-select, .form-control {
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    margin-bottom: 0.5rem;
+    transition: all var(--transition-medium);
+}
+
+.form-select:hover, .form-control:hover {
+    border-color: var(--border-light);
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: var(--bg-highlight);
+    border-color: var(--border-light);
+    color: var(--text-primary);
+    box-shadow: 0 0 0 3px rgba(200, 200, 200, 0.2);
+}
+
+.form-check-label {
+    color: var(--text-secondary);
+}
+
+.results-header {
+    background-color: var(--bg-darker);
+    padding: 15px;
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-md);
+}
+
+.results-header .d-flex {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+.results-count {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    padding-left: 10px;
+}
+
+.results-count .fw-bold {
+    color: var(--text-primary);
+}
+
+.sort-options {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    padding-right: 10px;
+}
+
+.sort-options .form-label {
+    margin-bottom: 0;
+    margin-right: 8px;
+    display: inline-block;
+}
+
+.sort-options .form-select {
+    width: auto;
+    margin-bottom: 0;
+    padding: 6px 30px 6px 12px;
+    background-color: var(--bg-highlight);
+    min-width: 180px;
+}
+
+.motorcycle-grid {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -10px;
+}
+
+.motorcycle-item {
+    width: 33.33%;
+    padding: 0 10px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+}
+
+.motorcycle-item.search-options {
+}
+
+.card {
+    transition: transform var(--transition-medium), box-shadow var(--transition-medium);
+    overflow: hidden;
+    height: 100%;
+    background-color: var(--bg-darker);
+    border: none;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+}
+
+.motorcycle-item:not(.search-options) .card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.search-options .card:hover {
+    transform: none !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+    transition: transform var(--transition-slow);
+    width: 100%;
+}
+
+.motorcycle-item:not(.search-options) .card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+.motorcycle-details {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 -5px 15px -5px;
+    padding: 0;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    margin: 0 5px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    width: 33.33%;
+    text-align: center;
+}
+
+.detail-icon {
+    height: 20px;
+    width: 20px;
+    margin-right: 0;
+    margin-bottom: 4px;
+    opacity: 0.8;
+}
+
+.detail-label {
+    font-size: 0.75rem;
+    color: var(--text-lighter);
+    margin-bottom: 2px;
+}
+
+.detail-value {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+@media (max-width: 992px) {
+    .motorcycle-item {
+        width: 50%;
+    }
+}
+
+@media (max-width: 576px) {
+    .motorcycle-item {
+        width: 100%;
+    }
+
+    .results-header .d-flex {
+        flex-direction: row !important;
+        flex-wrap: wrap;
+    }
+
+    .sort-options {
+        margin-top: 10px;
+    }
+}
