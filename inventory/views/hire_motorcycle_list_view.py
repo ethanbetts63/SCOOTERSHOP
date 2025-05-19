@@ -17,7 +17,7 @@ import math
 class HireMotorcycleListView(MotorcycleListView):
     template_name = 'inventory/hire.html'
     condition_name = 'hire'
-    url_name = 'inventory:hire'
+    url_name = 'hire:step2_choose_bike'
 
     def get_queryset(self):
         # Start with motorcycles available for hire

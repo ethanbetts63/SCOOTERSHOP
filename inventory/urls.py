@@ -17,7 +17,6 @@ urlpatterns = [
     path('', AllMotorcycleListView.as_view(), name='motorcycle-list'),
     path('new/', NewMotorcycleListView.as_view(), {'condition_name': 'new'}, name='new'), 
     path('used/', UsedMotorcycleListView.as_view(), {'condition_name': 'used'}, name='used'), 
-    path('hire/', HireMotorcycleListView.as_view(), {'condition_name': 'hire'}, name='hire'), 
 
     # --- Motorcycle Detail/Management Views ---
     path('<int:pk>/', MotorcycleDetailView.as_view(), name='motorcycle-detail'),

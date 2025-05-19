@@ -12,12 +12,7 @@
 {% endblock %}
 
 {% block content %}
-    <!--
-    <div class="container hero-banner">{# Added .container #}
-        <img src="{% static 'images/coffee_run5.png' %}" alt="Fiddle Scooter Wallpaper" class="banner-background img-responsive">{# Added .img-responsive #}
-    </div>
-    -->
-    {% include "core/includes/hire_book_include.html" with service_types=service_types %}
+    {% include "hire/step1_date_time_include.html" with service_types=service_types %}
 
     {% include "core/includes/book_include.html" with service_types=service_types %}
 
@@ -134,7 +129,7 @@
                     </ul>
 
                     <div class="hire-cta">
-                        <a href="{% url 'inventory:hire' %}" class="btn-primary">Check out the fleet</a>
+                        <a href="{% url 'hire:step2_choose_bike' %}" class="btn-primary">Check out the fleet</a>
                     </div>
                 </div> 
             </div>

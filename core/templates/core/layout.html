@@ -61,7 +61,7 @@
 
                 {% if settings.enable_hire or user.is_staff %}
                     <li>
-                        <a class="nav-item" href="{% url 'inventory:hire' %}"
+                        <a class="nav-item" href="{% url 'hire:step2_choose_bike' %}"
                            {% if not settings.enable_hire and user.is_staff %}
                                style="color: #08E5D1;"
                            {% endif %}
@@ -165,7 +165,7 @@
 
                         {% if settings.enable_hire or user.is_staff %}
                             <li>
-                                <a href="{% url 'inventory:hire' %}"
+                                <a href="{% url 'hire:step2_choose_bike' %}"
                                    {% if not settings.enable_hire and user.is_staff %}
                                         style="color: #08E5D1;" {# Bright turquoise color #}
                                    {% endif %}

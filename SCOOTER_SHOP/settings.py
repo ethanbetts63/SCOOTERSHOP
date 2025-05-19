@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # List apps using their AppConfig path for better practice
     "core.apps.CoreConfig",
     "users.apps.UsersConfig",
     "dashboard.apps.DashboardConfig", # Moved dashboard before inventory

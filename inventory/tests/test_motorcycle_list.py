@@ -134,7 +134,7 @@ class MotorcycleListViewTests(TestCase):
         self.assertTemplateUsed(response, 'inventory/used.html')
 
     def test_hire_motorcycle_list_view_renders_correct_template(self):
-        url = reverse('inventory:hire')
+        url = reverse('hire:step2_choose_bike')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'inventory/hire.html')
@@ -189,7 +189,7 @@ class MotorcycleListViewTests(TestCase):
         self.assertNotIn(self.motorcycle_unavailable, motorcycles_in_context)
 
     def test_hire_list_view_filters_by_hire_condition(self):
-        url = reverse('inventory:hire')
+        url = reverse('hire:step2_choose_bike')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         motorcycles_in_context = response.context['motorcycles']
@@ -394,7 +394,7 @@ class MotorcycleListViewTests(TestCase):
 
     # Test hire view specific functionality
     def test_hire_list_view_filters_by_daily_rate_range(self):
-        hire_url = reverse('inventory:hire')
+        hire_url = reverse('hire:step2_choose_bike')
         response = self.client.get(hire_url, {'daily_rate_min': 60, 'daily_rate_max': 90})
         self.assertEqual(response.status_code, 200)
         motorcycles_in_context = response.context['motorcycles']
@@ -403,7 +403,7 @@ class MotorcycleListViewTests(TestCase):
         self.assertNotIn(self.motorcycle_hire_cheap, motorcycles_in_context)
 
     def test_hire_list_view_includes_date_range_in_context(self):
-        hire_url = reverse('inventory:hire')
+        hire_url = reverse('hire:step2_choose_bike')
         start_date_str = '2025-07-01'
         end_date_str = '2025-07-10'
         response = self.client.get(hire_url, {'hire_start_date': start_date_str, 'hire_end_date': end_date_str})
