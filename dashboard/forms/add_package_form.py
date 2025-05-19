@@ -1,6 +1,7 @@
+# dashboard/forms/add_package_form.py
 from django import forms
-from hire.models.hire_packages import Package # Make sure this import path is correct
-from hire.models.hire_addon import AddOn # Import AddOn model
+from hire.models.hire_packages import Package
+from hire.models.hire_addon import AddOn
 
 class AddPackageForm(forms.ModelForm):
     add_ons = forms.ModelMultipleChoiceField(
@@ -27,3 +28,16 @@ class AddPackageForm(forms.ModelForm):
         if package_price is not None and package_price < 0:
             raise forms.ValidationError("Package price cannot be negative.")
         return package_price
+
+    def clean_add_ons(self):
+        # This clean method will be called after individual field clean methods,
+        # but before the model's clean method.
+        # It's suitable for validating ManyToMany fields.
+        selected_addons = self.cleaned_data.get('add_ons')
+        if selected_addons:
+            unavailable_addons = [addon.name for addon in selected_addons if not addon.is_available]
+            if unavailable_addons:
+                raise forms.ValidationError(
+                    f"The following add-ons selected are not available: {', '.join(unavailable_addons)}"
+                )
+        return selected_addons

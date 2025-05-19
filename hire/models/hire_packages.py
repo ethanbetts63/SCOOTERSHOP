@@ -46,12 +46,6 @@ class Package(models.Model):
         if self.package_price < 0:
             raise ValidationError({'package_price': "Package price cannot be negative."})
 
-        # Check availability of included add-ons
-        unavailable_addons = [addon.name for addon in self.add_ons.all() if not addon.is_available]
-        if unavailable_addons:
-             raise ValidationError({'add_ons': f"The following add-ons in this package are not available: {', '.join(unavailable_addons)}"})
-
-
     class Meta:
         ordering = ['name']
         verbose_name = "Hire Package"

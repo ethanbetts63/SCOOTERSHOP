@@ -3,8 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.contrib import messages
-from dashboard.forms.add_package_form import AddPackageForm # Make sure this import path is correct
-from hire.models.hire_packages import Package # Make sure this import path is correct
+from dashboard.forms.add_package_form import AddPackageForm
+from hire.models.hire_packages import Package
 
 @method_decorator(login_required, name='dispatch')
 class AddEditPackageView(View):
@@ -22,7 +22,7 @@ class AddEditPackageView(View):
         context = {
             'form': form,
             'title': title,
-            'package': package, # Pass package object for conditional rendering or checks
+            'package': package,
         }
         return render(request, self.template_name, context)
 
@@ -35,7 +35,15 @@ class AddEditPackageView(View):
             form = AddPackageForm(request.POST)
 
         if form.is_valid():
-            package_instance = form.save()
+            # Save the main Package instance first.
+            # For new instances, ManyToMany data can't be saved until the instance has an ID.
+            # Using commit=False prevents Django from saving M2M data until save_m2m() is called.
+            package_instance = form.save(commit=False)
+            package_instance.save() # This saves the Package object and gives it an ID.
+
+            # Now, save the ManyToMany data. This method requires the instance to be saved.
+            form.save_m2m()
+
             messages.success(request, f"Package '{package_instance.name}' saved successfully!")
             return redirect('dashboard:settings_hire_packages')
         else:

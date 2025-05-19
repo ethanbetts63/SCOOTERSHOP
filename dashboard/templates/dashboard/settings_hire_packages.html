@@ -51,7 +51,7 @@
                                     None
                                 {% endif %}
                             </td>
-                            <td>&euro;{{ package.package_price|floatformat:2 }}</td>
+                            <td>AUD ${{ package.package_price|floatformat:2 }}</td> 
                             <td>
                                 {% if package.is_available %}
                                     <span class="badge badge-success">Yes</span>
@@ -80,7 +80,28 @@
     </div>
 
     
-
+    <div class="modal fade" id="deletePackageModal" tabindex="-1" role="dialog" aria-labelledby="deletePackageModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deletePackageModalLabel">Confirm Delete</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete the package "<span id="packageNameToDelete"></span>"? This action cannot be undone.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <form id="deletePackageForm" method="post" action="">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block extra_js %}
