@@ -1,0 +1,71 @@
+{% extends "dashboard/admin_layout.html" %}
+
+{% block admin_main_content %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/service_type_styles.css' %}"> {# Re-using CSS for consistency #}
+
+    <div class="service-booking-container">
+        <div class="booking-progress">
+            <h2>{{ title }}</h2>
+        </div>
+        <p class="mb-4">Use this form to {{ "edit" if is_edit else "add a new" }} hire add-on.</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    {% if field.name != 'is_available' %} {# Render is_available separately for checkbox styling #}
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                    {% endif %}
+                    {% if field.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in field.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            {# Custom rendering for is_available checkbox #}
+            <div class="form-group form-check mt-3">
+                {{ form.is_available }}
+                <label class="form-check-label" for="{{ form.is_available.id_for_label }}">
+                    {{ form.is_available.label }}
+                </label>
+                {% if form.is_available.help_text %}
+                    <small class="form-text text-muted">{{ form.is_available.help_text }}</small>
+                {% endif %}
+                {% if form.is_available.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.is_available.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-success mt-4">
+                <i class="fas fa-save"></i> {{ "Update" if is_edit else "Add" }} Add-On
+            </button>
+            <a href="{% url 'dashboard:settings_hire_addons' %}" class="btn btn-secondary mt-4">
+                Cancel
+            </a>
+        </form>
+    </div>
+{% endblock %}

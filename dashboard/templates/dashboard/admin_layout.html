@@ -16,7 +16,7 @@
         <h2>Admin Navigation</h2>
         <ul class="reset-list">
             <li><a href="{% url 'dashboard:dashboard_index' %}">Dashboard Home</a></li>
-            <li><a href="{% url 'inventory:motorcycle-list' %}">All Motorcycles</a></li> 
+            <li><a href="{% url 'inventory:motorcycle-list' %}">All Motorcycles</a></li>
             <li><a href="{% url 'inventory:motorcycle-create' %}">Add Motorcycle</a></li>
 
             {# Service Management Section #}
@@ -37,6 +37,7 @@
                 <ul class="reset-list">
                     <li><a href="{% url 'dashboard:hire_bookings' %}">Hire Bookings</a></li>
                     <li><a href="{% url 'dashboard:settings_hire_booking' %}">Hire Booking Settings</a></li>
+                    <li><a href="{% url 'dashboard:settings_hire_addons' %}">Hire Add-Ons</a></li> {# NEW LINK HERE #}
                     <li><a href="{% url 'dashboard:blocked_hire_dates_management' %}">Blocked Hire Dates</a></li>
                 </ul>
             </li>

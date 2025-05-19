@@ -1,0 +1,108 @@
+{% extends "dashboard/admin_layout.html" %}
+
+{% block admin_main_content %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/service_type_styles.css' %}"> {# Re-using this CSS as it provides general table/list styling #}
+
+    <div class="service-booking-container">
+        <div class="booking-progress">
+            <h2>Hire Add-Ons Management</h2>
+        </div>
+        <p class="mb-4">Manage the individual add-on items available for hire.</p>
+
+        <a href="{% url 'dashboard:add_hire_addon' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> Add New Add-On
+        </a>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table" id="addonsTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Price Type</th>
+                            <th>Cost</th>
+                            <th>Available</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for addon in addons %}
+                        <tr>
+                            <td>{{ addon.name }}</td>
+                            <td>{{ addon.description|default:"N/A" }}</td>
+                            <td>{{ addon.get_price_type_display }}</td>
+                            <td>&euro;{{ addon.cost|floatformat:2 }}</td>
+                            <td>
+                                {% if addon.is_available %}
+                                    <span class="badge badge-success">Yes</span>
+                                {% else %}
+                                    <span class="badge badge-danger">No</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'dashboard:edit_hire_addon' addon.pk %}" class="btn btn-info btn-sm">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <button type="button" class="btn btn-danger btn-sm delete-addon-btn" data-addon-id="{{ addon.pk }}" data-addon-name="{{ addon.name }}">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6">No add-ons available.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DataTables initialization (optional, but good for larger lists)
+            $('#addonsTable').DataTable({
+                "paging": true,
+                "ordering": true,
+                "searching": true,
+                "info": true
+            });
+
+            // Handle delete button click
+            document.querySelectorAll('.delete-addon-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const addOnId = this.dataset.addonId;
+                    const addOnName = this.dataset.addonName;
+                    const deleteForm = document.getElementById('deleteAddOnForm');
+                    const addOnNameToDelete = document.getElementById('addonNameToDelete');
+
+                    // Set the name in the modal body
+                    addOnNameToDelete.textContent = addOnName;
+
+                    // Set the form action URL
+                    deleteForm.action = `/dashboard/settings/hire-addons/delete/${addOnId}/`;
+
+                    // Show the modal
+                    $('#deleteAddOnModal').modal('show');
+                });
+            });
+        });
+    </script>
+{% endblock %}
