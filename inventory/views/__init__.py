@@ -16,7 +16,6 @@ from .motorcycle_list_view import MotorcycleListView
 from .all_motorcycle_list_view import AllMotorcycleListView
 from .new_motorcycle_list_view import NewMotorcycleListView
 from .used_motorcycle_list_view import UsedMotorcycleListView
-from .hire_motorcycle_list_view import HireMotorcycleListView
 
 # You might want to list the classes that are intended to be publicly available
 __all__ = [
@@ -28,5 +27,4 @@ __all__ = [
     'AllMotorcycleListView',
     'NewMotorcycleListView',
     'UsedMotorcycleListView',
-    'HireMotorcycleListView',
 ]

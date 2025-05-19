@@ -140,11 +140,18 @@
                             </ul>
 
                             <p class="card-text fw-bold">
-                                {# Display the calculated daily rate if available #}
-                                {% if motorcycle.display_daily_rate is not None %}
-                                    from ${{ motorcycle.display_daily_rate|floatformat:2 }} per day
+                                {% if motorcycle.daily_hire_rate is not None %}
+                                    {% with discount_factor=hire_settings.monthly_discount_percentage|div:100 %}
+                                        {% with multiplier=1|sub:discount_factor %}
+                                            from ${{ motorcycle.daily_hire_rate|mul:multiplier|floatformat:2 }} per day
+                                        {% endwith %}
+                                    {% endwith %}
                                 {% else %}
-                                    Contact for price
+                                    {% with discount_factor=hire_settings.monthly_discount_percentage|div:100 %}
+                                        {% with multiplier=1|sub:discount_factor %}
+                                            from ${{ hire_settings.default_daily_rate|mul:multiplier|floatformat:2 }} per day
+                                        {% endwith %}
+                                    {% endwith %}
                                 {% endif %}
                             </p>
 

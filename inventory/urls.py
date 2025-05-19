@@ -4,7 +4,7 @@ from django.urls import path
 
 # Import the necessary views from your inventory app
 from .views import (
-    NewMotorcycleListView, UsedMotorcycleListView, HireMotorcycleListView, 
+    NewMotorcycleListView, UsedMotorcycleListView, 
     AllMotorcycleListView, MotorcycleDetailView,
     MotorcycleCreateView, MotorcycleUpdateView, MotorcycleDeleteView
 )
