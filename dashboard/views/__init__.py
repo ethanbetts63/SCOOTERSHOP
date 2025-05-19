@@ -20,6 +20,9 @@ from .settings_business_info import *
 from .settings_hire_booking import *
 from .index import *
 from .settings_hire_addons import settings_hire_addons
+from .settings_hire_packages import HirePackagesSettingsView
+from .add_edit_package_view import AddEditPackageView
+from .delete_package_view import DeletePackageView
 
 # Import booking views from the service_bookings.py file 
 from .service_bookings import (

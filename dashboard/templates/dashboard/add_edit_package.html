@@ -1,0 +1,128 @@
+{% extends "dashboard/admin_layout.html" %}
+
+{% block admin_main_content %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/service_type_styles.css' %}">
+
+    <div class="service-booking-container">
+        <div class="booking-progress">
+            <h2>{{ title }}</h2>
+        </div>
+        <p class="mb-4">Use this form to {% if package %}edit{% else %}add{% endif %} a hire package.</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="{{ form.name.id_for_label }}">Package Name</label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.name.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <small class="form-text text-muted">{{ form.name.help_text }}</small>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.description.id_for_label }}">Description</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.description.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <small class="form-text text-muted">{{ form.description.help_text }}</small>
+            </div>
+
+            <div class="form-group">
+                <label>Add-Ons Included</label>
+                <div class="addon-checkbox-list">
+                    {% for checkbox in form.add_ons %}
+                        <div class="form-check">
+                            {{ checkbox.tag }}
+                            <label class="form-check-label" for="{{ checkbox.id_for_label }}">
+                                {{ checkbox.choice_label }}
+                            </label>
+                        </div>
+                    {% endfor %}
+                </div>
+                {% if form.add_ons.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.add_ons.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <small class="form-text text-muted">{{ form.add_ons.help_text }}</small>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.package_price.id_for_label }}">Package Price ($)</label>
+                {{ form.package_price }}
+                {% if form.package_price.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.package_price.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <small class="form-text text-muted">{{ form.package_price.help_text }}</small>
+            </div>
+
+            <div class="form-group form-check">
+                {{ form.is_available }}
+                <label class="form-check-label" for="{{ form.is_available.id_for_label }}">
+                    Is Available?
+                </label>
+                {% if form.is_available.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.is_available.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <small class="form-text text-muted">{{ form.is_available.help_text }}</small>
+            </div>
+
+            <button type="submit" class="btn btn-success">Save Package</button>
+            <a href="{% url 'dashboard:settings_hire_packages' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add Bootstrap's 'is-invalid' class for form errors dynamically
+            // This is generally handled by Django crispy forms or manual template rendering
+            // but for raw forms, you might need extra JS to apply the class
+            document.querySelectorAll('.invalid-feedback').forEach(function(feedback) {
+                const formControl = feedback.previousElementSibling; // This usually points to the input
+                if (formControl && formControl.classList.contains('form-control')) {
+                    formControl.classList.add('is-invalid');
+                }
+            });
+            document.querySelectorAll('input, select, textarea').forEach(function(input) {
+                if (input.nextElementSibling && input.nextElementSibling.classList.contains('invalid-feedback')) {
+                    input.classList.add('is-invalid');
+                }
+            });
+        });
+    </script>
+{% endblock %}
