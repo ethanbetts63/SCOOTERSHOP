@@ -1,6 +1,6 @@
 # hire/views/__init__.py
 from .step1_DateTime_view import SelectDateTimeView
-from .step2_BikeChoice_view import HireMotorcycleListView
+from .step2_BikeChoice_view import BikeChoiceView
 from .step3_AddonPackage_view import AddonPackageView
 from .step4_HasAccount_view import HasAccountView
 from .step4_NoAccount_view import NoAccountView
