@@ -9,19 +9,17 @@ class AddAddOnForm(forms.ModelForm):
     """
     class Meta:
         model = AddOn
-        fields = ['name', 'description', 'price_type', 'cost', 'is_available']
+        fields = ['name', 'description', 'cost', 'is_available'] # Removed 'price_type'
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'price_type': forms.Select(attrs={'class': 'form-control'}),
             'cost': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'is_available': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
         help_texts = {
             'name': 'The name of the add-on (e.g., "Helmet", "GPS").',
             'description': 'A brief description of the add-on.',
-            'price_type': 'How the add-on is priced (e.g., per booking, per day, per item).',
-            'cost': 'The cost of the add-on.',
+            'cost': 'The cost of the add-on per item per day.', # Updated help text
             'is_available': 'Check if this add-on is currently available for hire.',
         }
 

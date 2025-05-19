@@ -1,13 +1,6 @@
 from django.db import models # Django models
 from django.core.exceptions import ValidationError # Validation errors
 
-# Choices for AddOn pricing type
-PRICE_TYPE_CHOICES = [
-    ('per_booking', 'Per Booking'),
-    ('per_day', 'Per Day'),
-    ('per_item', 'Per Item'),
-]
-
 class AddOn(models.Model):
     """
     Represents an individual add-on item available for hire.
@@ -16,16 +9,10 @@ class AddOn(models.Model):
     description = models.TextField(blank=True, null=True, help_text="Description of the add-on.")
 
     # Pricing
-    price_type = models.CharField(
-        max_length=20,
-        choices=PRICE_TYPE_CHOICES,
-        default='per_booking',
-        help_text="How the add-on is priced."
-    )
     cost = models.DecimalField(
         max_digits=8,
         decimal_places=2,
-        help_text="Cost of the add-on based on the price type."
+        help_text="Cost of the add-on per item per day."
     )
 
     # Availability
