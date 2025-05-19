@@ -13,8 +13,8 @@
 
 {# Include the Step 1 Date/Time form here #}
 {# Pass original_inputs from the view's context for pre-filling #}
-{# Pass hire_settings for time ranges #}
-{% include "hire/includes/step1_date_time_include.html" with original_inputs=original_inputs hire_settings=hire_settings %}
+{# REMOVED: hire_settings=hire_settings as it should be available via context processor #}
+{% include "hire/step1_date_time_include.html"%}
 
 
     <div class="hire-section">
@@ -22,23 +22,8 @@
 
             {% if hire_start_date and hire_end_date %}
             <div class="card card-border card-hover-effect availability-info">
-                <div class="card-body">
-                    <h3>Available Motorcycles</h3>
-                    {# Display dates and duration from session data passed via context #}
-                    <p>Showing motorcycles available for hire from <strong>{{ hire_start_date|date:"D, d M Y" }}</strong> to <strong>{{ hire_end_date|date:"D, d M Y" }}</strong> ({{ hire_days }} day{% if hire_days > 1 %}s{% endif %}).</p>
-
-                    <div class="alert alert-info">
-                        {# Keep the note about availability subject to confirmation #}
-                        <p>Please note that motorcycle availability is subject to confirmation.</p>
-                         {# You can add a note about license here if has_motorcycle_license is false #}
-                        {% if hire_settings and hire_settings.requires_license_above_50cc and not has_motorcycle_license %}
-                             <p>Based on your selection, only motorcycles 50cc or below are shown as you indicated you do not have a motorcycle license (Australian Law).</p>
-                        {% endif %}
-                    </div>
-                </div>
             </div>
             {% elif original_inputs %}
-                {# Optional: Show a message if the user arrived with selected dates but no bikes found #}
                  <div class="card card-border card-hover-effect availability-info">
                      <div class="card-body">
                           <div class="alert alert-warning">
@@ -53,7 +38,7 @@
         </div>
     </div>
 
-    {% with current_url_name='hire:step2_choose_bike' page_title='Motorcycles Available for Hire' %} {# Use the correct URL name #}
+    {% with current_url_name='hire:step2_choose_bike' page_title='Motorcycles Available for Hire' %}
 
         <div class="container-fluid mt-4">
             {% if page_title %}
@@ -65,11 +50,11 @@
             <div class="results-header mb-3">
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="results-count">
-                        {% with total_count=paginator.count %} {# Use paginator from context #}
+                        {% with total_count=paginator.count %}
                             {% if motorcycles %}
                                 {% if is_paginated %}
                                     <span class="fw-bold">{{ page_obj.start_index|default:"1" }}</span> to
-                                    <span class="fw-bold">{{ page_obj.end_index|default:total_count }}</span> of {# Corrected typo here #}
+                                    <span class="fw-bold">{{ page_obj.end_index|default:total_count }}</span> of
                                 {% endif %}
                                 <span class="fw-bold">{{ total_count }}</span> products for hire
                             {% else %}
@@ -103,8 +88,6 @@
             </div>
 
             <div class="motorcycle-grid">
-                {# REMOVED: The entire search-options card was here #}
-
                 {% for motorcycle in motorcycles %}
                 <div class="motorcycle-item">
 
@@ -174,21 +157,16 @@
                             <p class="card-text location"><small class="text-muted">{{ motorcycle.location }}</small></p>
                         </div>
                          <div class="card-footer text-center button-container">
-                             {# View Details Button #}
                              <a href="{% url 'inventory:motorcycle-detail' motorcycle.pk %}" class="btn-secondary">View Details</a>
 
-                             {# Select Button - Needs JS to submit a form or redirect to Step 3 with bike ID #}
-                             {# For now, keep the button structure #}
-                             {# The next step will involve adding functionality to this button #}
                              <button type="button" class="select-motorcycle-btn" data-motorcycle-id="{{ motorcycle.pk }}">Select</button>
                          </div>
                     </div>
                 </div>
                 {% empty %}
-                {# This message will show if the queryset is empty (e.g., no session data, or no bikes match) #}
                 <div class="col-12 text-center py-5">
                     <h3>No motorcycles found matching your criteria.</h3>
-                    <p>Try adjusting your hire dates above or check back later.</p> {# Direct user to the date selector #}
+                    <p>Try adjusting your hire dates above or check back later.</p>
                 </div>
                 {% endfor %}
             </div>
@@ -223,7 +201,7 @@
                     {% if page_obj.has_next %}
                     <li class="page-item">
                         {# Ensure other GET parameters (like 'order') are carried in pagination links #}
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a> {# Corrected closing tag #}
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
                     </li>
                     <li class="page-item">
                          {# Ensure other GET parameters (like 'order') are carried in pagination links #}
@@ -239,20 +217,9 @@
 {% endblock %}
 
 {% block extra_js %}
-{# Include the JS from the date/time include directly here, or ensure it's loaded. #}
-{# Since we are including the HTML file, the script tags within it should execute. #}
-{# If they don't, you might need to move the JS content here or ensure proper loading. #}
-{# Based on your previous include, the JS is inside the include, which is typical. #}
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
 
-    // The Flatpickr initialization and populateTimeDropdown logic
-    // should already be present and working from the included
-    // step1_date_time_include.html file.
-
-    // We only need JS here for the "Select" buttons on each motorcycle.
-    // This will handle redirecting to the next step (Add-ons/Packages).
     const selectButtons = document.querySelectorAll('.select-motorcycle-btn');
 
     selectButtons.forEach(button => {
@@ -261,17 +228,13 @@ document.addEventListener('DOMContentLoaded', function() {
             // Redirect to Step 3 URL, passing the motorcycle ID
             // You'll need to define the URL name for Step 3 in your urls.py
             window.location.href = `/hire/booking/addons/${motorcycleId}/`; // Example URL pattern
-            // Or use Django's URL reversing if you can pass the URL name dynamically
-            // e.g., window.location.href = "{% url 'hire:step3_addons' 0 %}".replace('0', motorcycleId);
-            // This requires the URL tag to be rendered in the template.
+
         });
     });
-
-    // Keep the JS for the sorting form if you still want sort options
-    // The sorting form is still in the HTML, so its JS is likely handled by the browser submit
-
-    // If you had any JS specifically for the removed search options card, remove it here.
-
 });
 </script>
+{# Include the JS from the date/time include here if the script tags within the include don't run #}
+{# automatically when included. Otherwise, this block might be redundant. #}
+{# <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script> #}
+{# <script> /* JS from step1_date_time_include.html */ </script> #}
 {% endblock %}
