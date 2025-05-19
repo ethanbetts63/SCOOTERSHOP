@@ -11,9 +11,6 @@
 
 {% block content %}
 
-{# Include the Step 1 Date/Time form here #}
-{# Pass original_inputs from the view's context for pre-filling #}
-{# REMOVED: hire_settings=hire_settings as it should be available via context processor #}
 {% include "hire/step1_date_time_include.html"%}
 
 
@@ -33,7 +30,7 @@
                      </div>
                  </div>
             {% else %}
-                 {# Message handled by view if no session data exists #}
+
             {% endif %}
         </div>
     </div>
@@ -75,7 +72,7 @@
 
                             </select>
 
-                            {# Keep only the 'order' parameter in the hidden fields for sorting form #}
+
                             {% for key, value in request.GET.items %}
                                 {% if key == 'order' %}
                                     <input type="hidden" name="{{ key }}" value="{{ value }}">
@@ -98,7 +95,11 @@
                             <img src="{% static 'images/no_image.jpg' %}" class="card-img-top img-cover" alt="No Image Available">
                         {% endif %}
                         <div class="card-body text-center">
-                            <h5 class="card-title">{{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }}</h5>
+                            <h5 class="card-title">{{ motorcycle.brand }} {{ motorcycle.model }}</h5>
+                            <p class="card-subtitle mb-2 text-muted" style="font-size: 0.8em;">
+                                or similar
+                                <span class="svg-icon svg-icon-md icon-info" title="The model you get on pickup is subject to availability."></span>
+                            </p>
 
                             <div class="motorcycle-details">
 
@@ -155,7 +156,7 @@
                                 {% endif %}
                             </p>
 
-                             {# Display the total price for the period if dates are selected #}
+
                             {% if motorcycle.total_hire_price is not None %}
                                  <p class="card-text total-price">Total for period: ${{ motorcycle.total_hire_price|floatformat:2 }}</p>
                             {% endif %}
@@ -164,7 +165,6 @@
                             <p class="card-text location"><small class="text-muted">{{ motorcycle.location }}</small></p>
                         </div>
                          <div class="card-footer text-center button-container">
-                             <a href="{% url 'inventory:motorcycle-detail' motorcycle.pk %}" class="btn-secondary">View Details</a>
 
                              <button type="button" class="select-motorcycle-btn" data-motorcycle-id="{{ motorcycle.pk }}">Select</button>
                          </div>
@@ -183,11 +183,9 @@
                 <ul class="pagination justify-content-center reset-list">
                     {% if page_obj.has_previous %}
                     <li class="page-item">
-                        {# Ensure other GET parameters (like 'order') are carried in pagination links #}
                         <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; First</a>
                     </li>
                     <li class="page-item">
-                        {# Ensure other GET parameters (like 'order') are carried in pagination links #}
                         <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
                     </li>
                     {% endif %}
@@ -199,7 +197,6 @@
                     </li>
                     {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                     <li class="page-item">
-                        {# Ensure other GET parameters (like 'order') are carried in pagination links #}
                         <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
                     </li>
                     {% endif %}
@@ -207,11 +204,9 @@
 
                     {% if page_obj.has_next %}
                     <li class="page-item">
-                        {# Ensure other GET parameters (like 'order') are carried in pagination links #}
                         <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
                     </li>
                     <li class="page-item">
-                         {# Ensure other GET parameters (like 'order') are carried in pagination links #}
                         <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last &raquo;</a>
                     </li>
                     {% endif %}
@@ -240,8 +235,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-{# Include the JS from the date/time include here if the script tags within the include don't run #}
-{# automatically when included. Otherwise, this block might be redundant. #}
-{# <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script> #}
-{# <script> /* JS from step1_date_time_include.html */ </script> #}
+
 {% endblock %}
