@@ -6,9 +6,11 @@
 
     <div class="service-booking-container">
         <div class="booking-progress">
-            <h2>{{ title }}</h2>
+            <h2>{{ title }}</h2> {# This is correct, as 'title' is already conditionally set in the view #}
         </div>
-        <p class="mb-4">Use this form to {{ "edit" if is_edit else "add a new" }} hire add-on.</p>
+        {# Original problematic line was here: <p class="mb-4">Use this form to {{ "edit" if is_edit else "add a new" }} hire add-on.</p> #}
+        {# Corrected line below: #}
+        <p class="mb-4">Use this form to {% if is_edit %}edit{% else %}add a new{% endif %} hire add-on.</p>
 
         {% if messages %}
             {% for message in messages %}
@@ -61,7 +63,7 @@
             </div>
 
             <button type="submit" class="btn btn-success mt-4">
-                <i class="fas fa-save"></i> {{ "Update" if is_edit else "Add" }} Add-On
+                <i class="fas fa-save"></i> {% if is_edit %}Update{% else %}Add{% endif %} Add-On
             </button>
             <a href="{% url 'dashboard:settings_hire_addons' %}" class="btn btn-secondary mt-4">
                 Cancel
