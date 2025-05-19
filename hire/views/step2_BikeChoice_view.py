@@ -1,291 +1,187 @@
 # hire/views/step2_BikeChoice_view.py
 
-from django.shortcuts import render, redirect
-from django.views import View # Inherit from Django's base View
-from django.db.models import Q, Min, Max, Case, When, Value, DecimalField
 import datetime
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views import View
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib import messages
 from django.utils import timezone
-from datetime import timedelta
-from hire.models import HireBooking
-from dashboard.models import HireSettings
+from django.db.models import Q
+
 from inventory.models import Motorcycle
-from dashboard.models import BlockedHireDate
-import logging
-from decimal import Decimal
-import math
-import json
+from ..models import HireBooking, TempHireBooking
+from dashboard.models import HireSettings, BlockedHireDate
+from ..forms.step1_DateTime_form import Step1DateTimeForm
+from ..views.utils import calculate_hire_price, calculate_hire_duration_days
 
 class BikeChoiceView(View):
     template_name = 'hire/step2_choose_bike.html'
-    url_name = 'hire:step2_choose_bike'
-    paginate_by = 12 # Manually add pagination attribute
+    paginate_by = 9
 
     def get(self, request, *args, **kwargs):
-        # This is the GET request to display the bikes
-        # We need to get booking data from the session
-        pick_up_datetime_iso = request.session.get('booking_pickup_datetime')
-        return_datetime_iso = request.session.get('booking_return_datetime')
-        has_motorcycle_license = request.session.get('booking_has_motorcycle_license', False)
+        temp_booking_id = request.session.get('temp_booking_id')
+        temp_booking_uuid = request.session.get('temp_booking_uuid')
+        temp_booking = None
 
-        self.pick_up_datetime = None
-        self.return_datetime = None
-        self.duration_days = None
-        self.original_inputs = {}
-
-        hire_settings = None
-        try:
-            hire_settings = HireSettings.objects.first()
-            if not hire_settings:
-                messages.error(request, "Hire settings are not configured. Availability and pricing may be inaccurate.")
-        except Exception:
-            messages.error(request, "Could not load hire settings. Availability and pricing may be inaccurate.")
-            pass
-
-        # --- Retrieve and validate session data ---
-        if pick_up_datetime_iso and return_datetime_iso:
+        # --- 1. Retrieve Temporary Booking Details or Initialize Defaults ---
+        if temp_booking_id and temp_booking_uuid:
             try:
-                self.pick_up_datetime = timezone.datetime.fromisoformat(pick_up_datetime_iso)
-                self.return_datetime = timezone.datetime.fromisoformat(return_datetime_iso)
+                temp_booking = TempHireBooking.objects.get(
+                    id=temp_booking_id,
+                    session_uuid=temp_booking_uuid
+                )
+            except TempHireBooking.DoesNotExist:
+                messages.error(request, "Your temporary booking could not be found or has expired. Please select your hire dates.")
+                if 'temp_booking_id' in request.session:
+                    del request.session['temp_booking_id']
+                if 'temp_booking_uuid' in request.session:
+                    del request.session['temp_booking_uuid']
+                # Continue with default values as if accessed directly
 
-                if timezone.is_naive(self.pick_up_datetime):
-                    self.pick_up_datetime = timezone.make_aware(self.pick_up_datetime)
-                if timezone.is_naive(self.return_datetime):
-                    self.return_datetime = timezone.make_aware(self.return_datetime)
+        # If no temp_booking exists (direct access or expired), set default values
+        # These will be used for the initial display and pre-filling the form.
+        # They will *not* be saved to the database unless the Step 1 form is submitted.
+        if not temp_booking or not (temp_booking.pickup_date and temp_booking.pickup_time and temp_booking.return_date and temp_booking.return_time):
+            # Set sensible defaults for initial view
+            now = timezone.now()
+            default_pickup_date = now.date()
+            default_pickup_time = now.time().replace(minute=0, second=0, microsecond=0) # Round to nearest hour
+            # Ensure default return date is at least one day after pickup
+            default_return_datetime = now + datetime.timedelta(days=1)
+            default_return_date = default_return_datetime.date()
+            default_return_time = default_return_datetime.time().replace(minute=0, second=0, microsecond=0)
 
-                if self.return_datetime <= self.pick_up_datetime:
-                    messages.error(request, "Invalid hire dates in session. Please select dates again.")
-                    request.session.pop('booking_pickup_datetime', None)
-                    request.session.pop('booking_return_datetime', None)
-                    request.session.pop('booking_has_motorcycle_license', None)
-                    return redirect('hire:step1_select_datetime')
-
-                duration = self.return_datetime - self.pick_up_datetime
-                self.duration_days = duration.total_seconds() / 3600 / 24
-
-                errors = []
-                if hire_settings:
-                    if hire_settings.minimum_hire_duration_days is not None and self.duration_days < hire_settings.minimum_hire_duration_days:
-                        errors.append(f"Minimum hire duration is {hire_settings.minimum_hire_duration_days} days.")
-                    if hire_settings.maximum_hire_duration_days is not None and self.duration_days > hire_settings.maximum_hire_duration_days:
-                         errors.append(f"Maximum hire duration is {hire_settings.maximum_hire_duration_days} days.")
-
-                    if hire_settings.booking_lead_time_hours is not None:
-                         now = timezone.now()
-                         min_pickup_time = now + timedelta(hours=hire_settings.booking_lead_time_hours)
-                         if self.pick_up_datetime < min_pickup_time:
-                              errors.append(f"Pickup must be at least {hire_settings.booking_lead_time_hours} hours from now.")
-
-                blocked_dates = BlockedHireDate.objects.all()
-                for blocked in blocked_dates:
-                     blocked_start_datetime = timezone.make_aware(datetime.datetime.combine(blocked.start_date, datetime.time.min))
-                     blocked_end_datetime = timezone.make_aware(datetime.datetime.combine(blocked.end_date, datetime.time.max))
-
-                     if (self.pick_up_datetime <= blocked_end_datetime) and (self.return_datetime >= blocked_start_datetime):
-                          errors.append(f"Your selected hire period conflicts with a blocked period ({blocked.start_date} to {blocked.end_date}).")
-                          break
-
-                if errors:
-                    for error in errors:
-                        messages.error(request, error)
-                    request.session.pop('booking_pickup_datetime', None)
-                    request.session.pop('booking_return_datetime', None)
-                    request.session.pop('booking_has_motorcycle_license', None)
-                    return redirect('hire:step1_select_datetime')
-
-                self.original_inputs = {
-                    'pick_up_date': self.pick_up_datetime.strftime('%Y-%m-%d'),
-                    'pick_up_time': self.pick_up_datetime.strftime('%H:%M'),
-                    'return_date': self.return_datetime.strftime('%Y-%m-%d'),
-                    'return_time': self.return_datetime.strftime('%H:%M'),
-                    'has_motorcycle_license': str(has_motorcycle_license).lower()
-                }
-
-
-            except ValueError:
-                messages.error(request, "Error parsing hire dates from session. Please select dates again.")
-                request.session.pop('booking_pickup_datetime', None)
-                request.session.pop('booking_return_datetime', None)
-                request.session.pop('booking_has_motorcycle_license', None)
-                return redirect('hire:step1_select_datetime')
-            except Exception as e:
-                messages.error(request, f"An unexpected error occurred processing hire dates: {e}")
-                request.session.pop('booking_pickup_datetime', None)
-                request.session.pop('booking_return_datetime', None)
-                request.session.pop('booking_has_motorcycle_license', None)
-                return redirect('hire:step1_select_datetime')
-
+            # Create a 'dummy' temp_booking object for consistent variable access
+            # This is not saved to the DB at this point.
+            temp_booking_display = TempHireBooking(
+                pickup_date=default_pickup_date,
+                pickup_time=default_pickup_time,
+                return_date=default_return_date,
+                return_time=default_return_time,
+                has_motorcycle_license=True # Default to true for broader initial display
+            )
+            messages.info(request, "Please select your desired hire dates and times to view available motorcycles.")
         else:
-            messages.info(request, "Please select your desired hire dates and times.")
+            temp_booking_display = temp_booking # Use the actual temp_booking if it exists and is valid
 
-        # --- Build the queryset based on session data ---
-        queryset = Motorcycle.objects.filter(
-            is_available=True,
-            conditions__name='hire'
+        # Use temp_booking_display for calculations and form pre-filling
+        pickup_datetime = timezone.make_aware(datetime.datetime.combine(temp_booking_display.pickup_date, temp_booking_display.pickup_time))
+        return_datetime = timezone.make_aware(datetime.datetime.combine(temp_booking_display.return_date, temp_booking_display.return_time))
+        has_license = temp_booking_display.has_motorcycle_license
+
+        # Duration for pricing (using potentially default dates/times)
+        duration_days = calculate_hire_duration_days(pickup_datetime, return_datetime)
+
+
+        # --- 2. Filter Motorcycles ---
+        available_motorcycles = Motorcycle.objects.filter(conditions__name='hire', is_available=True)
+
+        if not has_license:
+            available_motorcycles = available_motorcycles.filter(engine_size__lte=50)
+
+        conflicting_bookings = HireBooking.objects.filter(
+            Q(pickup_date__lt=return_datetime.date()) |
+            (Q(pickup_date=return_datetime.date()) & Q(pickup_time__lte=return_datetime.time())),
+            Q(return_date__gt=pickup_datetime.date()) |
+            (Q(return_date=pickup_datetime.date()) & Q(return_time__gte=pickup_datetime.time())),
+            status__in=['pending', 'confirmed', 'in_progress']
         )
+        booked_motorcycle_ids = conflicting_bookings.values_list('motorcycle__id', flat=True)
+        final_motorcycles_queryset = available_motorcycles.exclude(id__in=booked_motorcycle_ids)
 
-        if self.pick_up_datetime and self.return_datetime:
-            # Exclude motorcycles with conflicting confirmed/pending bookings (using corrected logic)
-            ends_before_or_at_desired_pickup = (
-                Q(return_date__lt=self.pick_up_datetime.date()) |
-                Q(return_date=self.pick_up_datetime.date(), return_time__lte=self.pick_up_datetime.time())
-            )
+        # --- 3. Add Price Calculations and Other Annotations ---
+        hire_settings = HireSettings.objects.first()
 
-            starts_after_or_at_desired_return = (
-                Q(pickup_date__gt=self.return_datetime.date()) |
-                Q(pickup_date=self.return_datetime.date(), pickup_time__gte=self.return_datetime.time())
-            )
+        motorcycles_with_prices = []
+        for motorcycle in final_motorcycles_queryset:
+             base_daily_rate = motorcycle.daily_hire_rate or (hire_settings.default_daily_rate if hire_settings else 0)
+             monthly_discount_factor = hire_settings.monthly_discount_percentage / 100 if hire_settings else 0
+             discounted_daily_rate_for_display = base_daily_rate * (1 - monthly_discount_factor)
 
-            no_overlap = ends_before_or_at_desired_pickup | starts_after_or_at_desired_return
-
-            conflicting_bookings = HireBooking.objects.filter(
-                status__in=['confirmed', 'pending'],
-                motorcycle__in=queryset,
-            ).exclude(no_overlap).values_list('motorcycle_id', flat=True)
-
-            queryset = queryset.exclude(id__in=conflicting_bookings)
-
-            # --- CORRECTED: Filter by license status based on engine size ---
-            # If user does NOT have a motorcycle license, only show bikes <= 50cc
-            if not has_motorcycle_license:
-                 queryset = queryset.filter(engine_size__lte=50)
-
-
-        else:
-            queryset = Motorcycle.objects.none()
-
-
-        # --- Apply sorting (keep existing sorting based on GET params) ---
-        order = self.request.GET.get('order', 'price_low_to_high')
-
-        if hire_settings and hire_settings.default_daily_rate is not None:
-             queryset = queryset.annotate(
-                 effective_daily_rate=Case(
-                     When(daily_hire_rate__isnull=False, then='daily_hire_rate'),
-                     default=hire_settings.default_daily_rate,
-                     output_field=DecimalField()
-                 )
+             total_hire_price_for_bike = calculate_hire_price(
+                  motorcycle,
+                  pickup_datetime,
+                  return_datetime,
+                  hire_settings
              )
 
-        if order == 'price_low_to_high':
-            queryset = queryset.order_by('effective_daily_rate' if 'effective_daily_rate' in queryset.query.annotations else 'daily_hire_rate')
-        elif order == 'price_high_to_low':
-             queryset = queryset.order_by('-effective_daily_rate' if 'effective_daily_rate' in queryset.query.annotations else '-daily_hire_rate')
-        elif order == 'age_new_to_old':
-            queryset = queryset.order_by('-year', '-pk')
-        elif order == 'age_old_to_new':
-            queryset = queryset.order_by('year', 'pk')
-        else:
-            queryset = queryset.order_by('effective_daily_rate' if 'effective_daily_rate' in queryset.query.annotations else 'daily_hire_rate')
-
-
-        # --- Pagination ---
-        page = self.request.GET.get('page', 1)
-        from django.core.paginator import Paginator
-        paginator = Paginator(queryset, self.paginate_by)
-        try:
-            motorcycles_page = paginator.page(page)
-        except Exception:
-             if int(page) > paginator.num_pages:
-                 motorcycles_page = paginator.page(paginator.num_pages)
-             else:
-                motorcycles_page = paginator.page(1)
-
-
-        self.motorcycles_list = motorcycles_page.object_list
-        self.page_obj = motorcycles_page
-        self.is_paginated = paginator.num_pages > 1
-        self.paginator = paginator
-
-
-        return render(request, self.template_name, self.get_context_data())
-
-    def get_context_data(self, **kwargs):
-        context = {}
-        context['motorcycles'] = self.motorcycles_list
-        context['page_obj'] = self.page_obj
-        context['is_paginated'] = self.is_paginated
-        context['paginator'] = self.paginator
-
-        context['original_inputs'] = self.original_inputs
-
-        if self.pick_up_datetime and self.return_datetime and self.duration_days is not None:
-             context['pick_up_date'] = self.pick_up_datetime.strftime('%Y-%m-%d')
-             context['pick_up_time'] = self.pick_up_datetime.strftime('%H:%M')
-             context['return_date'] = self.return_datetime.strftime('%Y-%m-%d')
-             context['return_time'] = self.return_datetime.strftime('%H:%M')
-             context['hire_days'] = math.ceil(self.duration_days) if self.duration_days is not None else None
-             context['hire_start_date'] = self.pick_up_datetime.date().strftime('%Y-%m-%d')
-             context['hire_end_date'] = self.return_datetime.date().strftime('%Y-%m-%d')
-
-             hire_settings = context.get('hire_settings')
-             if hire_settings:
-                 updated_motorcycles_list = []
-                 for motorcycle in self.motorcycles_list:
-                     base_daily_rate = motorcycle.daily_hire_rate
-                     if base_daily_rate is None and hire_settings.default_daily_rate is not None:
-                         base_daily_rate = hire_settings.default_daily_rate
-
-                     if base_daily_rate is not None:
-                         if hire_settings.monthly_discount_percentage is not None and hire_settings.monthly_discount_percentage > 0:
-                             monthly_discount_factor = (Decimal(100) - hire_settings.monthly_discount_percentage) / Decimal(100)
-                             discounted_daily_rate = base_daily_rate * monthly_discount_factor
-                             if self.duration_days is not None:
-                                 motorcycle.total_hire_price = discounted_daily_rate * Decimal(str(self.duration_days))
-                                 motorcycle.total_hire_price = motorcycle.total_hire_price.quantize(Decimal('0.01'))
-                             motorcycle.display_daily_rate = discounted_daily_rate.quantize(Decimal('0.01'))
-                         else:
-                             if self.duration_days is not None:
-                                 motorcycle.total_hire_price = base_daily_rate * Decimal(str(self.duration_days))
-                                 motorcycle.total_hire_price = motorcycle.total_hire_price.quantize(Decimal('0.01'))
-                             motorcycle.display_daily_rate = base_daily_rate.quantize(Decimal('0.01'))
-                     else:
-                         motorcycle.display_daily_rate = None
-                         motorcycle.total_hire_price = None
-
-                     updated_motorcycles_list.append(motorcycle)
-                 context['motorcycles'] = updated_motorcycles_list
-                 context['page_obj'].object_list = updated_motorcycles_list
-
-
-        else:
-             context['pick_up_date'] = ''
-             context['pick_up_time'] = ''
-             context['return_date'] = ''
-             context['return_time'] = ''
-             context['hire_days'] = None
-             context['hire_start_date'] = None
-             context['hire_end_date'] = None
-
-             for motorcycle in self.motorcycles_list:
-                 motorcycle.display_daily_rate = None
-                 motorcycle.total_hire_price = None
-
-        blocked_hire_dates = BlockedHireDate.objects.all()
-        blocked_hire_date_ranges = []
-        for blocked in blocked_hire_dates:
-             blocked_hire_date_ranges.append({
-                 'from': blocked.start_date.strftime('%Y-%m-%d'),
-                 'to': blocked.end_date.strftime('%Y-%m-%d')
+             motorcycles_with_prices.append({
+                  'object': motorcycle,
+                  'daily_hire_rate_display': discounted_daily_rate_for_display,
+                  'total_hire_price': total_hire_price_for_bike,
              })
-        context['blocked_hire_date_ranges_json'] = json.dumps(blocked_hire_date_ranges)
 
-        # --- CORRECTED: Use self.request.session ---
-        context['has_motorcycle_license'] = self.request.session.get('booking_has_motorcycle_license', False)
+        # --- 4. Sorting ---
+        order_by = request.GET.get('order', 'price_low_to_high')
+        if order_by == 'price_low_to_high':
+             motorcycles_with_prices.sort(key=lambda x: x['total_hire_price'])
+        elif order_by == 'price_high_to_low':
+             motorcycles_with_prices.sort(key=lambda x: x['total_hire_price'], reverse=True)
+
+        # --- 5. Pagination ---
+        paginator = Paginator(motorcycles_with_prices, self.paginate_by)
+        page_number = request.GET.get('page')
 
         try:
-            hire_settings = HireSettings.objects.first()
-            context['hire_settings'] = hire_settings
-        except Exception as e:
-             logging.error(f"Error loading hire settings for context: {e}")
+            page_obj = paginator.page(page_number)
+        except PageNotAnInteger:
+            page_obj = paginator.page(1)
+        except EmptyPage:
+            page_obj = paginator.page(paginator.num_pages)
 
-        context['current_order'] = self.request.GET.get('order', 'price_low_to_high')
 
-        return context
+        # --- 6. Prepare Context ---
+        context = {
+            'motorcycles': page_obj.object_list,
+            'page_obj': page_obj,
+            'is_paginated': page_obj.has_other_pages(),
+            'paginator': paginator,
+            'current_order': order_by,
+            'hire_settings': hire_settings,
+            'hire_start_date': temp_booking_display.pickup_date,
+            'hire_end_date': temp_booking_display.return_date,
+            'original_inputs': { # Data to pre-fill the Step 1 include form
+                'pick_up_date': temp_booking_display.pickup_date.isoformat(),
+                'pick_up_time': temp_booking_display.pickup_time.strftime('%H:%M'),
+                'return_date': temp_booking_display.return_date.isoformat(),
+                'return_time': temp_booking_display.return_time.strftime('%H:%M'),
+                'has_motorcycle_license': 'true' if temp_booking_display.has_motorcycle_license else 'false',
+            },
+            'temp_booking': temp_booking, # This will be the actual DB object if it exists, otherwise None
+        }
 
-    def post(self, request, *args, **kwargs):
-        query_string = request.META.get('QUERY_STRING', '')
-        redirect_url = redirect('hire:step1_select_datetime').url
-        if query_string:
-            redirect_url = f"{redirect_url}?{query_string}"
-        return redirect(redirect_url)
+        if not motorcycles_with_prices and temp_booking_display.pickup_date and temp_booking_display.return_date:
+             context['no_bikes_message'] = (
+                 f"No motorcycles found for hire from {temp_booking_display.pickup_date.strftime('%d %b %Y')} "
+                 f"to {temp_booking_display.return_date.strftime('%d %b %Y')}."
+             )
+
+        return render(request, self.template_name, context)
+
+# Dummy calculate_hire_price and calculate_hire_duration_days remain the same.
+# Ensure your actual utility functions are robust.
+def calculate_hire_price(motorcycle, pickup_datetime, return_datetime, hire_settings):
+    """
+    Placeholder for your actual hire price calculation logic.
+    Should take the motorcycle, dates, and settings and return the total price.
+    """
+    duration_days = calculate_hire_duration_days(pickup_datetime, return_datetime)
+    base_daily_rate = motorcycle.daily_hire_rate or hire_settings.default_daily_rate if hire_settings else 0
+    # Add logic for weekly/monthly discounts if applicable
+    total_price = base_daily_rate * duration_days
+    return total_price
+
+def calculate_hire_duration_days(pickup_datetime, return_datetime):
+     """
+     Placeholder for your actual hire duration calculation logic.
+     Calculates the number of hire days.
+     """
+     # For this example, let's use a simple days difference + 1 if time extends
+     duration = return_datetime - pickup_datetime
+     days = duration.days
+     # If the duration is positive but less than a full day, or crosses midnight, count as 1 day.
+     if duration.total_seconds() > 0 and days == 0:
+         days = 1
+     elif duration.total_seconds() > 0 and return_datetime.time() > pickup_datetime.time():
+         days += 1
+     return days

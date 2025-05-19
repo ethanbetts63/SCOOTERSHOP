@@ -7,3 +7,4 @@ from .step4_NoAccount_view import NoAccountView
 from .step5_BookSumAndPaymentOptions_view import BookSumAndPaymentOptionsView
 from .step6_PaymentDetails_view import PaymentDetailsView
 from .step7_BookingConfirmation_view import BookingConfirmationView
+from .utils import calculate_hire_duration_days, calculate_hire_price
