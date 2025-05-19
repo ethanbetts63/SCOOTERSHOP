@@ -18,7 +18,6 @@
     {% with current_url_name='hire:step2_choose_bike' page_title='Motorcycles Available for Hire' %}
 
         <div class="container-fluid mt-4">
-            {# Message Display Block #}
             {% if messages %}
                 <div class="messages-container mb-4">
                     {% for message in messages %}
@@ -58,17 +57,12 @@
                             <label for="order" class="form-label me-2 mb-0">Sort by:</label>
                             <select class="form-select form-select-sm" id="order" name="order" onchange="this.form.submit()">
 
-                                {# The value attribute should match the keys used for sorting in the view #}
                                 <option value="price_low_to_high" {% if current_order == 'price_low_to_high' or not current_order %}selected{% endif %}>Hire Rate: Low to High</option>
                                 <option value="price_high_to_low" {% if current_order == 'price_high_to_low' %}selected{% endif %}>Hire Rate: High to Low</option>
-
-                                {# Add other sorting options if implemented in the view logic #}
-                                {# <option value="engine_size_low_to_high" {% if current_order == 'engine_size_low_to_high' %}selected{% endif %}>Engine Size: Low to High</option> #}
 
 
                             </select>
 
-                            {# Include existing GET parameters (like page number if not sorting) when submitting sort form #}
                             {% for key, value in request.GET.items %}
                                 {% if key != 'order' %}
                                      <input type="hidden" name="{{ key }}" value="{{ value }}">
@@ -80,8 +74,8 @@
             </div>
 
             <div class="motorcycle-grid">
-                {% for item in motorcycles %} {# Loop through the list of dicts #}
-                {% with motorcycle=item.object %} {# Get the actual motorcycle object #}
+                {% for item in motorcycles %}
+                {% with motorcycle=item.object %}
                 <div class="motorcycle-item">
 
                     <div class="card h-100 card-hover-effect">
@@ -136,14 +130,12 @@
                                 <li>Fuel efficient</li>
                             </ul>
 
-                            {# Display calculated daily rate #}
                             {% if item.daily_hire_rate_display is not None %}
                                 <p class="card-text fw-bold">
                                      from ${{ item.daily_hire_rate_display|floatformat:2 }} per day
                                 </p>
                             {% endif %}
 
-                            {# Display calculated total price for the period #}
                             {% if item.total_hire_price is not None %}
                                  <p class="card-text total-price">Total for period: ${{ item.total_hire_price|floatformat:2 }}</p>
                             {% endif %}
@@ -151,19 +143,15 @@
                             <p class="card-text location"><small class="text-muted">{{ motorcycle.location }}</small></p>
                         </div>
                          <div class="card-footer text-center button-container">
-                             {# Update button to redirect to Step 3 with the motorcycle ID #}
-                             {# The Step 3 view will handle linking the bike to the TempBooking #}
                              <button type="button" class="select-motorcycle-btn" data-motorcycle-id="{{ motorcycle.pk }}">Select</button>
                          </div>
                     </div>
                 </div>
                 {% endwith %}
                 {% empty %}
-                {# The no_bikes_message handles this case now #}
                 {% endfor %}
             </div>
 
-            {# Pagination remains the same #}
             {% if is_paginated %}
             <nav aria-label="Page navigation" class="mt-4">
                 <ul class="pagination justify-content-center reset-list">
@@ -205,10 +193,7 @@
 {% endblock %}
 
 {% block extra_js %}
-{# Keep Flatpickr JS for the include form #}
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-{# Keep or move your time population JS here from the include if preferred #}
-{# The include template's JS is currently embedded and should work if included#}
 
 
 <script>
@@ -219,15 +204,9 @@ document.addEventListener('DOMContentLoaded', function() {
     selectButtons.forEach(button => {
         button.addEventListener('click', function() {
             const motorcycleId = this.dataset.motorcycleId;
-            // Redirect to Step 3 URL, passing the motorcycle ID
-            // The Step 3 view will then link this bike to the TempBooking in the session
             window.location.href = `/hire/book/step3/select-bike/${motorcycleId}/`;
         });
     });
-
-    // Note: The JS for the date/time include form (Flatpickr, time population)
-    // is expected to be included within the step1_date_time_include.html file itself.
-    // Ensure that script runs after the DOM is loaded.
 });
 </script>
 

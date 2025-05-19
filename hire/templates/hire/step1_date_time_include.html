@@ -6,7 +6,6 @@
         <div class="card-body">
             <h2 class="section-title booking-title">Find Your Hire Motorcycle</h2>
 
-            {# CHANGE: method="post" and action points to the new Step 1 view URL #}
             <form method="post" action="{% url 'hire:step1_select_datetime' %}" class="booking-form-container hire-booking-form">
                 {% csrf_token %}
 
@@ -14,7 +13,6 @@
                     <div class="date-time-row">
                         <div class="form-field">
                             <label for="id_pick_up_date">Pick Up Date</label>
-                            {# Use Django form field naming convention id_fieldname #}
                             <input type="text" id="id_pick_up_date" name="pick_up_date"
                                    class="form-control"
                                    placeholder="Select pick up date"
@@ -22,14 +20,11 @@
                         </div>
                         <div class="form-field">
                             <label for="id_pick_up_time">Pick Up Time</label>
-                             {# Replace input with select for pick up time #}
-                             {# Use Django form field naming convention id_fieldname #}
                              <select id="id_pick_up_time" name="pick_up_time"
                                      class="form-control"
                                      data-start-time="{{ hire_settings.pick_up_start_time|time:'H:i' }}"
                                      data-end-time="{{ hire_settings.pick_up_end_time|time:'H:i' }}">
                                  <option value="">Select pick up time</option>
-                                 {# Time options will be populated by JavaScript #}
                              </select>
                         </div>
                     </div>
@@ -37,7 +32,6 @@
                     <div class="date-time-row">
                         <div class="form-field">
                             <label for="id_return_date">Return Date</label>
-                            {# Use Django form field naming convention id_fieldname #}
                              <input type="text" id="id_return_date" name="return_date"
                                     class="form-control"
                                    placeholder="Select return date"
@@ -45,22 +39,16 @@
                         </div>
                          <div class="form-field">
                             <label for="id_return_time">Return Time</label>
-                             {# Replace input with select for return time #}
-                             {# Use Django form field naming convention id_fieldname #}
                              <select id="id_return_time" name="return_time"
                                      class="form-control"
-                                     {# Use data attributes to store time range from settings #}
-                                     {# Assuming 'hire_settings' object is available in the template context #}
                                      data-start-time="{{ hire_settings.return_off_start_time|time:'H:i' }}"
                                      data-end-time="{{ hire_settings.return_end_time|time:'H:i' }}">
                                  <option value="">Select return time</option>
-                                 {# Time options will be populated by JavaScript #}
                              </select>
                         </div>
                     </div>
 
                     <div class="search-button-column">
-                        {# The button triggers the form POST #}
                         <button type="submit" class="btn-primary book-now-btn">
                             Search
                         </button>
@@ -69,16 +57,12 @@
 
 
                 <div class="license-checkbox-container">
-                    {# Use Django form field naming convention id_fieldname #}
                     <input type="checkbox" id="id_has_motorcycle_license" name="has_motorcycle_license" value="true">
                     <label class="checkbox-label" for="id_has_motorcycle_license" title="Under australian law you are able to ride up to a 50cc without a motorcycle license provided you have a car license.">I have a motorcycle license</label>
                 </div>
 
-                {# Add hidden fields to hold original GET parameters if you want to persist search filters after date selection #}
-                {# This might be useful if the include form lives on the bike list page #}
                 {% if request.GET %}
                     {% for key, value in request.GET.items %}
-                        {# Exclude date/time/license fields, as they are handled by the form #}
                         {% if key not in 'pick_up_date,pick_up_time,return_date,return_time,has_motorcycle_license' %}
                             <input type="hidden" name="{{ key }}" value="{{ value }}">
                         {% endif %}
@@ -91,81 +75,53 @@
     </div>
 </div>
 
-{# Keep Flatpickr CSS for date fields #}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 
-{# Keep Flatpickr JS for date fields #}
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        console.log("--- step1_date_time_include.html script START ---");
-
         const pickUpTimeSelect = document.getElementById('id_pick_up_time');
         const returnTimeSelect = document.getElementById('id_return_time');
 
         const bookingLeadTimeHours = parseInt(document.getElementById('id_pick_up_date').getAttribute('data-booking-lead-time-hours')) || 0;
         const minimumHireDurationDays = parseInt(document.getElementById('id_return_date').getAttribute('data-min-hire-duration-days')) || 1;
 
-        console.log("Config values:", "Booking Lead Time (hours):", bookingLeadTimeHours, "Min Hire Duration (days):", minimumHireDurationDays);
-
-
-        // Calculate initial minDate for pick-up date
         const now = new Date();
-        const earliestPickupDateTime = new Date(now.getTime() + bookingLeadTimeHours * 60 * 60 * 1000); // Add lead time in milliseconds
+        const earliestPickupDateTime = new Date(now.getTime() + bookingLeadTimeHours * 60 * 60 * 1000);
 
-        // Determine if the current day should be blocked
         let initialMinDate = "today";
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Midnight today
-        const earliestPickupDay = new Date(earliestPickupDateTime.getFullYear(), earliestPickupDateTime.getMonth(), earliestPickupDateTime.getDate()); // Midnight of earliest pickUp day
-
-        console.log("Current actual time:", now.toLocaleString());
-        console.log("Earliest possible pickup datetime (with lead time):", earliestPickupDateTime.toLocaleString());
-        console.log("Today (midnight):", today.toLocaleString());
-        console.log("Earliest pickup day (midnight):", earliestPickupDay.toLocaleString());
-
-
-        // If earliestPickupDateTime (with lead time) is on a future day, then today should be blocked.
-        // We only block "today" if *all* available times for today are past the lead time.
-        // More robust logic would involve checking if any valid time slot for today is available after lead time.
-        // For simplicity, if earliestPickupDateTime rolls over to the next day, we block today.
-        // This implicitly assumes available times on pickUpDate start from pick_up_start_time.
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        
         const pickUpStartTimeStr = pickUpTimeSelect.getAttribute('data-start-time');
         const [puStartHour, puStartMinute] = pickUpStartTimeStr.split(':').map(Number);
         const pickUpStartToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), puStartHour, puStartMinute);
 
 
         if (earliestPickupDateTime > pickUpStartToday && earliestPickupDateTime.getDate() !== now.getDate()) {
-             initialMinDate = earliestPickupDateTime.toDateString(); // Set minDate to the next available day
-             console.log("Calculated minDate for pick up: Earliest pickup rolls into a future day. Blocking today.", initialMinDate);
+             initialMinDate = earliestPickupDateTime.toDateString();
         } else {
-             // If earliestPickupDateTime is still today, or it's before the configured pickUpStartToday,
-             // then today is still a valid start day.
              initialMinDate = "today";
-             console.log("Calculated minDate for pick up: Today is still valid or earliest pickup is within today's times.", initialMinDate);
         }
 
 
-        // Initialize Flatpickr for date fields
         const pickUpDatePicker = flatpickr("#id_pick_up_date", {
             dateFormat: "Y-m-d",
-            minDate: initialMinDate, // Set minDate dynamically
+            minDate: initialMinDate,
             altInput: true,
             altFormat: "F j, Y",
             onChange: function(selectedDates, dateStr, instance) {
-                console.log("Flatpickr: Pick Up Date changed to:", dateStr);
                 handleDateAndTimeUpdates();
             }
         });
 
         const returnDatePicker = flatpickr("#id_return_date", {
             dateFormat: "Y-m-d",
-            minDate: "today", // Will be updated by handleDateAndTimeUpdates
+            minDate: "today",
             altInput: true,
             altFormat: "F j, Y",
             onChange: function(selectedDates, dateStr, instance) {
-                console.log("Flatpickr: Return Date changed to:", dateStr);
                 handleDateAndTimeUpdates();
             }
         });
@@ -176,20 +132,13 @@
         const returnStartTimeAttr = returnTimeSelect ? returnTimeSelect.getAttribute('data-start-time') : null;
         const returnEndTimeAttr = returnTimeSelect ? returnTimeSelect.getAttribute('data-end-time') : null;
 
-        console.log("Data attributes for time ranges:");
-        console.log("Pick Up Start:", pickUpStartTimeAttr, "End:", pickUpEndTimeAttr);
-        console.log("Return Start:", returnStartTimeAttr, "End:", returnEndTimeAttr);
-
 
         function populateTimeDropdown(selectElement, startTimeStr, endTimeStr, intervalMinutes) {
             if (!selectElement || !startTimeStr || !endTimeStr) {
-                console.log("populateTimeDropdown: Missing required info, exiting.");
                 return;
             }
-            console.log(`Populating time dropdown for ${selectElement.id} from ${startTimeStr} to ${endTimeStr} with interval ${intervalMinutes} mins.`);
 
             const currentValue = selectElement.value;
-            console.log(`Stored current value for ${selectElement.id}: ${currentValue}`);
 
             while (selectElement.options.length > 1) {
                 selectElement.remove(1);
@@ -218,27 +167,17 @@
                 selectElement.appendChild(option);
                 currentTime.setMinutes(currentTime.getMinutes() + intervalMinutes);
             }
-            console.log(`Finished populating time dropdown for ${selectElement.id}. Options count: ${selectElement.options.length}`);
 
             if ([...selectElement.options].some(opt => opt.value === currentValue)) {
                 selectElement.value = currentValue;
-                console.log(`Restored value for ${selectElement.id} to: ${selectElement.value}`);
-            } else {
-                console.log(`Could not restore value ${currentValue} for ${selectElement.id}, it's not a valid option anymore.`);
             }
         }
 
         function handleDateAndTimeUpdates() {
-            console.log("handleDateAndTimeUpdates called.");
             const pickUpDate = pickUpDatePicker.selectedDates[0];
             const returnDate = returnDatePicker.selectedDates[0];
             const pickUpTime = pickUpTimeSelect ? pickUpTimeSelect.value : null;
 
-            console.log("Current selected dates (JS Date objects):", "Pick Up:", pickUpDate, "Return:", returnDate);
-            console.log("Current selected pick up time:", pickUpTime);
-
-            // --- Pick Up Date Logic (re-evaluate minDate based on current time for real-time blocking) ---
-            // Recalculate earliest pickup datetime for the *current* selection process
             const currentNow = new Date();
             const currentEarliestPickupDateTime = new Date(currentNow.getTime() + bookingLeadTimeHours * 60 * 60 * 1000);
 
@@ -247,71 +186,39 @@
             const pickUpStartTimeToday = new Date(currentTodayMidnight.getFullYear(), currentTodayMidnight.getMonth(), currentTodayMidnight.getDate(), puStartHour, puStartMinute);
 
 
-            // If the earliest *possible* pickup time with lead time is past the start of the pickup window *today*,
-            // or if it pushes into the next day, then we might need to block today.
-            // This is complex. A simpler approach for Flatpickr's `minDate` is to just set it to the actual
-            // earliest possible calendar day.
             if (currentEarliestPickupDateTime.getDate() !== currentNow.getDate()) {
-                // If lead time pushes us into the next day, then the min selectable day is the next day.
                 newMinDateForPickUp = currentEarliestPickupDateTime;
-                console.log("Calculated newMinDateForPickUp: Lead time pushes to next day.", newMinDateForPickUp);
             } else if (currentEarliestPickupDateTime > pickUpStartTimeToday) {
-                // If lead time keeps us today but is past the pick_up_start_time,
-                // the minDate should still be today, but time dropdown will filter.
                 newMinDateForPickUp = "today";
-                console.log("Calculated newMinDateForPickUp: Lead time keeps us today.", newMinDateForPickUp);
             } else {
-                // Lead time is before or at the start of pick_up_start_time today.
                 newMinDateForPickUp = "today";
-                console.log("Calculated newMinDateForPickUp: Lead time before pick up start today.", newMinDateForPickUp);
             }
             pickUpDatePicker.set('minDate', newMinDateForPickUp);
 
 
-            // --- Return Date Logic ---
             if (pickUpDate) {
-                console.log("Pick up date is selected. Setting return date minDate to (Pick Up Date):", pickUpDate);
                 let requiredReturnDate = new Date(pickUpDate);
-                requiredReturnDate.setDate(requiredReturnDate.getDate() + minimumHireDurationDays -1 ); // Add minimum duration
+                requiredReturnDate.setDate(requiredReturnDate.getDate() + minimumHireDurationDays -1 );
 
                 returnDatePicker.set('minDate', requiredReturnDate);
-                console.log("Required minimum return date based on duration:", requiredReturnDate);
 
-                // Check if returnDate is currently set and if it's before the new minimum (pickUpDate or requiredReturnDate)
                 if (returnDate) {
-                    console.log("Return date is currently set.");
-                    // Compare dates. Flatpickr dates are typically at midnight for the selected day.
                     const comparisonResult = returnDate < requiredReturnDate;
-                    console.log(`Comparison: returnDate (${returnDate}) < requiredReturnDate (${requiredReturnDate}) is ${comparisonResult}`);
-
                     if (comparisonResult) {
-                        console.log("Return date is before new minDate, clearing return date.");
                         returnDatePicker.clear();
-                    } else {
-                        console.log("Return date is on or after new minDate, keeping return date.");
                     }
-                } else {
-                     console.log("Return date is not currently set.");
                 }
-
             } else {
-                console.log("Pick up date is not selected, setting return date minDate to calculated earliest pickup day.");
-                returnDatePicker.set('minDate', newMinDateForPickUp); // Base on pickUp's minDate if no pickup chosen
-                 // If pick up date is cleared, also clear return date as it's now invalid
+                returnDatePicker.set('minDate', newMinDateForPickUp);
                  if (returnDate) {
-                      console.log("Pick up date cleared, clearing return date.");
                       returnDatePicker.clear();
                  }
             }
 
-            // --- Time Logic (remains the same as previous fix) ---
             let actualReturnStartTime = returnStartTimeAttr;
-            console.log("Initial actualReturnStartTime:", actualReturnStartTime);
 
             if (pickUpDate && returnDate && pickUpDate.toDateString() === returnDate.toDateString()) {
-                console.log("Pick up and Return dates are the same day. Adjusting return time start based on pickup time.");
                 if (pickUpTime) {
-                    console.log("Pick up time is selected:", pickUpTime);
                     const [puHour, puMinute] = pickUpTime.split(':').map(Number);
                     const pickUpTimeDate = new Date();
                     pickUpTimeDate.setHours(puHour, puMinute, 0, 0);
@@ -324,138 +231,71 @@
                     const defaultReturnEndDate = new Date();
                     defaultReturnEndDate.setHours(retEndHour, retEndMinute, 0, 0);
 
-                    console.log("Comparison times:", "Pick Up Time Date:", pickUpTimeDate, "Default Return Start Date:", defaultReturnStartDate, "Default Return End Date:", defaultReturnEndDate);
-
                     if (pickUpTimeDate >= defaultReturnStartDate) {
-                        console.log("Selected pickup time is >= default return start time. Using selected pickup time as actualReturnStartTime.");
                         actualReturnStartTime = pickUpTime;
                         if (pickUpTimeDate > defaultReturnEndDate && defaultReturnEndDate >= defaultReturnStartDate) {
-                            console.log("Selected pickup time is > default return end time (end is after start). Capping actualReturnStartTime at returnEndTimeAttr.");
                             actualReturnStartTime = returnEndTimeAttr;
                         } else if (pickUpTimeDate > defaultReturnEndDate && defaultReturnEndDate < defaultReturnStartDate) {
-                            console.log("Selected pickup time is > default return end time (end is next day). Keeping selected pickup time as actualReturnStartTime.");
                             actualReturnStartTime = pickUpTime;
                         }
                     } else {
-                        console.log("Selected pickup time is < default return start time. Using default return start time as actualReturnStartTime.");
                         actualReturnStartTime = returnStartTimeAttr;
                     }
                 } else {
-                    console.log("No pickup time selected yet, but dates are same day. Using default return start time as actualReturnStartTime.");
                     actualReturnStartTime = returnStartTimeAttr;
                 }
             } else {
-                // If return date is after pick up date, use the default return start time
-                console.log("Return date is after pick up date. Using default return start time as actualReturnStartTime.");
                 actualReturnStartTime = returnStartTimeAttr;
             }
-
-            console.log("Final actualReturnStartTime determined:", actualReturnStartTime);
 
             populateTimeDropdown(returnTimeSelect, actualReturnStartTime, returnEndTimeAttr, 15);
         }
 
-        // Populate the pick-up time dropdown initially
         if (pickUpTimeSelect && pickUpStartTimeAttr && pickUpEndTimeAttr) {
-            console.log("Populating initial pick-up time dropdown.");
             populateTimeDropdown(pickUpTimeSelect, pickUpStartTimeAttr, pickUpEndTimeAttr, 15);
         }
 
-        // Add event listener to the pick up time select to update return time options
         if (pickUpTimeSelect) {
-            console.log("Adding change listener to pick-up time select.");
             pickUpTimeSelect.addEventListener('change', handleDateAndTimeUpdates);
         }
 
-        // Initial call to update return time options based on default selected dates and times
-        console.log("Performing initial handleDateAndTimeUpdates call.");
         handleDateAndTimeUpdates();
 
-
-        // --- Pre-fill form from session data on page load ---
         const sessionPickUpDate = "{{ original_inputs.pick_up_date|default:'' }}";
         const sessionPickUpTime = "{{ original_inputs.pick_up_time|default:'' }}";
         const sessionReturnDate = "{{ original_inputs.return_date|default:'' }}";
         const sessionReturnTime = "{{ original_inputs.return_time|default:'' }}";
         const sessionHasLicense = "{{ original_inputs.has_motorcycle_license|default:'false' }}";
 
-        console.log("Session data read from template context:");
-        console.log("sessionPickUpDate:", sessionPickUpDate);
-        console.log("sessionPickUpTime:", sessionPickUpTime);
-        console.log("sessionReturnDate:", sessionReturnDate);
-        console.log("sessionReturnTime:", sessionReturnTime);
-        console.log("sessionHasLicense:", sessionHasLicense);
-
-
         if (sessionPickUpDate) {
-            console.log("Attempting to set pick-up date with:", sessionPickUpDate);
             pickUpDatePicker.setDate(sessionPickUpDate);
-            console.log("Pick-up date set result:", pickUpDatePicker.selectedDates[0]);
-        } else {
-            console.log("No sessionPickUpDate found to pre-fill.");
         }
 
         if (sessionReturnDate) {
-            console.log("Attempting to set return date with:", sessionReturnDate);
             returnDatePicker.setDate(sessionReturnDate);
-            console.log("Return date set result:", returnDatePicker.selectedDates[0]);
-        } else {
-            console.log("No sessionReturnDate found to pre-fill.");
         }
 
-        // Set pick-up time.
         if (sessionPickUpTime && pickUpTimeSelect) {
-            console.log("Attempting to set pick-up time with:", sessionPickUpTime);
             if ([...pickUpTimeSelect.options].some(opt => opt.value === sessionPickUpTime)) {
                 pickUpTimeSelect.value = sessionPickUpTime;
-                console.log("Pick-up time set to:", pickUpTimeSelect.value);
-            } else {
-                console.log(`Option with value ${sessionPickUpTime} not found in pick-up time select.`);
             }
-        } else {
-            console.log("No sessionPickUpTime or pickUpTimeSelect not found to pre-fill.");
         }
 
-        // Set return time. The populateTimeDropdown for return time will run again
-        // due to the second handleDateAndTimeUpdates call below.
-        // It's best to set the value after that.
-        // So, this initial setting for returnTimeSelect might be immediately overwritten.
-        // The fix is now inside populateTimeDropdown itself.
         if (sessionReturnTime && returnTimeSelect) {
-            console.log("Attempting to set return time with:", sessionReturnTime);
             if ([...returnTimeSelect.options].some(opt => opt.value === sessionReturnTime)) {
                 returnTimeSelect.value = sessionReturnTime;
-                console.log("Return time set to (pre-second handle):", returnTimeSelect.value);
-            } else {
-                console.log(`Option with value ${sessionReturnTime} not found in return time select (pre-second handle).`);
             }
-        } else {
-            console.log("No sessionReturnTime or returnTimeSelect not found to pre-fill.");
         }
-
 
         const hasLicenseCheckbox = document.getElementById('id_has_motorcycle_license');
         if (hasLicenseCheckbox) {
-            console.log("Attempting to set license checkbox with:", sessionHasLicense);
             if (sessionHasLicense === 'true') {
                 hasLicenseCheckbox.checked = true;
-                console.log("License checkbox checked.");
             } else {
                 hasLicenseCheckbox.checked = false;
-                console.log("License checkbox unchecked.");
             }
-        } else {
-            console.log("License checkbox element not found.");
         }
 
-
-        // IMPORTANT: Perform the second handleDateAndTimeUpdates call *after* pre-filling dates/times
-        // This ensures return time options are re-calculated correctly based on the selected pickup date.
-        // The populateTimeDropdown now handles preserving the selected value.
-        console.log("Performing second handleDateAndTimeUpdates call after pre-filling dates/times.");
         handleDateAndTimeUpdates();
-
-        console.log("--- step1_date_time_include.html script END ---");
-
     });
 </script>
