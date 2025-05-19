@@ -83,7 +83,7 @@ class SelectDateTimeView(View):
             # Redirect to the motorcycle listing page (Step 2)
             # You can potentially add a success message here
             # messages.success(request, "Dates selected. Please choose a motorcycle.")
-            return redirect('inventory:hire') # This is the URL name for HireMotorcycleListView
+            return redirect('hire:step2_choose_bike') # This is the URL name for HireMotorcycleListView
 
         else:
             # If form is not valid (e.g., missing field), add form errors to messages
@@ -96,4 +96,4 @@ class SelectDateTimeView(View):
 
     # Optional: Handle GET requests if someone lands directly on this URL (redirect them)
     def get(self, request, *args, **kwargs):
-         return redirect('inventory:hire') # Or a homepage etc.
+         return redirect('hire:step2_choose_bike') # Or a homepage etc.

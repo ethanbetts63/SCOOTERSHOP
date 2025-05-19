@@ -25,10 +25,6 @@ class Step1DateTimeForm(forms.Form):
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
     )
 
-    # You might want to add custom clean methods here for cross-field validation
-    # like checking return_datetime > pick_up_datetime, min/max duration, lead time, etc.
-    # Although some of this is also in HireMotorcycleListView now.
-    # It's good to have basic validation at the form level first.
     def clean(self):
         cleaned_data = super().clean()
         pickup_date = cleaned_data.get('pick_up_date')
