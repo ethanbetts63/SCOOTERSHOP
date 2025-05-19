@@ -17,7 +17,8 @@
                             {# Use Django form field naming convention id_fieldname #}
                             <input type="text" id="id_pick_up_date" name="pick_up_date"
                                    class="form-control"
-                                   placeholder="Select pick up date">
+                                   placeholder="Select pick up date"
+                                   data-booking-lead-time-hours="{{ hire_settings.booking_lead_time_hours|default:0 }}">
                         </div>
                         <div class="form-field">
                             <label for="id_pick_up_time">Pick Up Time</label>
@@ -39,7 +40,8 @@
                             {# Use Django form field naming convention id_fieldname #}
                              <input type="text" id="id_return_date" name="return_date"
                                     class="form-control"
-                                   placeholder="Select return date">
+                                   placeholder="Select return date"
+                                   data-min-hire-duration-days="{{ hire_settings.minimum_hire_duration_days|default:1 }}">
                         </div>
                          <div class="form-field">
                             <label for="id_return_time">Return Time</label>
@@ -100,31 +102,74 @@
     document.addEventListener('DOMContentLoaded', function() {
         console.log("--- step1_date_time_include.html script START ---");
 
+        const pickUpTimeSelect = document.getElementById('id_pick_up_time');
+        const returnTimeSelect = document.getElementById('id_return_time');
+
+        const bookingLeadTimeHours = parseInt(document.getElementById('id_pick_up_date').getAttribute('data-booking-lead-time-hours')) || 0;
+        const minimumHireDurationDays = parseInt(document.getElementById('id_return_date').getAttribute('data-min-hire-duration-days')) || 1;
+
+        console.log("Config values:", "Booking Lead Time (hours):", bookingLeadTimeHours, "Min Hire Duration (days):", minimumHireDurationDays);
+
+
+        // Calculate initial minDate for pick-up date
+        const now = new Date();
+        const earliestPickupDateTime = new Date(now.getTime() + bookingLeadTimeHours * 60 * 60 * 1000); // Add lead time in milliseconds
+
+        // Determine if the current day should be blocked
+        let initialMinDate = "today";
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Midnight today
+        const earliestPickupDay = new Date(earliestPickupDateTime.getFullYear(), earliestPickupDateTime.getMonth(), earliestPickupDateTime.getDate()); // Midnight of earliest pickUp day
+
+        console.log("Current actual time:", now.toLocaleString());
+        console.log("Earliest possible pickup datetime (with lead time):", earliestPickupDateTime.toLocaleString());
+        console.log("Today (midnight):", today.toLocaleString());
+        console.log("Earliest pickup day (midnight):", earliestPickupDay.toLocaleString());
+
+
+        // If earliestPickupDateTime (with lead time) is on a future day, then today should be blocked.
+        // We only block "today" if *all* available times for today are past the lead time.
+        // More robust logic would involve checking if any valid time slot for today is available after lead time.
+        // For simplicity, if earliestPickupDateTime rolls over to the next day, we block today.
+        // This implicitly assumes available times on pickUpDate start from pick_up_start_time.
+        const pickUpStartTimeStr = pickUpTimeSelect.getAttribute('data-start-time');
+        const [puStartHour, puStartMinute] = pickUpStartTimeStr.split(':').map(Number);
+        const pickUpStartToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), puStartHour, puStartMinute);
+
+
+        if (earliestPickupDateTime > pickUpStartToday && earliestPickupDateTime.getDate() !== now.getDate()) {
+             initialMinDate = earliestPickupDateTime.toDateString(); // Set minDate to the next available day
+             console.log("Calculated minDate for pick up: Earliest pickup rolls into a future day. Blocking today.", initialMinDate);
+        } else {
+             // If earliestPickupDateTime is still today, or it's before the configured pickUpStartToday,
+             // then today is still a valid start day.
+             initialMinDate = "today";
+             console.log("Calculated minDate for pick up: Today is still valid or earliest pickup is within today's times.", initialMinDate);
+        }
+
+
         // Initialize Flatpickr for date fields
         const pickUpDatePicker = flatpickr("#id_pick_up_date", {
             dateFormat: "Y-m-d",
-            minDate: "today",
+            minDate: initialMinDate, // Set minDate dynamically
             altInput: true,
             altFormat: "F j, Y",
             onChange: function(selectedDates, dateStr, instance) {
-                console.log("Pick Up Date changed to:", dateStr);
+                console.log("Flatpickr: Pick Up Date changed to:", dateStr);
                 handleDateAndTimeUpdates();
             }
         });
 
         const returnDatePicker = flatpickr("#id_return_date", {
             dateFormat: "Y-m-d",
-            minDate: "today",
+            minDate: "today", // Will be updated by handleDateAndTimeUpdates
             altInput: true,
             altFormat: "F j, Y",
             onChange: function(selectedDates, dateStr, instance) {
-                console.log("Return Date changed to:", dateStr);
+                console.log("Flatpickr: Return Date changed to:", dateStr);
                 handleDateAndTimeUpdates();
             }
         });
 
-        const pickUpTimeSelect = document.getElementById('id_pick_up_time');
-        const returnTimeSelect = document.getElementById('id_return_time');
 
         const pickUpStartTimeAttr = pickUpTimeSelect ? pickUpTimeSelect.getAttribute('data-start-time') : null;
         const pickUpEndTimeAttr = pickUpTimeSelect ? pickUpTimeSelect.getAttribute('data-end-time') : null;
@@ -143,7 +188,7 @@
             }
             console.log(`Populating time dropdown for ${selectElement.id} from ${startTimeStr} to ${endTimeStr} with interval ${intervalMinutes} mins.`);
 
-            const currentValue = selectElement.value; // Store current value before clearing
+            const currentValue = selectElement.value;
             console.log(`Stored current value for ${selectElement.id}: ${currentValue}`);
 
             while (selectElement.options.length > 1) {
@@ -175,7 +220,6 @@
             }
             console.log(`Finished populating time dropdown for ${selectElement.id}. Options count: ${selectElement.options.length}`);
 
-            // Attempt to restore the value after repopulation
             if ([...selectElement.options].some(opt => opt.value === currentValue)) {
                 selectElement.value = currentValue;
                 console.log(`Restored value for ${selectElement.id} to: ${selectElement.value}`);
@@ -190,26 +234,82 @@
             const returnDate = returnDatePicker.selectedDates[0];
             const pickUpTime = pickUpTimeSelect ? pickUpTimeSelect.value : null;
 
-            console.log("Current selected dates:", "Pick Up:", pickUpDate, "Return:", returnDate);
+            console.log("Current selected dates (JS Date objects):", "Pick Up:", pickUpDate, "Return:", returnDate);
             console.log("Current selected pick up time:", pickUpTime);
 
-            if (pickUpDate) {
-                console.log("Setting return date minDate to:", pickUpDate);
-                returnDatePicker.set('minDate', pickUpDate);
-                if (returnDate && returnDate < pickUpDate) {
-                    console.log("Return date is before new minDate, clearing return date.");
-                    returnDatePicker.clear();
-                }
+            // --- Pick Up Date Logic (re-evaluate minDate based on current time for real-time blocking) ---
+            // Recalculate earliest pickup datetime for the *current* selection process
+            const currentNow = new Date();
+            const currentEarliestPickupDateTime = new Date(currentNow.getTime() + bookingLeadTimeHours * 60 * 60 * 1000);
+
+            let newMinDateForPickUp = "today";
+            const currentTodayMidnight = new Date(currentNow.getFullYear(), currentNow.getMonth(), currentNow.getDate());
+            const pickUpStartTimeToday = new Date(currentTodayMidnight.getFullYear(), currentTodayMidnight.getMonth(), currentTodayMidnight.getDate(), puStartHour, puStartMinute);
+
+
+            // If the earliest *possible* pickup time with lead time is past the start of the pickup window *today*,
+            // or if it pushes into the next day, then we might need to block today.
+            // This is complex. A simpler approach for Flatpickr's `minDate` is to just set it to the actual
+            // earliest possible calendar day.
+            if (currentEarliestPickupDateTime.getDate() !== currentNow.getDate()) {
+                // If lead time pushes us into the next day, then the min selectable day is the next day.
+                newMinDateForPickUp = currentEarliestPickupDateTime;
+                console.log("Calculated newMinDateForPickUp: Lead time pushes to next day.", newMinDateForPickUp);
+            } else if (currentEarliestPickupDateTime > pickUpStartTimeToday) {
+                // If lead time keeps us today but is past the pick_up_start_time,
+                // the minDate should still be today, but time dropdown will filter.
+                newMinDateForPickUp = "today";
+                console.log("Calculated newMinDateForPickUp: Lead time keeps us today.", newMinDateForPickUp);
             } else {
-                console.log("Pick up date is not selected, setting return date minDate to 'today'.");
-                returnDatePicker.set('minDate', 'today');
+                // Lead time is before or at the start of pick_up_start_time today.
+                newMinDateForPickUp = "today";
+                console.log("Calculated newMinDateForPickUp: Lead time before pick up start today.", newMinDateForPickUp);
+            }
+            pickUpDatePicker.set('minDate', newMinDateForPickUp);
+
+
+            // --- Return Date Logic ---
+            if (pickUpDate) {
+                console.log("Pick up date is selected. Setting return date minDate to (Pick Up Date):", pickUpDate);
+                let requiredReturnDate = new Date(pickUpDate);
+                requiredReturnDate.setDate(requiredReturnDate.getDate() + minimumHireDurationDays -1 ); // Add minimum duration
+
+                returnDatePicker.set('minDate', requiredReturnDate);
+                console.log("Required minimum return date based on duration:", requiredReturnDate);
+
+                // Check if returnDate is currently set and if it's before the new minimum (pickUpDate or requiredReturnDate)
+                if (returnDate) {
+                    console.log("Return date is currently set.");
+                    // Compare dates. Flatpickr dates are typically at midnight for the selected day.
+                    const comparisonResult = returnDate < requiredReturnDate;
+                    console.log(`Comparison: returnDate (${returnDate}) < requiredReturnDate (${requiredReturnDate}) is ${comparisonResult}`);
+
+                    if (comparisonResult) {
+                        console.log("Return date is before new minDate, clearing return date.");
+                        returnDatePicker.clear();
+                    } else {
+                        console.log("Return date is on or after new minDate, keeping return date.");
+                    }
+                } else {
+                     console.log("Return date is not currently set.");
+                }
+
+            } else {
+                console.log("Pick up date is not selected, setting return date minDate to calculated earliest pickup day.");
+                returnDatePicker.set('minDate', newMinDateForPickUp); // Base on pickUp's minDate if no pickup chosen
+                 // If pick up date is cleared, also clear return date as it's now invalid
+                 if (returnDate) {
+                      console.log("Pick up date cleared, clearing return date.");
+                      returnDatePicker.clear();
+                 }
             }
 
+            // --- Time Logic (remains the same as previous fix) ---
             let actualReturnStartTime = returnStartTimeAttr;
             console.log("Initial actualReturnStartTime:", actualReturnStartTime);
 
             if (pickUpDate && returnDate && pickUpDate.toDateString() === returnDate.toDateString()) {
-                console.log("Pick up and Return dates are the same day.");
+                console.log("Pick up and Return dates are the same day. Adjusting return time start based on pickup time.");
                 if (pickUpTime) {
                     console.log("Pick up time is selected:", pickUpTime);
                     const [puHour, puMinute] = pickUpTime.split(':').map(Number);
@@ -245,14 +345,13 @@
                     actualReturnStartTime = returnStartTimeAttr;
                 }
             } else {
+                // If return date is after pick up date, use the default return start time
                 console.log("Return date is after pick up date. Using default return start time as actualReturnStartTime.");
                 actualReturnStartTime = returnStartTimeAttr;
             }
 
             console.log("Final actualReturnStartTime determined:", actualReturnStartTime);
 
-            // Re-populate the return time dropdown with the determined start time and the original end time
-            // The populateTimeDropdown function now handles saving and restoring the value internally.
             populateTimeDropdown(returnTimeSelect, actualReturnStartTime, returnEndTimeAttr, 15);
         }
 
@@ -304,13 +403,7 @@
             console.log("No sessionReturnDate found to pre-fill.");
         }
 
-        // Order is important here:
-        // 1. Populate pick-up time dropdown (done before handleDateAndTimeUpdates)
-        // 2. Set pick-up time from session
-        // 3. Populate return time dropdown (this happens inside handleDateAndTimeUpdates, which is called twice)
-        // 4. Set return time from session
-
-        // Set pick-up time. The `populateTimeDropdown` for pick-up time has already run initially.
+        // Set pick-up time.
         if (sessionPickUpTime && pickUpTimeSelect) {
             console.log("Attempting to set pick-up time with:", sessionPickUpTime);
             if ([...pickUpTimeSelect.options].some(opt => opt.value === sessionPickUpTime)) {
@@ -356,7 +449,7 @@
         }
 
 
-        // IMPORTANT: Perform the second handleDateAndTimeUpdates call *after* pre-filling dates
+        // IMPORTANT: Perform the second handleDateAndTimeUpdates call *after* pre-filling dates/times
         // This ensures return time options are re-calculated correctly based on the selected pickup date.
         // The populateTimeDropdown now handles preserving the selected value.
         console.log("Performing second handleDateAndTimeUpdates call after pre-filling dates/times.");
