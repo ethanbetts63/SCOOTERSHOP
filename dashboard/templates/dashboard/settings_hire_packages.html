@@ -63,9 +63,13 @@
                                 <a href="{% url 'dashboard:edit_hire_package' package.pk %}" class="btn btn-info btn-sm">
                                     <i class="fas fa-edit"></i> Edit
                                 </a>
-                                <button type="button" class="btn btn-danger btn-sm delete-package-btn" data-package-id="{{ package.pk }}" data-package-name="{{ package.name }}">
-                                    <i class="fas fa-trash"></i> Delete
-                                </button>
+                                {# Mirroring delete strategy from service_brands_management.html #}
+                                <form method="post" action="{% url 'dashboard:delete_hire_package' pk=package.pk %}" class="inline-form" style="display:inline;">
+                                     {% csrf_token %}
+                                     <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete the package \'{{ package.name }}\'?');">
+                                         <i class="fas fa-trash"></i> Delete
+                                     </button>
+                                </form>
                             </td>
                         </tr>
                         {% empty %}
@@ -78,62 +82,18 @@
             </div>
         </div>
     </div>
-
-    
-    <div class="modal fade" id="deletePackageModal" tabindex="-1" role="dialog" aria-labelledby="deletePackageModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deletePackageModalLabel">Confirm Delete</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    Are you sure you want to delete the package "<span id="packageNameToDelete"></span>"? This action cannot be undone.
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <form id="deletePackageForm" method="post" action="">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">Delete</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
 {% endblock %}
 
 {% block extra_js %}
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // DataTables initialization
-            $('#packagesTable').DataTable({
-                "paging": true,
-                "ordering": true,
-                "searching": true,
-                "info": true
-            });
-
-            // Handle delete button click
-            document.querySelectorAll('.delete-package-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const packageId = this.dataset.packageId;
-                    const packageName = this.dataset.packageName;
-                    const deleteForm = document.getElementById('deletePackageForm');
-                    const packageNameToDelete = document.getElementById('packageNameToDelete');
-
-                    // Set the name in the modal body
-                    packageNameToDelete.textContent = packageName;
-
-                    // Set the form action URL
-                    deleteForm.action = `/dashboard/settings/hire-packages/delete/${packageId}/`;
-
-                    // Show the modal
-                    $('#deletePackageModal').modal('show');
-                });
-            });
+            // DataTables initialization (optional)
+            // $('#packagesTable').DataTable({
+            //     "paging": true,
+            //     "ordering": true,
+            //     "searching": true,
+            //     "info": true
+            // });
         });
     </script>
 {% endblock %}

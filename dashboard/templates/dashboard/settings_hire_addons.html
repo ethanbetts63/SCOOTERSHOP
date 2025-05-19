@@ -55,9 +55,13 @@
                                 <a href="{% url 'dashboard:edit_hire_addon' addon.pk %}" class="btn btn-info btn-sm">
                                     <i class="fas fa-edit"></i> Edit
                                 </a>
-                                <button type="button" class="btn btn-danger btn-sm delete-addon-btn" data-addon-id="{{ addon.pk }}" data-addon-name="{{ addon.name }}">
-                                    <i class="fas fa-trash"></i> Delete
-                                </button>
+                                {# Mirroring delete strategy from service_brands_management.html #}
+                                <form method="post" action="{% url 'dashboard:delete_hire_addon' pk=addon.pk %}" class="inline-form" style="display:inline;">
+                                     {% csrf_token %}
+                                     <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete the add-on \'{{ addon.name }}\'?');">
+                                         <i class="fas fa-trash"></i> Delete
+                                     </button>
+                                </form>
                             </td>
                         </tr>
                         {% empty %}
@@ -74,35 +78,16 @@
 {% endblock %}
 
 {% block extra_js %}
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // DataTables initialization (optional, but good for larger lists)
-            $('#addonsTable').DataTable({
-                "paging": true,
-                "ordering": true,
-                "searching": true,
-                "info": true
-            });
-
-            // Handle delete button click
-            document.querySelectorAll('.delete-addon-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const addOnId = this.dataset.addonId;
-                    const addOnName = this.dataset.addonName;
-                    const deleteForm = document.getElementById('deleteAddOnForm');
-                    const addOnNameToDelete = document.getElementById('addonNameToDelete');
-
-                    // Set the name in the modal body
-                    addOnNameToDelete.textContent = addOnName;
-
-                    // Set the form action URL
-                    deleteForm.action = `/dashboard/settings/hire-addons/delete/${addOnId}/`;
-
-                    // Show the modal
-                    $('#deleteAddOnModal').modal('show');
-                });
-            });
+            // Ensure jQuery and DataTables are loaded if you want to use this.
+            // $('#addonsTable').DataTable({
+            //     "paging": true,
+            //     "ordering": true,
+            //     "searching": true,
+            //     "info": true
+            // });
         });
     </script>
 {% endblock %}
