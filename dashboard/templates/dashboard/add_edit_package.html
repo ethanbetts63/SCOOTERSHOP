@@ -58,6 +58,11 @@
                             {{ checkbox.tag }}
                             <label class="form-check-label" for="{{ checkbox.id_for_label }}">
                                 {{ checkbox.choice_label }}
+                                {% for addon in available_addons %}
+                                    {% if addon.name == checkbox.choice_label %}
+                                        <span class="addon-cost" data-cost="{{ addon.cost }}">${{ addon.cost }}</span>
+                                    {% endif %}
+                                {% endfor %}
                             </label>
                         </div>
                     {% endfor %}
@@ -73,6 +78,7 @@
             </div>
 
             <div class="form-group">
+                <div id="total-addons-cost" class="mb-2">Total non-package cost of selected add-ons: $0.00</div>
                 <label for="{{ form.package_price.id_for_label }}">Package Price ($)</label>
                 {{ form.package_price }}
                 {% if form.package_price.errors %}
@@ -110,10 +116,8 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Add Bootstrap's 'is-invalid' class for form errors dynamically
-            // This is generally handled by Django crispy forms or manual template rendering
-            // but for raw forms, you might need extra JS to apply the class
             document.querySelectorAll('.invalid-feedback').forEach(function(feedback) {
-                const formControl = feedback.previousElementSibling; // This usually points to the input
+                const formControl = feedback.previousElementSibling;
                 if (formControl && formControl.classList.contains('form-control')) {
                     formControl.classList.add('is-invalid');
                 }
@@ -123,6 +127,32 @@
                     input.classList.add('is-invalid');
                 }
             });
+
+            // Calculate total add-on cost when checkboxes are changed
+            const addonCheckboxes = document.querySelectorAll('.addon-checkbox-list input[type="checkbox"]');
+            const totalCostDisplay = document.getElementById('total-addons-cost');
+
+            function updateTotalCost() {
+                let totalCost = 0;
+                addonCheckboxes.forEach(function(checkbox) {
+                    if (checkbox.checked) {
+                        const costElement = checkbox.parentElement.querySelector('.addon-cost');
+                        if (costElement) {
+                            const cost = parseFloat(costElement.getAttribute('data-cost')) || 0;
+                            totalCost += cost;
+                        }
+                    }
+                });
+                totalCostDisplay.textContent = `Total non-package cost of selected add-ons: $${totalCost.toFixed(2)}`;
+            }
+
+            // Add event listeners to all addon checkboxes
+            addonCheckboxes.forEach(function(checkbox) {
+                checkbox.addEventListener('change', updateTotalCost);
+            });
+
+            // Calculate initial cost on page load
+            updateTotalCost();
         });
     </script>
 {% endblock %}

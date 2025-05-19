@@ -5,6 +5,7 @@ from django.views import View
 from django.contrib import messages
 from dashboard.forms.add_package_form import AddPackageForm
 from hire.models.hire_packages import Package
+from hire.models.hire_addon import AddOn # Import AddOn model
 
 @method_decorator(login_required, name='dispatch')
 class AddEditPackageView(View):
@@ -19,10 +20,15 @@ class AddEditPackageView(View):
         else:
             form = AddPackageForm()
             title = "Add New Hire Package"
+
+        # Fetch all available add-ons to pass their costs to the template
+        available_addons = AddOn.objects.filter(is_available=True).order_by('name')
+
         context = {
             'form': form,
             'title': title,
             'package': package,
+            'available_addons': available_addons, # Pass available_addons to the context
         }
         return render(request, self.template_name, context)
 
@@ -35,23 +41,20 @@ class AddEditPackageView(View):
             form = AddPackageForm(request.POST)
 
         if form.is_valid():
-            # Save the main Package instance first.
-            # For new instances, ManyToMany data can't be saved until the instance has an ID.
-            # Using commit=False prevents Django from saving M2M data until save_m2m() is called.
             package_instance = form.save(commit=False)
-            package_instance.save() # This saves the Package object and gives it an ID.
-
-            # Now, save the ManyToMany data. This method requires the instance to be saved.
+            package_instance.save()
             form.save_m2m()
-
             messages.success(request, f"Package '{package_instance.name}' saved successfully!")
             return redirect('dashboard:settings_hire_packages')
         else:
             messages.error(request, "Please correct the errors below.")
             title = "Edit Hire Package" if pk else "Add New Hire Package"
+            # Re-fetch available add-ons if the form is not valid, to re-render the costs
+            available_addons = AddOn.objects.filter(is_available=True).order_by('name')
             context = {
                 'form': form,
                 'title': title,
                 'package': package,
+                'available_addons': available_addons,
             }
             return render(request, self.template_name, context)
