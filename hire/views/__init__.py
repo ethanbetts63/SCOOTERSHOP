@@ -1,0 +1,8 @@
+# hire/views/__init__.py
+from .step1_DateTime_view import SelectDateTimeView
+from .step3_AddonPackage_view import AddonPackageView
+from .step4_HasAccount_view import HasAccountView
+from .step4_NoAccount_view import NoAccountView
+from .step5_BookSumAndPaymentOptions_view import BookSumAndPaymentOptionsView
+from .step6_PaymentDetails_view import PaymentDetailsView
+from .step7_BookingConfirmation_view import BookingConfirmationView
