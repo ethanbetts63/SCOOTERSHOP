@@ -97,7 +97,7 @@ class BikeChoiceView(View):
         print(f"Has license: {has_license}")
 
         # Duration for pricing (using potentially default dates/times)
-        duration_days = calculate_hire_duration_days(pickup_datetime, return_datetime)
+        duration_days = calculate_hire_duration_days(temp_booking.pickup_date, temp_booking.return_date, temp_booking.pickup_time, temp_booking.return_time)
         print(f"Calculated hire duration (days): {duration_days}")
 
 

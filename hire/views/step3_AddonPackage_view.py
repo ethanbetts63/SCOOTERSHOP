@@ -43,10 +43,12 @@ class AddonPackageView(View):
             # Recalculate motorcycle hire price based on the selected motorcycle and duration
             # Ensure calculate_hire_price uses the motorcycle's specific rates if set
             hire_duration_days = calculate_hire_duration_days(
-                temp_booking.pickup_date, temp_booking.return_date
+                temp_booking.pickup_date, temp_booking.return_date, temp_booking.pickup_time, temp_booking.return_time
             )
             temp_booking.total_hire_price = calculate_hire_price(
-                motorcycle, temp_booking.pickup_date, temp_booking.return_date, hire_settings # Pass motorcycle and settings
+                motorcycle,
+                hire_duration_days,
+                hire_settings
             )
             temp_booking.save()
             messages.success(request, f"Motorcycle {motorcycle.model} selected successfully. Now choose add-ons and packages.")
@@ -130,63 +132,8 @@ class AddonPackageView(View):
             return redirect('hire:step1_select_datetime')
 
         hire_settings = HireSettings.objects.first()
-
-        # Assuming you will create Step3AddonPackageForm and use it here
-        # form = self.form_class(request.POST, instance=temp_booking)
-        # if form.is_valid():
-            # Process package selection
-            # selected_package_id = request.POST.get('package_id')
-            # if hire_settings.packages_enabled and selected_package_id:
-            #     selected_package = get_object_or_404(Package, id=selected_package_id, is_available=True)
-            #     temp_booking.package = selected_package
-            #     temp_booking.total_package_price = selected_package.package_price
-            # else:
-            #     temp_booking.package = None
-            #     temp_booking.total_package_price = 0
-
-            # Process add-on selections (quantities)
-            # This would likely involve a formset or iterating through specific fields
-            # and updating TempBookingAddOn instances related to temp_booking.
-            # Example:
-            # temp_booking.temp_booking_addons.all().delete() # Clear existing
-            # for addon in AddOn.objects.filter(is_available=True):
-            #     addon_checkbox_name = f'addon_id_{addon.id}'
-            #     quantity_input_name = f'quantity_{addon.id}'
-            #     if request.POST.get(addon_checkbox_name) == str(addon.id):
-            #         quantity = int(request.POST.get(quantity_input_name, 1))
-            #         # Check if this addon is part of the selected package, if so, don't add it individually
-            #         # This logic should mirror the JS on the frontend
-            #         # If it's not part of the package or no package is selected
-            #         TempBookingAddOn.objects.create(
-            #             temp_booking=temp_booking,
-            #             addon=addon,
-            #             quantity=quantity,
-            #             booked_addon_price=addon.cost # Store current cost
-            #         )
-
-
-            # Recalculate grand_total based on selected package and add-ons
-            # hire_duration_days = calculate_hire_duration_days(...)
-            # temp_booking.total_addons_price = ... (sum of selected add-ons * duration)
-            # temp_booking.grand_total = temp_booking.total_hire_price + temp_booking.total_addons_price + temp_booking.total_package_price
-            # temp_booking.save()
-
         messages.success(request, "Add-ons and packages updated successfully.")
         return redirect('hire:step4_customer_details') # Redirect to next step
-        # else:
-            # messages.error(request, "Please correct the errors below.")
-            # context = {
-            #     'form': form,
-            #     'temp_booking': temp_booking,
-            #     'available_packages': Package.objects.filter(is_available=True),
-            #     'available_addons': AddOn.objects.filter(is_available=True),
-            #     'hire_settings': hire_settings,
-            # }
-            # return render(request, self.template_name, context)
-
-        # Placeholder for now, you will replace with actual form processing
-        messages.error(request, "Form processing not yet implemented for Step 3. Please complete form and submission logic.")
-        return redirect('hire:step3_addons_and_packages') # Stay on this page for now
 
     def _get_temp_booking(self, request):
         """Helper to retrieve the current TempHireBooking from session."""
