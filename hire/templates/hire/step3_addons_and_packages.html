@@ -1,4 +1,4 @@
-{% extends "core/layout.html" %} {# Assuming a base.html exists for your frontend #}
+{% extends "core/layout.html" %} 
 {% load static %}
 
 {% block title %}Step 3: Add-ons & Packages{% endblock %}
@@ -50,9 +50,10 @@
                                         <span>{{ temp_booking.package.name }} ({{ hire_settings.currency_symbol }}{{ temp_booking.total_package_price|floatformat:2 }})</span>
                                     </li>
                                 {% endif %}
-                                {% comment %}
-                                    This will be dynamically updated by JS and then confirmed by backend
-                                {% endcomment %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Selected Add-ons Price:
+                                    <span id="addons-total-display">{{ hire_settings.currency_symbol }}{{ temp_booking.total_addons_price|floatformat:2 }}</span>
+                                </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center bg-light">
                                     <strong>Estimated Total:</strong>
                                     <strong id="grand-total-display">{{ hire_settings.currency_symbol }}{{ temp_booking.grand_total|floatformat:2 }}</strong>
@@ -64,28 +65,30 @@
                                 <h3 class="mt-5 mb-3">Choose a Package:</h3>
                                 {% if available_packages %}
                                     <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
-                                        {% for package in available_packages %}
+                                        {{ form.package.errors }}
+                                        {% for radio in form.package %}
                                             <div class="col">
-                                                <div class="card h-100 package-tile {% if temp_booking.package == package %}border-primary{% endif %}" id="package-{{ package.id }}">
-                                                    <div class="card-body">
-                                                        <h5 class="card-title">{{ package.name }}</h5>
-                                                        <p class="card-text">{{ package.description }}</p>
-                                                        <p class="card-text"><strong>Price: {{ hire_settings.currency_symbol }}{{ package.package_price|floatformat:2 }}</strong></p>
-                                                        {% if package.add_ons.all %}
-                                                            <p class="card-text text-muted small">Includes:</p>
-                                                            <ul class="list-unstyled small text-muted">
-                                                                {% for addon in package.add_ons.all %}
-                                                                    <li>- {{ addon.name }}</li>
-                                                                {% endfor %}
-                                                            </ul>
-                                                        {% endif %}
-                                                        <div class="form-check mt-3">
-                                                            <input class="form-check-input package-radio" type="radio" name="package_id" id="packageRadio{{ package.id }}" value="{{ package.id }}"
-                                                                   {% if temp_booking.package == package %}checked{% endif %}>
-                                                            <label class="form-check-label" for="packageRadio{{ package.id }}">Select this package</label>
+                                                {% with package=radio.choice_value %}
+                                                    <div class="card h-100 package-tile {% if temp_booking.package.id == package.id %}border-primary{% endif %}" id="package-{{ package.id }}">
+                                                        <div class="card-body">
+                                                            <h5 class="card-title">{{ package.name }}</h5>
+                                                            <p class="card-text">{{ package.description }}</p>
+                                                            <p class="card-text"><strong>Price: {{ hire_settings.currency_symbol }}{{ package.package_price|floatformat:2 }}</strong></p>
+                                                            {% if package.add_ons.all %}
+                                                                <p class="card-text text-muted small">Includes:</p>
+                                                                <ul class="list-unstyled small text-muted">
+                                                                    {% for addon in package.add_ons.all %}
+                                                                        <li>- {{ addon.name }}</li>
+                                                                    {% endfor %}
+                                                                </ul>
+                                                            {% endif %}
+                                                            <div class="form-check mt-3">
+                                                                {{ radio.tag }}
+                                                                <label class="form-check-label" for="{{ radio.id_for_label }}">Select this package</label>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                {% endwith %}
                                             </div>
                                         {% endfor %}
                                     </div>
@@ -101,27 +104,28 @@
                                 <h3 class="mt-5 mb-3">Select Individual Add-ons:</h3>
                                 {% if available_addons %}
                                     <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
-                                        {% for addon in available_addons %}
-                                            <div class="col">
-                                                <div class="card h-100 addon-tile" id="addon-{{ addon.id }}">
-                                                    <div class="card-body">
-                                                        <h5 class="card-title">{{ addon.name }}</h5>
-                                                        <p class="card-text">{{ addon.description }}</p>
-                                                        <p class="card-text"><strong>Cost: {{ hire_settings.currency_symbol }}{{ addon.cost|floatformat:2 }} per day</strong></p>
-                                                        <div class="form-check mt-3">
-                                                            <input class="form-check-input addon-checkbox" type="checkbox" name="addon_id_{{ addon.id }}" id="addonCheck{{ addon.id }}" value="{{ addon.id }}"
-                                                                   data-addon-cost="{{ addon.cost|floatformat:2 }}"
-                                                                   {# Add checked state based on TempBookingAddOn instances if needed #}
-                                                                   >
-                                                            <label class="form-check-label" for="addonCheck{{ addon.id }}">Add to booking</label>
-                                                        </div>
-                                                        <div class="mt-2" style="display: none;" id="quantityDiv{{ addon.id }}">
-                                                            <label for="quantity{{ addon.id }}" class="form-label">Quantity:</label>
-                                                            <input type="number" class="form-control addon-quantity" id="quantity{{ addon.id }}" name="quantity_{{ addon.id }}" value="1" min="1" max="10">
+                                        {% for field_info in form.get_addon_fields %}
+                                            {% with addon=field_info.addon %}
+                                                <div class="col">
+                                                    <div class="card h-100 addon-tile" id="addon-{{ addon.id }}">
+                                                        <div class="card-body">
+                                                            <h5 class="card-title" data-original-title="{{ addon.name }}">{{ addon.name }}</h5>
+                                                            <p class="card-text">{{ addon.description }}</p>
+                                                            <p class="card-text"><strong>Cost: {{ hire_settings.currency_symbol }}{{ addon.cost|floatformat:2 }} per day</strong></p>
+                                                            <div class="form-check mt-3">
+                                                                {{ field_info.selected_field.errors }}
+                                                                {{ field_info.selected_field }}
+                                                                <label class="form-check-label" for="{{ field_info.selected_field.id_for_label }}">Add to booking</label>
+                                                            </div>
+                                                            <div class="mt-2" style="display: none;" id="quantityDiv{{ addon.id }}">
+                                                                <label for="{{ field_info.quantity_field.id_for_label }}" class="form-label">Quantity:</label>
+                                                                {{ field_info.quantity_field.errors }}
+                                                                {{ field_info.quantity_field }}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            {% endwith %}
                                         {% endfor %}
                                     </div>
                                 {% else %}
@@ -151,13 +155,14 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const packageRadios = document.querySelectorAll('.package-radio');
-        const addonCheckboxes = document.querySelectorAll('.addon-checkbox');
-        const addonQuantities = document.querySelectorAll('.addon-quantity');
+        // Corrected selectors for form-generated elements
+        const packageRadios = document.querySelectorAll('input[name="package"]');
+        const addonCheckboxes = document.querySelectorAll('input[name^="addon_"][name$="_selected"]');
         const grandTotalDisplay = document.getElementById('grand-total-display');
+        const addonsTotalDisplay = document.getElementById('addons-total-display');
+
 
         // Helper to calculate hire duration in days (needs to match backend logic)
-        // For simplicity, we'll use a placeholder for now, ideally this comes from backend context
         const pickupDate = new Date("{{ temp_booking.pickup_date|date:'Y-m-d' }}T{{ temp_booking.pickup_time|time:'H:i:s' }}");
         const returnDate = new Date("{{ temp_booking.return_date|date:'Y-m-d' }}T{{ temp_booking.return_time|time:'H:i:s' }}");
         const MS_PER_DAY = 1000 * 60 * 60 * 24;
@@ -171,9 +176,6 @@
 
         // Get initial prices from Django context
         const initialMotorcyclePrice = parseFloat("{{ temp_booking.total_hire_price|floatformat:2 }}");
-        // Initial package price comes from temp_booking.total_package_price
-        let currentPackagePrice = parseFloat("{{ temp_booking.total_package_price|floatformat:2 }}");
-        const initialAddonsPrice = parseFloat("{{ temp_booking.total_addons_price|floatformat:2 }}");
         const currencySymbol = "{{ hire_settings.currency_symbol }}";
 
         // Map packages to their included add-ons for exclusion logic
@@ -188,38 +190,33 @@
 
         // Function to update the total price
         function updateGrandTotal() {
+            let currentPackagePrice = 0;
+            let currentAddonsPrice = 0;
+
             // Recalculate currentPackagePrice based on selection
-            const selectedPackageRadio = document.querySelector('input[name="package_id"]:checked');
+            const selectedPackageRadio = document.querySelector('input[name="package"]:checked');
             if (selectedPackageRadio) {
                 const packageId = parseInt(selectedPackageRadio.value);
                 const packageElement = document.getElementById(`package-${packageId}`);
                 if (packageElement) {
-                    // Extract price from the element's text content, careful with formatting
                     const priceText = packageElement.querySelector('strong').textContent;
-                    // Regex to extract numeric part after "Price: " and currency symbol
                     const match = priceText.match(/Price: [^\d]*([\d.,]+)/);
                     if (match && match[1]) {
-                        currentPackagePrice = parseFloat(match[1].replace(',', '.')); // Handle comma as decimal separator if applicable
+                        currentPackagePrice = parseFloat(match[1].replace(',', '.'));
                     }
                 }
-            } else {
-                currentPackagePrice = 0; // No package selected
             }
-
-
-            let currentAddonsPrice = 0;
 
             // Calculate add-ons price
             addonCheckboxes.forEach(checkbox => {
-                const addonId = parseInt(checkbox.value);
-                const quantityInput = document.getElementById(`quantity${addonId}`);
+                const addonId = parseInt(checkbox.value); // This is addon.id
+                const quantityInput = document.querySelector(`input[name="addon_${addonId}_quantity"]`);
                 const quantity = parseInt(quantityInput.value);
                 const addonCost = parseFloat(checkbox.dataset.addonCost);
 
-                // Check if add-on is part of the currently selected package
                 let isAddonInSelectedPackage = false;
                 if (selectedPackageRadio && packagesAddonsMap[parseInt(selectedPackageRadio.value)]) {
-                    isAddonInSelectedPackage = packagesAddonsMap[parseInt(selectedPackageRadio.value)].includes(addonId);
+                    isAddonInSelectedPackage = packagesAddonsMap[parseInt(selectedPackageRadio.value)].includes(String(addonId)); // Ensure string comparison
                 }
 
                 if (checkbox.checked && !isAddonInSelectedPackage) {
@@ -229,11 +226,12 @@
 
             const newGrandTotal = initialMotorcyclePrice + currentPackagePrice + currentAddonsPrice;
             grandTotalDisplay.textContent = `${currencySymbol}${newGrandTotal.toFixed(2)}`;
+            addonsTotalDisplay.textContent = `${currencySymbol}${currentAddonsPrice.toFixed(2)}`;
         }
 
         // Function to handle add-on availability based on selected package
         function updateAddonAvailability() {
-            const selectedPackageRadio = document.querySelector('input[name="package_id"]:checked');
+            const selectedPackageRadio = document.querySelector('input[name="package"]:checked');
             let includedAddonIds = [];
             if (selectedPackageRadio && packagesAddonsMap[parseInt(selectedPackageRadio.value)]) {
                 includedAddonIds = packagesAddonsMap[parseInt(selectedPackageRadio.value)];
@@ -242,11 +240,10 @@
             addonCheckboxes.forEach(checkbox => {
                 const addonId = parseInt(checkbox.value);
                 const quantityDiv = document.getElementById(`quantityDiv${addonId}`);
-                const quantityInput = document.getElementById(`quantity${addonId}`);
+                const quantityInput = document.querySelector(`input[name="addon_${addonId}_quantity"]`);
                 const addonTile = document.getElementById(`addon-${addonId}`);
                 const cardTitleElement = addonTile ? addonTile.querySelector('.card-title') : null;
                 const originalTitle = cardTitleElement ? cardTitleElement.dataset.originalTitle || cardTitleElement.textContent : '';
-
 
                 // Restore original title before potentially modifying
                 if (cardTitleElement && cardTitleElement.dataset.originalTitle === undefined) {
@@ -256,7 +253,7 @@
                     cardTitleElement.textContent = originalTitle;
                 }
 
-                if (includedAddonIds.includes(addonId)) {
+                if (includedAddonIds.includes(String(addonId))) { // Ensure string comparison
                     // Addon is included in the package
                     checkbox.checked = true; // Force check if part of package
                     checkbox.disabled = true; // Disable selection
@@ -288,29 +285,36 @@
                     tile.classList.remove('border-primary');
                 });
                 // Add border to the newly selected package tile
-                document.getElementById(`package-${this.value}`).classList.add('border-primary');
+                const packageId = this.value;
+                const selectedPackageTile = document.getElementById(`package-${packageId}`);
+                if (selectedPackageTile) {
+                    selectedPackageTile.classList.add('border-primary');
+                }
                 updateAddonAvailability(); // Update add-on availability
-                updateGrandTotal();
             });
         });
 
         // Event Listeners for Add-on Checkboxes
         addonCheckboxes.forEach(checkbox => {
-            const addonId = parseInt(checkbox.value);
+            const addonId = parseInt(checkbox.value); // This is addon.id
             const quantityDiv = document.getElementById(`quantityDiv${addonId}`);
+            const quantityInput = document.querySelector(`input[name="addon_${addonId}_quantity"]`);
+
             checkbox.addEventListener('change', function() {
                 if (this.checked) {
                     if (quantityDiv) quantityDiv.style.display = 'block';
                 } else {
                     if (quantityDiv) quantityDiv.style.display = 'none';
-                    if (document.getElementById(`quantity${addonId}`)) document.getElementById(`quantity${addonId}`).value = 1; // Reset quantity
+                    if (quantityInput) quantityInput.value = 1; // Reset quantity
                 }
                 updateGrandTotal();
             });
         });
 
         // Event Listeners for Add-on Quantities
-        addonQuantities.forEach(input => {
+        // Select all quantity inputs, regardless of how they are named
+        const allQuantityInputs = document.querySelectorAll('input[name^="quantity_"], input[name^="addon_"][name$="_quantity"]');
+        allQuantityInputs.forEach(input => {
             input.addEventListener('change', function() {
                 updateGrandTotal();
             });
@@ -318,6 +322,7 @@
                 updateGrandTotal();
             });
         });
+
 
         // Initial update on page load
         updateAddonAvailability();
