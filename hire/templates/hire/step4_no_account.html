@@ -1,0 +1,25 @@
+{% extends 'core/layout.html' %}
+{% load static %}
+
+{% block title %}Step 4: Driver Details{% endblock %}
+
+{% block content %}
+  <h1>Driver Details</h1>
+  <p>Please enter your driver information.</p>
+
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Continue to Next Step</button>
+  </form>
+
+  <p><a href="{% url 'hire:step3' %}">Back to Previous Step</a></p>
+{% endblock %}

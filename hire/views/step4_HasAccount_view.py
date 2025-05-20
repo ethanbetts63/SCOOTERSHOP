@@ -96,6 +96,6 @@ class HasAccountView(LoginRequiredMixin, View):
             temp_booking.save()
 
             # 5. Redirect to next step (Step 5)
-            return redirect('hire:step5')  # Replace with your actual URL name for Step 5
+            return redirect('hire:step5_summary_payment_options') 
         else:
             return render(request, 'hire/step4_has_account.html', {'form': form, 'temp_booking': temp_booking})

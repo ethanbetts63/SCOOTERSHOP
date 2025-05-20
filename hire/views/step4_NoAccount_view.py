@@ -68,6 +68,6 @@ class NoAccountView(View):
             temp_booking.save()
 
             # 4. Redirect to next step (Step 5)
-            return redirect('hire:step5')  # Replace with your actual URL name for Step 5
+            return redirect('hire:step5_summary_payment_options')  # Replace with your actual URL name for Step 5
         else:
             return render(request, 'hire/step4_no_account.html', {'form': form, 'temp_booking': temp_booking})
