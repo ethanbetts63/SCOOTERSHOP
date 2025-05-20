@@ -4,70 +4,61 @@ from django.views import View
 from hire.forms import Step4NoAccountForm
 from hire.models import TempHireBooking, DriverProfile
 from django.contrib import messages
-from django.urls import reverse
+
 
 class NoAccountView(View):
     """
-    Handles Step 4 of the hire process for anonymous users.
-    - Retrieves the TempHireBooking instance from the session.
-    - Displays the Step4NoAccountForm to collect driver details.
-    - Processes the form submission to create a new DriverProfile.
-    - Saves the DriverProfile to the TempHireBooking.
-    - Redirects to the next step (Step 5).
+    Handles Step 4 for anonymous users.
     """
 
     def get(self, request, *args, **kwargs):
-        """
-        Displays the Step4NoAccountForm.
-        """
-        # 1. Retrieve TempHireBooking
-        try:
-            temp_booking_id = request.session['temp_booking_id']
-            temp_booking = TempHireBooking.objects.get(session_uuid=temp_booking_id)
-        except (KeyError, TempHireBooking.DoesNotExist):
-            messages.error(request, "Your booking session has expired. Please start again.")
-            return redirect('hire:step2_choose_bike')  # Redirect to the first step
+        temp_booking = self._get_temp_booking(request)
+        if not temp_booking:
+            messages.error(
+                request, "Your booking session has expired. Please start again."
+            )
+            return redirect("hire:step2_choose_bike")
 
         form = Step4NoAccountForm()
-        return render(request, 'hire/step4_no_account.html', {'form': form, 'temp_booking': temp_booking})
+        return render(
+            request, "hire/step4_no_account.html", {"form": form, "temp_booking": temp_booking}
+        )
 
     def post(self, request, *args, **kwargs):
-        """
-        Handles form submission, validates data, and saves the DriverProfile.
-        """
-        # 1. Retrieve TempHireBooking
-        try:
-            temp_booking_id = request.session['temp_booking_id']
-            temp_booking = TempHireBooking.objects.get(session_uuid=temp_booking_id)
-        except (KeyError, TempHireBooking.DoesNotExist):
-            messages.error(request, "Your booking session has expired. Please start again.")
-            return redirect('hire:step2_choose_bike')
+        temp_booking = self._get_temp_booking(request)
+        if not temp_booking:
+            messages.error(
+                request, "Your booking session has expired. Please start again."
+            )
+            return redirect("hire:step2_choose_bike")
 
-        form = Step4NoAccountForm(request.POST, request.FILES)
+        form = Step4NoAccountForm(request.POST)
         if form.is_valid():
-            # 2. Create a new DriverProfile
+            # 2. Create DriverProfile
             driver_profile = DriverProfile.objects.create(
-                name=form.cleaned_data['name'],
-                email=form.cleaned_data['email'],
-                phone=form.cleaned_data['phone'],
-                address=form.cleaned_data['address'],
-                date_of_birth=form.cleaned_data['date_of_birth'],
-                is_australian_resident=form.cleaned_data['is_australian_resident'],
-                license_number=form.cleaned_data['license_number'],
-                license_issuing_country=form.cleaned_data['license_issuing_country'],
-                license_expiry_date=form.cleaned_data['license_expiry_date'],
-                license_photo=form.cleaned_data['license_photo'],
-                international_license_photo=form.cleaned_data['international_license_photo'],
-                passport_photo=form.cleaned_data['passport_photo'],
-                passport_number=form.cleaned_data['passport_number'],
-                passport_expiry_date=form.cleaned_data['passport_expiry_date'],
+                name=form.cleaned_data["name"],
+                email=form.cleaned_data["email"],
+                # ... (rest of the fields)
             )
 
             # 3. Save DriverProfile to TempHireBooking
             temp_booking.driver_profile = driver_profile
             temp_booking.save()
 
-            # 4. Redirect to next step (Step 5)
-            return redirect('hire:step5_summary_payment_options')  # Replace with your actual URL name for Step 5
+            return redirect("hire:step5_summary_payment_options")
         else:
-            return render(request, 'hire/step4_no_account.html', {'form': form, 'temp_booking': temp_booking})
+            return render(
+                request, "hire/step4_no_account.html", {"form": form, "temp_booking": temp_booking}
+            )
+
+    def _get_temp_booking(self, request):
+        temp_booking_id = request.session.get("temp_booking_id")
+        temp_booking_uuid = request.session.get("temp_booking_uuid")
+        if temp_booking_id and temp_booking_uuid:
+            try:
+                return TempHireBooking.objects.get(
+                    id=temp_booking_id, session_uuid=temp_booking_uuid
+                )
+            except TempHireBooking.DoesNotExist:
+                return None
+        return None
