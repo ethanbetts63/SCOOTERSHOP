@@ -102,13 +102,27 @@ class BikeChoiceView(View):
 
 
         # --- 2. Filter Motorcycles ---
-        available_motorcycles = Motorcycle.objects.filter(conditions__name='hire', is_available=True)
-        print(f"Initial available motorcycles count: {available_motorcycles.count()}")
+        # Start with all eligible motorcycles as a QuerySet
+        all_eligible_motorcycles = Motorcycle.objects.filter(conditions__name='hire', is_available=True)
+        print(f"Initial eligible motorcycles count: {all_eligible_motorcycles.count()}")
 
+        # If no license, filter by engine size, converting to int.
+        # This will convert the QuerySet to a list.
         if not has_license:
             print("User does not have a license, filtering for engine_size <= 50.")
-            available_motorcycles = available_motorcycles.filter(engine_size__lte=50)
-            print(f"Available motorcycles count after license filter: {available_motorcycles.count()}")
+            temp_available_motorcycles = [] # Use a temporary list
+            for motorcycle in all_eligible_motorcycles:
+                try:
+                    engine_size_int = int(motorcycle.engine_size)
+                    if engine_size_int <= 50:
+                        temp_available_motorcycles.append(motorcycle)
+                except ValueError:
+                    print(f"Warning: Could not convert engine_size '{motorcycle.engine_size}' to int for motorcycle {motorcycle.id}")
+            available_motorcycles = temp_available_motorcycles
+        else:
+            # If license, all eligible motorcycles are available initially (as a list)
+            available_motorcycles = list(all_eligible_motorcycles)
+        print(f"Available motorcycles count after license filter (and int conversion): {len(available_motorcycles)}")
 
 
         # Find motorcycles booked during the selected period
@@ -123,8 +137,12 @@ class BikeChoiceView(View):
         print(f"Found {conflicting_bookings.count()} conflicting HireBookings.")
         print(f"Booked motorcycle IDs: {list(booked_motorcycle_ids)}")
 
-        final_motorcycles_queryset = available_motorcycles.exclude(id__in=booked_motorcycle_ids)
-        print(f"Final available motorcycles count after excluding booked: {final_motorcycles_queryset.count()}")
+        # Exclude booked motorcycles from the available_motorcycles list
+        # Since available_motorcycles is now guaranteed to be a list, we filter it in Python
+        final_motorcycles_list = [
+            m for m in available_motorcycles if m.id not in booked_motorcycle_ids
+        ]
+        print(f"Final available motorcycles count after excluding booked: {len(final_motorcycles_list)}")
 
 
         # --- 3. Add Price Calculations and Other Annotations ---
@@ -136,7 +154,7 @@ class BikeChoiceView(View):
 
 
         motorcycles_with_prices = []
-        for motorcycle in final_motorcycles_queryset:
+        for motorcycle in final_motorcycles_list: # Iterate over the final list
              base_daily_rate = motorcycle.daily_hire_rate or (hire_settings.default_daily_rate if hire_settings else 0)
              monthly_discount_factor = hire_settings.monthly_discount_percentage / 100 if hire_settings and hire_settings.monthly_discount_percentage is not None else 0
              discounted_daily_rate_for_display = base_daily_rate * (1 - monthly_discount_factor)
