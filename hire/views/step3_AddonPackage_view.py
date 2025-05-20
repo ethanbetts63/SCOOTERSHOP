@@ -32,12 +32,12 @@ class AddonPackageView(View):
                 motorcycle = get_object_or_404(Motorcycle, id=motorcycle_id)
             except Exception: # More specific exception handling is recommended
                 messages.error(request, "Selected motorcycle not found.")
-                return redirect('hire:step2_select_motorcycle')
+                return redirect('hire:step2_choose_bike')
 
             # Check if the motorcycle is available for the selected dates/times
             if not self._is_motorcycle_available(motorcycle, temp_booking):
                 messages.error(request, "The selected motorcycle is not available for your chosen dates/times or license type.")
-                return redirect('hire:step2_select_motorcycle')
+                return redirect('hire:step2_choose_bike')
 
             temp_booking.motorcycle = motorcycle
             # Recalculate motorcycle hire price based on the selected motorcycle and duration
@@ -229,7 +229,7 @@ class AddonPackageView(View):
         ).exists()
 
         # Check license compatibility again
-        if not temp_booking.has_motorcycle_license and motorcycle.engine_size > 50:
+        if not temp_booking.has_motorcycle_license and int(motorcycle.engine_size) > 50:
              messages.error(self.request, "You require a full motorcycle license for this motorcycle.")
              return False
 

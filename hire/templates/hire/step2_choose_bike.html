@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {
     selectButtons.forEach(button => {
         button.addEventListener('click', function() {
             const motorcycleId = this.dataset.motorcycleId;
-            window.location.href = `/hire/book/step3/select-bike/${motorcycleId}/`;
+            window.location.href = `/hire/book/step3/${motorcycleId}/`;
         });
     });
 });
