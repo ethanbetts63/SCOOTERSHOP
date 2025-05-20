@@ -20,8 +20,12 @@ class NoAccountView(View):
             return redirect("hire:step2_choose_bike")
 
         form = Step4NoAccountForm()
+        context = {
+            "form": form,
+            "temp_booking": temp_booking, # Add temp_booking to the context
+        }
         return render(
-            request, "hire/step4_no_account.html", {"form": form, "temp_booking": temp_booking}
+            request, "hire/step4_no_account.html", context
         )
 
     def post(self, request, *args, **kwargs):
@@ -47,8 +51,12 @@ class NoAccountView(View):
 
             return redirect("hire:step5_summary_payment_options")
         else:
+            context = {
+                "form": form,
+                "temp_booking": temp_booking, # Ensure temp_booking is in the context on form error too
+            }
             return render(
-                request, "hire/step4_no_account.html", {"form": form, "temp_booking": temp_booking}
+                request, "hire/step4_no_account.html", context
             )
 
     def _get_temp_booking(self, request):

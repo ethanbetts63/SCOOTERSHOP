@@ -28,7 +28,11 @@ class HasAccountView(LoginRequiredMixin, View):
             }
         )
 
-        return render(request, "hire/step4_has_account.html", {"form": form})
+        context = {
+            "form": form,
+            "temp_booking": temp_booking,  # Add temp_booking to the context
+        }
+        return render(request, "hire/step4_has_account.html", context)
 
     def post(self, request, *args, **kwargs):
         temp_booking = self._get_temp_booking(request)
@@ -57,7 +61,11 @@ class HasAccountView(LoginRequiredMixin, View):
 
             return redirect("hire:step5_summary_payment_options")
         else:
-            return render(request, "hire/step4_has_account.html", {"form": form})
+            context = {
+                "form": form,
+                "temp_booking": temp_booking, # Ensure temp_booking is in the context on form error too
+            }
+            return render(request, "hire/step4_has_account.html", context)
 
     def _get_temp_booking(self, request):
         temp_booking_id = request.session.get("temp_booking_id")

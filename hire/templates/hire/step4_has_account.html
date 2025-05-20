@@ -21,5 +21,5 @@
     <button type="submit">Continue to Next Step</button>
   </form>
 
-  <p><a href="{% url 'hire:step3_addons_and_packages' %}">Back to Previous Step</a></p>
+  <p><a href="{% url 'hire:step3_addons_and_packages' temp_booking.motorcycle.id %}">Back to Previous Step</a></p>
 {% endblock %}
