@@ -1,4 +1,4 @@
-{% extends "core/layout.html" %} 
+{% extends "core/layout.html" %}
 {% load static %}
 
 {% block title %}Step 3: Add-ons & Packages{% endblock %}
@@ -229,7 +229,7 @@
             // Calculate add-ons price
             addonCheckboxes.forEach(checkbox => {
                 // Ensure checkbox.value is the addon.id
-                const addonId = parseInt(checkbox.value); 
+                const addonId = parseInt(checkbox.value);
                 const quantityInput = document.querySelector(`input[name="addon_${addonId}_quantity"]`);
                 const addonCostSpan = document.querySelector(`#addon-${addonId} .addon-cost`);
                 
@@ -290,12 +290,9 @@
                 } else {
                     // Addon is not included in the package
                     checkbox.disabled = false; // Enable selection
-                    if (checkbox.checked) {
-                         if (quantityDiv) quantityDiv.style.display = 'block'; // Show quantity if checked
-                    } else {
-                        if (quantityDiv) quantityDiv.style.display = 'none'; // Hide quantity if unchecked
-                        if (quantityInput) quantityInput.value = 1; // Reset quantity
-                    }
+                    checkbox.checked = false; // Uncheck if not included in the new package
+                    if (quantityDiv) quantityDiv.style.display = 'none'; // Always hide quantity if not checked
+                    if (quantityInput) quantityInput.value = 1; // Reset quantity
                     if (addonTile) addonTile.classList.remove('bg-light', 'text-muted');
                 }
             });
