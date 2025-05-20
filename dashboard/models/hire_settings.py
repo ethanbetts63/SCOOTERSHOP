@@ -1,5 +1,5 @@
 from django.db import models
-from datetime import time # Import time
+from datetime import time
 
 DEPOSIT_CALC_CHOICES = [
     ('percentage', 'Percentage of Total'),

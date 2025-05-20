@@ -1,0 +1,327 @@
+{% extends "core/layout.html" %} {# Assuming a base.html exists for your frontend #}
+{% load static %}
+
+{% block title %}Step 3: Add-ons & Packages{% endblock %}
+
+{% block content %}
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card shadow-lg">
+                    <div class="card-header bg-primary text-white">
+                        <h2 class="mb-0">Step 3: Choose Add-ons & Packages</h2>
+                    </div>
+                    <div class="card-body">
+                        {% if messages %}
+                            <div class="mb-3">
+                                {% for message in messages %}
+                                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <form method="post" action="">
+                            {% csrf_token %}
+
+                            <h3 class="mb-4">Your Current Booking:</h3>
+                            <ul class="list-group mb-4">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Motorcycle:
+                                    <span>{{ temp_booking.motorcycle.year }} {{ temp_booking.motorcycle.make }} {{ temp_booking.motorcycle.model }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Pickup:
+                                    <span>{{ temp_booking.pickup_date|date:"D, d M Y" }} at {{ temp_booking.pickup_time|time:"H:i" }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Return:
+                                    <span>{{ temp_booking.return_date|date:"D, d M Y" }} at {{ temp_booking.return_time|time:"H:i" }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Motorcycle Hire Price:
+                                    <span>{{ hire_settings.currency_symbol }}{{ temp_booking.total_hire_price|floatformat:2 }}</span>
+                                </li>
+                                {% if temp_booking.package %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Selected Package:
+                                        <span>{{ temp_booking.package.name }} ({{ hire_settings.currency_symbol }}{{ temp_booking.total_package_price|floatformat:2 }})</span>
+                                    </li>
+                                {% endif %}
+                                {% comment %}
+                                    This will be dynamically updated by JS and then confirmed by backend
+                                {% endcomment %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center bg-light">
+                                    <strong>Estimated Total:</strong>
+                                    <strong id="grand-total-display">{{ hire_settings.currency_symbol }}{{ temp_booking.grand_total|floatformat:2 }}</strong>
+                                </li>
+                            </ul>
+
+                            {# Packages Section #}
+                            {% if hire_settings and hire_settings.packages_enabled %}
+                                <h3 class="mt-5 mb-3">Choose a Package:</h3>
+                                {% if available_packages %}
+                                    <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
+                                        {% for package in available_packages %}
+                                            <div class="col">
+                                                <div class="card h-100 package-tile {% if temp_booking.package == package %}border-primary{% endif %}" id="package-{{ package.id }}">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">{{ package.name }}</h5>
+                                                        <p class="card-text">{{ package.description }}</p>
+                                                        <p class="card-text"><strong>Price: {{ hire_settings.currency_symbol }}{{ package.package_price|floatformat:2 }}</strong></p>
+                                                        {% if package.add_ons.all %}
+                                                            <p class="card-text text-muted small">Includes:</p>
+                                                            <ul class="list-unstyled small text-muted">
+                                                                {% for addon in package.add_ons.all %}
+                                                                    <li>- {{ addon.name }}</li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                        {% endif %}
+                                                        <div class="form-check mt-3">
+                                                            <input class="form-check-input package-radio" type="radio" name="package_id" id="packageRadio{{ package.id }}" value="{{ package.id }}"
+                                                                   {% if temp_booking.package == package %}checked{% endif %}>
+                                                            <label class="form-check-label" for="packageRadio{{ package.id }}">Select this package</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-info">No packages are currently available. A default "Basic Hire" package may have been applied.</div>
+                                {% endif %}
+                            {% else %}
+                                <div class="alert alert-info mt-5">Package selection is currently disabled by the administrator.</div>
+                            {% endif %}
+
+                            {# Add-ons Section #}
+                            {% if hire_settings and hire_settings.add_ons_enabled %}
+                                <h3 class="mt-5 mb-3">Select Individual Add-ons:</h3>
+                                {% if available_addons %}
+                                    <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
+                                        {% for addon in available_addons %}
+                                            <div class="col">
+                                                <div class="card h-100 addon-tile" id="addon-{{ addon.id }}">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">{{ addon.name }}</h5>
+                                                        <p class="card-text">{{ addon.description }}</p>
+                                                        <p class="card-text"><strong>Cost: {{ hire_settings.currency_symbol }}{{ addon.cost|floatformat:2 }} per day</strong></p>
+                                                        <div class="form-check mt-3">
+                                                            <input class="form-check-input addon-checkbox" type="checkbox" name="addon_id_{{ addon.id }}" id="addonCheck{{ addon.id }}" value="{{ addon.id }}"
+                                                                   data-addon-cost="{{ addon.cost|floatformat:2 }}"
+                                                                   {# Add checked state based on TempBookingAddOn instances if needed #}
+                                                                   >
+                                                            <label class="form-check-label" for="addonCheck{{ addon.id }}">Add to booking</label>
+                                                        </div>
+                                                        <div class="mt-2" style="display: none;" id="quantityDiv{{ addon.id }}">
+                                                            <label for="quantity{{ addon.id }}" class="form-label">Quantity:</label>
+                                                            <input type="number" class="form-control addon-quantity" id="quantity{{ addon.id }}" name="quantity_{{ addon.id }}" value="1" min="1" max="10">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-info">No individual add-ons are currently available.</div>
+                                {% endif %}
+                            {% else %}
+                                <div class="alert alert-info mt-5">Individual add-on selection is currently disabled by the administrator.</div>
+                            {% endif %}
+
+
+                            <div class="d-flex justify-content-between mt-5">
+                                <a href="{% url 'hire:step2_select_motorcycle' %}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Back to Motorcycle Selection
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    Proceed to Customer Details <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const packageRadios = document.querySelectorAll('.package-radio');
+        const addonCheckboxes = document.querySelectorAll('.addon-checkbox');
+        const addonQuantities = document.querySelectorAll('.addon-quantity');
+        const grandTotalDisplay = document.getElementById('grand-total-display');
+
+        // Helper to calculate hire duration in days (needs to match backend logic)
+        // For simplicity, we'll use a placeholder for now, ideally this comes from backend context
+        const pickupDate = new Date("{{ temp_booking.pickup_date|date:'Y-m-d' }}T{{ temp_booking.pickup_time|time:'H:i:s' }}");
+        const returnDate = new Date("{{ temp_booking.return_date|date:'Y-m-d' }}T{{ temp_booking.return_time|time:'H:i:s' }}");
+        const MS_PER_DAY = 1000 * 60 * 60 * 24;
+        let hireDurationDays = Math.ceil((returnDate - pickupDate) / MS_PER_DAY);
+        if (hireDurationDays === 0 && returnDate > pickupDate) { // Handle same-day hires
+            hireDurationDays = 1;
+        } else if (hireDurationDays < 0) {
+            hireDurationDays = 0; // Should not happen with backend validation
+        }
+
+
+        // Get initial prices from Django context
+        const initialMotorcyclePrice = parseFloat("{{ temp_booking.total_hire_price|floatformat:2 }}");
+        // Initial package price comes from temp_booking.total_package_price
+        let currentPackagePrice = parseFloat("{{ temp_booking.total_package_price|floatformat:2 }}");
+        const initialAddonsPrice = parseFloat("{{ temp_booking.total_addons_price|floatformat:2 }}");
+        const currencySymbol = "{{ hire_settings.currency_symbol }}";
+
+        // Map packages to their included add-ons for exclusion logic
+        const packagesAddonsMap = {};
+        '{% for package in available_packages %}'
+            packagesAddonsMap['{{ package.id }}'] = [
+                '{% for addon in package.add_ons.all %}',
+                    "{{ addon.id }}",
+                '{% endfor %}'
+            ];
+        '{% endfor %}'
+
+        // Function to update the total price
+        function updateGrandTotal() {
+            // Recalculate currentPackagePrice based on selection
+            const selectedPackageRadio = document.querySelector('input[name="package_id"]:checked');
+            if (selectedPackageRadio) {
+                const packageId = parseInt(selectedPackageRadio.value);
+                const packageElement = document.getElementById(`package-${packageId}`);
+                if (packageElement) {
+                    // Extract price from the element's text content, careful with formatting
+                    const priceText = packageElement.querySelector('strong').textContent;
+                    // Regex to extract numeric part after "Price: " and currency symbol
+                    const match = priceText.match(/Price: [^\d]*([\d.,]+)/);
+                    if (match && match[1]) {
+                        currentPackagePrice = parseFloat(match[1].replace(',', '.')); // Handle comma as decimal separator if applicable
+                    }
+                }
+            } else {
+                currentPackagePrice = 0; // No package selected
+            }
+
+
+            let currentAddonsPrice = 0;
+
+            // Calculate add-ons price
+            addonCheckboxes.forEach(checkbox => {
+                const addonId = parseInt(checkbox.value);
+                const quantityInput = document.getElementById(`quantity${addonId}`);
+                const quantity = parseInt(quantityInput.value);
+                const addonCost = parseFloat(checkbox.dataset.addonCost);
+
+                // Check if add-on is part of the currently selected package
+                let isAddonInSelectedPackage = false;
+                if (selectedPackageRadio && packagesAddonsMap[parseInt(selectedPackageRadio.value)]) {
+                    isAddonInSelectedPackage = packagesAddonsMap[parseInt(selectedPackageRadio.value)].includes(addonId);
+                }
+
+                if (checkbox.checked && !isAddonInSelectedPackage) {
+                    currentAddonsPrice += (addonCost * quantity * hireDurationDays);
+                }
+            });
+
+            const newGrandTotal = initialMotorcyclePrice + currentPackagePrice + currentAddonsPrice;
+            grandTotalDisplay.textContent = `${currencySymbol}${newGrandTotal.toFixed(2)}`;
+        }
+
+        // Function to handle add-on availability based on selected package
+        function updateAddonAvailability() {
+            const selectedPackageRadio = document.querySelector('input[name="package_id"]:checked');
+            let includedAddonIds = [];
+            if (selectedPackageRadio && packagesAddonsMap[parseInt(selectedPackageRadio.value)]) {
+                includedAddonIds = packagesAddonsMap[parseInt(selectedPackageRadio.value)];
+            }
+
+            addonCheckboxes.forEach(checkbox => {
+                const addonId = parseInt(checkbox.value);
+                const quantityDiv = document.getElementById(`quantityDiv${addonId}`);
+                const quantityInput = document.getElementById(`quantity${addonId}`);
+                const addonTile = document.getElementById(`addon-${addonId}`);
+                const cardTitleElement = addonTile ? addonTile.querySelector('.card-title') : null;
+                const originalTitle = cardTitleElement ? cardTitleElement.dataset.originalTitle || cardTitleElement.textContent : '';
+
+
+                // Restore original title before potentially modifying
+                if (cardTitleElement && cardTitleElement.dataset.originalTitle === undefined) {
+                    cardTitleElement.dataset.originalTitle = cardTitleElement.textContent;
+                }
+                if (cardTitleElement) {
+                    cardTitleElement.textContent = originalTitle;
+                }
+
+                if (includedAddonIds.includes(addonId)) {
+                    // Addon is included in the package
+                    checkbox.checked = true; // Force check if part of package
+                    checkbox.disabled = true; // Disable selection
+                    if (quantityDiv) quantityDiv.style.display = 'none'; // Hide quantity
+                    if (quantityInput) quantityInput.value = 1; // Reset quantity
+                    if (addonTile) addonTile.classList.add('bg-light', 'text-muted'); // Style it as included
+                    if (cardTitleElement) cardTitleElement.textContent = `${originalTitle} (Included)`;
+                } else {
+                    // Addon is not included in the package
+                    checkbox.disabled = false; // Enable selection
+                    if (checkbox.checked) {
+                         if (quantityDiv) quantityDiv.style.display = 'block'; // Show quantity if checked
+                    } else {
+                        if (quantityDiv) quantityDiv.style.display = 'none'; // Hide quantity if unchecked
+                        if (quantityInput) quantityInput.value = 1; // Reset quantity
+                    }
+                    if (addonTile) addonTile.classList.remove('bg-light', 'text-muted');
+                }
+            });
+            updateGrandTotal(); // Recalculate after updating availability
+        }
+
+
+        // Event Listeners for Package Radios
+        packageRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                // Remove border from all package tiles
+                document.querySelectorAll('.package-tile').forEach(tile => {
+                    tile.classList.remove('border-primary');
+                });
+                // Add border to the newly selected package tile
+                document.getElementById(`package-${this.value}`).classList.add('border-primary');
+                updateAddonAvailability(); // Update add-on availability
+                updateGrandTotal();
+            });
+        });
+
+        // Event Listeners for Add-on Checkboxes
+        addonCheckboxes.forEach(checkbox => {
+            const addonId = parseInt(checkbox.value);
+            const quantityDiv = document.getElementById(`quantityDiv${addonId}`);
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    if (quantityDiv) quantityDiv.style.display = 'block';
+                } else {
+                    if (quantityDiv) quantityDiv.style.display = 'none';
+                    if (document.getElementById(`quantity${addonId}`)) document.getElementById(`quantity${addonId}`).value = 1; // Reset quantity
+                }
+                updateGrandTotal();
+            });
+        });
+
+        // Event Listeners for Add-on Quantities
+        addonQuantities.forEach(input => {
+            input.addEventListener('change', function() {
+                updateGrandTotal();
+            });
+            input.addEventListener('input', function() { // For real-time updates while typing
+                updateGrandTotal();
+            });
+        });
+
+        // Initial update on page load
+        updateAddonAvailability();
+        updateGrandTotal();
+    });
+</script>
+{% endblock %}
