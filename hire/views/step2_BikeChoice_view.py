@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.db.models import Q
 
 from inventory.models import Motorcycle
-from ..models import TempHireBooking
+from ..models import TempHireBooking, HireBooking
 from dashboard.models import HireSettings, BlockedHireDate
 from ..views.utils import calculate_hire_price, calculate_hire_duration_days
 
