@@ -26,7 +26,7 @@ class NoAccountView(View):
             temp_booking = TempHireBooking.objects.get(session_uuid=temp_booking_id)
         except (KeyError, TempHireBooking.DoesNotExist):
             messages.error(request, "Your booking session has expired. Please start again.")
-            return redirect('hire:step1')  # Redirect to the first step
+            return redirect('hire:step2_choose_bike')  # Redirect to the first step
 
         form = Step4NoAccountForm()
         return render(request, 'hire/step4_no_account.html', {'form': form, 'temp_booking': temp_booking})
@@ -41,7 +41,7 @@ class NoAccountView(View):
             temp_booking = TempHireBooking.objects.get(session_uuid=temp_booking_id)
         except (KeyError, TempHireBooking.DoesNotExist):
             messages.error(request, "Your booking session has expired. Please start again.")
-            return redirect('hire:step1')
+            return redirect('hire:step2_choose_bike')
 
         form = Step4NoAccountForm(request.POST, request.FILES)
         if form.is_valid():

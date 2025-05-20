@@ -3,13 +3,33 @@ from django import forms
 from ..models import DriverProfile
 from django.core.exceptions import ValidationError
 
+
 class Step4NoAccountForm(forms.ModelForm):
     class Meta:
         model = DriverProfile
-        fields = ['name', 'email', 'phone', 'address', 'city', 'county', 'postcode', 'date_of_birth',
-                  'is_australian_resident', 'license_number', 'license_issuing_country', 'license_expiry_date',
-                  'license_photo', 'international_license_photo', 'passport_photo', 'passport_number',
-                  'passport_expiry_date']
+        fields = [
+            'name',
+            'email',
+            'phone_number',  # Updated field name
+            'address_line_1',  # Updated field name
+            'address_line_2',  # Added field
+            'city',
+            'state',  # Updated field name
+            'post_code',  # Updated field name
+            'country',  # Added field
+            'date_of_birth',
+            'is_australian_resident',
+            'license_number',  # Updated field name
+            'license_issuing_country',
+            'license_expiry_date',
+            'license_photo',
+            'international_license_photo',
+            'passport_photo',
+            'passport_number',
+            'passport_expiry_date',
+            'id_image',  # Added field
+            'international_id_image',  # Added field
+        ]
 
     def clean(self):
         cleaned_data = super().clean()
@@ -29,11 +49,13 @@ class Step4NoAccountForm(forms.ModelForm):
                 self.add_error('license_number', "Australian residents must provide their domestic license number.")
         else:
             if not international_license_photo:
-                self.add_error('international_license_photo', "Foreign drivers must upload their International Driver's License photo.")
+                self.add_error('international_license_photo',
+                               "Foreign drivers must upload their International Driver's License photo.")
             if not passport_photo:
                 self.add_error('passport_photo', "Foreign drivers must upload their passport photo.")
             if not license_issuing_country:
-                self.add_error('license_issuing_country', "Foreign drivers must provide the issuing country of their International Driver's License.")
+                self.add_error('license_issuing_country',
+                               "Foreign drivers must provide the issuing country of their International Driver's License.")
             if not passport_number:
                 self.add_error('passport_number', "Foreign drivers must provide their passport number.")
             if not passport_expiry_date:

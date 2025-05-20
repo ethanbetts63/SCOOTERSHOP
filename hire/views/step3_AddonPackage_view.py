@@ -160,7 +160,10 @@ class AddonPackageView(View):
             temp_booking.save()
 
             messages.success(request, "Add-ons and packages updated successfully.")
-            return redirect('hire:step4_customer_details')
+            if request.user.is_authenticated:
+                return redirect('hire:step4_has_account')
+            else:
+                return redirect('hire:step4_no_account')
         else:
             messages.error(request, "Please correct the errors below.")
             context = {

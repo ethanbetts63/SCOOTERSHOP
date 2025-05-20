@@ -31,7 +31,7 @@ class HasAccountView(LoginRequiredMixin, View):
         except (KeyError, TempHireBooking.DoesNotExist):
             # Handle case where temp booking doesn't exist (e.g., session expired)
             messages.error(request, "Your booking session has expired. Please start again.")
-            return redirect('hire:step1')  # Redirect to the first step
+            return redirect('hire:step2_choose_bike')  # Redirect to the first step
 
         # 2. Get or create DriverProfile
         driver_profile, created = DriverProfile.objects.get_or_create(user=request.user)
@@ -67,7 +67,7 @@ class HasAccountView(LoginRequiredMixin, View):
             temp_booking = TempHireBooking.objects.get(session_uuid=temp_booking_id)
         except (KeyError, TempHireBooking.DoesNotExist):
             messages.error(request, "Your booking session has expired. Please start again.")
-            return redirect('hire:step1')
+            return redirect('hire:step2_choose_bike')
 
         form = Step4HasAccountForm(request.POST, request.FILES)  # Include request.FILES for file uploads
         if form.is_valid():
