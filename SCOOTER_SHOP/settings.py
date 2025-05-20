@@ -160,14 +160,7 @@ GOOGLE_API_KEY = "AIzaSyCOauHlqUBPYdLLsYKYFhaaYAIlxK6pGa4"
 # Add other API keys or service credentials here
 
 
-# Email Settings (for sending confirmation emails, etc.)
-# Configure these based on your email service provider (e.g., Gmail, SendGrid, etc.)
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'your_smtp_server'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'your_email@example.com'
-# EMAIL_HOST_PASSWORD = 'your_email_password'
-# DEFAULT_FROM_EMAIL = 'your_email@example.com'
-
-# Add other necessary settings here (e.g., security headers, logging, caching)
+# Session Settings
+SESSION_COOKIE_AGE = 3600 # 1 hour, adjust as needed
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False # Or True, depending on your needs
+SESSION_SAVE_EVERY_REQUEST = False # Or True, if you want to update the session on every request
