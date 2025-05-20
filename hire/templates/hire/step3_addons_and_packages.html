@@ -44,12 +44,16 @@
                                     Motorcycle Hire Price:
                                     <span>{{ hire_settings.currency_symbol }}{{ temp_booking.total_hire_price|floatformat:2 }}</span>
                                 </li>
-                                {% if temp_booking.package %}
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        Selected Package:
-                                        <span>{{ temp_booking.package.name }} ({{ hire_settings.currency_symbol }}{{ temp_booking.total_package_price|floatformat:2 }})</span>
-                                    </li>
-                                {% endif %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Selected Package:
+                                    <span id="selected-package-display">
+                                        {% if temp_booking.package %}
+                                            {{ temp_booking.package.name }} ({{ hire_settings.currency_symbol }}{{ temp_booking.total_package_price|floatformat:2 }})
+                                        {% else %}
+                                            None Selected
+                                        {% endif %}
+                                    </span>
+                                </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     Selected Add-ons Price:
                                     <span id="addons-total-display">{{ hire_settings.currency_symbol }}{{ temp_booking.total_addons_price|floatformat:2 }}</span>
@@ -62,42 +66,44 @@
 
                             {# Packages Section #}
                             {% if hire_settings and hire_settings.packages_enabled %}
-    <h3 class="mt-5 mb-3">Choose a Package:</h3>
-    {% if available_packages %}
-        <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
-            {{ form.package.errors }}
-            {# Iterate directly over available_packages for details #}
-            {% for package_obj in available_packages %}
-                <div class="col">
-                    <div class="card h-100 package-tile {% if temp_booking.package.id == package_obj.id %}border-primary{% endif %}" id="package-{{ package_obj.id }}">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ package_obj.name }}</h5>
-                            <p class="card-text">{{ package_obj.description }}</p>
-                            <p class="card-text"><strong>Price: {{ hire_settings.currency_symbol }}{{ package_obj.package_price|floatformat:2 }}</strong></p>
-                            {% if package_obj.add_ons.all %}
-                                <p class="card-text text-muted small">Includes:</p>
-                                <ul class="list-unstyled small text-muted">
-                                    {% for addon in package_obj.add_ons.all %}
-                                        <li>- {{ addon.name }}</li>
-                                    {% endfor %}
-                                </ul>
+                                <h3 class="mt-5 mb-3">Choose a Package:</h3>
+                                {% if available_packages %}
+                                    <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
+                                        {{ form.package.errors }}
+                                        {# Iterate directly over available_packages for details #}
+                                        {% for package_obj in available_packages %}
+                                            <div class="col">
+                                                <div class="card h-100 package-tile {% if temp_booking.package.id == package_obj.id %}border-primary{% endif %}" id="package-{{ package_obj.id }}">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">{{ package_obj.name }}</h5>
+                                                        <p class="card-text">{{ package_obj.description }}</p>
+                                                        <p class="card-text">
+                                                            <strong>Price: {{ hire_settings.currency_symbol }}<span class="package-price" data-package-price="{{ package_obj.package_price|floatformat:2 }}">{{ package_obj.package_price|floatformat:2 }}</span></strong>
+                                                        </p>
+                                                        {% if package_obj.add_ons.all %}
+                                                            <p class="card-text text-muted small">Includes:</p>
+                                                            <ul class="list-unstyled small text-muted">
+                                                                {% for addon in package_obj.add_ons.all %}
+                                                                    <li>- {{ addon.name }}</li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                        {% endif %}
+                                                        <div class="form-check mt-3">
+                                                            {# Find the specific radio input for this package_obj #}
+                                                            <input type="radio" name="{{ form.package.name }}" id="{{ form.package.id_for_label }}_{{ forloop.counter0 }}" value="{{ package_obj.id }}" {% if form.package.value|add:"0" == package_obj.id %}checked{% endif %} data-package-name="{{ package_obj.name }}">
+                                                            <label class="form-check-label" for="{{ form.package.id_for_label }}_{{ forloop.counter0 }}">Select this package</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-info">No packages are currently available. A default "Basic Hire" package may have been applied.</div>
+                                {% endif %}
+                            {% else %}
+                                <div class="alert alert-info mt-5">Package selection is currently disabled by the administrator.</div>
                             {% endif %}
-                            <div class="form-check mt-3">
-                                {# Find the specific radio input for this package_obj #}
-                                <input type="radio" name="{{ form.package.name }}" id="{{ form.package.id_for_label }}_{{ forloop.counter0 }}" value="{{ package_obj.id }}" {% if form.package.value == package_obj.id|stringformat:"s" %}checked{% endif %}>
-                                <label class="form-check-label" for="{{ form.package.id_for_label }}_{{ forloop.counter0 }}">Select this package</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="alert alert-info">No packages are currently available. A default "Basic Hire" package may have been applied.</div>
-    {% endif %}
-{% else %}
-    <div class="alert alert-info mt-5">Package selection is currently disabled by the administrator.</div>
-{% endif %}
 
                             {# Add-ons Section #}
                             {% if hire_settings and hire_settings.add_ons_enabled %}
@@ -111,7 +117,9 @@
                                                         <div class="card-body">
                                                             <h5 class="card-title" data-original-title="{{ addon.name }}">{{ addon.name }}</h5>
                                                             <p class="card-text">{{ addon.description }}</p>
-                                                            <p class="card-text"><strong>Cost: {{ hire_settings.currency_symbol }}{{ addon.cost|floatformat:2 }} per day</strong></p>
+                                                            <p class="card-text">
+                                                                <strong>Cost: {{ hire_settings.currency_symbol }}<span class="addon-cost" data-addon-cost="{{ addon.cost|floatformat:2 }}">{{ addon.cost|floatformat:2 }}</span> per day</strong>
+                                                            </p>
                                                             <div class="form-check mt-3">
                                                                 {{ field_info.selected_field.errors }}
                                                                 {{ field_info.selected_field }}
@@ -160,7 +168,7 @@
         const addonCheckboxes = document.querySelectorAll('input[name^="addon_"][name$="_selected"]');
         const grandTotalDisplay = document.getElementById('grand-total-display');
         const addonsTotalDisplay = document.getElementById('addons-total-display');
-
+        const selectedPackageDisplay = document.getElementById('selected-package-display');
 
         // Helper to calculate hire duration in days (needs to match backend logic)
         const pickupDate = new Date("{{ temp_booking.pickup_date|date:'Y-m-d' }}T{{ temp_booking.pickup_time|time:'H:i:s' }}");
@@ -192,6 +200,7 @@
         function updateGrandTotal() {
             let currentPackagePrice = 0;
             let currentAddonsPrice = 0;
+            let selectedPackageName = "None Selected";
 
             // Recalculate currentPackagePrice based on selection
             const selectedPackageRadio = document.querySelector('input[name="package"]:checked');
@@ -199,20 +208,23 @@
                 const packageId = parseInt(selectedPackageRadio.value);
                 const packageElement = document.getElementById(`package-${packageId}`);
                 if (packageElement) {
-                    const priceText = packageElement.querySelector('strong').textContent;
-                    const match = priceText.match(/Price: [^\d]*([\d.,]+)/);
-                    if (match && match[1]) {
-                        currentPackagePrice = parseFloat(match[1].replace(',', '.'));
+                    const priceSpan = packageElement.querySelector('.package-price');
+                    if (priceSpan) {
+                        currentPackagePrice = parseFloat(priceSpan.dataset.packagePrice);
                     }
+                    selectedPackageName = selectedPackageRadio.dataset.packageName;
                 }
             }
+            selectedPackageDisplay.textContent = `${selectedPackageName} (${currencySymbol}${currentPackagePrice.toFixed(2)})`;
+
 
             // Calculate add-ons price
             addonCheckboxes.forEach(checkbox => {
-                const addonId = parseInt(checkbox.value); // This is addon.id
+                const addonId = parseInt(checkbox.value);
                 const quantityInput = document.querySelector(`input[name="addon_${addonId}_quantity"]`);
+                const addonCostSpan = document.querySelector(`#addon-${addonId} .addon-cost`);
+                const addonCost = parseFloat(addonCostSpan.dataset.addonCost);
                 const quantity = parseInt(quantityInput.value);
-                const addonCost = parseFloat(checkbox.dataset.addonCost);
 
                 let isAddonInSelectedPackage = false;
                 if (selectedPackageRadio && packagesAddonsMap[parseInt(selectedPackageRadio.value)]) {
