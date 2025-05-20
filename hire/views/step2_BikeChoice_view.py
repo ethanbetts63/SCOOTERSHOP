@@ -97,8 +97,10 @@ class BikeChoiceView(View):
         print(f"Has license: {has_license}")
 
         # Duration for pricing (using potentially default dates/times)
-        duration_days = calculate_hire_duration_days(temp_booking.pickup_date, temp_booking.return_date, temp_booking.pickup_time, temp_booking.return_time)
-        print(f"Calculated hire duration (days): {duration_days}")
+        hire_duration_days = calculate_hire_duration_days(
+                temp_booking.pickup_date, temp_booking.return_date, temp_booking.pickup_time, temp_booking.return_time
+            )
+        print(f"Calculated hire duration (days): {hire_duration_days}")
 
 
         # --- 2. Filter Motorcycles ---
@@ -161,8 +163,7 @@ class BikeChoiceView(View):
 
              total_hire_price_for_bike = calculate_hire_price(
                   motorcycle,
-                  pickup_datetime,
-                  return_datetime,
+                  hire_duration_days,
                   hire_settings
              )
 
@@ -233,34 +234,3 @@ class BikeChoiceView(View):
         print("--- BikeChoiceView GET END ---")
         return render(request, self.template_name, context)
 
-# Dummy calculate_hire_price and calculate_hire_duration_days remain the same.
-# Ensure your actual utility functions are robust.
-def calculate_hire_price(motorcycle, pickup_datetime, return_datetime, hire_settings):
-    """
-    Placeholder for your actual hire price calculation logic.
-    Should take the motorcycle, dates, and settings and return the total price.
-    """
-    duration_days = calculate_hire_duration_days(pickup_datetime, return_datetime)
-    base_daily_rate = motorcycle.daily_hire_rate or hire_settings.default_daily_rate if hire_settings else 0
-    # Add logic for weekly/monthly discounts if applicable
-    total_price = base_daily_rate * duration_days
-    return total_price
-
-def calculate_hire_duration_days(pickup_datetime, return_datetime):
-     """
-     Placeholder for your actual hire duration calculation logic.
-     Calculates the number of hire days.
-     """
-     # For this example, let's use a simple days difference + 1 if time extends
-     duration = return_datetime - pickup_datetime
-     days = duration.days
-     # If the duration is positive but less than a full day, or crosses midnight, count as 1 day.
-     # This logic might need refinement depending on how you define a "hire day"
-     # For instance, a 25-hour hire might be 2 days, but a 23-hour hire might be 1 day.
-     # The current logic counts 23 hours across midnight as 2 days (1 day difference + 1).
-     # If you need precise 24-hour blocks or specific business hour logic, adjust this.
-     if duration.total_seconds() > 0 and days == 0:
-         days = 1
-     elif duration.total_seconds() > 0 and return_datetime.time() > pickup_datetime.time():
-         days += 1
-     return days
