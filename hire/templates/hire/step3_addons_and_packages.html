@@ -122,7 +122,14 @@
                                                             </p>
                                                             <div class="form-check mt-3">
                                                                 {{ field_info.selected_field.errors }}
-                                                                {{ field_info.selected_field }}
+                                                                {# Manually render checkbox to include value attribute #}
+                                                                <input type="checkbox"
+                                                                       name="{{ field_info.selected_field.name }}"
+                                                                       id="{{ field_info.selected_field.id_for_label }}"
+                                                                       value="{{ addon.id }}" {# <-- THIS WAS THE MISSING PIECE #}
+                                                                       class="form-check-input addon-checkbox"
+                                                                       {% if field_info.selected_field.value %}checked{% endif %}
+                                                                       data-addon-id="{{ addon.id }}">
                                                                 <label class="form-check-label" for="{{ field_info.selected_field.id_for_label }}">Add to booking</label>
                                                             </div>
                                                             <div class="mt-2" style="display: none;" id="quantityDiv{{ addon.id }}">
@@ -165,6 +172,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Corrected selectors for form-generated elements
         const packageRadios = document.querySelectorAll('input[name="package"]');
+        // Ensure this selector targets inputs with the correct value for addon.id
         const addonCheckboxes = document.querySelectorAll('input[name^="addon_"][name$="_selected"]');
         const grandTotalDisplay = document.getElementById('grand-total-display');
         const addonsTotalDisplay = document.getElementById('addons-total-display');
@@ -220,19 +228,25 @@
 
             // Calculate add-ons price
             addonCheckboxes.forEach(checkbox => {
-                const addonId = parseInt(checkbox.value);
+                // Ensure checkbox.value is the addon.id
+                const addonId = parseInt(checkbox.value); 
                 const quantityInput = document.querySelector(`input[name="addon_${addonId}_quantity"]`);
                 const addonCostSpan = document.querySelector(`#addon-${addonId} .addon-cost`);
-                const addonCost = parseFloat(addonCostSpan.dataset.addonCost);
-                const quantity = parseInt(quantityInput.value);
+                
+                // Only proceed if addonCostSpan exists (addon found)
+                if (addonCostSpan) {
+                    const addonCost = parseFloat(addonCostSpan.dataset.addonCost);
+                    // Ensure quantityInput exists and has a valid number
+                    const quantity = quantityInput && !isNaN(parseInt(quantityInput.value)) ? parseInt(quantityInput.value) : 1;
 
-                let isAddonInSelectedPackage = false;
-                if (selectedPackageRadio && packagesAddonsMap[parseInt(selectedPackageRadio.value)]) {
-                    isAddonInSelectedPackage = packagesAddonsMap[parseInt(selectedPackageRadio.value)].includes(String(addonId)); // Ensure string comparison
-                }
+                    let isAddonInSelectedPackage = false;
+                    if (selectedPackageRadio && packagesAddonsMap[parseInt(selectedPackageRadio.value)]) {
+                        isAddonInSelectedPackage = packagesAddonsMap[parseInt(selectedPackageRadio.value)].includes(String(addonId)); // Ensure string comparison
+                    }
 
-                if (checkbox.checked && !isAddonInSelectedPackage) {
-                    currentAddonsPrice += (addonCost * quantity * hireDurationDays);
+                    if (checkbox.checked && !isAddonInSelectedPackage) {
+                        currentAddonsPrice += (addonCost * quantity * hireDurationDays);
+                    }
                 }
             });
 
@@ -250,7 +264,7 @@
             }
 
             addonCheckboxes.forEach(checkbox => {
-                const addonId = parseInt(checkbox.value);
+                const addonId = parseInt(checkbox.value); // This is addon.id
                 const quantityDiv = document.getElementById(`quantityDiv${addonId}`);
                 const quantityInput = document.querySelector(`input[name="addon_${addonId}_quantity"]`);
                 const addonTile = document.getElementById(`addon-${addonId}`);
