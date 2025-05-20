@@ -43,11 +43,10 @@ class AddonPackageView(View):
             # Recalculate motorcycle hire price based on the selected motorcycle and duration
             # Ensure calculate_hire_price uses the motorcycle's specific rates if set
             hire_duration_days = calculate_hire_duration_days(
-                temp_booking.pickup_date, temp_booking.pickup_time,
-                temp_booking.return_date, temp_booking.return_time
+                temp_booking.pickup_date, temp_booking.return_date
             )
             temp_booking.total_hire_price = calculate_hire_price(
-                motorcycle, hire_duration_days, hire_settings # Pass motorcycle and settings
+                motorcycle, temp_booking.pickup_date, temp_booking.return_date, hire_settings # Pass motorcycle and settings
             )
             temp_booking.save()
             messages.success(request, f"Motorcycle {motorcycle.model} selected successfully. Now choose add-ons and packages.")
