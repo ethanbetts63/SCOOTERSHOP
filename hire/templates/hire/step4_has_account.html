@@ -23,7 +23,7 @@
         </ul>
     {% endif %}
 
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" id="driver-details-form">
         {% csrf_token %}
 
         <div class="form-group">
@@ -115,76 +115,80 @@
             {% endif %}
         </div>
 
-        <div class="form-group">
-            {{ form.license_number.label_tag }}
-            {{ form.license_number }}
-            {% if form.license_number.errors %}
-                <div class="error">{{ form.license_number.errors }}</div>
-            {% endif %}
+        <div id="australian-fields">
+            <div class="form-group">
+                {{ form.license_number.label_tag }}
+                {{ form.license_number }}
+                {% if form.license_number.errors %}
+                    <div class="error">{{ form.license_number.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.license_expiry_date.label_tag }}
+                {{ form.license_expiry_date }}
+                {% if form.license_expiry_date.errors %}
+                    <div class="error">{{ form.license_expiry_date.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.license_photo.label_tag }}
+                {{ form.license_photo }}
+                {% if form.license_photo.errors %}
+                    <div class="error">{{ form.license_photo.errors }}</div>
+                {% endif %}
+            </div>
         </div>
 
-        <div class="form-group">
-            {{ form.license_expiry_date.label_tag }}
-            {{ form.license_expiry_date }}
-            {% if form.license_expiry_date.errors %}
-                <div class="error">{{ form.license_expiry_date.errors }}</div>
-            {% endif %}
-        </div>
+        <div id="international-fields">
+            <div class="form-group">
+                {{ form.international_license_expiry_date.label_tag }}
+                {{ form.international_license_expiry_date }}
+                {% if form.international_license_expiry_date.errors %}
+                    <div class="error">{{ form.international_license_expiry_date.errors }}</div>
+                {% endif %}
+            </div>
 
-        <div class="form-group">
-            {{ form.license_photo.label_tag }}
-            {{ form.license_photo }}
-            {% if form.license_photo.errors %}
-                <div class="error">{{ form.license_photo.errors }}</div>
-            {% endif %}
-        </div>
+            <div class="form-group">
+                {{ form.international_license_issuing_country.label_tag }}
+                {{ form.international_license_issuing_country }}
+                {% if form.international_license_issuing_country.errors %}
+                    <div class="error">{{ form.international_license_issuing_country.errors }}</div>
+                {% endif %}
+            </div>
 
-        <div class="form-group">
-            {{ form.international_license_expiry_date.label_tag }}
-            {{ form.international_license_expiry_date }}
-            {% if form.international_license_expiry_date.errors %}
-                <div class="error">{{ form.international_license_expiry_date.errors }}</div>
-            {% endif %}
-        </div>
+            <div class="form-group">
+                {{ form.international_license_photo.label_tag }}
+                {{ form.international_license_photo }}
+                {% if form.international_license_photo.errors %}
+                    <div class="error">{{ form.international_license_photo.errors }}</div>
+                {% endif %}
+            </div>
 
-        <div class="form-group">
-            {{ form.international_license_issuing_country.label_tag }}
-            {{ form.international_license_issuing_country }}
-            {% if form.international_license_issuing_country.errors %}
-                <div class="error">{{ form.international_license_issuing_country.errors }}</div>
-            {% endif %}
-        </div>
+            <div class="form-group">
+                {{ form.passport_number.label_tag }}
+                {{ form.passport_number }}
+                {% if form.passport_number.errors %}
+                    <div class="error">{{ form.passport_number.errors }}</div>
+                {% endif %}
+            </div>
 
-        <div class="form-group">
-            {{ form.international_license_photo.label_tag }}
-            {{ form.international_license_photo }}
-            {% if form.international_license_photo.errors %}
-                <div class="error">{{ form.international_license_photo.errors }}</div>
-            {% endif %}
-        </div>
+            <div class="form-group">
+                {{ form.passport_expiry_date.label_tag }}
+                {{ form.passport_expiry_date }}
+                {% if form.passport_expiry_date.errors %}
+                    <div class="error">{{ form.passport_expiry_date.errors }}</div>
+                {% endif %}
+            </div>
 
-        <div class="form-group">
-            {{ form.passport_number.label_tag }}
-            {{ form.passport_number }}
-            {% if form.passport_number.errors %}
-                <div class="error">{{ form.passport_number.errors }}</div>
-            {% endif %}
-        </div>
-
-        <div class="form-group">
-            {{ form.passport_expiry_date.label_tag }}
-            {{ form.passport_expiry_date }}
-            {% if form.passport_expiry_date.errors %}
-                <div class="error">{{ form.passport_expiry_date.errors }}</div>
-            {% endif %}
-        </div>
-
-        <div class="form-group">
-            {{ form.passport_photo.label_tag }}
-            {{ form.passport_photo }}
-            {% if form.passport_photo.errors %}
-                <div class="error">{{ form.passport_photo.errors }}</div>
-            {% endif %}
+            <div class="form-group">
+                {{ form.passport_photo.label_tag }}
+                {{ form.passport_photo }}
+                {% if form.passport_photo.errors %}
+                    <div class="error">{{ form.passport_photo.errors }}</div>
+                {% endif %}
+            </div>
         </div>
 
         <button type="submit">Continue to Next Step</button>
@@ -192,4 +196,33 @@
 
     <p><a href="{% url 'hire:step3_addons_and_packages' temp_booking.motorcycle.id %}" class="btn-secondary">Back to Previous Step</a></p>
 </div>
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+    const isAustralianResidentSelect = document.getElementById('id_is_australian_resident');
+    const australianFields = document.getElementById('australian-fields');
+    const internationalFields = document.getElementById('international-fields');
+
+    function toggleFields() {
+        if (isAustralianResidentSelect.value === 'True') {
+            australianFields.style.display = 'block';
+            internationalFields.style.display = 'none';
+        } else if (isAustralianResidentSelect.value === 'False') {
+            australianFields.style.display = 'none';
+            internationalFields.style.display = 'block';
+        } else {
+            australianFields.style.display = 'none';
+            internationalFields.style.display = 'none';
+        }
+    }
+
+    // Initial setup on page load
+    toggleFields();
+
+    // Event listener for changes to the select field
+    isAustralianResidentSelect.addEventListener('change', toggleFields);
+</script>
+{% endblock %}
+
 {% endblock %}
