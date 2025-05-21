@@ -1,25 +1,205 @@
 {% extends 'core/layout.html' %}
 {% load static %}
 
+{% block extra_css %}
+{{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
+{% endblock %}
+
 {% block title %}Step 4: Driver Details{% endblock %}
 
 {% block content %}
-  <h1>Driver Details</h1>
-  <p>Please enter your driver information.</p>
+<div class="service-booking-container">
+    <div class="booking-progress">
+        <h2>Driver Details</h2>
+    </div>
+    <p>Please enter your driver information.</p>
 
-  {% if messages %}
-    <ul class="messages">
-      {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
+    {% if messages %}
+        <ul class="messages-container">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Continue to Next Step</button>
-  </form>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
 
-  <p><a href="{% url 'hire:step3_addons_and_packages' temp_booking.motorcycle.id %}">Back to Previous Step</a></p>
+        <div class="form-group">
+            {{ form.name.label_tag }}
+            {{ form.name }}
+            {% if form.name.errors %}
+                <div class="error">{{ form.name.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.email.label_tag }}
+            {{ form.email }}
+            {% if form.email.errors %}
+                <div class="error">{{ form.email.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.phone_number.label_tag }}
+            {{ form.phone_number }}
+            {% if form.phone_number.errors %}
+                <div class="error">{{ form.phone_number.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.address_line_1.label_tag }}
+            {{ form.address_line_1 }}
+            {% if form.address_line_1.errors %}
+                <div class="error">{{ form.address_line_1.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.address_line_2.label_tag }}
+            {{ form.address_line_2 }}
+            {% if form.address_line_2.errors %}
+                <div class="error">{{ form.address_line_2.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 form-group">
+                {{ form.city.label_tag }}
+                {{ form.city }}
+                {% if form.city.errors %}
+                    <div class="error">{{ form.city.errors }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6 form-group">
+                {{ form.state.label_tag }}
+                {{ form.state }}
+                {% if form.state.errors %}
+                    <div class="error">{{ form.state.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form.post_code.label_tag }}
+            {{ form.post_code }}
+            {% if form.post_code.errors %}
+                <div class="error">{{ form.post_code.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.country.label_tag }}
+            {{ form.country }}
+            {% if form.country.errors %}
+                <div class="error">{{ form.country.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.date_of_birth.label_tag }}
+            {{ form.date_of_birth }}
+            {% if form.date_of_birth.errors %}
+                <div class="error">{{ form.date_of_birth.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-check">
+            {{ form.is_australian_resident }}
+            <label class="form-check-label" for="{{ form.is_australian_resident.id_for_label }}">
+                {{ form.is_australian_resident.label }}
+            </label>
+            {% if form.is_australian_resident.errors %}
+                <div class="error">{{ form.is_australian_resident.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.license_number.label_tag }}
+            {{ form.license_number }}
+            {% if form.license_number.errors %}
+                <div class="error">{{ form.license_number.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.license_issuing_country.label_tag }}
+            {{ form.license_issuing_country }}
+            {% if form.license_issuing_country.errors %}
+                <div class="error">{{ form.license_issuing_country.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.license_expiry_date.label_tag }}
+            {{ form.license_expiry_date }}
+            {% if form.license_expiry_date.errors %}
+                <div class="error">{{ form.license_expiry_date.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.license_photo.label_tag }}
+            {{ form.license_photo }}
+            {% if form.license_photo.errors %}
+                <div class="error">{{ form.license_photo.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.international_license_photo.label_tag }}
+            {{ form.international_license_photo }}
+            {% if form.international_license_photo.errors %}
+                <div class="error">{{ form.international_license_photo.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.passport_photo.label_tag }}
+            {{ form.passport_photo }}
+            {% if form.passport_photo.errors %}
+                <div class="error">{{ form.passport_photo.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.passport_number.label_tag }}
+            {{ form.passport_number }}
+            {% if form.passport_number.errors %}
+                <div class="error">{{ form.passport_number.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.passport_expiry_date.label_tag }}
+            {{ form.passport_expiry_date }}
+            {% if form.passport_expiry_date.errors %}
+                <div class="error">{{ form.passport_expiry_date.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.id_image.label_tag }}
+            {{ form.id_image }}
+            {% if form.id_image.errors %}
+                <div class="error">{{ form.id_image.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.international_id_image.label_tag }}
+            {{ form.international_id_image }}
+            {% if form.international_id_image.errors %}
+                <div class="error">{{ form.international_id_image.errors }}</div>
+            {% endif %}
+        </div>
+
+        <button type="submit">Continue to Next Step</button>
+    </form>
+
+    <p><a href="{% url 'hire:step3_addons_and_packages' temp_booking.motorcycle.id %}" class="btn-secondary">Back to Previous Step</a></p>
+</div>
 {% endblock %}
