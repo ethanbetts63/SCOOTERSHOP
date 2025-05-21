@@ -22,6 +22,7 @@ class HasAccountView(LoginRequiredMixin, View):
             return redirect("hire:step2_choose_bike")
 
         form = Step4HasAccountForm(
+            user=request.user,
             initial={
                 "name": request.user.get_full_name(),
                 "email": request.user.email,
@@ -42,7 +43,7 @@ class HasAccountView(LoginRequiredMixin, View):
             )
             return redirect("hire:step2_choose_bike")
 
-        form = Step4HasAccountForm(request.POST)
+        form = Step4HasAccountForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
             # 1. Get or create DriverProfile
             driver_profile, created = DriverProfile.objects.get_or_create(
@@ -52,7 +53,25 @@ class HasAccountView(LoginRequiredMixin, View):
             # 2. Update DriverProfile fields
             driver_profile.name = form.cleaned_data["name"]
             driver_profile.email = form.cleaned_data["email"]
-            # ... (rest of the fields)
+            driver_profile.phone_number = form.cleaned_data["phone_number"]
+            driver_profile.address_line_1 = form.cleaned_data["address_line_1"]
+            driver_profile.address_line_2 = form.cleaned_data["address_line_2"]
+            driver_profile.city = form.cleaned_data["city"]
+            driver_profile.state = form.cleaned_data["state"]
+            driver_profile.post_code = form.cleaned_data["post_code"]
+            driver_profile.country = form.cleaned_data["country"]
+            driver_profile.date_of_birth = form.cleaned_data["date_of_birth"]
+            driver_profile.is_australian_resident = form.cleaned_data["is_australian_resident"]
+            driver_profile.license_number = form.cleaned_data["license_number"]
+            driver_profile.license_issuing_country = form.cleaned_data["license_issuing_country"]
+            driver_profile.license_expiry_date = form.cleaned_data["license_expiry_date"]
+            driver_profile.license_photo = form.cleaned_data["license_photo"]
+            driver_profile.international_license_photo = form.cleaned_data["international_license_photo"]
+            driver_profile.passport_photo = form.cleaned_data["passport_photo"]
+            driver_profile.passport_number = form.cleaned_data["passport_number"]
+            driver_profile.passport_expiry_date = form.cleaned_data["passport_expiry_date"]
+            driver_profile.id_image = form.cleaned_data["id_image"]
+            driver_profile.international_id_image = form.cleaned_data["international_id_image"]
             driver_profile.save()
 
             # 3. Save DriverProfile to TempHireBooking
