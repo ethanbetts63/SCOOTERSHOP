@@ -31,4 +31,4 @@ venv/
 htmlcov/
 coverage.xml
 
-settings.py
+.env
