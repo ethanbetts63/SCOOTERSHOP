@@ -8,8 +8,8 @@ class HireBookingSettingsForm(forms.ModelForm):
         fields = [
             'default_daily_rate',
             'default_hourly_rate',
-            'weekly_discount_percentage', # Added new discount field
-            'monthly_discount_percentage', # Added new discount field
+            'weekly_discount_percentage',
+            'monthly_discount_percentage',
             'minimum_hire_duration_days',
             'maximum_hire_duration_days',
             'booking_lead_time_hours',
@@ -40,22 +40,19 @@ class HireBookingSettingsForm(forms.ModelForm):
             'cancellation_partial_refund_percentage',
             'cancellation_minimal_refund_days',
             'cancellation_minimal_refund_percentage',
+            # --- New Payment Option Fields ---
+            'enable_online_full_payment',
+            'enable_online_deposit_payment',
+            'enable_in_store_full_payment',
+            'enable_cash_payment',
+            'enable_card_payment',
+            'enable_other_payment',
         ]
         widgets = {
             'default_hourly_rate': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
             'default_daily_rate': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
-            'weekly_discount_percentage': forms.NumberInput(attrs={ # Widget for new field
-                'class': 'form-control',
-                'min': '0',
-                'max': '100',
-                'step': '0.01'
-            }),
-            'monthly_discount_percentage': forms.NumberInput(attrs={ # Widget for new field
-                'class': 'form-control',
-                'min': '0',
-                'max': '100',
-                'step': '0.01'
-            }),
+            'weekly_discount_percentage': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'max': '100', 'step': '0.01'}),
+            'monthly_discount_percentage': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'max': '100', 'step': '0.01'}),
             'minimum_hire_duration_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
             'maximum_hire_duration_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
             'booking_lead_time_hours': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
@@ -65,17 +62,8 @@ class HireBookingSettingsForm(forms.ModelForm):
             'return_end_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
             'deposit_enabled': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'default_deposit_calculation_method': forms.Select(attrs={'class': 'form-control'}),
-            'deposit_percentage': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'min': '0',
-                'max': '100',
-                'step': '0.01'
-            }),
-            'deposit_amount': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'min': '0',
-                'step': '0.01'
-            }),
+            'deposit_percentage': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'max': '100', 'step': '0.01'}),
+            'deposit_amount': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
             'add_ons_enabled': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'packages_enabled': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'grace_period_minutes': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
@@ -95,6 +83,13 @@ class HireBookingSettingsForm(forms.ModelForm):
             'cancellation_partial_refund_percentage': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'max': '100', 'step': '0.01'}),
             'cancellation_minimal_refund_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
             'cancellation_minimal_refund_percentage': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'max': '100', 'step': '0.01'}),
+            # --- New Payment Option Widgets ---
+            'enable_online_full_payment': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'enable_online_deposit_payment': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'enable_in_store_full_payment': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'enable_cash_payment': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'enable_card_payment': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'enable_other_payment': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
     def clean(self):
@@ -104,30 +99,37 @@ class HireBookingSettingsForm(forms.ModelForm):
 
         if min_days is not None and max_days is not None and min_days > max_days:
             self.add_error('minimum_hire_duration_days', _("Minimum duration must be less than or equal to maximum duration."))
-            if not self.has_error('minimum_hire_duration_days'): # Check to avoid duplicate error messages
-                 self.add_error('maximum_hire_duration_days', _("Maximum duration must be greater than or equal to minimum duration."))
+            if not self.has_error('minimum_hire_duration_days'):
+                self.add_error('maximum_hire_duration_days', _("Maximum duration must be greater than or equal to minimum duration."))
 
         deposit_calculation_method = cleaned_data.get('default_deposit_calculation_method')
         deposit_percentage = cleaned_data.get('deposit_percentage')
         deposit_amount = cleaned_data.get('deposit_amount')
+        deposit_enabled = cleaned_data.get('deposit_enabled')
 
-        if cleaned_data.get('deposit_enabled'):
+        if deposit_enabled:
             if deposit_calculation_method == 'percentage' and (deposit_percentage is None or deposit_percentage < 0 or deposit_percentage > 100):
-                 self.add_error('deposit_percentage', _("Deposit percentage must be between 0 and 100 when using percentage calculation."))
+                self.add_error('deposit_percentage', _("Deposit percentage must be between 0 and 100 when using percentage calculation."))
             if deposit_calculation_method == 'fixed' and (deposit_amount is None or deposit_amount < 0):
-                 self.add_error('deposit_amount', _("Deposit amount must be a non-negative value when using fixed amount calculation."))
+                self.add_error('deposit_amount', _("Deposit amount must be a non-negative value when using fixed amount calculation."))
 
-        # Add validation for time fields if needed, e.g., ensuring end time is after start time
         pick_up_start_time = cleaned_data.get('pick_up_start_time')
         pick_up_end_time = cleaned_data.get('pick_up_end_time')
         return_off_start_time = cleaned_data.get('return_off_start_time')
         return_end_time = cleaned_data.get('return_end_time')
 
         if pick_up_start_time and pick_up_end_time and pick_up_start_time > pick_up_end_time:
-             self.add_error('pick_up_end_time', _("Pick up end time must be after pick up start time."))
+            self.add_error('pick_up_end_time', _("Pick up end time must be after pick up start time."))
 
         if return_off_start_time and return_end_time and return_off_start_time > return_end_time:
-             self.add_error('return_end_time', _("Return end time must be after return start time."))
+            self.add_error('return_end_time', _("Return end time must be after return start time."))
 
+        # --- Mutually exclusive validation for online deposit and in-store full payment ---
+        enable_online_deposit = cleaned_data.get('enable_online_deposit_payment')
+        enable_in_store_full = cleaned_data.get('enable_in_store_full_payment')
+
+        if enable_online_deposit and enable_in_store_full:
+            self.add_error('enable_online_deposit_payment', _("Cannot enable both online deposit and in-store full payment."))
+            self.add_error('enable_in_store_full_payment', _("Cannot enable both online deposit and in-store full payment."))
 
         return cleaned_data

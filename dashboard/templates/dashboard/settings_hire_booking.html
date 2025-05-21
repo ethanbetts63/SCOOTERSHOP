@@ -79,6 +79,47 @@
                 {% for error in form.monthly_discount_percentage.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
             </div>
         </div>
+        
+        {# --- Payment Options --- #}
+        <div class="form-field">
+            <h3 class="booking-section-title">{% translate "Payment Options" %}</h3>
+            <div class="form-field">
+                {{ form.enable_online_full_payment.label_tag }}
+                {{ form.enable_online_full_payment }}
+                {% if form.enable_online_full_payment.help_text %}<small>{{ form.enable_online_full_payment.help_text }}</small>{% endif %}
+                {% for error in form.enable_online_full_payment.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+            </div>
+            <div class="form-field">
+                {{ form.enable_online_deposit_payment.label_tag }}
+                {{ form.enable_online_deposit_payment }}
+                {% if form.enable_online_deposit_payment.help_text %}<small>{{ form.enable_online_deposit_payment.help_text }}</small>{% endif %}
+                {% for error in form.enable_online_deposit_payment.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+            </div>
+            <div class="form-field">
+                {{ form.enable_in_store_full_payment.label_tag }}
+                {{ form.enable_in_store_full_payment }}
+                {% if form.enable_in_store_full_payment.help_text %}<small>{{ form.enable_in_store_full_payment.help_text }}</small>{% endif %}
+                {% for error in form.enable_in_store_full_payment.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+            </div>
+            <div class="form-field">
+                {{ form.enable_cash_payment.label_tag }}
+                {{ form.enable_cash_payment }}
+                {% if form.enable_cash_payment.help_text %}<small>{{ form.enable_cash_payment.help_text }}</small>{% endif %}
+                {% for error in form.enable_cash_payment.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+            </div>
+            <div class="form-field">
+                {{ form.enable_card_payment.label_tag }}
+                {{ form.enable_card_payment }}
+                {% if form.enable_card_payment.help_text %}<small>{{ form.enable_card_payment.help_text }}</small>{% endif %}
+                {% for error in form.enable_card_payment.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+            </div>
+            <div class="form-field">
+                {{ form.enable_other_payment.label_tag }}
+                {{ form.enable_other_payment }}
+                {% if form.enable_other_payment.help_text %}<small>{{ form.enable_other_payment.help_text }}</small>{% endif %}
+                {% for error in form.enable_other_payment.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+            </div>
+        </div>
 
         {# --- Deposit Defaults --- #}
          <div class="form-field">
