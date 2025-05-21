@@ -41,10 +41,11 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "core.apps.CoreConfig",
     "users.apps.UsersConfig",
-    "dashboard.apps.DashboardConfig", # Moved dashboard before inventory
+    "dashboard.apps.DashboardConfig", 
     "inventory.apps.InventoryConfig",
     "service.apps.ServiceConfig",
     "hire.apps.HireConfig",
+    "payments.apps.PaymentsConfig",
     'widget_tweaks',
     'mathfilters',
 ]
