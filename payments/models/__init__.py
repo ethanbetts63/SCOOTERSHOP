@@ -1,1 +1,1 @@
-from PaymentModel import Payment
+from .PaymentModel import Payment

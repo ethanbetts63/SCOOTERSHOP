@@ -8,9 +8,6 @@ from .driver_profile import DriverProfile
 from .hire_addon import AddOn
 from .hire_packages import Package
 
-# Assuming you have HireSettings for potential calculations or validation
-# from dashboard.models import HireSettings
-
 
 class TempHireBooking(models.Model):
     """
@@ -63,6 +60,19 @@ class TempHireBooking(models.Model):
     # Need a way to track if this is an international booking based on driver profile
     is_international_booking = models.BooleanField(default=False)
 
+    # Step 5: Payment Option (NEW FIELD)
+    PAYMENT_OPTIONS = [
+        ('online_full', 'Online (Full Payment)'),
+        ('online_deposit', 'Online (Deposit Only)'),
+        ('in_store', 'Pay In Store'),
+    ]
+    payment_option = models.CharField(
+        max_length=20,
+        choices=PAYMENT_OPTIONS,
+        null=True,
+        blank=True,
+        help_text="The selected payment option for this booking."
+    )
 
     # --- Calculated / Booked Prices ---
     # Store the rates and total price at the time the bike is selected/confirmed
@@ -92,6 +102,19 @@ class TempHireBooking(models.Model):
          null=True, blank=True, # Calculated later
          help_text="Sum of total_hire_price, total_addons_price, and total_package_price."
     )
+    # Add deposit_amount field for online_deposit option
+    deposit_amount = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        null=True, blank=True,
+        help_text="The deposit amount required for the booking."
+    )
+    # Add currency field to TempHireBooking model
+    currency = models.CharField(
+        max_length=3,
+        default='DKK', # Default to Danish Krone
+        help_text="The three-letter ISO currency code for the booking."
+    )
+
 
     # --- Timestamps ---
     created_at = models.DateTimeField(auto_now_add=True)
@@ -109,3 +132,4 @@ class TempHireBooking(models.Model):
         ordering = ['-created_at']
         verbose_name = "Temporary Hire Booking"
         verbose_name_plural = "Temporary Hire Bookings"
+

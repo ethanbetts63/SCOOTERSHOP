@@ -9,7 +9,7 @@ import stripe
 # Set your Stripe secret key
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
-class Step6PaymentDetailsView(View):
+class PaymentDetailsView(View):
     def get(self, request):
         # Get the current temporary booking
         temp_booking_id = request.session.get('temp_booking_id')

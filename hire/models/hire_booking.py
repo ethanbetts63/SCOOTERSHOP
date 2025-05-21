@@ -1,12 +1,12 @@
-from django.db import models 
-from django.core.exceptions import ValidationError 
+from django.db import models
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 import uuid
-import datetime 
+import datetime
 
-from inventory.models import Motorcycle 
-from .driver_profile import DriverProfile 
-from dashboard.models import HireSettings 
+from inventory.models import Motorcycle
+from .driver_profile import DriverProfile
+from dashboard.models import HireSettings
 
 
 # Choices for booking status
@@ -92,6 +92,13 @@ class HireBooking(models.Model):
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='unpaid')
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, null=True, blank=True, help_text="Method by which the payment was made.")
+    
+    # Currency of the booking (NEW FIELD)
+    currency = models.CharField(
+        max_length=3,
+        default='DKK', # Assuming Danish Krone as default for consistency
+        help_text="The three-letter ISO currency code for the booking."
+    )
 
     # Status and Notes
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
@@ -139,69 +146,69 @@ class HireBooking(models.Model):
             try:
                 settings = HireSettings.objects.first()
                 if settings and settings.minimum_hire_duration_days is not None:
-                     min_duration = datetime.timedelta(days=settings.minimum_hire_duration_days)
-                     if (return_datetime - pickup_datetime) < min_duration:
-                          errors['return_date'] = f"Hire duration must be at least {settings.minimum_hire_duration_days} days."
-                          errors['return_time'] = f"Hire duration must be at least {settings.minimum_hire_duration_days} days."
+                    min_duration = datetime.timedelta(days=settings.minimum_hire_duration_days)
+                    if (return_datetime - pickup_datetime) < min_duration:
+                        errors['return_date'] = f"Hire duration must be at least {settings.minimum_hire_duration_days} days."
+                        errors['return_time'] = f"Hire duration must be at least {settings.minimum_hire_duration_days} days."
             except HireSettings.DoesNotExist:
-                 # Handle missing settings if necessary
-                 pass
+                # Handle missing settings if necessary
+                pass
             except Exception as e:
-                 print(f"Error checking minimum hire duration: {e}")
-                 pass
+                print(f"Error checking minimum hire duration: {e}")
+                pass
 
         if pickup_datetime:
             # Check booking lead time against settings
             try:
-                 settings = HireSettings.objects.first()
-                 if settings and settings.booking_lead_time_hours is not None:
-                      min_pickup_time = now + datetime.timedelta(hours=settings.booking_lead_time_hours)
-                      if pickup_datetime < min_pickup_time:
-                           errors['pickup_date'] = f"Pickup must be at least {settings.booking_lead_time_hours} hours from now."
-                           errors['pickup_time'] = f"Pickup must be at least {settings.booking_lead_time_hours} hours from now."
+                settings = HireSettings.objects.first()
+                if settings and settings.booking_lead_time_hours is not None:
+                    min_pickup_time = now + datetime.timedelta(hours=settings.booking_lead_time_hours)
+                    if pickup_datetime < min_pickup_time:
+                        errors['pickup_date'] = f"Pickup must be at least {settings.booking_lead_time_hours} hours from now."
+                        errors['pickup_time'] = f"Pickup must be at least {settings.booking_lead_time_hours} hours from now."
             except HireSettings.DoesNotExist:
-                 # Handle missing settings if necessary
-                 pass
+                # Handle missing settings if necessary
+                pass
             except Exception as e:
-                 print(f"Error checking booking lead time: {e}")
-                 pass
+                print(f"Error checking booking lead time: {e}")
+                pass
 
 
         # --- Financial Validation ---
         if self.total_price is not None and self.total_price < 0:
             errors['total_price'] = "Total price cannot be negative."
         if self.deposit_amount is not None and self.deposit_amount < 0:
-             errors['deposit_amount'] = "Deposit amount cannot be negative."
+            errors['deposit_amount'] = "Deposit amount cannot be negative."
         if self.amount_paid is not None and self.amount_paid < 0:
-             errors['amount_paid'] = "Amount paid cannot be negative."
+            errors['amount_paid'] = "Amount paid cannot be negative."
 
         # Consistency between payment status and amount paid
         if self.payment_status == 'paid' and self.amount_paid != self.total_price:
             errors['amount_paid'] = "Amount paid must equal total price when payment status is 'Paid'."
         if self.payment_status == 'deposit_paid':
             if self.deposit_amount is None or self.deposit_amount <= 0:
-                 errors['deposit_amount'] = "Deposit amount must be set when payment status is 'Deposit Paid'."
+                errors['deposit_amount'] = "Deposit amount must be set when payment status is 'Deposit Paid'."
             if self.amount_paid != self.deposit_amount:
-                 errors['amount_paid'] = "Amount paid must equal the deposit amount when payment status is 'Deposit Paid'."
+                errors['amount_paid'] = "Amount paid must equal the deposit amount when payment status is 'Deposit Paid'."
         if self.payment_status == 'unpaid' and self.amount_paid > 0:
-             # Optionally add a check here if unpaid but amount paid > 0
-             pass # Or raise an error depending on desired strictness
+            # Optionally add a check here if unpaid but amount paid > 0
+            pass # Or raise an error depending on desired strictness
 
         # Booked rates non-negative
         if self.booked_daily_rate is not None and self.booked_daily_rate < 0:
-             errors['booked_daily_rate'] = "Booked daily rate cannot be negative."
+            errors['booked_daily_rate'] = "Booked daily rate cannot be negative."
         if self.booked_weekly_rate is not None and self.booked_weekly_rate < 0:
-             errors['booked_weekly_rate'] = "Booked weekly rate cannot be negative."
+            errors['booked_weekly_rate'] = "Booked weekly rate cannot be negative."
         if self.booked_monthly_rate is not None and self.booked_monthly_rate < 0:
-             errors['booked_monthly_rate'] = "Booked monthly rate cannot be negative."
+            errors['booked_monthly_rate'] = "Booked monthly rate cannot be negative."
         if self.booked_package_price is not None and self.booked_package_price < 0:
-             errors['booked_package_price'] = "Booked package price cannot be negative."
+            errors['booked_package_price'] = "Booked package price cannot be negative."
 
 
         # --- Relationship Consistency ---
         # Check package availability if a package is selected
         if self.package and not self.package.is_available:
-             errors['package'] = f"The selected package '{self.package.name}' is currently not available."
+            errors['package'] = f"The selected package '{self.package.name}' is currently not available."
 
         # Consistency between is_international_booking and driver residency
         if self.is_international_booking and self.driver_profile and self.driver_profile.is_australian_resident:
