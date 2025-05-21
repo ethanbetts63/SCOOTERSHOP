@@ -107,11 +107,9 @@
             {% endif %}
         </div>
 
-        <div class="form-check">
+        <div class="form-group">
+            {{ form.is_australian_resident.label_tag }}
             {{ form.is_australian_resident }}
-            <label class="form-check-label" for="{{ form.is_australian_resident.id_for_label }}">
-                {{ form.is_australian_resident.label }}
-            </label>
             {% if form.is_australian_resident.errors %}
                 <div class="error">{{ form.is_australian_resident.errors }}</div>
             {% endif %}
