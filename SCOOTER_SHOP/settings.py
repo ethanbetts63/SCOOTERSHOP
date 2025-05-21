@@ -165,3 +165,8 @@ GOOGLE_API_KEY = "AIzaSyCOauHlqUBPYdLLsYKYFhaaYAIlxK6pGa4"
 SESSION_COOKIE_AGE = 3600 # 1 hour, adjust as needed
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False # Or True, depending on your needs
 SESSION_SAVE_EVERY_REQUEST = False # Or True, if you want to update the session on every request
+
+
+# Stripe Settings
+STRIPE_SECRET_KEY = "YOUR_STRIpk_test_51RRCzbPH0oVkn2F1ZCB43p08cHzPiROnrVDvRbggNjvm4WAsDHhNy8gzd00qhxCItqk5Y8yhtRi9BJSIlt8dr8x100D0oG7sKCPE_SECRET_KEY"
+STRIPE_PUBLISHABLE_KEY = "pk_test_51RRCzbPH0oVkn2F1ZCB43p08cHzPiROnrVDvRbggNjvm4WAsDHhNy8gzd00qhxCItqk5Y8yhtRi9BJSIlt8dr8x100D0oG7sKC"

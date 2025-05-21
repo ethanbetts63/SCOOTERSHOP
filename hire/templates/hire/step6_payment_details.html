@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Your Payment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        /* Custom styles for Stripe Elements */
+        .StripeElement {
+            box-sizing: border-box;
+            height: 40px;
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0; /* Tailwind border-gray-300 */
+            border-radius: 0.375rem; /* Tailwind rounded-md */
+            background-color: white;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* Tailwind shadow-sm */
+            -webkit-transition: box-shadow 150ms ease;
+            transition: box-shadow 150ms ease;
+        }
+
+        .StripeElement--focus {
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5); /* Tailwind focus:ring-blue-500 */
+            border-color: #4299e1; /* Tailwind border-blue-500 */
+        }
+
+        .StripeElement--invalid {
+            border-color: #ef4444; /* Tailwind border-red-500 */
+        }
+
+        .StripeElement--webkit-autofill {
+            background-color: #fefcbf !important; /* Tailwind bg-yellow-100 */
+        }
+    </style>
+</head>
+<body class="font-sans bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Complete Your Payment</h1>
+
+        <div class="mb-6 bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-md">
+            <h2 class="text-lg font-semibold mb-2">Booking Summary</h2>
+            <p class="text-sm">
+                Motorcycle: <span class="font-medium">{{ temp_booking.motorcycle.year }} {{ temp_booking.motorcycle.make }} {{ temp_booking.motorcycle.model }}</span>
+            </p>
+            <p class="text-sm">
+                Total Amount: <span class="font-semibold text-xl">{{ amount }} {{ currency }}</span>
+            </p>
+        </div>
+
+        <form id="payment-form" class="space-y-4">
+            <div>
+                <label for="card-element" class="block text-sm font-medium text-gray-700 mb-2">
+                    Credit or debit card
+                </label>
+                <div id="card-element" class="StripeElement">
+                    </div>
+                <div id="card-errors" role="alert" class="text-red-600 text-sm mt-2"></div>
+            </div>
+
+            <button
+                id="submit-button"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
+            >
+                Pay {{ amount }} {{ currency }}
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // Get the publishable key and client secret from the Django context
+        const stripePublishableKey = "{{ stripe_publishable_key }}";
+        const clientSecret = "{{ client_secret }}";
+
+        // Initialize Stripe with your publishable key
+        const stripe = Stripe(stripePublishableKey);
+        const elements = stripe.elements();
+
+        // Create an instance of the card Element.
+        const card = elements.create('card', {
+            style: {
+                base: {
+                    iconColor: '#6B7280', /* Tailwind gray-500 */
+                    color: '#374151', /* Tailwind gray-700 */
+                    fontWeight: '500',
+                    fontFamily: 'Inter, sans-serif',
+                    fontSize: '16px',
+                    '::placeholder': {
+                        color: '#9CA3AF', /* Tailwind gray-400 */
+                    },
+                },
+                invalid: {
+                    iconColor: '#EF4444', /* Tailwind red-500 */
+                    color: '#EF4444', /* Tailwind red-500 */
+                },
+            }
+        });
+
+        // Add an instance of the card Element into the `card-element` div.
+        card.mount('#card-element');
+
+        // Handle real-time validation errors from the card Element.
+        card.on('change', function(event) {
+            const displayError = document.getElementById('card-errors');
+            if (event.error) {
+                displayError.textContent = event.error.message;
+            } else {
+                displayError.textContent = '';
+            }
+        });
+
+        // Handle form submission.
+        const form = document.getElementById('payment-form');
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            const submitButton = document.getElementById('submit-button');
+            submitButton.disabled = true; // Disable button to prevent multiple submissions
+            submitButton.textContent = 'Processing...'; // Change button text
+
+            // Confirm the card payment with the client secret
+            const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+                payment_method: {
+                    card: card,
+                }
+            });
+
+            if (error) {
+                // Show error to your customer (e.g., insufficient funds, card declined)
+                const errorDisplay = document.getElementById('card-errors');
+                errorDisplay.textContent = error.message;
+                submitButton.disabled = false; // Re-enable button
+                submitButton.textContent = `Pay {{ amount }} {{ currency }}`; // Reset button text
+            } else {
+                // The payment has been processed!
+                if (paymentIntent.status === 'succeeded') {
+                    // Show a success message to your customer
+                    // There's a risk of the customer closing the window before this is called
+                    // Your backend should receive a webhook or poll API to confirm payment
+                    // For now, we'll redirect to a placeholder success page (Step 7)
+                    window.location.href = "{% url 'hire:step7_confirmation' %}?payment_intent_id=" + paymentIntent.id;
+                } else {
+                    // Handle other statuses, e.g., 'requires_action', 'requires_confirmation'
+                    // For more complex flows, you might need to handle these here
+                    const errorDisplay = document.getElementById('card-errors');
+                    errorDisplay.textContent = 'Payment status: ' + paymentIntent.status + '. Please try again or contact support.';
+                    submitButton.disabled = false; // Re-enable button
+                    submitButton.textContent = `Pay {{ amount }} {{ currency }}`; // Reset button text
+                }
+            }
+        });
+    </script>
+</body>
+</html>
