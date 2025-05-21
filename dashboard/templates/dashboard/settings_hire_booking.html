@@ -51,197 +51,197 @@
             <h3 class="booking-section-title">{% translate "Rate Defaults and Discounts" %}</h3> {# Updated section title #}
             {# Add the new hourly rate field here #}
              <div class="form-field">
-                {{ form.default_hourly_rate.label_tag }}
-                {{ form.default_hourly_rate }}
-                {% if form.default_hourly_rate.help_text %}<small>{{ form.default_hourly_rate.help_text }}</small>{% endif %}
-                {% for error in form.default_hourly_rate.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.default_hourly_rate.label_tag }}
+                 {{ form.default_hourly_rate }}
+                 {% if form.default_hourly_rate.help_text %}<small>{{ form.default_hourly_rate.help_text }}</small>{% endif %}
+                 {% for error in form.default_hourly_rate.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
             <div class="form-field">
-                {{ form.default_daily_rate.label_tag }}
-                {{ form.default_daily_rate }}
-                {% if form.default_daily_rate.help_text %}<small>{{ form.default_daily_rate.help_text }}</small>{% endif %}
-                {% for error in form.default_daily_rate.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.default_daily_rate.label_tag }}
+                 {{ form.default_daily_rate }}
+                 {% if form.default_daily_rate.help_text %}<small>{{ form.default_daily_rate.help_text }}</small>{% endif %}
+                 {% for error in form.default_daily_rate.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
             {# Removed old weekly rate field #}
             {# Removed old monthly rate field #}
 
             {# Added new discount percentage fields #}
             <div class="form-field">
-                {{ form.weekly_discount_percentage.label_tag }}
-                {{ form.weekly_discount_percentage }}
-                {% if form.weekly_discount_percentage.help_text %}<small>{{ form.weekly_discount_percentage.help_text }}</small>{% endif %}
-                {% for error in form.weekly_discount_percentage.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.weekly_discount_percentage.label_tag }}
+                 {{ form.weekly_discount_percentage }}
+                 {% if form.weekly_discount_percentage.help_text %}<small>{{ form.weekly_discount_percentage.help_text }}</small>{% endif %}
+                 {% for error in form.weekly_discount_percentage.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
              <div class="form-field">
-                {{ form.monthly_discount_percentage.label_tag }}
-                {{ form.monthly_discount_percentage }}
-                {% if form.monthly_discount_percentage.help_text %}<small>{{ form.monthly_discount_percentage.help_text }}</small>{% endif %}
-                {% for error in form.monthly_discount_percentage.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.monthly_discount_percentage.label_tag }}
+                 {{ form.monthly_discount_percentage }}
+                 {% if form.monthly_discount_percentage.help_text %}<small>{{ form.monthly_discount_percentage.help_text }}</small>{% endif %}
+                 {% for error in form.monthly_discount_percentage.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
         </div>
-        
+
         {# --- Payment Options --- #}
         <div class="form-field">
             <h3 class="booking-section-title">{% translate "Payment Options" %}</h3>
             <div class="form-field">
-                {{ form.enable_online_full_payment.label_tag }}
-                {{ form.enable_online_full_payment }}
-                {% if form.enable_online_full_payment.help_text %}<small>{{ form.enable_online_full_payment.help_text }}</small>{% endif %}
-                {% for error in form.enable_online_full_payment.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.enable_online_full_payment.label_tag }}
+                 {{ form.enable_online_full_payment }}
+                 {% if form.enable_online_full_payment.help_text %}<small>{{ form.enable_online_full_payment.help_text }}</small>{% endif %}
+                 {% for error in form.enable_online_full_payment.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
             <div class="form-field">
-                {{ form.enable_online_deposit_payment.label_tag }}
-                {{ form.enable_online_deposit_payment }}
-                {% if form.enable_online_deposit_payment.help_text %}<small>{{ form.enable_online_deposit_payment.help_text }}</small>{% endif %}
-                {% for error in form.enable_online_deposit_payment.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.enable_online_deposit_payment.label_tag }}
+                 {{ form.enable_online_deposit_payment }}
+                 {% if form.enable_online_deposit_payment.help_text %}<small>{{ form.enable_online_deposit_payment.help_text }}</small>{% endif %}
+                 {% for error in form.enable_online_deposit_payment.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
             <div class="form-field">
-                {{ form.enable_in_store_full_payment.label_tag }}
-                {{ form.enable_in_store_full_payment }}
-                {% if form.enable_in_store_full_payment.help_text %}<small>{{ form.enable_in_store_full_payment.help_text }}</small>{% endif %}
-                {% for error in form.enable_in_store_full_payment.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.enable_in_store_full_payment.label_tag }}
+                 {{ form.enable_in_store_full_payment }}
+                 {% if form.enable_in_store_full_payment.help_text %}<small>{{ form.enable_in_store_full_payment.help_text }}</small>{% endif %}
+                 {% for error in form.enable_in_store_full_payment.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
             <div class="form-field">
-                {{ form.enable_cash_payment.label_tag }}
-                {{ form.enable_cash_payment }}
-                {% if form.enable_cash_payment.help_text %}<small>{{ form.enable_cash_payment.help_text }}</small>{% endif %}
-                {% for error in form.enable_cash_payment.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.enable_cash_payment.label_tag }}
+                 {{ form.enable_cash_payment }}
+                 {% if form.enable_cash_payment.help_text %}<small>{{ form.enable_cash_payment.help_text }}</small>{% endif %}
+                 {% for error in form.enable_cash_payment.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
             <div class="form-field">
-                {{ form.enable_card_payment.label_tag }}
-                {{ form.enable_card_payment }}
-                {% if form.enable_card_payment.help_text %}<small>{{ form.enable_card_payment.help_text }}</small>{% endif %}
-                {% for error in form.enable_card_payment.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.enable_card_payment.label_tag }}
+                 {{ form.enable_card_payment }}
+                 {% if form.enable_card_payment.help_text %}<small>{{ form.enable_card_payment.help_text }}</small>{% endif %}
+                 {% for error in form.enable_card_payment.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
             <div class="form-field">
-                {{ form.enable_other_payment.label_tag }}
-                {{ form.enable_other_payment }}
-                {% if form.enable_other_payment.help_text %}<small>{{ form.enable_other_payment.help_text }}</small>{% endif %}
-                {% for error in form.enable_other_payment.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.enable_other_payment.label_tag }}
+                 {{ form.enable_other_payment }}
+                 {% if form.enable_other_payment.help_text %}<small>{{ form.enable_other_payment.help_text }}</small>{% endif %}
+                 {% for error in form.enable_other_payment.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
         </div>
 
         {# --- Deposit Defaults --- #}
          <div class="form-field">
-            <h3 class="booking-section-title">{% translate "Deposit Settings" %}</h3>
-            <div class="form-field">
-                {{ form.deposit_enabled.label_tag }}
-                {{ form.deposit_enabled }}
-                {% if form.deposit_enabled.help_text %}<small>{{ form.deposit_enabled.help_text }}</small>{% endif %}
-                {% for error in form.deposit_enabled.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
-            <div class="form-field">
-                {{ form.default_deposit_calculation_method.label_tag }}
-                {{ form.default_deposit_calculation_method }}
-                {% if form.default_deposit_calculation_method.help_text %}<small>{{ form.default_deposit_calculation_method.help_text }}</small>{% endif %}
-                {% for error in form.default_deposit_calculation_method.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+             <h3 class="booking-section-title">{% translate "Deposit Settings" %}</h3>
              <div class="form-field">
-                {{ form.deposit_percentage.label_tag }}
-                {{ form.deposit_percentage }}
-                {% if form.deposit_percentage.help_text %}<small>{{ form.deposit_percentage.help_text }}</small>{% endif %}
-                {% for error in form.deposit_percentage.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.deposit_enabled.label_tag }}
+                 {{ form.deposit_enabled }}
+                 {% if form.deposit_enabled.help_text %}<small>{{ form.deposit_enabled.help_text }}</small>{% endif %}
+                 {% for error in form.deposit_enabled.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
              <div class="form-field">
-                {{ form.deposit_amount.label_tag }}
-                {{ form.deposit_amount }}
-                {% if form.deposit_amount.help_text %}<small>{{ form.deposit_amount.help_text }}</small>{% endif %}
-                {% for error in form.deposit_amount.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
-        </div>
+                 {{ form.default_deposit_calculation_method.label_tag }}
+                 {{ form.default_deposit_calculation_method }}
+                 {% if form.default_deposit_calculation_method.help_text %}<small>{{ form.default_deposit_calculation_method.help_text }}</small>{% endif %}
+                 {% for error in form.default_deposit_calculation_method.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
+              <div class="form-field">
+                  {{ form.deposit_percentage.label_tag }}
+                  {{ form.deposit_percentage }}
+                  {% if form.deposit_percentage.help_text %}<small>{{ form.deposit_percentage.help_text }}</small>{% endif %}
+                  {% for error in form.deposit_percentage.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+              </div>
+              <div class="form-field">
+                  {{ form.deposit_amount.label_tag }}
+                  {{ form.deposit_amount }}
+                  {% if form.deposit_amount.help_text %}<small>{{ form.deposit_amount.help_text }}</small>{% endif %}
+                  {% for error in form.deposit_amount.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+              </div>
+         </div>
 
         {# --- Feature Toggles --- #}
         <div class="form-field">
             <h3 class="booking-section-title">{% translate "Feature Toggles" %}</h3>
              <div class="form-field">
-                {{ form.add_ons_enabled.label_tag }}
-                {{ form.add_ons_enabled }}
-                {% if form.add_ons_enabled.help_text %}<small>{{ form.add_ons_enabled.help_text }}</small>{% endif %}
-                {% for error in form.add_ons_enabled.errors %}><small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.add_ons_enabled.label_tag }}
+                 {{ form.add_ons_enabled }}
+                 {% if form.add_ons_enabled.help_text %}<small>{{ form.add_ons_enabled.help_text }}</small>{% endif %}
+                 {% for error in form.add_ons_enabled.errors %}><small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
              <div class="form-field">
-                {{ form.packages_enabled.label_tag }}
-                {{ form.packages_enabled }}
-                {% if form.packages_enabled.help_text %}<small>{{ form.packages_enabled.help_text }}</small>{% endif %}
-                {% for error in form.packages_enabled.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.packages_enabled.label_tag }}
+                 {{ form.packages_enabled }}
+                 {% if form.packages_enabled.help_text %}<small>{{ form.packages_enabled.help_text }}</small>{% endif %}
+                 {% for error in form.packages_enabled.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
         </div>
 
         {# --- Hire Duration and Timing Rules --- #}
          <div class="form-field">
-            <h3 class="booking-section-title">{% translate "Duration and Timing" %}</h3>
-            <div class="form-field">
-                {{ form.minimum_hire_duration_days.label_tag }}
-                {{ form.minimum_hire_duration_days }}
-                {% if form.minimum_hire_duration_days.help_text %}<small>{{ form.minimum_hire_duration_days.help_text }}</small>{% endif %}
-                {% for error in form.minimum_hire_duration_days.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+             <h3 class="booking-section-title">{% translate "Duration and Timing" %}</h3>
              <div class="form-field">
-                {{ form.maximum_hire_duration_days.label_tag }}
-                {{ form.maximum_hire_duration_days }}
-                {% if form.maximum_hire_duration_days.help_text %}<small>{{ form.maximum_hire_duration_days.help_text }}</small>{% endif %}
-                {% for error in form.maximum_hire_duration_days.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
-            <div class="form-field">
-                {{ form.booking_lead_time_hours.label_tag }}
-                {{ form.booking_lead_time_hours }}
-                {% if form.booking_lead_time_hours.help_text %}<small>{{ form.booking_lead_time_hours.help_text }}</small>{% endif %}
-                {% for error in form.booking_lead_time_hours.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.minimum_hire_duration_days.label_tag }}
+                 {{ form.minimum_hire_duration_days }}
+                 {% if form.minimum_hire_duration_days.help_text %}<small>{{ form.minimum_hire_duration_days.help_text }}</small>{% endif %}
+                 {% for error in form.minimum_hire_duration_days.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
+              <div class="form-field">
+                  {{ form.maximum_hire_duration_days.label_tag }}
+                  {{ form.maximum_hire_duration_days }}
+                  {% if form.maximum_hire_duration_days.help_text %}<small>{{ form.maximum_hire_duration_days.help_text }}</small>{% endif %}
+                  {% for error in form.maximum_hire_duration_days.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+              </div>
              <div class="form-field">
-                {{ form.grace_period_minutes.label_tag }}
-                {{ form.grace_period_minutes }}
-                {% if form.grace_period_minutes.help_text %}<small>{{ form.grace_period_minutes.help_text }}</small>{% endif %}
-                {% for error in form.grace_period_minutes.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.booking_lead_time_hours.label_tag }}
+                 {{ form.booking_lead_time_hours }}
+                 {% if form.booking_lead_time_hours.help_text %}<small>{{ form.booking_lead_time_hours.help_text }}</small>{% endif %}
+                 {% for error in form.booking_lead_time_hours.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
+              <div class="form-field">
+                  {{ form.grace_period_minutes.label_tag }}
+                  {{ form.grace_period_minutes }}
+                  {% if form.grace_period_minutes.help_text %}<small>{{ form.grace_period_minutes.help_text }}</small>{% endif %}
+                  {% for error in form.grace_period_minutes.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+              </div>
 
-            {# Added time fields for pickup and return #}
-            <div class="form-field">
-                {{ form.pick_up_start_time.label_tag }}
-                {{ form.pick_up_start_time }}
-                {% if form.pick_up_start_time.help_text %}<small>{{ form.pick_up_start_time.help_text }}</small>{% endif %}
-                {% for error in form.pick_up_start_time.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
-            <div class="form-field">
-                {{ form.pick_up_end_time.label_tag }}
-                {{ form.pick_up_end_time }}
-                {% if form.pick_up_end_time.help_text %}<small>{{ form.pick_up_end_time.help_text }}</small>{% endif %}
-                {% for error in form.pick_up_end_time.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
-            <div class="form-field">
-                {{ form.return_off_start_time.label_tag }}
-                {{ form.return_off_start_time }}
-                {% if form.return_off_start_time.help_text %}<small>{{ form.return_off_start_time.help_text }}</small>{% endif %}
-                {% for error in form.return_off_start_time.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
-            <div class="form-field">
-                {{ form.return_end_time.label_tag }}
-                {{ form.return_end_time }}
-                {% if form.return_end_time.help_text %}<small>{{ form.return_end_time.help_text }}</small>{% endif %}
-                {% for error in form.return_end_time.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
-        </div>
+             {# Added time fields for pickup and return #}
+             <div class="form-field">
+                 {{ form.pick_up_start_time.label_tag }}
+                 {{ form.pick_up_start_time }}
+                 {% if form.pick_up_start_time.help_text %}<small>{{ form.pick_up_start_time.help_text }}</small>{% endif %}
+                 {% for error in form.pick_up_start_time.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
+             <div class="form-field">
+                 {{ form.pick_up_end_time.label_tag }}
+                 {{ form.pick_up_end_time }}
+                 {% if form.pick_up_end_time.help_text %}<small>{{ form.pick_up_end_time.help_text }}</small>{% endif %}
+                 {% for error in form.pick_up_end_time.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
+             <div class="form-field">
+                 {{ form.return_off_start_time.label_tag }}
+                 {{ form.return_off_start_time }}
+                 {% if form.return_off_start_time.help_text %}<small>{{ form.return_off_start_time.help_text }}</small>{% endif %}
+                 {% for error in form.return_off_start_time.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
+             <div class="form-field">
+                 {{ form.return_end_time.label_tag }}
+                 {{ form.return_end_time }}
+                 {% if form.return_end_time.help_text %}<small>{{ form.return_end_time.help_text }}</small>{% endif %}
+                 {% for error in form.return_end_time.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
+         </div>
 
 
         {# --- Notification Settings --- #}
          <div class="form-field">
-            <h3 class="booking-section-title">{% translate "Notification Settings" %}</h3>
-            <div class="form-field">
-                {{ form.hire_confirmation_email_subject.label_tag }}
-                {{ form.hire_confirmation_email_subject }}
-                {% if form.hire_confirmation_email_subject.help_text %}<small>{{ form.hire_confirmation_email_subject.help_text }}</small>{% endif %}
-                {% for error in form.hire_confirmation_email_subject.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+             <h3 class="booking-section-title">{% translate "Notification Settings" %}</h3>
              <div class="form-field">
-                {{ form.admin_hire_notification_email.label_tag }}
-                {{ form.admin_hire_notification_email }}
-                {% if form.admin_hire_notification_email.help_text %}<small>{{ form.admin_hire_notification_email.help_text }}</small>{% endif %}
-                {% for error in form.admin_hire_notification_email.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
-        </div>
-
+                 {{ form.hire_confirmation_email_subject.label_tag }}
+                 {{ form.hire_confirmation_email_subject }}
+                 {% if form.hire_confirmation_email_subject.help_text %}<small>{{ form.hire_confirmation_email_subject.help_text }}</small>{% endif %}
+                 {% for error in form.hire_confirmation_email_subject.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
+              <div class="form-field">
+                  {{ form.admin_hire_notification_email.label_tag }}
+                  {{ form.admin_hire_notification_email }}
+                  {% if form.admin_hire_notification_email.help_text %}<small>{{ form.admin_hire_notification_email.help_text }}</small>{% endif %}
+                  {% for error in form.admin_hire_notification_email.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+              </div>
+         </div>
+         
          {# --- Late Fees and Charges --- #}
-         <div class="form-field">
+        <div class="form-field">
             <h3 class="booking-section-title">{% translate "Late Fees and Charges" %}</h3>
             <div class="form-field">
                 {{ form.late_fee_per_hour.label_tag }}
@@ -250,11 +250,11 @@
                 {% for error in form.late_fee_per_hour.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
             </div>
              <div class="form-field">
-                {{ form.late_fee_per_day.label_tag }}
-                {{ form.late_fee_per_day }}
-                {% if form.late_fee_per_day.help_text %}<small>{{ form.late_fee_per_day.help_text }}</small>{% endif %}
-                {% for error in form.late_fee_per_day.errors %}><small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.late_fee_per_day.label_tag }}
+                 {{ form.late_fee_per_day }}
+                 {% if form.late_fee_per_day.help_text %}<small>{{ form.late_fee_per_day.help_text }}</small>{% endif %}
+                 {% for error in form.late_fee_per_day.errors %}><small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
             <div class="form-field">
                 {{ form.enable_cleaning_fee.label_tag }}
                 {{ form.enable_cleaning_fee }}
@@ -262,11 +262,11 @@
                 {% for error in form.enable_cleaning_fee.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
             </div>
              <div class="form-field">
-                {{ form.default_cleaning_fee.label_tag }}
-                {{ form.default_cleaning_fee }}
-                {% if form.default_cleaning_fee.help_text %}<small>{{ form.default_cleaning_fee.help_text }}</small>{% endif %}
-                {% for error in form.default_cleaning_fee.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.default_cleaning_fee.label_tag }}
+                 {{ form.default_cleaning_fee }}
+                 {% if form.default_cleaning_fee.help_text %}<small>{{ form.default_cleaning_fee.help_text }}</small>{% endif %}
+                 {% for error in form.default_cleaning_fee.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
         </div>
 
         {# --- Driver Requirements --- #}
@@ -279,17 +279,17 @@
                 {% for error in form.minimum_driver_age.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
             </div>
              <div class="form-field">
-                {{ form.young_driver_surcharge_age_limit.label_tag }}
-                {{ form.young_driver_surcharge_age_limit }}
-                {% if form.young_driver_surcharge_age_limit.help_text %}<small>{{ form.young_driver_surcharge_age_limit.help_text }}</small>{% endif %}
-                {% for error in form.young_driver_surcharge_age_limit.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.young_driver_surcharge_age_limit.label_tag }}
+                 {{ form.young_driver_surcharge_age_limit }}
+                 {% if form.young_driver_surcharge_age_limit.help_text %}<small>{{ form.young_driver_surcharge_age_limit.help_text }}</small>{% endif %}
+                 {% for error in form.young_driver_surcharge_age_limit.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
              <div class="form-field">
-                {{ form.require_driver_license_upload.label_tag }}
-                {{ form.require_driver_license_upload }}
-                {% if form.require_driver_license_upload.help_text %}<small>{{ form.require_driver_license_upload.help_text }}</small>{% endif %}
-                {% for error in form.require_driver_license_upload.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.require_driver_license_upload.label_tag }}
+                 {{ form.require_driver_license_upload }}
+                 {% if form.require_driver_license_upload.help_text %}<small>{{ form.require_driver_license_upload.help_text }}</small>{% endif %}
+                 {% for error in form.require_driver_license_upload.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
         </div>
 
         {# --- Currency Settings --- #}
@@ -302,11 +302,11 @@
                 {% for error in form.currency_code.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
             </div>
              <div class="form-field">
-                {{ form.currency_symbol.label_tag }}
-                {{ form.currency_symbol }}
-                {% if form.currency_symbol.help_text %}<small>{{ form.currency_symbol.help_text }}</small>{% endif %}
-                {% for error in form.currency_symbol.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.currency_symbol.label_tag }}
+                 {{ form.currency_symbol }}
+                 {% if form.currency_symbol.help_text %}<small>{{ form.currency_symbol.help_text }}</small>{% endif %}
+                 {% for error in form.currency_symbol.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
         </div>
 
         {# --- Cancellation Policy --- #}
@@ -319,42 +319,32 @@
                 {% for error in form.cancellation_full_refund_days.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
             </div>
              <div class="form-field">
-                {{ form.cancellation_partial_refund_days.label_tag }}
-                {{ form.cancellation_partial_refund_days }}
-                {% if form.cancellation_partial_refund_days.help_text %}<small>{{ form.cancellation_partial_refund_days.help_text }}</small>{% endif %}
-                {% for error in form.cancellation_partial_refund_days.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.cancellation_partial_refund_days.label_tag }}
+                 {{ form.cancellation_partial_refund_days }}
+                 {% if form.cancellation_partial_refund_days.help_text %}<small>{{ form.cancellation_partial_refund_days.help_text }}</small>{% endif %}
+                 {% for error in form.cancellation_partial_refund_days.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
              <div class="form-field">
-                {{ form.cancellation_partial_refund_percentage.label_tag }}
-                {{ form.cancellation_partial_refund_percentage }}
-                {% if form.cancellation_partial_refund_percentage.help_text %}<small>{{ form.cancellation_partial_refund_percentage.help_text }}</small>{% endif %}
-                {% for error in form.cancellation_partial_refund_percentage.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.cancellation_partial_refund_percentage.label_tag }}
+                 {{ form.cancellation_partial_refund_percentage }}
+                 {% if form.cancellation_partial_refund_percentage.help_text %}<small>{{ form.cancellation_partial_refund_percentage.help_text }}</small>{% endif %}
+                 {% for error in form.cancellation_partial_refund_percentage.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
              <div class="form-field">
-                {{ form.cancellation_minimal_refund_days.label_tag }}
-                {{ form.cancellation_minimal_refund_days }}
-                {% if form.cancellation_minimal_refund_days.help_text %}<small>{{ form.cancellation_minimal_refund_days.help_text }}</small>{% endif %}
-                {% for error in form.cancellation_minimal_refund_days.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.cancellation_minimal_refund_days.label_tag }}
+                 {{ form.cancellation_minimal_refund_days }}
+                 {% if form.cancellation_minimal_refund_days.help_text %}<small>{{ form.cancellation_minimal_refund_days.help_text }}</small>{% endif %}
+                 {% for error in form.cancellation_minimal_refund_days.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
              <div class="form-field">
-                {{ form.cancellation_minimal_refund_percentage.label_tag }}
-                {{ form.cancellation_minimal_refund_percentage }}
-                {% if form.cancellation_minimal_refund_percentage.help_text %}<small>{{ form.cancellation_minimal_refund_percentage.help_text }}</small>{% endif %}
-                {% for error in form.cancellation_minimal_refund_percentage.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
+                 {{ form.cancellation_minimal_refund_percentage.label_tag }}
+                 {{ form.cancellation_minimal_refund_percentage }}
+                 {% if form.cancellation_minimal_refund_percentage.help_text %}<small>{{ form.cancellation_minimal_refund_percentage.help_text }}</small>{% endif %}
+                 {% for error in form.cancellation_minimal_refund_percentage.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
         </div>
-
-
     </form>
-    {# End of the form for Hire Settings #}
-
     <hr>
-
-    {# Note: The Blocked Dates section in the service template is not related to Hire Settings directly
-       unless you have a similar concept for hire. I'm omitting it here. If you need it,
-       you would add a separate form and logic for that here, similar to the service template. #}
-
-
 </div>
 
 {% block extra_js %}
@@ -372,20 +362,20 @@
         function setFormReadonly(readonly) {
             formFields.forEach(field => {
                  // Ensure we don't accidentally affect the CSRF token input
-                if (field.name !== 'csrfmiddlewaretoken') {
-                    if (readonly) {
-                        field.setAttribute('readonly', true);
-                        // Prevent checkbox and select interaction when read-only
-                         if (field.type === 'checkbox' || field.tagName === 'SELECT') {
-                            field.setAttribute('disabled', true);
-                        }
-                    } else {
-                        field.removeAttribute('readonly');
-                         if (field.type === 'checkbox' || field.tagName === 'SELECT') {
-                            field.removeAttribute('disabled');
-                        }
-                    }
-                }
+                 if (field.name !== 'csrfmiddlewaretoken') {
+                     if (readonly) {
+                         field.setAttribute('readonly', true);
+                         // Prevent checkbox and select interaction when read-only
+                          if (field.type === 'checkbox' || field.tagName === 'SELECT') {
+                              field.setAttribute('disabled', true);
+                          }
+                     } else {
+                         field.removeAttribute('readonly');
+                          if (field.type === 'checkbox' || field.tagName === 'SELECT') {
+                              field.removeAttribute('disabled');
+                          }
+                     }
+                 }
             });
         }
 
@@ -408,16 +398,16 @@
             resetButton.style.display = 'none';
             editButton.style.display = 'inline-block';
              // Form fields will become read-only again *after* the form submission or reset.
-            // For the 'Reset' button, we reset the form before changing button visibility.
+             // For the 'Reset' button, we reset the form before changing button visibility.
         }
 
          // Add event listener for Save button (it's a submit button)
-        // The form submission itself will handle the save action.
-        // We attach the click listener to change buttons BEFORE potential submission.
-        saveButton.addEventListener('click', function() {
+         // The form submission itself will handle the save action.
+         // We attach the click listener to change buttons BEFORE potential submission.
+         saveButton.addEventListener('click', function() {
              // This will run before the form is submitted
              // The read-only state will be reset after the page reloads from submission
-        });
+         });
 
         resetButton.addEventListener('click', function(event) {
             event.preventDefault(); // Prevent the default button click behavior first
@@ -455,13 +445,13 @@
           // Handle the case where the Save button was clicked and the page reloaded with errors
           // The window.onload logic above should handle this, but keeping this for clarity.
           // If form has errors on page load, assume it was a failed submission and keep it editable.
-         const errorsExistOnLoad = document.querySelectorAll('.errorlist').length > 0;
-         if (window.performance && window.performance.getEntriesByType('navigation')[0].type === 'reload' && !errorsExistOnLoad) {
-             setFormReadonly(true);
-             saveButton.style.display = 'none';
-             resetButton.style.display = 'none';
-             editButton.style.display = 'inline-block';
-         }
+          const errorsExistOnLoad = document.querySelectorAll('.errorlist').length > 0;
+          if (window.performance && window.performance.getEntriesByType('navigation')[0].type === 'reload' && !errorsExistOnLoad) {
+              setFormReadonly(true);
+              saveButton.style.display = 'none';
+              resetButton.style.display = 'none';
+              editButton.style.display = 'inline-block';
+          }
 
     });
 </script>

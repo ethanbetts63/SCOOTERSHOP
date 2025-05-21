@@ -415,6 +415,12 @@ input[type="checkbox"]:checked {
     margin-bottom: 15px;
 }
 
+.errorlist {
+    color: #dc3545; /* Bootstrap's danger color, or any red you prefer */
+    font-size: 0.85rem;
+    margin-top: 4px;
+}
+
 /* Media queries */
 @media (max-width: 768px) {
     .blocked-date-item {
