@@ -63,7 +63,7 @@ class HasAccountView(LoginRequiredMixin, View):
             driver_profile.date_of_birth = form.cleaned_data["date_of_birth"]
             driver_profile.is_australian_resident = form.cleaned_data["is_australian_resident"]
             driver_profile.license_number = form.cleaned_data["license_number"]
-            driver_profile.license_issuing_country = form.cleaned_data["license_issuing_country"]
+            driver_profile.international_license_issuing_country = form.cleaned_data["international_license_issuing_country"]
             driver_profile.license_expiry_date = form.cleaned_data["license_expiry_date"]
             driver_profile.license_photo = form.cleaned_data["license_photo"]
             driver_profile.international_license_photo = form.cleaned_data["international_license_photo"]
