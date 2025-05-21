@@ -1,4 +1,4 @@
-# hire/views/step6_PaymentDetails_view.py (Updated GET method with debug prints)
+# hire/views/step6_PaymentDetails_view.py (Updated GET method with debug prints and attribute fix)
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from hire.models import TempHireBooking
@@ -23,14 +23,12 @@ class PaymentDetailsView(View):
         print(f"DEBUG: Retrieved TempHireBooking: {temp_booking.id}")
 
         # Get the selected payment option from the TempHireBooking
-        # The field name should be 'payment_option' as per our model update
         payment_option = temp_booking.payment_option
         print(f"DEBUG: TempHireBooking payment_option: {payment_option}")
 
         amount_to_pay = None
         # Use the currency from the TempHireBooking if available, otherwise default
-        # The field name should be 'currency' as per our model update
-        currency = temp_booking.currency if hasattr(temp_booking, 'currency') and temp_booking.currency else 'AUD'
+        currency = temp_booking.currency if hasattr(temp_booking, 'currency') and temp_booking.currency else 'dkk'
         print(f"DEBUG: TempHireBooking currency: {currency}")
 
 
@@ -51,30 +49,34 @@ class PaymentDetailsView(View):
             return redirect('hire:step5_summary_payment_options')
 
         # Check if a Payment object already exists for this TempHireBooking
-        # This prevents creating multiple PaymentIntents if the user refreshes the page
         payment_obj = Payment.objects.filter(temp_hire_booking=temp_booking).first()
+
+        # Construct a description for the payment intent
+        # FIX: Changed 'make' to 'brand' as per Motorcycle model
+        payment_description = f"Motorcycle hire booking for {temp_booking.motorcycle.year} {temp_booking.motorcycle.brand} {temp_booking.motorcycle.model}"
+
 
         if payment_obj and payment_obj.stripe_payment_intent_id:
             print(f"DEBUG: Existing Payment object found: {payment_obj.id}, Stripe Intent ID: {payment_obj.stripe_payment_intent_id}")
-            # If Payment object exists and has an intent ID, retrieve existing intent
             try:
                 intent = stripe.PaymentIntent.retrieve(payment_obj.stripe_payment_intent_id)
                 print(f"DEBUG: Retrieved Stripe PaymentIntent: {intent.id}, Status: {intent.status}")
-                # Ensure the amount and currency match, update if necessary (e.g., if booking details changed)
-                # Stripe amounts are in cents, so multiply by 100
+                
+                # Ensure the amount and currency match, update if necessary
                 if intent.amount != int(amount_to_pay * 100) or intent.currency.lower() != currency.lower():
                     print(f"DEBUG: Mismatch in amount/currency. Modifying PaymentIntent.")
                     intent = stripe.PaymentIntent.modify(
                         payment_obj.stripe_payment_intent_id,
                         amount=int(amount_to_pay * 100),
-                        currency=currency
+                        currency=currency,
+                        description=payment_description # Update description if needed
                     )
                     payment_obj.amount = amount_to_pay
                     payment_obj.currency = currency
+                    payment_obj.description = payment_description # Update description in DB
                     payment_obj.save()
                     print(f"DEBUG: Modified PaymentIntent: {intent.id}, New Amount: {intent.amount}, New Currency: {intent.currency}")
             except stripe.error.StripeError as e:
-                # If retrieving fails, log and proceed to create a new one
                 print(f"Stripe error retrieving existing PaymentIntent: {e}. Forcing creation of new one.")
                 payment_obj = None # Force creation of new PaymentIntent
         
@@ -89,7 +91,7 @@ class PaymentDetailsView(View):
                         'temp_booking_id': str(temp_booking.id),
                         'user_id': str(request.user.id) if request.user.is_authenticated else 'guest'
                     },
-                    description=f"Motorcycle hire booking for {temp_booking.motorcycle.year} {temp_booking.motorcycle.make} {temp_booking.motorcycle.model}"
+                    description=payment_description # Use the corrected description
                 )
                 print(f"DEBUG: Created new Stripe PaymentIntent: {intent.id}, Client Secret: {intent.client_secret}, Status: {intent.status}")
 
@@ -101,15 +103,12 @@ class PaymentDetailsView(View):
                     amount=amount_to_pay,
                     currency=currency,
                     status=intent.status, # Set initial status from Stripe
-                    description=f"Motorcycle hire booking for {temp_booking.motorcycle.year} {temp_booking.motorcycle.make} {temp_booking.motorcycle.model}"
+                    description=payment_description # Use the corrected description
                 )
                 payment_obj = payment # Use the newly created object
                 print(f"DEBUG: Created new Payment DB object: {payment_obj.id}")
             except stripe.error.StripeError as e:
-                # Handle Stripe errors (log them, display a message to the user, etc.)
                 print(f"Stripe error creating PaymentIntent: {e}")
-                # Redirect back with an error message (you'll need to handle this in the template)
-                # For a real app, you'd want a more user-friendly error page/message
                 return redirect('hire:step5_summary_payment_options')
 
 
