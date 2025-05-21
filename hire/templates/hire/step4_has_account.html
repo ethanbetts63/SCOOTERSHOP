@@ -27,6 +27,22 @@
         {% csrf_token %}
 
         <div class="form-group">
+            {{ form.name.label_tag }}
+            {{ form.name }}
+            {% if form.name.errors %}
+                <div class="error">{{ form.name.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.email.label_tag }}
+            {{ form.email }}
+            {% if form.email.errors %}
+                <div class="error">{{ form.email.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
             {{ form.phone_number.label_tag }}
             {{ form.phone_number }}
             {% if form.phone_number.errors %}
@@ -84,6 +100,22 @@
         </div>
 
         <div class="form-group">
+            {{ form.date_of_birth.label_tag }}
+            {{ form.date_of_birth }}
+            {% if form.date_of_birth.errors %}
+                <div class="error">{{ form.date_of_birth.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.is_australian_resident.label_tag }}
+            {{ form.is_australian_resident }}
+            {% if form.is_australian_resident.errors %}
+                <div class="error">{{ form.is_australian_resident.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
             {{ form.license_number.label_tag }}
             {{ form.license_number }}
             {% if form.license_number.errors %}
@@ -92,10 +124,58 @@
         </div>
 
         <div class="form-group">
+            {{ form.license_issuing_country.label_tag }}
+            {{ form.license_issuing_country }}
+            {% if form.license_issuing_country.errors %}
+                <div class="error">{{ form.license_issuing_country.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.license_expiry_date.label_tag }}
+            {{ form.license_expiry_date }}
+            {% if form.license_expiry_date.errors %}
+                <div class="error">{{ form.license_expiry_date.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.license_photo.label_tag }}
+            {{ form.license_photo }}
+            {% if form.license_photo.errors %}
+                <div class="error">{{ form.license_photo.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.international_license_photo.label_tag }}
+            {{ form.international_license_photo }}
+            {% if form.international_license_photo.errors %}
+                <div class="error">{{ form.international_license_photo.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.passport_photo.label_tag }}
+            {{ form.passport_photo }}
+            {% if form.passport_photo.errors %}
+                <div class="error">{{ form.passport_photo.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
             {{ form.passport_number.label_tag }}
             {{ form.passport_number }}
             {% if form.passport_number.errors %}
                 <div class="error">{{ form.passport_number.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.passport_expiry_date.label_tag }}
+            {{ form.passport_expiry_date }}
+            {% if form.passport_expiry_date.errors %}
+                <div class="error">{{ form.passport_expiry_date.errors }}</div>
             {% endif %}
         </div>
 

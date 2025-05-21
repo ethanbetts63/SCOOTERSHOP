@@ -10,16 +10,16 @@ class Step4NoAccountForm(forms.ModelForm):
         fields = [
             'name',
             'email',
-            'phone_number',  # Updated field name
-            'address_line_1',  # Updated field name
-            'address_line_2',  # Added field
+            'phone_number', 
+            'address_line_1',  
+            'address_line_2', 
             'city',
-            'state',  # Updated field name
-            'post_code',  # Updated field name
-            'country',  # Added field
+            'state',  
+            'post_code',  
+            'country',  
             'date_of_birth',
             'is_australian_resident',
-            'license_number',  # Updated field name
+            'license_number',  
             'license_issuing_country',
             'license_expiry_date',
             'license_photo',
@@ -27,8 +27,6 @@ class Step4NoAccountForm(forms.ModelForm):
             'passport_photo',
             'passport_number',
             'passport_expiry_date',
-            'id_image',  # Added field
-            'international_id_image',  # Added field
         ]
 
     def clean(self):
