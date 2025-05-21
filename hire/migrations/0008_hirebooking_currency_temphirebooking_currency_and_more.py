@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             model_name="hirebooking",
             name="currency",
             field=models.CharField(
-                default="DKK",
+                default="AUD",
                 help_text="The three-letter ISO currency code for the booking.",
                 max_length=3,
             ),
@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
             model_name="temphirebooking",
             name="currency",
             field=models.CharField(
-                default="DKK",
+                default="AUD",
                 help_text="The three-letter ISO currency code for the booking.",
                 max_length=3,
             ),

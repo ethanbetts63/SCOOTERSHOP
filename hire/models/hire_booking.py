@@ -96,7 +96,7 @@ class HireBooking(models.Model):
     # Currency of the booking (NEW FIELD)
     currency = models.CharField(
         max_length=3,
-        default='DKK', # Assuming Danish Krone as default for consistency
+        default='AUD', 
         help_text="The three-letter ISO currency code for the booking."
     )
 

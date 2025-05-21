@@ -58,11 +58,11 @@ class Payment(models.Model):
         help_text="The amount of the payment."
     )
 
-    # The currency of the payment (e.g., 'usd', 'eur', 'dkk').
+    # The currency of the payment (e.g., 'usd', 'eur', 'AUD').
     currency = models.CharField(
-        max_length=3, # Standard currency codes are 3 letters (e.g., 'USD', 'DKK')
-        default='AUD', # Assuming Danish Krone as default for your project
-        help_text="The three-letter ISO currency code (e.g., 'usd', 'dkk')."
+        max_length=3, # Standard currency codes are 3 letters (e.g., 'USD', 'AUD')
+        default='AUD', 
+        help_text="The three-letter ISO currency code (e.g., 'usd', 'AUD')."
     )
 
     # The current status of the payment. We will directly store Stripe's status strings.

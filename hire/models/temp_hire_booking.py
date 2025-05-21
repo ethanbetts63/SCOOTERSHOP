@@ -111,7 +111,7 @@ class TempHireBooking(models.Model):
     # Add currency field to TempHireBooking model
     currency = models.CharField(
         max_length=3,
-        default='DKK', # Default to Danish Krone
+        default='AUD', 
         help_text="The three-letter ISO currency code for the booking."
     )
 

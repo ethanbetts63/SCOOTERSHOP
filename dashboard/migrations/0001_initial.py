@@ -370,7 +370,7 @@ class Migration(migrations.Migration):
                 (
                     "currency_code",
                     models.CharField(
-                        default="DKK",
+                        default="AUD",
                         help_text="The primary currency code (ISO 4217) for all prices and calculations.",
                         max_length=3,
                     ),

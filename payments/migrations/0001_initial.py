@@ -62,7 +62,7 @@ class Migration(migrations.Migration):
                     "currency",
                     models.CharField(
                         default="AUD",
-                        help_text="The three-letter ISO currency code (e.g., 'usd', 'dkk').",
+                        help_text="The three-letter ISO currency code (e.g., 'usd', 'AUD').",
                         max_length=3,
                     ),
                 ),

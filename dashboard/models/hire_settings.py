@@ -176,7 +176,7 @@ class HireSettings(models.Model):
 
     # --- Currency Settings ---
     # Primary currency code.
-    currency_code = models.CharField(max_length=3, default='DKK', help_text="The primary currency code (ISO 4217) for all prices and calculations.")
+    currency_code = models.CharField(max_length=3, default='AUD', help_text="The primary currency code (ISO 4217) for all prices and calculations.")
 
     # Currency symbol.
     currency_symbol = models.CharField(max_length=5, default='kr.', help_text="Symbol for the currency.")
