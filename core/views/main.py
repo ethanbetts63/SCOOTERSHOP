@@ -6,16 +6,21 @@ import requests
 import sys
 
 # Import models from other apps as needed
-from dashboard.models import SiteSettings
+from dashboard.models import SiteSettings, HireSettings
 # Assuming you have a model for ServiceType in dashboard.models or another app
 
 # Import the utility function for featured motorcycles if still needed
 from inventory.views.utils import get_featured_motorcycles
 
+# Import TempHireBooking for potential pre-population of step1 form
+from hire.models import TempHireBooking
+
 
 # Home Page
 def index(request):
     site_settings = SiteSettings.get_settings()
+    hire_settings = HireSettings.objects.first() # Get HireSettings for step1_date_time_include
+
     place_id = site_settings.google_places_place_id
     api_key = settings.GOOGLE_API_KEY
     is_testing = 'test' in sys.argv or 'manage.py' in sys.argv
@@ -68,13 +73,33 @@ def index(request):
         except Exception as e:
             print(f"Error fetching featured motorcycles: {e}")
 
+    # Try to get TempHireBooking from session for pre-populating Step 1 form
+    temp_booking = None
+    temp_booking_id = request.session.get('temp_booking_id')
+    temp_booking_uuid = request.session.get('temp_booking_uuid')
+
+    if temp_booking_id and temp_booking_uuid:
+        try:
+            temp_booking = TempHireBooking.objects.get(id=temp_booking_id, session_uuid=temp_booking_uuid)
+        except TempHireBooking.DoesNotExist:
+            # If temp booking doesn't exist, clear session keys
+            if 'temp_booking_id' in request.session:
+                del request.session['temp_booking_id']
+            if 'temp_booking_uuid' in request.session:
+                del request.session['temp_booking_uuid']
+            temp_booking = None
+
+
     # Pass the filtered 5-star reviews and featured bikes to the template
     context = {
         'reviews': five_star_reviews,
         'featured_new_motorcycles': featured_new_motorcycles,
         'featured_used_motorcycles': featured_used_motorcycles,
         'google_api_key': settings.GOOGLE_API_KEY,
+        'hire_settings': hire_settings, # Pass hire settings for the include
+        'temp_booking': temp_booking, # Pass temp_booking for pre-populating the form
     }
 
     # Updated template path
     return render(request, 'core/index.html', context)
+
