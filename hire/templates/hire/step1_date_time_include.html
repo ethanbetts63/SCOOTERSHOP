@@ -89,11 +89,11 @@
 
         const bookingLeadTimeHours = parseInt(document.getElementById('id_pick_up_date').getAttribute('data-booking-lead-time-hours')) || 0;
         const minimumHireDurationDays = parseInt(document.getElementById('id_return_date').getAttribute('data-min-hire-duration-days')) || 1;
-        const maximumHireDurationDays = parseInt(document.getElementById('id_return_date').getAttribute('data-max-hire-duration-days')) || 30; // Get max hire duration
+        const maximumHireDurationDays = parseInt(document.getElementById('id_return_date').getAttribute('data-max-hire-duration-days')) || 30;
 
-        // Assuming blocked_hire_dates is passed from the Django view
+        // Assuming blocked_dates_json is passed from the Django view
         // Example: [{'start': '2025-06-01', 'end': '2025-06-05'}, {'start': '2025-07-10', 'end': '2025-07-10'}]
-        const blockedDatesRaw = "{{ blocked_hire_dates|escapejs }}";
+        const blockedDatesRaw = "{{ blocked_dates_json|escapejs }}";
         let blockedDates = [];
         try {
             blockedDates = JSON.parse(blockedDatesRaw || '[]');
@@ -102,42 +102,48 @@
         }
 
         const now = new Date();
-        const earliestPickupDateTime = new Date(now.getTime() + bookingLeadTimeHours * 60 * 60 * 1000);
+        // Calculate the earliest valid pickup datetime based on lead time
+        const earliestValidPickupDateTime = new Date(now.getTime() + bookingLeadTimeHours * 60 * 60 * 1000);
 
-        let initialMinDate = "today";
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        
-        const pickUpStartTimeStr = pickUpTimeSelect.getAttribute('data-start-time');
-        const [puStartHour, puStartMinute] = pickUpStartTimeStr.split(':').map(Number);
-        const pickUpStartToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), puStartHour, puStartMinute);
+        // Rule 1: Minimum Booking Lead Time - Disable entire day if any of its hours fall within the lead time.
+        // This means the minDate for the picker should be the day *after* earliestValidPickupDateTime.
+        let minDateForPickup = new Date(earliestValidPickupDateTime);
+        minDateForPickup.setDate(minDateForPickup.getDate() + 1); // Move to the next day
+        minDateForPickup.setHours(0, 0, 0, 0); // Set to the very start of that next day
 
-
-        if (earliestPickupDateTime > pickUpStartToday && earliestPickupDateTime.getDate() !== now.getDate()) {
-             initialMinDate = earliestPickupDateTime.toDateString();
+        // If the current time + lead time doesn't push it past midnight, then "today" might still be valid
+        // but only for times after the lead time. However, the rule is to disable the *entire day*.
+        // So, if earliestValidPickupDateTime is on the current day, minDateForPickup should be tomorrow.
+        // If earliestValidPickupDateTime is already tomorrow or later, minDateForPickup is the day after that.
+        if (earliestValidPickupDateTime.getDate() === now.getDate() && earliestValidPickupDateTime.getMonth() === now.getMonth() && earliestValidPickupDateTime.getFullYear() === now.getFullYear()) {
+            // If lead time ends today, disable today, start from tomorrow.
+            minDateForPickup = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
         } else {
-             initialMinDate = "today";
+            // If lead time ends on a future day, disable that day, start from the day after.
+            minDateForPickup = new Date(earliestValidPickupDateTime.getFullYear(), earliestValidPickupDateTime.getMonth(), earliestValidPickupDateTime.getDate() + 1);
         }
+        minDateForPickup.setHours(0,0,0,0); // Ensure it's the start of the day
 
-        // Rule 1: Minimum Booking Lead Time & Blocked Dates for Pickup
         const pickUpDatePicker = flatpickr("#id_pick_up_date", {
             dateFormat: "Y-m-d",
-            minDate: initialMinDate,
+            minDate: minDateForPickup, // Apply the refined minDate logic
             altInput: true,
             altFormat: "F j, Y",
-            disable: blockedDates.map(range => ({ from: range.start, to: range.end })), // Disable blocked dates
+            // Rule 4: Blocked Dates - Disable dates explicitly marked as blocked.
+            disable: blockedDates.map(range => ({ from: range.start, to: range.end })),
             onChange: function(selectedDates, dateStr, instance) {
                 handleDateAndTimeUpdates();
             }
         });
 
-        // Rule 2: Minimum Hire Duration, Maximum Hire Duration & Blocked Dates for Return
         const returnDatePicker = flatpickr("#id_return_date", {
             dateFormat: "Y-m-d",
             minDate: "today", // Will be dynamically updated by handleDateAndTimeUpdates
             maxDate: null,    // Will be dynamically updated by handleDateAndTimeUpdates
             altInput: true,
             altFormat: "F j, Y",
-            disable: blockedDates.map(range => ({ from: range.start, to: range.end })), // Disable blocked dates
+            // Rule 4: Blocked Dates - Disable dates explicitly marked as blocked.
+            disable: blockedDates.map(range => ({ from: range.start, to: range.end })),
             onChange: function(selectedDates, dateStr, instance) {
                 handleDateAndTimeUpdates();
             }
@@ -200,36 +206,18 @@
             const returnDate = returnDatePicker.selectedDates[0];
             const pickUpTime = pickUpTimeSelect ? pickUpTimeSelect.value : null;
 
-            const currentNow = new Date();
-            const currentEarliestPickupDateTime = new Date(currentNow.getTime() + bookingLeadTimeHours * 60 * 60 * 1000);
-
-            // Rule 1 (cont.): Adjust minDate for pickup based on lead time
-            let newMinDateForPickUp = "today";
-            const currentTodayMidnight = new Date(currentNow.getFullYear(), currentNow.getMonth(), currentNow.getDate());
-            const pickUpStartTimeToday = new Date(currentTodayMidnight.getFullYear(), currentTodayMidnight.getMonth(), currentTodayMidnight.getDate(), puStartHour, puStartMinute);
-
-            if (currentEarliestPickupDateTime.getDate() !== currentNow.getDate()) {
-                newMinDateForPickUp = currentEarliestPickupDateTime;
-            } else if (currentEarliestPickupDateTime > pickUpStartTimeToday) {
-                newMinDateForPickUp = "today";
-            } else {
-                newMinDateForPickUp = "today";
-            }
-            pickUpDatePicker.set('minDate', newMinDateForPickUp);
-
-
+            // Rule 2: Minimum Hire Duration for Return Date
+            // Rule 3: Maximum Hire Duration for Return Date
             if (pickUpDate) {
-                // Rule 2: Minimum Hire Duration for Return Date
                 let requiredReturnDate = new Date(pickUpDate);
                 requiredReturnDate.setDate(requiredReturnDate.getDate() + minimumHireDurationDays - 1); // -1 because duration includes pickup day
 
-                // Rule 3: Maximum Hire Duration for Return Date
                 let maximumAllowedReturnDate = new Date(pickUpDate);
                 maximumAllowedReturnDate.setDate(maximumAllowedReturnDate.getDate() + maximumHireDurationDays);
 
 
                 returnDatePicker.set('minDate', requiredReturnDate);
-                returnDatePicker.set('maxDate', maximumAllowedReturnDate); // Set maxDate
+                returnDatePicker.set('maxDate', maximumAllowedReturnDate);
 
                 if (returnDate) {
                     // Clear return date if it falls outside the new valid range
@@ -239,7 +227,7 @@
                 }
             } else {
                 // If no pickup date, return date min should be same as pickup min
-                returnDatePicker.set('minDate', newMinDateForPickUp);
+                returnDatePicker.set('minDate', minDateForPickup); // Use the calculated minDateForPickup
                 returnDatePicker.set('maxDate', null); // Clear maxDate if no pickup date
                  if (returnDate) {
                       returnDatePicker.clear();
@@ -289,10 +277,6 @@
         // Rule 5 (cont.): Populate initial pickup time dropdown
         if (pickUpTimeSelect && pickUpStartTimeAttr && pickUpEndTimeAttr) {
             populateTimeDropdown(pickUpTimeSelect, pickUpStartTimeAttr, pickUpEndTimeAttr, 15);
-        }
-
-        if (pickUpTimeSelect) {
-            pickUpTimeSelect.addEventListener('change', handleDateAndTimeUpdates);
         }
 
         handleDateAndTimeUpdates(); // Initial call to set up date pickers and time dropdowns
