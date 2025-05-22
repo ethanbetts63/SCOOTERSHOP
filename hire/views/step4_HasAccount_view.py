@@ -22,12 +22,10 @@ class HasAccountView(LoginRequiredMixin, View):
             return redirect("hire:step2_choose_bike")
 
         # Get the driver profile associated with the current temporary booking
-        # This is the key change: use temp_booking.driver_profile for initial data
         driver_profile_instance = temp_booking.driver_profile
 
-        # Initialize the form, passing the driver_profile_instance if it exists.
-        # The form's __init__ method should then use this instance to pre-populate fields.
-        form = Step4HasAccountForm(user=request.user, instance=driver_profile_instance)
+        # Initialize the form, passing the driver_profile_instance and temp_booking
+        form = Step4HasAccountForm(user=request.user, instance=driver_profile_instance, temp_booking=temp_booking)
 
         context = {
             "form": form,
@@ -44,20 +42,16 @@ class HasAccountView(LoginRequiredMixin, View):
             return redirect("hire:step2_choose_bike")
 
         # Get the driver profile associated with the current temporary booking
-        # This is important for updating an existing profile rather than creating a new one
         driver_profile_instance = temp_booking.driver_profile
 
-        # Initialize the form with POST data, files, and the existing instance
-        form = Step4HasAccountForm(request.POST, request.FILES, user=request.user, instance=driver_profile_instance)
+        # Initialize the form with POST data, files, the existing instance, and temp_booking
+        form = Step4HasAccountForm(request.POST, request.FILES, user=request.user, instance=driver_profile_instance, temp_booking=temp_booking)
 
         if form.is_valid():
-            # Save the form, which will update the existing driver_profile_instance
-            # or create a new one if driver_profile_instance was None (though it should not be if user is logged in)
-            driver_profile = form.save(commit=False) # Use commit=False to allow linking user before saving
-            driver_profile.user = request.user # Ensure the user is linked
+            driver_profile = form.save(commit=False)
+            driver_profile.user = request.user
             driver_profile.save()
 
-            # Link the saved driver_profile to the temporary booking
             temp_booking.driver_profile = driver_profile
             temp_booking.save()
             messages.success(request, "Driver details saved successfully.")
@@ -82,3 +76,4 @@ class HasAccountView(LoginRequiredMixin, View):
             except TempHireBooking.DoesNotExist:
                 return None
         return None
+

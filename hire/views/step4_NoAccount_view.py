@@ -19,10 +19,11 @@ class NoAccountView(View):
             )
             return redirect("hire:step2_choose_bike")
 
-        form = Step4NoAccountForm()
+        # Pass temp_booking to the form
+        form = Step4NoAccountForm(temp_booking=temp_booking)
         context = {
             "form": form,
-            "temp_booking": temp_booking, # Add temp_booking to the context
+            "temp_booking": temp_booking,
         }
         return render(
             request, "hire/step4_no_account.html", context
@@ -36,25 +37,25 @@ class NoAccountView(View):
             )
             return redirect("hire:step2_choose_bike")
 
-        form = Step4NoAccountForm(request.POST)
+        # Pass temp_booking to the form
+        form = Step4NoAccountForm(request.POST, request.FILES, temp_booking=temp_booking)
         if form.is_valid():
-            # 2. Create DriverProfile
-            driver_profile = DriverProfile.objects.create(
-                name=form.cleaned_data["name"],
-                email=form.cleaned_data["email"],
-                # ... (rest of the fields)
-            )
+            # Create DriverProfile
+            driver_profile = form.save(commit=False) # Use commit=False to allow linking
+            driver_profile.save() # Save the driver profile
 
-            # 3. Save DriverProfile to TempHireBooking
+            # Save DriverProfile to TempHireBooking
             temp_booking.driver_profile = driver_profile
             temp_booking.save()
 
+            messages.success(request, "Driver details saved successfully.")
             return redirect("hire:step5_summary_payment_options")
         else:
             context = {
                 "form": form,
-                "temp_booking": temp_booking, # Ensure temp_booking is in the context on form error too
+                "temp_booking": temp_booking,
             }
+            messages.error(request, "Please correct the errors below.")
             return render(
                 request, "hire/step4_no_account.html", context
             )
@@ -70,3 +71,4 @@ class NoAccountView(View):
             except TempHireBooking.DoesNotExist:
                 return None
         return None
+
