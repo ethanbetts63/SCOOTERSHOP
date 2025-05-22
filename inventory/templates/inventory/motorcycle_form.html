@@ -1,8 +1,9 @@
-{% extends 'core/layout.html' %}
+{% extends "dashboard/admin_layout.html" %}
 {% load static %}
 {% load widget_tweaks %}
 
 {% block extra_css %}
+{{ block.super }}
 {# Remove the old form_styles.css link #}
 {# <link rel="stylesheet" href="{% static 'css/form_styles.css' %}"> #}
 {# Link to the new booking_styles.css #}
@@ -140,7 +141,7 @@
 </style>
 {% endblock %}
 
-{% block content %}
+{% block admin_main_content %}
 {# Use the main container class from booking_styles.css #}
 <div class="service-booking-container">
     {# Add a booking progress header similar to settings page, maybe simplified #}
