@@ -40,10 +40,24 @@ class TempBookingAddOn(models.Model):
         Custom validation for TempBookingAddOn data.
         """
         super().clean()
-        # Optional: Add validation here if needed, e.g., quantity > 0
-        if self.quantity is not None and self.quantity <= 0:
-             raise ValidationError({'quantity': "Quantity must be at least 1."})
-        # Optional: Validate booked_addon_price against current addon price if addon is not null
+        errors = {}
+
+        # Ensure quantity is within the allowed range for the associated AddOn
+        if self.addon:
+            if self.quantity is not None:
+                if self.quantity < self.addon.min_quantity:
+                    errors['quantity'] = f"Quantity for {self.addon.name} cannot be less than {self.addon.min_quantity}."
+                if self.quantity > self.addon.max_quantity:
+                    errors['quantity'] = f"Quantity for {self.addon.name} cannot be more than {self.addon.max_quantity}."
+            else:
+                errors['quantity'] = "Quantity cannot be null." # Quantity should always be set if addon is selected
+
+            # Validate booked_addon_price against current addon price if addon is not null
+            if self.booked_addon_price is not None and self.addon and self.booked_addon_price != self.addon.cost:
+                errors['booked_addon_price'] = f"Booked add-on price must match the current price of the add-on ({self.addon.cost})."
+
+        if errors:
+            raise ValidationError(errors)
 
     class Meta:
         # Ensure you can't add the same add-on to the same temp booking multiple times

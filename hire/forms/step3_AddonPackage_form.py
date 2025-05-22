@@ -28,13 +28,14 @@ class Step3AddOnsPackagesForm(forms.Form):
                     'data-addon-id': str(addon.id)
                 })
             )
+            # Set min_value and max_value from the AddOn model instance
             self.fields[f'addon_{addon.id}_quantity'] = forms.IntegerField(
-                min_value=1,
-                max_value=10,
-                initial=1,
+                min_value=addon.min_quantity, # Use addon's min_quantity
+                max_value=addon.max_quantity, # Use addon's max_quantity
+                initial=1, # Default to 1
                 widget=forms.NumberInput(attrs={
                     'class': 'addon-quantity',
-                    'style': 'display: none;'
+                    'style': 'display: none;' # Hidden by default, shown by JS if selected
                 }),
                 required=False
             )
@@ -52,7 +53,9 @@ class Step3AddOnsPackagesForm(forms.Form):
         # Process add-ons
         for addon in self.available_addons:
             is_selected = cleaned_data.get(f'addon_{addon.id}_selected')
-            quantity = cleaned_data.get(f'addon_{addon.id}_quantity', 1)
+            # Get the quantity field dynamically
+            quantity_field_name = f'addon_{addon.id}_quantity'
+            quantity = cleaned_data.get(quantity_field_name, 1) # Default to 1 if not provided
 
             if is_selected:
                 # Validate add-on availability
@@ -60,9 +63,9 @@ class Step3AddOnsPackagesForm(forms.Form):
                     errors[f'addon_{addon.id}_selected'] = f"{addon.name} is no longer available."
                     continue
                 
-                # Validate quantity
-                if quantity < 1 or quantity > 10:
-                    errors[f'addon_{addon.id}_quantity'] = "Quantity must be between 1-10."
+                # Validate quantity using addon's min_quantity and max_quantity
+                if quantity < addon.min_quantity or quantity > addon.max_quantity:
+                    errors[quantity_field_name] = f"Quantity for {addon.name} must be between {addon.min_quantity}-{addon.max_quantity}."
                     continue
                 
                 selected_addons.append({

@@ -103,7 +103,7 @@ class BikeChoiceView(View):
             # Assuming 'license_required' is a field on Motorcycle model
             # And 50cc bikes don't require a motorcycle license (only car license)
             available_motorcycles = available_motorcycles.filter(
-                Q(license_required=False) | Q(engine_size__lte=50)
+                Q(engine_size__lte=50)
             )
         
         # Annotate motorcycles with calculated hire rates and total price

@@ -15,6 +15,16 @@ class AddOn(models.Model):
         help_text="Cost of the add-on per item per day."
     )
 
+    # Quantity controls (NEW FIELDS)
+    min_quantity = models.PositiveIntegerField(
+        default=1,
+        help_text="Minimum quantity allowed for this add-on."
+    )
+    max_quantity = models.PositiveIntegerField(
+        default=1,
+        help_text="Maximum quantity allowed for this add-on."
+    )
+
     # Availability
     is_available = models.BooleanField(default=True, help_text="Is this add-on currently available for booking?")
 
@@ -30,8 +40,18 @@ class AddOn(models.Model):
         Custom validation for AddOn data.
         """
         super().clean()
+        errors = {}
         if self.cost < 0:
-            raise ValidationError({'cost': "Add-on cost cannot be negative."})
+            errors['cost'] = "Add-on cost cannot be negative."
+        
+        # Validate min_quantity and max_quantity
+        if self.min_quantity < 1:
+            errors['min_quantity'] = "Minimum quantity must be at least 1."
+        if self.max_quantity < self.min_quantity:
+            errors['max_quantity'] = "Maximum quantity cannot be less than minimum quantity."
+        
+        if errors:
+            raise ValidationError(errors)
 
 
     class Meta:
