@@ -58,6 +58,10 @@
                 <div id="card-errors" role="alert" class="text-red-600 text-sm mt-2"></div>
             </div>
 
+            <div id="payment-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <span class="block sm:inline"></span>
+            </div>
+
             <button
                 id="submit-button"
                 class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
@@ -109,6 +113,25 @@
             }
         });
 
+        // Helper function to display messages in the new payment-message div
+        function showMessage(messageText, isError = true) {
+            const messageContainer = document.getElementById('payment-message');
+            if (messageContainer) { // Ensure the container exists
+                const messageSpan = messageContainer.querySelector('span');
+                messageSpan.textContent = messageText;
+                messageContainer.classList.remove('hidden'); // Make it visible
+                if (isError) {
+                    messageContainer.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
+                    messageContainer.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
+                } else {
+                    messageContainer.classList.remove('bg-red-100', 'border-red-400', 'text-red-700');
+                    messageContainer.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
+                }
+            } else {
+                console.warn("Payment message container not found. Message: ", messageText);
+            }
+        }
+
         // Handle form submission.
         const form = document.getElementById('payment-form');
         form.addEventListener('submit', async function(event) {
@@ -117,6 +140,7 @@
             const submitButton = document.getElementById('submit-button');
             submitButton.disabled = true; // Disable button to prevent multiple submissions
             submitButton.textContent = 'Processing...'; // Change button text
+            document.getElementById('payment-message').classList.add('hidden'); // Hide any previous messages
 
             // Confirm the card payment with the client secret
             const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
@@ -129,23 +153,75 @@
                 // Show error to your customer (e.g., insufficient funds, card declined)
                 const errorDisplay = document.getElementById('card-errors');
                 errorDisplay.textContent = error.message;
+                showMessage(error.message, true); // Display error using the new message div
                 submitButton.disabled = false; // Re-enable button
                 submitButton.textContent = `Pay {{ amount }} {{ currency }}`; // Reset button text
             } else {
-                // The payment has been processed!
+                // The payment has been processed client-side!
                 if (paymentIntent.status === 'succeeded') {
-                    // Show a success message to your customer
-                    // There's a risk of the customer closing the window before this is called
-                    // Your backend should receive a webhook or poll API to confirm payment
-                    // For now, we'll redirect to a placeholder success page (Step 7)
+                    // IMPORTANT: Send the payment_intent_id to your Django server for server-side confirmation
+                    // This fetch request will run in the background.
+                    fetch('/hire/step6/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}' // Include CSRF token for Django
+                        },
+                        body: JSON.stringify({
+                            payment_intent_id: paymentIntent.id
+                        })
+                    })
+                    .then(response => {
+                        // Log the server response for debugging, but don't block the redirect
+                        if (!response.ok) {
+                            console.error('Server responded with an error:', response.status, response.statusText);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Server confirmation response (background):', data);
+                        // You can optionally show a message here if the background process has a specific outcome
+                        // showMessage(data.status === 'success' ? 'Booking finalizing...' : data.error, !data.status === 'success');
+                    })
+                    .catch(error => {
+                        console.error('Error sending payment intent to server for background confirmation:', error);
+                        // showMessage('Background booking finalization failed. Please contact support.', true);
+                    });
+
+                    // Redirect immediately to the confirmation page as per your original working code
+                    // The server-side finalization is now happening in the background.
                     window.location.href = "{% url 'hire:step7_confirmation' %}?payment_intent_id=" + paymentIntent.id;
+
                 } else {
                     // Handle other statuses, e.g., 'requires_action', 'requires_confirmation'
-                    // For more complex flows, you might need to handle these here
                     const errorDisplay = document.getElementById('card-errors');
                     errorDisplay.textContent = 'Payment status: ' + paymentIntent.status + '. Please try again or contact support.';
+                    showMessage('Payment status: ' + paymentIntent.status + '. Please try again or contact support.', true); // Display using new message div
                     submitButton.disabled = false; // Re-enable button
                     submitButton.textContent = `Pay {{ amount }} {{ currency }}`; // Reset button text
+
+                    // Also send status update to server for non-succeeded payments in background
+                    fetch('/hire/step6/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({
+                            payment_intent_id: paymentIntent.id
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Server status update response (background):', data);
+                        // If the server indicates a redirect is needed (e.g., for 3D Secure), perform it.
+                        if (data.redirect_url) {
+                            window.location.href = data.redirect_url;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error sending payment intent to server for status update:', error);
+                    });
                 }
             }
         });
