@@ -71,6 +71,72 @@
         color: #ff6b6b; /* Indicate it's marked for deletion */
     }
 
+    /* Styles for the custom message box */
+    .custom-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .custom-modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .custom-modal-content {
+        background-color: var(--bg-light);
+        padding: 30px;
+        border-radius: var(--radius-md);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        transform: translateY(-20px);
+        transition: transform 0.3s ease;
+    }
+
+    .custom-modal-overlay.active .custom-modal-content {
+        transform: translateY(0);
+    }
+
+    .custom-modal-content h4 {
+        margin-top: 0;
+        color: var(--text-color-dark);
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+    }
+
+    .custom-modal-content p {
+        margin-bottom: 25px;
+        color: var(--text-color);
+        line-height: 1.5;
+    }
+
+    .custom-modal-content button {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.2s ease;
+    }
+
+    .custom-modal-content button:hover {
+        background-color: var(--primary-dark);
+    }
+
 </style>
 {% endblock %}
 
@@ -313,7 +379,7 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-field">
-                            <label for="{{ form.hourly_hire_rate.id_for_label }}" class="form-label">Hourly Rate ($)</label> {# Hourly Rate is now optional #}
+                            <label for="{{ form.hourly_hire_rate.id_for_label }}" class="form-label">Hourly Rate ($)<span class="required-indicator hire-rate-required-indicator" style="display:none;">*</span></label> {# Hourly Rate is now optional #}
                             {{ form.hourly_hire_rate.errors }}
                             {{ form.hourly_hire_rate|add_class:"form-control" }}
                         </div>
@@ -321,7 +387,7 @@
                     <div class="col-md-4">
                         <div class="form-field">
                             <label for="{{ form.daily_hire_rate.id_for_label }}" class="form-label">
-                                Daily Rate ($)
+                                Daily Rate ($)<span class="required-indicator hire-rate-required-indicator" style="display:none;">*</span>
                             </label> {# Daily Rate is now optional #}
                             {{ form.daily_hire_rate.errors }}
                             {{ form.daily_hire_rate|add_class:"form-control" }}
@@ -357,9 +423,32 @@
     </form>
 </div>
 
+{# Custom Modal for Alerts #}
+<div id="customAlertModal" class="custom-modal-overlay">
+    <div class="custom-modal-content">
+        <h4 id="customAlertTitle"></h4>
+        <p id="customAlertMessage"></p>
+        <button id="customAlertCloseButton">OK</button>
+    </div>
+</div>
+
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Function to show custom alert modal
+        function showAlert(title, message) {
+            const modal = document.getElementById('customAlertModal');
+            document.getElementById('customAlertTitle').innerText = title;
+            document.getElementById('customAlertMessage').innerText = message;
+            modal.classList.add('active');
+        }
+
+        // Function to hide custom alert modal
+        document.getElementById('customAlertCloseButton').addEventListener('click', function() {
+            document.getElementById('customAlertModal').classList.remove('active');
+        });
+
+
         // Define condition IDs - ADJUST THESE BASED ON YOUR ACTUAL DATABASE VALUES
         // These are example IDs. You MUST verify these match the IDs in your database
         // for the 'New', 'Used', 'Demo', and 'Hire' MotorcycleCondition objects.
@@ -385,7 +474,9 @@
         const saleDetailsSection = document.querySelector('.sale-details-section');
         const priceField = document.querySelector('#id_price');
         const dailyRateField = document.querySelector('#id_daily_hire_rate');
+        const hourlyRateField = document.querySelector('#id_hourly_hire_rate'); // Get hourly rate field
         const odometerField = document.querySelector('#id_odometer');
+        const hireRateRequiredIndicators = document.querySelectorAll('.hire-rate-required-indicator');
 
 
         // Function to update checkbox states and field visibility based on selection
@@ -449,15 +540,21 @@
              const isHireSelectedNow = (hireCondition && hireCondition.checked);
 
 
-            // Handle Hire visibility
-            // Removed JS logic making Odometer required conditionally
+            // Handle Hire visibility and required attributes for hire rates
             if (isHireSelectedNow) {
-                // Use display: 'block' and 'none' for visibility as before
                 if (hireDetailsSection) hireDetailsSection.style.display = 'block'; // Show the section
-                 // Removed JS logic to add/remove required indicator for Odometer
+                // Make hire rate fields required
+                dailyRateField.setAttribute('required', 'required');
+                hourlyRateField.setAttribute('required', 'required');
+                // Show required indicators
+                hireRateRequiredIndicators.forEach(indicator => indicator.style.display = 'inline');
             } else {
                 if (hireDetailsSection) hireDetailsSection.style.display = 'none'; // Hide the section
-                 // Removed JS logic to add/remove required indicator for Odometer
+                // Remove required attribute
+                dailyRateField.removeAttribute('required');
+                hourlyRateField.removeAttribute('required');
+                // Hide required indicators
+                hireRateRequiredIndicators.forEach(indicator => indicator.style.display = 'none');
             }
 
             // Handle Sale visibility
@@ -496,28 +593,54 @@
              // Check for empty string or value less than 0
              if (odometerField && (odometerField.value === '' || parseInt(odometerField.value) < 0)) {
                  event.preventDefault();
-                 // Use a more styled message box if available, otherwise keep alert for now
-                 alert('Please enter a valid odometer reading (cannot be empty or negative).'); // Generic message
+                 showAlert('Validation Error', 'Please enter a valid odometer reading (cannot be empty or negative).');
                  odometerField.focus();
                  return;
              }
+
+            // Client-side validation for hire rates if 'Hire' is selected
+            if (submitIsHireSelected) {
+                const dailyRateValue = dailyRateField.value;
+                const hourlyRateValue = hourlyRateField.value;
+
+                if (!dailyRateValue && !hourlyRateValue) {
+                    event.preventDefault();
+                    showAlert('Validation Error', 'If "Hire" is selected, either Daily Rate or Hourly Rate must be provided.');
+                    dailyRateField.focus(); // Focus on the first hire rate field
+                    return;
+                }
+
+                if (dailyRateValue && parseFloat(dailyRateValue) <= 0) {
+                    event.preventDefault();
+                    showAlert('Validation Error', 'Daily Rate must be a positive value if provided.');
+                    dailyRateField.focus();
+                    return;
+                }
+
+                if (hourlyRateValue && parseFloat(hourlyRateValue) <= 0) {
+                    event.preventDefault();
+                    showAlert('Validation Error', 'Hourly Rate must be a positive value if provided.');
+                    hourlyRateField.focus();
+                    return;
+                }
+            }
 
 
              // Check for mutual exclusivity on submit just in case JS was bypassed (kept for robustness)
             if (submitIsNewSelected && (submitIsUsedSelected || submitIsDemoSelected)) {
                  event.preventDefault();
-                 alert('A motorcycle cannot be listed as New and also Used or Demo.');
+                 showAlert('Validation Error', 'A motorcycle cannot be listed as New and also Used or Demo.');
                  return;
             }
              // Hire and New check is also done here
             if (submitIsNewSelected && submitIsHireSelected) {
                  event.preventDefault();
-                 alert('A motorcycle cannot be listed as New and also for Hire.');
+                 showAlert('Validation Error', 'A motorcycle cannot be listed as New and also for Hire.');
                  return;
             }
             if (submitIsUsedSelected && submitIsDemoSelected) {
                  event.preventDefault();
-                 alert('A motorcycle cannot be listed as Used and Demo simultaneously.');
+                 showAlert('Validation Error', 'A motorcycle cannot be listed as Used and Demo simultaneously.');
                  return;
             }
             // Django form validation will handle the "required" check for Odometer.

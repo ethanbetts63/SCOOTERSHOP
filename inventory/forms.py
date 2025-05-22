@@ -104,7 +104,32 @@ class MotorcycleForm(forms.ModelForm):
             return self.cleaned_data['rego'].upper()
         return self.cleaned_data.get('rego')
 
-    # Removed the custom price and daily_hire_rate validation from clean method
+    # Add this clean method for hire rate validation
+    def clean(self):
+        cleaned_data = super().clean()
+        conditions = cleaned_data.get('conditions')
+        daily_hire_rate = cleaned_data.get('daily_hire_rate')
+        hourly_hire_rate = cleaned_data.get('hourly_hire_rate')
+
+        # Check if 'Hire' condition is selected
+        is_hire_selected = False
+        if conditions:
+            # Assuming 'Hire' condition has a 'name' field 'hire'
+            # You might need to adjust this lookup based on how you identify the 'Hire' condition
+            for condition in conditions:
+                if condition.name == 'hire':
+                    is_hire_selected = True
+                    break
+
+        if is_hire_selected:
+            if daily_hire_rate is None and hourly_hire_rate is None:
+                self.add_error(None, "If 'Hire' is selected, either Daily Rate or Hourly Rate must be provided.")
+            elif daily_hire_rate is not None and daily_hire_rate <= 0:
+                self.add_error('daily_hire_rate', "Daily Rate must be a positive value if provided.")
+            elif hourly_hire_rate is not None and hourly_hire_rate <= 0:
+                self.add_error('hourly_hire_rate', "Hourly Rate must be a positive value if provided.")
+
+        return cleaned_data
 
     def save(self, commit=True):
         instance = super().save(commit=False)
