@@ -87,28 +87,38 @@ class AddonPackageView(View):
                 temp_booking.total_package_price = 0
                 temp_booking.save()
 
-        available_addons = AddOn.objects.none() # Initialize as empty QuerySet
+        # Get all available add-ons (before filtering by package)
+        all_active_addons = AddOn.objects.none()
         if hire_settings and hire_settings.add_ons_enabled:
-            available_addons = AddOn.objects.filter(is_available=True)
+            all_active_addons = AddOn.objects.filter(is_available=True)
 
         initial_data = {}
         if temp_booking.package:
             initial_data['package'] = temp_booking.package.id
+        # Populate initial data only for add-ons that will be displayed
+        # The form's __init__ will handle filtering based on the selected package
         for temp_addon in temp_booking.temp_booking_addons.all():
-            initial_data[f'addon_{temp_addon.addon.id}_selected'] = True
-            initial_data[f'addon_{temp_addon.addon.id}_quantity'] = temp_addon.quantity
+            # Check if this temp_addon's original addon is still active and relevant
+            # The form's __init__ will decide if it should be displayed
+            if all_active_addons.filter(id=temp_addon.addon.id).exists():
+                initial_data[f'addon_{temp_addon.addon.id}_selected'] = True
+                initial_data[f'addon_{temp_addon.addon.id}_quantity'] = temp_addon.quantity
 
         form = Step3AddOnsPackagesForm(
             initial=initial_data,
-            available_packages=available_packages,  # Pass QuerySet here
-            available_addons=available_addons      # Pass QuerySet here
+            available_packages=available_packages,
+            available_addons=all_active_addons, # Pass all active addons to the form
+            selected_package_instance=temp_booking.package # Pass the selected package instance
         )
 
         context = {
             'temp_booking': temp_booking,
             'form': form,
-            'available_packages': available_packages, # For JS mapping, can be QuerySet
-            'available_addons': available_addons,     # For JS mapping, can be QuerySet
+            'available_packages': available_packages,
+            # 'available_addons' in context is now redundant for rendering add-ons,
+            # as form.get_addon_fields() handles the filtered list.
+            # Keep it if needed for JS mapping of ALL packages/addons, but not for rendering individual addons.
+            'all_active_addons': all_active_addons, # For JS mapping of all addons
             'hire_settings': hire_settings,
         }
         return render(request, self.template_name, context)
@@ -121,12 +131,23 @@ class AddonPackageView(View):
 
         hire_settings = HireSettings.objects.first()
         available_packages = Package.objects.filter(is_available=True)
-        available_addons = AddOn.objects.filter(is_available=True)
+        all_active_addons = AddOn.objects.filter(is_available=True)
+
+        # Get the selected package from POST data to pass to the form's __init__
+        # This is crucial for the form to correctly filter/adjust add-ons during POST validation
+        selected_package_id = request.POST.get('package')
+        selected_package_instance_for_form = None
+        if selected_package_id:
+            try:
+                selected_package_instance_for_form = Package.objects.get(id=selected_package_id)
+            except Package.DoesNotExist:
+                pass # Handle case where package might not exist (e.g., tampered data)
 
         form = Step3AddOnsPackagesForm(
             request.POST,
             available_packages=available_packages,
-            available_addons=available_addons
+            available_addons=all_active_addons,
+            selected_package_instance=selected_package_instance_for_form # Pass for POST validation
         )
 
         if form.is_valid():
@@ -136,6 +157,7 @@ class AddonPackageView(View):
             temp_booking.package = selected_package
             temp_booking.total_package_price = selected_package.package_price if selected_package else Decimal('0.00')
 
+            # Clear existing TempBookingAddOn entries
             temp_booking.temp_booking_addons.all().delete()
 
             total_addons_price = Decimal('0.00')
@@ -143,19 +165,32 @@ class AddonPackageView(View):
                 temp_booking.pickup_date, temp_booking.return_date, temp_booking.pickup_time, temp_booking.return_time
             )
 
+            # Create TempBookingAddOn entries for the *additional* selected add-ons
             for item in selected_addons_data:
                 addon = item['addon']
                 quantity = item['quantity']
-                if not (selected_package and addon in selected_package.add_ons.all()):
-                    TempBookingAddOn.objects.create(
-                        temp_booking=temp_booking,
-                        addon=addon,
-                        quantity=quantity,
-                        booked_addon_price=addon.cost
-                    )
-                    total_addons_price += (addon.cost * quantity * hire_duration_days)
+                
+                # No need to check if addon is in selected_package.add_ons.all() here,
+                # as the form's filtering ensures these are "additional" add-ons.
+                TempBookingAddOn.objects.create(
+                    temp_booking=temp_booking,
+                    addon=addon,
+                    quantity=quantity,
+                    booked_addon_price=addon.cost
+                )
+                total_addons_price += (addon.cost * quantity * hire_duration_days)
 
-            temp_booking.total_addons_price = total_addons_price
+            # Also, add the price of add-ons *included* in the package if max_quantity = 1
+            # These are not part of selected_addons_data, but their cost is part of the package price.
+            # We need to ensure their cost is reflected in total_addons_price if they are part of the package
+            # and they have max_quantity = 1.
+            # This logic might need to be refined based on how package pricing is handled.
+            # If package_price already includes the cost of these addons, then no need to add here.
+            # Assuming package_price *does* include the cost of its max_quantity=1 addons.
+            # For max_quantity > 1 addons, their 'base' quantity (1) is included in package price,
+            # and any *additional* quantity is added via selected_addons_data.
+
+            temp_booking.total_addons_price = total_addons_price # This now only reflects additional add-ons
             temp_booking.grand_total = temp_booking.total_hire_price + temp_booking.total_package_price + temp_booking.total_addons_price
             temp_booking.save()
 
@@ -170,7 +205,7 @@ class AddonPackageView(View):
                 'temp_booking': temp_booking,
                 'form': form,
                 'available_packages': available_packages,
-                'available_addons': available_addons,
+                'all_active_addons': all_active_addons, # For JS mapping of all addons
                 'hire_settings': hire_settings,
             }
             return render(request, self.template_name, context)
