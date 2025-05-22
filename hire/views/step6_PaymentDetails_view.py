@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.db import transaction
 
 from hire.models import TempHireBooking, HireBooking, BookingAddOn, TempBookingAddOn
-from payments.models import Payment
+from payments.models import Payment # Ensure Payment model is imported
 from django.conf import settings
 import stripe
 import json
@@ -51,6 +51,7 @@ class PaymentDetailsView(View):
 
         payment_description = f"Motorcycle hire booking for {temp_booking.motorcycle.year} {temp_booking.motorcycle.brand} {temp_booking.motorcycle.model}"
 
+        # Try to get an existing Payment object linked to this TempHireBooking
         payment_obj = Payment.objects.filter(temp_hire_booking=temp_booking).first()
         intent = None # Initialize intent to None
 
@@ -72,21 +73,18 @@ class PaymentDetailsView(View):
                         print(f"DEBUG: Updated Payment DB object {payment_obj.id} status to 'succeeded'.")
 
                     # Ensure HireBooking is created if not already
-                    # This check is a heuristic; ideally, TempHireBooking would have a OneToOneField to HireBooking
-                    hire_booking = HireBooking.objects.filter(
-                        motorcycle=temp_booking.motorcycle,
-                        pickup_date=temp_booking.pickup_date,
-                        return_date=temp_booking.return_date,
-                        total_price=temp_booking.grand_total # This might not be unique enough in all cases
-                    ).first()
+                    # We can now reliably check via the payment_obj link
+                    hire_booking = HireBooking.objects.filter(payment=payment_obj).first()
 
                     if not hire_booking:
-                         print("DEBUG: HireBooking not found for this TempHireBooking. Attempting to create it.")
+                         print("DEBUG: HireBooking not found for this Payment. Attempting to create it.")
                          with transaction.atomic():
+                             # Pass payment_obj to helper to link the HireBooking
                              hire_booking = self._create_hire_booking_from_temp(temp_booking, payment_obj)
                              print(f"DEBUG: Created HireBooking: {hire_booking.booking_reference}")
                     
                     if hire_booking:
+                        # Store the booking_reference in session for step 7
                         request.session['final_booking_reference'] = hire_booking.booking_reference
                         # Clear the temp_booking_id from session as it's now finalized
                         if 'temp_booking_id' in request.session:
@@ -235,6 +233,7 @@ class PaymentDetailsView(View):
             if intent.status == 'succeeded':
                 print("DEBUG: Payment Intent succeeded. Finalizing booking.")
                 with transaction.atomic():
+                    # Pass the payment_obj to link the HireBooking to the Payment
                     hire_booking = self._create_hire_booking_from_temp(temp_booking, payment_obj)
                     print(f"DEBUG: Created HireBooking: {hire_booking.booking_reference}")
 
@@ -250,16 +249,19 @@ class PaymentDetailsView(View):
 
                 # Redirect to the confirmation page with the new booking reference
                 request.session['final_booking_reference'] = hire_booking.booking_reference
-                print(f"DEBUG: Redirecting to success with booking reference: {hire_booking.booking_reference}")
-                return JsonResponse({'status': 'success', 'redirect_url': '/hire/confirmation/'})
+                print(f"DEBUG: Stored final_booking_reference: {hire_booking.booking_reference} in session.")
+                # Return success response, client-side will handle redirect
+                return JsonResponse({'status': 'success', 'redirect_url': '/hire/book/step7/'})
 
             elif intent.status in ['requires_action', 'requires_confirmation', 'requires_payment_method']:
                 print(f"DEBUG: Payment Intent requires further action or is pending: {intent.status}")
-                return JsonResponse({'status': 'requires_action', 'redirect_url': '/hire/payment_failed/'})
+                # For 'requires_action', Stripe.js handles the redirect.
+                # For others, you might want a specific 'payment_failed' page or retry logic.
+                return JsonResponse({'status': 'requires_action', 'redirect_url': '/hire/payment_failed/'}) # Example redirect
 
             else:
                 print(f"DEBUG: Payment Intent status is unexpected: {intent.status}")
-                return JsonResponse({'status': 'failed', 'redirect_url': '/hire/payment_failed/'})
+                return JsonResponse({'status': 'failed', 'redirect_url': '/hire/payment_failed/'}) # Example redirect
 
         except stripe.error.StripeError as e:
             print(f"Stripe API Error: {e}")
@@ -279,6 +281,7 @@ class PaymentDetailsView(View):
         """
         Helper method to create a permanent HireBooking from a TempHireBooking.
         This should be called only after successful payment.
+        Now also links the HireBooking to the Payment object.
         """
         print(f"DEBUG: _create_hire_booking_from_temp called for TempHireBooking: {temp_booking.id}")
 
@@ -304,6 +307,7 @@ class PaymentDetailsView(View):
             payment_method='online',
             currency=temp_booking.currency,
             status='confirmed',
+            payment=payment_obj, # NEW: Link the HireBooking to the Payment object
         )
         print(f"DEBUG: New HireBooking created with ID: {hire_booking.id}, Reference: {hire_booking.booking_reference}")
 
@@ -319,4 +323,3 @@ class PaymentDetailsView(View):
             print(f"DEBUG: Copied add-on '{temp_addon.addon.name}' (Qty: {temp_addon.quantity}) to HireBooking {hire_booking.booking_reference}")
         
         return hire_booking
-
