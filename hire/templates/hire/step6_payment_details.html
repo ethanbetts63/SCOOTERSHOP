@@ -124,7 +124,7 @@
                     messageContainer.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
                     messageContainer.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
                 } else {
-                    messageContainer.classList.remove('bg-red-100', 'border-red-400', 'text-red-700');
+                    messageContainer.classList.remove('bg-red-100', 'border-red-400', 'text-green-700');
                     messageContainer.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
                 }
             } else {
@@ -161,7 +161,7 @@
                 if (paymentIntent.status === 'succeeded') {
                     // IMPORTANT: Send the payment_intent_id to your Django server for server-side confirmation
                     // This fetch request will run in the background.
-                    fetch('/hire/step6/', {
+                    fetch("{% url 'hire:step6_payment_details' %}", { // <-- CORRECTED URL HERE
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -201,7 +201,7 @@
                     submitButton.textContent = `Pay {{ amount }} {{ currency }}`; // Reset button text
 
                     // Also send status update to server for non-succeeded payments in background
-                    fetch('/hire/step6/', {
+                    fetch("{% url 'hire:step6_payment_details' %}", { // <-- CORRECTED URL HERE
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

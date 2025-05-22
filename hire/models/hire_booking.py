@@ -7,6 +7,8 @@ import datetime
 from inventory.models import Motorcycle
 from .driver_profile import DriverProfile
 from dashboard.models import HireSettings
+# Import the Payment model from the payments app
+from payments.models import Payment
 
 
 # Choices for booking status
@@ -55,6 +57,17 @@ class HireBooking(models.Model):
         on_delete=models.SET_NULL,
         related_name='hire_bookings',
         null=True, blank=True
+    )
+
+    # Add a OneToOneField to the Payment model for robust linking
+    # This ensures that each HireBooking corresponds to exactly one Payment record
+    # and makes it easy to retrieve the HireBooking from a Payment Intent ID.
+    payment = models.OneToOneField(
+        Payment,
+        on_delete=models.SET_NULL, # If payment record is deleted, don't delete booking
+        related_name='hire_booking',
+        null=True, blank=True, # Allow null initially, will be set upon successful payment
+        help_text="Link to the associated payment record."
     )
 
     # Package price at booking time

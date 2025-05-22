@@ -1,6 +1,6 @@
 # payments/models.py
 from django.db import models
-from hire.models import TempHireBooking # Assuming hire.models.temp_hire_booking is accessible as hire.models.TempHireBooking
+# REMOVED: from hire.models import TempHireBooking # This caused the circular import
 from django.conf import settings # Needed for AUTH_USER_MODEL if we decide to link to user as well
 import uuid # For UUIDField
 
@@ -14,8 +14,9 @@ class Payment(models.Model):
 
     # Link directly to the TempHireBooking, ensuring a one-to-one relationship.
     # This is crucial for tying the payment to a specific booking.
+    # CORRECTED: Using a string reference 'hire.TempHireBooking' to break the circular import.
     temp_hire_booking = models.OneToOneField(
-        TempHireBooking,
+        'hire.TempHireBooking', # Changed to string reference
         on_delete=models.CASCADE, # If the TempHireBooking is deleted, delete this Payment record too.
         related_name='payment', # Allows accessing payment from TempHireBooking: booking.payment
         help_text="The temporary hire booking associated with this payment."
@@ -100,5 +101,6 @@ class Payment(models.Model):
         """
         String representation of the Payment object.
         """
-        return f"Payment {self.id} for Booking {self.temp_hire_booking.id} - Amount: {self.amount} {self.currency} - Status: {self.status}"
-
+        # Safely access temp_hire_booking ID, as it might be null
+        temp_booking_id_str = str(self.temp_hire_booking.id) if self.temp_hire_booking else 'N/A'
+        return f"Payment {self.id} for Booking {temp_booking_id_str} - Amount: {self.amount} {self.currency} - Status: {self.status}"
