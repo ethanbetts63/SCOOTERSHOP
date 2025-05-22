@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.utils import timezone
 
 from ..forms.step1_DateTime_form import Step1DateTimeForm
-from ..models import TempHireBooking
+from ..models import TempHireBooking, DriverProfile # Import DriverProfile
 from dashboard.models import HireSettings, BlockedHireDate
 
 
@@ -67,6 +67,7 @@ class SelectDateTimeView(View):
             temp_booking_uuid = request.session.get('temp_booking_uuid')
             temp_booking = None
 
+            # Attempt to retrieve existing temporary booking
             if temp_booking_id and temp_booking_uuid:
                 try:
                     temp_booking = TempHireBooking.objects.get(
@@ -78,6 +79,10 @@ class SelectDateTimeView(View):
                     temp_booking.return_date = return_date
                     temp_booking.return_time = return_time
                     temp_booking.has_motorcycle_license = has_motorcycle_license
+                    # If the user is logged in and has a driver profile,
+                    # ensure it's linked to the temp_booking if not already.
+                    if request.user.is_authenticated and hasattr(request.user, 'driver_profile') and temp_booking.driver_profile is None:
+                        temp_booking.driver_profile = request.user.driver_profile
                     temp_booking.save()
                     messages.success(request, "Booking dates updated.")
 
@@ -90,14 +95,26 @@ class SelectDateTimeView(View):
                 except Exception as e:
                     messages.error(request, "An unexpected error occurred while updating your booking.")
 
+            # If no temporary booking exists or an error occurred retrieving it, create a new one
             if not temp_booking:
+                # Get the driver profile if the user is logged in
+                driver_profile_for_temp_booking = None
+                if request.user.is_authenticated:
+                    try:
+                        driver_profile_for_temp_booking = request.user.driver_profile
+                    except DriverProfile.DoesNotExist:
+                        # User is authenticated but doesn't have a DriverProfile yet,
+                        # it will be created in Step 4.
+                        pass
+
                 temp_booking = TempHireBooking.objects.create(
                     session_uuid=uuid.uuid4(),
                     pickup_date=pickup_date,
                     pickup_time=pickup_time,
                     return_date=return_date,
                     return_time=return_time,
-                    has_motorcycle_license=has_motorcycle_license
+                    has_motorcycle_license=has_motorcycle_license,
+                    driver_profile=driver_profile_for_temp_booking # Link driver profile here
                 )
                 request.session['temp_booking_id'] = temp_booking.id
                 request.session['temp_booking_uuid'] = str(temp_booking.session_uuid)
