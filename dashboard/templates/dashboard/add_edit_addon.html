@@ -1,15 +1,13 @@
 {% extends "dashboard/admin_layout.html" %}
 
 {% block admin_main_content %}
-    {% load static %}
+    {% load static %}_
     <link rel="stylesheet" href="{% static 'css/service_type_styles.css' %}"> {# Re-using CSS for consistency #}
 
     <div class="service-booking-container">
         <div class="booking-progress">
             <h2>{{ title }}</h2> {# This is correct, as 'title' is already conditionally set in the view #}
         </div>
-        {# Original problematic line was here: <p class="mb-4">Use this form to {{ "edit" if is_edit else "add a new" }} hire add-on.</p> #}
-        {# Corrected line below: #}
         <p class="mb-4">Use this form to {% if is_edit %}edit{% else %}add a new{% endif %} hire add-on.</p>
 
         {% if messages %}
@@ -26,14 +24,13 @@
         <form method="post">
             {% csrf_token %}
             {% for field in form %}
-                {% if field.name != 'price_type' %} {# Exclude price_type field #}
+                {# Exclude is_available, min_quantity, and max_quantity from this loop for custom rendering #}
+                {% if field.name not in 'is_available,min_quantity,max_quantity' %}
                     <div class="form-group {% if field.errors %}has-error{% endif %}">
-                        {% if field.name != 'is_available' %} {# Render is_available separately for checkbox styling #}
-                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                            {{ field }}
-                            {% if field.help_text %}
-                                <small class="form-text text-muted">{{ field.help_text }}</small>
-                            {% endif %}
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small class="form-text text-muted">{{ field.help_text }}</small>
                         {% endif %}
                         {% if field.errors %}
                             <div class="invalid-feedback d-block">
@@ -46,6 +43,36 @@
                 {% endif %}
             {% endfor %}
 
+            {# Custom rendering for min_quantity and max_quantity #}
+            <div class="form-group mt-3 {% if form.min_quantity.errors %}has-error{% endif %}">
+                <label for="{{ form.min_quantity.id_for_label }}">{{ form.min_quantity.label }}</label>
+                {{ form.min_quantity }}
+                {% if form.min_quantity.help_text %}
+                    <small class="form-text text-muted">{{ form.min_quantity.help_text }}</small>
+                {% endif %}
+                {% if form.min_quantity.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.min_quantity.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group mt-3 {% if form.max_quantity.errors %}has-error{% endif %}">
+                <label for="{{ form.max_quantity.id_for_label }}">{{ form.max_quantity.label }}</label>
+                {{ form.max_quantity }}
+                {% if form.max_quantity.help_text %}
+                    <small class="form-text text-muted">{{ form.max_quantity.help_text }}</small>
+                {% endif %}
+                {% if form.max_quantity.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.max_quantity.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+                <small class="form-text text-info mt-2">
+                    <i class="fas fa-info-circle"></i> If Max Quantity is set to 1, the quantity adjuster will not be shown on the booking form (Step 3).
+                </small>
+            </div>
+
             {# Custom rendering for is_available checkbox #}
             <div class="form-group form-check mt-3">
                 {{ form.is_available }}
@@ -57,9 +84,7 @@
                 {% endif %}
                 {% if form.is_available.errors %}
                     <div class="invalid-feedback d-block">
-                        {% for error in form.is_available.errors %}
-                            {{ error }}
-                        {% endfor %}
+                        {% for error in form.is_available.errors %}{{ error }}{% endfor %}
                     </div>
                 {% endif %}
             </div>

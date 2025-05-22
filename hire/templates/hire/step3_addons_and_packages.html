@@ -252,14 +252,16 @@
                     let quantity = 1;
                     const maxQuantity = parseInt(checkbox.dataset.maxQuantity); // Get max quantity from data attribute
 
-                    if (checkbox.checked && quantityInput && quantityInput.closest('.quantity-input-group').classList.contains('d-block')) {
+                    // If maxQuantity is 1, quantity is always 1. Otherwise, use the input value.
+                    if (maxQuantity > 1 && checkbox.checked && quantityInput && quantityInput.closest('.quantity-input-group').classList.contains('d-block')) {
                         quantity = parseInt(quantityInput.value);
+                        // Basic validation for quantity
                         if (isNaN(quantity) || quantity < parseInt(checkbox.dataset.minQuantity) || quantity > maxQuantity) {
                             quantity = 1; // Fallback to 1 if invalid
                             quantityInput.value = 1; // Reset input to 1
                         }
-                    } else if (checkbox.checked && maxQuantity === 1) {
-                         quantity = 1; // If max quantity is 1, quantity is always 1
+                    } else if (checkbox.checked) { // If checkbox is checked but maxQuantity is 1
+                         quantity = 1; 
                     }
                     
                     let isAddonInSelectedPackage = false;
@@ -303,28 +305,27 @@
                     cardTitleElement.textContent = originalTitle;
                 }
 
-                if (includedAddonIds.includes(String(addonId))) { // Ensure string comparison
-                    // Addon is included in the package
+                if (includedAddonIds.includes(String(addonId))) { // Addon is included in the package
                     checkbox.checked = true; // Force check if part of package
                     checkbox.disabled = true; // Disable selection
-                    if (quantityDiv) quantityDiv.classList.replace('d-block', 'd-none'); // Hide quantity
-                    if (quantityInput) quantityInput.value = 1; // Reset quantity
+                    if (quantityDiv) quantityDiv.classList.replace('d-block', 'd-none'); // Always hide quantity if included in package
+                    if (quantityInput) quantityInput.value = 1; // Reset quantity to 1
                     if (addonTile) addonTile.classList.add('bg-light', 'text-muted'); // Style it as included
                     if (cardTitleElement) cardTitleElement.textContent = `${originalTitle} (Included)`;
-                } else {
-                    // Addon is not included in the package
+                } else { // Addon is not included in the package
                     checkbox.disabled = false; // Enable selection
-                    // Only uncheck if it's not currently part of the package AND it was previously checked
+                    // Only uncheck if it's not included in the new package AND it was previously checked
                     if (checkbox.checked && !includedAddonIds.includes(String(addonId))) {
                         checkbox.checked = false;
                     }
                     
-                    // Conditionally show quantity input based on max_quantity
+                    // Conditionally show quantity input based on max_quantity and if checkbox is checked
                     if (maxQuantity > 1 && checkbox.checked) {
                         if (quantityDiv) quantityDiv.classList.replace('d-none', 'd-block');
                     } else {
+                        // Hide if max_quantity is 1 or if not checked
                         if (quantityDiv) quantityDiv.classList.replace('d-block', 'd-none');
-                        if (quantityInput) quantityInput.value = 1; // Reset quantity
+                        if (quantityInput) quantityInput.value = 1; // Reset quantity to 1
                     }
 
                     if (addonTile) addonTile.classList.remove('bg-light', 'text-muted');
@@ -364,9 +365,10 @@
                     if (maxQuantity > 1) {
                         if (quantityDiv) quantityDiv.classList.replace('d-none', 'd-block');
                     } else {
-                        if (quantityDiv) quantityDiv.classList.replace('d-block', 'd-none'); // Ensure it's hidden if max_quantity is 1
+                        // If max_quantity is 1, ensure it's hidden even if checked
+                        if (quantityDiv) quantityDiv.classList.replace('d-block', 'd-none');
                     }
-                } else {
+                } else { // If checkbox is unchecked
                     if (quantityDiv) quantityDiv.classList.replace('d-block', 'd-none');
                     if (quantityInput) quantityInput.value = 1; // Reset quantity
                 }
