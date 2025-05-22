@@ -61,6 +61,7 @@
                     <label class="checkbox-label" for="id_has_motorcycle_license" title="Under australian law you are able to ride up to a 50cc without a motorcycle license provided you have a car license.">I have a motorcycle license</label>
                 </div>
 
+                {# Hidden fields for GET parameters to persist filters/sorting #}
                 {% if request.GET %}
                     {% for key, value in request.GET.items %}
                         {% if key not in 'pick_up_date,pick_up_time,return_date,return_time,has_motorcycle_license' %}
@@ -75,9 +76,9 @@
     </div>
 </div>
 
+{# Flatpickr CSS and JS are now self-contained within this include #}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
-
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
@@ -261,41 +262,42 @@
 
         handleDateAndTimeUpdates();
 
-        const sessionPickUpDate = "{{ original_inputs.pick_up_date|default:'' }}";
-        const sessionPickUpTime = "{{ original_inputs.pick_up_time|default:'' }}";
-        const sessionReturnDate = "{{ original_inputs.return_date|default:'' }}";
-        const sessionReturnTime = "{{ original_inputs.return_time|default:'' }}";
-        const sessionHasLicense = "{{ original_inputs.has_motorcycle_license|default:'false' }}";
+        // Populate form fields from Django context if available (from TempHireBooking)
+        const initialPickUpDate = "{{ temp_booking.pickup_date|date:'Y-m-d'|default:'' }}";
+        const initialPickUpTime = "{{ temp_booking.pickup_time|time:'H:i'|default:'' }}";
+        const initialReturnDate = "{{ temp_booking.return_date|date:'Y-m-d'|default:'' }}";
+        const initialReturnTime = "{{ temp_booking.return_time|time:'H:i'|default:'' }}";
+        const initialHasLicense = "{{ temp_booking.has_motorcycle_license|yesno:'true,false'|default:'false' }}";
 
-        if (sessionPickUpDate) {
-            pickUpDatePicker.setDate(sessionPickUpDate);
+        if (initialPickUpDate) {
+            pickUpDatePicker.setDate(initialPickUpDate);
         }
 
-        if (sessionReturnDate) {
-            returnDatePicker.setDate(sessionReturnDate);
+        if (initialReturnDate) {
+            returnDatePicker.setDate(initialReturnDate);
         }
 
-        if (sessionPickUpTime && pickUpTimeSelect) {
-            if ([...pickUpTimeSelect.options].some(opt => opt.value === sessionPickUpTime)) {
-                pickUpTimeSelect.value = sessionPickUpTime;
+        if (initialPickUpTime && pickUpTimeSelect) {
+            if ([...pickUpTimeSelect.options].some(opt => opt.value === initialPickUpTime)) {
+                pickUpTimeSelect.value = initialPickUpTime;
             }
         }
 
-        if (sessionReturnTime && returnTimeSelect) {
-            if ([...returnTimeSelect.options].some(opt => opt.value === sessionReturnTime)) {
-                returnTimeSelect.value = sessionReturnTime;
+        if (initialReturnTime && returnTimeSelect) {
+            if ([...returnTimeSelect.options].some(opt => opt.value === initialReturnTime)) {
+                returnTimeSelect.value = initialReturnTime;
             }
         }
 
         const hasLicenseCheckbox = document.getElementById('id_has_motorcycle_license');
         if (hasLicenseCheckbox) {
-            if (sessionHasLicense === 'true') {
+            if (initialHasLicense === 'true') {
                 hasLicenseCheckbox.checked = true;
             } else {
                 hasLicenseCheckbox.checked = false;
             }
         }
 
-        handleDateAndTimeUpdates();
+        handleDateAndTimeUpdates(); // Call again to ensure all updates are applied after initial data is set
     });
 </script>
