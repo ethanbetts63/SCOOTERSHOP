@@ -21,13 +21,11 @@ class HasAccountView(LoginRequiredMixin, View):
             )
             return redirect("hire:step2_choose_bike")
 
-        form = Step4HasAccountForm(
-            user=request.user,
-            initial={
-                "name": request.user.get_full_name(),
-                "email": request.user.email,
-            }
-        )
+        # Initialize the form. The form's __init__ method will handle pre-populating
+        # fields from the user's existing DriverProfile or User model fields.
+        # Removed explicit 'initial' for name and email here,
+        # allowing the form's __init__ to handle all pre-population logic.
+        form = Step4HasAccountForm(user=request.user)
 
         context = {
             "form": form,
@@ -45,6 +43,9 @@ class HasAccountView(LoginRequiredMixin, View):
 
         form = Step4HasAccountForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
+            # Get or create the DriverProfile associated with the user
+            # If a profile exists, it will be retrieved; otherwise, a new one is created.
+            # The 'defaults' are used only when a new profile is created.
             driver_profile, created = DriverProfile.objects.get_or_create(
                 user=request.user,
                 defaults={
@@ -62,6 +63,7 @@ class HasAccountView(LoginRequiredMixin, View):
                     'license_number': form.cleaned_data.get('license_number'),
                     'international_license_issuing_country': form.cleaned_data.get('international_license_issuing_country'),
                     'license_expiry_date': form.cleaned_data['license_expiry_date'],
+                    # File fields are handled below if not created
                     'license_photo': form.cleaned_data.get('license_photo'),
                     'international_license_photo': form.cleaned_data.get('international_license_photo'),
                     'passport_photo': form.cleaned_data.get('passport_photo'),
@@ -72,7 +74,9 @@ class HasAccountView(LoginRequiredMixin, View):
                 }
             )
             print(f"Date of Birth from form: {form.cleaned_data.get('date_of_birth')}")
-            # We've already set these in defaults, but for clarity if it exists:
+
+            # If the profile already existed, update its fields with the new data from the form.
+            # This ensures that any changes made by the user are saved.
             if not created:
                 driver_profile.name = form.cleaned_data["name"]
                 driver_profile.email = form.cleaned_data["email"]
@@ -88,13 +92,38 @@ class HasAccountView(LoginRequiredMixin, View):
                 driver_profile.license_number = form.cleaned_data.get("license_number")
                 driver_profile.international_license_issuing_country = form.cleaned_data.get("international_license_issuing_country")
                 driver_profile.license_expiry_date = form.cleaned_data["license_expiry_date"]
-                driver_profile.license_photo = form.cleaned_data.get("license_photo")
-                driver_profile.international_license_photo = form.cleaned_data.get("international_license_photo")
-                driver_profile.passport_photo = form.cleaned_data.get("passport_photo")
                 driver_profile.passport_number = form.cleaned_data.get("passport_number")
                 driver_profile.passport_expiry_date = form.cleaned_data.get("passport_expiry_date")
-                driver_profile.id_image = form.cleaned_data.get("id_image")
-                driver_profile.international_id_image = form.cleaned_data.get("international_id_image")
+
+                # Handle file fields separately as they might not always be in cleaned_data if not updated
+                # Check if the file was actually provided in the request.FILES
+                if 'license_photo' in request.FILES:
+                    driver_profile.license_photo = form.cleaned_data.get("license_photo")
+                elif 'license_photo' in form.fields and not form.cleaned_data.get('license_photo'):
+                    # If the field exists in the form but no file was provided, and it's not required,
+                    # you might want to clear it or keep the old one. This keeps the old one.
+                    pass
+                
+                if 'international_license_photo' in request.FILES:
+                    driver_profile.international_license_photo = form.cleaned_data.get("international_license_photo")
+                elif 'international_license_photo' in form.fields and not form.cleaned_data.get('international_license_photo'):
+                    pass
+
+                if 'passport_photo' in request.FILES:
+                    driver_profile.passport_photo = form.cleaned_data.get("passport_photo")
+                elif 'passport_photo' in form.fields and not form.cleaned_data.get('passport_photo'):
+                    pass
+
+                if 'id_image' in request.FILES:
+                    driver_profile.id_image = form.cleaned_data.get("id_image")
+                elif 'id_image' in form.fields and not form.cleaned_data.get('id_image'):
+                    pass
+
+                if 'international_id_image' in request.FILES:
+                    driver_profile.international_id_image = form.cleaned_data.get("international_id_image")
+                elif 'international_id_image' in form.fields and not form.cleaned_data.get('international_id_image'):
+                    pass
+
 
             driver_profile.save()
             temp_booking.driver_profile = driver_profile
@@ -106,6 +135,7 @@ class HasAccountView(LoginRequiredMixin, View):
                 "temp_booking": temp_booking,
             }
             return render(request, "hire/step4_has_account.html", context)
+
     def _get_temp_booking(self, request):
         temp_booking_id = request.session.get("temp_booking_id")
         temp_booking_uuid = request.session.get("temp_booking_uuid")

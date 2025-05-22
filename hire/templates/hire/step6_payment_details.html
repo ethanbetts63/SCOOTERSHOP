@@ -159,9 +159,9 @@
             } else {
                 // The payment has been processed client-side!
                 if (paymentIntent.status === 'succeeded') {
-                    // IMPORTANT: Send the payment_intent_id to your Django server for server-side confirmation
-                    // This fetch request will run in the background.
-                    fetch("{% url 'hire:step6_payment_details' %}", { // <-- CORRECTED URL HERE
+                    // Send the payment_intent_id to your Django server for server-side confirmation
+                    // Wait for the server's response before redirecting
+                    fetch("{% url 'hire:step6_payment_details' %}", {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -172,25 +172,35 @@
                         })
                     })
                     .then(response => {
-                        // Log the server response for debugging, but don't block the redirect
                         if (!response.ok) {
+                            // If the server responds with an error, log it and show a message
                             console.error('Server responded with an error:', response.status, response.statusText);
+                            showMessage('Payment processed, but booking finalization failed on server. Please contact support.', true);
+                            submitButton.disabled = false;
+                            submitButton.textContent = `Pay {{ amount }} {{ currency }}`;
+                            // Do NOT redirect if server indicates an error
+                            throw new Error('Server error during booking finalization');
                         }
                         return response.json();
                     })
                     .then(data => {
-                        console.log('Server confirmation response (background):', data);
-                        // You can optionally show a message here if the background process has a specific outcome
-                        // showMessage(data.status === 'success' ? 'Booking finalizing...' : data.error, !data.status === 'success');
+                        console.log('Server confirmation response:', data);
+                        if (data.status === 'success' && data.redirect_url) {
+                            // Only redirect if the server explicitly says it was a success AND provides a redirect URL
+                            window.location.href = data.redirect_url;
+                        } else {
+                            // Handle cases where server response is not 'success' or no redirect_url
+                            showMessage(data.error || 'Unknown server response after payment. Please contact support.', true);
+                            submitButton.disabled = false;
+                            submitButton.textContent = `Pay {{ amount }} {{ currency }}`;
+                        }
                     })
                     .catch(error => {
-                        console.error('Error sending payment intent to server for background confirmation:', error);
-                        // showMessage('Background booking finalization failed. Please contact support.', true);
+                        console.error('Error sending payment intent to server for confirmation:', error);
+                        showMessage('Network error or unexpected issue during booking finalization. Please try again.', true);
+                        submitButton.disabled = false;
+                        submitButton.textContent = `Pay {{ amount }} {{ currency }}`;
                     });
-
-                    // Redirect immediately to the confirmation page as per your original working code
-                    // The server-side finalization is now happening in the background.
-                    window.location.href = "{% url 'hire:step7_confirmation' %}?payment_intent_id=" + paymentIntent.id;
 
                 } else {
                     // Handle other statuses, e.g., 'requires_action', 'requires_confirmation'
@@ -201,7 +211,7 @@
                     submitButton.textContent = `Pay {{ amount }} {{ currency }}`; // Reset button text
 
                     // Also send status update to server for non-succeeded payments in background
-                    fetch("{% url 'hire:step6_payment_details' %}", { // <-- CORRECTED URL HERE
+                    fetch("{% url 'hire:step6_payment_details' %}", {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
