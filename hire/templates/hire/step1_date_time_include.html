@@ -210,7 +210,8 @@
             // Rule 3: Maximum Hire Duration for Return Date
             if (pickUpDate) {
                 let requiredReturnDate = new Date(pickUpDate);
-                requiredReturnDate.setDate(requiredReturnDate.getDate() + minimumHireDurationDays - 1); // -1 because duration includes pickup day
+                // Adjusted to ensure return date is at least 'minimumHireDurationDays' after pickup date
+                requiredReturnDate.setDate(requiredReturnDate.getDate() + minimumHireDurationDays);
 
                 let maximumAllowedReturnDate = new Date(pickUpDate);
                 maximumAllowedReturnDate.setDate(maximumAllowedReturnDate.getDate() + maximumHireDurationDays);
