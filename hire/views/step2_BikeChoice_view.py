@@ -139,8 +139,9 @@ class BikeChoiceView(View):
             'page_obj': page_obj,
             'paginator': paginator,
             'current_order': order_by,
-            'hire_settings': hire_settings, # Pass hire settings to the template
-            'temp_booking': temp_booking, # Pass the TempHireBooking instance to the template
+            'hire_settings': hire_settings,
+            'temp_booking': temp_booking,
+            'blocked_hire_dates': BlockedHireDate 
         }
         return render(request, self.template_name, context)
 

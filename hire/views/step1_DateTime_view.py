@@ -35,33 +35,43 @@ class SelectDateTimeView(View):
             # --- Validation Checks ---
             errors_exist = False
 
+            # Rule: Return date and time must be after pickup date and time.
             if return_datetime <= pickup_datetime:
                 messages.error(request, "Return date and time must be after pickup date and time.")
                 errors_exist = True
 
+            # Rule: Hire duration must meet the minimum requirement.
             if hire_settings and hire_settings.minimum_hire_duration_days is not None:
                 min_duration = datetime.timedelta(days=hire_settings.minimum_hire_duration_days)
                 if (return_datetime - pickup_datetime) < min_duration:
                     messages.error(request, f"Hire duration must be at least {hire_settings.minimum_hire_duration_days} days.")
                     errors_exist = True
 
+            # Rule: Hire duration must not exceed the maximum requirement.
+            if hire_settings and hire_settings.maximum_hire_duration_days is not None:
+                max_duration = datetime.timedelta(days=hire_settings.maximum_hire_duration_days)
+                if (return_datetime - pickup_datetime) > max_duration:
+                    messages.error(request, f"Hire duration cannot exceed {hire_settings.maximum_hire_duration_days} days.")
+                    errors_exist = True
+
+            # Rule: Pickup must be at least 'booking_lead_time_hours' from now.
             if hire_settings and hire_settings.booking_lead_time_hours is not None:
                 min_pickup_time = now + datetime.timedelta(hours=hire_settings.booking_lead_time_hours)
                 if pickup_datetime < min_pickup_time:
                     messages.error(request, f"Pickup must be at least {hire_settings.booking_lead_time_hours} hours from now.")
                     errors_exist = True
 
-            blocked_dates = BlockedHireDate.objects.filter(
+            # Rule: Selected dates must not overlap with any blocked hire period.
+            blocked_dates_overlap = BlockedHireDate.objects.filter(
                 start_date__lte=return_date,
                 end_date__gte=pickup_date
             ).exists()
-            if blocked_dates:
+            if blocked_dates_overlap:
                 messages.error(request, "Selected dates overlap with a blocked hire period.")
                 errors_exist = True
 
             # If any validation errors, redirect back to step2_choose_bike (which includes step1 form)
             if errors_exist:
-                # We no longer store form data/errors in session as TempHireBooking will hold values
                 return redirect('hire:step2_choose_bike')
 
             # --- Data Persistence to TempHireBooking ---
@@ -126,12 +136,10 @@ class SelectDateTimeView(View):
                 messages.success(request, "Booking dates saved.")
             
             # Redirect to step 2, passing the temp_booking_id in the URL
-            # This is a better way to ensure continuity without relying on session for all data
             return redirect(reverse('hire:step2_choose_bike') + f'?temp_booking_id={temp_booking.id}&temp_booking_uuid={temp_booking.session_uuid}')
 
         else:
             # Form is not valid, add errors to messages and redirect
             messages.error(request, "Please correct the errors below for your hire dates and times.")
-            # We no longer store form data/errors in session
             return redirect('hire:step2_choose_bike')
 

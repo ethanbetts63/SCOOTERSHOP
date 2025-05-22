@@ -35,7 +35,8 @@
                              <input type="text" id="id_return_date" name="return_date"
                                     class="form-control"
                                    placeholder="Select return date"
-                                   data-min-hire-duration-days="{{ hire_settings.minimum_hire_duration_days|default:1 }}">
+                                   data-min-hire-duration-days="{{ hire_settings.minimum_hire_duration_days|default:1 }}"
+                                   data-max-hire-duration-days="{{ hire_settings.maximum_hire_duration_days|default:30 }}"> {# Added max hire duration #}
                         </div>
                          <div class="form-field">
                             <label for="id_return_time">Return Time</label>
@@ -88,6 +89,17 @@
 
         const bookingLeadTimeHours = parseInt(document.getElementById('id_pick_up_date').getAttribute('data-booking-lead-time-hours')) || 0;
         const minimumHireDurationDays = parseInt(document.getElementById('id_return_date').getAttribute('data-min-hire-duration-days')) || 1;
+        const maximumHireDurationDays = parseInt(document.getElementById('id_return_date').getAttribute('data-max-hire-duration-days')) || 30; // Get max hire duration
+
+        // Assuming blocked_hire_dates is passed from the Django view
+        // Example: [{'start': '2025-06-01', 'end': '2025-06-05'}, {'start': '2025-07-10', 'end': '2025-07-10'}]
+        const blockedDatesRaw = "{{ blocked_hire_dates|escapejs }}";
+        let blockedDates = [];
+        try {
+            blockedDates = JSON.parse(blockedDatesRaw || '[]');
+        } catch (e) {
+            console.error("Error parsing blocked dates JSON:", e);
+        }
 
         const now = new Date();
         const earliestPickupDateTime = new Date(now.getTime() + bookingLeadTimeHours * 60 * 60 * 1000);
@@ -106,22 +118,26 @@
              initialMinDate = "today";
         }
 
-
+        // Rule 1: Minimum Booking Lead Time & Blocked Dates for Pickup
         const pickUpDatePicker = flatpickr("#id_pick_up_date", {
             dateFormat: "Y-m-d",
             minDate: initialMinDate,
             altInput: true,
             altFormat: "F j, Y",
+            disable: blockedDates.map(range => ({ from: range.start, to: range.end })), // Disable blocked dates
             onChange: function(selectedDates, dateStr, instance) {
                 handleDateAndTimeUpdates();
             }
         });
 
+        // Rule 2: Minimum Hire Duration, Maximum Hire Duration & Blocked Dates for Return
         const returnDatePicker = flatpickr("#id_return_date", {
             dateFormat: "Y-m-d",
-            minDate: "today",
+            minDate: "today", // Will be dynamically updated by handleDateAndTimeUpdates
+            maxDate: null,    // Will be dynamically updated by handleDateAndTimeUpdates
             altInput: true,
             altFormat: "F j, Y",
+            disable: blockedDates.map(range => ({ from: range.start, to: range.end })), // Disable blocked dates
             onChange: function(selectedDates, dateStr, instance) {
                 handleDateAndTimeUpdates();
             }
@@ -141,6 +157,7 @@
 
             const currentValue = selectElement.value;
 
+            // Clear existing options, keeping the first "Select time" option
             while (selectElement.options.length > 1) {
                 selectElement.remove(1);
             }
@@ -154,6 +171,7 @@
             const endTime = new Date();
             endTime.setHours(endHour, endMinute, 0, 0);
 
+            // Handle cases where end time is on the next day (e.g., 22:00 to 02:00)
             if (endTime < currentTime) {
                 endTime.setDate(endTime.getDate() + 1);
             }
@@ -169,8 +187,11 @@
                 currentTime.setMinutes(currentTime.getMinutes() + intervalMinutes);
             }
 
+            // Restore previously selected value if it's still valid
             if ([...selectElement.options].some(opt => opt.value === currentValue)) {
                 selectElement.value = currentValue;
+            } else {
+                selectElement.value = ""; // Clear if current value is no longer valid
             }
         }
 
@@ -182,10 +203,10 @@
             const currentNow = new Date();
             const currentEarliestPickupDateTime = new Date(currentNow.getTime() + bookingLeadTimeHours * 60 * 60 * 1000);
 
+            // Rule 1 (cont.): Adjust minDate for pickup based on lead time
             let newMinDateForPickUp = "today";
             const currentTodayMidnight = new Date(currentNow.getFullYear(), currentNow.getMonth(), currentNow.getDate());
             const pickUpStartTimeToday = new Date(currentTodayMidnight.getFullYear(), currentTodayMidnight.getMonth(), currentTodayMidnight.getDate(), puStartHour, puStartMinute);
-
 
             if (currentEarliestPickupDateTime.getDate() !== currentNow.getDate()) {
                 newMinDateForPickUp = currentEarliestPickupDateTime;
@@ -198,24 +219,34 @@
 
 
             if (pickUpDate) {
+                // Rule 2: Minimum Hire Duration for Return Date
                 let requiredReturnDate = new Date(pickUpDate);
-                requiredReturnDate.setDate(requiredReturnDate.getDate() + minimumHireDurationDays -1 );
+                requiredReturnDate.setDate(requiredReturnDate.getDate() + minimumHireDurationDays - 1); // -1 because duration includes pickup day
+
+                // Rule 3: Maximum Hire Duration for Return Date
+                let maximumAllowedReturnDate = new Date(pickUpDate);
+                maximumAllowedReturnDate.setDate(maximumAllowedReturnDate.getDate() + maximumHireDurationDays);
+
 
                 returnDatePicker.set('minDate', requiredReturnDate);
+                returnDatePicker.set('maxDate', maximumAllowedReturnDate); // Set maxDate
 
                 if (returnDate) {
-                    const comparisonResult = returnDate < requiredReturnDate;
-                    if (comparisonResult) {
+                    // Clear return date if it falls outside the new valid range
+                    if (returnDate < requiredReturnDate || returnDate > maximumAllowedReturnDate) {
                         returnDatePicker.clear();
                     }
                 }
             } else {
+                // If no pickup date, return date min should be same as pickup min
                 returnDatePicker.set('minDate', newMinDateForPickUp);
+                returnDatePicker.set('maxDate', null); // Clear maxDate if no pickup date
                  if (returnDate) {
                       returnDatePicker.clear();
                  }
             }
 
+            // Rule 5: Operating Hours (Time Slots) & Special Case: Same Day Pickup/Return
             let actualReturnStartTime = returnStartTimeAttr;
 
             if (pickUpDate && returnDate && pickUpDate.toDateString() === returnDate.toDateString()) {
@@ -232,12 +263,15 @@
                     const defaultReturnEndDate = new Date();
                     defaultReturnEndDate.setHours(retEndHour, retEndMinute, 0, 0);
 
-                    if (pickUpTimeDate >= defaultReturnStartDate) {
+                    // If pickup time is after the default return start time,
+                    // the actual return start time for same-day must be at least pickup time.
+                    // Also consider if default return end time is before default return start time (e.g., overnight)
+                    if (pickUpTimeDate >= defaultReturnStartDate || defaultReturnEndDate < defaultReturnStartDate) {
                         actualReturnStartTime = pickUpTime;
+                        // If pickup time pushes past the normal end time for same-day,
+                        // and it's not an overnight return period, cap it at end time.
                         if (pickUpTimeDate > defaultReturnEndDate && defaultReturnEndDate >= defaultReturnStartDate) {
                             actualReturnStartTime = returnEndTimeAttr;
-                        } else if (pickUpTimeDate > defaultReturnEndDate && defaultReturnEndDate < defaultReturnStartDate) {
-                            actualReturnStartTime = pickUpTime;
                         }
                     } else {
                         actualReturnStartTime = returnStartTimeAttr;
@@ -252,6 +286,7 @@
             populateTimeDropdown(returnTimeSelect, actualReturnStartTime, returnEndTimeAttr, 15);
         }
 
+        // Rule 5 (cont.): Populate initial pickup time dropdown
         if (pickUpTimeSelect && pickUpStartTimeAttr && pickUpEndTimeAttr) {
             populateTimeDropdown(pickUpTimeSelect, pickUpStartTimeAttr, pickUpEndTimeAttr, 15);
         }
@@ -260,7 +295,7 @@
             pickUpTimeSelect.addEventListener('change', handleDateAndTimeUpdates);
         }
 
-        handleDateAndTimeUpdates();
+        handleDateAndTimeUpdates(); // Initial call to set up date pickers and time dropdowns
 
         // Populate form fields from Django context if available (from TempHireBooking)
         const initialPickUpDate = "{{ temp_booking.pickup_date|date:'Y-m-d'|default:'' }}";
