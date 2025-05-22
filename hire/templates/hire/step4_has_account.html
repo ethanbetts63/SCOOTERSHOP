@@ -4,6 +4,13 @@
 {% block extra_css %}
 {{ block.super }}
     <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
+    <style>
+        /* Style for the required asterisk */
+        .required-asterisk {
+            color: red;
+            margin-left: 4px;
+        }
+    </style>
 {% endblock %}
 
 {% block title %}Step 4: Driver Details (account){% endblock %}
@@ -27,7 +34,7 @@
         {% csrf_token %}
 
         <div class="form-group">
-            {{ form.name.label_tag }}
+            {{ form.name.label_tag }}<span class="required-asterisk">*</span>
             {{ form.name }}
             {% if form.name.errors %}
                 <div class="error">{{ form.name.errors }}</div>
@@ -35,7 +42,7 @@
         </div>
 
         <div class="form-group">
-            {{ form.email.label_tag }}
+            {{ form.email.label_tag }}<span class="required-asterisk">*</span>
             {{ form.email }}
             {% if form.email.errors %}
                 <div class="error">{{ form.email.errors }}</div>
@@ -43,7 +50,7 @@
         </div>
 
         <div class="form-group">
-            {{ form.phone_number.label_tag }}
+            {{ form.phone_number.label_tag }}<span class="required-asterisk">*</span>
             {{ form.phone_number }}
             {% if form.phone_number.errors %}
                 <div class="error">{{ form.phone_number.errors }}</div>
@@ -51,7 +58,7 @@
         </div>
 
         <div class="form-group">
-            {{ form.address_line_1.label_tag }}
+            {{ form.address_line_1.label_tag }}<span class="required-asterisk">*</span>
             {{ form.address_line_1 }}
             {% if form.address_line_1.errors %}
                 <div class="error">{{ form.address_line_1.errors }}</div>
@@ -68,7 +75,7 @@
 
         <div class="row">
             <div class="col-md-6 form-group">
-                {{ form.city.label_tag }}
+                {{ form.city.label_tag }}<span class="required-asterisk">*</span>
                 {{ form.city }}
                 {% if form.city.errors %}
                     <div class="error">{{ form.city.errors }}</div>
@@ -92,7 +99,7 @@
         </div>
 
         <div class="form-group">
-            {{ form.country.label_tag }}
+            {{ form.country.label_tag }}<span class="required-asterisk">*</span>
             {{ form.country }}
             {% if form.country.errors %}
                 <div class="error">{{ form.country.errors }}</div>
@@ -100,7 +107,7 @@
         </div>
 
         <div class="form-group">
-            {{ form.date_of_birth.label_tag }}
+            {{ form.date_of_birth.label_tag }}<span class="required-asterisk">*</span>
             {{ form.date_of_birth }}
             {% if form.date_of_birth.errors %}
                 <div class="error">{{ form.date_of_birth.errors }}</div>
@@ -108,7 +115,7 @@
         </div>
 
         <div class="form-group">
-            {{ form.is_australian_resident.label_tag }}
+            {{ form.is_australian_resident.label_tag }}<span class="required-asterisk">*</span>
             {{ form.is_australian_resident }}
             {% if form.is_australian_resident.errors %}
                 <div class="error">{{ form.is_australian_resident.errors }}</div>
@@ -117,7 +124,7 @@
 
         <div id="australian-fields">
             <div class="form-group">
-                {{ form.license_number.label_tag }}
+                {{ form.license_number.label_tag }}<span class="required-asterisk">*</span>
                 {{ form.license_number }}
                 {% if form.license_number.errors %}
                     <div class="error">{{ form.license_number.errors }}</div>
@@ -125,7 +132,7 @@
             </div>
 
             <div class="form-group">
-                {{ form.license_expiry_date.label_tag }}
+                {{ form.license_expiry_date.label_tag }}<span class="required-asterisk">*</span>
                 {{ form.license_expiry_date }}
                 {% if form.license_expiry_date.errors %}
                     <div class="error">{{ form.license_expiry_date.errors }}</div>
@@ -133,7 +140,7 @@
             </div>
 
             <div class="form-group">
-                {{ form.license_photo.label_tag }}
+                {{ form.license_photo.label_tag }}<span class="required-asterisk">*</span>
                 {{ form.license_photo }}
                 {% if form.license_photo.errors %}
                     <div class="error">{{ form.license_photo.errors }}</div>
@@ -143,7 +150,7 @@
 
         <div id="international-fields">
             <div class="form-group">
-                {{ form.international_license_expiry_date.label_tag }}
+                {{ form.international_license_expiry_date.label_tag }}<span class="required-asterisk">*</span>
                 {{ form.international_license_expiry_date }}
                 {% if form.international_license_expiry_date.errors %}
                     <div class="error">{{ form.international_license_expiry_date.errors }}</div>
@@ -151,7 +158,7 @@
             </div>
 
             <div class="form-group">
-                {{ form.international_license_issuing_country.label_tag }}
+                {{ form.international_license_issuing_country.label_tag }}<span class="required-asterisk">*</span>
                 {{ form.international_license_issuing_country }}
                 {% if form.international_license_issuing_country.errors %}
                     <div class="error">{{ form.international_license_issuing_country.errors }}</div>
@@ -159,7 +166,7 @@
             </div>
 
             <div class="form-group">
-                {{ form.international_license_photo.label_tag }}
+                {{ form.international_license_photo.label_tag }}<span class="required-asterisk">*</span>
                 {{ form.international_license_photo }}
                 {% if form.international_license_photo.errors %}
                     <div class="error">{{ form.international_license_photo.errors }}</div>
@@ -167,7 +174,7 @@
             </div>
 
             <div class="form-group">
-                {{ form.passport_number.label_tag }}
+                {{ form.passport_number.label_tag }}<span class="required-asterisk">*</span>
                 {{ form.passport_number }}
                 {% if form.passport_number.errors %}
                     <div class="error">{{ form.passport_number.errors }}</div>
@@ -175,7 +182,7 @@
             </div>
 
             <div class="form-group">
-                {{ form.passport_expiry_date.label_tag }}
+                {{ form.passport_expiry_date.label_tag }}<span class="required-asterisk">*</span>
                 {{ form.passport_expiry_date }}
                 {% if form.passport_expiry_date.errors %}
                     <div class="error">{{ form.passport_expiry_date.errors }}</div>
@@ -183,7 +190,7 @@
             </div>
 
             <div class="form-group">
-                {{ form.passport_photo.label_tag }}
+                {{ form.passport_photo.label_tag }}<span class="required-asterisk">*</span>
                 {{ form.passport_photo }}
                 {% if form.passport_photo.errors %}
                     <div class="error">{{ form.passport_photo.errors }}</div>

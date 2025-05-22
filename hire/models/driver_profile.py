@@ -22,18 +22,20 @@ class DriverProfile(models.Model):
     )
 
     # --- Contact Information (From User model) ---
-    phone_number = models.CharField(max_length=20, blank=True, null=True, help_text="Phone number of the driver.")
-    address_line_1 = models.CharField(max_length=100, blank=True, null=True, help_text="Address line 1 of the driver.")
+    # These fields are now explicitly required
+    phone_number = models.CharField(max_length=20, blank=False, null=False, help_text="Phone number of the driver.")
+    address_line_1 = models.CharField(max_length=100, blank=False, null=False, help_text="Address line 1 of the driver.")
     address_line_2 = models.CharField(max_length=100, blank=True, null=True, help_text="Address line 2 of the driver.")
-    city = models.CharField(max_length=50, blank=True, null=True, help_text="City of the driver.")
+    city = models.CharField(max_length=50, blank=False, null=False, help_text="City of the driver.")
     state = models.CharField(max_length=50, blank=True, null=True, help_text="State of the driver.")
     post_code = models.CharField(max_length=20, blank=True, null=True, help_text="Postal code of the driver.")
-    country = models.CharField(max_length=50, blank=True, null=True, help_text="Country of the driver.")
+    country = models.CharField(max_length=50, blank=False, null=False, help_text="Country of the driver.")
 
     # --- Additional Contact and Identity Information ---
-    name = models.CharField(max_length=100, help_text="Full name of the driver.")
-    email = models.EmailField(help_text="Email address of the driver.")
-    date_of_birth = models.DateField(help_text="Date of birth of the driver.")
+    # These fields are now explicitly required
+    name = models.CharField(max_length=100, blank=False, null=False, help_text="Full name of the driver.")
+    email = models.EmailField(blank=False, null=False, help_text="Email address of the driver.")
+    date_of_birth = models.DateField(blank=False, null=False, help_text="Date of birth of the driver.")
 
     # --- Residency and Documentation ---
     is_australian_resident = models.BooleanField(
@@ -45,7 +47,8 @@ class DriverProfile(models.Model):
     # License number is only strictly required for Australian residents
     license_number = models.CharField(max_length=50, blank=True, null=True, help_text="Driver's license number.")
     international_license_issuing_country = models.CharField(max_length=100, blank=True, null=True, help_text="Country that issued the International Driver's License.")
-    license_expiry_date = models.DateField(help_text="Expiry date of the license.")  # Made required
+    # license_expiry_date was already required (no blank=True, null=True)
+    license_expiry_date = models.DateField(help_text="Expiry date of the license.")
     international_license_expiry_date = models.DateField(blank=True, null=True, help_text="Expiry date of the International Driver's License.")
 
     # Uploads (From User model)
