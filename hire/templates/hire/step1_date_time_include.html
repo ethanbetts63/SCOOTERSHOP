@@ -234,44 +234,9 @@
                  }
             }
 
-            // Rule 5: Operating Hours (Time Slots) & Special Case: Same Day Pickup/Return
-            let actualReturnStartTime = returnStartTimeAttr;
-
-            if (pickUpDate && returnDate && pickUpDate.toDateString() === returnDate.toDateString()) {
-                if (pickUpTime) {
-                    const [puHour, puMinute] = pickUpTime.split(':').map(Number);
-                    const pickUpTimeDate = new Date();
-                    pickUpTimeDate.setHours(puHour, puMinute, 0, 0);
-
-                    const [retStartHour, retStartMinute] = returnStartTimeAttr.split(':').map(Number);
-                    const defaultReturnStartDate = new Date();
-                    defaultReturnStartDate.setHours(retStartHour, retStartMinute, 0, 0);
-
-                    const [retEndHour, retEndMinute] = returnEndTimeAttr.split(':').map(Number);
-                    const defaultReturnEndDate = new Date();
-                    defaultReturnEndDate.setHours(retEndHour, retEndMinute, 0, 0);
-
-                    // If pickup time is after the default return start time,
-                    // the actual return start time for same-day must be at least pickup time.
-                    // Also consider if default return end time is before default return start time (e.g., overnight)
-                    if (pickUpTimeDate >= defaultReturnStartDate || defaultReturnEndDate < defaultReturnStartDate) {
-                        actualReturnStartTime = pickUpTime;
-                        // If pickup time pushes past the normal end time for same-day,
-                        // and it's not an overnight return period, cap it at end time.
-                        if (pickUpTimeDate > defaultReturnEndDate && defaultReturnEndDate >= defaultReturnStartDate) {
-                            actualReturnStartTime = returnEndTimeAttr;
-                        }
-                    } else {
-                        actualReturnStartTime = returnStartTimeAttr;
-                    }
-                } else {
-                    actualReturnStartTime = returnStartTimeAttr;
-                }
-            } else {
-                actualReturnStartTime = returnStartTimeAttr;
-            }
-
-            populateTimeDropdown(returnTimeSelect, actualReturnStartTime, returnEndTimeAttr, 15);
+            // Populate return time dropdown with full range, as per user's request.
+            // The logic to adjust return times based on same-day pickup has been removed.
+            populateTimeDropdown(returnTimeSelect, returnStartTimeAttr, returnEndTimeAttr, 15);
         }
 
         // Rule 5 (cont.): Populate initial pickup time dropdown
