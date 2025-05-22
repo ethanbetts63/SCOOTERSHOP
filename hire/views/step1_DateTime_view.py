@@ -25,13 +25,13 @@ class SelectDateTimeView(View):
         print(f"Form data: {request.POST}")
         print(f"Hire Settings: {hire_settings}")
         if hire_settings:
-            print(f"  Min Hire Duration Days: {hire_settings.minimum_hire_duration_days}")
-            print(f"  Max Hire Duration Days: {hire_settings.maximum_hire_duration_days}")
-            print(f"  Booking Lead Time Hours: {hire_settings.booking_lead_time_hours}")
-            print(f"  Pick Up Start Time: {hire_settings.pick_up_start_time}")
-            print(f"  Pick Up End Time: {hire_settings.pick_up_end_time}")
-            print(f"  Return Off Start Time: {hire_settings.return_off_start_time}")
-            print(f"  Return End Time: {hire_settings.return_end_time}")
+            print(f"   Min Hire Duration Days: {hire_settings.minimum_hire_duration_days}")
+            print(f"   Max Hire Duration Days: {hire_settings.maximum_hire_duration_days}")
+            print(f"   Booking Lead Time Hours: {hire_settings.booking_lead_time_hours}")
+            print(f"   Pick Up Start Time: {hire_settings.pick_up_start_time}")
+            print(f"   Pick Up End Time: {hire_settings.pick_up_end_time}")
+            print(f"   Return Off Start Time: {hire_settings.return_off_start_time}")
+            print(f"   Return End Time: {hire_settings.return_end_time}")
 
 
         if form.is_valid():
@@ -48,19 +48,20 @@ class SelectDateTimeView(View):
             now_local = timezone.now() # This is already aware, usually UTC or TIME_ZONE
 
             # Convert all datetimes to UTC for consistent comparison
-            pickup_datetime_utc = pickup_datetime_local.astimezone(timezone.utc)
-            return_datetime_utc = return_datetime_local.astimezone(timezone.utc)
-            now_utc = now_local.astimezone(timezone.utc) # Ensure now is also explicitly UTC
+            # FIX: Replaced timezone.utc with datetime.timezone.utc
+            pickup_datetime_utc = pickup_datetime_local.astimezone(datetime.timezone.utc)
+            return_datetime_utc = return_datetime_local.astimezone(datetime.timezone.utc)
+            now_utc = now_local.astimezone(datetime.timezone.utc) # Ensure now is also explicitly UTC
 
             print(f"\nParsed Dates & Times:")
-            print(f"  Pickup Date: {pickup_date}, Time: {pickup_time}")
-            print(f"  Return Date: {return_date}, Time: {return_time}")
-            print(f"  Pickup Datetime (local): {pickup_datetime_local}")
-            print(f"  Return Datetime (local): {return_datetime_local}")
-            print(f"  Current Datetime (local): {now_local}")
-            print(f"  Pickup Datetime (UTC for comparison): {pickup_datetime_utc}")
-            print(f"  Return Datetime (UTC for comparison): {return_datetime_utc}")
-            print(f"  Current Datetime (UTC for comparison): {now_utc}")
+            print(f"   Pickup Date: {pickup_date}, Time: {pickup_time}")
+            print(f"   Return Date: {return_date}, Time: {return_time}")
+            print(f"   Pickup Datetime (local): {pickup_datetime_local}")
+            print(f"   Return Datetime (local): {return_datetime_local}")
+            print(f"   Current Datetime (local): {now_local}")
+            print(f"   Pickup Datetime (UTC for comparison): {pickup_datetime_utc}")
+            print(f"   Return Datetime (UTC for comparison): {return_datetime_utc}")
+            print(f"   Current Datetime (UTC for comparison): {now_utc}")
 
 
             # --- Validation Checks ---
@@ -68,7 +69,7 @@ class SelectDateTimeView(View):
 
             # Rule: Return date and time must be after pickup date and time.
             print(f"\nValidation: Return Datetime vs Pickup Datetime")
-            print(f"  return_datetime_utc ({return_datetime_utc}) <= pickup_datetime_utc ({pickup_datetime_utc})? {return_datetime_utc <= pickup_datetime_utc}")
+            print(f"   return_datetime_utc ({return_datetime_utc}) <= pickup_datetime_utc ({pickup_datetime_utc})? {return_datetime_utc <= pickup_datetime_utc}")
             if return_datetime_utc <= pickup_datetime_utc:
                 messages.error(request, "Return date and time must be after pickup date and time.")
                 errors_exist = True
@@ -78,9 +79,9 @@ class SelectDateTimeView(View):
                 min_duration = datetime.timedelta(days=hire_settings.minimum_hire_duration_days)
                 actual_duration = return_datetime_utc - pickup_datetime_utc
                 print(f"\nValidation: Minimum Hire Duration")
-                print(f"  Minimum Hire Duration (timedelta): {min_duration}")
-                print(f"  Actual Hire Duration (timedelta): {actual_duration}")
-                print(f"  actual_duration ({actual_duration}) < min_duration ({min_duration})? {actual_duration < min_duration}")
+                print(f"   Minimum Hire Duration (timedelta): {min_duration}")
+                print(f"   Actual Hire Duration (timedelta): {actual_duration}")
+                print(f"   actual_duration ({actual_duration}) < min_duration ({min_duration})? {actual_duration < min_duration}")
                 if actual_duration < min_duration:
                     messages.error(request, f"Hire duration must be at least {hire_settings.minimum_hire_duration_days} days.")
                     errors_exist = True
@@ -90,9 +91,9 @@ class SelectDateTimeView(View):
                 max_duration = datetime.timedelta(days=hire_settings.maximum_hire_duration_days)
                 actual_duration = return_datetime_utc - pickup_datetime_utc # Recalculate or reuse from above
                 print(f"\nValidation: Maximum Hire Duration")
-                print(f"  Maximum Hire Duration (timedelta): {max_duration}")
-                print(f"  Actual Hire Duration (timedelta): {actual_duration}")
-                print(f"  actual_duration ({actual_duration}) > max_duration ({max_duration})? {actual_duration > max_duration}")
+                print(f"   Maximum Hire Duration (timedelta): {max_duration}")
+                print(f"   Actual Hire Duration (timedelta): {actual_duration}")
+                print(f"   actual_duration ({actual_duration}) > max_duration ({max_duration})? {actual_duration > max_duration}")
                 if actual_duration > max_duration:
                     messages.error(request, f"Hire duration cannot exceed {hire_settings.maximum_hire_duration_days} days.")
                     errors_exist = True
@@ -101,8 +102,8 @@ class SelectDateTimeView(View):
             if hire_settings and hire_settings.booking_lead_time_hours is not None:
                 min_pickup_time_utc = now_utc + datetime.timedelta(hours=hire_settings.booking_lead_time_hours)
                 print(f"\nValidation: Booking Lead Time")
-                print(f"  Minimum Pickup Time (calculated UTC): {min_pickup_time_utc}")
-                print(f"  pickup_datetime_utc ({pickup_datetime_utc}) < min_pickup_time_utc ({min_pickup_time_utc})? {pickup_datetime_utc < min_pickup_time_utc}")
+                print(f"   Minimum Pickup Time (calculated UTC): {min_pickup_time_utc}")
+                print(f"   pickup_datetime_utc ({pickup_datetime_utc}) < min_pickup_time_utc ({min_pickup_time_utc})? {pickup_datetime_utc < min_pickup_time_utc}")
                 if pickup_datetime_utc < min_pickup_time_utc:
                     messages.error(request, f"Pickup must be at least {hire_settings.booking_lead_time_hours} hours from now.")
                     errors_exist = True
@@ -113,8 +114,8 @@ class SelectDateTimeView(View):
                 end_date__gte=pickup_date
             ).exists()
             print(f"\nValidation: Blocked Dates")
-            print(f"  Checking for blocked dates between {pickup_date} and {return_date}.")
-            print(f"  Blocked dates overlap found: {blocked_dates_overlap}")
+            print(f"   Checking for blocked dates between {pickup_date} and {return_date}.")
+            print(f"   Blocked dates overlap found: {blocked_dates_overlap}")
             if blocked_dates_overlap:
                 messages.error(request, "Selected dates overlap with a blocked hire period.")
                 errors_exist = True
@@ -205,4 +206,3 @@ class SelectDateTimeView(View):
             messages.error(request, "Please correct the errors below for your hire dates and times.")
             # We no longer store form data/errors in session
             return redirect('hire:step2_choose_bike')
-

@@ -110,7 +110,7 @@ class BikeChoiceView(View):
         motorcycles_with_prices = []
         for motorcycle in available_motorcycles:
             # Calculate daily hire rate (you might have more complex logic here)
-            daily_hire_rate = motorcycle.daily_rate
+            daily_hire_rate = motorcycle.daily_hire_rate
             
             # Calculate total hire price for the period
             total_hire_price = daily_hire_rate * duration
