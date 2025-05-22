@@ -19,7 +19,7 @@ class AddonPackageView(View):
     def get(self, request, motorcycle_id=None, *args, **kwargs):
         temp_booking = self._get_temp_booking(request)
         if not temp_booking:
-            return redirect('hire:step1_select_datetime')
+            return redirect('hire:step2_choose_bike')
 
         hire_settings = HireSettings.objects.first()
 
@@ -117,7 +117,7 @@ class AddonPackageView(View):
         temp_booking = self._get_temp_booking(request)
         if not temp_booking:
             messages.error(request, "Session expired. Please start again.")
-            return redirect('hire:step1_select_datetime')
+            return redirect('hire:step2_choose_bike')
 
         hire_settings = HireSettings.objects.first()
         available_packages = Package.objects.filter(is_available=True)

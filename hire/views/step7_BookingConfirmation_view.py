@@ -16,7 +16,7 @@ class BookingConfirmationView(View):
         if not booking_reference:
             print("DEBUG: No final_booking_reference in session. Redirecting to step 1.")
             # If no booking reference, redirect to the start of the booking process
-            return redirect('hire:step1_select_datetime')
+            return redirect('hire:step2_choose_bike')
 
         try:
             # Fetch the confirmed HireBooking object
@@ -50,11 +50,11 @@ class BookingConfirmationView(View):
         except HireBooking.DoesNotExist:
             print(f"ERROR: HireBooking with reference {booking_reference} not found.")
             # If the booking is not found, something went wrong, redirect to a generic error or start page
-            return redirect('hire:step1_select_datetime')
+            return redirect('hire:step2_choose_bike')
         except Exception as e:
             print(f"An unexpected error occurred in BookingConfirmationView: {e}")
             # Log the full traceback for debugging in production
             import traceback
             traceback.print_exc()
-            return redirect('hire:step1_select_datetime') # Redirect to start on error
+            return redirect('hire:step2_choose_bike') # Redirect to start on error
 

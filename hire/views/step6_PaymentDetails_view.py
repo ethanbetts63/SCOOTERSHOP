@@ -23,7 +23,7 @@ class PaymentDetailsView(View):
 
         if not temp_booking_id:
             print("DEBUG: No temp_booking_id in session. Redirecting to step 1.")
-            return redirect('hire:step1_select_datetime')
+            return redirect('hire:step2_choose_bike')
 
         temp_booking = get_object_or_404(TempHireBooking, id=temp_booking_id)
         print(f"DEBUG: Retrieved TempHireBooking: {temp_booking.id}")
@@ -95,7 +95,7 @@ class PaymentDetailsView(View):
                         return redirect('hire:step7_confirmation')
                     else:
                         print("ERROR: Could not create HireBooking despite succeeded payment. Redirecting to step 1.")
-                        return redirect('hire:step1_select_datetime')
+                        return redirect('hire:step2_choose_bike')
 
                 # If the PaymentIntent is not succeeded, check if it needs modification or a new one
                 amount_changed = intent.amount != int(amount_to_pay * 100)

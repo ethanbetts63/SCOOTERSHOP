@@ -17,7 +17,7 @@ class BookSumAndPaymentOptionsView(View):
         temp_booking = self._get_temp_booking(request)
         if not temp_booking:
             messages.error(request, "Your booking session has expired. Please start again.")
-            return redirect('hire:step1_select_datetime')
+            return redirect('hire:step2_choose_bike')
 
         hire_settings = HireSettings.objects.first()
         if not hire_settings:
@@ -37,7 +37,7 @@ class BookSumAndPaymentOptionsView(View):
         temp_booking = self._get_temp_booking(request)
         if not temp_booking:
             messages.error(request, "Your booking session has expired. Please start again.")
-            return redirect('hire:step1_select_datetime')
+            return redirect('hire:step2_choose_bike')
 
         hire_settings = HireSettings.objects.first()
         if not hire_settings:
