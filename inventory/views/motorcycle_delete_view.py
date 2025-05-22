@@ -11,7 +11,7 @@ from inventory.models import Motorcycle
 class MotorcycleDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     """View for deleting a motorcycle listing."""
     model = Motorcycle
-    template_name = 'inventory/motorcycles/motorcycle_confirm_delete.html'
+    'inventory/templates/inventory/motorcycle_confirm_delete.html'
     success_url = reverse_lazy('core:index') # Redirect to index or motorcycle list after deletion
 
     def test_func(self):

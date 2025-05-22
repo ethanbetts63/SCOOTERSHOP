@@ -16,7 +16,7 @@
                 {% csrf_token %}
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-danger">Yes, Delete</button>
-                    <a href="{% url 'inventory:motorcycle-detail' object.pk %}" class="btn btn-secondary">Cancel</a>
+                    <a href="{% url 'inventory:motorcycle-list' object.pk %}" class="btn btn-secondary">Cancel</a>
                 </div>
             </form>
         </div>

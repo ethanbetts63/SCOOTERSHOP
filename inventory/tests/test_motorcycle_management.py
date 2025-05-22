@@ -445,7 +445,7 @@ class MotorcycleManagementViewTests(TestCase):
         self.client.login(username='staffuser', password='password')
         response = self.client.get(self.delete_url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'inventory/motorcycles/motorcycle_confirm_delete.html')
+        self.assertTemplateUsed(response, 'inventory/templates/inventory/motorcycle_confirm_delete.html'')
         self.assertIn('motorcycle', response.context)
         self.assertEqual(response.context['motorcycle'], self.motorcycle_to_manage)
 
