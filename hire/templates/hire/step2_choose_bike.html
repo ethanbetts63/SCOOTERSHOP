@@ -204,11 +204,9 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', function() {
             const motorcycleId = this.dataset.motorcycleId;
             // Get temp_booking_id and temp_booking_uuid from the form's hidden fields
-            const tempBookingId = document.querySelector('input[name="temp_booking_id"]').value;
-            const tempBookingUuid = document.querySelector('input[name="temp_booking_uuid"]').value;
-            
+
             // Redirect to step 3 with motorcycle_id and temp_booking details
-            window.location.href = `/hire/book/step3/${motorcycleId}/?temp_booking_id=${tempBookingId}&temp_booking_uuid=${tempBookingUuid}`;
+            window.location.href = `/hire/book/step3/${motorcycleId}/`;
         });
     });
 });
