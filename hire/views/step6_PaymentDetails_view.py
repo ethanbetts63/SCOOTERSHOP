@@ -7,7 +7,8 @@ from django.conf import settings
 import stripe
 import json
 import logging
-from ..models import TempHireBooking
+
+from hire.models import TempHireBooking
 from payments.models import Payment
 
 logger = logging.getLogger(__name__)
@@ -58,7 +59,7 @@ class PaymentDetailsView(View):
 
         # Step 3: Find or create a Payment object and Stripe PaymentIntent
         payment_obj = Payment.objects.filter(temp_hire_booking=temp_booking).first()
-        intent = None
+        intent = None # Initialize intent to None
 
         if payment_obj and payment_obj.stripe_payment_intent_id:
             try:
@@ -76,20 +77,13 @@ class PaymentDetailsView(View):
                         payment_obj.save()
                         logger.debug(f"Updated Payment DB object {payment_obj.id} status to 'succeeded'.")
                     
-                    # We don't create HireBooking here, but we need the final_booking_reference
-                    # for step 7. This would ideally be set by the webhook and fetched here,
-                    # or passed via session if the webhook updates session (less common/good practice).
-                    # For now, we'll assume the webhook will handle the full finalization and
-                    # the user will be redirected to a confirmation page that can fetch details.
-                    # If you need the booking reference immediately, you'd need a mechanism
-                    # for the webhook to communicate it back (e.g., via a DB field on Payment).
-                    # For simplicity in this flow, we'll let step 7 handle fetching.
-                    
                     # Clear the temp_booking_id from session as it's now finalized (by webhook)
                     if 'temp_booking_id' in request.session:
                         del request.session['temp_booking_id']
                         logger.debug(f"Cleared temp_booking_id {temp_booking_id} from session.")
-                    return redirect('hire:step7_confirmation')
+                    
+                    # Redirect to step 7, passing the payment_intent_id
+                    return redirect('hire:step7_confirmation', payment_intent_id=intent.id)
 
                 # Check if the existing PaymentIntent needs modification
                 amount_changed = intent.amount != int(amount_to_pay * 100)
@@ -111,7 +105,7 @@ class PaymentDetailsView(View):
                     )
                     payment_obj.amount = amount_to_pay
                     payment_obj.currency = currency
-                    payment_obj.status = intent.status 
+                    payment_obj.status = intent.status # Update status after modification
                     payment_obj.description = payment_description
                     payment_obj.save()
                     logger.debug(f"Modified PaymentIntent: {intent.id}, New Amount: {intent.amount}, New Currency: {intent.currency}")
@@ -246,17 +240,16 @@ class PaymentDetailsView(View):
                 return JsonResponse({
                     'status': 'success',
                     'message': 'Payment processed successfully. Your booking is being finalized.',
-                    'redirect_url': '/hire/book/step7/' # Client will redirect here after success
+                    # IMPORTANT: Pass payment_intent_id in the redirect URL
+                    'redirect_url': f'/hire/book/step7/?payment_intent_id={payment_intent_id}'
                 })
 
             elif intent.status in ['requires_action', 'requires_confirmation', 'requires_payment_method']:
                 logger.info(f"Payment Intent requires further action or is pending: {intent.status}")
-                # For 'requires_action', Stripe.js handles the redirect.
-                # For others, you might want to provide specific client feedback.
                 return JsonResponse({
                     'status': 'requires_action',
                     'message': 'Payment requires further action or is pending. Please follow prompts.',
-                    'redirect_url': '/hire/payment_failed/' # Example redirect for non-succeeded
+                    'redirect_url': f'/hire/payment_failed/?payment_intent_id={payment_intent_id}' # Also pass for failed/action
                 })
 
             else:
@@ -264,7 +257,7 @@ class PaymentDetailsView(View):
                 return JsonResponse({
                     'status': 'failed',
                     'message': 'Payment failed or an unexpected status occurred. Please try again.',
-                    'redirect_url': '/hire/payment_failed/' # Example redirect for failed
+                    'redirect_url': f'/hire/payment_failed/?payment_intent_id={payment_intent_id}' # Also pass for failed
                 })
 
         # Step 4: Handle errors during POST processing
