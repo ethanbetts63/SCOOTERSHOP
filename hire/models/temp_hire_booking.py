@@ -77,10 +77,6 @@ class TempHireBooking(models.Model):
     # --- Calculated / Booked Prices ---
     # Store the rates and total price at the time the bike is selected/confirmed
     booked_daily_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-    # Add fields for weekly/monthly rates if you apply discounts like HireBooking
-    # booked_weekly_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-    # booked_monthly_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-
 
     total_hire_price = models.DecimalField(
         max_digits=10, decimal_places=2,

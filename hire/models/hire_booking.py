@@ -107,8 +107,6 @@ class HireBooking(models.Model):
 
     # Financial Details
     booked_daily_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-    booked_weekly_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-    booked_monthly_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     deposit_amount = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -164,21 +162,6 @@ class HireBooking(models.Model):
                 errors['return_date'] = "Return date and time must be after pickup date and time."
                 errors['return_time'] = "Return date and time must be after pickup date and time."
 
-            # Check minimum hire duration against settings
-            try:
-                settings = HireSettings.objects.first()
-                if settings and settings.minimum_hire_duration_days is not None:
-                    min_duration = datetime.timedelta(days=settings.minimum_hire_duration_days)
-                    if (return_datetime - pickup_datetime) < min_duration:
-                        errors['return_date'] = f"Hire duration must be at least {settings.minimum_hire_duration_days} days."
-                        errors['return_time'] = f"Hire duration must be at least {settings.minimum_hire_duration_days} days."
-            except HireSettings.DoesNotExist:
-                # Handle missing settings if necessary
-                pass
-            except Exception as e:
-                print(f"Error checking minimum hire duration: {e}")
-                pass
-
         if pickup_datetime:
             # Check booking lead time against settings
             try:
@@ -219,10 +202,6 @@ class HireBooking(models.Model):
         # Booked rates non-negative
         if self.booked_daily_rate is not None and self.booked_daily_rate < 0:
             errors['booked_daily_rate'] = "Booked daily rate cannot be negative."
-        if self.booked_weekly_rate is not None and self.booked_weekly_rate < 0:
-            errors['booked_weekly_rate'] = "Booked weekly rate cannot be negative."
-        if self.booked_monthly_rate is not None and self.booked_monthly_rate < 0:
-            errors['booked_monthly_rate'] = "Booked monthly rate cannot be negative."
         if self.booked_package_price is not None and self.booked_package_price < 0:
             errors['booked_package_price'] = "Booked package price cannot be negative."
 
