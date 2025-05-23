@@ -5,7 +5,8 @@
 {% endblock %}
 
 {% block content %}
-    {% with current_url_name='used' page_title='Used Motorcycles For Sale' %}
+    {# Corrected: Pass the fully qualified URL name 'inventory:used' #}
+    {% with current_url_name='inventory:used' page_title='Used Motorcycles For Sale' %}
         {% include "inventory/motorcycle_list_include.html" %}
     {% endwith %}
 {% endblock %}

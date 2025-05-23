@@ -5,7 +5,8 @@
 {% endblock %}
 
 {% block content %}
-    {% with current_url_name='new' page_title='New Motorcycles For Sale' %}
+    {# Corrected: Pass the fully qualified URL name 'inventory:new' #}
+    {% with current_url_name='inventory:new' page_title='New Motorcycles For Sale' %}
         {% include "inventory/motorcycle_list_include.html" %}
     {% endwith %}
 {% endblock %}

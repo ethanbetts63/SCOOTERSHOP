@@ -1,10 +1,8 @@
-# hire/views/step4_HasAccount_view.py
 from django.shortcuts import render, redirect
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from hire.forms import Step4HasAccountForm
-from hire.models import TempHireBooking
-from hire.models import DriverProfile
+from hire.models import TempHireBooking, DriverProfile
 from django.contrib import messages
 
 
@@ -14,6 +12,7 @@ class HasAccountView(LoginRequiredMixin, View):
     """
 
     def get(self, request, *args, **kwargs):
+        print(f"DEBUG: HasAccountView GET - User: {request.user}")
         temp_booking = self._get_temp_booking(request)
         if not temp_booking:
             messages.error(
@@ -21,19 +20,20 @@ class HasAccountView(LoginRequiredMixin, View):
             )
             return redirect("hire:step2_choose_bike")
 
-        # Get the driver profile associated with the current temporary booking
-        driver_profile_instance = temp_booking.driver_profile
+        print(f"DEBUG: HasAccountView GET - temp_booking.driver_profile: {temp_booking.driver_profile}")
+        driver_profile_instance, created = DriverProfile.objects.get_or_create(user=request.user)
+        print(f"DEBUG: HasAccountView GET - Retrieved/Created DriverProfile: {driver_profile_instance}, Created: {created}")
 
-        # Initialize the form, passing the driver_profile_instance and temp_booking
         form = Step4HasAccountForm(user=request.user, instance=driver_profile_instance, temp_booking=temp_booking)
 
         context = {
             "form": form,
-            "temp_booking": temp_booking,  # Add temp_booking to the context
+            "temp_booking": temp_booking,
         }
         return render(request, "hire/step4_has_account.html", context)
 
     def post(self, request, *args, **kwargs):
+        print(f"DEBUG: HasAccountView POST - User: {request.user}")
         temp_booking = self._get_temp_booking(request)
         if not temp_booking:
             messages.error(
@@ -41,18 +41,19 @@ class HasAccountView(LoginRequiredMixin, View):
             )
             return redirect("hire:step2_choose_bike")
 
-        # Get the driver profile associated with the current temporary booking
-        driver_profile_instance = temp_booking.driver_profile
+        print(f"DEBUG: HasAccountView POST - temp_booking.driver_profile: {temp_booking.driver_profile}")
+        driver_profile_instance, created = DriverProfile.objects.get_or_create(user=request.user)
+        print(f"DEBUG: HasAccountView POST - Retrieved/Created DriverProfile: {driver_profile_instance}, Created: {created}")
 
-        # Initialize the form with POST data, files, the existing instance, and temp_booking
         form = Step4HasAccountForm(request.POST, request.FILES, user=request.user, instance=driver_profile_instance, temp_booking=temp_booking)
 
         if form.is_valid():
             driver_profile = form.save(commit=False)
-            driver_profile.user = request.user
+            driver_profile.user = request.user  # Redundant, but safe
             driver_profile.save()
 
             temp_booking.driver_profile = driver_profile
+            print(f"DEBUG: HasAccountView POST - temp_booking.driver_profile after setting: {temp_booking.driver_profile}")
             temp_booking.save()
             messages.success(request, "Driver details saved successfully.")
             return redirect("hire:step5_summary_payment_options")
@@ -76,4 +77,3 @@ class HasAccountView(LoginRequiredMixin, View):
             except TempHireBooking.DoesNotExist:
                 return None
         return None
-
