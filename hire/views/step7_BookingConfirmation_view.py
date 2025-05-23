@@ -37,23 +37,16 @@ class BookingConfirmationView(View):
         if not hire_booking and payment_intent_id:
             logger.debug(f"Attempting to retrieve HireBooking using payment_intent_id: {payment_intent_id}")
             try:
-                # Find the Payment object first
-                # Use .get() instead of get_object_or_404 to catch DoesNotExist
-                payment_obj = Payment.objects.get(stripe_payment_intent_id=payment_intent_id)
-                # Then get the associated HireBooking
-                # Use .get() instead of get_object_or_404 to catch DoesNotExist
-                hire_booking = HireBooking.objects.get(payment=payment_obj)
-                logger.debug(f"Retrieved HireBooking from Payment object: {hire_booking.booking_reference}")
+                # Try to find the HireBooking directly using the stripe_payment_intent_id
+                hire_booking = HireBooking.objects.get(stripe_payment_intent_id=payment_intent_id)
+                logger.debug(f"Retrieved HireBooking using stripe_payment_intent_id: {hire_booking.booking_reference}")
 
                 # If found this way, store the booking_reference in session for future use
                 request.session['final_booking_reference'] = hire_booking.booking_reference
                 logger.debug(f"Stored final_booking_reference: {hire_booking.booking_reference} in session for future use.")
 
-            except Payment.DoesNotExist:
-                logger.warning(f"Payment object with intent ID {payment_intent_id} not found. Booking likely not finalized yet.")
-                is_processing = True # Set flag for client-side polling
             except HireBooking.DoesNotExist:
-                logger.warning(f"HireBooking not found for Payment object with intent ID {payment_intent_id}. Booking likely not finalized yet.")
+                logger.warning(f"HireBooking with intent ID {payment_intent_id} not found. Booking likely not finalized yet.")
                 is_processing = True # Set flag for client-side polling
             except Exception as e:
                 logger.exception(f"An unexpected error occurred while trying to retrieve booking for payment_intent_id {payment_intent_id}: {e}")
@@ -121,8 +114,8 @@ class BookingStatusCheckView(View):
             return JsonResponse({'status': 'error', 'message': 'Payment Intent ID is required'}, status=400)
 
         try:
-            payment_obj = Payment.objects.get(stripe_payment_intent_id=payment_intent_id)
-            hire_booking = HireBooking.objects.get(payment=payment_obj)
+            # Try to find the HireBooking directly using the stripe_payment_intent_id
+            hire_booking = HireBooking.objects.get(stripe_payment_intent_id=payment_intent_id)
 
             # If HireBooking is found, return its details
             response_data = {
@@ -143,13 +136,21 @@ class BookingStatusCheckView(View):
             logger.debug(f"Booking found for {payment_intent_id}. Status: ready.")
             return JsonResponse(response_data)
 
-        except Payment.DoesNotExist:
-            logger.info(f"Payment object not yet found for intent ID {payment_intent_id}. Still processing.")
-            return JsonResponse({'status': 'processing', 'message': 'Payment record not yet available.'})
         except HireBooking.DoesNotExist:
             logger.info(f"HireBooking not yet found for payment intent ID {payment_intent_id}. Still processing.")
-            return JsonResponse({'status': 'processing', 'message': 'Booking still being finalized.'})
+            # If HireBooking is not found, check if the Payment object still exists.
+            # This helps differentiate between "not yet processed" and "processed but failed to create HireBooking"
+            try:
+                Payment.objects.get(stripe_payment_intent_id=payment_intent_id)
+                logger.info(f"Payment object found for intent ID {payment_intent_id}, but HireBooking not yet. Still processing.")
+                return JsonResponse({'status': 'processing', 'message': 'Booking still being finalized.'})
+            except Payment.DoesNotExist:
+                logger.info(f"Payment object not found for intent ID {payment_intent_id}. This means TempHireBooking and Payment were deleted. HireBooking creation might have failed or completed.")
+                # If both Payment and HireBooking are gone, it implies a problem in the webhook handler
+                # where TempHireBooking was deleted but HireBooking was not created.
+                # In this specific scenario, we should return an error or a "failed" status
+                # to the client, as the booking cannot be confirmed.
+                return JsonResponse({'status': 'error', 'message': 'Booking finalization failed. Please contact support.'}, status=500)
         except Exception as e:
             logger.exception(f"An unexpected error occurred during status check for {payment_intent_id}: {e}")
             return JsonResponse({'status': 'error', 'message': 'An internal server error occurred during status check.'}, status=500)
-

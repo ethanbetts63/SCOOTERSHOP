@@ -61,9 +61,6 @@ class PaymentDetailsView(View):
                 intent = stripe.PaymentIntent.retrieve(payment_obj.stripe_payment_intent_id)
                 logger.debug(f"Retrieved Stripe PaymentIntent: {intent.id}, Status: {intent.status}")
 
-                # Removed: Premature redirect for succeeded PaymentIntent in GET method.
-                # This logic will now be handled by the client-side POST after payment confirmation.
-
                 amount_changed = intent.amount != int(amount_to_pay * 100)
                 currency_changed = intent.currency.lower() != currency.lower()
                 is_modifiable = intent.status in ['requires_payment_method', 'requires_confirmation', 'requires_action']
@@ -184,20 +181,24 @@ class PaymentDetailsView(View):
             intent = stripe.PaymentIntent.retrieve(payment_intent_id)
             logger.debug(f"Retrieved Stripe PaymentIntent: {intent.id}, Status: {intent.status}")
 
-            payment_obj = get_object_or_404(Payment, stripe_payment_intent_id=intent.id)
-            logger.debug(f"Found Payment DB object: {payment_obj.id}")
-
-            if payment_obj.status != intent.status:
-                payment_obj.status = intent.status
-                payment_obj.save()
-                logger.info(f"Updated Payment DB object status to: {payment_obj.status} based on client-side confirmation.")
-            else:
-                logger.info(f"Payment DB object status already {payment_obj.status}. No update needed.")
+            # Try to get the Payment object. It might have been deleted by the webhook already.
+            payment_obj = Payment.objects.filter(stripe_payment_intent_id=intent.id).first()
 
             if intent.status == 'succeeded':
-                logger.info("Client reports Payment Intent succeeded. Awaiting webhook for finalization.")
-                # This is the correct place to return the redirect URL to the client.
-                # The client-side JS will then perform the actual redirect.
+                if payment_obj:
+                    # If payment_obj still exists, update its status if necessary
+                    if payment_obj.status != intent.status:
+                        payment_obj.status = intent.status
+                        payment_obj.save()
+                        logger.info(f"Updated Payment DB object status to: {payment_obj.status} based on client-side confirmation.")
+                    else:
+                        logger.info(f"Payment DB object status already {payment_obj.status}. No update needed.")
+                else:
+                    # This means the webhook has already processed and deleted the TempHireBooking and Payment.
+                    logger.info(f"Payment object for intent ID {payment_intent_id} not found in DB. Assuming webhook processed it.")
+                
+                # In either case (found or not found), if Stripe reports succeeded, redirect to step 7
+                logger.info("Client reports Payment Intent succeeded. Redirecting to Step 7 (awaiting webhook for finalization if not already done).")
                 return JsonResponse({
                     'status': 'success',
                     'message': 'Payment processed successfully. Your booking is being finalized.',
@@ -205,6 +206,10 @@ class PaymentDetailsView(View):
                 })
 
             elif intent.status in ['requires_action', 'requires_confirmation', 'requires_payment_method']:
+                if payment_obj:
+                    if payment_obj.status != intent.status:
+                        payment_obj.status = intent.status
+                        payment_obj.save()
                 logger.info(f"Payment Intent requires further action or is pending: {intent.status}")
                 return JsonResponse({
                     'status': 'requires_action',
@@ -213,6 +218,10 @@ class PaymentDetailsView(View):
                 })
 
             else:
+                if payment_obj:
+                    if payment_obj.status != intent.status:
+                        payment_obj.status = intent.status
+                        payment_obj.save()
                 logger.warning(f"Payment Intent status is unexpected from client: {intent.status}")
                 return JsonResponse({
                     'status': 'failed',
@@ -222,10 +231,9 @@ class PaymentDetailsView(View):
 
         except stripe.error.StripeError as e:
             logger.error(f"Stripe API Error in POST: {e}")
+            # If Stripe API fails to retrieve the intent, it's a serious issue.
+            # We can't confirm the status, so we should return an error.
             return JsonResponse({'error': str(e)}, status=500)
-        except Payment.DoesNotExist:
-            logger.error(f"Payment object not found for Stripe Intent ID: {payment_intent_id} in POST request.")
-            return JsonResponse({'error': 'Payment record not found in DB'}, status=404)
         except Exception as e:
             logger.exception(f"An unexpected error occurred in POST for PaymentIntent {payment_intent_id}: {e}")
             return JsonResponse({'error': 'An internal server error occurred'}, status=500)

@@ -70,6 +70,15 @@ class HireBooking(models.Model):
         help_text="Link to the associated payment record."
     )
 
+    # Add a field to store the Stripe Payment Intent ID directly
+    stripe_payment_intent_id = models.CharField(
+        max_length=100,
+        unique=True, # Ensure uniqueness for this ID
+        blank=True,
+        null=True,
+        help_text="The ID of the Stripe Payment Intent associated with this booking."
+    )
+
     # Package price at booking time
     booked_package_price = models.DecimalField(
         max_digits=10, decimal_places=2,

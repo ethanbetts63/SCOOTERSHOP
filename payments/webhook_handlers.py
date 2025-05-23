@@ -53,6 +53,7 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
                 currency=temp_booking.currency,
                 status='confirmed',
                 payment=payment_obj, # Link the HireBooking to the Payment object
+                stripe_payment_intent_id=payment_obj.stripe_payment_intent_id, # NEW: Populate this field
             )
             logger.info(f"Created new HireBooking: {hire_booking.booking_reference} from TempHireBooking {temp_booking.id}")
 
@@ -97,4 +98,3 @@ WEBHOOK_HANDLERS = {
     # },
     # Add more booking types and their handlers here
 }
-
