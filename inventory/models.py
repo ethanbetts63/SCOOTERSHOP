@@ -62,7 +62,11 @@ class Motorcycle(models.Model):
 
     # Odometer is now required
     odometer = models.IntegerField(default=0)
-    engine_size = models.CharField(max_length=50)
+    
+    # --- IMPORTANT CHANGE: Changed engine_size from CharField to IntegerField ---
+    engine_size = models.IntegerField(
+        help_text="Engine size in cubic centimeters (cc)"
+    )
 
     # Made seats nullable and blankable
     seats = models.IntegerField(

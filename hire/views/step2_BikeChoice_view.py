@@ -26,6 +26,10 @@ class BikeChoiceView(View):
         temp_booking_id = request.session.get('temp_booking_id') or request.GET.get('temp_booking_id')
         temp_booking_uuid = request.session.get('temp_booking_uuid') or request.GET.get('temp_booking_uuid')
         
+        print(f"--- Debugging BikeChoiceView.get ---")
+        print(f"temp_booking_id from session/GET: {temp_booking_id}")
+        print(f"temp_booking_uuid from session/GET: {temp_booking_uuid}")
+
         temp_booking = None
         if temp_booking_id and temp_booking_uuid:
             try:
@@ -33,6 +37,7 @@ class BikeChoiceView(View):
                 # Update session if retrieved from URL (e.g., first time landing on step 2 via direct link)
                 request.session['temp_booking_id'] = temp_booking.id
                 request.session['temp_booking_uuid'] = str(temp_booking.session_uuid)
+                print(f"TempHireBooking retrieved successfully: {temp_booking.id}")
             except TempHireBooking.DoesNotExist:
                 messages.error(request, "Your previous booking details could not be found. Please re-enter your dates.")
                 # Clear session if invalid temp_booking_id/uuid
@@ -41,13 +46,12 @@ class BikeChoiceView(View):
                 if 'temp_booking_uuid' in request.session:
                     del request.session['temp_booking_uuid']
                 temp_booking = None # Ensure temp_booking is None
+                print(f"TempHireBooking.DoesNotExist: Clearing session keys.")
 
         # If no temporary booking exists, redirect to home or step 1 to start fresh
         if not temp_booking:
             messages.info(request, "Please select your pickup and return dates to find available motorcycles.")
-            # Redirect to a page where the user can start the booking process (e.g., home or a dedicated step1 page)
-            # For now, we'll render step2_choose_bike, which includes the step1 form.
-            # The step1 form will then handle creating a new TempHireBooking.
+            print(f"No TempHireBooking found. Rendering without motorcycles.")
             context = {
                 'hire_settings': hire_settings,
                 'motorcycles': [], # No motorcycles to show without dates
@@ -61,7 +65,9 @@ class BikeChoiceView(View):
         pickup_time = temp_booking.pickup_time
         return_date = temp_booking.return_date
         return_time = temp_booking.return_time
-        has_motorcycle_license = temp_booking.has_motorcycle_license
+        has_motorcycle_license = temp_booking.has_motorcycle_license # This is the key variable from Step 1
+
+        print(f"has_motorcycle_license from TempHireBooking: {has_motorcycle_license}")
 
         # If any date/time is missing in temp_booking (e.g., direct access without step 1), redirect
         if not all([pickup_date, pickup_time, return_date, return_time]):
@@ -72,6 +78,7 @@ class BikeChoiceView(View):
             if 'temp_booking_uuid' in request.session:
                 del request.session['temp_booking_uuid']
             temp_booking = None # Ensure temp_booking is None in context
+            print(f"Missing pickup/return dates/times in TempHireBooking. Clearing session.")
             context = {
                 'hire_settings': hire_settings,
                 'motorcycles': [],
@@ -97,15 +104,26 @@ class BikeChoiceView(View):
             Q(hire_bookings__pickup_date__lt=return_date, hire_bookings__return_date__gt=pickup_date) |
             Q(temp_hire_bookings__pickup_date__lt=return_date, temp_hire_bookings__return_date__gt=pickup_date)
         )
+        print(f"Motorcycles available before license filter (count): {available_motorcycles.count()}")
+        print(f"Motorcycles available before license filter (IDs): {[m.id for m in available_motorcycles]}")
 
-        # Filter by license requirement
+
+        # --- IMPORTANT: Filter motorcycles based on license requirement ---
+        # As per Australian law, motorcycles with engine size > 50cc require a motorcycle license.
+        # If the user does NOT have a motorcycle license, only show bikes with engine_size <= 50cc.
         if not has_motorcycle_license:
-            # Assuming 'license_required' is a field on Motorcycle model
-            # And 50cc bikes don't require a motorcycle license (only car license)
+            print(f"User does NOT have a motorcycle license. Filtering for engine_size <= 50.")
             available_motorcycles = available_motorcycles.filter(
-                Q(engine_size__lte=50)
+                engine_size__lte=50
             )
+        else:
+            print(f"User HAS a motorcycle license. All engine sizes are considered.")
         
+        print(f"Motorcycles available AFTER license filter (count): {available_motorcycles.count()}")
+        print(f"Motorcycles available AFTER license filter (IDs): {[m.id for m in available_motorcycles]}")
+        print(f"Motorcycles available AFTER license filter (Engine Sizes): {[m.engine_size for m in available_motorcycles]}")
+
+
         # Annotate motorcycles with calculated hire rates and total price
         motorcycles_with_prices = []
         for motorcycle in available_motorcycles:
