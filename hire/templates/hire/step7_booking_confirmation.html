@@ -1,6 +1,6 @@
 {% extends 'core/layout.html' %}
 {% load static %}
-{% load custom_filters %} {# Load the custom filters for string manipulation #}
+{# Removed: {% load custom_filters %} as we are handling string formatting in Python/JavaScript #}
 
 {% block title %}Booking Confirmation{% endblock %}
 
@@ -178,8 +178,9 @@
                         <p><strong class="font-medium">Driver:</strong> {{ driver_name }}</p>
                     </div>
                     <div>
-                        <p><strong class="font-medium">Booking Status:</strong> <span class="capitalize">{{ booking_status|replace:"_":" " }}</span></p>
-                        <p><strong class="font-medium">Payment Status:</strong> <span class="capitalize">{{ payment_status|replace:"_":" " }}</span></p>
+                        {# booking_status and payment_status are now pre-formatted in the view #}
+                        <p><strong class="font-medium">Booking Status:</strong> <span class="capitalize">{{ booking_status }}</span></p>
+                        <p><strong class="font-medium">Payment Status:</strong> <span class="capitalize">{{ payment_status }}</span></p>
                         <p><strong class="font-medium">Total Price:</strong> {{ total_price }} {{ currency }}</p>
                         <p><strong class="font-medium">Amount Paid:</strong> {{ amount_paid }} {{ currency }}</p>
                     </div>
@@ -218,23 +219,3 @@
     </div>
 </div>
 {% endblock %}
-
-{% comment %}
-    Define a custom template filter for replacing characters.
-    This should ideally be in a separate templatetags file (e.g., myapp/templatetags/custom_filters.py)
-    and then loaded with {% load custom_filters %}.
-    For demonstration purposes, I'm including the conceptual filter usage here.
-    You would need to create `custom_filters.py` in a `templatetags` directory within your app.
-    Example `custom_filters.py`:
-    from django import template
-    register = template.Library()
-
-    @register.filter
-    def replace(value, arg):
-        # arg should be in format "old_char:new_char"
-        try:
-            old, new = arg.split(':')
-            return value.replace(old, new)
-        except ValueError:
-            return value # Return original value if arg is not in expected format
-{% endcomment %}

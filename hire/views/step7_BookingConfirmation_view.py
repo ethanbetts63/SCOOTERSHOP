@@ -1,5 +1,5 @@
 # hire/views/step7_BookingConfirmation_view.py
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect # Removed get_object_or_404 as it raises Http404 directly
 from django.views import View
 from django.http import JsonResponse
 from hire.models import HireBooking # We will display the final HireBooking
@@ -24,7 +24,8 @@ class BookingConfirmationView(View):
         booking_reference = request.session.get('final_booking_reference')
         if booking_reference:
             try:
-                hire_booking = get_object_or_404(HireBooking, booking_reference=booking_reference)
+                # Use .get() instead of get_object_or_404 to catch DoesNotExist
+                hire_booking = HireBooking.objects.get(booking_reference=booking_reference)
                 logger.debug(f"Retrieved HireBooking from session: {hire_booking.booking_reference}")
             except HireBooking.DoesNotExist:
                 logger.debug(f"HireBooking with reference {booking_reference} not found in DB, despite being in session. Falling back to payment_intent_id.")
@@ -37,9 +38,11 @@ class BookingConfirmationView(View):
             logger.debug(f"Attempting to retrieve HireBooking using payment_intent_id: {payment_intent_id}")
             try:
                 # Find the Payment object first
-                payment_obj = get_object_or_404(Payment, stripe_payment_intent_id=payment_intent_id)
+                # Use .get() instead of get_object_or_404 to catch DoesNotExist
+                payment_obj = Payment.objects.get(stripe_payment_intent_id=payment_intent_id)
                 # Then get the associated HireBooking
-                hire_booking = get_object_or_404(HireBooking, payment=payment_obj)
+                # Use .get() instead of get_object_or_404 to catch DoesNotExist
+                hire_booking = HireBooking.objects.get(payment=payment_obj)
                 logger.debug(f"Retrieved HireBooking from Payment object: {hire_booking.booking_reference}")
 
                 # If found this way, store the booking_reference in session for future use
@@ -52,6 +55,10 @@ class BookingConfirmationView(View):
             except HireBooking.DoesNotExist:
                 logger.warning(f"HireBooking not found for Payment object with intent ID {payment_intent_id}. Booking likely not finalized yet.")
                 is_processing = True # Set flag for client-side polling
+            except Exception as e:
+                logger.exception(f"An unexpected error occurred while trying to retrieve booking for payment_intent_id {payment_intent_id}: {e}")
+                # If any other unexpected error, treat as processing and let polling handle it
+                is_processing = True
         elif not hire_booking and not payment_intent_id:
             logger.debug("No payment_intent_id in URL query parameters and no booking_reference in session. Redirecting to step 2.")
             return redirect('hire:step2_choose_bike')

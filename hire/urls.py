@@ -13,6 +13,5 @@ urlpatterns = [
     path('book/step5/', views.BookSumAndPaymentOptionsView.as_view(), name='step5_summary_payment_options'),
     path('book/step6/', views.PaymentDetailsView.as_view(), name='step6_payment_details'),
     path('book/step7/', views.BookingConfirmationView.as_view(), name='step7_confirmation'),
-    # New URL for booking status check
     path('book/status-check/', views.BookingStatusCheckView.as_view(), name='booking_status_check'),
 ]
