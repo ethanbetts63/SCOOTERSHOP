@@ -78,9 +78,9 @@ class BookingConfirmationView(View):
             'motorcycle_details': f"{hire_booking.motorcycle.year} {hire_booking.motorcycle.brand} {hire_booking.motorcycle.model}",
             'pickup_datetime': f"{hire_booking.pickup_date} at {hire_booking.pickup_time}",
             'return_datetime': f"{hire_booking.return_date} at {hire_booking.return_time}",
-            'driver_name': hire_booking.driver_profile.name, # Use .name instead of .full_name if full_name is not a property
+            'driver_name': hire_booking.driver_profile.name, 
             'package_name': hire_booking.package.name if hire_booking.package else 'N/A',
-            'addons': hire_booking.booking_addons.all(), # Get all BookingAddOn instances linked to this HireBooking
+            'addons': hire_booking.booking_addons.all(),
         }
         print("DEBUG: Rendering step7_booking_confirmation.html with context.")
         return render(request, 'hire/step7_booking_confirmation.html', context)
