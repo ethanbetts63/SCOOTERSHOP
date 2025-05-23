@@ -61,20 +61,8 @@ class PaymentDetailsView(View):
                 intent = stripe.PaymentIntent.retrieve(payment_obj.stripe_payment_intent_id)
                 logger.debug(f"Retrieved Stripe PaymentIntent: {intent.id}, Status: {intent.status}")
 
-                if intent.status == 'succeeded':
-                    logger.debug(f"Existing Stripe PaymentIntent {intent.id} is already succeeded. Redirecting to confirmation.")
-                    if payment_obj.status != 'succeeded':
-                        payment_obj.status = 'succeeded'
-                        payment_obj.save()
-                        logger.debug(f"Updated Payment DB object {payment_obj.id} status to 'succeeded'.")
-                    
-                    if 'temp_booking_id' in request.session:
-                        del request.session['temp_booking_id']
-                        logger.debug(f"Cleared temp_booking_id {temp_booking_id} from session.")
-                    
-                    # FIX: Construct the URL with query parameter using reverse
-                    confirmation_url = reverse('hire:step7_confirmation')
-                    return redirect(f"{confirmation_url}?payment_intent_id={intent.id}")
+                # Removed: Premature redirect for succeeded PaymentIntent in GET method.
+                # This logic will now be handled by the client-side POST after payment confirmation.
 
                 amount_changed = intent.amount != int(amount_to_pay * 100)
                 currency_changed = intent.currency.lower() != currency.lower()
@@ -208,6 +196,8 @@ class PaymentDetailsView(View):
 
             if intent.status == 'succeeded':
                 logger.info("Client reports Payment Intent succeeded. Awaiting webhook for finalization.")
+                # This is the correct place to return the redirect URL to the client.
+                # The client-side JS will then perform the actual redirect.
                 return JsonResponse({
                     'status': 'success',
                     'message': 'Payment processed successfully. Your booking is being finalized.',
@@ -239,4 +229,3 @@ class PaymentDetailsView(View):
         except Exception as e:
             logger.exception(f"An unexpected error occurred in POST for PaymentIntent {payment_intent_id}: {e}")
             return JsonResponse({'error': 'An internal server error occurred'}, status=500)
-

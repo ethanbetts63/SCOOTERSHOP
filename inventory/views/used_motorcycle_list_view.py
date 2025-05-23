@@ -1,8 +1,8 @@
 # inventory/views/used_motorcycle_list_view.py
 
-from .motorcycle_list_view import MotorcycleListView # Import the base class
+from .motorcycle_list_view import MotorcycleListView 
 
 class UsedMotorcycleListView(MotorcycleListView):
     template_name = 'inventory/used.html'
     condition_name = 'used'
-    url_name = 'inventory:used' # Fully qualified URL name for reverse lookups
+    url_name = 'inventory:used'
