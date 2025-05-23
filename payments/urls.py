@@ -5,5 +5,5 @@ from . import views
 app_name = 'payments'
 
 urlpatterns = [
-    # Your payment app's URL patterns will go here
+    path('stripe-webhook/', views.stripe_webhook, name='stripe_webhook'),
 ]
