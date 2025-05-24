@@ -40,14 +40,6 @@ class AdminHireBookingView(View):
         all_addons = AddOn.objects.filter(is_available=True)
         all_driver_profiles = DriverProfile.objects.all().order_by('name')
 
-        # Debugging: Print rates for motorcycles and default hire setting
-        print(f"--- Debugging AdminHireBookingView Context Data ---")
-        print(f"Hire Settings Default Daily Rate: {hire_settings.default_daily_rate if hire_settings else 'N/A'}")
-        print(f"Hire Settings Default Hourly Rate: {hire_settings.default_hourly_rate if hire_settings else 'N/A'}") # Added hourly rate debug
-        for m in all_motorcycles:
-            print(f"Motorcycle ID: {m.id}, Brand: {m.brand}, Model: {m.model}, Daily Hire Rate: {m.daily_hire_rate}, Hourly Hire Rate: {m.hourly_hire_rate}") # Added hourly rate debug
-
-
         context = {
             'form': form,
             'hire_settings': hire_settings,
@@ -83,6 +75,7 @@ class AdminHireBookingView(View):
         # Clear any previous overlap warning from session on initial GET
         if 'last_overlap_attempt' in request.session:
             del request.session['last_overlap_attempt']
+            print("DEBUG: Cleared 'last_overlap_attempt' from session on GET request.")
         context = self._get_context_data(request, form)
         return render(request, self.template_name, context)
 
@@ -93,6 +86,9 @@ class AdminHireBookingView(View):
         """
         form = AdminHireBookingForm(request.POST)
         hire_settings = HireSettings.objects.first()
+
+        print("\n--- DEBUGGING POST REQUEST ---")
+        print(f"Form is valid: {form.is_valid()}")
 
         if form.is_valid():
             # --- Extract cleaned data ---
@@ -113,8 +109,13 @@ class AdminHireBookingView(View):
                 pickup_datetime_for_identifier.isoformat(), # Use ISO format for consistent string representation
                 return_datetime_for_identifier.isoformat()
             )
+            print(f"DEBUG: Current overlap identifier: {current_overlap_identifier}")
 
-            last_overlap_attempt = request.session.get('last_overlap_attempt')
+            # Retrieve last_overlap_attempt and convert it to a tuple for consistent comparison
+            last_overlap_attempt_raw = request.session.get('last_overlap_attempt')
+            last_overlap_attempt = tuple(last_overlap_attempt_raw) if isinstance(last_overlap_attempt_raw, list) else last_overlap_attempt_raw
+            print(f"DEBUG: 'last_overlap_attempt' from session (after conversion): {last_overlap_attempt}")
+
 
             # Call the utility function to get overlapping bookings
             actual_overlaps = get_overlapping_motorcycle_bookings(
@@ -124,15 +125,19 @@ class AdminHireBookingView(View):
                 return_date,
                 return_time
             )
+            print(f"DEBUG: Actual overlaps found: {actual_overlaps}")
+
 
             # --- Override Logic ---
             allow_booking_creation = True
             if actual_overlaps:
+                print(f"DEBUG: Overlaps detected. Number of overlaps: {len(actual_overlaps)}")
                 if last_overlap_attempt == current_overlap_identifier:
                     # This is a re-submission with the same overlapping dates/motorcycle, allow override
                     messages.info(request, "Overlap warning overridden. Creating booking despite overlap.")
                     if 'last_overlap_attempt' in request.session:
                         del request.session['last_overlap_attempt'] # Clear session after override
+                        print("DEBUG: 'last_overlap_attempt' cleared from session (override successful).")
                 else:
                     # First time this overlap is detected, issue warning
                     overlap_messages = [
@@ -146,17 +151,24 @@ class AdminHireBookingView(View):
                         f"To override this warning and proceed, submit again with unchanged dates."
                     )
                     request.session['last_overlap_attempt'] = current_overlap_identifier
+                    print(f"DEBUG: 'last_overlap_attempt' set in session for warning: {current_overlap_identifier}")
                     allow_booking_creation = False
             else:
                 # No overlaps detected, or previous overlap was resolved
+                print("DEBUG: No overlaps detected.")
                 if 'last_overlap_attempt' in request.session:
                     del request.session['last_overlap_attempt'] # Clear if no overlap
+                    print("DEBUG: 'last_overlap_attempt' cleared from session (no overlap).")
+
+            print(f"DEBUG: allow_booking_creation after overlap logic: {allow_booking_creation}")
 
             if not allow_booking_creation:
+                print("DEBUG: Booking creation NOT allowed. Re-rendering form with errors/warnings.")
                 context = self._get_context_data(request, form)
                 return render(request, self.template_name, context)
 
             # --- If we reach here, either no overlap or override is allowed ---
+            print("DEBUG: Proceeding with booking creation.")
 
             # Calculate duration in days for price calculation
             duration_days = calculate_hire_duration_days(
@@ -243,6 +255,7 @@ class AdminHireBookingView(View):
 
         else:
             # Form is not valid, re-render with errors
+            print("DEBUG: Form is NOT valid. Re-rendering form with errors.")
             context = self._get_context_data(request, form)
             messages.error(request, "Please correct the errors below.")
             return render(request, self.template_name, context)
