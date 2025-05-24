@@ -61,6 +61,8 @@
                                         <label for="{{ form.return_time.id_for_label }}" class="form-label">{{ form.return_time.label }}</label>
                                         {# This will now render as <input type="time"> due to widget change in form #}
                                         {{ form.return_time }}
+                                        {# Added a div for displaying time validation errors #}
+                                        <div id="returnTimeError" class="text-danger small"></div>
                                         {% if form.return_time.errors %}<div class="text-danger small">{{ form.return_time.errors }}</div>{% endif %}
                                     </div>
                                 </div>
@@ -247,6 +249,7 @@
         const estimatedTotalPriceDisplay = document.getElementById('estimatedTotalPriceDisplay');
         const addonCheckboxes = document.querySelectorAll('.addon-checkbox');
         const addonQuantityInputs = document.querySelectorAll('.addon-quantity');
+        const returnTimeErrorDiv = document.getElementById('returnTimeError'); // NEW: Error div for return time
 
 
         // --- Data from Django Context (safely retrieved from json_script tags) ---
@@ -281,6 +284,7 @@
             altFormat: "F j, Y",
             onChange: function(selectedDates, dateStr, instance) {
                 handleDateAndTimeUpdates();
+                validateReturnTime(); // NEW: Call validation on date change
                 updateEstimatedTotalPrice();
             }
         });
@@ -293,6 +297,7 @@
             altFormat: "F j, Y",
             onChange: function(selectedDates, dateStr, instance) {
                 handleDateAndTimeUpdates();
+                validateReturnTime(); // NEW: Call validation on date change
                 updateEstimatedTotalPrice();
             }
         });
@@ -303,10 +308,6 @@
             const returnDate = returnDatePicker.selectedDates[0];
 
             if (pickUpDate) {
-                // Original logic: enforces minimum_hire_duration_days
-                // let requiredReturnDate = new Date(pickUpDate);
-                // requiredReturnDate.setDate(requiredReturnDate.getDate() + hireSettings.minimum_hire_duration_days);
-
                 // NEW LOGIC: Allow return date to be the same as pickup date for admin form
                 // Set the minimum return date to be the pickup date itself.
                 // This overrides the minimum_hire_duration_days for the admin interface
@@ -334,6 +335,29 @@
                 }
             }
         }
+
+        // NEW: Validation function for return time
+        function validateReturnTime() {
+            const pickUpDate = pickUpDatePicker.selectedDates[0];
+            const returnDate = returnDatePicker.selectedDates[0];
+            const pickUpTimeStr = pickUpTimeInput.value;
+            const returnTimeStr = returnTimeInput.value;
+
+            returnTimeErrorDiv.textContent = ''; // Clear previous error
+
+            if (pickUpDate && returnDate && pickUpTimeStr && returnTimeStr) {
+                // Check if it's a same-day booking
+                if (pickUpDate.toDateString() === returnDate.toDateString()) {
+                    // If same day, compare times
+                    if (returnTimeStr < pickUpTimeStr) {
+                        returnTimeErrorDiv.textContent = "Return time cannot be before pickup time on the same day.";
+                        return false; // Validation failed
+                    }
+                }
+            }
+            return true; // Validation passed
+        }
+
 
         // Helper function to calculate duration in days, including partial days based on times
         function calculateDurationDays(pickupDate, pickupTimeStr, returnDate, returnTimeStr) {
@@ -467,6 +491,12 @@
             // Determine if it's a same-day booking
             const isSameDayBooking = pickupDate && returnDate && pickupDate.toDateString() === returnDate.toDateString();
 
+            // Only proceed with calculation if time validation passes
+            if (!validateReturnTime()) {
+                estimatedTotalPriceDisplay.textContent = `${currencySymbol}0.00`; // Reset total if validation fails
+                return;
+            }
+
             if (isSameDayBooking) {
                 // Use hourly rate for same-day bookings
                 baseRate = parseFloat(bookedHourlyRateInput.value) || 0;
@@ -561,8 +591,14 @@
         });
 
         // Listen for changes on time inputs
-        pickUpTimeInput.addEventListener('change', updateEstimatedTotalPrice);
-        returnTimeInput.addEventListener('change', updateEstimatedTotalPrice);
+        pickUpTimeInput.addEventListener('change', function() {
+            validateReturnTime(); // NEW: Call validation on time change
+            updateEstimatedTotalPrice();
+        });
+        returnTimeInput.addEventListener('change', function() {
+            validateReturnTime(); // NEW: Call validation on time change
+            updateEstimatedTotalPrice();
+        });
 
         // Listen for changes on add-on checkboxes and quantity inputs
         addonCheckboxes.forEach(checkbox => {
@@ -594,4 +630,4 @@
         updateEstimatedTotalPrice();
     });
 </script>
-	{% endblock %}
+{% endblock %}
