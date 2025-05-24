@@ -143,7 +143,8 @@ class AdminHireBookingForm(forms.Form):
         # Store selected add-ons and their quantities from the instance
         selected_addons_from_instance = {}
         if instance:
-            for booking_addon in instance.bookingaddon_set.all():
+            # CORRECTED: Use the related_name 'booking_addons' instead of 'bookingaddon_set'
+            for booking_addon in instance.booking_addons.all():
                 selected_addons_from_instance[booking_addon.addon.id] = booking_addon.quantity
 
         for addon in self.available_addons:

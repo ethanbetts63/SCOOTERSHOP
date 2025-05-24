@@ -7,7 +7,8 @@ app_name = 'hire'
 urlpatterns = [
     # Admin Hire Booking URLs
     path('admin/hire/book/new/', views.AdminHireBookingView.as_view(), name='admin_hire_booking_create'),
-    path('admin/hire/book/edit/<uuid:pk>/', views.AdminHireBookingView.as_view(), name='admin_hire_booking_edit'),
+    # Changed <uuid:pk> to <int:pk> to match the default integer primary key of HireBooking
+    path('admin/hire/book/edit/<int:pk>/', views.AdminHireBookingView.as_view(), name='admin_hire_booking_edit'),
 
     # User multi-step booking URLs
     path('book/step1/select-datetime/', views.SelectDateTimeView.as_view(), name='step1_select_datetime'),

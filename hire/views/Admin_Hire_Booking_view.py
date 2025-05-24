@@ -247,7 +247,8 @@ class AdminHireBookingView(View):
                     booking_instance.save() # Save the updated instance
 
                     # Update add-ons: clear existing and add new ones
-                    booking_instance.bookingaddon_set.all().delete() # Remove all existing add-ons
+                    # CORRECTED: Use the related_name 'booking_addons'
+                    booking_instance.booking_addons.all().delete() # Remove all existing add-ons
                     for item in selected_addons_data:
                         BookingAddOn.objects.create(
                             booking=booking_instance,
@@ -304,4 +305,3 @@ class AdminHireBookingView(View):
             context = self._get_context_data(request, form, booking_instance)
             messages.error(request, "Please correct the errors below.")
             return render(request, self.template_name, context)
-
