@@ -51,8 +51,9 @@ def get_overlapping_motorcycle_bookings(motorcycle, pickup_date, pickup_time, re
     # and whose date ranges potentially overlap.
     potential_overlaps = HireBooking.objects.filter(
         motorcycle=motorcycle,
-        pickup_date__lt=return_datetime.date(),  # Booking starts before requested return date
-        return_date__gt=pickup_date.date()       # Booking ends after requested pickup date
+        # Corrected: Removed .date() as pickup_date and return_date are already date objects
+        pickup_date__lt=return_datetime.date(),
+        return_date__gt=pickup_date
     ).exclude(
         status__in=['cancelled', 'completed', 'no_show']
     )

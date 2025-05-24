@@ -222,7 +222,8 @@ class AdminHireBookingView(View):
                 for item in selected_addons_data:
                     # Add-on cost is per item per day, so multiply by duration_days
                     BookingAddOn.objects.create(
-                        hire_booking=hire_booking,
+                        # Changed 'hire_booking' to 'booking' to match the BookingAddOn model field name
+                        booking=hire_booking,
                         addon=item['addon'],
                         quantity=item['quantity'],
                         booked_addon_price=item['addon'].cost
