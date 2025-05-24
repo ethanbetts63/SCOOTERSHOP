@@ -165,7 +165,7 @@
                                 {% if form.currency.errors %}<div class="text-danger small">{{ form.currency.errors }}</div>{% endif %}
                             </div>
                             <div class="mb-3">
-                                <p class="mb-1"><strong>Estimated Total Price of Selections: <span id="estimatedTotalPriceDisplay">{{ hire_settings.currency_symbol }}{{ estimated_total_price|floatformat:2 }}</span></strong></p>
+                                <p class="mb-1"><strong>Estimated Total Price of Selections (Excluding Add-ons): <span id="estimatedTotalPriceDisplay">{{ hire_settings.currency_symbol }}0.00</span></strong></p>
                             </div>
                             <div class="form-group mb-3">
                                 <label for="{{ form.total_price.id_for_label }}" class="form-label">{{ form.total_price.label }}</label>
@@ -230,6 +230,11 @@
         const bookedDailyRateInput = document.getElementById('id_booked_daily_rate');
         const packageSelect = document.getElementById('id_package'); // New: Package dropdown
         const packagePriceDisplay = document.getElementById('package-price-display'); // New: Package price display
+        const pickUpDateInput = document.getElementById('id_pick_up_date'); // Added for total calculation
+        const pickUpTimeInput = document.getElementById('id_pick_up_time'); // Added for total calculation
+        const returnDateInput = document.getElementById('id_return_date'); // Added for total calculation
+        const returnTimeInput = document.getElementById('id_return_time'); // Added for total calculation
+        const estimatedTotalPriceDisplay = document.getElementById('estimatedTotalPriceDisplay'); // New: Estimated total display
 
         // --- Data from Django Context (safely retrieved from json_script tags) ---
         const motorcyclesData = JSON.parse(document.getElementById('motorcycles-data').textContent);
@@ -243,8 +248,6 @@
 
 
         // --- Flatpickr related elements (kept for date logic) ---
-        const pickUpDateInput = document.getElementById('id_pick_up_date');
-        const returnDateInput = document.getElementById('id_return_date');
         const hireSettings = {
             minimum_hire_duration_days: parseInt(document.getElementById('min-hire-days').textContent),
             maximum_hire_duration_days: parseInt(document.getElementById('max-hire-days').textContent),
@@ -265,6 +268,7 @@
             altFormat: "F j, Y",
             onChange: function(selectedDates, dateStr, instance) {
                 handleDateAndTimeUpdates();
+                updateEstimatedTotalPrice(); // Call total update on date change
             }
         });
 
@@ -276,6 +280,7 @@
             altFormat: "F j, Y",
             onChange: function(selectedDates, dateStr, instance) {
                 handleDateAndTimeUpdates();
+                updateEstimatedTotalPrice(); // Call total update on date change
             }
         });
 
@@ -306,6 +311,31 @@
                     returnDatePicker.clear();
                 }
             }
+        }
+
+        // Helper function to calculate duration in days, including partial days based on times
+        function calculateDurationDays(pickupDate, pickupTimeStr, returnDate, returnTimeStr) {
+            if (!pickupDate || !returnDate || !pickupTimeStr || !returnTimeStr) {
+                return 0; // Cannot calculate without full date/time info
+            }
+
+            // Combine date objects with time strings
+            const [puHours, puMinutes] = pickupTimeStr.split(':').map(Number);
+            const pickupDateTime = new Date(pickupDate.getFullYear(), pickupDate.getMonth(), pickupDate.getDate(), puHours, puMinutes);
+
+            const [rtHours, rtMinutes] = returnTimeStr.split(':').map(Number);
+            const returnDateTime = new Date(returnDate.getFullYear(), returnDate.getMonth(), returnDate.getDate(), rtHours, rtMinutes);
+
+            // Ensure return is after pickup
+            if (returnDateTime <= pickupDateTime) {
+                return 0;
+            }
+
+            const diffMs = returnDateTime.getTime() - pickupDateTime.getTime();
+            const diffDays = diffMs / (1000 * 60 * 60 * 24); // Convert milliseconds to days
+
+            // Round up to the nearest whole day for billing purposes
+            return Math.ceil(diffDays);
         }
 
         // --- Core Logic for Daily Rate (Using Map) ---
@@ -356,6 +386,45 @@
             packagePriceDisplay.textContent = `Selected Package Price: ${currencySymbol}${currentPackagePrice.toFixed(2)}`;
         }
 
+        // --- New: Core Logic for Estimated Total Price Display (excluding add-ons) ---
+        function updateEstimatedTotalPrice() {
+            const pickupDate = pickUpDatePicker.selectedDates[0];
+            const returnDate = returnDatePicker.selectedDates[0];
+            const pickupTimeStr = pickUpTimeInput.value;
+            const returnTimeStr = returnTimeInput.value;
+
+            const durationDays = calculateDurationDays(pickupDate, pickupTimeStr, returnDate, returnTimeStr);
+            const dailyRate = parseFloat(bookedDailyRateInput.value) || 0; // Get current value from input
+            
+            // Get selected package price
+            const selectedPackageId = parseInt(packageSelect.value);
+            let packagePrice = 0;
+            if (selectedPackageId) {
+                const packageObj = packageMap.get(selectedPackageId);
+                if (packageObj) {
+                    packagePrice = parseFloat(packageObj.package_price);
+                }
+            }
+
+            // Debugging logs
+            console.log("--- Calculating Estimated Total ---");
+            console.log("Pickup Date:", pickupDate);
+            console.log("Return Date:", returnDate);
+            console.log("Pickup Time:", pickupTimeStr);
+            console.log("Return Time:", returnTimeStr);
+            console.log("Calculated Duration (days, rounded up):", durationDays);
+            console.log("Daily Rate:", dailyRate);
+            console.log("Package Price (per day):", packagePrice);
+            console.log("Motorcycle Cost (Daily Rate * Duration):", dailyRate * durationDays);
+            console.log("Package Cost (Package Price * Duration):", packagePrice * durationDays);
+
+
+            const estimatedTotal = (dailyRate * durationDays) + (packagePrice * durationDays);
+            estimatedTotalPriceDisplay.textContent = `${currencySymbol}${estimatedTotal.toFixed(2)}`;
+            console.log("Estimated Total:", estimatedTotal.toFixed(2));
+            console.log("---------------------------------");
+        }
+
 
         // --- Event Listeners (Simplified) ---
 
@@ -367,23 +436,30 @@
             // When motorcycle changes, reset the override flag so the rate can be automatically set
             bookedDailyRateInput.dataset.isOverridden = 'false';
             updateBookedDailyRate();
+            updateEstimatedTotalPrice(); // Call total update on motorcycle change
         });
 
         // Listen for manual changes to booked daily rate
         bookedDailyRateInput.addEventListener('input', function() {
             this.dataset.isOverridden = 'true'; // Set override flag
-            // No need to call updateBookedDailyRate here, as manual input takes precedence
+            updateEstimatedTotalPrice(); // Call total update on manual rate change
         });
 
         // New: Listen for changes on package selection
         packageSelect.addEventListener('change', function() {
             updatePackagePriceDisplay();
+            updateEstimatedTotalPrice(); // Call total update on package change
         });
+
+        // Listen for changes on time inputs
+        pickUpTimeInput.addEventListener('change', updateEstimatedTotalPrice);
+        returnTimeInput.addEventListener('change', updateEstimatedTotalPrice);
 
 
         // Initial calls on page load
         updateBookedDailyRate();
         updatePackagePriceDisplay(); // Initial call for package price display
+        updateEstimatedTotalPrice(); // Initial call for estimated total price
     });
 </script>
 {% endblock %}
