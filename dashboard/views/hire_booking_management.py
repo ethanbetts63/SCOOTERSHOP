@@ -13,6 +13,9 @@ from dashboard.models import BlockedHireDate
 
 @user_passes_test(lambda u: u.is_staff)
 def hire_bookings_view(request):
+    """
+    Renders the main hire bookings calendar page for staff users.
+    """
     context = {
         'page_title': 'Manage Hire Bookings',
     }
@@ -20,16 +23,16 @@ def hire_bookings_view(request):
 
 @user_passes_test(lambda u: u.is_staff)
 def get_hire_bookings_json(request):
+    """
+    Returns a JSON feed of hire bookings and blocked dates for FullCalendar.
+    Filters bookings and blocked dates based on the 'start' and 'end' parameters
+    provided by FullCalendar.
+    """
     start_param = request.GET.get('start')
     end_param = request.GET.get('end')
 
-    print(f"DEBUG: FullCalendar requested start: {start_param}, end: {end_param}")
-
     hire_bookings = HireBooking.objects.all()
     blocked_hire_dates = BlockedHireDate.objects.all()
-
-    start_date = None
-    end_date = None
 
     if start_param and end_param:
         try:
@@ -45,13 +48,13 @@ def get_hire_bookings_json(request):
                     start_date__lte=end_date_filter.date(),
                     end_date__gte=start_date_filter.date()
                 )
-                print(f"DEBUG: Filtered bookings count: {hire_bookings.count()}")
-                print(f"DEBUG: Filtered blocked dates count: {blocked_hire_dates.count()}")
 
-        except (ValueError, TypeError) as e:
-            print(f"ERROR: Date parsing failed: {e}")
+        except (ValueError, TypeError):
+            # Error during date parsing, continue without filtering
+            pass
 
     events = []
+
     for booking in hire_bookings:
         customer_display = 'Anonymous'
         if booking.driver_profile:
@@ -60,7 +63,7 @@ def get_hire_bookings_json(request):
             else:
                 customer_display = booking.driver_profile.name or 'Anonymous'
         
-        vehicle_display = booking.motorcycle.name if booking.motorcycle else 'Vehicle N/A' 
+        vehicle_display = str(booking.motorcycle) if booking.motorcycle else 'Vehicle N/A' 
 
         event_title = f"{customer_display} - {vehicle_display}"
 
@@ -87,7 +90,6 @@ def get_hire_bookings_json(request):
             'className': f'status-{booking.status}' if hasattr(booking, 'status') else '',
         }
         events.append(event)
-        print(f"DEBUG: Added booking event: {event}")
 
     for blocked_hire_date_range in blocked_hire_dates:
         current_date = blocked_hire_date_range.start_date
@@ -103,8 +105,6 @@ def get_hire_bookings_json(request):
                 'display': 'block',
             }
             events.append(blocked_event)
-            print(f"DEBUG: Added blocked event: {blocked_event}")
             current_date += timedelta(days=1)
 
-    print(f"DEBUG: Total events to be returned: {len(events)}")
     return JsonResponse(events, safe=False)
