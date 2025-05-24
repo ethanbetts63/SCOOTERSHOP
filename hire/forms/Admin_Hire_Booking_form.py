@@ -22,8 +22,9 @@ class AdminHireBookingForm(forms.Form):
         label="Pick Up Date",
         required=True
     )
+    # Changed to TimeInput for native time picker
     pick_up_time = forms.TimeField(
-        widget=forms.Select(attrs={'class': 'form-control'}),
+        widget=forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
         label="Pick Up Time",
         required=True
     )
@@ -32,8 +33,9 @@ class AdminHireBookingForm(forms.Form):
         label="Return Date",
         required=True
     )
+    # Changed to TimeInput for native time picker
     return_time = forms.TimeField(
-        widget=forms.Select(attrs={'class': 'form-control'}),
+        widget=forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
         label="Return Time",
         required=True
     )
@@ -112,14 +114,8 @@ class AdminHireBookingForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Populate time choices (e.g., every 15 minutes)
-        time_choices = []
-        for i in range(24):
-            for j in [0, 15]:
-                time_obj = datetime.time(i, j)
-                time_choices.append((time_obj.strftime('%H:%M'), time_obj.strftime('%I:%M %p')))
-        self.fields['pick_up_time'].choices = time_choices
-        self.fields['return_time'].choices = time_choices
+        # Removed time_choices population as we are now using native time input type='time'
+        # The browser will handle the time selection UI for pick_up_time and return_time.
 
         # Set queryset and label for motorcycle
         self.fields['motorcycle'].queryset = Motorcycle.objects.filter(is_available=True, conditions__name='hire').distinct()

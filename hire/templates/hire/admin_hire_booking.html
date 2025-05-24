@@ -42,6 +42,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group mb-3">
                                         <label for="{{ form.pick_up_time.id_for_label }}" class="form-label">{{ form.pick_up_time.label }}</label>
+                                        {# This will now render as <input type="time"> due to widget change in form #}
                                         {{ form.pick_up_time }}
                                         {% if form.pick_up_time.errors %}<div class="text-danger small">{{ form.pick_up_time.errors }}</div>{% endif %}
                                     </div>
@@ -58,6 +59,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group mb-3">
                                         <label for="{{ form.return_time.id_for_label }}" class="form-label">{{ form.return_time.label }}</label>
+                                        {# This will now render as <input type="time"> due to widget change in form #}
                                         {{ form.return_time }}
                                         {% if form.return_time.errors %}<div class="text-danger small">{{ form.return_time.errors }}</div>{% endif %}
                                     </div>
@@ -236,9 +238,11 @@
         // --- DOM Elements ---
         const form = document.getElementById('adminBookingForm');
         const pickUpDateInput = document.getElementById('id_pick_up_date');
-        const pickUpTimeSelect = document.getElementById('id_pick_up_time');
+        // Updated to target the time input directly
+        const pickUpTimeInput = document.getElementById('id_pick_up_time'); 
         const returnDateInput = document.getElementById('id_return_date');
-        const returnTimeSelect = document.getElementById('id_return_time');
+        // Updated to target the time input directly
+        const returnTimeInput = document.getElementById('id_return_time'); 
         const motorcycleSelect = document.getElementById('id_motorcycle');
         const bookedDailyRateInput = document.getElementById('id_booked_daily_rate');
         const packageRadios = document.querySelectorAll('input[name="package"]');
@@ -261,7 +265,7 @@
         const packageMap = new Map(packagesData.map(p => [p.id, p]));
         const addonMap = new Map(addonsData.map(a => [a.id, a]));
 
-        // --- Flatpickr Initialization ---
+        // --- Flatpickr Initialization for Dates ---
         const now = new Date();
         let minDateForPickup = new Date(now.getTime() + hireSettings.booking_lead_time_hours * 60 * 60 * 1000);
         minDateForPickup.setDate(minDateForPickup.getDate()); // Keep same day if lead time doesn't push it past midnight
@@ -310,9 +314,9 @@
             return durationDays;
         }
 
-        function getSelectedDateTime(dateInput, timeSelect) {
+        function getSelectedDateTime(dateInput, timeInput) {
             const date = dateInput.value;
-            const time = timeSelect.value;
+            const time = timeInput.value;
             if (date && time) {
                 return new Date(`${date}T${time}:00`);
             }
@@ -345,14 +349,16 @@
                     returnDatePicker.clear();
                 }
             }
-            // Removed the call to populateTimeDropdown here, as Django form handles it
+            // No longer calling populateTimeDropdown here, as native time inputs handle their own UI.
         }
 
         function updateEstimatedTotal() {
             let estimatedTotal = 0;
 
-            const pickUpDt = getSelectedDateTime(pickUpDateInput, pickUpTimeSelect);
-            const returnDt = getSelectedDateTime(returnDateInput, returnTimeSelect);
+            // Updated to use timeInput
+            const pickUpDt = getSelectedDateTime(pickUpDateInput, pickUpTimeInput);
+            // Updated to use timeInput
+            const returnDt = getSelectedDateTime(returnDateInput, returnTimeInput);
             const durationDays = calculateDurationDays(pickUpDt, returnDt);
 
             // 1. Motorcycle Daily Rate
@@ -429,14 +435,16 @@
 
         // --- Event Listeners ---
 
-        // Initial call to set min/max dates for return picker (no longer populating times via JS here)
+        // Initial call to set min/max dates for return picker
         handleDateAndTimeUpdates(); 
 
         // Listen for changes on date/time inputs
         pickUpDateInput.addEventListener('change', updateEstimatedTotal);
-        pickUpTimeSelect.addEventListener('change', updateEstimatedTotal);
+        // Updated to listen for changes on the time input
+        pickUpTimeInput.addEventListener('change', updateEstimatedTotal); 
         returnDateInput.addEventListener('change', updateEstimatedTotal);
-        returnTimeSelect.addEventListener('change', updateEstimatedTotal);
+        // Updated to listen for changes on the time input
+        returnTimeInput.addEventListener('change', updateEstimatedTotal); 
 
         // Listen for changes on motorcycle selection
         motorcycleSelect.addEventListener('change', function() {
