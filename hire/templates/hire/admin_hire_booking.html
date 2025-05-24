@@ -251,6 +251,10 @@
         const motorcyclesData = JSON.parse(document.getElementById('motorcycles-data').textContent);
         const defaultDailyRate = parseFloat(document.getElementById('default-daily-rate').textContent);
 
+        // Create map for quick lookup
+        const motorcycleMap = new Map(motorcyclesData.map(m => [m.id, m]));
+
+
         // --- Flatpickr related elements (kept for date logic) ---
         const pickUpDateInput = document.getElementById('id_pick_up_date');
         const returnDateInput = document.getElementById('id_return_date');
@@ -315,7 +319,7 @@
             }
         }
 
-        // --- Core Logic for Daily Rate (Simplified) ---
+        // --- Core Logic for Daily Rate (Using Map) ---
         function updateBookedDailyRate() {
             const selectedMotorcycleId = parseInt(motorcycleSelect.value);
             let currentDailyRate = 0;
@@ -325,19 +329,11 @@
 
             if (!isRateManuallyOverridden) { // Only update if not manually overridden
                 if (selectedMotorcycleId) {
-                    let foundMotorcycle = null;
-                    // Iterate directly through the array to find the motorcycle
-                    for (let i = 0; i < motorcyclesData.length; i++) {
-                        if (motorcyclesData[i].id === selectedMotorcycleId) {
-                            foundMotorcycle = motorcyclesData[i];
-                            break;
-                        }
-                    }
-
-                    if (foundMotorcycle) {
+                    const motorcycle = motorcycleMap.get(selectedMotorcycleId); // Use the map for lookup
+                    if (motorcycle) {
                         // Prioritize motorcycle's specific daily_hire_rate
-                        if (foundMotorcycle.daily_hire_rate !== null && foundMotorcycle.daily_hire_rate !== undefined) {
-                            currentDailyRate = parseFloat(foundMotorcycle.daily_hire_rate);
+                        if (motorcycle.daily_hire_rate !== null && motorcycle.daily_hire_rate !== undefined) {
+                            currentDailyRate = parseFloat(motorcycle.daily_hire_rate);
                         } else {
                             // Fallback to hire settings default daily rate
                             currentDailyRate = defaultDailyRate;
