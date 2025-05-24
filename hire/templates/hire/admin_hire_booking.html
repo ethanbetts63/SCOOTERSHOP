@@ -79,6 +79,13 @@
                                 <div class="form-text text-muted">{{ form.booked_daily_rate.help_text }}</div>
                                 {% if form.booked_daily_rate.errors %}<div class="text-danger small">{{ form.booked_daily_rate.errors }}</div>{% endif %}
                             </div>
+                            {# NEW FIELD: Booked Hourly Rate #}
+                            <div class="form-group mb-4">
+                                <label for="{{ form.booked_hourly_rate.id_for_label }}" class="form-label">{{ form.booked_hourly_rate.label }}</label>
+                                {{ form.booked_hourly_rate }}
+                                <div class="form-text text-muted">{{ form.booked_hourly_rate.help_text }}</div>
+                                {% if form.booked_hourly_rate.errors %}<div class="text-danger small">{{ form.booked_hourly_rate.errors }}</div>{% endif %}
+                            </div>
 
                             {# Section 3: Add-ons & Packages #}
                             <h3 class="mb-4 mt-4 text-primary">Section 3: Packages & Add-ons</h3>
@@ -221,6 +228,8 @@
 {{ hire_settings.booking_lead_time_hours|json_script:"booking-lead-time-hours" }}
 {# Pass packages_data to JS #}
 {{ packages_data|json_script:"packages-data" }}
+{# NEW: Pass default_hourly_rate to JS #}
+{{ default_hourly_rate|json_script:"default-hourly-rate" }}
 
 
 <script>
@@ -228,25 +237,26 @@
         // --- DOM Elements ---
         const motorcycleSelect = document.getElementById('id_motorcycle');
         const bookedDailyRateInput = document.getElementById('id_booked_daily_rate');
-        const packageSelect = document.getElementById('id_package'); // New: Package dropdown
-        const packagePriceDisplay = document.getElementById('package-price-display'); // New: Package price display
+        const bookedHourlyRateInput = document.getElementById('id_booked_hourly_rate'); // NEW: Hourly rate input
+        const packageSelect = document.getElementById('id_package');
+        const packagePriceDisplay = document.getElementById('package-price-display');
         const pickUpDateInput = document.getElementById('id_pick_up_date');
         const pickUpTimeInput = document.getElementById('id_pick_up_time');
         const returnDateInput = document.getElementById('id_return_date');
         const returnTimeInput = document.getElementById('id_return_time');
-        const estimatedTotalPriceDisplay = document.getElementById('estimatedTotalPriceDisplay'); // New: Estimated total display
-        const addonCheckboxes = document.querySelectorAll('.addon-checkbox'); // Get all add-on checkboxes
-        const addonQuantityInputs = document.querySelectorAll('.addon-quantity'); // Get all add-on quantity inputs
+        const estimatedTotalPriceDisplay = document.getElementById('estimatedTotalPriceDisplay');
+        const addonCheckboxes = document.querySelectorAll('.addon-checkbox');
+        const addonQuantityInputs = document.querySelectorAll('.addon-quantity');
 
 
         // --- Data from Django Context (safely retrieved from json_script tags) ---
         const motorcyclesData = JSON.parse(document.getElementById('motorcycles-data').textContent);
         const defaultDailyRate = parseFloat(document.getElementById('default-daily-rate').textContent);
-        const packagesData = JSON.parse(document.getElementById('packages-data').textContent); // New: Packages data
+        const defaultHourlyRate = parseFloat(document.getElementById('default-hourly-rate').textContent); // NEW: Default hourly rate
+        const packagesData = JSON.parse(document.getElementById('packages-data').textContent);
 
         // Create map for quick lookup
         const motorcycleMap = new Map(motorcyclesData.map(m => [m.id, m]));
-        // New: Create map for packages lookup
         const packageMap = new Map(packagesData.map(p => [p.id, p]));
 
 
@@ -271,7 +281,7 @@
             altFormat: "F j, Y",
             onChange: function(selectedDates, dateStr, instance) {
                 handleDateAndTimeUpdates();
-                updateEstimatedTotalPrice(); // Call total update on date change
+                updateEstimatedTotalPrice();
             }
         });
 
@@ -283,7 +293,7 @@
             altFormat: "F j, Y",
             onChange: function(selectedDates, dateStr, instance) {
                 handleDateAndTimeUpdates();
-                updateEstimatedTotalPrice(); // Call total update on date change
+                updateEstimatedTotalPrice();
             }
         });
 
@@ -322,57 +332,102 @@
                 return 0; // Cannot calculate without full date/time info
             }
 
-            // Combine date objects with time strings
             const [puHours, puMinutes] = pickupTimeStr.split(':').map(Number);
             const pickupDateTime = new Date(pickupDate.getFullYear(), pickupDate.getMonth(), pickupDate.getDate(), puHours, puMinutes);
 
             const [rtHours, rtMinutes] = returnTimeStr.split(':').map(Number);
             const returnDateTime = new Date(returnDate.getFullYear(), returnDate.getMonth(), returnDate.getDate(), rtHours, rtMinutes);
 
-            // Ensure return is after pickup
             if (returnDateTime <= pickupDateTime) {
                 return 0;
             }
 
             const diffMs = returnDateTime.getTime() - pickupDateTime.getTime();
-            const diffDays = diffMs / (1000 * 60 * 60 * 24); // Convert milliseconds to days
+            const diffDays = diffMs / (1000 * 60 * 60 * 24);
 
-            // Round up to the nearest whole day for billing purposes
-            return Math.ceil(diffDays);
+            return Math.ceil(diffDays); // Round up to the nearest whole day for billing purposes
         }
+
+        // NEW: Helper function to calculate duration in hours, including fractional hours
+        function calculateDurationHours(pickupDate, pickupTimeStr, returnDate, returnTimeStr) {
+            if (!pickupDate || !returnDate || !pickupTimeStr || !returnTimeStr) {
+                return 0;
+            }
+
+            const [puHours, puMinutes] = pickupTimeStr.split(':').map(Number);
+            const pickupDateTime = new Date(pickupDate.getFullYear(), pickupDate.getMonth(), pickupDate.getDate(), puHours, puMinutes);
+
+            const [rtHours, rtMinutes] = returnTimeStr.split(':').map(Number);
+            const returnDateTime = new Date(returnDate.getFullYear(), returnDate.getMonth(), returnDate.getDate(), rtHours, rtMinutes);
+
+            if (returnDateTime <= pickupDateTime) {
+                return 0;
+            }
+
+            const diffMs = returnDateTime.getTime() - pickupDateTime.getTime();
+            const diffHours = diffMs / (1000 * 60 * 60); // Convert milliseconds to hours
+
+            return diffHours; // Return fractional hours for hourly billing
+        }
+
 
         // --- Core Logic for Daily Rate (Using Map) ---
         function updateBookedDailyRate() {
             const selectedMotorcycleId = parseInt(motorcycleSelect.value);
             let currentDailyRate = 0;
 
-            // Check if the daily rate input has been manually overridden
             const isRateManuallyOverridden = bookedDailyRateInput.dataset.isOverridden === 'true';
 
-            if (!isRateManuallyOverridden) { // Only update if not manually overridden
+            if (!isRateManuallyOverridden) {
                 if (selectedMotorcycleId) {
-                    const motorcycle = motorcycleMap.get(selectedMotorcycleId); // Use the map for lookup
+                    const motorcycle = motorcycleMap.get(selectedMotorcycleId);
                     if (motorcycle) {
-                        // Prioritize motorcycle's specific daily_hire_rate
                         if (motorcycle.daily_hire_rate !== null && motorcycle.daily_hire_rate !== undefined) {
                             currentDailyRate = parseFloat(motorcycle.daily_hire_rate);
                         } else {
-                            // Fallback to hire settings default daily rate
                             currentDailyRate = defaultDailyRate;
                         }
                     } else {
-                        // If selected ID doesn't map to a motorcycle (e.g., "--- Select a Motorcycle ---" is selected)
                         currentDailyRate = defaultDailyRate;
                     }
                 } else {
-                    // If no motorcycle is selected (value is NaN or empty string), default to the hire settings default daily rate
                     currentDailyRate = defaultDailyRate;
                 }
-
-                // Update the booked daily rate input field
                 bookedDailyRateInput.value = currentDailyRate.toFixed(2);
             }
-            // If manually overridden, we do nothing here, the manual value persists.
+        }
+
+        // NEW: Core Logic for Hourly Rate (Using Map)
+        function updateBookedHourlyRate() {
+            const selectedMotorcycleId = parseInt(motorcycleSelect.value);
+            let currentHourlyRate = 0;
+
+            // Check if the hourly rate input has been manually overridden
+            const isRateManuallyOverridden = bookedHourlyRateInput.dataset.isOverridden === 'true';
+
+            if (!isRateManuallyOverridden) { // Only update if not manually overridden
+                if (selectedMotorcycleId) {
+                    const motorcycle = motorcycleMap.get(selectedMotorcycleId);
+                    if (motorcycle) {
+                        // Prioritize motorcycle's specific hourly_hire_rate
+                        if (motorcycle.hourly_hire_rate !== null && motorcycle.hourly_hire_rate !== undefined) {
+                            currentHourlyRate = parseFloat(motorcycle.hourly_hire_rate);
+                        } else {
+                            // Fallback to hire settings default hourly rate
+                            currentHourlyRate = defaultHourlyRate;
+                        }
+                    } else {
+                        // If selected ID doesn't map to a motorcycle, default to the hire settings default hourly rate
+                        currentHourlyRate = defaultHourlyRate;
+                    }
+                } else {
+                    // If no motorcycle is selected, default to the hire settings default hourly rate
+                    currentHourlyRate = defaultHourlyRate;
+                }
+
+                // Update the booked hourly rate input field
+                bookedHourlyRateInput.value = currentHourlyRate.toFixed(2);
+            }
         }
 
         // --- Core Logic for Package Price Display ---
@@ -396,8 +451,26 @@
             const pickupTimeStr = pickUpTimeInput.value;
             const returnTimeStr = returnTimeInput.value;
 
-            const durationDays = calculateDurationDays(pickupDate, pickupTimeStr, returnDate, returnTimeStr);
-            const dailyRate = parseFloat(bookedDailyRateInput.value) || 0; // Get current value from input
+            let estimatedTotal = 0;
+            let baseRate = 0;
+            let durationMultiplier = 0; // This will be days or hours
+
+            // Determine if it's a same-day booking
+            const isSameDayBooking = pickupDate && returnDate && pickupDate.toDateString() === returnDate.toDateString();
+
+            if (isSameDayBooking) {
+                // Use hourly rate for same-day bookings
+                baseRate = parseFloat(bookedHourlyRateInput.value) || 0;
+                durationMultiplier = calculateDurationHours(pickupDate, pickupTimeStr, returnDate, returnTimeStr);
+                console.log("Using HOURLY rate.");
+                console.log("Duration (hours):", durationMultiplier);
+            } else {
+                // Use daily rate for multi-day bookings
+                baseRate = parseFloat(bookedDailyRateInput.value) || 0;
+                durationMultiplier = calculateDurationDays(pickupDate, pickupTimeStr, returnDate, returnTimeStr);
+                console.log("Using DAILY rate.");
+                console.log("Duration (days):", durationMultiplier);
+            }
             
             // Get selected package price
             const selectedPackageId = parseInt(packageSelect.value);
@@ -409,7 +482,7 @@
                 }
             }
 
-            // Calculate add-on total
+            // Calculate add-on total (add-ons are still per day, or per hour depending on the duration multiplier)
             let addonsTotal = 0;
             addonCheckboxes.forEach(checkbox => {
                 if (checkbox.checked) {
@@ -430,17 +503,15 @@
             console.log("Return Date:", returnDate);
             console.log("Pickup Time:", pickupTimeStr);
             console.log("Return Time:", returnTimeStr);
-            console.log("Calculated Duration (days, rounded up):", durationDays);
-            console.log("Daily Rate:", dailyRate);
-            console.log("Package Price (per day):", packagePrice);
-            console.log("Addons Total (per day):", addonsTotal);
-            console.log("Motorcycle Cost (Daily Rate * Duration):", dailyRate * durationDays);
-            console.log("Package Cost (Package Price * Duration):", packagePrice * durationDays);
-            console.log("Addons Cost (Addons Total * Duration):", addonsTotal * durationDays);
+            console.log("Base Rate:", baseRate);
+            console.log("Package Price (per unit of duration):", packagePrice);
+            console.log("Addons Total (per unit of duration):", addonsTotal);
+            console.log("Motorcycle Cost (Base Rate * Duration Multiplier):", baseRate * durationMultiplier);
+            console.log("Package Cost (Package Price * Duration Multiplier):", packagePrice * durationMultiplier);
+            console.log("Addons Cost (Addons Total * Duration Multiplier):", addonsTotal * durationMultiplier);
 
 
-            // The user's provided change: packagePrice and addonCost are also per day
-            const estimatedTotal = (dailyRate * durationDays) + (packagePrice * durationDays) + (addonsTotal * durationDays);
+            estimatedTotal = (baseRate * durationMultiplier) + (packagePrice * durationMultiplier) + (addonsTotal * durationMultiplier);
             estimatedTotalPriceDisplay.textContent = `${currencySymbol}${estimatedTotal.toFixed(2)}`;
             console.log("Estimated Total:", estimatedTotal.toFixed(2));
             console.log("---------------------------------");
@@ -454,29 +525,37 @@
 
         // Listen for changes on motorcycle selection
         motorcycleSelect.addEventListener('change', function() {
-            // When motorcycle changes, reset the override flag so the rate can be automatically set
+            // When motorcycle changes, reset the override flags so rates can be automatically set
             bookedDailyRateInput.dataset.isOverridden = 'false';
+            bookedHourlyRateInput.dataset.isOverridden = 'false'; // NEW: Reset hourly rate override
             updateBookedDailyRate();
-            updateEstimatedTotalPrice(); // Call total update on motorcycle change
+            updateBookedHourlyRate(); // NEW: Update hourly rate
+            updateEstimatedTotalPrice();
         });
 
         // Listen for manual changes to booked daily rate
         bookedDailyRateInput.addEventListener('input', function() {
-            this.dataset.isOverridden = 'true'; // Set override flag
-            updateEstimatedTotalPrice(); // Call total update on manual rate change
+            this.dataset.isOverridden = 'true';
+            updateEstimatedTotalPrice();
+        });
+
+        // NEW: Listen for manual changes to booked hourly rate
+        bookedHourlyRateInput.addEventListener('input', function() {
+            this.dataset.isOverridden = 'true';
+            updateEstimatedTotalPrice();
         });
 
         // Listen for changes on package selection
         packageSelect.addEventListener('change', function() {
             updatePackagePriceDisplay();
-            updateEstimatedTotalPrice(); // Call total update on package change
+            updateEstimatedTotalPrice();
         });
 
         // Listen for changes on time inputs
         pickUpTimeInput.addEventListener('change', updateEstimatedTotalPrice);
         returnTimeInput.addEventListener('change', updateEstimatedTotalPrice);
 
-        // New: Listen for changes on add-on checkboxes and quantity inputs
+        // Listen for changes on add-on checkboxes and quantity inputs
         addonCheckboxes.forEach(checkbox => {
             checkbox.addEventListener('change', function() {
                 const addonId = this.dataset.addonId;
@@ -488,21 +567,22 @@
                     quantityDiv.classList.remove('d-block');
                     quantityDiv.classList.add('d-none');
                 }
-                updateEstimatedTotalPrice(); // Call total update on add-on checkbox change
+                updateEstimatedTotalPrice();
             });
         });
 
         addonQuantityInputs.forEach(input => {
             input.addEventListener('input', function() {
-                updateEstimatedTotalPrice(); // Call total update on add-on quantity change
+                updateEstimatedTotalPrice();
             });
         });
 
 
         // Initial calls on page load
         updateBookedDailyRate();
-        updatePackagePriceDisplay(); // Initial call for package price display
-        updateEstimatedTotalPrice(); // Initial call for estimated total price
+        updateBookedHourlyRate(); // NEW: Initial call for hourly rate
+        updatePackagePriceDisplay();
+        updateEstimatedTotalPrice();
     });
 </script>
 {% endblock %}

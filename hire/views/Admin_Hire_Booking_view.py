@@ -43,19 +43,20 @@ class AdminHireBookingView(View):
         # Debugging: Print rates for motorcycles and default hire setting
         print(f"--- Debugging AdminHireBookingView Context Data ---")
         print(f"Hire Settings Default Daily Rate: {hire_settings.default_daily_rate if hire_settings else 'N/A'}")
+        print(f"Hire Settings Default Hourly Rate: {hire_settings.default_hourly_rate if hire_settings else 'N/A'}") # Added hourly rate debug
         for m in all_motorcycles:
-            print(f"Motorcycle ID: {m.id}, Brand: {m.brand}, Model: {m.model}, Daily Hire Rate: {m.daily_hire_rate}")
+            print(f"Motorcycle ID: {m.id}, Brand: {m.brand}, Model: {m.model}, Daily Hire Rate: {m.daily_hire_rate}, Hourly Hire Rate: {m.hourly_hire_rate}") # Added hourly rate debug
 
 
         context = {
             'form': form,
             'hire_settings': hire_settings,
             'motorcycles_data': [
-                {'id': m.id, 'daily_hire_rate': str(m.daily_hire_rate) if m.daily_hire_rate is not None else None} # Convert Decimal to string for JSON safety, handle None
+                {'id': m.id, 'daily_hire_rate': str(m.daily_hire_rate) if m.daily_hire_rate is not None else None, 'hourly_hire_rate': str(m.hourly_hire_rate) if m.hourly_hire_rate is not None else None} # Added hourly_hire_rate
                 for m in all_motorcycles
             ],
             'packages_data': [
-                {'id': p.id, 'name': p.name, 'package_price': str(p.package_price)} # Added 'name' here
+                {'id': p.id, 'name': p.name, 'package_price': str(p.package_price)}
                 for p in all_packages
             ],
             'addons_data': [
@@ -67,7 +68,9 @@ class AdminHireBookingView(View):
                 for dp in all_driver_profiles
             ],
             # Pass default daily rate from hire settings to JS
-            'default_daily_rate': str(hire_settings.default_daily_rate) if hire_settings and hire_settings.default_daily_rate is not None else "0.00"
+            'default_daily_rate': str(hire_settings.default_daily_rate) if hire_settings and hire_settings.default_daily_rate is not None else "0.00",
+            # NEW: Pass default hourly rate from hire settings to JS
+            'default_hourly_rate': str(hire_settings.default_hourly_rate) if hire_settings and hire_settings.default_hourly_rate is not None else "0.00"
         }
         return context
 
@@ -162,6 +165,7 @@ class AdminHireBookingView(View):
 
             # --- Section 2: Motorcycle Selection & Rates (already extracted) ---
             booked_daily_rate = form.cleaned_data['booked_daily_rate']
+            booked_hourly_rate = form.cleaned_data['booked_hourly_rate'] # NEW: Extract booked hourly rate
 
             # --- Section 3: Add-ons & Packages ---
             selected_package = form.cleaned_data.get('selected_package_instance')
@@ -206,6 +210,7 @@ class AdminHireBookingView(View):
                     return_date=return_date,
                     return_time=return_time,
                     booked_daily_rate=booked_daily_rate,
+                    booked_hourly_rate=booked_hourly_rate, # NEW: Save booked hourly rate
                     total_price=total_price_admin_entered,
                     amount_paid=amount_paid,
                     payment_status=payment_status,
@@ -222,7 +227,6 @@ class AdminHireBookingView(View):
                 for item in selected_addons_data:
                     # Add-on cost is per item per day, so multiply by duration_days
                     BookingAddOn.objects.create(
-                        # Changed 'hire_booking' to 'booking' to match the BookingAddOn model field name
                         booking=hire_booking,
                         addon=item['addon'],
                         quantity=item['quantity'],
