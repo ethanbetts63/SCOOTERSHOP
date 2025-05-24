@@ -72,8 +72,8 @@
                         <p><strong>Last Updated:</strong> {{ booking.updated_at|date:"F j, Y, h:i A" }}</p>
 
                         <div class="d-flex justify-content-start mt-5">
-                            {# Edit Button: This URL points to the admin booking creation form. #}
-                            <a href="{% url 'hire:admin_hire_booking' %}" class="btn btn-warning me-2">Edit Booking</a>
+    
+                            <a href="{% url 'hire:admin_hire_booking_edit' pk=booking.pk %}" class="btn btn-warning me-2">Edit Booking</a>
 
                             {# Delete Button: Uses a form with a simple JavaScript confirm dialog #}
                             <form method="post" action="{% url 'dashboard:delete_hire_booking' pk=booking.pk %}" class="inline-form" style="display:inline;">

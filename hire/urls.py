@@ -5,8 +5,9 @@ from . import views
 app_name = 'hire'
 
 urlpatterns = [
-    # Admin Hire Booking URL
-    path('admin/hire/book/new/', views.AdminHireBookingView.as_view(), name='admin_hire_booking'),
+    # Admin Hire Booking URLs
+    path('admin/hire/book/new/', views.AdminHireBookingView.as_view(), name='admin_hire_booking_create'),
+    path('admin/hire/book/edit/<uuid:pk>/', views.AdminHireBookingView.as_view(), name='admin_hire_booking_edit'),
 
     # User multi-step booking URLs
     path('book/step1/select-datetime/', views.SelectDateTimeView.as_view(), name='step1_select_datetime'),

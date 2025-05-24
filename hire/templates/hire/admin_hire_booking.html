@@ -12,7 +12,13 @@
             <div class="col-md-10 offset-md-1">
                 <div class="card shadow-lg">
                     <div class="card-header bg-primary text-white">
-                        <h2 class="mb-0">Create New Hire Booking (Admin)</h2>
+                        <h2 class="mb-0">
+                            {% if booking %}
+                                Edit Hire Booking: {{ booking.booking_reference }}
+                            {% else %}
+                                Create New Hire Booking (Admin)
+                            {% endif %}
+                        </h2>
                     </div>
                     <div class="card-body">
                         {% if messages %}
@@ -207,7 +213,13 @@
                             {% endif %}
 
                             <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-success btn-lg">Create Booking</button>
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    {% if booking %}
+                                        Save Changes
+                                    {% else %}
+                                        Create Booking
+                                    {% endif %}
+                                </button>
                             </div>
                         </form>
                     </div>

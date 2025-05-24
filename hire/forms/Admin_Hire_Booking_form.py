@@ -6,7 +6,7 @@ import datetime
 
 # Import models
 from inventory.models import Motorcycle
-from ..models import AddOn, Package, DriverProfile
+from ..models import AddOn, Package, DriverProfile, BookingAddOn
 from ..models.hire_booking import STATUS_CHOICES, PAYMENT_STATUS_CHOICES, PAYMENT_METHOD_CHOICES, HireBooking
 # No direct import of HireSettings here, it will be used in the view for default rates if needed.
 
@@ -121,10 +121,9 @@ class AdminHireBookingForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
+        # Pop the instance if it exists
+        instance = kwargs.pop('instance', None)
         super().__init__(*args, **kwargs)
-
-        # Removed time_choices population as we are now using native time input type='time'
-        # The browser will handle the time selection UI for pick_up_time and return_time.
 
         # Set queryset and label for motorcycle
         self.fields['motorcycle'].queryset = Motorcycle.objects.filter(is_available=True, conditions__name='hire').distinct()
@@ -140,7 +139,17 @@ class AdminHireBookingForm(forms.Form):
         # Dynamically create add-on fields
         self.available_addons = AddOn.objects.filter(is_available=True)
         self.display_addons = [] # This will hold addon info for rendering in the template
+        
+        # Store selected add-ons and their quantities from the instance
+        selected_addons_from_instance = {}
+        if instance:
+            for booking_addon in instance.bookingaddon_set.all():
+                selected_addons_from_instance[booking_addon.addon.id] = booking_addon.quantity
+
         for addon in self.available_addons:
+            is_selected = addon.id in selected_addons_from_instance
+            quantity = selected_addons_from_instance.get(addon.id, 1) # Default to 1 if selected but no quantity
+
             self.display_addons.append({
                 'addon': addon,
                 'adjusted_max_quantity': addon.max_quantity, # For admin, no package-based adjustment needed
@@ -151,6 +160,7 @@ class AdminHireBookingForm(forms.Form):
             self.fields[f'addon_{addon.id}_selected'] = forms.BooleanField(
                 required=False,
                 label=addon.name,
+                initial=is_selected, # Set initial based on instance
                 widget=forms.CheckboxInput(attrs={
                     'class': 'addon-checkbox',
                     'data-addon-id': str(addon.id),
@@ -162,10 +172,11 @@ class AdminHireBookingForm(forms.Form):
             self.fields[f'addon_{addon.id}_quantity'] = forms.IntegerField(
                 min_value=addon.min_quantity,
                 max_value=addon.max_quantity,
-                initial=1,
+                initial=quantity, # Set initial based on instance
                 widget=forms.NumberInput(attrs={
                     'class': 'addon-quantity',
-                    'style': 'display: none;' # Hidden by default, shown by JS if selected
+                    # Show if selected, otherwise hidden by default
+                    'style': 'display: block;' if is_selected and addon.max_quantity > 1 else 'display: none;'
                 }),
                 required=False
             )
@@ -173,6 +184,24 @@ class AdminHireBookingForm(forms.Form):
         # Set queryset and label for driver profile
         self.fields['driver_profile'].queryset = DriverProfile.objects.all().order_by('name')
         self.fields['driver_profile'].label_from_instance = lambda obj: f"ID: {obj.id} - {obj.name} ({obj.email})"
+
+        # If an instance is provided, populate initial form data
+        if instance:
+            self.fields['pick_up_date'].initial = instance.pickup_date
+            self.fields['pick_up_time'].initial = instance.pickup_time
+            self.fields['return_date'].initial = instance.return_date
+            self.fields['return_time'].initial = instance.return_time
+            self.fields['motorcycle'].initial = instance.motorcycle
+            self.fields['booked_daily_rate'].initial = instance.booked_daily_rate
+            self.fields['booked_hourly_rate'].initial = instance.booked_hourly_rate
+            self.fields['package'].initial = instance.package
+            self.fields['driver_profile'].initial = instance.driver_profile
+            self.fields['currency'].initial = instance.currency
+            self.fields['total_price'].initial = instance.total_price
+            self.fields['payment_method'].initial = instance.payment_method
+            self.fields['payment_status'].initial = instance.payment_status
+            self.fields['status'].initial = instance.status
+            self.fields['internal_notes'].initial = instance.internal_notes
 
 
     def clean(self):
