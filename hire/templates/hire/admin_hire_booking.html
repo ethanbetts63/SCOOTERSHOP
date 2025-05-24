@@ -303,22 +303,31 @@
             const returnDate = returnDatePicker.selectedDates[0];
 
             if (pickUpDate) {
-                let requiredReturnDate = new Date(pickUpDate);
-                requiredReturnDate.setDate(requiredReturnDate.getDate() + hireSettings.minimum_hire_duration_days);
+                // Original logic: enforces minimum_hire_duration_days
+                // let requiredReturnDate = new Date(pickUpDate);
+                // requiredReturnDate.setDate(requiredReturnDate.getDate() + hireSettings.minimum_hire_duration_days);
+
+                // NEW LOGIC: Allow return date to be the same as pickup date for admin form
+                // Set the minimum return date to be the pickup date itself.
+                // This overrides the minimum_hire_duration_days for the admin interface
+                // to allow same-day bookings for hourly rate testing.
+                returnDatePicker.set('minDate', pickUpDate); // This is the key change
 
                 let maximumAllowedReturnDate = new Date(pickUpDate);
                 maximumAllowedReturnDate.setDate(maximumAllowedReturnDate.getDate() + hireSettings.maximum_hire_duration_days);
 
-                returnDatePicker.set('minDate', requiredReturnDate);
                 returnDatePicker.set('maxDate', maximumAllowedReturnDate);
 
                 if (returnDate) {
-                    if (returnDate < requiredReturnDate || returnDate > maximumAllowedReturnDate) {
+                    // If the currently selected return date is earlier than the new minimum (pickupDate), clear it.
+                    // Or if it's beyond the maximum allowed.
+                    if (returnDate < pickUpDate || returnDate > maximumAllowedReturnDate) { // Changed requiredReturnDate to pickUpDate
                         returnDatePicker.clear();
                     }
                 }
             } else {
-                returnDatePicker.set('minDate', minDateForPickup);
+                // If pickup date is cleared, reset return date constraints
+                returnDatePicker.set('minDate', minDateForPickup); // Revert to global minDate
                 returnDatePicker.set('maxDate', null);
                 if (returnDate) {
                     returnDatePicker.clear();
@@ -585,4 +594,4 @@
         updateEstimatedTotalPrice();
     });
 </script>
-{% endblock %}
+	{% endblock %}
