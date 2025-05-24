@@ -14,16 +14,12 @@
 <div class="card shadow mb-4">
     <div class="card-header">
         <div class="button-group-spaced mb-4"> {# Using existing class for spacing, added margin-bottom #}
-            {# Link to create hire booking for existing user - ADJUST URL NAME AS NEEDED #}
-            <a href="" class="btn-primary"> {# Using existing button primary style #}
-                Create booking (existing user)
-            </a>
-            {# Link to create hire booking for one-off user - ADJUST URL NAME AS NEEDED #}
-            <a href="" class="btn-primary"> {# Using existing button primary style #}
-                Create booking (one-off user)
+            {# Single button to create new hire booking for admin #}
+            <a href="{% url 'hire:admin_hire_booking' %}" class="btn-primary"> {# Using existing button primary style #}
+                Create New Hire Booking
             </a>
             {# Link to search hire bookings - keeping the existing search button, just moving it #}
-            <a href="" class="btn-primary"> {# Using existing button primary style #}
+            <a href="{% url 'dashboard:hire_booking_search' %}" class="btn-primary"> {# Using existing button primary style #}
                  Search bookings
             </a>
         </div>
@@ -37,13 +33,25 @@
         {# Adjust statuses and colors to match your HireBooking model's status choices #}
         <div class="color-key" id="status-color-key" style="display: none;">
             <div class="color-key-item">
-                <span class="color-box status-confirmed"></span> Confirmed {# Assuming 'confirmed' status #}
+                <span class="color-box status-pending"></span> Pending
             </div>
             <div class="color-key-item">
-                <span class="color-box status-pending"></span> Pending {# Assuming 'pending' status #}
+                <span class="color-box status-confirmed"></span> Confirmed
             </div>
-             <div class="color-key-item">
-                <span class="color-box status-completed"></span> Completed {# Assuming 'completed' status #}
+            <div class="color-key-item">
+                <span class="color-box status-in_progress"></span> In Progress
+            </div>
+            <div class="color-key-item">
+                <span class="color-box status-completed"></span> Completed
+            </div>
+            <div class="color-key-item">
+                <span class="color-box status-cancelled"></span> Cancelled
+            </div>
+            <div class="color-key-item">
+                <span class="color-box status-no_show"></span> No Show
+            </div>
+            <div class="color-key-item">
+                <span class="color-box status-blocked"></span> Blocked Date
             </div>
         </div>
 
