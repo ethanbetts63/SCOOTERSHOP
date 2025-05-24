@@ -192,38 +192,6 @@ class AdminHireBookingForm(forms.Form):
                 form_errors['return_date'] = "Return date and time must be after pickup date and time."
                 form_errors['return_time'] = "Return date and time must be after pickup date and time."
 
-        # --- Section 2: Motorcycle Overlap Check ---
-        motorcycle = cleaned_data.get('motorcycle')
-        if motorcycle and pickup_datetime and return_datetime:
-            # Check for overlapping bookings for the selected motorcycle
-            # Exclude the current instance if we are editing an existing booking (not applicable for new admin booking)
-            overlapping_bookings = HireBooking.objects.filter(
-                motorcycle=motorcycle,
-                pickup_date__lt=return_datetime.date(),
-                return_date__gt=pickup_datetime.date()
-            ).exclude(
-                status__in=['cancelled', 'completed', 'no_show']
-            )
-            
-            final_overlaps = []
-            for booking in overlapping_bookings:
-                booking_pickup_dt = datetime.datetime.combine(booking.pickup_date, booking.pickup_time)
-                booking_return_dt = datetime.datetime.combine(booking.return_date, booking.return_time)
-
-                # Check for actual datetime overlap
-                if max(pickup_datetime, booking_pickup_dt) < min(return_datetime, booking_return_dt):
-                    final_overlaps.append(booking)
-            
-            if final_overlaps:
-                overlap_messages = [
-                    f"Careful! This booking will overlap with existing booking: {b.booking_reference} "
-                    f"({b.pickup_date.strftime('%Y-%m-%d')} {b.pickup_time.strftime('%H:%M')} to {b.return_date.strftime('%Y-%m-%d')} {b.return_time.strftime('%H:%M')})"
-                    for b in final_overlaps
-                ]
-                # Add as a non-field error (global form error)
-                self.add_error(None, ValidationError(" ".join(overlap_messages)))
-
-
         # --- Section 3: Add-ons & Packages Processing ---
         selected_package_from_form = cleaned_data.get('package')
         cleaned_data['selected_package_instance'] = selected_package_from_form # Store the package object for view/save

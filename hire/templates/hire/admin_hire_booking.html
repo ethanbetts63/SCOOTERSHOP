@@ -63,13 +63,10 @@
 
                             {# Section 2: Motorcycle Selection & Rates #}
                             <h3 class="mb-4 mt-4 text-primary">Section 2: Motorcycle & Daily Rate</h3>
-                            <div class="form-group mb-3">
+                            <div class="form-group mb-4"> {# Removed motorcycleOverlapWarning div as messages handle it #}
                                 <label for="{{ form.motorcycle.id_for_label }}" class="form-label">{{ form.motorcycle.label }}</label>
                                 {{ form.motorcycle }}
                                 {% if form.motorcycle.errors %}<div class="text-danger small">{{ form.motorcycle.errors }}</div>{% endif %}
-                                <div id="motorcycleOverlapWarning" class="mt-2 small">
-                                    {# This will be populated by JavaScript #}
-                                </div>
                             </div>
                             <div class="form-group mb-4">
                                 <label for="{{ form.booked_daily_rate.id_for_label }}" class="form-label">{{ form.booked_daily_rate.label }}</label>
@@ -207,14 +204,6 @@
                                 {% if form.status.errors %}<div class="text-danger small">{{ form.status.errors }}</div>{% endif %}
                             </div>
 
-                            {# Section 6: Internal Notes #}
-                            <h3 class="mb-4 mt-4 text-primary">Section 6: Internal Notes</h3>
-                            <div class="form-group mb-4">
-                                <label for="{{ form.internal_notes.id_for_label }}" class="form-label">{{ form.internal_notes.label }}</label>
-                                {{ form.internal_notes }}
-                                {% if form.internal_notes.errors %}<div class="text-danger small">{{ form.internal_notes.errors }}</div>{% endif %}
-                            </div>
-
                             {% if form.non_field_errors %}
                                 <div class="alert alert-danger mt-3">
                                     {% for error in form.non_field_errors %}
@@ -252,7 +241,6 @@
         const packageRadios = document.querySelectorAll('input[name="package"]');
         const addonCheckboxes = document.querySelectorAll('input[name^="addon_"][name$="_selected"]');
         const estimatedTotalPriceDisplay = document.getElementById('estimatedTotalPriceDisplay');
-        const motorcycleOverlapWarning = document.getElementById('motorcycleOverlapWarning');
 
         // --- Data from Django Context (converted to JS objects) ---
         const motorcyclesData = JSON.parse('{{ motorcycles_data|safe }}');
@@ -283,7 +271,6 @@
             onChange: function(selectedDates, dateStr, instance) {
                 handleDateAndTimeUpdates();
                 updateEstimatedTotal();
-                checkMotorcycleOverlap();
             }
         });
 
@@ -296,7 +283,6 @@
             onChange: function(selectedDates, dateStr, instance) {
                 handleDateAndTimeUpdates();
                 updateEstimatedTotal();
-                checkMotorcycleOverlap();
             }
         });
 
@@ -437,54 +423,6 @@
             updateEstimatedTotal();
         }
 
-        // --- AJAX for Motorcycle Overlap Check ---
-        let overlapTimeout;
-        function checkMotorcycleOverlap() {
-            clearTimeout(overlapTimeout);
-            overlapTimeout = setTimeout(async () => {
-                const motorcycleId = motorcycleSelect.value;
-                const pickupDate = pickUpDateInput.value;
-                const pickupTime = pickUpTimeSelect.value;
-                const returnDate = returnDateInput.value;
-                const returnTime = returnTimeSelect.value;
-
-                if (!motorcycleId || !pickupDate || !pickupTime || !returnDate || !returnTime) {
-                    motorcycleOverlapWarning.innerHTML = '';
-                    return;
-                }
-
-                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-                try {
-                    const response = await fetch('/hire/check-motorcycle-overlap/', { // Adjust URL as needed
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': csrfToken
-                        },
-                        body: JSON.stringify({
-                            motorcycle_id: motorcycleId,
-                            pickup_date: pickupDate,
-                            pickup_time: pickupTime,
-                            return_date: returnDate,
-                            return_time: returnTime
-                        })
-                    });
-
-                    const data = await response.json();
-
-                    if (data.overlap) {
-                        motorcycleOverlapWarning.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> Careful! This booking will overlap with:</span><br>${data.overlapping_bookings.map(b => `Booking ${b.reference} (${b.pickup_datetime} to ${b.return_datetime})`).join('<br>')}`;
-                    } else {
-                        motorcycleOverlapWarning.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> No booking overlap detected.</span>';
-                    }
-                } catch (error) {
-                    console.error('Error checking motorcycle overlap:', error);
-                    motorcycleOverlapWarning.innerHTML = '<span class="text-warning">Could not check for overlaps. Please verify manually.</span>';
-                }
-            }, 500); // Debounce to prevent too many requests
-        }
-
         // --- Event Listeners ---
 
         // Initial population of time dropdowns (if needed, though Django form handles it)
@@ -507,7 +445,6 @@
                 bookedDailyRateInput.value = ''; // Clear if no motorcycle selected
             }
             updateEstimatedTotal();
-            checkMotorcycleOverlap();
         });
 
         // Listen for manual changes to booked daily rate
@@ -547,7 +484,6 @@
 
         // Initial calls on page load
         updateAddonVisibility(); // Sets initial visibility for add-on quantities and calculates total
-        checkMotorcycleOverlap(); // Initial overlap check if fields are pre-filled
     });
 </script>
 {% endblock %}

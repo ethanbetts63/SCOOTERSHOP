@@ -1,5 +1,8 @@
 import datetime
 from django.utils import timezone
+from django.db.models import Q # Import Q for complex queries
+from ..models import HireBooking # Import HireBooking model (assuming it's in a parent directory's models)
+from inventory.models import Motorcycle # Also need Motorcycle model for type hinting/clarity
 
 def calculate_hire_price(motorcycle, duration_days, hire_settings):
     """
@@ -34,3 +37,38 @@ def calculate_hire_duration_days(pickup_date, return_date, pickup_time, return_t
          days += 1
 
      return days
+
+def get_overlapping_motorcycle_bookings(motorcycle, pickup_date, pickup_time, return_date, return_time, exclude_booking_id=None):
+    # Combine date and time into timezone-aware datetime objects
+    pickup_datetime = timezone.make_aware(datetime.datetime.combine(pickup_date, pickup_time))
+    return_datetime = timezone.make_aware(datetime.datetime.combine(return_date, return_time))
+
+    # Ensure return_datetime is after pickup_datetime for a valid range
+    if return_datetime <= pickup_datetime:
+        return []
+
+    # Find bookings for the specified motorcycle that are not cancelled, completed, or no_show
+    # and whose date ranges potentially overlap.
+    potential_overlaps = HireBooking.objects.filter(
+        motorcycle=motorcycle,
+        pickup_date__lt=return_datetime.date(),  # Booking starts before requested return date
+        return_date__gt=pickup_date.date()       # Booking ends after requested pickup date
+    ).exclude(
+        status__in=['cancelled', 'completed', 'no_show']
+    )
+
+    # Exclude a specific booking if provided (e.g., when editing an existing booking)
+    if exclude_booking_id:
+        potential_overlaps = potential_overlaps.exclude(id=exclude_booking_id)
+
+    actual_overlaps = []
+    for booking in potential_overlaps:
+        booking_pickup_dt = timezone.make_aware(datetime.datetime.combine(booking.pickup_date, booking.pickup_time))
+        booking_return_dt = timezone.make_aware(datetime.datetime.combine(booking.return_date, booking.return_time))
+
+        # Perform precise datetime overlap check:
+        # The intervals [start1, end1) and [start2, end2) overlap if max(start1, start2) < min(end1, end2)
+        if max(pickup_datetime, booking_pickup_dt) < min(return_datetime, booking_return_dt):
+            actual_overlaps.append(booking)
+
+    return actual_overlaps

@@ -2,8 +2,8 @@
 
 from django.urls import path
 from . import views # This imports all views exposed in __init__.py
-
-app_name = 'dashboard' # Set the app name for namespacing
+from hire.views import Admin_Hire_Booking_view
+app_name = 'dashboard' 
 
 urlpatterns = [
     # --- Dashboard Index ---
@@ -18,7 +18,7 @@ urlpatterns = [
 
     # --- Hire Booking Management Views ---
     # These views will be imported via views/__init__.py from views/hire_bookings.py
-    path('hire-bookings/', views.hire_bookings_view, name='hire_bookings'), # Hire bookings calendar view
+    path('hire-bookings/', views.hire_bookings_view, name='hire_bookings'),
     path('hire-bookings/<int:pk>/', views.hire_booking_details_view, name='hire_booking_details'), # Hire booking details view
     path('hire-bookings/search/', views.hire_booking_search_view, name='hire_booking_search'), # Hire booking search view
     path('hire-bookings/json/', views.get_hire_bookings_json, name='get_hire_bookings_json'), # Hire bookings JSON feed

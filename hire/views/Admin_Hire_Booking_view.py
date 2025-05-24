@@ -8,6 +8,7 @@ from django.views import View
 from django.contrib import messages
 from django.utils import timezone
 from django.urls import reverse # Import reverse for dynamic URL lookup
+# from django.db.models import Q # No longer needed here as it's in utils
 
 # Import models
 from inventory.models import Motorcycle
@@ -18,7 +19,7 @@ from dashboard.models import HireSettings, BlockedHireDate
 from ..forms.Admin_Hire_Booking_form import AdminHireBookingForm
 
 # Import utility functions
-from .utils import calculate_hire_price, calculate_hire_duration_days
+from .utils import calculate_hire_price, calculate_hire_duration_days, get_overlapping_motorcycle_bookings
 
 
 class AdminHireBookingView(View):
@@ -59,7 +60,6 @@ class AdminHireBookingView(View):
                 {'id': dp.id, 'name': dp.name, 'email': dp.email} # Example data, adjust as needed
                 for dp in all_driver_profiles
             ]
-
         }
         return context
 
@@ -69,31 +69,90 @@ class AdminHireBookingView(View):
         Handles GET requests to display the blank admin booking form.
         """
         form = AdminHireBookingForm()
+        # Clear any previous overlap warning from session on initial GET
+        if 'last_overlap_attempt' in request.session:
+            del request.session['last_overlap_attempt']
         context = self._get_context_data(request, form)
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
         """
         Handles POST requests to process the submitted admin booking form
-        and create a HireBooking instance.
+        and create a HireBooking instance, with overlap override logic.
         """
         form = AdminHireBookingForm(request.POST)
         hire_settings = HireSettings.objects.first()
 
         if form.is_valid():
-            # --- Section 1: Date & Time Selection ---
+            # --- Extract cleaned data ---
             pickup_date = form.cleaned_data['pick_up_date']
             pickup_time = form.cleaned_data['pick_up_time']
             return_date = form.cleaned_data['return_date']
             return_time = form.cleaned_data['return_time']
+            motorcycle = form.cleaned_data['motorcycle']
+
+            # Combine date and time for the overlap identifier
+            pickup_datetime_for_identifier = timezone.make_aware(datetime.datetime.combine(pickup_date, pickup_time))
+            return_datetime_for_identifier = timezone.make_aware(datetime.datetime.combine(return_date, return_time))
+
+            # --- Motorcycle Overlap Check using utility function ---
+            # Create a unique identifier for the current potential overlap
+            current_overlap_identifier = (
+                motorcycle.id,
+                pickup_datetime_for_identifier.isoformat(), # Use ISO format for consistent string representation
+                return_datetime_for_identifier.isoformat()
+            )
+            
+            last_overlap_attempt = request.session.get('last_overlap_attempt')
+            
+            # Call the utility function to get overlapping bookings
+            actual_overlaps = get_overlapping_motorcycle_bookings(
+                motorcycle,
+                pickup_date,
+                pickup_time,
+                return_date,
+                return_time
+            )
+            
+            # --- Override Logic ---
+            allow_booking_creation = True
+            if actual_overlaps:
+                if last_overlap_attempt == current_overlap_identifier:
+                    # This is a re-submission with the same overlapping dates/motorcycle, allow override
+                    messages.info(request, "Overlap warning overridden. Creating booking despite overlap.")
+                    if 'last_overlap_attempt' in request.session:
+                        del request.session['last_overlap_attempt'] # Clear session after override
+                else:
+                    # First time this overlap is detected, issue warning
+                    overlap_messages = [
+                        f"Booking {b.booking_reference} ({b.pickup_date.strftime('%Y-%m-%d')} {b.pickup_time.strftime('%H:%M')} to {b.return_date.strftime('%Y-%m-%d')} {b.return_time.strftime('%H:%M')})"
+                        for b in actual_overlaps
+                    ]
+                    messages.warning(
+                        request,
+                        f"These dates for this motorcycle overlap with existing booking(s): "
+                        f"{'; '.join(overlap_messages)}. "
+                        f"To override this warning and proceed, submit again with unchanged dates."
+                    )
+                    request.session['last_overlap_attempt'] = current_overlap_identifier
+                    allow_booking_creation = False
+            else:
+                # No overlaps detected, or previous overlap was resolved
+                if 'last_overlap_attempt' in request.session:
+                    del request.session['last_overlap_attempt'] # Clear if no overlap
+
+            if not allow_booking_creation:
+                context = self._get_context_data(request, form)
+                return render(request, self.template_name, context)
+
+            # --- If we reach here, either no overlap or override is allowed ---
 
             # Calculate duration in days for price calculation
             duration_days = calculate_hire_duration_days(
                 pickup_date, return_date, pickup_time, return_time
             )
 
-            # --- Section 2: Motorcycle Selection & Rates ---
-            motorcycle = form.cleaned_data['motorcycle']
+            # --- Section 2: Motorcycle Selection & Rates (already extracted) ---
             booked_daily_rate = form.cleaned_data['booked_daily_rate']
 
             # --- Section 3: Add-ons & Packages ---
