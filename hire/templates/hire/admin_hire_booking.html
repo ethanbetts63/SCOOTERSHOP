@@ -1,0 +1,553 @@
+{% extends "core/layout.html" %}
+{% load static %}
+
+{% block title %}Admin Hire Booking{% endblock %}
+
+{% block content %}
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-md-10 offset-md-1">
+                <div class="card shadow-lg">
+                    <div class="card-header bg-primary text-white">
+                        <h2 class="mb-0">Create New Hire Booking (Admin)</h2>
+                    </div>
+                    <div class="card-body">
+                        {% if messages %}
+                            <div class="mb-3">
+                                {% for message in messages %}
+                                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <form method="post" action="" id="adminBookingForm">
+                            {% csrf_token %}
+
+                            {# Section 1: Date & Time Selection #}
+                            <h3 class="mb-4 mt-4 text-primary">Section 1: Date & Time</h3>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="{{ form.pick_up_date.id_for_label }}" class="form-label">{{ form.pick_up_date.label }}</label>
+                                        {{ form.pick_up_date }}
+                                        {% if form.pick_up_date.errors %}<div class="text-danger small">{{ form.pick_up_date.errors }}</div>{% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="{{ form.pick_up_time.id_for_label }}" class="form-label">{{ form.pick_up_time.label }}</label>
+                                        {{ form.pick_up_time }}
+                                        {% if form.pick_up_time.errors %}<div class="text-danger small">{{ form.pick_up_time.errors }}</div>{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="{{ form.return_date.id_for_label }}" class="form-label">{{ form.return_date.label }}</label>
+                                        {{ form.return_date }}
+                                        {% if form.return_date.errors %}<div class="text-danger small">{{ form.return_date.errors }}</div>{% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="{{ form.return_time.id_for_label }}" class="form-label">{{ form.return_time.label }}</label>
+                                        {{ form.return_time }}
+                                        {% if form.return_time.errors %}<div class="text-danger small">{{ form.return_time.errors }}</div>{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {# Section 2: Motorcycle Selection & Rates #}
+                            <h3 class="mb-4 mt-4 text-primary">Section 2: Motorcycle & Daily Rate</h3>
+                            <div class="form-group mb-3">
+                                <label for="{{ form.motorcycle.id_for_label }}" class="form-label">{{ form.motorcycle.label }}</label>
+                                {{ form.motorcycle }}
+                                {% if form.motorcycle.errors %}<div class="text-danger small">{{ form.motorcycle.errors }}</div>{% endif %}
+                                <div id="motorcycleOverlapWarning" class="mt-2 small">
+                                    {# This will be populated by JavaScript #}
+                                </div>
+                            </div>
+                            <div class="form-group mb-4">
+                                <label for="{{ form.booked_daily_rate.id_for_label }}" class="form-label">{{ form.booked_daily_rate.label }}</label>
+                                {{ form.booked_daily_rate }}
+                                <div class="form-text text-muted">{{ form.booked_daily_rate.help_text }}</div>
+                                {% if form.booked_daily_rate.errors %}<div class="text-danger small">{{ form.booked_daily_rate.errors }}</div>{% endif %}
+                            </div>
+
+                            {# Section 3: Add-ons & Packages #}
+                            <h3 class="mb-4 mt-4 text-primary">Section 3: Packages & Add-ons</h3>
+                            <div class="form-group mb-3">
+                                <label class="form-label">{{ form.package.label }}</label>
+                                {% if form.package.errors %}<div class="text-danger small">{{ form.package.errors }}</div>{% endif %}
+                                <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+                                    {% for radio in form.package %}
+                                        <div class="col">
+                                            <div class="card h-100 package-tile {% if radio.data.selected %}border-primary{% endif %}" id="package-{{ radio.data.value }}">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">{{ radio.choice_label }}</h5>
+                                                    {% with package_obj=radio.choice_value.instance %}
+                                                        <p class="card-text">{{ package_obj.description }}</p>
+                                                        <p class="card-text">
+                                                            <strong>Price: {{ hire_settings.currency_symbol }}<span class="package-price" data-package-price="{{ package_obj.package_price|floatformat:2 }}">{{ package_obj.package_price|floatformat:2 }}</span></strong>
+                                                        </p>
+                                                        {% if package_obj.add_ons.all %}
+                                                            <p class="card-text text-muted small">Includes:</p>
+                                                            <ul class="list-unstyled small text-muted">
+                                                                {% for addon in package_obj.add_ons.all %}
+                                                                    <li>- {{ addon.name }}</li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                    <div class="form-check mt-3">
+                                                        {{ radio.tag }}
+                                                        <label class="form-check-label" for="{{ radio.id_for_label }}">Select this package</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <h4 class="mb-3 mt-4">Individual Add-ons:</h4>
+                            {% if form.get_addon_fields %}
+                                <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+                                    {% for field_info in form.get_addon_fields %}
+                                        {% with addon=field_info.addon %}
+                                            <div class="col">
+                                                <div class="card h-100 addon-tile" id="addon-{{ addon.id }}">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">{{ addon.name }}</h5>
+                                                        <p class="card-text">{{ addon.description }}</p>
+                                                        <p class="card-text">
+                                                            <strong>Cost: {{ hire_settings.currency_symbol }}<span class="addon-cost" data-addon-cost="{{ addon.cost|floatformat:2 }}">{{ addon.cost|floatformat:2 }}</span> per day</strong>
+                                                        </p>
+                                                        <div class="form-check mt-3">
+                                                            {{ field_info.selected_field.errors }}
+                                                            <input type="checkbox"
+                                                                   name="{{ field_info.selected_field.name }}"
+                                                                   id="{{ field_info.selected_field.id_for_label }}"
+                                                                   value="{{ addon.id }}"
+                                                                   class="form-check-input addon-checkbox"
+                                                                   {% if field_info.selected_field.value %}checked{% endif %}
+                                                                   data-addon-id="{{ addon.id }}"
+                                                                   data-max-quantity="{{ field_info.quantity_field.field.max_value }}"
+                                                                   data-min-quantity="{{ field_info.quantity_field.field.min_value }}">
+                                                            <label class="form-check-label" for="{{ field_info.selected_field.id_for_label }}">Add to booking</label>
+                                                        </div>
+                                                        <div class="mt-2 quantity-input-group {% if field_info.quantity_field.field.max_value > 1 and field_info.selected_field.value %}d-block{% else %}d-none{% endif %}" id="quantityDiv{{ addon.id }}">
+                                                            <label for="{{ field_info.quantity_field.id_for_label }}" class="form-label">Quantity ({{ field_info.quantity_field.field.min_value }}-{{ field_info.quantity_field.field.max_value }}):</label>
+                                                            {{ field_info.quantity_field.errors }}
+                                                            <input type="number"
+                                                                   name="{{ field_info.quantity_field.name }}"
+                                                                   id="{{ field_info.quantity_field.id_for_label }}"
+                                                                   class="form-control addon-quantity"
+                                                                   value="{{ field_info.quantity_field.value|default:1 }}"
+                                                                   min="{{ field_info.quantity_field.field.min_value }}"
+                                                                   max="{{ field_info.quantity_field.field.max_value }}"
+                                                                   data-addon-id="{{ addon.id }}">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endwith %}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">No individual add-ons are currently available.</div>
+                            {% endif %}
+
+
+                            {# Section 4: Driver Profile #}
+                            <h3 class="mb-4 mt-4 text-primary">Section 4: Driver Profile</h3>
+                            <div class="form-group mb-3">
+                                <label for="{{ form.driver_profile.id_for_label }}" class="form-label">{{ form.driver_profile.label }}</label>
+                                {{ form.driver_profile }}
+                                {% if form.driver_profile.errors %}<div class="text-danger small">{{ form.driver_profile.errors }}</div>{% endif %}
+                            </div>
+                            <div class="mb-4">
+                                <a href="{% url 'hire:manage_driver_profiles' %}" class="btn btn-info btn-sm">Manage Driver Profiles</a>
+                                <small class="form-text text-muted ms-2">Create, edit, or delete driver profiles.</small>
+                            </div>
+
+                            {# Section 5: Financial Details & Status #}
+                            <h3 class="mb-4 mt-4 text-primary">Section 5: Financial Details & Status</h3>
+                            <div class="form-group mb-3">
+                                <label for="{{ form.currency.id_for_label }}" class="form-label">{{ form.currency.label }}</label>
+                                {{ form.currency }}
+                                {% if form.currency.errors %}<div class="text-danger small">{{ form.currency.errors }}</div>{% endif %}
+                            </div>
+                            <div class="mb-3">
+                                <p class="mb-1"><strong>Estimated Total Price of Selections: <span id="estimatedTotalPriceDisplay">{{ hire_settings.currency_symbol }}{{ estimated_total_price|floatformat:2 }}</span></strong></p>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="{{ form.total_price.id_for_label }}" class="form-label">{{ form.total_price.label }}</label>
+                                {{ form.total_price }}
+                                <div class="form-text text-muted">{{ form.total_price.help_text }}</div>
+                                {% if form.total_price.errors %}<div class="text-danger small">{{ form.total_price.errors }}</div>{% endif %}
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="{{ form.payment_method.id_for_label }}" class="form-label">{{ form.payment_method.label }}</label>
+                                {{ form.payment_method }}
+                                {% if form.payment_method.errors %}<div class="text-danger small">{{ form.payment_method.errors }}</div>{% endif %}
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="{{ form.payment_status.id_for_label }}" class="form-label">{{ form.payment_status.label }}</label>
+                                {{ form.payment_status }}
+                                {% if form.payment_status.errors %}<div class="text-danger small">{{ form.payment_status.errors }}</div>{% endif %}
+                            </div>
+                            <div class="form-group mb-4">
+                                <label for="{{ form.status.id_for_label }}" class="form-label">{{ form.status.label }}</label>
+                                {{ form.status }}
+                                {% if form.status.errors %}<div class="text-danger small">{{ form.status.errors }}</div>{% endif %}
+                            </div>
+
+                            {# Section 6: Internal Notes #}
+                            <h3 class="mb-4 mt-4 text-primary">Section 6: Internal Notes</h3>
+                            <div class="form-group mb-4">
+                                <label for="{{ form.internal_notes.id_for_label }}" class="form-label">{{ form.internal_notes.label }}</label>
+                                {{ form.internal_notes }}
+                                {% if form.internal_notes.errors %}<div class="text-danger small">{{ form.internal_notes.errors }}</div>{% endif %}
+                            </div>
+
+                            {% if form.non_field_errors %}
+                                <div class="alert alert-danger mt-3">
+                                    {% for error in form.non_field_errors %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success btn-lg">Create Booking</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- DOM Elements ---
+        const form = document.getElementById('adminBookingForm');
+        const pickUpDateInput = document.getElementById('id_pick_up_date');
+        const pickUpTimeSelect = document.getElementById('id_pick_up_time');
+        const returnDateInput = document.getElementById('id_return_date');
+        const returnTimeSelect = document.getElementById('id_return_time');
+        const motorcycleSelect = document.getElementById('id_motorcycle');
+        const bookedDailyRateInput = document.getElementById('id_booked_daily_rate');
+        const packageRadios = document.querySelectorAll('input[name="package"]');
+        const addonCheckboxes = document.querySelectorAll('input[name^="addon_"][name$="_selected"]');
+        const estimatedTotalPriceDisplay = document.getElementById('estimatedTotalPriceDisplay');
+        const motorcycleOverlapWarning = document.getElementById('motorcycleOverlapWarning');
+
+        // --- Data from Django Context (converted to JS objects) ---
+        const motorcyclesData = JSON.parse('{{ motorcycles_data|safe }}');
+        const packagesData = JSON.parse('{{ packages_data|safe }}');
+        const addonsData = JSON.parse('{{ addons_data|safe }}');
+        const hireSettings = {
+            currency_symbol: "{{ hire_settings.currency_symbol|default:'$' }}",
+            minimum_hire_duration_days: parseInt("{{ hire_settings.minimum_hire_duration_days|default:1 }}"),
+            maximum_hire_duration_days: parseInt("{{ hire_settings.maximum_hire_duration_days|default:30 }}"),
+            booking_lead_time_hours: parseInt("{{ hire_settings.booking_lead_time_hours|default:0 }}")
+        };
+
+        // Create maps for quick lookup
+        const motorcycleMap = new Map(motorcyclesData.map(m => [m.id, m]));
+        const packageMap = new Map(packagesData.map(p => [p.id, p]));
+        const addonMap = new Map(addonsData.map(a => [a.id, a]));
+
+        // --- Flatpickr Initialization ---
+        const now = new Date();
+        let minDateForPickup = new Date(now.getTime() + hireSettings.booking_lead_time_hours * 60 * 60 * 1000);
+        minDateForPickup.setDate(minDateForPickup.getDate()); // Keep same day if lead time doesn't push it past midnight
+
+        const pickUpDatePicker = flatpickr(pickUpDateInput, {
+            dateFormat: "Y-m-d",
+            minDate: minDateForPickup,
+            altInput: true,
+            altFormat: "F j, Y",
+            onChange: function(selectedDates, dateStr, instance) {
+                handleDateAndTimeUpdates();
+                updateEstimatedTotal();
+                checkMotorcycleOverlap();
+            }
+        });
+
+        const returnDatePicker = flatpickr(returnDateInput, {
+            dateFormat: "Y-m-d",
+            minDate: "today", // Will be dynamically updated
+            maxDate: null,    // Will be dynamically updated
+            altInput: true,
+            altFormat: "F j, Y",
+            onChange: function(selectedDates, dateStr, instance) {
+                handleDateAndTimeUpdates();
+                updateEstimatedTotal();
+                checkMotorcycleOverlap();
+            }
+        });
+
+        // --- Helper Functions ---
+
+        function parseTime(timeString) {
+            const [hours, minutes] = timeString.split(':').map(Number);
+            return new Date(1970, 0, 1, hours, minutes); // Use a fixed date for time comparison
+        }
+
+        function calculateDurationDays(pickupDt, returnDt) {
+            if (!pickupDt || !returnDt) return 0;
+            const MS_PER_DAY = 1000 * 60 * 60 * 24;
+            const durationMs = returnDt.getTime() - pickupDt.getTime();
+            let durationDays = Math.ceil(durationMs / MS_PER_DAY);
+            // Ensure minimum 1 day if return is after pickup but less than 24 hours
+            if (durationDays === 0 && durationMs > 0) {
+                durationDays = 1;
+            } else if (durationDays < 0) {
+                durationDays = 0; // Should not happen with validation but for safety
+            }
+            return durationDays;
+        }
+
+        function getSelectedDateTime(dateInput, timeSelect) {
+            const date = dateInput.value;
+            const time = timeSelect.value;
+            if (date && time) {
+                return new Date(`${date}T${time}:00`);
+            }
+            return null;
+        }
+
+        function handleDateAndTimeUpdates() {
+            const pickUpDate = pickUpDatePicker.selectedDates[0];
+            const returnDate = returnDatePicker.selectedDates[0];
+
+            if (pickUpDate) {
+                let requiredReturnDate = new Date(pickUpDate);
+                requiredReturnDate.setDate(requiredReturnDate.getDate() + hireSettings.minimum_hire_duration_days);
+
+                let maximumAllowedReturnDate = new Date(pickUpDate);
+                maximumAllowedReturnDate.setDate(maximumAllowedReturnDate.getDate() + hireSettings.maximum_hire_duration_days);
+
+                returnDatePicker.set('minDate', requiredReturnDate);
+                returnDatePicker.set('maxDate', maximumAllowedReturnDate);
+
+                if (returnDate) {
+                    if (returnDate < requiredReturnDate || returnDate > maximumAllowedReturnDate) {
+                        returnDatePicker.clear();
+                    }
+                }
+            } else {
+                returnDatePicker.set('minDate', minDateForPickup);
+                returnDatePicker.set('maxDate', null);
+                if (returnDate) {
+                    returnDatePicker.clear();
+                }
+            }
+        }
+
+        function updateEstimatedTotal() {
+            let estimatedTotal = 0;
+
+            const pickUpDt = getSelectedDateTime(pickUpDateInput, pickUpTimeSelect);
+            const returnDt = getSelectedDateTime(returnDateInput, returnTimeSelect);
+            const durationDays = calculateDurationDays(pickUpDt, returnDt);
+
+            // 1. Motorcycle Daily Rate
+            const selectedMotorcycleId = parseInt(motorcycleSelect.value);
+            let currentDailyRate = parseFloat(bookedDailyRateInput.value) || 0;
+
+            // If motorcycle selected and daily rate is not manually overridden, use motorcycle's default
+            if (selectedMotorcycleId && !bookedDailyRateInput.dataset.isOverridden) {
+                const motorcycle = motorcycleMap.get(selectedMotorcycleId);
+                if (motorcycle) {
+                    currentDailyRate = parseFloat(motorcycle.daily_hire_rate);
+                    bookedDailyRateInput.value = currentDailyRate.toFixed(2); // Update input field
+                }
+            }
+            estimatedTotal += currentDailyRate * durationDays;
+
+            // 2. Package Price
+            let selectedPackagePrice = 0;
+            const selectedPackageRadio = document.querySelector('input[name="package"]:checked');
+            if (selectedPackageRadio && selectedPackageRadio.value) {
+                const packageId = parseInt(selectedPackageRadio.value);
+                const packageObj = packageMap.get(packageId);
+                if (packageObj) {
+                    selectedPackagePrice = parseFloat(packageObj.package_price);
+                }
+            }
+            estimatedTotal += selectedPackagePrice;
+
+            // 3. Add-ons Price
+            let addonsTotal = 0;
+            addonCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    const addonId = parseInt(checkbox.value);
+                    const quantityInput = document.querySelector(`input[name="addon_${addonId}_quantity"]`);
+                    const addonObj = addonMap.get(addonId);
+
+                    if (addonObj) {
+                        const addonCost = parseFloat(addonObj.cost);
+                        let quantity = 1;
+                        if (addonObj.max_quantity > 1 && quantityInput && !quantityInput.closest('.quantity-input-group').classList.contains('d-none')) {
+                            quantity = parseInt(quantityInput.value) || 1;
+                            // Basic client-side quantity validation
+                            if (quantity < addonObj.min_quantity) quantity = addonObj.min_quantity;
+                            if (quantity > addonObj.max_quantity) quantity = addonObj.max_quantity;
+                            quantityInput.value = quantity; // Update input if corrected
+                        }
+                        addonsTotal += (addonCost * quantity * durationDays);
+                    }
+                }
+            });
+            estimatedTotal += addonsTotal;
+
+            estimatedTotalPriceDisplay.textContent = `${hireSettings.currency_symbol}${estimatedTotal.toFixed(2)}`;
+        }
+
+        function updateAddonVisibility() {
+            addonCheckboxes.forEach(checkbox => {
+                const addonId = parseInt(checkbox.value);
+                const quantityDiv = document.getElementById(`quantityDiv${addonId}`);
+                const quantityInput = document.querySelector(`input[name="addon_${addonId}_quantity"]`);
+                const addonObj = addonMap.get(addonId);
+
+                if (quantityDiv && addonObj) {
+                    if (addonObj.max_quantity > 1 && checkbox.checked) {
+                        quantityDiv.classList.replace('d-none', 'd-block');
+                    } else {
+                        quantityDiv.classList.replace('d-block', 'd-none');
+                        if (quantityInput) quantityInput.value = 1; // Reset quantity if hidden
+                    }
+                }
+            });
+            updateEstimatedTotal();
+        }
+
+        // --- AJAX for Motorcycle Overlap Check ---
+        let overlapTimeout;
+        function checkMotorcycleOverlap() {
+            clearTimeout(overlapTimeout);
+            overlapTimeout = setTimeout(async () => {
+                const motorcycleId = motorcycleSelect.value;
+                const pickupDate = pickUpDateInput.value;
+                const pickupTime = pickUpTimeSelect.value;
+                const returnDate = returnDateInput.value;
+                const returnTime = returnTimeSelect.value;
+
+                if (!motorcycleId || !pickupDate || !pickupTime || !returnDate || !returnTime) {
+                    motorcycleOverlapWarning.innerHTML = '';
+                    return;
+                }
+
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                try {
+                    const response = await fetch('/hire/check-motorcycle-overlap/', { // Adjust URL as needed
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: JSON.stringify({
+                            motorcycle_id: motorcycleId,
+                            pickup_date: pickupDate,
+                            pickup_time: pickupTime,
+                            return_date: returnDate,
+                            return_time: returnTime
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.overlap) {
+                        motorcycleOverlapWarning.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> Careful! This booking will overlap with:</span><br>${data.overlapping_bookings.map(b => `Booking ${b.reference} (${b.pickup_datetime} to ${b.return_datetime})`).join('<br>')}`;
+                    } else {
+                        motorcycleOverlapWarning.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> No booking overlap detected.</span>';
+                    }
+                } catch (error) {
+                    console.error('Error checking motorcycle overlap:', error);
+                    motorcycleOverlapWarning.innerHTML = '<span class="text-warning">Could not check for overlaps. Please verify manually.</span>';
+                }
+            }, 500); // Debounce to prevent too many requests
+        }
+
+        // --- Event Listeners ---
+
+        // Initial population of time dropdowns (if needed, though Django form handles it)
+        handleDateAndTimeUpdates(); // Set min/max dates for return picker
+
+        // Listen for changes on date/time inputs
+        pickUpDateInput.addEventListener('change', updateEstimatedTotal);
+        pickUpTimeSelect.addEventListener('change', updateEstimatedTotal);
+        returnDateInput.addEventListener('change', updateEstimatedTotal);
+        returnTimeSelect.addEventListener('change', updateEstimatedTotal);
+
+        // Listen for changes on motorcycle selection
+        motorcycleSelect.addEventListener('change', function() {
+            const selectedMotorcycleId = parseInt(this.value);
+            const motorcycle = motorcycleMap.get(selectedMotorcycleId);
+            if (motorcycle) {
+                bookedDailyRateInput.value = parseFloat(motorcycle.daily_hire_rate).toFixed(2);
+                bookedDailyRateInput.dataset.isOverridden = 'false'; // Reset override flag
+            } else {
+                bookedDailyRateInput.value = ''; // Clear if no motorcycle selected
+            }
+            updateEstimatedTotal();
+            checkMotorcycleOverlap();
+        });
+
+        // Listen for manual changes to booked daily rate
+        bookedDailyRateInput.addEventListener('input', function() {
+            this.dataset.isOverridden = 'true'; // Set override flag
+            updateEstimatedTotal();
+        });
+
+        // Listen for package changes (re-submits form to refresh add-ons from server)
+        packageRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                // Remove border from all package tiles
+                document.querySelectorAll('.package-tile').forEach(tile => {
+                    tile.classList.remove('border-primary');
+                });
+                // Add border to the newly selected package tile
+                const packageId = this.value;
+                const selectedPackageTile = document.getElementById(`package-${packageId}`);
+                if (selectedPackageTile) {
+                    selectedPackageTile.classList.add('border-primary');
+                }
+                // Submit the form to reload with new addon options based on package
+                form.submit();
+            });
+        });
+
+        // Listen for add-on checkbox changes
+        addonCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateAddonVisibility);
+        });
+
+        // Listen for add-on quantity changes
+        document.querySelectorAll('input[name^="addon_"][name$="_quantity"]').forEach(input => {
+            input.addEventListener('input', updateEstimatedTotal);
+            input.addEventListener('change', updateEstimatedTotal); // For when focus leaves
+        });
+
+        // Initial calls on page load
+        updateAddonVisibility(); // Sets initial visibility for add-on quantities and calculates total
+        checkMotorcycleOverlap(); // Initial overlap check if fields are pre-filled
+    });
+</script>
+{% endblock %}

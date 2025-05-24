@@ -28,7 +28,7 @@ class AdminHireBookingView(View):
     """
     template_name = 'hire/admin_hire_booking.html' 
 
-    def _get_context_data(self, request, form, estimated_total_price=Decimal('0.00')):
+    def _get_context_data(self, request, form):
         """
         Helper function to prepare the common context data for the template.
         """
@@ -58,8 +58,8 @@ class AdminHireBookingView(View):
             'driver_profiles_data': [
                 {'id': dp.id, 'name': dp.name, 'email': dp.email} # Example data, adjust as needed
                 for dp in all_driver_profiles
-            ],
-            'estimated_total_price': estimated_total_price, # Pass the estimated total
+            ]
+
         }
         return context
 
