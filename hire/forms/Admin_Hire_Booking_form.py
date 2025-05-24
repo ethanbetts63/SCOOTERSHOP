@@ -53,6 +53,14 @@ class AdminHireBookingForm(forms.Form):
         required=True,
         help_text="This will prefill from the motorcycle's default, or the general daily default, but can be overridden. (e.g., 150.00)"
     )
+    # NEW FIELD: Booked Hourly Rate
+    booked_hourly_rate = forms.DecimalField(
+        max_digits=8, decimal_places=2,
+        label="Booked Hourly Rate",
+        required=True,
+        help_text="This will prefill from the motorcycle's hourly rate, or the general hourly default. Used for same-day bookings. (e.g., 25.00)"
+    )
+
 
     # Section 3: Add-ons & Packages
     package = forms.ModelChoiceField(

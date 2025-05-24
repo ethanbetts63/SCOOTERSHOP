@@ -12,8 +12,7 @@ class HireSettings(models.Model):
     default_hourly_rate = models.DecimalField(
         max_digits=8,
         decimal_places=2,
-        null=True,
-        blank=True,
+        default=0.00,
         help_text="Default hourly rate for bikes if no custom rate is set (optional)."
     )
 
