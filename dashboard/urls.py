@@ -2,7 +2,8 @@
 
 from django.urls import path
 from . import views # This imports all views exposed in __init__.py
-from hire.views import Admin_Hire_Booking_view
+from hire.views import Admin_Hire_Booking_view # Ensure this is imported if used elsewhere
+
 app_name = 'dashboard' 
 
 urlpatterns = [
@@ -10,18 +11,19 @@ urlpatterns = [
     path('', views.dashboard_index, name='dashboard_index'),
 
     # --- Service Booking Management Views ---
-    # These views are imported via views/__init__.py from views/service_bookings.py
     path('service-bookings/', views.service_bookings_view, name='service_bookings'),
     path('service-bookings/<int:pk>/', views.service_booking_details_view, name='service_booking_details'),
     path('service-bookings/search/', views.service_booking_search_view, name='service_booking_search'),
-    path('service-bookings/json/', views.get_service_bookings_json, name='get_service_bookings_json'), # Renamed JSON feed URL
+    path('service-bookings/json/', views.get_service_bookings_json, name='get_service_bookings_json'),
 
     # --- Hire Booking Management Views ---
-    # These views will be imported via views/__init__.py from views/hire_bookings.py
     path('hire-bookings/', views.hire_bookings_view, name='hire_bookings'),
     path('hire-bookings/<int:pk>/', views.hire_booking_details_view, name='hire_booking_details'), # Hire booking details view
     path('hire-bookings/search/', views.hire_booking_search_view, name='hire_booking_search'), # Hire booking search view
     path('hire-bookings/json/', views.get_hire_bookings_json, name='get_hire_bookings_json'), # Hire bookings JSON feed
+    # NEW: URL for deleting a hire booking
+    path('hire-bookings/delete/<int:pk>/', views.delete_hire_booking_view, name='delete_hire_booking'),
+
 
     # --- Other Views (e.g., About Page) ---
     path('edit-about/', views.edit_about_page, name='edit_about_page'),
@@ -50,7 +52,7 @@ urlpatterns = [
     path('settings/blocked-hire-dates/', views.blocked_hire_dates_management, name='blocked_hire_dates_management'),
     path('settings/blocked-hire-dates/delete/<int:pk>/', views.delete_blocked_hire_date, name='delete_blocked_hire_date'),
 
-        # --- Dashboard Hire Add-On Management Views ---
+    # --- Dashboard Hire Add-On Management Views ---
     path('settings/hire-addons/', views.settings_hire_addons, name='settings_hire_addons'),
     path('settings/hire-addons/add/', views.AddEditAddOnView.as_view(), name='add_hire_addon'),
     path('settings/hire-addons/edit/<int:pk>/', views.AddEditAddOnView.as_view(), name='edit_hire_addon'),

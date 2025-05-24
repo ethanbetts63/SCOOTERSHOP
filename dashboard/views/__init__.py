@@ -26,7 +26,7 @@ from .delete_package_view import DeletePackageView
 
 # Import the newly split hire booking views using relative imports
 from .hire_booking_management import hire_bookings_view, get_hire_bookings_json
-from .hire_booking_details_view import hire_booking_details_view
+from .hire_booking_details_view import hire_booking_details_view, delete_hire_booking_view
 from .hire_booking_search_view import hire_booking_search_view
 
 # Import booking views from the service_bookings.py file
@@ -36,3 +36,4 @@ from .service_bookings import (
     get_service_bookings_json,
     service_booking_search_view,
 )
+
