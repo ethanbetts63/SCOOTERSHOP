@@ -1,4 +1,5 @@
 # hire/views/__init__.py
+from Admin_Hire_Booking_view import *
 from .step1_DateTime_view import SelectDateTimeView
 from .step2_BikeChoice_view import BikeChoiceView
 from .step3_AddonPackage_view import AddonPackageView

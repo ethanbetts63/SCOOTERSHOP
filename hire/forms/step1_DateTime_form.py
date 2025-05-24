@@ -20,7 +20,7 @@ class Step1DateTimeForm(forms.Form):
         label="Return Time"
     )
     has_motorcycle_license = forms.BooleanField(
-        required=False, # Allow not having a license
+        required=False, 
         label="I have a motorcycle license",
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
     )
