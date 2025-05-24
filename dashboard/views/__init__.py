@@ -23,15 +23,16 @@ from .settings_hire_addons import settings_hire_addons
 from .settings_hire_packages import HirePackagesSettingsView
 from .add_edit_package_view import AddEditPackageView
 from .delete_package_view import DeletePackageView
-from .hire_booking_management import *
-from hire_booking_details_view import *
-from hire_booking_search_view import *
 
-# Import booking views from the service_bookings.py file 
+# Import the newly split hire booking views using relative imports
+from .hire_booking_management import hire_bookings_view, get_hire_bookings_json
+from .hire_booking_details_view import hire_booking_details_view
+from .hire_booking_search_view import hire_booking_search_view
+
+# Import booking views from the service_bookings.py file
 from .service_bookings import (
     service_bookings_view,
     service_booking_details_view,
     get_service_bookings_json,
     service_booking_search_view,
 )
-
