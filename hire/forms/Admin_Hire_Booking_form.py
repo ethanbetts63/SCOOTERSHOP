@@ -57,7 +57,8 @@ class AdminHireBookingForm(forms.Form):
     # Section 3: Add-ons & Packages
     package = forms.ModelChoiceField(
         queryset=Package.objects.none(), # Will be set in __init__
-        widget=RadioSelect(attrs={'class': 'package-radio'}),
+        # Changed widget from RadioSelect to Select for dropdown
+        widget=forms.Select(attrs={'class': 'form-control'}),
         required=False,
         label="Select a Package",
         empty_label="--- No Package ---"
@@ -124,6 +125,9 @@ class AdminHireBookingForm(forms.Form):
         # Set queryset for packages
         self.available_packages = Package.objects.filter(is_available=True)
         self.fields['package'].queryset = self.available_packages
+        # Updated label_from_instance for package to show name and price
+        self.fields['package'].label_from_instance = lambda obj: f"{obj.name} ({obj.package_price:.2f})"
+
 
         # Dynamically create add-on fields
         self.available_addons = AddOn.objects.filter(is_available=True)
@@ -157,7 +161,7 @@ class AdminHireBookingForm(forms.Form):
                 }),
                 required=False
             )
-        
+
         # Set queryset and label for driver profile
         self.fields['driver_profile'].queryset = DriverProfile.objects.all().order_by('name')
         self.fields['driver_profile'].label_from_instance = lambda obj: f"ID: {obj.id} - {obj.name} ({obj.email})"
@@ -165,7 +169,7 @@ class AdminHireBookingForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-        
+
         # Initialize an errors dictionary to collect all validation errors
         form_errors = {}
 
@@ -221,7 +225,7 @@ class AdminHireBookingForm(forms.Form):
         payment_status = cleaned_data.get('payment_status')
         if payment_status == 'paid' and (total_price is None or total_price <= 0):
             form_errors['total_price'] = "Total price must be greater than 0 if payment status is 'Fully Paid'."
-        
+
         # If any errors were collected, add them to the form's errors
         if form_errors:
             for field, message in form_errors.items():

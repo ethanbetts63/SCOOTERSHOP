@@ -83,36 +83,16 @@
                             {# Section 3: Add-ons & Packages #}
                             <h3 class="mb-4 mt-4 text-primary">Section 3: Packages & Add-ons</h3>
                             <div class="form-group mb-3">
-                                <label class="form-label">{{ form.package.label }}</label>
+                                <label for="{{ form.package.id_for_label }}" class="form-label">{{ form.package.label }}</label>
+                                {# Changed from radio buttons to a select dropdown #}
+                                {{ form.package }}
                                 {% if form.package.errors %}<div class="text-danger small">{{ form.package.errors }}</div>{% endif %}
-                                <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
-                                    {% for radio in form.package %}
-                                        <div class="col">
-                                            <div class="card h-100 package-tile {% if radio.data.selected %}border-primary{% endif %}" id="package-{{ radio.data.value }}">
-                                                <div class="card-body">
-                                                    <h5 class="card-title">{{ radio.choice_label }}</h5>
-                                                    {% with package_obj=radio.choice_value.instance %}
-                                                        <p class="card-text">{{ package_obj.description }}</p>
-                                                        <p class="card-text">
-                                                            <strong>Price: {{ hire_settings.currency_symbol }}<span class="package-price" data-package-price="{{ package_obj.package_price|floatformat:2 }}">{{ package_obj.package_price|floatformat:2 }}</span></strong>
-                                                        </p>
-                                                        {% if package_obj.add_ons.all %}
-                                                            <p class="card-text text-muted small">Includes:</p>
-                                                            <ul class="list-unstyled small text-muted">
-                                                                {% for addon in package_obj.add_ons.all %}
-                                                                    <li>- {{ addon.name }}</li>
-                                                                {% endfor %}
-                                                            </ul>
-                                                        {% endif %}
-                                                    {% endwith %}
-                                                    <div class="form-check mt-3">
-                                                        {{ radio.tag }}
-                                                        <label class="form-check-label" for="{{ radio.id_for_label }}">Select this package</label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    {% endfor %}
+                                <div class="form-text text-muted" id="package-price-display">
+                                    {% if form.package.value %}
+                                        Selected Package Price: {{ hire_settings.currency_symbol }}{{ form.package.value.instance.package_price|floatformat:2 }}
+                                    {% else %}
+                                        Selected Package Price: {{ hire_settings.currency_symbol }}0.00
+                                    {% endif %}
                                 </div>
                             </div>
 
@@ -239,6 +219,8 @@
 {{ hire_settings.minimum_hire_duration_days|json_script:"min-hire-days" }}
 {{ hire_settings.maximum_hire_duration_days|json_script:"max-hire-days" }}
 {{ hire_settings.booking_lead_time_hours|json_script:"booking-lead-time-hours" }}
+{# Pass packages_data to JS #}
+{{ packages_data|json_script:"packages-data" }}
 
 
 <script>
@@ -246,13 +228,18 @@
         // --- DOM Elements ---
         const motorcycleSelect = document.getElementById('id_motorcycle');
         const bookedDailyRateInput = document.getElementById('id_booked_daily_rate');
+        const packageSelect = document.getElementById('id_package'); // New: Package dropdown
+        const packagePriceDisplay = document.getElementById('package-price-display'); // New: Package price display
 
         // --- Data from Django Context (safely retrieved from json_script tags) ---
         const motorcyclesData = JSON.parse(document.getElementById('motorcycles-data').textContent);
         const defaultDailyRate = parseFloat(document.getElementById('default-daily-rate').textContent);
+        const packagesData = JSON.parse(document.getElementById('packages-data').textContent); // New: Packages data
 
         // Create map for quick lookup
         const motorcycleMap = new Map(motorcyclesData.map(m => [m.id, m]));
+        // New: Create map for packages lookup
+        const packageMap = new Map(packagesData.map(p => [p.id, p]));
 
 
         // --- Flatpickr related elements (kept for date logic) ---
@@ -263,6 +250,8 @@
             maximum_hire_duration_days: parseInt(document.getElementById('max-hire-days').textContent),
             booking_lead_time_hours: parseInt(document.getElementById('booking-lead-time-hours').textContent),
         };
+        const currencySymbol = "{{ hire_settings.currency_symbol }}";
+
 
         // --- Flatpickr Initialization for Dates (kept for date logic) ---
         const now = new Date();
@@ -353,6 +342,21 @@
             // If manually overridden, we do nothing here, the manual value persists.
         }
 
+        // --- Core Logic for Package Price Display ---
+        function updatePackagePriceDisplay() {
+            const selectedPackageId = parseInt(packageSelect.value);
+            let currentPackagePrice = 0;
+
+            if (selectedPackageId) {
+                const packageObj = packageMap.get(selectedPackageId);
+                if (packageObj) {
+                    currentPackagePrice = parseFloat(packageObj.package_price);
+                }
+            }
+            packagePriceDisplay.textContent = `Selected Package Price: ${currencySymbol}${currentPackagePrice.toFixed(2)}`;
+        }
+
+
         // --- Event Listeners (Simplified) ---
 
         // Initial call to set min/max dates for return picker
@@ -371,8 +375,15 @@
             // No need to call updateBookedDailyRate here, as manual input takes precedence
         });
 
-        // Initial call on page load to set initial daily rate
+        // New: Listen for changes on package selection
+        packageSelect.addEventListener('change', function() {
+            updatePackagePriceDisplay();
+        });
+
+
+        // Initial calls on page load
         updateBookedDailyRate();
+        updatePackagePriceDisplay(); // Initial call for package price display
     });
 </script>
 {% endblock %}

@@ -55,7 +55,7 @@ class AdminHireBookingView(View):
                 for m in all_motorcycles
             ],
             'packages_data': [
-                {'id': p.id, 'package_price': str(p.package_price)}
+                {'id': p.id, 'name': p.name, 'package_price': str(p.package_price)} # Added 'name' here
                 for p in all_packages
             ],
             'addons_data': [
