@@ -51,7 +51,7 @@ class AdminHireBookingForm(forms.Form):
         max_digits=8, decimal_places=2,
         label="Booked Daily Rate",
         required=True,
-        help_text="This will prefill from the motorcycle's default, but can be overridden. (e.g., 150.00)"
+        help_text="This will prefill from the motorcycle's default, or the general daily default, but can be overridden. (e.g., 150.00)"
     )
 
     # Section 3: Add-ons & Packages

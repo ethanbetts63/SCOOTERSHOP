@@ -68,7 +68,7 @@
 
                             {# Section 2: Motorcycle Selection & Rates #}
                             <h3 class="mb-4 mt-4 text-primary">Section 2: Motorcycle & Daily Rate</h3>
-                            <div class="form-group mb-4"> {# Removed motorcycleOverlapWarning div as messages handle it #}
+                            <div class="form-group mb-4">
                                 <label for="{{ form.motorcycle.id_for_label }}" class="form-label">{{ form.motorcycle.label }}</label>
                                 {{ form.motorcycle }}
                                 {% if form.motorcycle.errors %}<div class="text-danger small">{{ form.motorcycle.errors }}</div>{% endif %}
@@ -233,42 +233,37 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
+{# Safely embed JSON data for JavaScript using json_script #}
+{{ motorcycles_data|json_script:"motorcycles-data" }}
+{{ default_daily_rate|json_script:"default-daily-rate" }}
+{{ hire_settings.minimum_hire_duration_days|json_script:"min-hire-days" }}
+{{ hire_settings.maximum_hire_duration_days|json_script:"max-hire-days" }}
+{{ hire_settings.booking_lead_time_hours|json_script:"booking-lead-time-hours" }}
+
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // --- DOM Elements ---
-        const form = document.getElementById('adminBookingForm');
-        const pickUpDateInput = document.getElementById('id_pick_up_date');
-        // Updated to target the time input directly
-        const pickUpTimeInput = document.getElementById('id_pick_up_time'); 
-        const returnDateInput = document.getElementById('id_return_date');
-        // Updated to target the time input directly
-        const returnTimeInput = document.getElementById('id_return_time'); 
         const motorcycleSelect = document.getElementById('id_motorcycle');
         const bookedDailyRateInput = document.getElementById('id_booked_daily_rate');
-        const packageRadios = document.querySelectorAll('input[name="package"]');
-        const addonCheckboxes = document.querySelectorAll('input[name^="addon_"][name$="_selected"]');
-        const estimatedTotalPriceDisplay = document.getElementById('estimatedTotalPriceDisplay');
 
-        // --- Data from Django Context (converted to JS objects) ---
-        const motorcyclesData = JSON.parse('{{ motorcycles_data|safe }}');
-        const packagesData = JSON.parse('{{ packages_data|safe }}');
-        const addonsData = JSON.parse('{{ addons_data|safe }}');
+        // --- Data from Django Context (safely retrieved from json_script tags) ---
+        const motorcyclesData = JSON.parse(document.getElementById('motorcycles-data').textContent);
+        const defaultDailyRate = parseFloat(document.getElementById('default-daily-rate').textContent);
+
+        // --- Flatpickr related elements (kept for date logic) ---
+        const pickUpDateInput = document.getElementById('id_pick_up_date');
+        const returnDateInput = document.getElementById('id_return_date');
         const hireSettings = {
-            currency_symbol: "{{ hire_settings.currency_symbol|default:'$' }}",
-            minimum_hire_duration_days: parseInt("{{ hire_settings.minimum_hire_duration_days|default:1 }}"),
-            maximum_hire_duration_days: parseInt("{{ hire_settings.maximum_hire_duration_days|default:30 }}"),
-            booking_lead_time_hours: parseInt("{{ hire_settings.booking_lead_time_hours|default:0 }}")
+            minimum_hire_duration_days: parseInt(document.getElementById('min-hire-days').textContent),
+            maximum_hire_duration_days: parseInt(document.getElementById('max-hire-days').textContent),
+            booking_lead_time_hours: parseInt(document.getElementById('booking-lead-time-hours').textContent),
         };
 
-        // Create maps for quick lookup
-        const motorcycleMap = new Map(motorcyclesData.map(m => [m.id, m]));
-        const packageMap = new Map(packagesData.map(p => [p.id, p]));
-        const addonMap = new Map(addonsData.map(a => [a.id, a]));
-
-        // --- Flatpickr Initialization for Dates ---
+        // --- Flatpickr Initialization for Dates (kept for date logic) ---
         const now = new Date();
         let minDateForPickup = new Date(now.getTime() + hireSettings.booking_lead_time_hours * 60 * 60 * 1000);
-        minDateForPickup.setDate(minDateForPickup.getDate()); // Keep same day if lead time doesn't push it past midnight
+        minDateForPickup.setDate(minDateForPickup.getDate());
 
         const pickUpDatePicker = flatpickr(pickUpDateInput, {
             dateFormat: "Y-m-d",
@@ -277,52 +272,21 @@
             altFormat: "F j, Y",
             onChange: function(selectedDates, dateStr, instance) {
                 handleDateAndTimeUpdates();
-                updateEstimatedTotal();
             }
         });
 
         const returnDatePicker = flatpickr(returnDateInput, {
             dateFormat: "Y-m-d",
-            minDate: "today", // Will be dynamically updated
-            maxDate: null,    // Will be dynamically updated
+            minDate: "today",
+            maxDate: null,
             altInput: true,
             altFormat: "F j, Y",
             onChange: function(selectedDates, dateStr, instance) {
                 handleDateAndTimeUpdates();
-                updateEstimatedTotal();
             }
         });
 
-        // --- Helper Functions ---
-
-        function parseTime(timeString) {
-            const [hours, minutes] = timeString.split(':').map(Number);
-            return new Date(1970, 0, 1, hours, minutes); // Use a fixed date for time comparison
-        }
-
-        function calculateDurationDays(pickupDt, returnDt) {
-            if (!pickupDt || !returnDt) return 0;
-            const MS_PER_DAY = 1000 * 60 * 60 * 24;
-            const durationMs = returnDt.getTime() - pickupDt.getTime();
-            let durationDays = Math.ceil(durationMs / MS_PER_DAY);
-            // Ensure minimum 1 day if return is after pickup but less than 24 hours
-            if (durationDays === 0 && durationMs > 0) {
-                durationDays = 1;
-            } else if (durationDays < 0) {
-                durationDays = 0; // Should not happen with validation but for safety
-            }
-            return durationDays;
-        }
-
-        function getSelectedDateTime(dateInput, timeInput) {
-            const date = dateInput.value;
-            const time = timeInput.value;
-            if (date && time) {
-                return new Date(`${date}T${time}:00`);
-            }
-            return null;
-        }
-
+        // --- Helper Functions (kept for date logic) ---
         function handleDateAndTimeUpdates() {
             const pickUpDate = pickUpDatePicker.selectedDates[0];
             const returnDate = returnDatePicker.selectedDates[0];
@@ -349,153 +313,70 @@
                     returnDatePicker.clear();
                 }
             }
-            // No longer calling populateTimeDropdown here, as native time inputs handle their own UI.
         }
 
-        function updateEstimatedTotal() {
-            let estimatedTotal = 0;
-
-            // Updated to use timeInput
-            const pickUpDt = getSelectedDateTime(pickUpDateInput, pickUpTimeInput);
-            // Updated to use timeInput
-            const returnDt = getSelectedDateTime(returnDateInput, returnTimeInput);
-            const durationDays = calculateDurationDays(pickUpDt, returnDt);
-
-            // 1. Motorcycle Daily Rate
+        // --- Core Logic for Daily Rate (Simplified) ---
+        function updateBookedDailyRate() {
             const selectedMotorcycleId = parseInt(motorcycleSelect.value);
-            let currentDailyRate = parseFloat(bookedDailyRateInput.value) || 0;
+            let currentDailyRate = 0;
 
-            // If motorcycle selected and daily rate is not manually overridden, use motorcycle's default
-            if (selectedMotorcycleId && !bookedDailyRateInput.dataset.isOverridden) {
-                const motorcycle = motorcycleMap.get(selectedMotorcycleId);
-                if (motorcycle) {
-                    currentDailyRate = parseFloat(motorcycle.daily_hire_rate);
-                    bookedDailyRateInput.value = currentDailyRate.toFixed(2); // Update input field
-                }
-            }
-            estimatedTotal += currentDailyRate * durationDays;
+            // Check if the daily rate input has been manually overridden
+            const isRateManuallyOverridden = bookedDailyRateInput.dataset.isOverridden === 'true';
 
-            // 2. Package Price
-            let selectedPackagePrice = 0;
-            const selectedPackageRadio = document.querySelector('input[name="package"]:checked');
-            if (selectedPackageRadio && selectedPackageRadio.value) {
-                const packageId = parseInt(selectedPackageRadio.value);
-                const packageObj = packageMap.get(packageId);
-                if (packageObj) {
-                    selectedPackagePrice = parseFloat(packageObj.package_price);
-                }
-            }
-            estimatedTotal += selectedPackagePrice;
-
-            // 3. Add-ons Price
-            let addonsTotal = 0;
-            addonCheckboxes.forEach(checkbox => {
-                if (checkbox.checked) {
-                    const addonId = parseInt(checkbox.value);
-                    const quantityInput = document.querySelector(`input[name="addon_${addonId}_quantity"]`);
-                    const addonObj = addonMap.get(addonId);
-
-                    if (addonObj) {
-                        const addonCost = parseFloat(addonObj.cost);
-                        let quantity = 1;
-                        if (addonObj.max_quantity > 1 && quantityInput && !quantityInput.closest('.quantity-input-group').classList.contains('d-none')) {
-                            quantity = parseInt(quantityInput.value) || 1;
-                            // Basic client-side quantity validation
-                            if (quantity < addonObj.min_quantity) quantity = addonObj.min_quantity;
-                            if (quantity > addonObj.max_quantity) quantity = addonObj.max_quantity;
-                            quantityInput.value = quantity; // Update input if corrected
+            if (!isRateManuallyOverridden) { // Only update if not manually overridden
+                if (selectedMotorcycleId) {
+                    let foundMotorcycle = null;
+                    // Iterate directly through the array to find the motorcycle
+                    for (let i = 0; i < motorcyclesData.length; i++) {
+                        if (motorcyclesData[i].id === selectedMotorcycleId) {
+                            foundMotorcycle = motorcyclesData[i];
+                            break;
                         }
-                        addonsTotal += (addonCost * quantity * durationDays);
                     }
-                }
-            });
-            estimatedTotal += addonsTotal;
 
-            estimatedTotalPriceDisplay.textContent = `${hireSettings.currency_symbol}${estimatedTotal.toFixed(2)}`;
-        }
-
-        function updateAddonVisibility() {
-            addonCheckboxes.forEach(checkbox => {
-                const addonId = parseInt(checkbox.value);
-                const quantityDiv = document.getElementById(`quantityDiv${addonId}`);
-                const quantityInput = document.querySelector(`input[name="addon_${addonId}_quantity"]`);
-                const addonObj = addonMap.get(addonId);
-
-                if (quantityDiv && addonObj) {
-                    if (addonObj.max_quantity > 1 && checkbox.checked) {
-                        quantityDiv.classList.replace('d-none', 'd-block');
+                    if (foundMotorcycle) {
+                        // Prioritize motorcycle's specific daily_hire_rate
+                        if (foundMotorcycle.daily_hire_rate !== null && foundMotorcycle.daily_hire_rate !== undefined) {
+                            currentDailyRate = parseFloat(foundMotorcycle.daily_hire_rate);
+                        } else {
+                            // Fallback to hire settings default daily rate
+                            currentDailyRate = defaultDailyRate;
+                        }
                     } else {
-                        quantityDiv.classList.replace('d-block', 'd-none');
-                        if (quantityInput) quantityInput.value = 1; // Reset quantity if hidden
+                        // If selected ID doesn't map to a motorcycle (e.g., "--- Select a Motorcycle ---" is selected)
+                        currentDailyRate = defaultDailyRate;
                     }
+                } else {
+                    // If no motorcycle is selected (value is NaN or empty string), default to the hire settings default daily rate
+                    currentDailyRate = defaultDailyRate;
                 }
-            });
-            updateEstimatedTotal();
+
+                // Update the booked daily rate input field
+                bookedDailyRateInput.value = currentDailyRate.toFixed(2);
+            }
+            // If manually overridden, we do nothing here, the manual value persists.
         }
 
-        // --- Event Listeners ---
+        // --- Event Listeners (Simplified) ---
 
         // Initial call to set min/max dates for return picker
-        handleDateAndTimeUpdates(); 
-
-        // Listen for changes on date/time inputs
-        pickUpDateInput.addEventListener('change', updateEstimatedTotal);
-        // Updated to listen for changes on the time input
-        pickUpTimeInput.addEventListener('change', updateEstimatedTotal); 
-        returnDateInput.addEventListener('change', updateEstimatedTotal);
-        // Updated to listen for changes on the time input
-        returnTimeInput.addEventListener('change', updateEstimatedTotal); 
+        handleDateAndTimeUpdates();
 
         // Listen for changes on motorcycle selection
         motorcycleSelect.addEventListener('change', function() {
-            const selectedMotorcycleId = parseInt(this.value);
-            const motorcycle = motorcycleMap.get(selectedMotorcycleId);
-            if (motorcycle) {
-                bookedDailyRateInput.value = parseFloat(motorcycle.daily_hire_rate).toFixed(2);
-                bookedDailyRateInput.dataset.isOverridden = 'false'; // Reset override flag
-            } else {
-                bookedDailyRateInput.value = ''; // Clear if no motorcycle selected
-            }
-            updateEstimatedTotal();
+            // When motorcycle changes, reset the override flag so the rate can be automatically set
+            bookedDailyRateInput.dataset.isOverridden = 'false';
+            updateBookedDailyRate();
         });
 
         // Listen for manual changes to booked daily rate
         bookedDailyRateInput.addEventListener('input', function() {
             this.dataset.isOverridden = 'true'; // Set override flag
-            updateEstimatedTotal();
+            // No need to call updateBookedDailyRate here, as manual input takes precedence
         });
 
-        // Listen for package changes (re-submits form to refresh add-ons from server)
-        packageRadios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                // Remove border from all package tiles
-                document.querySelectorAll('.package-tile').forEach(tile => {
-                    tile.classList.remove('border-primary');
-                });
-                // Add border to the newly selected package tile
-                const packageId = this.value;
-                const selectedPackageTile = document.getElementById(`package-${packageId}`);
-                if (selectedPackageTile) {
-                    selectedPackageTile.classList.add('border-primary');
-                }
-                // Submit the form to reload with new addon options based on package
-                form.submit();
-            });
-        });
-
-        // Listen for add-on checkbox changes
-        addonCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', updateAddonVisibility);
-        });
-
-        // Listen for add-on quantity changes
-        document.querySelectorAll('input[name^="addon_"][name$="_quantity"]').forEach(input => {
-            input.addEventListener('input', updateEstimatedTotal);
-            input.addEventListener('change', updateEstimatedTotal); // For when focus leaves
-        });
-
-        // Initial calls on page load
-        updateAddonVisibility(); // Sets initial visibility for add-on quantities and calculates total
+        // Initial call on page load to set initial daily rate
+        updateBookedDailyRate();
     });
 </script>
 {% endblock %}

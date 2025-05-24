@@ -8,7 +8,6 @@ from django.views import View
 from django.contrib import messages
 from django.utils import timezone
 from django.urls import reverse # Import reverse for dynamic URL lookup
-# from django.db.models import Q # No longer needed here as it's in utils
 
 # Import models
 from inventory.models import Motorcycle
@@ -27,7 +26,7 @@ class AdminHireBookingView(View):
     A single-page admin view for creating HireBooking records directly.
     It combines all steps into one form and allows for overrides.
     """
-    template_name = 'hire/admin_hire_booking.html' 
+    template_name = 'hire/admin_hire_booking.html'
 
     def _get_context_data(self, request, form):
         """
@@ -41,11 +40,18 @@ class AdminHireBookingView(View):
         all_addons = AddOn.objects.filter(is_available=True)
         all_driver_profiles = DriverProfile.objects.all().order_by('name')
 
+        # Debugging: Print rates for motorcycles and default hire setting
+        print(f"--- Debugging AdminHireBookingView Context Data ---")
+        print(f"Hire Settings Default Daily Rate: {hire_settings.default_daily_rate if hire_settings else 'N/A'}")
+        for m in all_motorcycles:
+            print(f"Motorcycle ID: {m.id}, Brand: {m.brand}, Model: {m.model}, Daily Hire Rate: {m.daily_hire_rate}")
+
+
         context = {
             'form': form,
             'hire_settings': hire_settings,
             'motorcycles_data': [
-                {'id': m.id, 'daily_hire_rate': str(m.daily_hire_rate)} # Convert Decimal to string for JSON safety
+                {'id': m.id, 'daily_hire_rate': str(m.daily_hire_rate) if m.daily_hire_rate is not None else None} # Convert Decimal to string for JSON safety, handle None
                 for m in all_motorcycles
             ],
             'packages_data': [
@@ -59,7 +65,9 @@ class AdminHireBookingView(View):
             'driver_profiles_data': [
                 {'id': dp.id, 'name': dp.name, 'email': dp.email} # Example data, adjust as needed
                 for dp in all_driver_profiles
-            ]
+            ],
+            # Pass default daily rate from hire settings to JS
+            'default_daily_rate': str(hire_settings.default_daily_rate) if hire_settings and hire_settings.default_daily_rate is not None else "0.00"
         }
         return context
 
@@ -102,9 +110,9 @@ class AdminHireBookingView(View):
                 pickup_datetime_for_identifier.isoformat(), # Use ISO format for consistent string representation
                 return_datetime_for_identifier.isoformat()
             )
-            
+
             last_overlap_attempt = request.session.get('last_overlap_attempt')
-            
+
             # Call the utility function to get overlapping bookings
             actual_overlaps = get_overlapping_motorcycle_bookings(
                 motorcycle,
@@ -113,7 +121,7 @@ class AdminHireBookingView(View):
                 return_date,
                 return_time
             )
-            
+
             # --- Override Logic ---
             allow_booking_creation = True
             if actual_overlaps:
@@ -207,7 +215,7 @@ class AdminHireBookingView(View):
                     internal_notes=internal_notes,
                     is_international_booking=is_international_booking,
                     package=selected_package,
-                    booked_package_price=total_package_price 
+                    booked_package_price=total_package_price
                 )
 
                 # Add add-ons through the intermediate model (BookingAddOn)
@@ -217,15 +225,15 @@ class AdminHireBookingView(View):
                         hire_booking=hire_booking,
                         addon=item['addon'],
                         quantity=item['quantity'],
-                        booked_addon_price=item['addon'].cost 
+                        booked_addon_price=item['addon'].cost
                     )
 
                 messages.success(request, f"Hire Booking {hire_booking.booking_reference} created successfully!")
-                return redirect('hire:admin_dashboard') 
+                return redirect('hire:admin_dashboard')
 
             except Exception as e:
                 messages.error(request, f"An error occurred while creating the booking: {e}")
-                context = self._get_context_data(request, form) 
+                context = self._get_context_data(request, form)
                 return render(request, self.template_name, context)
 
         else:
