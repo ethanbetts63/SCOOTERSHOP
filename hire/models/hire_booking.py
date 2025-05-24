@@ -106,6 +106,7 @@ class HireBooking(models.Model):
     is_international_booking = models.BooleanField(default=False)
 
     # Financial Details
+    booked_hourly_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     booked_daily_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     deposit_amount = models.DecimalField(max_digits=8, decimal_places=2, default=0)
