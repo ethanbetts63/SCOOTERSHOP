@@ -1,9 +1,12 @@
-{% extends "core/layout.html" %}
+{% extends "dashboard/admin_layout.html" %}
 {% load static %}
 
-{% block title %}Admin Hire Booking{% endblock %}
+{% block extra_css %}
+{{ block.super }}
 
-{% block content %}
+{% endblock %}
+
+{% block admin_main_content %}
     <div class="container my-5">
         <div class="row">
             <div class="col-md-10 offset-md-1">
@@ -168,7 +171,7 @@
                                 {% if form.driver_profile.errors %}<div class="text-danger small">{{ form.driver_profile.errors }}</div>{% endif %}
                             </div>
                             <div class="mb-4">
-                                <a href="{% url 'hire:manage_driver_profiles' %}" class="btn btn-info btn-sm">Manage Driver Profiles</a>
+                                <a href="" class="btn btn-info btn-sm">Manage Driver Profiles</a>
                                 <small class="form-text text-muted ms-2">Create, edit, or delete driver profiles.</small>
                             </div>
 
@@ -342,6 +345,7 @@
                     returnDatePicker.clear();
                 }
             }
+            // Removed the call to populateTimeDropdown here, as Django form handles it
         }
 
         function updateEstimatedTotal() {
@@ -425,8 +429,8 @@
 
         // --- Event Listeners ---
 
-        // Initial population of time dropdowns (if needed, though Django form handles it)
-        handleDateAndTimeUpdates(); // Set min/max dates for return picker
+        // Initial call to set min/max dates for return picker (no longer populating times via JS here)
+        handleDateAndTimeUpdates(); 
 
         // Listen for changes on date/time inputs
         pickUpDateInput.addEventListener('change', updateEstimatedTotal);

@@ -5,6 +5,10 @@ from . import views
 app_name = 'hire'
 
 urlpatterns = [
+    # Admin Hire Booking URL
+    path('admin/hire/book/new/', views.AdminHireBookingView.as_view(), name='admin_hire_booking'),
+
+    # User multi-step booking URLs
     path('book/step1/select-datetime/', views.SelectDateTimeView.as_view(), name='step1_select_datetime'),
     path('book/step2/choose-bike/', views.BikeChoiceView.as_view(), name='step2_choose_bike'),
     path('book/step3/<int:motorcycle_id>/', views.AddonPackageView.as_view(), name='step3_addons_and_packages'),
