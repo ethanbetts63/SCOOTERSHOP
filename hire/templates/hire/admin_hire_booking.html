@@ -165,7 +165,7 @@
                                 {% if form.currency.errors %}<div class="text-danger small">{{ form.currency.errors }}</div>{% endif %}
                             </div>
                             <div class="mb-3">
-                                <p class="mb-1"><strong>Estimated Total Price of Selections (Excluding Add-ons): <span id="estimatedTotalPriceDisplay">{{ hire_settings.currency_symbol }}0.00</span></strong></p>
+                                <p class="mb-1"><strong>Estimated Total Price of Selections: <span id="estimatedTotalPriceDisplay">{{ hire_settings.currency_symbol }}0.00</span></strong></p>
                             </div>
                             <div class="form-group mb-3">
                                 <label for="{{ form.total_price.id_for_label }}" class="form-label">{{ form.total_price.label }}</label>
@@ -230,11 +230,14 @@
         const bookedDailyRateInput = document.getElementById('id_booked_daily_rate');
         const packageSelect = document.getElementById('id_package'); // New: Package dropdown
         const packagePriceDisplay = document.getElementById('package-price-display'); // New: Package price display
-        const pickUpDateInput = document.getElementById('id_pick_up_date'); // Added for total calculation
-        const pickUpTimeInput = document.getElementById('id_pick_up_time'); // Added for total calculation
-        const returnDateInput = document.getElementById('id_return_date'); // Added for total calculation
-        const returnTimeInput = document.getElementById('id_return_time'); // Added for total calculation
+        const pickUpDateInput = document.getElementById('id_pick_up_date');
+        const pickUpTimeInput = document.getElementById('id_pick_up_time');
+        const returnDateInput = document.getElementById('id_return_date');
+        const returnTimeInput = document.getElementById('id_return_time');
         const estimatedTotalPriceDisplay = document.getElementById('estimatedTotalPriceDisplay'); // New: Estimated total display
+        const addonCheckboxes = document.querySelectorAll('.addon-checkbox'); // Get all add-on checkboxes
+        const addonQuantityInputs = document.querySelectorAll('.addon-quantity'); // Get all add-on quantity inputs
+
 
         // --- Data from Django Context (safely retrieved from json_script tags) ---
         const motorcyclesData = JSON.parse(document.getElementById('motorcycles-data').textContent);
@@ -386,7 +389,7 @@
             packagePriceDisplay.textContent = `Selected Package Price: ${currencySymbol}${currentPackagePrice.toFixed(2)}`;
         }
 
-        // --- New: Core Logic for Estimated Total Price Display (excluding add-ons) ---
+        // --- New: Core Logic for Estimated Total Price Display (including add-ons) ---
         function updateEstimatedTotalPrice() {
             const pickupDate = pickUpDatePicker.selectedDates[0];
             const returnDate = returnDatePicker.selectedDates[0];
@@ -406,6 +409,21 @@
                 }
             }
 
+            // Calculate add-on total
+            let addonsTotal = 0;
+            addonCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    const addonId = checkbox.dataset.addonId;
+                    const addonCostElement = document.querySelector(`#addon-${addonId} .addon-cost`);
+                    const addonQuantityInput = document.querySelector(`#quantityDiv${addonId} .addon-quantity`);
+                    
+                    const addonCost = parseFloat(addonCostElement.dataset.addonCost) || 0;
+                    const addonQuantity = parseInt(addonQuantityInput.value) || 0;
+
+                    addonsTotal += (addonCost * addonQuantity);
+                }
+            });
+
             // Debugging logs
             console.log("--- Calculating Estimated Total ---");
             console.log("Pickup Date:", pickupDate);
@@ -415,18 +433,21 @@
             console.log("Calculated Duration (days, rounded up):", durationDays);
             console.log("Daily Rate:", dailyRate);
             console.log("Package Price (per day):", packagePrice);
+            console.log("Addons Total (per day):", addonsTotal);
             console.log("Motorcycle Cost (Daily Rate * Duration):", dailyRate * durationDays);
             console.log("Package Cost (Package Price * Duration):", packagePrice * durationDays);
+            console.log("Addons Cost (Addons Total * Duration):", addonsTotal * durationDays);
 
 
-            const estimatedTotal = (dailyRate * durationDays) + (packagePrice * durationDays);
+            // The user's provided change: packagePrice and addonCost are also per day
+            const estimatedTotal = (dailyRate * durationDays) + (packagePrice * durationDays) + (addonsTotal * durationDays);
             estimatedTotalPriceDisplay.textContent = `${currencySymbol}${estimatedTotal.toFixed(2)}`;
             console.log("Estimated Total:", estimatedTotal.toFixed(2));
             console.log("---------------------------------");
         }
 
 
-        // --- Event Listeners (Simplified) ---
+        // --- Event Listeners ---
 
         // Initial call to set min/max dates for return picker
         handleDateAndTimeUpdates();
@@ -445,7 +466,7 @@
             updateEstimatedTotalPrice(); // Call total update on manual rate change
         });
 
-        // New: Listen for changes on package selection
+        // Listen for changes on package selection
         packageSelect.addEventListener('change', function() {
             updatePackagePriceDisplay();
             updateEstimatedTotalPrice(); // Call total update on package change
@@ -454,6 +475,28 @@
         // Listen for changes on time inputs
         pickUpTimeInput.addEventListener('change', updateEstimatedTotalPrice);
         returnTimeInput.addEventListener('change', updateEstimatedTotalPrice);
+
+        // New: Listen for changes on add-on checkboxes and quantity inputs
+        addonCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const addonId = this.dataset.addonId;
+                const quantityDiv = document.getElementById(`quantityDiv${addonId}`);
+                if (this.checked) {
+                    quantityDiv.classList.remove('d-none');
+                    quantityDiv.classList.add('d-block');
+                } else {
+                    quantityDiv.classList.remove('d-block');
+                    quantityDiv.classList.add('d-none');
+                }
+                updateEstimatedTotalPrice(); // Call total update on add-on checkbox change
+            });
+        });
+
+        addonQuantityInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                updateEstimatedTotalPrice(); // Call total update on add-on quantity change
+            });
+        });
 
 
         // Initial calls on page load
