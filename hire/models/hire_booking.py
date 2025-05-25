@@ -65,7 +65,7 @@ class HireBooking(models.Model):
     payment = models.OneToOneField(
         Payment,
         on_delete=models.SET_NULL, # If payment record is deleted, don't delete booking
-        related_name='hire_booking',
+        related_name='related_hire_booking_payment', # CHANGED: Renamed related_name to avoid clash
         null=True, blank=True, # Allow null initially, will be set upon successful payment
         help_text="Link to the associated payment record."
     )
@@ -113,11 +113,11 @@ class HireBooking(models.Model):
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='unpaid')
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, null=True, blank=True, help_text="Method by which the payment was made.")
-    
+
     # Currency of the booking (NEW FIELD)
     currency = models.CharField(
         max_length=3,
-        default='AUD', 
+        default='AUD',
         help_text="The three-letter ISO currency code for the booking."
     )
 
@@ -225,3 +225,4 @@ class HireBooking(models.Model):
         ordering = ['pickup_date', 'pickup_time', 'motorcycle']
         verbose_name = "Hire Booking"
         verbose_name_plural = "Hire Bookings"
+
