@@ -146,7 +146,7 @@ class PaymentDetailsView(View):
                     # Set intent to None to trigger new PI creation, but keep payment_obj
                     intent = None
 
-            # If no existing payment_obj or intent is valid, create a new one
+            # If no existing intent is valid, create a new one
             if not intent: # This condition now handles creating a new PI for an existing payment_obj or a brand new one
                 logger.debug("Creating new Stripe PaymentIntent.")
                 print("DEBUG: Creating new Stripe PaymentIntent.") # Debug print
@@ -250,15 +250,12 @@ class PaymentDetailsView(View):
             if intent.status == 'succeeded':
                 print("DEBUG: POST Request - Payment Intent status: succeeded.") # Debug print
                 if payment_obj:
-                    # If payment_obj still exists, update its status if necessary
-                    if payment_obj.status != intent.status:
-                        payment_obj.status = intent.status
-                        payment_obj.save()
-                        logger.info(f"Updated Payment DB object status to: {payment_obj.status} based on client-side confirmation.")
-                        print(f"DEBUG: POST Request - Updated Payment DB object {payment_obj.id} status to succeeded.") # Debug print
-                    else:
-                        logger.info(f"Payment DB object status already {payment_obj.status}. No update needed.")
-                        print(f"DEBUG: POST Request - Payment DB object {payment_obj.id} already succeeded.") # Debug print
+                    # The webhook handler is responsible for the final state and deletion.
+                    # We should NOT attempt to save payment_obj here, as its related TempHireBooking
+                    # might have already been deleted by the webhook, leading to a FK error.
+                    # Just log that it was found or not, and proceed to redirect.
+                    logger.info(f"Payment object for intent ID {payment_intent_id} found ({payment_obj.id}). Webhook will finalize.")
+                    print(f"DEBUG: POST Request - Payment object for {payment_intent_id} found. Webhook will finalize.") # Debug print
                 else:
                     # This means the webhook has already processed and deleted the TempHireBooking and Payment.
                     logger.info(f"Payment object for intent ID {payment_intent_id} not found in DB. Assuming webhook processed it.")
@@ -278,7 +275,7 @@ class PaymentDetailsView(View):
                 if payment_obj:
                     if payment_obj.status != intent.status:
                         payment_obj.status = intent.status
-                        payment_obj.save()
+                        payment_obj.save() # Keep this save, as the object is still valid and not deleted by webhook
                 logger.info(f"Payment Intent requires further action or is pending: {intent.status}")
                 return JsonResponse({
                     'status': 'requires_action',
@@ -291,7 +288,7 @@ class PaymentDetailsView(View):
                 if payment_obj:
                     if payment_obj.status != intent.status:
                         payment_obj.status = intent.status
-                        payment_obj.save()
+                        payment_obj.save() # Keep this save
                 logger.warning(f"Payment Intent status is unexpected from client: {intent.status}")
                 return JsonResponse({
                     'status': 'failed',
