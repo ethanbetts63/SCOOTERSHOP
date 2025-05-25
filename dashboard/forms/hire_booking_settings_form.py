@@ -10,7 +10,7 @@ class HireBookingSettingsForm(forms.ModelForm):
             'default_hourly_rate',
             'weekly_discount_percentage',
             'monthly_discount_percentage',
-            'minimum_hire_duration_days',
+            'minimum_hire_duration_hours',
             'maximum_hire_duration_days',
             'booking_lead_time_hours',
             'pick_up_start_time',
@@ -53,7 +53,7 @@ class HireBookingSettingsForm(forms.ModelForm):
             'default_daily_rate': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
             'weekly_discount_percentage': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'max': '100', 'step': '0.01'}),
             'monthly_discount_percentage': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'max': '100', 'step': '0.01'}),
-            'minimum_hire_duration_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'minimum_hire_duration_hours': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
             'maximum_hire_duration_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
             'booking_lead_time_hours': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
             'pick_up_start_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
@@ -94,12 +94,12 @@ class HireBookingSettingsForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        min_days = cleaned_data.get('minimum_hire_duration_days')
+        min_days = cleaned_data.get('minimum_hire_duration_hours')
         max_days = cleaned_data.get('maximum_hire_duration_days')
 
         if min_days is not None and max_days is not None and min_days > max_days:
-            self.add_error('minimum_hire_duration_days', _("Minimum duration must be less than or equal to maximum duration."))
-            if not self.has_error('minimum_hire_duration_days'):
+            self.add_error('minimum_hire_duration_hours', _("Minimum duration must be less than or equal to maximum duration."))
+            if not self.has_error('minimum_hire_duration_hours'):
                 self.add_error('maximum_hire_duration_days', _("Maximum duration must be greater than or equal to minimum duration."))
 
         deposit_calculation_method = cleaned_data.get('default_deposit_calculation_method')

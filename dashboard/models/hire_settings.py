@@ -8,7 +8,7 @@ DEPOSIT_CALC_CHOICES = [
 
 class HireSettings(models.Model):
     # --- Rate Defaults ---
-    # Default daily rate for bikes.
+    # Default hourly rate for bikes.
     default_hourly_rate = models.DecimalField(
         max_digits=8,
         decimal_places=2,
@@ -104,10 +104,10 @@ class HireSettings(models.Model):
     )
 
     # --- Hire Duration and Timing Rules ---
-    # Minimum hire duration in days.
-    minimum_hire_duration_days = models.PositiveIntegerField(
-        default=1,
-        help_text="Minimum duration for a hire booking in days."
+    # Minimum hire duration in hours.
+    minimum_hire_duration_hours = models.PositiveIntegerField(
+        default=2, 
+        help_text="Minimum duration for a hire booking in hours."
     )
 
     # Minimum hours required before pickup.
