@@ -1,4 +1,4 @@
-# hire/tests/model_tests/test_hire_addon.py
+# hire/tests/model_tests/hire_addon_tests.py
 
 from decimal import Decimal
 from django.test import TestCase
@@ -7,6 +7,8 @@ from django.db import IntegrityError
 
 # Import model factory
 from hire.tests.test_helpers.model_factories import create_addon
+# Import the AddOn model directly to test its defaults
+from hire.models import AddOn
 
 
 class AddOnModelTest(TestCase):
@@ -93,9 +95,10 @@ class AddOnModelTest(TestCase):
 
     def test_default_quantity_values(self):
         """
-        Test that min_quantity and max_quantity default to 1.
+        Test that min_quantity and max_quantity default to 1 as per the model definition.
+        We create the object directly here to bypass factory defaults.
         """
-        addon = create_addon(name="Default Quantity AddOn", cost=Decimal('5.00'))
+        addon = AddOn.objects.create(name="Default Quantity AddOn", cost=Decimal('5.00'))
         self.assertEqual(addon.min_quantity, 1)
         self.assertEqual(addon.max_quantity, 1)
 

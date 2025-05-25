@@ -1,4 +1,4 @@
-# hire/tests/model_tests/test_temp_booking_addon.py
+# hire/tests/model_tests/temp_booking_addon_tests.py
 
 from decimal import Decimal
 from django.test import TestCase
@@ -13,6 +13,9 @@ from hire.tests.test_helpers.model_factories import (
     create_motorcycle,
     create_driver_profile,
 )
+
+# Import the model directly to bypass factory defaults for specific tests
+from hire.models import TempBookingAddOn
 
 
 class TempBookingAddOnModelTest(TestCase):
@@ -63,12 +66,12 @@ class TempBookingAddOnModelTest(TestCase):
         expected_str = f"3 x {self.addon_min1_max5.name} for Temp Booking {str(self.temp_booking.session_uuid)[:8]}"
         self.assertEqual(str(temp_booking_addon), expected_str)
 
-        # Test with a deleted addon (addon=None)
-        temp_booking_addon_deleted = create_temp_booking_addon(
+        # Test with a deleted addon (addon=None) by creating the instance directly
+        temp_booking_addon_deleted = TempBookingAddOn.objects.create(
             temp_booking=self.temp_booking,
-            addon=None,
+            addon=None, # Explicitly set to None
             quantity=1,
-            booked_addon_price=Decimal('10.00')
+            booked_addon_price=Decimal('10.00') # Price can be anything if addon is null
         )
         expected_str_deleted = f"1 x Deleted Add-On for Temp Booking {str(self.temp_booking.session_uuid)[:8]}"
         self.assertEqual(str(temp_booking_addon_deleted), expected_str_deleted)
@@ -180,7 +183,8 @@ class TempBookingAddOnModelTest(TestCase):
         Test that clean() passes for TempBookingAddOn if addon is null (deleted).
         In this case, quantity and booked_addon_price validation should be skipped.
         """
-        temp_booking_addon = create_temp_booking_addon(
+        # Create the instance directly to ensure addon is None
+        temp_booking_addon = TempBookingAddOn.objects.create(
             temp_booking=self.temp_booking,
             addon=None, # Simulate deleted addon
             quantity=1,
