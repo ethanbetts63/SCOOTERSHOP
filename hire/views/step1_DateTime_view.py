@@ -25,7 +25,7 @@ class SelectDateTimeView(View):
         print(f"Form data: {request.POST}")
         print(f"Hire Settings: {hire_settings}")
         if hire_settings:
-            print(f"   Min Hire Duration Days: {hire_settings.minimum_hire_duration_days}")
+            print(f"   Min Hire Duration Hours: {hire_settings.minimum_hire_duration_hours}")
             print(f"   Max Hire Duration Days: {hire_settings.maximum_hire_duration_days}")
             print(f"   Booking Lead Time Hours: {hire_settings.booking_lead_time_hours}")
             print(f"   Pick Up Start Time: {hire_settings.pick_up_start_time}")
@@ -64,26 +64,19 @@ class SelectDateTimeView(View):
             print(f"   Current Datetime (UTC for comparison): {now_utc}")
 
 
-            # --- Validation Checks ---
+            # --- Validation Checks (These are view-level validations, separate from form.clean()) ---
             errors_exist = False
 
-            # Rule: Return date and time must be after pickup date and time.
-            print(f"\nValidation: Return Datetime vs Pickup Datetime")
-            print(f"   return_datetime_utc ({return_datetime_utc}) <= pickup_datetime_utc ({pickup_datetime_utc})? {return_datetime_utc <= pickup_datetime_utc}")
-            if return_datetime_utc <= pickup_datetime_utc:
-                messages.error(request, "Return date and time must be after pickup date and time.")
-                errors_exist = True
-
-            # Rule: Hire duration must meet the minimum requirement.
-            if hire_settings and hire_settings.minimum_hire_duration_days is not None:
-                min_duration = datetime.timedelta(days=hire_settings.minimum_hire_duration_days)
+            # Rule: Hire duration must meet the minimum requirement (now in hours).
+            if hire_settings and hire_settings.minimum_hire_duration_hours is not None:
+                min_duration = datetime.timedelta(hours=hire_settings.minimum_hire_duration_hours)
                 actual_duration = return_datetime_utc - pickup_datetime_utc
                 print(f"\nValidation: Minimum Hire Duration")
                 print(f"   Minimum Hire Duration (timedelta): {min_duration}")
                 print(f"   Actual Hire Duration (timedelta): {actual_duration}")
                 print(f"   actual_duration ({actual_duration}) < min_duration ({min_duration})? {actual_duration < min_duration}")
                 if actual_duration < min_duration:
-                    messages.error(request, f"Hire duration must be at least {hire_settings.minimum_hire_duration_days} days.")
+                    messages.error(request, f"Hire duration must be at least {hire_settings.minimum_hire_duration_hours} hours.")
                     errors_exist = True
 
             # Rule: Hire duration must not exceed the maximum requirement.
@@ -122,10 +115,9 @@ class SelectDateTimeView(View):
 
             print(f"\nErrors exist after all validations: {errors_exist}")
 
-            # If any validation errors, redirect back to step2_choose_bike (which includes step1 form)
+            # If any validation errors (from view-level checks), redirect back to step2_choose_bike
             if errors_exist:
-                # We no longer store form data/errors in session as TempHireBooking will hold values
-                print(f"Redirecting back to step2_choose_bike due to errors.")
+                print(f"Redirecting back to step2_choose_bike due to view-level errors.")
                 return redirect('hire:step2_choose_bike')
 
             # --- Data Persistence to TempHireBooking ---
@@ -201,8 +193,19 @@ class SelectDateTimeView(View):
             return redirect(redirect_url)
 
         else:
-            # Form is not valid, add errors to messages and redirect
+            # Form is not valid. Iterate through form errors and add them to messages.
             print(f"\nForm is NOT valid. Errors: {form.errors}")
-            messages.error(request, "Please correct the errors below for your hire dates and times.")
-            # We no longer store form data/errors in session
+            
+            # Add non-field errors (e.g., the "Return date and time must be after pickup date and time." error)
+            for error in form.non_field_errors():
+                messages.error(request, error)
+            
+            # Add field-specific errors
+            for field_name, field_errors in form.errors.items():
+                if field_name != '__all__': # '__all__' errors are handled by non_field_errors
+                    for error in field_errors:
+                        # You can choose to prepend the field label or just add the error
+                        # For example: messages.error(request, f"{form.fields[field_name].label}: {error}")
+                        messages.error(request, error) # Just add the error message
+
             return redirect('hire:step2_choose_bike')

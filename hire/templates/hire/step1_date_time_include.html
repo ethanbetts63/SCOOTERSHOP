@@ -35,7 +35,7 @@
                              <input type="text" id="id_return_date" name="return_date"
                                     class="form-control"
                                    placeholder="Select return date"
-                                   data-min-hire-duration-days="{{ hire_settings.minimum_hire_duration_days|default:1 }}"
+                                   data-min-hire-duration-hours="{{ hire_settings.minimum_hire_duration_hours|default:1 }}"
                                    data-max-hire-duration-days="{{ hire_settings.maximum_hire_duration_days|default:30 }}"> {# Added max hire duration #}
                         </div>
                          <div class="form-field">
@@ -88,7 +88,7 @@
         const returnTimeSelect = document.getElementById('id_return_time');
 
         const bookingLeadTimeHours = parseInt(document.getElementById('id_pick_up_date').getAttribute('data-booking-lead-time-hours')) || 0;
-        const minimumHireDurationDays = parseInt(document.getElementById('id_return_date').getAttribute('data-min-hire-duration-days')) || 1;
+        const minimumHireDurationDays = parseInt(document.getElementById('id_return_date').getAttribute('data-min-hire-duration-hours')) || 1;
         const maximumHireDurationDays = parseInt(document.getElementById('id_return_date').getAttribute('data-max-hire-duration-days')) || 30;
 
         // Assuming blocked_dates_json is passed from the Django view
@@ -209,20 +209,20 @@
             // Rule 2: Minimum Hire Duration for Return Date
             // Rule 3: Maximum Hire Duration for Return Date
             if (pickUpDate) {
-                let requiredReturnDate = new Date(pickUpDate);
-                // Adjusted to ensure return date is at least 'minimumHireDurationDays' after pickup date
-                requiredReturnDate.setDate(requiredReturnDate.getDate() + minimumHireDurationDays);
+                // Set the minimum return date to be the pickup date itself, allowing same-day bookings.
+                // The minimumHireDurationDays is not used here for setting the minDate.
+                returnDatePicker.set('minDate', pickUpDate); 
 
                 let maximumAllowedReturnDate = new Date(pickUpDate);
                 maximumAllowedReturnDate.setDate(maximumAllowedReturnDate.getDate() + maximumHireDurationDays);
 
 
-                returnDatePicker.set('minDate', requiredReturnDate);
                 returnDatePicker.set('maxDate', maximumAllowedReturnDate);
 
                 if (returnDate) {
                     // Clear return date if it falls outside the new valid range
-                    if (returnDate < requiredReturnDate || returnDate > maximumAllowedReturnDate) {
+                    // This check now uses pickUpDate as the minimum, allowing same-day selection
+                    if (returnDate < pickUpDate || returnDate > maximumAllowedReturnDate) { 
                         returnDatePicker.clear();
                     }
                 }
