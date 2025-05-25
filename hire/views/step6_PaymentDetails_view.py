@@ -4,13 +4,14 @@ from django.views import View
 from django.http import JsonResponse
 from django.db import transaction
 from django.conf import settings
-from django.urls import reverse # IMPORT THIS!
+from django.urls import reverse
 import stripe
 import json
 import logging
 
 from payments.models import Payment
-from hire.models import TempHireBooking # Import TempHireBooking here
+from hire.models import TempHireBooking
+from django.contrib.auth import get_user_model # Import get_user_model
 
 logger = logging.getLogger(__name__)
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -55,6 +56,23 @@ class PaymentDetailsView(View):
 
         payment_obj = Payment.objects.filter(temp_hire_booking=temp_booking).first()
         intent = None
+
+        # --- START: Added logging for user check ---
+        if request.user.is_authenticated:
+            logger.debug(f"Authenticated user ID: {request.user.id}")
+            User = get_user_model()
+            try:
+                db_user = User.objects.get(id=request.user.id)
+                logger.debug(f"User {request.user.id} successfully retrieved from DB.")
+            except User.DoesNotExist:
+                logger.error(f"CRITICAL ERROR: Authenticated user {request.user.id} DOES NOT EXIST in the database!")
+                # You might want to add a redirect or error message here for the user
+                # For now, we'll just log it and proceed, but this is likely the root cause.
+            except Exception as e:
+                logger.error(f"Error checking user {request.user.id} in DB: {e}")
+        else:
+            logger.debug("User is anonymous (not authenticated).")
+        # --- END: Added logging for user check ---
 
         if payment_obj and payment_obj.stripe_payment_intent_id:
             try:
@@ -129,7 +147,7 @@ class PaymentDetailsView(View):
                 else:
                     payment_obj = Payment.objects.create(
                         temp_hire_booking=temp_booking,
-                        user=request.user if request.user.is_authenticated else None,
+                        user=request.user if request.user.is_authenticated else None, # This line remains the same
                         stripe_payment_intent_id=intent.id,
                         amount=amount_to_pay,
                         currency=currency,
