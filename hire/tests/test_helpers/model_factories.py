@@ -109,6 +109,10 @@ def create_hire_settings(
     default_deposit_calculation_method='percentage',
     deposit_percentage=Decimal('10.00'),
     deposit_amount=Decimal('50.00'),
+    # Add the missing payment option fields
+    enable_online_full_payment=False,
+    enable_online_deposit_payment=False,
+    enable_in_store_full_payment=False,
     # Add other HireSettings fields as needed
 ):
     """Creates or gets a HireSettings instance."""
@@ -127,6 +131,10 @@ def create_hire_settings(
     settings.default_deposit_calculation_method = default_deposit_calculation_method
     settings.deposit_percentage = deposit_percentage
     settings.deposit_amount = deposit_amount
+    # Assign the new payment option fields
+    settings.enable_online_full_payment = enable_online_full_payment
+    settings.enable_online_deposit_payment = enable_online_deposit_payment
+    settings.enable_in_store_full_payment = enable_in_store_full_payment
     settings.save()
     return settings
 
