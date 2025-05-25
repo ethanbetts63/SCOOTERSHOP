@@ -134,16 +134,16 @@ def create_payment(
     amount=Decimal('100.00'),
     currency='AUD',
     status='pending',
-    stripe_payment_intent_id=None, # Re-added
-    stripe_payment_method_id=None, # Re-added
+    stripe_payment_intent_id=None, 
+    stripe_payment_method_id=None, 
 ):
     """Creates a Payment instance."""
     return Payment.objects.create(
         amount=amount,
         currency=currency,
         status=status,
-        stripe_payment_intent_id=stripe_payment_intent_id, # Use correct field name
-        stripe_payment_method_id=stripe_payment_method_id, # Use correct field name
+        stripe_payment_intent_id=stripe_payment_intent_id, 
+        stripe_payment_method_id=stripe_payment_method_id, 
     )
 
 # --- Factories for Hire App Models ---
@@ -159,19 +159,42 @@ def create_driver_profile(
     date_of_birth=None,
     is_australian_resident=True,
     license_number="123456789",
-    license_expiry_date=None,
+    license_expiry_date=None, # Main license expiry
     international_license_issuing_country="",
-    international_license_expiry_date=None,
+    international_license_expiry_date=None, # International license expiry
     passport_number="",
-    passport_expiry_date=None,
-    # File fields are omitted for simplicity in factory, can be added if needed
+    passport_expiry_date=None, # Passport expiry
+    license_photo=None,
+    international_license_photo=None,
+    passport_photo=None,
+    id_image=None, 
+    international_id_image=None, 
+    # Add a flag to control default expiry dates for testing purposes
+    _set_default_expiry_dates=True,
 ):
     """Creates a DriverProfile instance."""
+    # Default date_of_birth if not provided
     if not date_of_birth:
-        # Default to an age over minimum_driver_age (e.g., 25 years ago)
-        date_of_birth = timezone.now().date() - datetime.timedelta(days=25 * 365)
-    if not license_expiry_date:
-        license_expiry_date = timezone.now().date() + datetime.timedelta(days=365) # Expires in 1 year
+        try:
+            min_age = HireSettings.objects.first().minimum_driver_age
+        except (HireSettings.DoesNotExist, AttributeError):
+            min_age = 18 # Fallback default
+        date_of_birth = timezone.now().date() - datetime.timedelta(days=(min_age + 4) * 365)
+
+    # Default license_expiry_date (for the primary license) if not provided.
+    # This is always required by the model, so it should always have a default.
+    if license_expiry_date is None:
+        license_expiry_date = timezone.now().date() + datetime.timedelta(days=365)
+
+    # Set defaults for international/passport details if foreigner and not provided,
+    # but only if _set_default_expiry_dates is True.
+    if not is_australian_resident and _set_default_expiry_dates:
+        if international_license_expiry_date is None:
+            international_license_expiry_date = timezone.now().date() + datetime.timedelta(days=365)
+        if passport_expiry_date is None:
+            passport_expiry_date = timezone.now().date() + datetime.timedelta(days=365)
+    # For Australian residents, international and passport fields should typically be None/empty
+    # unless specific test data is being provided. The factory defaults them to empty/None.
 
     return DriverProfile.objects.create(
         user=user,
@@ -184,11 +207,16 @@ def create_driver_profile(
         date_of_birth=date_of_birth,
         is_australian_resident=is_australian_resident,
         license_number=license_number,
-        license_expiry_date=license_expiry_date,
+        license_expiry_date=license_expiry_date, # Now always has a value
         international_license_issuing_country=international_license_issuing_country,
         international_license_expiry_date=international_license_expiry_date,
         passport_number=passport_number,
         passport_expiry_date=passport_expiry_date,
+        license_photo=license_photo,
+        international_license_photo=international_license_photo,
+        passport_photo=passport_photo,
+        id_image=id_image,
+        international_id_image=international_id_image,
     )
 
 def create_addon(
@@ -224,7 +252,7 @@ def create_package(
         is_available=is_available
     )
     if add_ons:
-        package.add_ons.set(add_ons) # Use .set() for ManyToMany
+        package.add_ons.set(add_ons) 
     return package
 
 def create_hire_booking(
@@ -267,9 +295,7 @@ def create_hire_booking(
         return_time = datetime.time(16, 0)
     if not booking_reference:
         booking_reference = f"HIRE-{uuid.uuid4().hex[:8].upper()}"
-    # Removed automatic payment creation based on stripe_payment_intent_id here
-    # If a payment object is needed, it should be passed explicitly.
-
+    
     booking = HireBooking.objects.create(
         motorcycle=motorcycle,
         driver_profile=driver_profile,
@@ -290,7 +316,7 @@ def create_hire_booking(
         package=package,
         booked_package_price=booked_package_price,
         currency=currency,
-        payment=payment, # Payment object should be passed if needed
+        payment=payment, 
         stripe_payment_intent_id=stripe_payment_intent_id,
         customer_notes=customer_notes,
         internal_notes=internal_notes,
@@ -301,13 +327,13 @@ def create_booking_addon(
     booking,
     addon=None,
     quantity=1,
-    booked_addon_price=None # Will default to addon.cost if not provided
+    booked_addon_price=None 
 ):
     """Creates a BookingAddOn instance."""
     if not addon:
         addon = create_addon()
     if booked_addon_price is None:
-        booked_addon_price = addon.cost # Default to current addon cost
+        booked_addon_price = addon.cost 
 
     return BookingAddOn.objects.create(
         booking=booking,
@@ -380,13 +406,13 @@ def create_temp_booking_addon(
     temp_booking,
     addon=None,
     quantity=1,
-    booked_addon_price=None # Will default to addon.cost if not provided
+    booked_addon_price=None 
 ):
     """Creates a TempBookingAddOn instance."""
     if not addon:
         addon = create_addon()
     if booked_addon_price is None:
-        booked_addon_price = addon.cost # Default to current addon cost
+        booked_addon_price = addon.cost
 
     return TempBookingAddOn.objects.create(
         temp_booking=temp_booking,
