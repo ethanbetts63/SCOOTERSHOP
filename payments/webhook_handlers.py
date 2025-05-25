@@ -20,6 +20,7 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
     2. Copying associated add-ons.
     3. Deleting the temporary booking.
     4. Updating the Payment object to link to the new HireBooking and DriverProfile.
+    5. Updating the Payment object's status to reflect the successful payment.
 
     Args:
         payment_obj (Payment): The Payment model instance linked to this intent.
@@ -30,11 +31,20 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
     print(f"DEBUG: Payment Intent Data received: {payment_intent_data}") # Debug print
 
     try:
+        temp_booking = payment_obj.temp_hire_booking
+
+        # FIX: Check if temp_booking is None before proceeding
+        if temp_booking is None:
+            logger.error(f"TempHireBooking not found for Payment ID {payment_obj.id}. Cannot finalize booking.")
+            print(f"DEBUG: ERROR - TempHireBooking not found for Payment ID {payment_obj.id}.") # Debug print
+            # Re-raise TempHireBooking.DoesNotExist to be caught by the outer try-except in the test
+            raise TempHireBooking.DoesNotExist(f"TempHireBooking for Payment ID {payment_obj.id} does not exist.")
+
+        # Moved this print statement here, after confirming temp_booking is not None
+        print(f"DEBUG: Retrieved TempHireBooking {temp_booking.id} from Payment object.") # Debug print
+
         # Ensure we are working within an atomic transaction for data consistency
         with transaction.atomic():
-            temp_booking = payment_obj.temp_hire_booking
-            print(f"DEBUG: Retrieved TempHireBooking {temp_booking.id} from Payment object.") # Debug print
-
             # Determine payment_status for the HireBooking based on the original payment option
             hire_payment_status = 'paid' if temp_booking.payment_option == 'online_full' else 'deposit_paid'
             print(f"DEBUG: Hire payment status determined: {hire_payment_status}") # Debug print
@@ -58,8 +68,6 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
                 payment_method='online',
                 currency=temp_booking.currency,
                 status='confirmed',
-                # Do NOT link payment here directly, as we will update the existing payment_obj
-                # payment=payment_obj, # REMOVED: This creates a new payment link, we want to update existing
                 stripe_payment_intent_id=payment_obj.stripe_payment_intent_id, # Populate this field
             )
             logger.info(f"Created new HireBooking: {hire_booking.booking_reference} from TempHireBooking {temp_booking.id}")
@@ -68,6 +76,7 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
             # Update the existing Payment object to link to the new HireBooking and DriverProfile
             payment_obj.hire_booking = hire_booking
             payment_obj.driver_profile = hire_booking.driver_profile # Link payment to the driver
+            payment_obj.status = payment_intent_data['status'] # Update payment status
             # Set temp_hire_booking to None before deleting the temp_booking to ensure SET_NULL works
             payment_obj.temp_hire_booking = None
             payment_obj.save()
@@ -103,10 +112,11 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
             print("DEBUG: Hire booking finalization complete.") # Debug print
 
     except TempHireBooking.DoesNotExist:
+        # This block now catches the specific exception raised if temp_booking is None
         logger.error(f"TempHireBooking not found for Payment ID {payment_obj.id}. Cannot finalize booking.")
         print(f"DEBUG: ERROR - TempHireBooking not found for Payment ID {payment_obj.id}.") # Debug print
-        # Depending on your error handling, you might want to raise an exception
-        # or mark the payment as needing manual review.
+        # Re-raise the exception to ensure the webhook returns a 500, prompting Stripe to retry
+        raise
     except Exception as e:
         logger.exception(f"Critical error finalizing hire booking for Payment ID {payment_obj.id}: {e}")
         print(f"DEBUG: CRITICAL ERROR - Exception in handle_hire_booking_succeeded: {e}") # Debug print
@@ -124,3 +134,4 @@ WEBHOOK_HANDLERS = {
     # },
     # Add more booking types and their handlers here
 }
+
