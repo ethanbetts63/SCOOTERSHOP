@@ -23,15 +23,19 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
         payment_obj (Payment): The Payment model instance linked to this intent.
         payment_intent_data (dict): The data object from the Stripe PaymentIntent event.
     """
+    print(f"DEBUG: Entering handle_hire_booking_succeeded for Payment ID: {payment_obj.id}") # Debug print
     logger.info(f"Handling successful hire_booking payment for Payment ID: {payment_obj.id}")
+    print(f"DEBUG: Payment Intent Data received: {payment_intent_data}") # Debug print
 
     try:
         # Ensure we are working within an atomic transaction for data consistency
         with transaction.atomic():
             temp_booking = payment_obj.temp_hire_booking
+            print(f"DEBUG: Retrieved TempHireBooking {temp_booking.id} from Payment object.") # Debug print
 
             # Determine payment_status for the HireBooking based on the original payment option
             hire_payment_status = 'paid' if temp_booking.payment_option == 'online_full' else 'deposit_paid'
+            print(f"DEBUG: Hire payment status determined: {hire_payment_status}") # Debug print
 
             # Create the HireBooking instance
             hire_booking = HireBooking.objects.create(
@@ -56,9 +60,11 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
                 stripe_payment_intent_id=payment_obj.stripe_payment_intent_id, # NEW: Populate this field
             )
             logger.info(f"Created new HireBooking: {hire_booking.booking_reference} from TempHireBooking {temp_booking.id}")
+            print(f"DEBUG: Successfully created HireBooking: {hire_booking.booking_reference}") # Debug print
 
             # Copy add-ons from TempBookingAddOn to BookingAddOn
             temp_booking_addons = TempBookingAddOn.objects.filter(temp_booking=temp_booking)
+            print(f"DEBUG: Found {len(temp_booking_addons)} temporary add-ons.") # Debug print
             for temp_addon in temp_booking_addons:
                 BookingAddOn.objects.create(
                     booking=hire_booking,
@@ -66,24 +72,29 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
                     quantity=temp_addon.quantity,
                     booked_addon_price=temp_addon.booked_addon_price
                 )
+                print(f"DEBUG: Copied add-on: {temp_addon.addon.name} (Qty: {temp_addon.quantity})") # Debug print
             logger.info(f"Copied {len(temp_booking_addons)} add-ons for HireBooking {hire_booking.booking_reference}.")
 
             # Delete the TempHireBooking and its associated TempBookingAddOns
             temp_booking_id_to_delete = temp_booking.id
             temp_booking.delete()
             logger.info(f"TempHireBooking {temp_booking_id_to_delete} and associated data deleted.")
+            print(f"DEBUG: Deleted TempHireBooking {temp_booking_id_to_delete}.") # Debug print
 
             # At this point, the booking is finalized. You might want to:
             # - Send a confirmation email to the user.
             # - Update inventory (if not already done).
             # - Log the final booking reference for administrative purposes.
+            print("DEBUG: Hire booking finalization complete.") # Debug print
 
     except TempHireBooking.DoesNotExist:
         logger.error(f"TempHireBooking not found for Payment ID {payment_obj.id}. Cannot finalize booking.")
+        print(f"DEBUG: ERROR - TempHireBooking not found for Payment ID {payment_obj.id}.") # Debug print
         # Depending on your error handling, you might want to raise an exception
         # or mark the payment as needing manual review.
     except Exception as e:
         logger.exception(f"Critical error finalizing hire booking for Payment ID {payment_obj.id}: {e}")
+        print(f"DEBUG: CRITICAL ERROR - Exception in handle_hire_booking_succeeded: {e}") # Debug print
         # Re-raise the exception to ensure the webhook returns a 500, prompting Stripe to retry
         raise
 
