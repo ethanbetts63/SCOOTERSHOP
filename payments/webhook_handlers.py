@@ -6,6 +6,7 @@ import logging
 from hire.models import TempHireBooking, HireBooking, BookingAddOn, TempBookingAddOn
 # Import Payment model from payments app
 from payments.models import Payment
+from hire.models import DriverProfile # Import DriverProfile
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +19,7 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
     1. Converting the TempHireBooking to a permanent HireBooking.
     2. Copying associated add-ons.
     3. Deleting the temporary booking.
+    4. Updating the Payment object to link to the new HireBooking and DriverProfile.
 
     Args:
         payment_obj (Payment): The Payment model instance linked to this intent.
@@ -56,11 +58,22 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
                 payment_method='online',
                 currency=temp_booking.currency,
                 status='confirmed',
-                payment=payment_obj, # Link the HireBooking to the Payment object
-                stripe_payment_intent_id=payment_obj.stripe_payment_intent_id, # NEW: Populate this field
+                # Do NOT link payment here directly, as we will update the existing payment_obj
+                # payment=payment_obj, # REMOVED: This creates a new payment link, we want to update existing
+                stripe_payment_intent_id=payment_obj.stripe_payment_intent_id, # Populate this field
             )
             logger.info(f"Created new HireBooking: {hire_booking.booking_reference} from TempHireBooking {temp_booking.id}")
             print(f"DEBUG: Successfully created HireBooking: {hire_booking.booking_reference}") # Debug print
+
+            # Update the existing Payment object to link to the new HireBooking and DriverProfile
+            payment_obj.hire_booking = hire_booking
+            payment_obj.driver_profile = hire_booking.driver_profile # Link payment to the driver
+            # Set temp_hire_booking to None before deleting the temp_booking to ensure SET_NULL works
+            payment_obj.temp_hire_booking = None
+            payment_obj.save()
+            logger.info(f"Updated Payment {payment_obj.id} to link to HireBooking {hire_booking.booking_reference} and DriverProfile {hire_booking.driver_profile.id}.")
+            print(f"DEBUG: Updated Payment object with HireBooking and DriverProfile links.") # Debug print
+
 
             # Copy add-ons from TempBookingAddOn to BookingAddOn
             temp_booking_addons = TempBookingAddOn.objects.filter(temp_booking=temp_booking)
@@ -76,6 +89,8 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
             logger.info(f"Copied {len(temp_booking_addons)} add-ons for HireBooking {hire_booking.booking_reference}.")
 
             # Delete the TempHireBooking and its associated TempBookingAddOns
+            # Because TempBookingAddOn has on_delete=CASCADE to TempHireBooking,
+            # deleting temp_booking will automatically delete its related TempBookingAddOns.
             temp_booking_id_to_delete = temp_booking.id
             temp_booking.delete()
             logger.info(f"TempHireBooking {temp_booking_id_to_delete} and associated data deleted.")

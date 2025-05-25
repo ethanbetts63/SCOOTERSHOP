@@ -1,6 +1,5 @@
 # payments/models.py
 from django.db import models
-# REMOVED: from hire.models import TempHireBooking # This caused the circular import
 from django.conf import settings # Needed for AUTH_USER_MODEL if we decide to link to user as well
 import uuid # For UUIDField
 
@@ -15,23 +14,34 @@ class Payment(models.Model):
     # Link directly to the TempHireBooking, ensuring a one-to-one relationship.
     # This is crucial for tying the payment to a specific booking.
     # CORRECTED: Using a string reference 'hire.TempHireBooking' to break the circular import.
+    # Changed on_delete to SET_NULL to prevent accidental deletion of Payment when TempHireBooking is deleted.
     temp_hire_booking = models.OneToOneField(
         'hire.TempHireBooking', # Changed to string reference
-        on_delete=models.CASCADE, # If the TempHireBooking is deleted, delete this Payment record too.
+        on_delete=models.SET_NULL, # IMPORTANT: Changed from CASCADE to SET_NULL
         related_name='payment', # Allows accessing payment from TempHireBooking: booking.payment
-        help_text="The temporary hire booking associated with this payment."
+        null=True, # Allow null as TempHireBooking will be deleted after conversion
+        blank=True, # Allow blank in forms
+        help_text="The temporary hire booking associated with this payment (null after conversion)."
     )
 
-    # Optionally, link to the user who initiated the payment.
-    # This can be useful for user-specific payment history, but the primary link is to the booking.
-    # Make it nullable if payments can be made by unauthenticated users or if the user link isn't always available.
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL, # Don't delete payment if user is deleted, just set to NULL.
-        related_name='payments',
-        null=True, # Allow null if payment can be made without a logged-in user (e.g., guest checkout)
+    # NEW: Link to the permanent HireBooking after conversion.
+    hire_booking = models.ForeignKey(
+        'hire.HireBooking', # String reference to HireBooking model
+        on_delete=models.SET_NULL, # If HireBooking is deleted, don't delete payment, just set to NULL.
+        related_name='payments', # Allows accessing payments from HireBooking: booking.payments.all()
+        null=True, # Will be set after successful conversion from TempHireBooking
         blank=True,
-        help_text="The user who made this payment, if applicable."
+        help_text="The permanent hire booking associated with this payment."
+    )
+
+    # NEW: Link to the DriverProfile who made the payment.
+    driver_profile = models.ForeignKey(
+        'hire.DriverProfile', # String reference to DriverProfile model
+        on_delete=models.SET_NULL, # If DriverProfile is deleted, don't delete payment.
+        related_name='payments', # Allows accessing payments from DriverProfile: driver.payments.all()
+        null=True, # Driver profile might not always be linked directly at payment creation
+        blank=True,
+        help_text="The driver profile associated with this payment."
     )
 
     # The ID of the Stripe Payment Intent. This is crucial for tracking the payment on Stripe's side.
@@ -62,7 +72,7 @@ class Payment(models.Model):
     # The currency of the payment (e.g., 'usd', 'eur', 'AUD').
     currency = models.CharField(
         max_length=3, # Standard currency codes are 3 letters (e.g., 'USD', 'AUD')
-        default='AUD', 
+        default='AUD',
         help_text="The three-letter ISO currency code (e.g., 'usd', 'AUD')."
     )
 
@@ -101,6 +111,8 @@ class Payment(models.Model):
         """
         String representation of the Payment object.
         """
-        # Safely access temp_hire_booking ID, as it might be null
+        # Safely access related booking IDs for string representation
         temp_booking_id_str = str(self.temp_hire_booking.id) if self.temp_hire_booking else 'N/A'
-        return f"Payment {self.id} for Booking {temp_booking_id_str} - Amount: {self.amount} {self.currency} - Status: {self.status}"
+        hire_booking_ref_str = self.hire_booking.booking_reference if self.hire_booking else 'N/A'
+        return f"Payment {self.id} (Temp: {temp_booking_id_str}, Hire: {hire_booking_ref_str}) - Amount: {self.amount} {self.currency} - Status: {self.status}"
+
