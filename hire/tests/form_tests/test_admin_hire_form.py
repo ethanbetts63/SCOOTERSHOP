@@ -1,4 +1,4 @@
-# hire/tests/test_admin_hire_booking_form.py
+# hire/tests/form_tests/test_admin_hire_form.py
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from datetime import date, time, timedelta
@@ -8,7 +8,7 @@ from decimal import Decimal
 from hire.forms.Admin_Hire_Booking_form import AdminHireBookingForm
 
 # Import model factories
-from hire.model_factories import (
+from hire.tests.test_helpers.model_factories import(
     create_motorcycle,
     create_driver_profile,
     create_addon,
@@ -44,7 +44,8 @@ class AdminHireBookingFormTest(TestCase):
         cls.driver_profile = create_driver_profile()
         cls.addon1 = create_addon(name="GPS", cost=Decimal('15.00'), min_quantity=1, max_quantity=2)
         cls.addon2 = create_addon(name="Extra Helmet", cost=Decimal('10.00'), min_quantity=1, max_quantity=1)
-        cls.unavailable_addon = create_addon(name="Unavailable Item", is_available=False)
+        # Ensure this add-on is initially unavailable to test the form's __init__ change
+        cls.unavailable_addon = create_addon(name="Unavailable Item", is_available=False) 
         cls.package = create_package(name="Premium Pack", package_price=Decimal('75.00'), add_ons=[cls.addon1])
         cls.unavailable_package = create_package(name="Out of Stock Pack", is_available=False)
 
@@ -74,7 +75,7 @@ class AdminHireBookingFormTest(TestCase):
             f'addon_{self.addon1.id}_quantity': 1,
             f'addon_{self.addon2.id}_selected': False,
             f'addon_{self.addon2.id}_quantity': 1,
-            f'addon_{self.unavailable_addon.id}_selected': False,
+            f'addon_{self.unavailable_addon.id}_selected': False, # Include unavailable addon in default data
             f'addon_{self.unavailable_addon.id}_quantity': 1,
         }
         data.update(kwargs)
@@ -101,20 +102,20 @@ class AdminHireBookingFormTest(TestCase):
 
         form = AdminHireBookingForm(instance=booking)
 
-        # Assert initial values are correctly set
-        self.assertEqual(form.initial['pick_up_date'], booking.pickup_date)
-        self.assertEqual(form.initial['pick_up_time'], booking.pickup_time)
-        self.assertEqual(form.initial['motorcycle'], booking.motorcycle.id)
-        self.assertEqual(form.initial['package'], booking.package.id)
-        self.assertEqual(form.initial['total_price'], booking.total_price)
-        self.assertEqual(form.initial['payment_status'], booking.payment_status)
-        self.assertEqual(form.initial['status'], booking.status)
+        # Assert initial values are correctly set by checking form.fields[...].initial
+        self.assertEqual(form.fields['pick_up_date'].initial, booking.pickup_date)
+        self.assertEqual(form.fields['pick_up_time'].initial, booking.pickup_time)
+        self.assertEqual(form.fields['motorcycle'].initial, booking.motorcycle) # Model instance comparison
+        self.assertEqual(form.fields['package'].initial, booking.package) # Model instance comparison
+        self.assertEqual(form.fields['total_price'].initial, booking.total_price)
+        self.assertEqual(form.fields['payment_status'].initial, booking.payment_status)
+        self.assertEqual(form.fields['status'].initial, booking.status)
 
         # Assert add-on initial values are correctly set
-        self.assertTrue(form.initial[f'addon_{self.addon1.id}_selected'])
-        self.assertEqual(form.initial[f'addon_{self.addon1.id}_quantity'], 2)
-        self.assertTrue(form.initial[f'addon_{self.addon2.id}_selected'])
-        self.assertEqual(form.initial[f'addon_{self.addon2.id}_quantity'], 1)
+        self.assertTrue(form.fields[f'addon_{self.addon1.id}_selected'].initial)
+        self.assertEqual(form.fields[f'addon_{self.addon1.id}_quantity'].initial, 2)
+        self.assertTrue(form.fields[f'addon_{self.addon2.id}_selected'].initial)
+        self.assertEqual(form.fields[f'addon_{self.addon2.id}_quantity'].initial, 1)
 
     def test_valid_form_data(self):
         """
@@ -176,6 +177,7 @@ class AdminHireBookingFormTest(TestCase):
         self.assertIn('total_price', form.errors)
         self.assertEqual(form.errors['total_price'][0], "Total price must be greater than 0 if payment status is 'Fully Paid'.")
 
+        # Test with total_price=None when payment_status is 'paid'
         data = self._get_valid_form_data(total_price=None, payment_status='paid')
         form = AdminHireBookingForm(data=data)
         self.assertFalse(form.is_valid())
@@ -238,27 +240,8 @@ class AdminHireBookingFormTest(TestCase):
     def test_international_booking_and_australian_resident_consistency(self):
         """
         Test that an international booking cannot be made for an Australian resident.
+        NOTE: This validation is handled in the HireBooking model's clean method, not the form's.
         """
-        # Create an Australian resident driver profile
-        australian_driver = create_driver_profile(is_australian_resident=True)
-        # Create an international driver profile
-        international_driver = create_driver_profile(is_australian_resident=False, country="USA")
-
-        # Scenario 1: International booking with Australian resident (should fail)
-        data = self._get_valid_form_data(
-            driver_profile=australian_driver.id,
-            is_international_booking=True # This field is on the model, not the form.
-                                         # The form doesn't have a direct is_international_booking field to pass.
-                                         # This test would typically be for the model's clean method or a view.
-                                         # For the form, we can only test what the form collects.
-                                         # The form's clean method does NOT currently check this.
-                                         # If this check is desired in the form, it needs to be added to AdminHireBookingForm.clean().
-                                         # For now, we'll skip this test as the form doesn't handle it.
-        )
-        # Re-reading the form code, the `is_international_booking` check is in the `HireBooking` model's `clean` method,
-        # not the `AdminHireBookingForm`'s `clean` method.
-        # Therefore, this test case is not applicable to `AdminHireBookingForm` directly.
-        # The form is responsible for collecting data, the model's clean method for final object validation.
         pass # Skipping this test as it's not handled by the form's clean method.
 
     def test_form_initialization_with_no_package_selected(self):
@@ -278,7 +261,8 @@ class AdminHireBookingFormTest(TestCase):
             status='confirmed'
         )
         form = AdminHireBookingForm(instance=booking)
-        self.assertIsNone(form.initial['package'])
+        # Check initial value on the field itself
+        self.assertIsNone(form.fields['package'].initial)
 
     def test_form_initialization_with_no_addons_selected(self):
         """
@@ -296,12 +280,14 @@ class AdminHireBookingFormTest(TestCase):
             status='confirmed'
         )
         form = AdminHireBookingForm(instance=booking)
-        self.assertFalse(form.initial[f'addon_{self.addon1.id}_selected'])
-        self.assertEqual(form.initial[f'addon_{self.addon1.id}_quantity'], 1) # Default quantity
+        # Check initial value on the field itself
+        self.assertFalse(form.fields[f'addon_{self.addon1.id}_selected'].initial)
+        self.assertEqual(form.fields[f'addon_{self.addon1.id}_quantity'].initial, 1) # Default quantity
 
     def test_dynamic_addon_fields_creation(self):
         """
         Test that add-on fields are dynamically created during form initialization.
+        This now includes unavailable add-ons for admin purposes.
         """
         form = AdminHireBookingForm()
         self.assertIn(f'addon_{self.addon1.id}_selected', form.fields)

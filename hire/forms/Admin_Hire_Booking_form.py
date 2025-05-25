@@ -91,7 +91,7 @@ class AdminHireBookingForm(forms.Form):
     total_price = forms.DecimalField(
         max_digits=10, decimal_places=2,
         label="Admin Entered Total Price",
-        required=True,
+        required=False, # Changed to False to allow custom validation in clean()
         help_text="Enter the final total price. An estimated total will be calculated dynamically on the page."
     )
     payment_method = forms.ChoiceField(
@@ -137,7 +137,8 @@ class AdminHireBookingForm(forms.Form):
 
 
         # Dynamically create add-on fields
-        self.available_addons = AddOn.objects.filter(is_available=True)
+        # Fetch ALL add-ons, not just available ones, for admin purposes
+        self.available_addons = AddOn.objects.all() # Changed from .filter(is_available=True)
         self.display_addons = [] # This will hold addon info for rendering in the template
         
         # Store selected add-ons and their quantities from the instance
@@ -263,6 +264,16 @@ class AdminHireBookingForm(forms.Form):
         payment_status = cleaned_data.get('payment_status')
         if payment_status == 'paid' and (total_price is None or total_price <= 0):
             form_errors['total_price'] = "Total price must be greater than 0 if payment status is 'Fully Paid'."
+
+        # --- Section 2: Booked Rates Validation ---
+        booked_daily_rate = cleaned_data.get('booked_daily_rate')
+        booked_hourly_rate = cleaned_data.get('booked_hourly_rate')
+
+        if booked_daily_rate is not None and booked_daily_rate < 0:
+            form_errors['booked_daily_rate'] = "Booked daily rate cannot be negative."
+        if booked_hourly_rate is not None and booked_hourly_rate < 0: # Added validation for hourly rate
+            form_errors['booked_hourly_rate'] = "Booked hourly rate cannot be negative."
+
 
         # If any errors were collected, add them to the form's errors
         if form_errors:
