@@ -8,8 +8,8 @@ import stripe
 import json
 import logging
 
-from payments.models import Payment, WebhookEvent 
-from payments.webhook_handlers import WEBHOOK_HANDLERS 
+from payments.models import Payment, WebhookEvent
+from payments.webhook_handlers import WEBHOOK_HANDLERS
 
 logger = logging.getLogger(__name__)
 
@@ -21,12 +21,13 @@ def stripe_webhook(request):
     based on metadata in the PaymentIntent.
     """
     print("DEBUG: Entering stripe_webhook view.") # Debug print
+    logger.info("Received Stripe webhook request.")
+
     payload = request.body
     sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
     event = None
 
-    logger.info("Received Stripe webhook request.")
-    print(f"DEBUG: Webhook Payload: {payload.decode('utf-8')[:200]}...") # Print first 200 chars of payload
+    print(f"DEBUG: Webhook Payload (first 200 chars): {payload.decode('utf-8')[:200]}...") # Print first 200 chars of payload
     print(f"DEBUG: Signature Header: {sig_header}") # Debug print
 
     # 1. Verify Stripe Signature
@@ -49,7 +50,7 @@ def stripe_webhook(request):
     except Exception as e:
         logger.error(f"Webhook Error: Unexpected error during event construction: {e}", exc_info=True)
         print(f"DEBUG: Webhook Error: Unexpected error during event construction: {e}") # Debug print
-        return HttpResponse(status=500)
+        return HttpResponse(status=400) # Changed to 400 for consistency
 
     # 2. Idempotency Check: Record the event and check if already processed
     # This prevents duplicate processing if Stripe retries sending the event.
@@ -65,7 +66,7 @@ def stripe_webhook(request):
                 received_at=timezone.now()
             )
             logger.info(f"Successfully recorded new webhook event: {event['id']} ({event['type']})")
-            print(f"DEBUG: Webhook event {event['id']} ({event['type']}) recorded.") # Debug print
+            print(f"DEBUG: Webhook event {event['id']} ({event['type']}) recorded successfully.") # Debug print
     except Exception as e:
         # This typically means the event ID already exists (IntegrityError)
         # or another database error occurred during recording.
@@ -73,7 +74,9 @@ def stripe_webhook(request):
         # If it's another error, we should log it and potentially return 500.
         logger.warning(f"Webhook event {event['id']} ({event['type']}) already processed or failed to record: {e}")
         print(f"DEBUG: Webhook event {event['id']} already processed or failed to record: {e}") # Debug print
-        return HttpResponse(status=200) # Acknowledge receipt even if already processed
+        # If it's already processed, we still return 200 OK to Stripe.
+        # If it's another error, we might want to return 500, but for idempotency, 200 is safer.
+        return HttpResponse(status=200)
 
     # 3. Process the event based on its type
     event_type = event['type']
@@ -91,37 +94,44 @@ def stripe_webhook(request):
                 # Retrieve the Payment object from your database.
                 # Use select_for_update to lock the row during this transaction
                 # to prevent race conditions if multiple webhooks for the same PI arrive.
+                print(f"DEBUG: Attempting to retrieve Payment object for stripe_payment_intent_id: {payment_intent_id}") # Debug print
                 payment_obj = Payment.objects.select_for_update().get(stripe_payment_intent_id=payment_intent_id)
                 logger.debug(f"Found Payment DB object {payment_obj.id} for PaymentIntent {payment_intent_id}")
-                print(f"DEBUG: Found Payment DB object {payment_obj.id} for PI: {payment_intent_id}") # Debug print
+                print(f"DEBUG: Successfully found Payment DB object {payment_obj.id} for PI: {payment_intent_id}") # Debug print
 
                 # Update the Payment object's status in your database
                 # Only update if the status has actually changed to avoid unnecessary DB writes
                 if payment_obj.status != event_data['status']:
+                    print(f"DEBUG: Payment DB object status changing from '{payment_obj.status}' to '{event_data['status']}'.") # Debug print
                     payment_obj.status = event_data['status']
                     # Update amount and currency from Stripe's source of truth if needed
                     payment_obj.amount = event_data['amount'] / 100
                     payment_obj.currency = event_data['currency'].upper()
                     payment_obj.save()
                     logger.info(f"Updated Payment DB object {payment_obj.id} status to '{payment_obj.status}'.")
-                    print(f"DEBUG: Updated Payment DB object {payment_obj.id} status to '{payment_obj.status}'.") # Debug print
+                    print(f"DEBUG: Payment DB object {payment_obj.id} status updated to '{payment_obj.status}'.") # Debug print
                 else:
                     logger.info(f"Payment DB object {payment_obj.id} status already '{payment_obj.status}'. No update needed.")
-                    print(f"DEBUG: Payment DB object {payment_obj.id} status already '{payment_obj.status}'.") # Debug print
+                    print(f"DEBUG: Payment DB object {payment_obj.id} status already '{payment_obj.status}'. No update needed.") # Debug print
 
                 # 4. Dispatch to specific business logic handler
                 # Get the booking_type from the PaymentIntent's metadata
                 booking_type = event_data.get('metadata', {}).get('booking_type')
-                print(f"DEBUG: Booking type from metadata: {booking_type}") # Debug print
+                print(f"DEBUG: Retrieved booking_type from PaymentIntent metadata: {booking_type}") # Debug print
 
                 if booking_type and booking_type in WEBHOOK_HANDLERS:
                     # Check if there's a specific handler for this event type and booking type
                     handler = WEBHOOK_HANDLERS[booking_type].get(event_type)
                     if handler:
                         logger.info(f"Dispatching to handler: {handler.__name__} for booking_type '{booking_type}' and event '{event_type}'")
-                        print(f"DEBUG: Dispatching to handler: {handler.__name__}") # Debug print
-                        handler(payment_obj, event_data)
-                        print(f"DEBUG: Handler {handler.__name__} executed.") # Debug print
+                        print(f"DEBUG: Dispatching to handler: {handler.__name__} for booking_type '{booking_type}' and event '{event_type}'.") # Debug print
+                        try:
+                            handler(payment_obj, event_data)
+                            print(f"DEBUG: Handler {handler.__name__} executed successfully.") # Debug print
+                        except Exception as handler_e:
+                            logger.exception(f"Error executing handler {handler.__name__} for PaymentIntent {payment_intent_id}: {handler_e}")
+                            print(f"DEBUG: ERROR - Exception in handler {handler.__name__}: {handler_e}") # Debug print
+                            raise # Re-raise to trigger the outer 500 response
                     else:
                         logger.info(f"No specific handler found for booking_type '{booking_type}' and event type '{event_type}'.")
                         print(f"DEBUG: No specific handler for {booking_type} and {event_type}.") # Debug print
@@ -131,16 +141,20 @@ def stripe_webhook(request):
 
         except Payment.DoesNotExist:
             logger.warning(f"Payment object not found for Stripe Intent ID: {payment_intent_id}. This might indicate a missing DB record for a Stripe event.")
-            print(f"DEBUG: WARNING - Payment object not found for PI ID: {payment_intent_id}.") # Debug print
+            print(f"DEBUG: WARNING - Payment object not found for PI ID: {payment_intent_id}. This is critical.") # Debug print
+            # If the Payment object isn't found, it means our system didn't create it
+            # or it was deleted prematurely. We should log this and return 200
+            # because Stripe doesn't need to retry, but we have an internal issue.
+            return HttpResponse(status=200) # Acknowledge receipt to Stripe
         except Exception as e:
-            logger.exception(f"Error processing {event_type} for PaymentIntent {payment_intent_id}: {e}")
-            print(f"DEBUG: ERROR - Exception processing {event_type} for PI {payment_intent_id}: {e}") # Debug print
+            logger.exception(f"Critical error processing {event_type} for PaymentIntent {payment_intent_id}: {e}")
+            print(f"DEBUG: CRITICAL ERROR - Exception processing {event_type} for PI {payment_intent_id}: {e}") # Debug print
             # Return 500 to Stripe to retry sending the webhook
             return HttpResponse(status=500)
     else:
         # Handle other Stripe events if necessary (e.g., charge.refunded, customer.created)
-        logger.info(f"Unhandled Stripe event type: {event_type}")
-        print(f"DEBUG: Unhandled Stripe event type: {event_type}") # Debug print
+        logger.info(f"Unhandled Stripe event type: {event['type']}")
+        print(f"DEBUG: Unhandled Stripe event type: {event['type']}") # Debug print
 
     # Always return a 200 OK to Stripe to acknowledge receipt
     print("DEBUG: Webhook processing complete. Returning 200 OK.") # Debug print

@@ -89,65 +89,67 @@ class PaymentDetailsView(View):
             print("DEBUG: User is anonymous.") # Debug print
         # --- END: Added logging for user check ---
 
-        if payment_obj and payment_obj.stripe_payment_intent_id:
-            print(f"DEBUG: Found existing payment_obj with Stripe Intent ID: {payment_obj.stripe_payment_intent_id}") # Debug print
-            try:
-                intent = stripe.PaymentIntent.retrieve(payment_obj.stripe_payment_intent_id)
-                logger.debug(f"Retrieved Stripe PaymentIntent: {intent.id}, Status: {intent.status}")
-                print(f"DEBUG: Retrieved Stripe PaymentIntent: {intent.id}, Status: {intent.status}") # Debug print
+        # Try to retrieve or create PaymentIntent and local Payment object
+        try:
+            if payment_obj and payment_obj.stripe_payment_intent_id:
+                print(f"DEBUG: Found existing payment_obj with Stripe Intent ID: {payment_obj.stripe_payment_intent_id}") # Debug print
+                try:
+                    intent = stripe.PaymentIntent.retrieve(payment_obj.stripe_payment_intent_id)
+                    logger.debug(f"Retrieved Stripe PaymentIntent: {intent.id}, Status: {intent.status}")
+                    print(f"DEBUG: Retrieved Stripe PaymentIntent: {intent.id}, Status: {intent.status}") # Debug print
 
-                amount_changed = intent.amount != int(amount_to_pay * 100)
-                currency_changed = intent.currency.lower() != currency.lower()
-                is_modifiable = intent.status in ['requires_payment_method', 'requires_confirmation', 'requires_action']
+                    amount_changed = intent.amount != int(amount_to_pay * 100)
+                    currency_changed = intent.currency.lower() != currency.lower()
+                    is_modifiable = intent.status in ['requires_payment_method', 'requires_confirmation', 'requires_action']
 
-                if (amount_changed or currency_changed) and is_modifiable:
-                    logger.debug(f"Mismatch in amount/currency for modifiable intent. Modifying PaymentIntent {intent.id}.")
-                    print(f"DEBUG: Modifying PaymentIntent {intent.id} due to mismatch.") # Debug print
-                    intent = stripe.PaymentIntent.modify(
-                        payment_obj.stripe_payment_intent_id,
-                        amount=int(amount_to_pay * 100),
-                        currency=currency,
-                        description=payment_description,
-                        metadata={
-                            'temp_booking_id': str(temp_booking.id),
-                            'user_id': str(request.user.id) if request.user.is_authenticated else 'guest',
-                            'booking_type': 'hire_booking',
-                        }
-                    )
-                    payment_obj.amount = amount_to_pay
-                    payment_obj.currency = currency
-                    payment_obj.status = intent.status
-                    payment_obj.description = payment_description
-                    payment_obj.save()
-                    logger.debug(f"Modified PaymentIntent: {intent.id}, New Amount: {intent.amount}, New Currency: {intent.currency}")
-                    print(f"DEBUG: Modified PaymentIntent {intent.id}. New status: {intent.status}") # Debug print
-                elif not is_modifiable and intent.status not in ['succeeded', 'canceled', 'failed']:
-                    logger.debug(f"Existing PaymentIntent {intent.id} is not modifiable ({intent.status}) and not succeeded/canceled/failed. Forcing creation of new one.")
-                    print(f"DEBUG: Existing PI {intent.id} not modifiable. Forcing new PI.") # Debug print
-                    payment_obj = None
-                    intent = None
-                elif intent.status in ['canceled', 'failed']:
-                    logger.debug(f"Existing PaymentIntent {intent.id} is {intent.status}. Forcing creation of new one.")
-                    print(f"DEBUG: Existing PI {intent.id} is {intent.status}. Forcing new PI.") # Debug print
-                    payment_obj = None
-                    intent = None
-                else:
-                    logger.debug(f"Re-using existing PaymentIntent {intent.id} (Status: {intent.status}).")
-                    print(f"DEBUG: Re-using existing PI {intent.id}. Status: {intent.status}") # Debug print
-                    if payment_obj.status != intent.status:
+                    if (amount_changed or currency_changed) and is_modifiable:
+                        logger.debug(f"Mismatch in amount/currency for modifiable intent. Modifying PaymentIntent {intent.id}.")
+                        print(f"DEBUG: Modifying PaymentIntent {intent.id} due to mismatch.") # Debug print
+                        intent = stripe.PaymentIntent.modify(
+                            payment_obj.stripe_payment_intent_id,
+                            amount=int(amount_to_pay * 100),
+                            currency=currency,
+                            description=payment_description,
+                            metadata={
+                                'temp_booking_id': str(temp_booking.id),
+                                'user_id': str(request.user.id) if request.user.is_authenticated else 'guest',
+                                'booking_type': 'hire_booking',
+                            }
+                        )
+                        payment_obj.amount = amount_to_pay
+                        payment_obj.currency = currency
                         payment_obj.status = intent.status
+                        payment_obj.description = payment_description
                         payment_obj.save()
+                        logger.debug(f"Modified PaymentIntent: {intent.id}, New Amount: {intent.amount}, New Currency: {intent.currency}")
+                        print(f"DEBUG: Modified PaymentIntent {intent.id}. New status: {intent.status}") # Debug print
+                    elif not is_modifiable and intent.status not in ['succeeded', 'canceled', 'failed']:
+                        logger.debug(f"Existing PaymentIntent {intent.id} is not modifiable ({intent.status}) and not succeeded/canceled/failed. Creating new PI and updating existing Payment object.")
+                        print(f"DEBUG: Existing PI {intent.id} not modifiable. Creating new PI and updating Payment object.") # Debug print
+                        # Set intent to None to trigger new PI creation, but keep payment_obj
+                        intent = None
+                    elif intent.status in ['canceled', 'failed']:
+                        logger.debug(f"Existing PaymentIntent {intent.id} is {intent.status}. Creating new PI and updating existing Payment object.")
+                        print(f"DEBUG: Existing PI {intent.id} is {intent.status}. Creating new PI and updating Payment object.") # Debug print
+                        # Set intent to None to trigger new PI creation, but keep payment_obj
+                        intent = None
+                    else:
+                        logger.debug(f"Re-using existing PaymentIntent {intent.id} (Status: {intent.status}).")
+                        print(f"DEBUG: Re-using existing PI {intent.id}. Status: {intent.status}") # Debug print
+                        if payment_obj.status != intent.status:
+                            payment_obj.status = intent.status
+                            payment_obj.save()
 
-            except stripe.error.StripeError as e:
-                logger.error(f"Stripe error retrieving or modifying existing PaymentIntent ({payment_obj.stripe_payment_intent_id}): {e}. Forcing creation of new one.")
-                print(f"DEBUG: Stripe error with existing PI: {e}. Forcing new PI.") # Debug print
-                payment_obj = None
-                intent = None
+                except stripe.error.StripeError as e:
+                    logger.error(f"Stripe error retrieving or modifying existing PaymentIntent ({payment_obj.stripe_payment_intent_id}): {e}. Creating new PI and updating existing Payment object.")
+                    print(f"DEBUG: Stripe error with existing PI: {e}. Creating new PI and updating Payment object.") # Debug print
+                    # Set intent to None to trigger new PI creation, but keep payment_obj
+                    intent = None
 
-        if not payment_obj or not intent:
-            logger.debug("Creating new Stripe PaymentIntent and Payment DB object.")
-            print("DEBUG: Creating new Stripe PaymentIntent and Payment DB object.") # Debug print
-            try:
+            # If no existing payment_obj or intent is valid, create a new one
+            if not intent: # This condition now handles creating a new PI for an existing payment_obj or a brand new one
+                logger.debug("Creating new Stripe PaymentIntent.")
+                print("DEBUG: Creating new Stripe PaymentIntent.") # Debug print
                 intent = stripe.PaymentIntent.create(
                     amount=int(amount_to_pay * 100),
                     currency=currency,
@@ -161,7 +163,8 @@ class PaymentDetailsView(View):
                 logger.debug(f"Created new Stripe PaymentIntent: {intent.id}, Client Secret: {intent.client_secret}, Status: {intent.status}")
                 print(f"DEBUG: Created new Stripe PI: {intent.id}, Status: {intent.status}") # Debug print
 
-                if payment_obj:
+                # Now update or create the local Payment object
+                if payment_obj: # If payment_obj already exists, update it
                     payment_obj.stripe_payment_intent_id = intent.id
                     payment_obj.amount = amount_to_pay
                     payment_obj.currency = currency
@@ -170,10 +173,10 @@ class PaymentDetailsView(View):
                     payment_obj.save()
                     logger.debug(f"Updated existing Payment DB object: {payment_obj.id} with new Stripe Intent.")
                     print(f"DEBUG: Updated existing Payment DB object {payment_obj.id}.") # Debug print
-                else:
+                else: # If no payment_obj exists, create a new one
                     payment_obj = Payment.objects.create(
                         temp_hire_booking=temp_booking,
-                        user=request.user if request.user.is_authenticated else None, # This line remains the same
+                        user=request.user if request.user.is_authenticated else None,
                         stripe_payment_intent_id=intent.id,
                         amount=amount_to_pay,
                         currency=currency,
@@ -182,10 +185,16 @@ class PaymentDetailsView(View):
                     )
                     logger.debug(f"Created new Payment DB object: {payment_obj.id}")
                     print(f"DEBUG: Created new Payment DB object {payment_obj.id}.") # Debug print
-            except stripe.error.StripeError as e:
-                logger.error(f"Stripe error creating PaymentIntent: {e}")
-                print(f"DEBUG: Stripe error creating PI: {e}. Redirecting.") # Debug print
-                return redirect('hire:step5_summary_payment_options')
+
+        except stripe.error.StripeError as e:
+            logger.error(f"Stripe error during PaymentIntent creation/retrieval: {e}")
+            print(f"DEBUG: Stripe error during PI creation/retrieval: {e}. Redirecting.") # Debug print
+            return redirect('hire:step5_summary_payment_options')
+        except Exception as e:
+            logger.exception(f"An unexpected error occurred in PaymentDetailsView GET: {e}")
+            print(f"DEBUG: UNEXPECTED ERROR in PaymentDetailsView GET: {e}. Redirecting.") # Debug print
+            return redirect('hire:step5_summary_payment_options')
+
 
         if not intent:
             logger.error("PaymentIntent could not be created or retrieved. Redirecting to step 5.")
@@ -197,7 +206,7 @@ class PaymentDetailsView(View):
             'amount': amount_to_pay,
             'currency': currency.upper(),
             'temp_booking': temp_booking,
-            'stripe_publishable_key': settings.STRIPE_PUBLISHABLE_KEY,
+            'stripe_publishable_key': settings.STRIPE_PUBLISHABLE_KEY, # FIXED TYPO HERE
         }
         logger.debug("Rendering step6_payment_details.html with context.")
         print("DEBUG: Rendering step6_payment_details.html") # Debug print
@@ -213,7 +222,7 @@ class PaymentDetailsView(View):
         """
         print("DEBUG: Entering PaymentDetailsView POST method.") # Debug print
         logger.debug("Entering Step6PaymentDetailsView POST method for client-side update.")
-        
+
         try:
             data = json.loads(request.body)
             payment_intent_id = data.get('payment_intent_id')
@@ -254,7 +263,7 @@ class PaymentDetailsView(View):
                     # This means the webhook has already processed and deleted the TempHireBooking and Payment.
                     logger.info(f"Payment object for intent ID {payment_intent_id} not found in DB. Assuming webhook processed it.")
                     print(f"DEBUG: POST Request - Payment object for {payment_intent_id} not found. Webhook likely processed.") # Debug print
-                
+
                 # In either case (found or not found), if Stripe reports succeeded, redirect to step 7
                 logger.info("Client reports Payment Intent succeeded. Redirecting to Step 7 (awaiting webhook for finalization if not already done).")
                 print(f"DEBUG: POST Request - Redirecting to step 7 for PI: {payment_intent_id}") # Debug print
