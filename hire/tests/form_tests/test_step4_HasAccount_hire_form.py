@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 import datetime
 from django.utils import timezone
 from unittest.mock import MagicMock
+from django.core.files.uploadedfile import SimpleUploadedFile # Import SimpleUploadedFile
 
 from hire.forms.step4_HasAccount_form import Step4HasAccountForm
 from hire.tests.test_helpers.model_factories import create_driver_profile, create_temp_hire_booking
@@ -28,14 +29,22 @@ class Step4HasAccountFormTests(TestCase):
         self.temp_booking_past_return = MagicMock()
         self.temp_booking_past_return.return_date = self.return_date_past
 
+        # Create dummy files for testing photo uploads
+        self.dummy_license = SimpleUploadedFile("license.jpg", b"file_content", content_type="image/jpeg")
+        self.dummy_int_license = SimpleUploadedFile("int_license.jpg", b"file_content", content_type="image/jpeg")
+        self.dummy_passport = SimpleUploadedFile("passport.jpg", b"file_content", content_type="image/jpeg")
+
         # Create a basic driver profile instance for testing updates
+        # Ensure passport_photo is None for an Australian resident existing profile
         self.existing_driver_profile = create_driver_profile(
             name="Existing User",
             email="existing@example.com",
             is_australian_resident=True,
-            license_photo='path/to/existing_license.jpg',
+            license_photo=self.dummy_license, # Simulate existing file
             license_number='EX12345678',
-            license_expiry_date=timezone.now().date() + datetime.timedelta(days=100)
+            license_expiry_date=timezone.now().date() + datetime.timedelta(days=100),
+            international_license_photo=None, # Should be None for Australian
+            passport_photo=None, # Should be None for Australian
         )
 
         # Base form data for an Australian resident (valid state)
@@ -50,12 +59,12 @@ class Step4HasAccountFormTests(TestCase):
             'is_australian_resident': 'True',
             'license_number': 'AUS12345',
             'license_expiry_date': self.return_date_future + datetime.timedelta(days=1),
-            'license_photo': MagicMock(name='license_photo.jpg'),
-            # Ensure international/passport fields are empty/None for Australian residents
+            'license_photo': self.dummy_license, # Use SimpleUploadedFile
+            # Ensure international/passport fields are explicitly None/empty for Australian residents
             'international_license_photo': None,
             'international_license_issuing_country': '',
             'international_license_expiry_date': None,
-            'passport_photo': None,
+            'passport_photo': None, # Set to None as per new validation
             'passport_number': '',
             'passport_expiry_date': None,
         }
@@ -70,10 +79,10 @@ class Step4HasAccountFormTests(TestCase):
             'country': 'USA',
             'date_of_birth': datetime.date(1985, 5, 10),
             'is_australian_resident': 'False',
-            'international_license_photo': MagicMock(name='int_license.jpg'),
+            'international_license_photo': self.dummy_int_license, # Use SimpleUploadedFile
             'international_license_issuing_country': 'USA',
             'international_license_expiry_date': self.return_date_future + datetime.timedelta(days=1),
-            'passport_photo': MagicMock(name='passport.jpg'),
+            'passport_photo': self.dummy_passport, # Use SimpleUploadedFile
             'passport_number': 'P1234567',
             'passport_expiry_date': self.return_date_future + datetime.timedelta(days=1),
             # Ensure Australian-specific fields are empty/None for foreign residents
@@ -90,7 +99,9 @@ class Step4HasAccountFormTests(TestCase):
         Test a valid submission for an Australian resident.
         """
         form_data = self.base_australian_data.copy()
-        form = Step4HasAccountForm(data=form_data, temp_booking=self.temp_booking_future_return)
+        form = Step4HasAccountForm(data=form_data, files={
+            'license_photo': self.dummy_license # Pass the license photo
+        }, temp_booking=self.temp_booking_future_return)
         self.assertTrue(form.is_valid(), form.errors)
         self.assertEqual(form.cleaned_data['is_australian_resident'], True)
 
@@ -99,7 +110,7 @@ class Step4HasAccountFormTests(TestCase):
         Test a valid submission for an Australian resident when license photo already exists on instance.
         """
         form_data = self.base_australian_data.copy()
-        form_data['license_photo'] = None # Simulate no new photo upload
+        form_data['license_photo'] = None # Simulate no new photo upload, rely on existing
         form = Step4HasAccountForm(
             data=form_data,
             instance=self.existing_driver_profile, # Instance has existing photo
@@ -108,15 +119,13 @@ class Step4HasAccountFormTests(TestCase):
         self.assertTrue(form.is_valid(), form.errors)
         self.assertEqual(form.cleaned_data['is_australian_resident'], True)
 
-
     def test_clean_australian_resident_missing_license_photo(self):
         """
         Test missing license photo for an Australian resident.
         """
         form_data = self.base_australian_data.copy()
-        form_data['license_photo'] = None # Explicitly missing
-        # Use a fresh instance or one without a photo
-        fresh_profile = create_driver_profile(license_photo=None)
+        # Do not pass 'license_photo' in files to simulate missing upload
+        fresh_profile = create_driver_profile(license_photo=None, is_australian_resident=True) # Ensure fresh profile has no photo
         form = Step4HasAccountForm(data=form_data, instance=fresh_profile, temp_booking=self.temp_booking_future_return)
         self.assertFalse(form.is_valid())
         self.assertIn('license_photo', form.errors)
@@ -128,7 +137,9 @@ class Step4HasAccountFormTests(TestCase):
         """
         form_data = self.base_australian_data.copy()
         form_data['license_number'] = '' # Explicitly missing
-        form = Step4HasAccountForm(data=form_data, temp_booking=self.temp_booking_future_return)
+        form = Step4HasAccountForm(data=form_data, files={
+            'license_photo': self.dummy_license
+        }, temp_booking=self.temp_booking_future_return)
         self.assertFalse(form.is_valid())
         self.assertIn('license_number', form.errors)
         self.assertIn("Australian residents must provide their domestic license number.", form.errors['license_number'])
@@ -139,7 +150,9 @@ class Step4HasAccountFormTests(TestCase):
         """
         form_data = self.base_australian_data.copy()
         form_data['license_expiry_date'] = self.return_date_future - datetime.timedelta(days=1) # Before return date
-        form = Step4HasAccountForm(data=form_data, temp_booking=self.temp_booking_future_return)
+        form = Step4HasAccountForm(data=form_data, files={
+            'license_photo': self.dummy_license
+        }, temp_booking=self.temp_booking_future_return)
         self.assertFalse(form.is_valid())
         self.assertIn('license_expiry_date', form.errors)
         self.assertIn("Your Australian Driver's License must not expire before the end of your booking.", form.errors['license_expiry_date'])
@@ -150,7 +163,10 @@ class Step4HasAccountFormTests(TestCase):
         Test a valid submission for a foreign resident.
         """
         form_data = self.base_foreign_data.copy()
-        form = Step4HasAccountForm(data=form_data, temp_booking=self.temp_booking_future_return)
+        form = Step4HasAccountForm(data=form_data, files={
+            'international_license_photo': self.dummy_int_license,
+            'passport_photo': self.dummy_passport
+        }, temp_booking=self.temp_booking_future_return)
         self.assertTrue(form.is_valid(), form.errors)
         self.assertEqual(form.cleaned_data['is_australian_resident'], False)
 
@@ -159,9 +175,10 @@ class Step4HasAccountFormTests(TestCase):
         Test missing international license photo for a foreign resident.
         """
         form_data = self.base_foreign_data.copy()
-        form_data['international_license_photo'] = None # Explicitly missing
         fresh_profile = create_driver_profile(international_license_photo=None, is_australian_resident=False)
-        form = Step4HasAccountForm(data=form_data, instance=fresh_profile, temp_booking=self.temp_booking_future_return)
+        form = Step4HasAccountForm(data=form_data, instance=fresh_profile, files={
+            'passport_photo': self.dummy_passport
+        }, temp_booking=self.temp_booking_future_return)
         self.assertFalse(form.is_valid())
         self.assertIn('international_license_photo', form.errors)
         self.assertIn("Foreign drivers must upload their International Driver's License photo.", form.errors['international_license_photo'])
@@ -171,9 +188,10 @@ class Step4HasAccountFormTests(TestCase):
         Test missing passport photo for a foreign resident.
         """
         form_data = self.base_foreign_data.copy()
-        form_data['passport_photo'] = None # Explicitly missing
         fresh_profile = create_driver_profile(passport_photo=None, is_australian_resident=False)
-        form = Step4HasAccountForm(data=form_data, instance=fresh_profile, temp_booking=self.temp_booking_future_return)
+        form = Step4HasAccountForm(data=form_data, instance=fresh_profile, files={
+            'international_license_photo': self.dummy_int_license
+        }, temp_booking=self.temp_booking_future_return)
         self.assertFalse(form.is_valid())
         self.assertIn('passport_photo', form.errors)
         self.assertIn("Foreign drivers must upload their passport photo.", form.errors['passport_photo'])
@@ -184,7 +202,10 @@ class Step4HasAccountFormTests(TestCase):
         """
         form_data = self.base_foreign_data.copy()
         form_data['international_license_issuing_country'] = '' # Explicitly missing
-        form = Step4HasAccountForm(data=form_data, temp_booking=self.temp_booking_future_return)
+        form = Step4HasAccountForm(data=form_data, files={
+            'international_license_photo': self.dummy_int_license,
+            'passport_photo': self.dummy_passport
+        }, temp_booking=self.temp_booking_future_return)
         self.assertFalse(form.is_valid())
         self.assertIn('international_license_issuing_country', form.errors)
         self.assertIn("Foreign drivers must provide the issuing country of their International Driver's License.", form.errors['international_license_issuing_country'])
@@ -195,7 +216,10 @@ class Step4HasAccountFormTests(TestCase):
         """
         form_data = self.base_foreign_data.copy()
         form_data['international_license_expiry_date'] = None # Explicitly missing
-        form = Step4HasAccountForm(data=form_data, temp_booking=self.temp_booking_future_return)
+        form = Step4HasAccountForm(data=form_data, files={
+            'international_license_photo': self.dummy_int_license,
+            'passport_photo': self.dummy_passport
+        }, temp_booking=self.temp_booking_future_return)
         self.assertFalse(form.is_valid())
         self.assertIn('international_license_expiry_date', form.errors)
         self.assertIn("Foreign drivers must provide the expiry date of their International Driver's License.", form.errors['international_license_expiry_date'])
@@ -206,7 +230,10 @@ class Step4HasAccountFormTests(TestCase):
         """
         form_data = self.base_foreign_data.copy()
         form_data['international_license_expiry_date'] = self.return_date_future - datetime.timedelta(days=1) # Before return date
-        form = Step4HasAccountForm(data=form_data, temp_booking=self.temp_booking_future_return)
+        form = Step4HasAccountForm(data=form_data, files={
+            'international_license_photo': self.dummy_int_license,
+            'passport_photo': self.dummy_passport
+        }, temp_booking=self.temp_booking_future_return)
         self.assertFalse(form.is_valid())
         self.assertIn('international_license_expiry_date', form.errors)
         self.assertIn("Your International Driver's License must not expire before the end of your booking.", form.errors['international_license_expiry_date'])
@@ -217,7 +244,10 @@ class Step4HasAccountFormTests(TestCase):
         """
         form_data = self.base_foreign_data.copy()
         form_data['passport_number'] = '' # Explicitly missing
-        form = Step4HasAccountForm(data=form_data, temp_booking=self.temp_booking_future_return)
+        form = Step4HasAccountForm(data=form_data, files={
+            'international_license_photo': self.dummy_int_license,
+            'passport_photo': self.dummy_passport
+        }, temp_booking=self.temp_booking_future_return)
         self.assertFalse(form.is_valid())
         self.assertIn('passport_number', form.errors)
         self.assertIn("Foreign drivers must provide their passport number.", form.errors['passport_number'])
@@ -228,7 +258,10 @@ class Step4HasAccountFormTests(TestCase):
         """
         form_data = self.base_foreign_data.copy()
         form_data['passport_expiry_date'] = None # Explicitly missing
-        form = Step4HasAccountForm(data=form_data, temp_booking=self.temp_booking_future_return)
+        form = Step4HasAccountForm(data=form_data, files={
+            'international_license_photo': self.dummy_int_license,
+            'passport_photo': self.dummy_passport
+        }, temp_booking=self.temp_booking_future_return)
         self.assertFalse(form.is_valid())
         self.assertIn('passport_expiry_date', form.errors)
         self.assertIn("Foreign drivers must provide their passport expiry date.", form.errors['passport_expiry_date'])
@@ -239,7 +272,16 @@ class Step4HasAccountFormTests(TestCase):
         """
         form_data = self.base_foreign_data.copy()
         form_data['passport_expiry_date'] = self.return_date_future - datetime.timedelta(days=1) # Before return date
-        form = Step4HasAccountForm(data=form_data, temp_booking=self.temp_booking_future_return)
+        # Ensure other fields are valid so this specific error can be tested in isolation
+        form_data['international_license_issuing_country'] = 'USA' # Ensure this is present
+        form_data['international_license_expiry_date'] = self.return_date_future + datetime.timedelta(days=1) # Ensure this is valid
+        form_data['passport_number'] = 'P1234567' # Ensure this is present
+
+        form = Step4HasAccountForm(data=form_data, files={
+            'international_license_photo': self.dummy_int_license,
+            'passport_photo': self.dummy_passport
+        }, temp_booking=self.temp_booking_future_return)
         self.assertFalse(form.is_valid())
         self.assertIn('passport_expiry_date', form.errors)
         self.assertIn("Your passport must not expire before the end of your booking.", form.errors['passport_expiry_date'])
+
