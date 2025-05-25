@@ -47,14 +47,14 @@ def create_motorcycle(
     rego="ABC123",
     rego_exp=None,
     stock_number=None,
-    price=None, 
+    price=None,
     vin_number=None,
     engine_number=None,
     owner=None,
     seats=2,
     transmission='manual',
     description="A reliable and fun motorcycle for hire.",
-    image=None, 
+    image=None,
 ):
     """
     Creates a Motorcycle instance, specifically configured as a hire bike,
@@ -91,7 +91,7 @@ def create_motorcycle(
     # Always add the 'hire' condition, as requested
     hire_condition = create_motorcycle_condition(name='hire', display_name='For Hire')
     motorcycle.conditions.add(hire_condition)
-    
+
     return motorcycle
 
 def create_hire_settings(
@@ -134,18 +134,16 @@ def create_payment(
     amount=Decimal('100.00'),
     currency='AUD',
     status='pending',
-    payment_intent_id=None,
-    payment_method='online'
+    stripe_payment_intent_id=None, # Re-added
+    stripe_payment_method_id=None, # Re-added
 ):
     """Creates a Payment instance."""
-    if not payment_intent_id:
-        payment_intent_id = f"pi_{uuid.uuid4().hex}"
     return Payment.objects.create(
         amount=amount,
         currency=currency,
         status=status,
-        payment_intent_id=payment_intent_id,
-        payment_method=payment_method
+        stripe_payment_intent_id=stripe_payment_intent_id, # Use correct field name
+        stripe_payment_method_id=stripe_payment_method_id, # Use correct field name
     )
 
 # --- Factories for Hire App Models ---
@@ -269,9 +267,8 @@ def create_hire_booking(
         return_time = datetime.time(16, 0)
     if not booking_reference:
         booking_reference = f"HIRE-{uuid.uuid4().hex[:8].upper()}"
-    if stripe_payment_intent_id and not payment:
-        payment = create_payment(payment_intent_id=stripe_payment_intent_id)
-
+    # Removed automatic payment creation based on stripe_payment_intent_id here
+    # If a payment object is needed, it should be passed explicitly.
 
     booking = HireBooking.objects.create(
         motorcycle=motorcycle,
@@ -293,7 +290,7 @@ def create_hire_booking(
         package=package,
         booked_package_price=booked_package_price,
         currency=currency,
-        payment=payment,
+        payment=payment, # Payment object should be passed if needed
         stripe_payment_intent_id=stripe_payment_intent_id,
         customer_notes=customer_notes,
         internal_notes=internal_notes,

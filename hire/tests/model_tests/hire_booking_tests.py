@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from unittest import mock
 
 # Import model factories for easy test data creation
 from hire.tests.test_helpers.model_factories import (
@@ -15,7 +16,6 @@ from hire.tests.test_helpers.model_factories import (
 )
 from hire.models.hire_booking import HireBooking, PAYMENT_STATUS_CHOICES
 from dashboard.models import HireSettings 
-
 
 class HireBookingModelTest(TestCase):
     """
@@ -126,9 +126,12 @@ class HireBookingModelTest(TestCase):
         self.hire_settings.booking_lead_time_hours = 2
         self.hire_settings.save()
 
-        # Set pickup time to be 1 hour from now (violates 2-hour lead time)
-        future_pickup_datetime = timezone.now() + datetime.timedelta(hours=1)
-        
+        # Define a fixed "now" for consistency
+        fixed_now = timezone.make_aware(datetime.datetime(2025, 1, 1, 10, 0, 0))
+
+        # Set pickup time to be 1 hour from fixed_now (violates 2-hour lead time)
+        future_pickup_datetime = fixed_now + datetime.timedelta(hours=1)
+
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
@@ -136,14 +139,16 @@ class HireBookingModelTest(TestCase):
             pickup_time=future_pickup_datetime.time(),
             total_price=Decimal('100.00')
         )
-        with self.assertRaises(ValidationError) as cm:
-            booking.clean()
-        self.assertIn('pickup_date', cm.exception.message_dict)
-        self.assertIn('pickup_time', cm.exception.message_dict)
-        self.assertEqual(
-            cm.exception.message_dict['pickup_date'][0],
-            "Pickup must be at least 2 hours from now."
-        )
+
+        with mock.patch('django.utils.timezone.now', return_value=fixed_now):
+            with self.assertRaises(ValidationError) as cm:
+                booking.clean()
+            self.assertIn('pickup_date', cm.exception.message_dict)
+            self.assertIn('pickup_time', cm.exception.message_dict)
+            self.assertEqual(
+                cm.exception.message_dict['pickup_date'][0],
+                "Pickup must be at least 2 hours from now."
+            )
 
     def test_clean_pickup_time_valid_with_lead_time(self):
         """
@@ -153,20 +158,28 @@ class HireBookingModelTest(TestCase):
         self.hire_settings.booking_lead_time_hours = 2
         self.hire_settings.save()
 
-        # Set pickup time to be 3 hours from now (valid)
-        future_pickup_datetime = timezone.now() + datetime.timedelta(hours=3)
+        # Define a fixed "now" for consistency
+        fixed_now = timezone.make_aware(datetime.datetime(2025, 1, 1, 10, 0, 0))
+
+        # Calculate the minimum valid pickup time based on fixed_now and lead time
+        min_valid_pickup_datetime = fixed_now + datetime.timedelta(hours=self.hire_settings.booking_lead_time_hours)
+
+        # Set pickup time to be safely after the minimum valid pickup time (e.g., 10 minutes later)
+        safe_pickup_datetime = min_valid_pickup_datetime + datetime.timedelta(minutes=10)
 
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
-            pickup_date=future_pickup_datetime.date(),
-            pickup_time=future_pickup_datetime.time(),
+            pickup_date=safe_pickup_datetime.date(),
+            pickup_time=safe_pickup_datetime.time(),
             total_price=Decimal('100.00')
         )
-        try:
-            booking.clean()
-        except ValidationError:
-            self.fail("ValidationError raised unexpectedly for valid pickup time.")
+        # Patch timezone.now() to return our fixed_now for the duration of this test block
+        with mock.patch('django.utils.timezone.now', return_value=fixed_now):
+            try:
+                booking.clean()
+            except ValidationError:
+                self.fail("ValidationError raised unexpectedly for valid pickup time.")
 
     def test_clean_negative_total_price_raises_error(self):
         """
@@ -312,7 +325,7 @@ class HireBookingModelTest(TestCase):
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
-            package=self.unavailable_package, 
+            package=self.unavailable_package, # This package is not available
             total_price=Decimal('100.00')
         )
         with self.assertRaises(ValidationError) as cm:
@@ -354,7 +367,7 @@ class HireBookingModelTest(TestCase):
         pickup_time = datetime.time(10, 0)
         return_date = pickup_date + datetime.timedelta(days=2)
         return_time = datetime.time(16, 0)
-        
+
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_int, # Non-Australian resident
@@ -413,13 +426,20 @@ class HireBookingModelTest(TestCase):
         """
         Test that a booking can have a payment link and stripe ID.
         """
-        payment_obj = create_payment(payment_intent_id="pi_test_123")
+        # Create a Payment object with the correct field names
+        payment_obj = create_payment(
+            amount=Decimal('100.00'),
+            currency='AUD',
+            status='pending',
+            stripe_payment_intent_id="pi_test_123", # Use correct field name
+            stripe_payment_method_id="pm_test_abc" # Use correct field name
+        )
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
             total_price=Decimal('100.00'),
             payment=payment_obj,
-            stripe_payment_intent_id="pi_test_123"
+            stripe_payment_intent_id="pi_test_123" # This is stored on HireBooking
         )
         try:
             booking.clean()
