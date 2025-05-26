@@ -314,7 +314,7 @@ class HireBookingModelTest(TestCase):
 
     def test_clean_negative_booked_package_price_raises_error(self):
         """
-        Test that clean() raises ValidationError if booked_package_price is negative.
+        Test that clean() raises ValidationError if total_package_price is negative.
         """
         booking = create_hire_booking(
             motorcycle=self.motorcycle,

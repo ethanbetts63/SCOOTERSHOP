@@ -112,7 +112,7 @@
                             <div class="mb-6">
                                 <h3 class="text-xl font-semibold text-gray-800 mb-3">Package Details</h3>
                                 <p class="text-gray-700"><strong class="font-medium">Package Name:</strong> ${booking.package_name}</p>
-                                {% comment %} The backend does not currently send booked_package_price for JS rendering. Add if needed. {% endcomment %}
+                                {% comment %} The backend does not currently send total_package_price for JS rendering. Add if needed. {% endcomment %}
                                 {% comment %} <p class="text-gray-700"><strong class="font-medium">Package Price:</strong> ${booking.booked_package_price} ${booking.currency}</p> {% endcomment %}
                             </div>
                         `;
@@ -191,7 +191,7 @@
             <div class="mb-6">
                 <h3 class="text-xl font-semibold text-gray-800 mb-3">Package Details</h3>
                 <p class="text-gray-700"><strong class="font-medium">Package Name:</strong> {{ package_name }}</p>
-                <p class="text-gray-700"><strong class="font-medium">Package Price:</strong> {{ hire_booking.booked_package_price }} {{ currency }}</p>
+                <p class="text-gray-700"><strong class="font-medium">Package Price:</strong> {{ hire_booking.total_package_price }} {{ currency }}</p>
                 {% if hire_booking.package.description %}
                 <p class="text-gray-600 text-sm mt-1">{{ hire_booking.package.description }}</p>
                 {% endif %}

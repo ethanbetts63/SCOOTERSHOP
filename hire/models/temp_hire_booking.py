@@ -45,7 +45,7 @@ class TempHireBooking(models.Model):
         null=True, blank=True
     )
     # Store booked price of package at the time of selection
-    booked_package_price = models.DecimalField(
+    total_package_price = models.DecimalField(
         max_digits=10, decimal_places=2,
         null=True, blank=True
     )

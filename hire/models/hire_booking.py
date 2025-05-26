@@ -80,7 +80,7 @@ class HireBooking(models.Model):
     )
 
     # Package price at booking time
-    booked_package_price = models.DecimalField(
+    total_package_price = models.DecimalField(
         max_digits=10, decimal_places=2,
         null=True, blank=True,
         help_text="Price of the selected package at the time of booking."
@@ -203,7 +203,7 @@ class HireBooking(models.Model):
         # Booked rates non-negative
         if self.booked_daily_rate is not None and self.booked_daily_rate < 0:
             errors['booked_daily_rate'] = "Booked daily rate cannot be negative."
-        if self.booked_package_price is not None and self.booked_package_price < 0:
+        if self.total_package_price is not None and self.total_package_price < 0:
             errors['booked_package_price'] = "Booked package price cannot be negative."
 
 

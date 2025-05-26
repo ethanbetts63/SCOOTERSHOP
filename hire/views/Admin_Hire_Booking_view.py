@@ -243,7 +243,7 @@ class AdminHireBookingView(View):
                     booking_instance.internal_notes = internal_notes
                     booking_instance.is_international_booking = is_international_booking
                     booking_instance.package = selected_package
-                    booking_instance.booked_package_price = total_package_price
+                    booking_instance.total_package_price = total_package_price
                     booking_instance.save() # Save the updated instance
 
                     # Update add-ons: clear existing and add new ones
