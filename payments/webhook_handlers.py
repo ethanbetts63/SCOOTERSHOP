@@ -33,14 +33,11 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
     try:
         temp_booking = payment_obj.temp_hire_booking
 
-        # FIX: Check if temp_booking is None before proceeding
         if temp_booking is None:
             logger.error(f"TempHireBooking not found for Payment ID {payment_obj.id}. Cannot finalize booking.")
             print(f"DEBUG: ERROR - TempHireBooking not found for Payment ID {payment_obj.id}.") # Debug print
-            # Re-raise TempHireBooking.DoesNotExist to be caught by the outer try-except in the test
             raise TempHireBooking.DoesNotExist(f"TempHireBooking for Payment ID {payment_obj.id} does not exist.")
 
-        # Moved this print statement here, after confirming temp_booking is not None
         print(f"DEBUG: Retrieved TempHireBooking {temp_booking.id} from Payment object.") # Debug print
 
         # Ensure we are working within an atomic transaction for data consistency
@@ -54,21 +51,23 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
                 motorcycle=temp_booking.motorcycle,
                 driver_profile=temp_booking.driver_profile,
                 package=temp_booking.package,
-                booked_package_price=temp_booking.booked_package_price,
+                # UPDATED FIELD: Changed from booked_package_price to total_package_price
+                total_package_price=temp_booking.total_package_price, # Total price for the package
                 pickup_date=temp_booking.pickup_date,
                 pickup_time=temp_booking.pickup_time,
                 return_date=temp_booking.return_date,
                 return_time=temp_booking.return_time,
                 is_international_booking=temp_booking.is_international_booking,
-                booked_daily_rate=temp_booking.booked_daily_rate,
-                total_price=temp_booking.grand_total,
+                booked_daily_rate=temp_booking.booked_daily_rate, # Motorcycle's daily rate at booking
+                booked_hourly_rate=temp_booking.booked_hourly_rate, # Motorcycle's hourly rate at booking
+                total_price=temp_booking.grand_total, # This is the grand total for the entire booking
                 deposit_amount=temp_booking.deposit_amount if temp_booking.deposit_amount else 0,
-                amount_paid=payment_obj.amount, # Use the amount from the Payment object
+                amount_paid=payment_obj.amount, # Use the amount from the Payment object (actual amount paid)
                 payment_status=hire_payment_status,
                 payment_method='online',
                 currency=temp_booking.currency,
-                status='confirmed',
-                stripe_payment_intent_id=payment_obj.stripe_payment_intent_id, # Populate this field
+                status='confirmed', # Booking is confirmed upon successful payment
+                stripe_payment_intent_id=payment_obj.stripe_payment_intent_id, # Link to Stripe PI
             )
             logger.info(f"Created new HireBooking: {hire_booking.booking_reference} from TempHireBooking {temp_booking.id}")
             print(f"DEBUG: Successfully created HireBooking: {hire_booking.booking_reference}") # Debug print
@@ -76,7 +75,7 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
             # Update the existing Payment object to link to the new HireBooking and DriverProfile
             payment_obj.hire_booking = hire_booking
             payment_obj.driver_profile = hire_booking.driver_profile # Link payment to the driver
-            payment_obj.status = payment_intent_data['status'] # Update payment status
+            payment_obj.status = payment_intent_data['status'] # Update payment status from Stripe
             # Set temp_hire_booking to None before deleting the temp_booking to ensure SET_NULL works
             payment_obj.temp_hire_booking = None
             payment_obj.save()
@@ -92,7 +91,7 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
                     booking=hire_booking,
                     addon=temp_addon.addon,
                     quantity=temp_addon.quantity,
-                    booked_addon_price=temp_addon.booked_addon_price
+                    booked_addon_price=temp_addon.booked_addon_price # Price per unit of the addon at booking
                 )
                 print(f"DEBUG: Copied add-on: {temp_addon.addon.name} (Qty: {temp_addon.quantity})") # Debug print
             logger.info(f"Copied {len(temp_booking_addons)} add-ons for HireBooking {hire_booking.booking_reference}.")
@@ -112,7 +111,6 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
             print("DEBUG: Hire booking finalization complete.") # Debug print
 
     except TempHireBooking.DoesNotExist:
-        # This block now catches the specific exception raised if temp_booking is None
         logger.error(f"TempHireBooking not found for Payment ID {payment_obj.id}. Cannot finalize booking.")
         print(f"DEBUG: ERROR - TempHireBooking not found for Payment ID {payment_obj.id}.") # Debug print
         # Re-raise the exception to ensure the webhook returns a 500, prompting Stripe to retry
@@ -134,4 +132,3 @@ WEBHOOK_HANDLERS = {
     # },
     # Add more booking types and their handlers here
 }
-

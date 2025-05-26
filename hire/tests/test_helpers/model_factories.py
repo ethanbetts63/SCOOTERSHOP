@@ -327,10 +327,10 @@ def create_hire_booking(
     if not booking_reference:
         booking_reference = f"HIRE-{uuid.uuid4().hex[:8].upper()}"
 
-    # If package is provided but total_package_price is not, use package's daily_cost as a default
+    # If package is provided but booked_package_price is not, use package's daily_cost as a default
     # The actual calculation will happen in utils.
-    if package and total_package_price == Decimal('0.00'):
-        total_package_price = package.daily_cost # Using daily_cost as a sensible default for factory
+    if package and booked_package_price == Decimal('0.00'):
+        booked_package_price = package.daily_cost # Using daily_cost as a sensible default for factory
 
     booking = HireBooking.objects.create(
         motorcycle=motorcycle,
@@ -414,10 +414,10 @@ def create_temp_hire_booking(
         return_time = datetime.time(16, 0)
     if motorcycle and not booked_daily_rate:
         booked_daily_rate = motorcycle.daily_hire_rate
-    # If package is provided but total_package_price is not, use package's daily_cost as a default
+    # If package is provided but booked_package_price is not, use package's daily_cost as a default
     # The actual calculation will happen in utils.
-    if package and total_package_price is None:
-        total_package_price = package.daily_cost # Using daily_cost as a sensible default for factory
+    if package and booked_package_price is None:
+        booked_package_price = package.daily_cost # Using daily_cost as a sensible default for factory
 
     temp_booking = TempHireBooking.objects.create(
         session_uuid=session_uuid,
