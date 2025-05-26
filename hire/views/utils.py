@@ -48,22 +48,33 @@ def _calculate_price_by_strategy(total_duration_hours, daily_rate, hourly_rate, 
     """
     Calculates the price for an item based on duration, rates, and pricing strategy.
     """
+    # This check assumes that if either rate is None, it's problematic for most paths.
+    # Calling functions (e.g., calculate_motorcycle_hire_price) also perform this check
+    # after determining specific/default rates.
     if daily_rate is None or hourly_rate is None:
         return Decimal('0.00')
+
     if total_duration_hours <= Decimal('0.00'):
         return Decimal('0.00')
 
+    # NEW RULE: If the hire is not on the same day (i.e., overnight or multi-day)
+    # AND the total duration is less than 24 hours, charge the daily rate.
+    # This assumes daily_rate is not None at this point due to the check above.
+    if not is_same_day_hire and total_duration_hours < Decimal('24.00'):
+        return daily_rate # Charge the full daily rate
+
     # Same-day hires are billed hourly, rounded up (min 1 hour).
+    # This condition (is_same_day_hire) implies total_duration_hours < 24.
+    # hourly_rate is assumed not None here due to the initial check.
     if is_same_day_hire:
-        # If total_duration_hours is, for example, 0.5, it should bill for 1 hour.
-        # If it's 2.1, it bills for 3 hours.
         billed_hours = Decimal(ceil(float(total_duration_hours))).quantize(Decimal('1.'), rounding=ROUND_HALF_UP)
         # Ensure at least 1 hour is billed for very short same-day hires if total_duration_hours > 0
         if billed_hours < Decimal('1.00') and total_duration_hours > Decimal('0.00'):
              billed_hours = Decimal('1.00')
         return billed_hours * hourly_rate
 
-    # Multi-day hire pricing strategies
+    # Multi-day hire pricing strategies (applies if not same-day and duration >= 24 hours)
+    # Both daily_rate and hourly_rate are assumed not None here due to the initial check.
     if pricing_strategy == 'flat_24_hour':
         return _calculate_flat_24_hour_billing(total_duration_hours, daily_rate)
     elif pricing_strategy == '24_hour_plus_margin':
@@ -108,8 +119,8 @@ def calculate_motorcycle_hire_price(motorcycle, pickup_date, return_date, pickup
         total_duration_hours,
         daily_rate,
         hourly_rate,
-        hire_settings.hire_pricing_strategy, #
-        hire_settings.excess_hours_margin, #
+        hire_settings.hire_pricing_strategy,
+        hire_settings.excess_hours_margin,
         is_same_day_hire
     )
 
@@ -141,8 +152,8 @@ def calculate_package_price(package_instance, pickup_date, return_date, pickup_t
         total_duration_hours,
         daily_rate, # package.daily_cost
         hourly_rate, # package.hourly_cost
-        hire_settings.hire_pricing_strategy, #
-        hire_settings.excess_hours_margin, #
+        hire_settings.hire_pricing_strategy,
+        hire_settings.excess_hours_margin,
         is_same_day_hire
     )
 
@@ -177,8 +188,8 @@ def calculate_addon_price(addon_instance, quantity, pickup_date, return_date, pi
         total_duration_hours,
         daily_rate, # addon.daily_cost
         hourly_rate, # addon.hourly_cost
-        hire_settings.hire_pricing_strategy, #
-        hire_settings.excess_hours_margin, #
+        hire_settings.hire_pricing_strategy,
+        hire_settings.excess_hours_margin,
         is_same_day_hire
     )
     
@@ -286,7 +297,7 @@ def calculate_hire_duration_days(motorcycle, pickup_date, return_date, pickup_ti
     if return_datetime <= pickup_datetime:
         return 0
 
-    pricing_strategy = hire_settings.hire_pricing_strategy #
+    pricing_strategy = hire_settings.hire_pricing_strategy 
     total_duration_seconds = (return_datetime - pickup_datetime).total_seconds()
     total_hours_float = total_duration_seconds / 3600.0
 
@@ -302,54 +313,37 @@ def calculate_hire_duration_days(motorcycle, pickup_date, return_date, pickup_ti
     elif pricing_strategy == '24_hour_plus_margin':
         full_24_hour_blocks = floor(total_hours_float / 24.0)
         remaining_excess_hours_float = total_hours_float % 24.0
-        margin_hours_float = float(hire_settings.excess_hours_margin) #
+        margin_hours_float = float(hire_settings.excess_hours_margin) 
         if remaining_excess_hours_float > 0.0 and remaining_excess_hours_float > margin_hours_float:
             return int(full_24_hour_blocks + 1)
         else: # If within margin or no excess
-            # if full_24_hour_blocks is 0 but there is duration (e.g. 10 hours into margin on day 1), count as 1 day
             return int(full_24_hour_blocks) if full_24_hour_blocks > 0 else (1 if total_hours_float > 0 else 0)
     elif pricing_strategy == '24_hour_customer_friendly':
-        if daily_rate is None or hourly_rate is None: return 0 # Rates needed for comparison
+        if daily_rate is None or hourly_rate is None: return 0 
         full_24_hour_blocks = floor(total_hours_float / 24.0)
         remaining_excess_hours_float = total_hours_float % 24.0
         if remaining_excess_hours_float > 0.0:
-            # How this strategy counts "days" for display vs billing might differ.
-            # Billing logic is in _calculate_24_hour_customer_friendly_billing
-            # For display, if any excess hours lead to a charge equivalent to a day, count it as a day.
             billed_excess_hours_for_cost_check = ceil(remaining_excess_hours_float)
             cost_by_hourly_rate_for_check = Decimal(billed_excess_hours_for_cost_check) * hourly_rate
-            if cost_by_hourly_rate_for_check >= daily_rate: # If excess costs a full day rate
+            if cost_by_hourly_rate_for_check >= daily_rate: 
                 return int(full_24_hour_blocks + 1)
-            else: # Excess costs less than a day, but it's still part of the hire
-                  # If it's e.g. 1 day and 3 hours, it's effectively into the 2nd day of usage.
-                  # This part of the logic determines if it *bills* as 2 days or 1 day + hours.
-                  # For "duration in days" display, it might be more intuitive to show ceil(total_hours_float / 24.0)
-                  # or align with how many "daily rate" blocks are charged.
-                  # The original logic was:
-                  # return int(max(1, full_24_hour_blocks)) if total_hours_float > 0 else 0
-                  # This means 1 day and 3 hours (where 3hr cost < daily_rate) counts as 1 day.
-                  # And 0 days and 3 hours (same day) counts as 1 day.
-                  # Let's refine: if there are any full_24_hour_blocks, that's the base.
-                  # If there are remaining_excess_hours, it means it's into the "next" day segment.
+            else: 
                 if full_24_hour_blocks > 0:
                     return int(full_24_hour_blocks + (1 if remaining_excess_hours_float > 0 else 0))
-                else: # Less than 24 hours total (but not same-day, so must be overnight)
+                else: 
                     return 1 if total_hours_float > 0 else 0
-        else: # Exactly N * 24 hours
+        else: 
             return int(full_24_hour_blocks) if full_24_hour_blocks > 0 else (1 if total_hours_float > 0 else 0)
     elif pricing_strategy == 'daily_plus_excess_hourly':
-        # This strategy bills full days, then adds hourly. So, "days" would be full 24-hour blocks.
-        # If any excess, it's into the next day period.
         num_days = floor(total_hours_float / 24.0)
         if total_hours_float % 24.0 > 0:
             num_days +=1
-        return int(max(1,num_days) if total_hours_float > 0 else 0) # Ensure at least 1 day if any duration
+        return int(max(1,num_days) if total_hours_float > 0 else 0) 
     else:
-        return 0 # Should not happen if strategy is valid
+        return 0 
 
 # Retrieves existing bookings that conflict with a given new booking period.
 def get_overlapping_motorcycle_bookings(motorcycle, pickup_date, pickup_time, return_date, return_time, exclude_booking_id=None):
-    # This function remains as provided
     pickup_datetime = timezone.make_aware(datetime.datetime.combine(pickup_date, pickup_time))
     return_datetime = timezone.make_aware(datetime.datetime.combine(return_date, return_time))
 
@@ -358,10 +352,10 @@ def get_overlapping_motorcycle_bookings(motorcycle, pickup_date, pickup_time, re
 
     potential_overlaps = HireBooking.objects.filter(
         motorcycle=motorcycle,
-        pickup_date__lt=return_datetime.date(), # Compare date parts for initial filter
-        return_date__gt=pickup_datetime.date()  # Compare date parts for initial filter
+        pickup_date__lt=return_datetime.date(), 
+        return_date__gt=pickup_datetime.date()  
     ).exclude(
-        status__in=['cancelled', 'completed', 'no_show'] # Assuming these are HireBooking statuses
+        status__in=['cancelled', 'completed', 'no_show'] 
     )
 
     if exclude_booking_id:
@@ -369,41 +363,32 @@ def get_overlapping_motorcycle_bookings(motorcycle, pickup_date, pickup_time, re
 
     actual_overlaps = []
     for booking in potential_overlaps:
-        # Ensure booking times are actual time objects, not None
         if booking.pickup_time is None or booking.return_time is None:
-            # Handle bookings with missing times if necessary, or skip
             continue
 
         booking_pickup_dt = timezone.make_aware(datetime.datetime.combine(booking.pickup_date, booking.pickup_time))
         booking_return_dt = timezone.make_aware(datetime.datetime.combine(booking.return_date, booking.return_time))
         
-        # Precise datetime overlap check: (StartA < EndB) and (StartB < EndA)
         if pickup_datetime < booking_return_dt and booking_pickup_dt < return_datetime:
             actual_overlaps.append(booking)
     return actual_overlaps
 
 # Checks if a motorcycle is available for a temporary booking, considering its status and other bookings.
 def is_motorcycle_available(request, motorcycle, temp_booking):
-    # This function remains as provided
-    if not motorcycle.is_available: # Assuming Motorcycle model has 'is_available'
+    if not motorcycle.is_available: 
         messages.error(request, "The selected motorcycle is currently not available.")
         return False
 
     if not temp_booking.pickup_date or not temp_booking.pickup_time or \
-       not temp_booking.return_date or not temp_booking.return_time: # Fields from TempHireBooking
+       not temp_booking.return_date or not temp_booking.return_time: 
         messages.error(request, "Please select valid pickup and return dates/times first.")
         return False
-
-    # Datetimes for comparison should be timezone-aware if database stores them as such
-    # Assuming form inputs are naive, make them aware if needed for get_overlapping_motorcycle_bookings
-    # get_overlapping_motorcycle_bookings already handles making datetimes aware.
 
     if datetime.datetime.combine(temp_booking.return_date, temp_booking.return_time) <= \
        datetime.datetime.combine(temp_booking.pickup_date, temp_booking.pickup_time):
         messages.error(request, "Return time must be after pickup time.")
         return False
 
-    # Assuming Motorcycle model has 'engine_size' and TempHireBooking has 'has_motorcycle_license'
     if motorcycle.engine_size > 50 and not temp_booking.has_motorcycle_license:
         messages.error(request, "You require a full motorcycle license for this motorcycle.")
         return False
@@ -414,9 +399,6 @@ def is_motorcycle_available(request, motorcycle, temp_booking):
         temp_booking.pickup_time,
         temp_booking.return_date,
         temp_booking.return_time
-        # If temp_booking is being edited and corresponds to an existing HireBooking,
-        # you might want to pass exclude_booking_id here.
-        # For a new temp_booking, this is usually not needed.
     )
     if conflicting_bookings:
         messages.error(request, "The selected motorcycle is not available for your chosen dates/times due to an existing booking.")

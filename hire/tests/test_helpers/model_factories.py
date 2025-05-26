@@ -248,6 +248,10 @@ def create_addon(
     is_available=True
 ):
     """Creates an AddOn instance."""
+    # Ensure hourly_cost and daily_cost are Decimal, defaulting to 0 if None is passed
+    hourly_cost = hourly_cost if hourly_cost is not None else Decimal('0.00')
+    daily_cost = daily_cost if daily_cost is not None else Decimal('0.00')
+
     return AddOn.objects.create(
         name=name,
         description=description,
@@ -267,6 +271,10 @@ def create_package(
     is_available=True
 ):
     """Creates a Package instance."""
+    # Ensure hourly_cost and daily_cost are Decimal, defaulting to 0 if None is passed
+    hourly_cost = hourly_cost if hourly_cost is not None else Decimal('0.00')
+    daily_cost = daily_cost if daily_cost is not None else Decimal('0.00')
+
     package = Package.objects.create(
         name=name,
         description=description,

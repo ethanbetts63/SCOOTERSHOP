@@ -75,6 +75,32 @@ class MotorcyclePricingUtilsTests(TestCase): # Renamed for clarity
         )
         self.assertEqual(calculated_price_short, expected_price_short)
 
+    def test_calculate_motorcycle_hire_price_overnight_less_than_24_hours_uses_daily_rate(self):
+        pickup_date = timezone.now().date() + datetime.timedelta(days=1) # Day T+1
+        pickup_time = datetime.time(22, 0) # 10 PM
+        return_date = pickup_date + datetime.timedelta(days=1) # Day T+2
+        return_time = datetime.time(8, 0) # 8 AM (10 hours duration)
+
+        # This new rule should apply regardless of the detailed strategy for >24h hires
+        for strategy in ['flat_24_hour', '24_hour_plus_margin', '24_hour_customer_friendly', 'daily_plus_excess_hourly']:
+            self.hire_settings.hire_pricing_strategy = strategy
+            self.hire_settings.save()
+
+            # Test with motorcycle having specific rates
+            expected_price_moto = self.motorcycle_with_rates.daily_hire_rate
+            calculated_price_moto = calculate_motorcycle_hire_price(
+                self.motorcycle_with_rates, pickup_date, return_date, pickup_time, return_time, self.hire_settings
+            )
+            self.assertEqual(calculated_price_moto, expected_price_moto, f"Failed for motorcycle with rates, strategy: {strategy}")
+
+            # Test with motorcycle using default rates from hire_settings
+            # Ensure motorcycle_no_rates uses the default daily rate from hire_settings
+            expected_price_default = self.hire_settings.default_daily_rate
+            calculated_price_default = calculate_motorcycle_hire_price(
+                self.motorcycle_no_rates, pickup_date, return_date, pickup_time, return_time, self.hire_settings
+            )
+            self.assertEqual(calculated_price_default, expected_price_default, f"Failed for motorcycle no rates, strategy: {strategy}")
+
     def test_calculate_motorcycle_hire_price_zero_or_negative_duration(self):
         pickup_date = timezone.now().date() + datetime.timedelta(days=1)
         pickup_time = datetime.time(9, 0)
@@ -128,27 +154,33 @@ class MotorcyclePricingUtilsTests(TestCase): # Renamed for clarity
         pickup_date = timezone.now().date() + datetime.timedelta(days=1) # T+1 09:00
         pickup_time = datetime.time(9, 0)
 
-        # Test 1: 23h 59min (should be 1 day)
-        # This duration is not same-day, e.g., T+1 09:00 to T+2 08:59
+        # Test 1: 23h 59min (should be 1 day) - This is now handled by the new overnight rule if dates differ.
+        # If it's T+1 09:00 to T+2 08:59 (pickup_date != return_date, duration < 24h)
+        # it should be daily_rate * 1 due to the new rule.
         pickup_datetime_val_short = datetime.datetime.combine(pickup_date, pickup_time)
         duration_23h59m = datetime.timedelta(hours=23, minutes=59)
         return_datetime_val_short = pickup_datetime_val_short + duration_23h59m
-        actual_return_date_short = return_datetime_val_short.date()
+        actual_return_date_short = return_datetime_val_short.date() # This will be pickup_date + 1 day
         actual_return_time_short = return_datetime_val_short.time()
+
+        # Check if dates are different
+        self.assertNotEqual(pickup_date, actual_return_date_short, "Test setup error: dates should be different for overnight rule.")
 
         calculated_price_short = calculate_motorcycle_hire_price(
              self.motorcycle_with_rates, pickup_date, actual_return_date_short, pickup_time, actual_return_time_short, self.hire_settings
         )
+        # New rule: overnight < 24h is daily_rate
         self.assertEqual(calculated_price_short, self.motorcycle_with_rates.daily_hire_rate * 1)
 
-        # Test 2: 1 day 23h 59m (47h 59m total) (should be 2 days)
-        # e.g., T+1 09:00 to T+3 08:59
-        duration_47h59m = datetime.timedelta(hours=47, minutes=59)
-        return_datetime_val_long = pickup_datetime_val_short + duration_47h59m # Using same pickup_datetime_val_short as base
+
+        # Test 2: 1 day 23h 59m (47h 59m total) (should be 2 days by flat_24_hour)
+        # e.g., T+1 09:00 to T+3 08:59. This is > 24h, so new rule doesn't apply.
+        duration_47h59m = datetime.timedelta(hours=47, minutes=59) # total_duration_hours = 47.98...
+        return_datetime_val_long = pickup_datetime_val_short + duration_47h59m # Base is T+1 09:00
         actual_return_date_long = return_datetime_val_long.date()
         actual_return_time_long = return_datetime_val_long.time()
 
-        expected_price_long = self.motorcycle_with_rates.daily_hire_rate * 2
+        expected_price_long = self.motorcycle_with_rates.daily_hire_rate * 2 # ceil(47.98 / 24) = 2
         calculated_price_long = calculate_motorcycle_hire_price(
             self.motorcycle_with_rates, pickup_date, actual_return_date_long, pickup_time, actual_return_time_long, self.hire_settings
         )
@@ -292,14 +324,13 @@ class HireDurationUtilsTests(TestCase):
     def setUp(self):
         self.motorcycle = create_motorcycle(daily_hire_rate=Decimal('100.00'), hourly_hire_rate=Decimal('20.00'))
         self.hire_settings = create_hire_settings(excess_hours_margin=3, default_daily_rate=Decimal('100.00'), default_hourly_rate=Decimal('20.00'))
-        self.base_date = timezone.now().date() # Add a base date for time arithmetic
+        self.base_date = timezone.now().date() 
 
     def test_calculate_hire_duration_days_same_day_hire(self):
         pickup_date = timezone.now().date()
         pickup_time = datetime.time(9, 0)
         return_date = pickup_date
-        return_time = datetime.time(17, 0) # 8 hours, same day
-        # For same-day hires, duration_days is always 1 if there's any positive duration
+        return_time = datetime.time(17, 0) 
         for strategy in ['flat_24_hour', '24_hour_plus_margin', '24_hour_customer_friendly', 'daily_plus_excess_hourly']:
             self.hire_settings.hire_pricing_strategy = strategy
             self.hire_settings.save()
@@ -308,7 +339,7 @@ class HireDurationUtilsTests(TestCase):
             )
             self.assertEqual(duration, 1, f"Failed for strategy: {strategy}")
 
-        return_time_short = datetime.time(9, 15) # 15 mins, same day
+        return_time_short = datetime.time(9, 15) 
         for strategy in ['flat_24_hour', '24_hour_plus_margin', '24_hour_customer_friendly', 'daily_plus_excess_hourly']:
             self.hire_settings.hire_pricing_strategy = strategy
             self.hire_settings.save()
@@ -321,7 +352,7 @@ class HireDurationUtilsTests(TestCase):
         pickup_date = timezone.now().date() + datetime.timedelta(days=1)
         pickup_time = datetime.time(9, 0)
         return_date_zero = pickup_date
-        return_time_zero = pickup_time # Zero duration
+        return_time_zero = pickup_time 
         self.hire_settings.hire_pricing_strategy = 'flat_24_hour'
         self.hire_settings.save()
         duration = calculate_hire_duration_days(
@@ -329,7 +360,7 @@ class HireDurationUtilsTests(TestCase):
         )
         self.assertEqual(duration, 0)
 
-        return_date_negative = pickup_date - datetime.timedelta(days=1) # Negative duration
+        return_date_negative = pickup_date - datetime.timedelta(days=1) 
         duration_negative = calculate_hire_duration_days(
             self.motorcycle, pickup_date, return_date_negative, pickup_time, return_time_zero, self.hire_settings
         )
@@ -339,37 +370,29 @@ class HireDurationUtilsTests(TestCase):
         self.hire_settings.hire_pricing_strategy = 'flat_24_hour'
         self.hire_settings.save()
         pickup_date = timezone.now().date()
-        pickup_time = datetime.time(9, 0) # T 09:00
+        pickup_time = datetime.time(9, 0) 
         
-        # Helper to create end date/time from duration
         def get_end_datetime_parts(start_dt, duration_delta):
             end_dt = start_dt + duration_delta
             return end_dt.date(), end_dt.time()
 
         start_datetime = datetime.datetime.combine(pickup_date, pickup_time)
 
-        # Test cases:
-        # 1. 24 hours exactly -> 1 day
         end_date_1, end_time_1 = get_end_datetime_parts(start_datetime, datetime.timedelta(hours=24))
         self.assertEqual(calculate_hire_duration_days(self.motorcycle, pickup_date, end_date_1, pickup_time, end_time_1, self.hire_settings), 1)
         
-        # 2. 24 hours + 1 minute -> 2 days
         end_date_2, end_time_2 = get_end_datetime_parts(start_datetime, datetime.timedelta(hours=24, minutes=1))
         self.assertEqual(calculate_hire_duration_days(self.motorcycle, pickup_date, end_date_2, pickup_time, end_time_2, self.hire_settings), 2)
 
-        # 3. 47 hours 59 minutes -> 2 days (ceil(47.98/24) = 2)
-        # This was the failing test. Corrected parameters to reflect 47h 59m.
         target_duration_47h59m = datetime.timedelta(hours=47, minutes=59)
         end_datetime_for_test = datetime.datetime.combine(pickup_date, pickup_time) + target_duration_47h59m
         return_date_for_test = end_datetime_for_test.date()
         return_time_for_test = end_datetime_for_test.time()
         self.assertEqual(calculate_hire_duration_days(self.motorcycle, pickup_date, return_date_for_test, pickup_time, return_time_for_test, self.hire_settings), 2)
 
-        # 4. 23 hours 59 minutes -> 1 day (ceil(23.98/24) = 1)
         end_date_4, end_time_4 = get_end_datetime_parts(start_datetime, datetime.timedelta(hours=23, minutes=59))
         self.assertEqual(calculate_hire_duration_days(self.motorcycle, pickup_date, end_date_4, pickup_time, end_time_4, self.hire_settings), 1)
         
-        # 5. 2 days 6 hours (54 hours) -> 3 days (ceil(54/24)=3)
         end_date_5, end_time_5 = get_end_datetime_parts(start_datetime, datetime.timedelta(days=2, hours=6))
         self.assertEqual(calculate_hire_duration_days(self.motorcycle, pickup_date, end_date_5, pickup_time, end_time_5, self.hire_settings), 3)
 
@@ -379,45 +402,28 @@ class HireDurationUtilsTests(TestCase):
         self.hire_settings.excess_hours_margin = 3
         self.hire_settings.save()
         pickup_date = timezone.now().date()
-        pickup_time = datetime.time(9, 0) # T 09:00
+        pickup_time = datetime.time(9, 0) 
 
         start_datetime = datetime.datetime.combine(pickup_date, pickup_time)
         def get_end_parts(duration_delta):
             end_dt = start_datetime + duration_delta
             return end_dt.date(), end_dt.time()
 
-        # Test cases:
-        # 1. 48 hours (2 days exact) -> 2 days
         rd1, rt1 = get_end_parts(datetime.timedelta(days=2))
         self.assertEqual(calculate_hire_duration_days(self.motorcycle, pickup_date, rd1, pickup_time, rt1, self.hire_settings), 2)
         
-        # 2. 2 days + 2 hours (within 3h margin) -> 2 days
         rd2, rt2 = get_end_parts(datetime.timedelta(days=2, hours=2))
         self.assertEqual(calculate_hire_duration_days(self.motorcycle, pickup_date, rd2, pickup_time, rt2, self.hire_settings), 2)
         
-        # 3. 2 days + 3 hours (at 3h margin) -> 2 days
         rd3, rt3 = get_end_parts(datetime.timedelta(days=2, hours=3))
         self.assertEqual(calculate_hire_duration_days(self.motorcycle, pickup_date, rd3, pickup_time, rt3, self.hire_settings), 2)
         
-        # 4. 2 days + 4 hours (exceeds 3h margin) -> 3 days
         rd4, rt4 = get_end_parts(datetime.timedelta(days=2, hours=4))
         self.assertEqual(calculate_hire_duration_days(self.motorcycle, pickup_date, rd4, pickup_time, rt4, self.hire_settings), 3)
         
-        # 5. 10 hours (not same-day, e.g. overnight) -> 1 day
-        # (total_hours_float > 0, full_24_hour_blocks = 0, but not margin_exceeded, so 1)
-        # Example: T 09:00 to T 19:00 (10 hours). If this spans midnight, it's handled by multi-day logic.
-        # If it's T1 09:00 to T2 01:00 (16 hours), full_24_hour_blocks = 0, remaining_excess_hours = 16.
-        # If margin is 3, 16 > 3, so it should be 0 + 1 = 1 day.
-        # The original test case was:
-        # return_date_overnight_short = pickup_date
-        # return_time_overnight_short = (datetime.datetime.combine(self.base_date, pickup_time) + datetime.timedelta(hours=10)).time()
-        # This makes it a same-day hire, which is handled differently.
-        # Let's test an overnight short hire: T1 22:00 to T2 08:00 (10 hours)
         pickup_time_os = datetime.time(22,0)
         start_dt_os = datetime.datetime.combine(pickup_date, pickup_time_os)
-        rd5, rt5 = get_end_parts(datetime.timedelta(hours=10)) # This will use start_datetime (09:00), need to adjust
-        
-        end_dt_os_10h = start_dt_os + datetime.timedelta(hours=10) # pickup_date 22:00 + 10h = pickup_date+1day 08:00
+        end_dt_os_10h = start_dt_os + datetime.timedelta(hours=10) 
         self.assertEqual(calculate_hire_duration_days(self.motorcycle, pickup_date, end_dt_os_10h.date(), pickup_time_os, end_dt_os_10h.time(), self.hire_settings), 1)
 
 
@@ -425,42 +431,33 @@ class HireDurationUtilsTests(TestCase):
         self.hire_settings.hire_pricing_strategy = '24_hour_customer_friendly'
         self.hire_settings.save()
         pickup_date = timezone.now().date()
-        pickup_time = datetime.time(9, 0) # T 09:00
-        motorcycle_for_test = self.motorcycle # daily 100, hourly 20
+        pickup_time = datetime.time(9, 0) 
+        motorcycle_for_test = self.motorcycle 
 
         start_datetime = datetime.datetime.combine(pickup_date, pickup_time)
         def get_end_parts(duration_delta):
             end_dt = start_datetime + duration_delta
             return end_dt.date(), end_dt.time()
 
-        # Test cases:
-        # 1. 48 hours (2 days exact) -> 2 days
         rd1, rt1 = get_end_parts(datetime.timedelta(days=2))
         self.assertEqual(calculate_hire_duration_days(motorcycle_for_test, pickup_date, rd1, pickup_time, rt1, self.hire_settings), 2)
 
-        # 2. 2 days + 3h excess (51 hours total). (3*20=60 < 100 daily)
-        # Duration counts as 3 days because it spans into the 3rd day period.
         rd2, rt2 = get_end_parts(datetime.timedelta(days=2, hours=3))
         self.assertEqual(calculate_hire_duration_days(motorcycle_for_test, pickup_date, rd2, pickup_time, rt2, self.hire_settings), 3)
 
-        # 3. 2 days + 5h excess (53 hours total). (5*20=100 == 100 daily) -> 3 days
         rd3, rt3 = get_end_parts(datetime.timedelta(days=2, hours=5))
         self.assertEqual(calculate_hire_duration_days(motorcycle_for_test, pickup_date, rd3, pickup_time, rt3, self.hire_settings), 3)
 
-        # 4. 2 days + 6h excess (54 hours total). (6*20=120 > 100 daily) -> 3 days
         rd4, rt4 = get_end_parts(datetime.timedelta(days=2, hours=6))
         self.assertEqual(calculate_hire_duration_days(motorcycle_for_test, pickup_date, rd4, pickup_time, rt4, self.hire_settings), 3)
 
-        # 5. Same day, 5 hours -> 1 day (Handled by same-day hire condition at the start of calc_hire_duration_days)
         return_date_same_day = pickup_date
-        return_time_5_hours = datetime.time(14, 0) # T 09:00 to T 14:00
+        return_time_5_hours = datetime.time(14, 0) 
         self.assertEqual(calculate_hire_duration_days(motorcycle_for_test, pickup_date, return_date_same_day, pickup_time, return_time_5_hours, self.hire_settings), 1)
 
-        # 6. 10 hours (not same-day, e.g. overnight T 22:00 to T+1 08:00)
-        # (10 * 20 = 200 > 100 daily). Billed as 1 day. Duration should be 1 day.
         pickup_time_overnight = datetime.time(22,0)
         start_dt_overnight = datetime.datetime.combine(pickup_date, pickup_time_overnight)
-        end_dt_overnight = start_dt_overnight + datetime.timedelta(hours=10) # P_DATE 22:00 + 10h = P_DATE+1 08:00
+        end_dt_overnight = start_dt_overnight + datetime.timedelta(hours=10) 
         self.assertEqual(calculate_hire_duration_days(motorcycle_for_test, pickup_date, end_dt_overnight.date(), pickup_time_overnight, end_dt_overnight.time(), self.hire_settings), 1)
 
 
@@ -468,38 +465,33 @@ class HireDurationUtilsTests(TestCase):
         self.hire_settings.hire_pricing_strategy = 'daily_plus_excess_hourly'
         self.hire_settings.save()
         pickup_date = timezone.now().date()
-        pickup_time = datetime.time(9, 0) # T 09:00
+        pickup_time = datetime.time(9, 0) 
 
         start_datetime = datetime.datetime.combine(pickup_date, pickup_time)
         def get_end_parts(duration_delta):
             end_dt = start_datetime + duration_delta
             return end_dt.date(), end_dt.time()
 
-        # Test cases:
-        # 1. 48 hours (2 days exact) -> 2 days
         rd1, rt1 = get_end_parts(datetime.timedelta(days=2))
         self.assertEqual(calculate_hire_duration_days(self.motorcycle, pickup_date, rd1, pickup_time, rt1, self.hire_settings), 2)
 
-        # 2. 2 days + 5.5 hours (53.5 hours total) -> 3 days (because it spans into the 3rd day)
         rd2, rt2 = get_end_parts(datetime.timedelta(days=2, hours=5, minutes=30))
         self.assertEqual(calculate_hire_duration_days(self.motorcycle, pickup_date, rd2, pickup_time, rt2, self.hire_settings), 3)
 
-        # 3. 4 hours total over midnight (e.g. T 22:00 to T+1 02:00) -> 1 day
         pickup_time_span = datetime.time(22, 0)
         start_dt_span = datetime.datetime.combine(pickup_date, pickup_time_span)
-        end_dt_span = start_dt_span + datetime.timedelta(hours=4) # P_DATE 22:00 + 4h = P_DATE+1 02:00
+        end_dt_span = start_dt_span + datetime.timedelta(hours=4) 
         self.assertEqual(calculate_hire_duration_days(self.motorcycle, pickup_date, end_dt_span.date(), pickup_time_span, end_dt_span.time(), self.hire_settings), 1)
 
-        # 4. 23 hours (not same-day, e.g. T 09:00 to T+1 08:00) -> 1 day
-        rd4, rt4 = get_end_parts(datetime.timedelta(hours=23)) # P_DATE 09:00 + 23h = P_DATE+1 08:00
+        rd4, rt4 = get_end_parts(datetime.timedelta(hours=23)) 
         self.assertEqual(calculate_hire_duration_days(self.motorcycle, pickup_date, rd4, pickup_time, rt4, self.hire_settings), 1)
 
-# --- Tests for get_overlapping_motorcycle_bookings --- (Largely Unchanged)
+# --- Tests for get_overlapping_motorcycle_bookings --- 
 class OverlapUtilsTests(TestCase):
     def setUp(self):
         self.motorcycle = create_motorcycle()
         self.driver_profile = create_driver_profile()
-        self.hire_settings = create_hire_settings() # Though not directly used by overlap func
+        self.hire_settings = create_hire_settings() 
 
     def test_get_overlapping_motorcycle_bookings_no_overlap(self):
         create_hire_booking(
@@ -533,7 +525,6 @@ class OverlapUtilsTests(TestCase):
         self.assertIn(booking1, overlaps)
 
 
-    # Tests overlap check when new booking starts within and ends after an existing booking.
     def test_get_overlapping_motorcycle_bookings_partial_overlap_start_within(self):
         booking1 = create_hire_booking(
             motorcycle=self.motorcycle, driver_profile=self.driver_profile,
@@ -550,7 +541,6 @@ class OverlapUtilsTests(TestCase):
         self.assertEqual(len(overlaps), 1)
         self.assertIn(booking1, overlaps)
 
-    # Tests overlap check when new booking starts before and ends within an existing booking.
     def test_get_overlapping_motorcycle_bookings_partial_overlap_end_within(self):
         booking1 = create_hire_booking(
             motorcycle=self.motorcycle, driver_profile=self.driver_profile,
@@ -567,7 +557,6 @@ class OverlapUtilsTests(TestCase):
         self.assertEqual(len(overlaps), 1)
         self.assertIn(booking1, overlaps)
 
-    # Tests overlap check with adjacent bookings (should not overlap).
     def test_get_overlapping_motorcycle_bookings_adjacent_bookings(self):
         create_hire_booking(
             motorcycle=self.motorcycle, driver_profile=self.driver_profile,
@@ -583,7 +572,6 @@ class OverlapUtilsTests(TestCase):
         )
         self.assertEqual(len(overlaps), 0)
 
-    # Tests overlap check excluding a specific booking ID.
     def test_get_overlapping_motorcycle_bookings_with_exclude_id(self):
         booking1 = create_hire_booking(
             motorcycle=self.motorcycle, driver_profile=self.driver_profile,
@@ -607,7 +595,6 @@ class OverlapUtilsTests(TestCase):
         self.assertIn(booking2, overlaps)
         self.assertNotIn(booking1, overlaps)
 
-    # Tests that cancelled bookings are ignored in overlap checks.
     def test_get_overlapping_motorcycle_bookings_cancelled_status(self):
         create_hire_booking(
             motorcycle=self.motorcycle, driver_profile=self.driver_profile,
@@ -624,7 +611,6 @@ class OverlapUtilsTests(TestCase):
         )
         self.assertEqual(len(overlaps), 0)
 
-    # Tests that completed bookings are ignored in overlap checks.
     def test_get_overlapping_motorcycle_bookings_completed_status(self):
         create_hire_booking(
             motorcycle=self.motorcycle, driver_profile=self.driver_profile,
@@ -643,7 +629,6 @@ class OverlapUtilsTests(TestCase):
         )
         self.assertEqual(len(overlaps), 0)
 
-    # Tests that 'no_show' bookings are ignored in overlap checks.
     def test_get_overlapping_motorcycle_bookings_no_show_status(self):
         create_hire_booking(
             motorcycle=self.motorcycle, driver_profile=self.driver_profile,
@@ -660,7 +645,6 @@ class OverlapUtilsTests(TestCase):
         )
         self.assertEqual(len(overlaps), 0)
 
-    # Tests overlap check when query return is before query pickup (invalid range).
     def test_get_overlapping_motorcycle_bookings_return_before_pickup_query(self):
         create_hire_booking(
             motorcycle=self.motorcycle, driver_profile=self.driver_profile,
@@ -676,7 +660,6 @@ class OverlapUtilsTests(TestCase):
         )
         self.assertEqual(len(overlaps), 0)
 
-    # Tests overlap check when query return is same as query pickup (zero duration).
     def test_get_overlapping_motorcycle_bookings_return_equal_pickup_query(self):
         create_hire_booking(
             motorcycle=self.motorcycle, driver_profile=self.driver_profile,
@@ -696,11 +679,16 @@ class OverlapUtilsTests(TestCase):
 
 class PackagePricingUtilsTests(TestCase):
     def setUp(self):
-        self.hire_settings = create_hire_settings(hire_pricing_strategy='24_hour_customer_friendly', excess_hours_margin=2)
+        self.hire_settings = create_hire_settings(hire_pricing_strategy='24_hour_customer_friendly', excess_hours_margin=2, default_daily_rate=Decimal('50.00'), default_hourly_rate=Decimal('10.00')) # Added defaults for robustness
         self.package_adventure = create_package(
             name="Adventure Pack",
             hourly_cost=Decimal('10.00'),
             daily_cost=Decimal('50.00')
+        )
+        self.package_no_rates = create_package( # For testing fallback or missing rates
+            name="Basic Pack No Rates",
+            hourly_cost=None,
+            daily_cost=None
         )
         self.pickup_date = timezone.now().date() + datetime.timedelta(days=1)
         self.pickup_time = datetime.time(9, 0)
@@ -714,6 +702,33 @@ class PackagePricingUtilsTests(TestCase):
             self.package_adventure, self.pickup_date, return_date, self.pickup_time, return_time, self.hire_settings
         )
         self.assertEqual(calculated_price, expected_price)
+
+    def test_calculate_package_price_overnight_less_than_24_hours_uses_daily_rate(self):
+        pickup_date_overnight = self.pickup_date 
+        pickup_time_overnight = datetime.time(22, 0) # 10 PM
+        return_date_overnight = pickup_date_overnight + datetime.timedelta(days=1) 
+        return_time_overnight = datetime.time(8, 0) # 8 AM (10 hours duration)
+
+        for strategy in ['flat_24_hour', '24_hour_plus_margin', '24_hour_customer_friendly', 'daily_plus_excess_hourly']:
+            self.hire_settings.hire_pricing_strategy = strategy
+            self.hire_settings.save()
+
+            expected_price = self.package_adventure.daily_cost
+            calculated_price = calculate_package_price(
+                self.package_adventure, pickup_date_overnight, return_date_overnight, pickup_time_overnight, return_time_overnight, self.hire_settings
+            )
+            self.assertEqual(calculated_price, expected_price, f"Failed for package with rates, strategy: {strategy}")
+            
+            # Test with a package that has no direct rates, should use defaults from hire_settings if applicable
+            # However, calculate_package_price uses package's own rates directly. If None, it returns 0.
+            # Let's ensure our hire_settings has defaults that could be used if logic changed, but for now, it's direct.
+            # If package_no_rates.daily_cost is None, the initial check in calculate_package_price
+            # `if daily_rate is None or hourly_rate is None: return Decimal('0.00')` will trigger.
+            calculated_price_no_rates = calculate_package_price(
+                 self.package_no_rates, pickup_date_overnight, return_date_overnight, pickup_time_overnight, return_time_overnight, self.hire_settings
+            )
+            self.assertEqual(calculated_price_no_rates, Decimal('0.00'), f"Failed for package with no rates (should be 0), strategy: {strategy}")
+
 
     def test_calculate_package_price_flat_24_hour_exact_days(self):
         self.hire_settings.hire_pricing_strategy = 'flat_24_hour'
@@ -758,18 +773,18 @@ class PackagePricingUtilsTests(TestCase):
 
 class AddOnPricingUtilsTests(TestCase):
     def setUp(self):
-        self.hire_settings = create_hire_settings(hire_pricing_strategy='24_hour_customer_friendly', excess_hours_margin=2)
+        self.hire_settings = create_hire_settings(hire_pricing_strategy='24_hour_customer_friendly', excess_hours_margin=2, default_daily_rate=Decimal('10.00'), default_hourly_rate=Decimal('2.00'))
         self.addon_helmet = create_addon(name="Helmet", hourly_cost=Decimal('2.00'), daily_cost=Decimal('10.00'))
         self.addon_jacket = create_addon(name="Jacket", hourly_cost=Decimal('3.00'), daily_cost=Decimal('15.00'))
+        self.addon_no_rates = create_addon(name="Gloves", hourly_cost=None, daily_cost=None)
+
 
         self.pickup_date = timezone.now().date() + datetime.timedelta(days=1)
         self.pickup_time = datetime.time(9, 0)
 
-        # TempBooking for calculate_total_addons_price
         self.temp_booking = create_temp_hire_booking(
             pickup_date=self.pickup_date,
             pickup_time=self.pickup_time,
-            # Return date/time will be set per test for total_addons_price
         )
 
     def test_calculate_addon_price_same_day_hourly_single_quantity(self):
@@ -791,6 +806,30 @@ class AddOnPricingUtilsTests(TestCase):
         )
         self.assertEqual(calculated_price, expected_price)
 
+    def test_calculate_addon_price_overnight_less_than_24_hours_uses_daily_rate(self):
+        pickup_date_overnight = self.pickup_date
+        pickup_time_overnight = datetime.time(22, 0)  # 10 PM
+        return_date_overnight = pickup_date_overnight + datetime.timedelta(days=1)
+        return_time_overnight = datetime.time(8, 0)  # 8 AM (10 hours duration)
+        quantity = 2
+
+        for strategy in ['flat_24_hour', '24_hour_plus_margin', '24_hour_customer_friendly', 'daily_plus_excess_hourly']:
+            self.hire_settings.hire_pricing_strategy = strategy
+            self.hire_settings.save()
+
+            expected_price_single_unit = self.addon_helmet.daily_cost
+            expected_total_price = expected_price_single_unit * quantity
+            calculated_price = calculate_addon_price(
+                self.addon_helmet, quantity, pickup_date_overnight, return_date_overnight, pickup_time_overnight, return_time_overnight, self.hire_settings
+            )
+            self.assertEqual(calculated_price, expected_total_price, f"Failed for addon with rates, strategy: {strategy}")
+
+            calculated_price_no_rates = calculate_addon_price(
+                self.addon_no_rates, quantity, pickup_date_overnight, return_date_overnight, pickup_time_overnight, return_time_overnight, self.hire_settings
+            )
+            self.assertEqual(calculated_price_no_rates, Decimal('0.00'), f"Failed for addon with no rates (should be 0), strategy: {strategy}")
+
+
     def test_calculate_addon_price_flat_24_hour_exact_days(self):
         self.hire_settings.hire_pricing_strategy = 'flat_24_hour'
         self.hire_settings.save()
@@ -808,7 +847,7 @@ class AddOnPricingUtilsTests(TestCase):
         self.assertEqual(calculated_price, expected_price)
 
     def test_calculate_total_addons_price_no_addons(self):
-        self.temp_booking.return_date = self.pickup_date + datetime.timedelta(days=1) # Any valid duration
+        self.temp_booking.return_date = self.pickup_date + datetime.timedelta(days=1) 
         self.temp_booking.return_time = self.pickup_time
         self.temp_booking.save()
 
@@ -823,7 +862,7 @@ class AddOnPricingUtilsTests(TestCase):
         create_temp_booking_addon(temp_booking=self.temp_booking, addon=self.addon_helmet, quantity=1)
         create_temp_booking_addon(temp_booking=self.temp_booking, addon=self.addon_jacket, quantity=2)
 
-        expected_price_helmet = self.addon_helmet.hourly_cost * 3 # 3 hours billed
+        expected_price_helmet = self.addon_helmet.hourly_cost * 3 
         expected_price_jacket = (self.addon_jacket.hourly_cost * 3) * 2
         expected_total = expected_price_helmet + expected_price_jacket
 
@@ -835,7 +874,6 @@ class AddOnPricingUtilsTests(TestCase):
         self.hire_settings.save()
 
         pickup_datetime_val = datetime.datetime.combine(self.pickup_date, self.pickup_time)
-        # 1 day + 2 hours -> 2 days billed by flat_24_hour strategy
         return_datetime_val = pickup_datetime_val + datetime.timedelta(days=1, hours=2)
         self.temp_booking.return_date = return_datetime_val.date()
         self.temp_booking.return_time = return_datetime_val.time()
@@ -867,8 +905,8 @@ class GrandTotalUtilsTests(TestCase):
         self.temp_booking = create_temp_hire_booking(
             pickup_date=timezone.now().date() + datetime.timedelta(days=1),
             pickup_time=datetime.time(10,0),
-            return_date=timezone.now().date() + datetime.timedelta(days=1), # Same day for initial setup
-            return_time=datetime.time(13,0) # 3 hours duration
+            return_date=timezone.now().date() + datetime.timedelta(days=1), 
+            return_time=datetime.time(13,0) 
         )
 
     def test_calculate_booking_grand_total_motorcycle_only_same_day(self):
@@ -877,7 +915,6 @@ class GrandTotalUtilsTests(TestCase):
 
         results = calculate_booking_grand_total(self.temp_booking, self.hire_settings)
 
-        # Motorcycle: 3 hours * 20/hr = 60
         expected_moto_price = self.motorcycle.hourly_hire_rate * 3
         self.assertEqual(results['motorcycle_price'], expected_moto_price)
         self.assertEqual(results['package_price'], Decimal('0.00'))
@@ -891,8 +928,6 @@ class GrandTotalUtilsTests(TestCase):
 
         results = calculate_booking_grand_total(self.temp_booking, self.hire_settings)
 
-        # Motorcycle: 3 hours * 20/hr = 60
-        # Package: 3 hours * 5/hr = 15
         expected_moto_price = self.motorcycle.hourly_hire_rate * 3
         expected_package_price = self.package.hourly_cost * 3
         expected_grand_total = expected_moto_price + expected_package_price
@@ -910,9 +945,6 @@ class GrandTotalUtilsTests(TestCase):
 
         results = calculate_booking_grand_total(self.temp_booking, self.hire_settings)
 
-        # Motorcycle: 3 hours * 20/hr = 60
-        # Addon1: 3 hours * 1/hr * 1 = 3
-        # Addon2: 3 hours * 0.50/hr * 2 = 3
         expected_moto_price = self.motorcycle.hourly_hire_rate * 3
         expected_addon1_price = self.addon1.hourly_cost * 3 * 1
         expected_addon2_price = self.addon2.hourly_cost * 3 * 2
@@ -932,7 +964,6 @@ class GrandTotalUtilsTests(TestCase):
         self.temp_booking.package = self.package
         
         pickup_datetime_val = datetime.datetime.combine(self.temp_booking.pickup_date, self.temp_booking.pickup_time)
-        # 1 day + 3 hours -> 2 days billed by flat_24_hour
         return_datetime_val = pickup_datetime_val + datetime.timedelta(days=1, hours=3)
         self.temp_booking.return_date = return_datetime_val.date()
         self.temp_booking.return_time = return_datetime_val.time()
@@ -941,9 +972,6 @@ class GrandTotalUtilsTests(TestCase):
 
         results = calculate_booking_grand_total(self.temp_booking, self.hire_settings)
 
-        # Motorcycle: 2 days (flat) * 100/day = 200
-        # Package: 2 days (flat) * 25/day = 50
-        # Addon1: 2 days (flat) * 5/day * 1 = 10
         expected_moto_price = self.motorcycle.daily_hire_rate * 2
         expected_package_price = self.package.daily_cost * 2
         expected_addon1_price = self.addon1.daily_cost * 2 * 1
@@ -953,9 +981,40 @@ class GrandTotalUtilsTests(TestCase):
         self.assertEqual(results['package_price'], expected_package_price)
         self.assertEqual(results['addons_total_price'], expected_addon1_price)
         self.assertEqual(results['grand_total'], expected_grand_total)
+        
+    def test_calculate_booking_grand_total_overnight_less_than_24h_all_items(self):
+        # Set temp_booking for overnight < 24h
+        self.temp_booking.pickup_time = datetime.time(22,0) # 10 PM
+        self.temp_booking.return_date = self.temp_booking.pickup_date + datetime.timedelta(days=1)
+        self.temp_booking.return_time = datetime.time(8,0) # 8 AM (10 hours duration)
+        
+        self.temp_booking.motorcycle = self.motorcycle
+        self.temp_booking.package = self.package
+        self.temp_booking.save()
+        create_temp_booking_addon(temp_booking=self.temp_booking, addon=self.addon1, quantity=1)
+        create_temp_booking_addon(temp_booking=self.temp_booking, addon=self.addon2, quantity=2)
+
+        # The new rule should apply daily_rate for each item, regardless of hire_settings.hire_pricing_strategy
+        for strategy in ['flat_24_hour', '24_hour_plus_margin', '24_hour_customer_friendly', 'daily_plus_excess_hourly']:
+            self.hire_settings.hire_pricing_strategy = strategy
+            self.hire_settings.save()
+
+            results = calculate_booking_grand_total(self.temp_booking, self.hire_settings)
+
+            expected_moto_price = self.motorcycle.daily_hire_rate
+            expected_package_price = self.package.daily_cost
+            expected_addon1_price = self.addon1.daily_cost * 1
+            expected_addon2_price = self.addon2.daily_cost * 2
+            expected_addons_total = expected_addon1_price + expected_addon2_price
+            expected_grand_total = expected_moto_price + expected_package_price + expected_addons_total
+
+            self.assertEqual(results['motorcycle_price'], expected_moto_price, f"Moto price failed for strategy {strategy}")
+            self.assertEqual(results['package_price'], expected_package_price, f"Package price failed for strategy {strategy}")
+            self.assertEqual(results['addons_total_price'], expected_addons_total, f"Addons total price failed for strategy {strategy}")
+            self.assertEqual(results['grand_total'], expected_grand_total, f"Grand total failed for strategy {strategy}")
+
 
     def test_calculate_booking_grand_total_incomplete_booking(self):
-        # No motorcycle, no package, no addons, no dates
         empty_temp_booking = create_temp_hire_booking(pickup_date=None, pickup_time=None, return_date=None, return_time=None)
         results = calculate_booking_grand_total(empty_temp_booking, self.hire_settings)
         self.assertEqual(results['motorcycle_price'], Decimal('0.00'))
@@ -963,11 +1022,10 @@ class GrandTotalUtilsTests(TestCase):
         self.assertEqual(results['addons_total_price'], Decimal('0.00'))
         self.assertEqual(results['grand_total'], Decimal('0.00'))
 
-        # With dates but no items
         self.temp_booking.motorcycle = None
         self.temp_booking.package = None
-        # ensure addons are cleared if any were attached from other tests to this shared instance
         TempBookingAddOn.objects.filter(temp_booking=self.temp_booking).delete()
-        self.temp_booking.save()
+        self.temp_booking.save() # Save changes to self.temp_booking (which has dates from its setUp)
         results_only_dates = calculate_booking_grand_total(self.temp_booking, self.hire_settings)
         self.assertEqual(results_only_dates['grand_total'], Decimal('0.00'))
+
