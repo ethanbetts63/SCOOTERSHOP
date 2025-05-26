@@ -9,6 +9,9 @@ from django.utils import timezone
 from inventory.models import Motorcycle
 from dashboard.models import HireSettings, BlockedHireDate
 from hire.models import TempHireBooking # Import TempHireBooking model
+# Import the new pricing functions
+from .hire_pricing import calculate_motorcycle_hire_price 
+
 
 class BikeChoiceView(View):
     """
@@ -91,10 +94,13 @@ class BikeChoiceView(View):
         pickup_datetime = timezone.make_aware(datetime.datetime.combine(pickup_date, pickup_time))
         return_datetime = timezone.make_aware(datetime.datetime.combine(return_date, return_time))
         
-        # Recalculate duration in days for display and price calculation
-        duration = (return_datetime - pickup_datetime).days + (1 if (return_datetime - pickup_datetime).seconds > 0 else 0)
-        if duration == 0: # Minimum 1 day hire if pickup and return are same day but different times
-            duration = 1
+        # The 'duration' variable here was previously used for a simplified calculation.
+        # It's no longer directly used for the main pricing logic, as calculate_motorcycle_hire_price
+        # handles duration internally based on datetimes.
+        # Keeping it for potential display purposes if needed elsewhere, but not for price calculation.
+        # duration = (return_datetime - pickup_datetime).days + (1 if (return_datetime - pickup_datetime).seconds > 0 else 0)
+        # if duration == 0: # Minimum 1 day hire if pickup and return are same day but different times
+        #     duration = 1
 
         # Determine available motorcycles based on license and existing bookings
         available_motorcycles = Motorcycle.objects.filter(
@@ -127,16 +133,25 @@ class BikeChoiceView(View):
         # Annotate motorcycles with calculated hire rates and total price
         motorcycles_with_prices = []
         for motorcycle in available_motorcycles:
-            # Calculate daily hire rate (you might have more complex logic here)
-            daily_hire_rate = motorcycle.daily_hire_rate
+            # Calculate total hire price for the period using the comprehensive pricing logic
+            # from hire_pricing.py
+            total_hire_price = calculate_motorcycle_hire_price(
+                motorcycle=motorcycle,
+                pickup_date=pickup_date,
+                return_date=return_date,
+                pickup_time=pickup_time,
+                return_time=return_time,
+                hire_settings=hire_settings
+            )
             
-            # Calculate total hire price for the period
-            total_hire_price = daily_hire_rate * duration
+            # Use the motorcycle's daily_hire_rate for display if available, otherwise fallback to default
+            daily_hire_rate_display = motorcycle.daily_hire_rate if motorcycle.daily_hire_rate is not None else hire_settings.default_daily_rate
+
 
             motorcycles_with_prices.append({
                 'object': motorcycle,
-                'daily_hire_rate_display': daily_hire_rate,
-                'total_hire_price': total_hire_price,
+                'daily_hire_rate_display': daily_hire_rate_display, # Display the daily rate
+                'total_hire_price': total_hire_price, # This is the calculated total price
             })
 
         # Sorting logic
@@ -162,4 +177,3 @@ class BikeChoiceView(View):
             'blocked_hire_dates': BlockedHireDate 
         }
         return render(request, self.template_name, context)
-
