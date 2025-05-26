@@ -8,6 +8,7 @@ from inventory.models import Motorcycle # Also need Motorcycle model for type hi
 from django.contrib import messages # Import messages for the utility function
 from django.shortcuts import redirect
 
+
 def calculate_hire_price(motorcycle, duration_days, hire_settings):
     """
     Calculates the total hire price based on motorcycle, duration in days, and hire settings.
@@ -51,6 +52,7 @@ def get_overlapping_motorcycle_bookings(motorcycle, pickup_date, pickup_time, re
     return_datetime = timezone.make_aware(datetime.datetime.combine(return_date, return_time))
 
     # Ensure return_datetime is after pickup_datetime for a valid range
+    # This check is now also performed in is_motorcycle_available, but kept here for robustness
     if return_datetime <= pickup_datetime:
         return []
 
@@ -82,16 +84,34 @@ def get_overlapping_motorcycle_bookings(motorcycle, pickup_date, pickup_time, re
     return actual_overlaps
 
 def is_motorcycle_available(request, motorcycle, temp_booking):
-
+    """
+    Checks if a motorcycle is available for the given temporary booking dates and license type.
+    Adds messages and returns False if not available.
+    """
     # Check: Is the motorcycle generally available?
     if not motorcycle.is_available:
         messages.error(request, "The selected motorcycle is currently not available.")
         return False
-    
+
+    # Check for basic date/time validity first
     if not temp_booking.pickup_date or not temp_booking.pickup_time or \
        not temp_booking.return_date or not temp_booking.return_time:
         messages.error(request, "Please select valid pickup and return dates/times first.")
-        return redirect('hire:step2_choose_bike')
+        return False
+
+    # Combine into datetime objects for comparison
+    pickup_datetime = timezone.make_aware(datetime.datetime.combine(temp_booking.pickup_date, temp_booking.pickup_time))
+    return_datetime = timezone.make_aware(datetime.datetime.combine(temp_booking.return_date, temp_booking.return_time))
+
+    # Explicitly check if return date/time is before or same as pickup date/time
+    if return_datetime <= pickup_datetime:
+        messages.error(request, "Return time must be after pickup time.")
+        return False
+
+    # Check for license compatibility
+    if motorcycle.engine_size > 50 and not temp_booking.has_motorcycle_license:
+        messages.error(request, "You require a full motorcycle license for this motorcycle.")
+        return False
 
     # Check: Are there any conflicting permanent bookings?
     conflicting_bookings = get_overlapping_motorcycle_bookings(
@@ -105,4 +125,4 @@ def is_motorcycle_available(request, motorcycle, temp_booking):
         messages.error(request, "The selected motorcycle is not available for your chosen dates/times due to an existing booking.")
         return False
 
-    return True 
+    return True

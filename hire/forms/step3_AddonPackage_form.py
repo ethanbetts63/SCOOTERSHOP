@@ -14,8 +14,8 @@ class Step3AddOnsPackagesForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         self.available_packages = kwargs.pop('available_packages', Package.objects.none())
-        # The original available_addons (all active addons)
-        all_available_addons = kwargs.pop('available_addons', AddOn.objects.none())
+        # Receive ALL add-ons, regardless of availability, for validation purposes
+        all_addons_for_validation = kwargs.pop('available_addons', AddOn.objects.none()) 
         # The currently selected package instance
         self.selected_package_instance = kwargs.pop('selected_package_instance', None)
         
@@ -26,7 +26,11 @@ class Step3AddOnsPackagesForm(forms.Form):
         self.display_addons = []
 
         # Determine which add-ons to display and their adjusted max_quantity
-        for addon in all_available_addons:
+        # Only display add-ons that are available
+        for addon in all_addons_for_validation: # Iterate over all addons passed
+            if not addon.is_available: # Explicitly skip if not available
+                continue
+
             is_addon_in_package = False
             if self.selected_package_instance:
                 # Check if the addon is part of the selected package
@@ -81,6 +85,11 @@ class Step3AddOnsPackagesForm(forms.Form):
                     required=False
                 )
 
+        # Store all add-ons for validation in the clean method
+        self.all_addons_for_validation = {addon.id: addon for addon in all_addons_for_validation}
+        print(f"DEBUG (Form __init__): self.display_addons contains: {[a['addon'].name for a in self.display_addons]}")
+
+
     def clean(self):
         cleaned_data = super().clean()
         errors = {}
@@ -91,12 +100,9 @@ class Step3AddOnsPackagesForm(forms.Form):
         if selected_package_from_form and not selected_package_from_form.is_available:
             errors['package'] = "The selected package is no longer available."
 
-        # Process add-ons based on what was actually displayed and submitted
-        for addon_info in self.display_addons:
-            addon = addon_info['addon']
-            # Use the adjusted_max_quantity that was used to create the form field
-            adjusted_max_quantity_for_validation = addon_info['adjusted_max_quantity']
-
+        # Process ALL submitted add-ons, not just those in display_addons
+        # Iterate over the add-ons that were actually passed during form initialization
+        for addon_id, addon in self.all_addons_for_validation.items():
             is_selected = cleaned_data.get(f'addon_{addon.id}_selected')
             quantity_field_name = f'addon_{addon.id}_quantity'
             quantity = cleaned_data.get(quantity_field_name, 1) # Default to 1 if not provided
@@ -106,6 +112,20 @@ class Step3AddOnsPackagesForm(forms.Form):
                     errors.setdefault(f'addon_{addon.id}_selected', []).append(f"{addon.name} is no longer available.")
                     continue
                 
+                # Determine the correct adjusted_max_quantity for validation
+                # This needs to be consistent with how the field was created in __init__
+                # Find the addon_info for this addon in self.display_addons
+                addon_info_for_validation = next((item for item in self.display_addons if item['addon'].id == addon.id), None)
+                
+                # If addon_info_for_validation is None, it means this addon was not meant to be displayed
+                # (e.g., max_quantity=1 and included in package, or adjusted_max_quantity < min_quantity)
+                # In such cases, if it was submitted, it's an invalid selection.
+                if not addon_info_for_validation:
+                    errors.setdefault(f'addon_{addon.id}_selected', []).append(f"{addon.name} cannot be selected as an additional item.")
+                    continue
+
+                adjusted_max_quantity_for_validation = addon_info_for_validation['adjusted_max_quantity']
+
                 # Validate quantity against the adjusted_max_quantity
                 if quantity < addon.min_quantity or quantity > adjusted_max_quantity_for_validation:
                     errors.setdefault(quantity_field_name, []).append(
@@ -147,4 +167,3 @@ class Step3AddOnsPackagesForm(forms.Form):
                     'selected_field': self[f'addon_{addon.id}_selected'],
                     'quantity_field': self[f'addon_{addon.id}_quantity']
                 }
-

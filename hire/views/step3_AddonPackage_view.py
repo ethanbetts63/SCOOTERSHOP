@@ -100,10 +100,9 @@ class AddonPackageView(View):
                 temp_booking.total_package_price = 0
                 temp_booking.save()
 
-        # Get all available add-ons (before filtering by package)
-        all_active_addons = AddOn.objects.none()
-        if hire_settings and hire_settings.add_ons_enabled:
-            all_active_addons = AddOn.objects.filter(is_available=True)
+        # Get all add-ons (including unavailable ones) to pass to the form for comprehensive validation
+        # The form's __init__ will handle filtering for display
+        all_addons_for_form = AddOn.objects.all()
 
         initial_data = {}
         if temp_booking.package:
@@ -113,14 +112,14 @@ class AddonPackageView(View):
         for temp_addon in temp_booking.temp_booking_addons.all():
             # Check if this temp_addon's original addon is still active and relevant
             # The form's __init__ will decide if it should be displayed
-            if all_active_addons.filter(id=temp_addon.addon.id).exists():
+            if all_addons_for_form.filter(id=temp_addon.addon.id).exists(): # Check against all_addons_for_form
                 initial_data[f'addon_{temp_addon.addon.id}_selected'] = True
                 initial_data[f'addon_{temp_addon.addon.id}_quantity'] = temp_addon.quantity
 
         form = Step3AddOnsPackagesForm(
             initial=initial_data,
             available_packages=available_packages,
-            available_addons=all_active_addons, # Pass all active addons to the form
+            available_addons=all_addons_for_form, # Pass ALL add-ons to the form
             selected_package_instance=temp_booking.package # Pass the selected package instance
         )
 
@@ -131,7 +130,7 @@ class AddonPackageView(View):
             # 'available_addons' in context is now redundant for rendering add-ons,
             # as form.get_addon_fields() handles the filtered list.
             # Keep it if needed for JS mapping of ALL packages/addons, but not for rendering individual addons.
-            'all_active_addons': all_active_addons, # For JS mapping of all addons
+            'all_active_addons': AddOn.objects.filter(is_available=True), # For JS mapping of only active addons
             'hire_settings': hire_settings,
         }
         return render(request, self.template_name, context)
@@ -144,7 +143,8 @@ class AddonPackageView(View):
 
         hire_settings = HireSettings.objects.first()
         available_packages = Package.objects.filter(is_available=True)
-        all_active_addons = AddOn.objects.filter(is_available=True)
+        # Get all add-ons (including unavailable ones) to pass to the form for comprehensive validation
+        all_addons_for_form = AddOn.objects.all()
 
         # Get the selected package from POST data to pass to the form's __init__
         # This is crucial for the form to correctly filter/adjust add-ons during POST validation
@@ -159,7 +159,7 @@ class AddonPackageView(View):
         form = Step3AddOnsPackagesForm(
             request.POST,
             available_packages=available_packages,
-            available_addons=all_active_addons,
+            available_addons=all_addons_for_form, # Pass ALL add-ons to the form
             selected_package_instance=selected_package_instance_for_form # Pass for POST validation
         )
 
@@ -218,7 +218,7 @@ class AddonPackageView(View):
                 'temp_booking': temp_booking,
                 'form': form,
                 'available_packages': available_packages,
-                'all_active_addons': all_active_addons, # For JS mapping of all addons
+                'all_active_addons': AddOn.objects.filter(is_available=True), # For JS mapping of only active addons
                 'hire_settings': hire_settings,
             }
             return render(request, self.template_name, context)
@@ -231,5 +231,3 @@ class AddonPackageView(View):
             return TempHireBooking.objects.get(session_uuid=session_uuid)
         except TempHireBooking.DoesNotExist:
             return None
-
-    # Removed _is_motorcycle_available from here as it's now in utils.py
