@@ -122,14 +122,12 @@ class AddonPackageView(View):
             available_addons=all_addons_for_form, # Pass ALL add-ons to the form
             selected_package_instance=temp_booking.package # Pass the selected package instance
         )
+        print(f"DEBUG (View GET): Form's display_addons contains: {[a['addon'].name for a in form.display_addons]}")
 
         context = {
             'temp_booking': temp_booking,
             'form': form,
             'available_packages': available_packages,
-            # 'available_addons' in context is now redundant for rendering add-ons,
-            # as form.get_addon_fields() handles the filtered list.
-            # Keep it if needed for JS mapping of ALL packages/addons, but not for rendering individual addons.
             'all_active_addons': AddOn.objects.filter(is_available=True), # For JS mapping of only active addons
             'hire_settings': hire_settings,
         }
@@ -166,6 +164,8 @@ class AddonPackageView(View):
         if form.is_valid():
             selected_package = form.cleaned_data.get('selected_package')
             selected_addons_data = form.cleaned_data.get('selected_addons', [])
+            print(f"DEBUG (View POST - form valid): selected_addons_data: {[{'addon': item['addon'].name, 'quantity': item['quantity']} for item in selected_addons_data]}")
+
 
             temp_booking.package = selected_package
             temp_booking.total_package_price = selected_package.package_price if selected_package else Decimal('0.00')
@@ -177,6 +177,8 @@ class AddonPackageView(View):
             hire_duration_days = calculate_hire_duration_days(
                 temp_booking.pickup_date, temp_booking.return_date, temp_booking.pickup_time, temp_booking.return_time
             )
+            print(f"DEBUG (View POST - form valid): hire_duration_days: {hire_duration_days}")
+
 
             # Create TempBookingAddOn entries for the *additional* selected add-ons
             for item in selected_addons_data:
@@ -191,7 +193,10 @@ class AddonPackageView(View):
                     quantity=quantity,
                     booked_addon_price=addon.cost
                 )
-                total_addons_price += (addon.cost * quantity * hire_duration_days)
+                cost_for_this_addon = addon.cost * quantity * hire_duration_days
+                total_addons_price += cost_for_this_addon
+                print(f"DEBUG (View POST - form valid): Added {addon.name} (qty={quantity}) cost: {cost_for_this_addon}. Current total_addons_price: {total_addons_price}")
+
 
             # Also, add the price of add-ons *included* in the package if max_quantity = 1
             # These are not part of selected_addons_data, but their cost is part of the package price.
@@ -199,13 +204,15 @@ class AddonPackageView(View):
             # and they have max_quantity = 1.
             # This logic might need to be refined based on how package pricing is handled.
             # If package_price already includes the cost of these addons, then no need to add here.
-            # Assuming package_price *does* include the cost of its max_quantity=1 addons.
             # For max_quantity > 1 addons, their 'base' quantity (1) is included in package price,
             # and any *additional* quantity is added via selected_addons_data.
 
             temp_booking.total_addons_price = total_addons_price # This now only reflects additional add-ons
             temp_booking.grand_total = temp_booking.total_hire_price + temp_booking.total_package_price + temp_booking.total_addons_price
             temp_booking.save()
+            print(f"DEBUG (View POST - form valid): Final total_addons_price: {temp_booking.total_addons_price}")
+            print(f"DEBUG (View POST - form valid): Final grand_total: {temp_booking.grand_total}")
+
 
             messages.success(request, "Add-ons and packages updated successfully.")
             if request.user.is_authenticated:
@@ -213,6 +220,7 @@ class AddonPackageView(View):
             else:
                 return redirect('hire:step4_no_account')
         else:
+            print(f"DEBUG (View POST - form invalid): Form errors: {form.errors}")
             messages.error(request, "Please correct the errors below.")
             context = {
                 'temp_booking': temp_booking,
