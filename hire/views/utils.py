@@ -7,20 +7,58 @@ from ..models import HireBooking # Import HireBooking model (assuming it's in a 
 from inventory.models import Motorcycle # Also need Motorcycle model for type hinting/clarity
 from django.contrib import messages # Import messages for the utility function
 from django.shortcuts import redirect
+from decimal import Decimal # Import Decimal for precise calculations
+from math import ceil # Import ceil for rounding up hours
 
 
-def calculate_hire_price(motorcycle, duration_days, hire_settings):
+def calculate_hire_price(motorcycle, pickup_date, return_date, pickup_time, return_time, hire_settings):
     """
-    Calculates the total hire price based on motorcycle, duration in days, and hire settings.
+    Calculates the total hire price based on motorcycle, exact pickup/return datetimes, and hire settings.
+    Uses hourly rate for bookings of 1 day or less, and daily rate for bookings greater than 1 day.
     """
-    base_daily_rate = motorcycle.daily_hire_rate or hire_settings.default_daily_rate if hire_settings else 0
-    # Add logic for weekly/monthly discounts if applicable
-    total_price = base_daily_rate * duration_days
+    # Combine date and time into timezone-aware datetime objects
+    pickup_datetime = timezone.make_aware(datetime.datetime.combine(pickup_date, pickup_time))
+    return_datetime = timezone.make_aware(datetime.datetime.combine(return_date, return_time))
+
+    duration_timedelta = return_datetime - pickup_datetime
+
+    # If return is before or at pickup, price is 0
+    if duration_timedelta.total_seconds() <= 0:
+        return Decimal('0.00')
+
+    # Re-use calculate_hire_duration_days to determine "days" for pricing tiers.
+    # This function returns 1 for same-day bookings or bookings exactly 24 hours.
+    # It returns > 1 for bookings spanning more than one calendar day.
+    hire_duration_days_for_tiering = calculate_hire_duration_days(
+        pickup_date, return_date, pickup_time, return_time
+    )
+
+    if hire_duration_days_for_tiering <= 1:
+        # For bookings of 1 day or less, calculate price based on hours.
+        # Calculate total hours, rounding up to the nearest full hour.
+        total_hours = ceil(duration_timedelta.total_seconds() / 3600)
+        
+        # Ensure minimum 1 hour if duration is positive but very short (e.g., a few minutes)
+        if total_hours == 0 and duration_timedelta.total_seconds() > 0:
+            total_hours = 1
+
+        # Use motorcycle's hourly rate, or fallback to hire settings' default hourly rate
+        hourly_rate = motorcycle.hourly_hire_rate or hire_settings.default_hourly_rate if hire_settings else Decimal('0.00')
+        
+        total_price = hourly_rate * total_hours
+    else:
+        # For bookings longer than 1 day, use the daily rate.
+        daily_rate = motorcycle.daily_hire_rate or hire_settings.default_daily_rate if hire_settings else Decimal('0.00')
+        total_price = daily_rate * hire_duration_days_for_tiering
+
     return total_price
 
 def calculate_hire_duration_days(pickup_date, return_date, pickup_time, return_time):
      """
      Calculates the number of hire days given separate date and time components.
+     This function determines the number of 'billing days'.
+     - If pickup and return are on the same day, it counts as 1 day (for hourly pricing).
+     - If return time is later than pickup time on the final day, it counts as an additional day.
      """
      # Combine date and time into timezone-aware datetime objects
      pickup_datetime = timezone.make_aware(datetime.datetime.combine(pickup_date, pickup_time))

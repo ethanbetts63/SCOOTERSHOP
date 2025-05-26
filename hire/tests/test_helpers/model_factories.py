@@ -110,6 +110,7 @@ def create_hire_settings(
     deposit_percentage=Decimal('10.00'),
     deposit_amount=Decimal('50.00'),
     default_daily_rate=Decimal('90.00'),
+    default_hourly_rate=Decimal('15.00'), # Added default hourly rate
     enable_online_full_payment=False,
     enable_online_deposit_payment=False,
     enable_in_store_full_payment=False,
@@ -134,6 +135,7 @@ def create_hire_settings(
     settings.deposit_percentage = deposit_percentage
     settings.deposit_amount = deposit_amount
     settings.default_daily_rate = default_daily_rate
+    settings.default_hourly_rate = default_hourly_rate # Assign default hourly rate
     settings.enable_online_full_payment = enable_online_full_payment
     settings.enable_online_deposit_payment = enable_online_deposit_payment
     settings.enable_in_store_full_payment = enable_in_store_full_payment

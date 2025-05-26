@@ -48,12 +48,14 @@ class AddonPackageView(View):
                  return redirect('hire:step2_choose_bike')
 
             temp_booking.motorcycle = motorcycle
-            hire_duration_days = calculate_hire_duration_days(
-                temp_booking.pickup_date, temp_booking.return_date, temp_booking.pickup_time, temp_booking.return_time
-            )
+            
+            # Pass separate date and time components to calculate_hire_price
             temp_booking.total_hire_price = calculate_hire_price(
                 motorcycle,
-                hire_duration_days,
+                temp_booking.pickup_date,
+                temp_booking.return_date,
+                temp_booking.pickup_time,
+                temp_booking.return_time,
                 hire_settings
             )
             temp_booking.save()

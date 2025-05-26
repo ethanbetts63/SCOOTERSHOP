@@ -33,48 +33,120 @@ class HireUtilsTests(TestCase):
         """
         Set up common test data for all tests.
         """
-        self.motorcycle_with_rate = create_motorcycle(daily_hire_rate=Decimal('100.00'))
-        self.motorcycle_no_rate = create_motorcycle(daily_hire_rate=None)
-        self.hire_settings = create_hire_settings(default_daily_rate=Decimal('90.00'))
+        self.motorcycle_with_daily_rate = create_motorcycle(
+            daily_hire_rate=Decimal('100.00'),
+            hourly_hire_rate=Decimal('20.00')
+        )
+        self.motorcycle_no_rate = create_motorcycle(
+            daily_hire_rate=None,
+            hourly_hire_rate=None # Ensure no hourly rate as well
+        )
+        self.hire_settings = create_hire_settings(
+            default_daily_rate=Decimal('90.00'),
+            default_hourly_rate=Decimal('15.00')
+        )
         self.driver_profile = create_driver_profile()
 
         # Ensure HireSettings exists for tests that rely on it
         if not HireSettings.objects.exists():
             create_hire_settings()
 
-    def test_calculate_hire_price_with_motorcycle_rate(self):
+    # --- calculate_hire_price Tests ---
+
+    def test_calculate_hire_price_daily_rate_motorcycle_specific(self):
         """
-        Test calculate_hire_price when motorcycle has a daily rate.
+        Test calculate_hire_price when motorcycle has a daily rate for multi-day hire.
         """
-        duration = 5
-        expected_price = self.motorcycle_with_rate.daily_hire_rate * duration
+        pickup_date = timezone.now().date() + datetime.timedelta(days=1)
+        pickup_time = datetime.time(9, 0)
+        return_date = pickup_date + datetime.timedelta(days=3) # 3 billing days
+        return_time = datetime.time(17, 0) # Later time to ensure full day count
+
+        expected_price = self.motorcycle_with_daily_rate.daily_hire_rate * 3
         calculated_price = calculate_hire_price(
-            self.motorcycle_with_rate, duration, self.hire_settings
+            self.motorcycle_with_daily_rate, pickup_date, return_date, pickup_time, return_time, self.hire_settings
         )
         self.assertEqual(calculated_price, expected_price)
 
-    def test_calculate_hire_price_with_default_rate(self):
+    def test_calculate_hire_price_daily_rate_default(self):
         """
         Test calculate_hire_price when motorcycle has no daily rate,
-        should use default from HireSettings.
+        should use default from HireSettings for multi-day hire.
         """
-        duration = 3
-        expected_price = self.hire_settings.default_daily_rate * duration
+        pickup_date = timezone.now().date() + datetime.timedelta(days=1)
+        pickup_time = datetime.time(9, 0)
+        return_date = pickup_date + datetime.timedelta(days=2) # 2 billing days
+        return_time = datetime.time(10, 0) # Later time to ensure full day count
+
+        expected_price = self.hire_settings.default_daily_rate * 2
         calculated_price = calculate_hire_price(
-            self.motorcycle_no_rate, duration, self.hire_settings
+            self.motorcycle_no_rate, pickup_date, return_date, pickup_time, return_time, self.hire_settings
+        )
+        self.assertEqual(calculated_price, expected_price)
+
+    def test_calculate_hire_price_hourly_rate_motorcycle_specific(self):
+        """
+        Test calculate_hire_price when motorcycle has an hourly rate for same-day hire.
+        """
+        pickup_date = timezone.now().date()
+        pickup_time = datetime.time(9, 0)
+        return_date = pickup_date
+        return_time = datetime.time(11, 30) # 2.5 hours, should round up to 3 hours
+
+        expected_price = self.motorcycle_with_daily_rate.hourly_hire_rate * 3 # 3 hours
+        calculated_price = calculate_hire_price(
+            self.motorcycle_with_daily_rate, pickup_date, return_date, pickup_time, return_time, self.hire_settings
+        )
+        self.assertEqual(calculated_price, expected_price)
+
+    def test_calculate_hire_price_hourly_rate_default(self):
+        """
+        Test calculate_hire_price when motorcycle has no hourly rate,
+        should use default from HireSettings for same-day hire.
+        """
+        pickup_date = timezone.now().date()
+        pickup_time = datetime.time(14, 0)
+        return_date = pickup_date
+        return_time = datetime.time(14, 50) # 50 minutes, should round up to 1 hour
+
+        expected_price = self.hire_settings.default_hourly_rate * 1 # 1 hour
+        calculated_price = calculate_hire_price(
+            self.motorcycle_no_rate, pickup_date, return_date, pickup_time, return_time, self.hire_settings
         )
         self.assertEqual(calculated_price, expected_price)
 
     def test_calculate_hire_price_zero_duration(self):
         """
-        Test calculate_hire_price with zero duration.
+        Test calculate_hire_price with zero duration (return_datetime <= pickup_datetime).
         """
-        duration = 0
+        pickup_date = timezone.now().date() + datetime.timedelta(days=1)
+        pickup_time = datetime.time(9, 0)
+        return_date = pickup_date
+        return_time = pickup_time # Same time, so 0 duration
+
         expected_price = Decimal('0.00')
         calculated_price = calculate_hire_price(
-            self.motorcycle_with_rate, duration, self.hire_settings
+            self.motorcycle_with_daily_rate, pickup_date, return_date, pickup_time, return_time, self.hire_settings
         )
         self.assertEqual(calculated_price, expected_price)
+
+    def test_calculate_hire_price_less_than_one_hour_positive_duration(self):
+        """
+        Test calculate_hire_price for a very short positive duration (e.g., 15 minutes).
+        Should round up to 1 hour.
+        """
+        pickup_date = timezone.now().date()
+        pickup_time = datetime.time(9, 0)
+        return_date = pickup_date
+        return_time = datetime.time(9, 15) # 15 minutes
+
+        expected_price = self.motorcycle_with_daily_rate.hourly_hire_rate * 1 # Rounds up to 1 hour
+        calculated_price = calculate_hire_price(
+            self.motorcycle_with_daily_rate, pickup_date, return_date, pickup_time, return_time, self.hire_settings
+        )
+        self.assertEqual(calculated_price, expected_price)
+
+    # --- calculate_hire_duration_days Tests (already correctly structured) ---
 
     def test_calculate_hire_duration_days_same_day_hire(self):
         """
@@ -154,13 +226,15 @@ class HireUtilsTests(TestCase):
         )
         self.assertEqual(duration, 0)
 
+    # --- get_overlapping_motorcycle_bookings Tests (unchanged as they already use separate date/time args) ---
+
     def test_get_overlapping_motorcycle_bookings_no_overlap(self):
         """
         Test get_overlapping_motorcycle_bookings with no overlapping bookings.
         """
         # Existing booking: Day 1 10:00 to Day 2 10:00
         create_hire_booking(
-            motorcycle=self.motorcycle_with_rate,
+            motorcycle=self.motorcycle_with_daily_rate,
             driver_profile=self.driver_profile,
             pickup_date=timezone.now().date() + datetime.timedelta(days=1),
             pickup_time=datetime.time(10, 0),
@@ -175,7 +249,7 @@ class HireUtilsTests(TestCase):
         return_time = datetime.time(10, 0)
 
         overlaps = get_overlapping_motorcycle_bookings(
-            self.motorcycle_with_rate, pickup_date, pickup_time, return_date, return_time
+            self.motorcycle_with_daily_rate, pickup_date, pickup_time, return_date, return_time
         )
         self.assertEqual(len(overlaps), 0)
 
@@ -185,7 +259,7 @@ class HireUtilsTests(TestCase):
         """
         # Existing booking: Day 1 10:00 to Day 5 10:00
         booking1 = create_hire_booking(
-            motorcycle=self.motorcycle_with_rate,
+            motorcycle=self.motorcycle_with_daily_rate,
             driver_profile=self.driver_profile,
             pickup_date=timezone.now().date() + datetime.timedelta(days=1),
             pickup_time=datetime.time(10, 0),
@@ -200,7 +274,7 @@ class HireUtilsTests(TestCase):
         return_time = datetime.time(10, 0)
 
         overlaps = get_overlapping_motorcycle_bookings(
-            self.motorcycle_with_rate, pickup_date, pickup_time, return_date, return_time
+            self.motorcycle_with_daily_rate, pickup_date, pickup_time, return_date, return_time
         )
         self.assertEqual(len(overlaps), 1)
         self.assertIn(booking1, overlaps)
@@ -211,7 +285,7 @@ class HireUtilsTests(TestCase):
         """
         # Existing booking: Day 1 10:00 to Day 3 10:00
         booking1 = create_hire_booking(
-            motorcycle=self.motorcycle_with_rate,
+            motorcycle=self.motorcycle_with_daily_rate,
             driver_profile=self.driver_profile,
             pickup_date=timezone.now().date() + datetime.timedelta(days=1),
             pickup_time=datetime.time(10, 0),
@@ -226,7 +300,7 @@ class HireUtilsTests(TestCase):
         return_time = datetime.time(10, 0)
 
         overlaps = get_overlapping_motorcycle_bookings(
-            self.motorcycle_with_rate, pickup_date, pickup_time, return_date, return_time
+            self.motorcycle_with_daily_rate, pickup_date, pickup_time, return_date, return_time
         )
         self.assertEqual(len(overlaps), 1)
         self.assertIn(booking1, overlaps)
@@ -237,7 +311,7 @@ class HireUtilsTests(TestCase):
         """
         # Existing booking: Day 2 10:00 to Day 4 10:00
         booking1 = create_hire_booking(
-            motorcycle=self.motorcycle_with_rate,
+            motorcycle=self.motorcycle_with_daily_rate,
             driver_profile=self.driver_profile,
             pickup_date=timezone.now().date() + datetime.timedelta(days=2),
             pickup_time=datetime.time(10, 0),
@@ -252,7 +326,7 @@ class HireUtilsTests(TestCase):
         return_time = datetime.time(10, 0)
 
         overlaps = get_overlapping_motorcycle_bookings(
-            self.motorcycle_with_rate, pickup_date, pickup_time, return_date, return_time
+            self.motorcycle_with_daily_rate, pickup_date, pickup_time, return_date, return_time
         )
         self.assertEqual(len(overlaps), 1)
         self.assertIn(booking1, overlaps)
@@ -263,7 +337,7 @@ class HireUtilsTests(TestCase):
         """
         # Existing booking: Day 1 10:00 to Day 2 10:00
         create_hire_booking(
-            motorcycle=self.motorcycle_with_rate,
+            motorcycle=self.motorcycle_with_daily_rate,
             driver_profile=self.driver_profile,
             pickup_date=timezone.now().date() + datetime.timedelta(days=1),
             pickup_time=datetime.time(10, 0),
@@ -278,7 +352,7 @@ class HireUtilsTests(TestCase):
         return_time = datetime.time(10, 0)
 
         overlaps = get_overlapping_motorcycle_bookings(
-            self.motorcycle_with_rate, pickup_date, pickup_time, return_date, return_time
+            self.motorcycle_with_daily_rate, pickup_date, pickup_time, return_date, return_time
         )
         self.assertEqual(len(overlaps), 0)
 
@@ -288,7 +362,7 @@ class HireUtilsTests(TestCase):
         """
         # Existing booking 1: Day 1 10:00 to Day 3 10:00
         booking1 = create_hire_booking(
-            motorcycle=self.motorcycle_with_rate,
+            motorcycle=self.motorcycle_with_daily_rate,
             driver_profile=self.driver_profile,
             pickup_date=timezone.now().date() + datetime.timedelta(days=1),
             pickup_time=datetime.time(10, 0),
@@ -297,7 +371,7 @@ class HireUtilsTests(TestCase):
         )
         # Existing booking 2: Day 2 10:00 to Day 4 10:00
         booking2 = create_hire_booking(
-            motorcycle=self.motorcycle_with_rate,
+            motorcycle=self.motorcycle_with_daily_rate,
             driver_profile=self.driver_profile,
             pickup_date=timezone.now().date() + datetime.timedelta(days=2),
             pickup_time=datetime.time(10, 0),
@@ -314,7 +388,7 @@ class HireUtilsTests(TestCase):
 
         # Exclude booking1, so only booking2 should be returned
         overlaps = get_overlapping_motorcycle_bookings(
-            self.motorcycle_with_rate, pickup_date, pickup_time, return_date, return_time,
+            self.motorcycle_with_daily_rate, pickup_date, pickup_time, return_date, return_time,
             exclude_booking_id=booking1.id
         )
         self.assertEqual(len(overlaps), 1)
@@ -327,7 +401,7 @@ class HireUtilsTests(TestCase):
         """
         # Existing cancelled booking: Day 1 10:00 to Day 3 10:00
         create_hire_booking(
-            motorcycle=self.motorcycle_with_rate,
+            motorcycle=self.motorcycle_with_daily_rate,
             driver_profile=self.driver_profile,
             pickup_date=timezone.now().date() + datetime.timedelta(days=1),
             pickup_time=datetime.time(10, 0),
@@ -343,7 +417,7 @@ class HireUtilsTests(TestCase):
         return_time = datetime.time(10, 0)
 
         overlaps = get_overlapping_motorcycle_bookings(
-            self.motorcycle_with_rate, pickup_date, pickup_time, return_date, return_time
+            self.motorcycle_with_daily_rate, pickup_date, pickup_time, return_date, return_time
         )
         self.assertEqual(len(overlaps), 0)
 
@@ -353,7 +427,7 @@ class HireUtilsTests(TestCase):
         """
         # Existing completed booking: Day 1 10:00 to Day 3 10:00
         create_hire_booking(
-            motorcycle=self.motorcycle_with_rate,
+            motorcycle=self.motorcycle_with_daily_rate,
             driver_profile=self.driver_profile,
             pickup_date=timezone.now().date() - datetime.timedelta(days=5), # In the past
             pickup_time=datetime.time(10, 0),
@@ -370,7 +444,7 @@ class HireUtilsTests(TestCase):
         return_time = datetime.time(10, 0)
 
         overlaps = get_overlapping_motorcycle_bookings(
-            self.motorcycle_with_rate, pickup_date, pickup_time, return_date, return_time
+            self.motorcycle_with_daily_rate, pickup_date, pickup_time, return_date, return_time
         )
         self.assertEqual(len(overlaps), 0)
 
@@ -380,7 +454,7 @@ class HireUtilsTests(TestCase):
         """
         # Existing no_show booking: Day 1 10:00 to Day 3 10:00
         create_hire_booking(
-            motorcycle=self.motorcycle_with_rate,
+            motorcycle=self.motorcycle_with_daily_rate,
             driver_profile=self.driver_profile,
             pickup_date=timezone.now().date() + datetime.timedelta(days=1),
             pickup_time=datetime.time(10, 0),
@@ -396,7 +470,7 @@ class HireUtilsTests(TestCase):
         return_time = datetime.time(10, 0)
 
         overlaps = get_overlapping_motorcycle_bookings(
-            self.motorcycle_with_rate, pickup_date, pickup_time, return_date, return_time
+            self.motorcycle_with_daily_rate, pickup_date, pickup_time, return_date, return_time
         )
         self.assertEqual(len(overlaps), 0)
 
@@ -407,7 +481,7 @@ class HireUtilsTests(TestCase):
         """
         # Existing booking (irrelevant as query is invalid): Day 1 10:00 to Day 3 10:00
         create_hire_booking(
-            motorcycle=self.motorcycle_with_rate,
+            motorcycle=self.motorcycle_with_daily_rate,
             driver_profile=self.driver_profile,
             pickup_date=timezone.now().date() + datetime.timedelta(days=1),
             pickup_time=datetime.time(10, 0),
@@ -422,7 +496,7 @@ class HireUtilsTests(TestCase):
         return_time = datetime.time(10, 0)
 
         overlaps = get_overlapping_motorcycle_bookings(
-            self.motorcycle_with_rate, pickup_date, pickup_time, return_date, return_time
+            self.motorcycle_with_daily_rate, pickup_date, pickup_time, return_date, return_time
         )
         self.assertEqual(len(overlaps), 0)
 
@@ -433,7 +507,7 @@ class HireUtilsTests(TestCase):
         """
         # Existing booking (irrelevant as query is invalid): Day 1 10:00 to Day 3 10:00
         create_hire_booking(
-            motorcycle=self.motorcycle_with_rate,
+            motorcycle=self.motorcycle_with_daily_rate,
             driver_profile=self.driver_profile,
             pickup_date=timezone.now().date() + datetime.timedelta(days=1),
             pickup_time=datetime.time(10, 0),
@@ -448,7 +522,6 @@ class HireUtilsTests(TestCase):
         return_time = pickup_time
 
         overlaps = get_overlapping_motorcycle_bookings(
-            self.motorcycle_with_rate, pickup_date, pickup_time, return_date, return_time
+            self.motorcycle_with_daily_rate, pickup_date, pickup_time, return_date, return_time
         )
         self.assertEqual(len(overlaps), 0)
-

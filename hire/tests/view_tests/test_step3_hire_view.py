@@ -34,10 +34,16 @@ class AddonPackageViewTest(TestCase):
         # Create global hire settings, enabling packages and add-ons by default
         self.hire_settings = create_hire_settings(
             packages_enabled=True,
-            add_ons_enabled=True
+            add_ons_enabled=True,
+            default_daily_rate=Decimal('100.00'), # Ensure default daily rate is set
+            default_hourly_rate=Decimal('20.00'), # Ensure default hourly rate is set
         )
         # Create a sample motorcycle for testing
-        self.motorcycle = create_motorcycle(engine_size=250, daily_hire_rate=Decimal('100.00'))
+        self.motorcycle = create_motorcycle(
+            engine_size=250,
+            daily_hire_rate=Decimal('100.00'),
+            hourly_hire_rate=Decimal('20.00') # Explicitly set hourly rate for clarity
+        )
         
         # Define base data for a temporary booking
         self.temp_booking_data = {
@@ -52,13 +58,14 @@ class AddonPackageViewTest(TestCase):
         
         # Simulate Step 2 completion: attach motorcycle and calculate hire price
         self.temp_booking.motorcycle = self.motorcycle
-        hire_duration_days = calculate_hire_duration_days(
-            self.temp_booking.pickup_date, self.temp_booking.return_date,
-            self.temp_booking.pickup_time, self.temp_booking.return_time
-        )
+        
+        # Pass separate date and time components to calculate_hire_price
         self.temp_booking.total_hire_price = calculate_hire_price(
             self.motorcycle,
-            hire_duration_days,
+            self.temp_booking.pickup_date,
+            self.temp_booking.return_date,
+            self.temp_booking.pickup_time,
+            self.temp_booking.return_time,
             self.hire_settings
         )
         self.temp_booking.save() # Save the updated temp_booking
@@ -345,7 +352,7 @@ class AddonPackageViewTest(TestCase):
         """
         # self.temp_booking is already set up with a motorcycle and hire price in setUp
         # Prepare form data: select package1, 1 additional Helmet (addon1), and 2 Gloves (addon3)
-        # addon1 has max_quantity=2, and is in package1. So, 1 additional is allowed.
+        # addon1 has max_quantity=2, and is in package1. So, adjusted max is 1.
         # addon3 has max_quantity=3, and is not in package1. So, 2 are allowed.
         form_data = {
             'package': self.package1.id,
@@ -362,15 +369,16 @@ class AddonPackageViewTest(TestCase):
         self.assertEqual(self.temp_booking.package, self.package1)
         self.assertEqual(self.temp_booking.total_package_price, self.package1.package_price)
 
-        # Calculate expected total_addons_price based on hire_duration_days (2 days from setUp)
-        # Addon1 (additional 1 unit): 1 * 10.00 (cost) * 2 (days) = 20.00
-        # Addon3 (2 units): 2 * 5.00 (cost) * 2 (days) = 20.00
-        # Total expected additional add-ons price = 20.00 + 20.00 = 40.00
-        self.assertEqual(self.temp_booking.total_addons_price, Decimal('40.00'))
+        # Calculate expected total_addons_price based on hire_duration_days (3 days from setUp calculation)
+        # Addon1 (additional 1 unit): 1 * 10.00 (cost) * 3 (days) = 30.00
+        # Addon3 (2 units): 2 * 5.00 (cost) * 3 (days) = 30.00
+        # Total expected additional add-ons price = 30.00 + 30.00 = 60.00
+        self.assertEqual(self.temp_booking.total_addons_price, Decimal('60.00'))
         
         # Calculate expected grand total: total_hire_price + total_package_price + total_addons_price
-        # 200.00 (from setUp) + 30.00 + 40.00 = 270.00
-        expected_grand_total = self.temp_booking.total_hire_price + self.package1.package_price + Decimal('40.00')
+        # self.temp_booking.total_hire_price is 300.00 (from setUp calculation: 100.00 daily_rate * 3 days)
+        # 300.00 (hire) + 30.00 (package) + 60.00 (addons) = 390.00
+        expected_grand_total = self.temp_booking.total_hire_price + self.package1.package_price + Decimal('60.00')
         self.assertEqual(self.temp_booking.grand_total, expected_grand_total)
 
         self.assertEqual(self.temp_booking.temp_booking_addons.count(), 2) # Two temporary add-ons should be created
