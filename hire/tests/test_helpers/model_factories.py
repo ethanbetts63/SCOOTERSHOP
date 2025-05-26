@@ -241,7 +241,8 @@ def create_driver_profile(
 def create_addon(
     name="Helmet",
     description="Standard safety helmet",
-    cost=Decimal('10.00'),
+    hourly_cost=Decimal('2.00'), # Changed from 'cost'
+    daily_cost=Decimal('10.00'), # New field
     min_quantity=1,
     max_quantity=5,
     is_available=True
@@ -250,7 +251,8 @@ def create_addon(
     return AddOn.objects.create(
         name=name,
         description=description,
-        cost=cost,
+        hourly_cost=hourly_cost, # Changed
+        daily_cost=daily_cost,   # New
         min_quantity=min_quantity,
         max_quantity=max_quantity,
         is_available=is_available
@@ -259,7 +261,8 @@ def create_addon(
 def create_package(
     name="Adventure Pack",
     description="Includes helmet, jacket, and gloves",
-    package_price=Decimal('50.00'),
+    hourly_cost=Decimal('10.00'), # Changed from 'package_price'
+    daily_cost=Decimal('50.00'), # New field
     add_ons=None, # List of AddOn instances
     is_available=True
 ):
@@ -267,7 +270,8 @@ def create_package(
     package = Package.objects.create(
         name=name,
         description=description,
-        package_price=package_price,
+        hourly_cost=hourly_cost, # Changed
+        daily_cost=daily_cost,   # New
         is_available=is_available
     )
     if add_ons:
@@ -292,7 +296,7 @@ def create_hire_booking(
     payment_method='at_desk',
     status='pending',
     package=None,
-    booked_package_price=Decimal('0.00'),
+    booked_package_price=Decimal('0.00'), # This will now represent the total package price for the booking
     currency='AUD',
     payment=None,
     stripe_payment_intent_id=None,
@@ -314,6 +318,11 @@ def create_hire_booking(
         return_time = datetime.time(16, 0)
     if not booking_reference:
         booking_reference = f"HIRE-{uuid.uuid4().hex[:8].upper()}"
+
+    # If package is provided but booked_package_price is not, use package's daily_cost as a default
+    # The actual calculation will happen in utils.
+    if package and booked_package_price == Decimal('0.00'):
+        booked_package_price = package.daily_cost # Using daily_cost as a sensible default for factory
 
     booking = HireBooking.objects.create(
         motorcycle=motorcycle,
@@ -346,13 +355,15 @@ def create_booking_addon(
     booking,
     addon=None,
     quantity=1,
-    booked_addon_price=None
+    booked_addon_price=None # This will now represent the total addon price for the booking
 ):
     """Creates a BookingAddOn instance."""
     if not addon:
         addon = create_addon()
+    # If booked_addon_price is not provided, use addon's daily_cost as a default.
+    # The actual calculation (daily vs hourly, quantity) will happen in utils.
     if booked_addon_price is None:
-        booked_addon_price = addon.cost
+        booked_addon_price = addon.daily_cost * quantity # Default to daily cost * quantity
 
     return BookingAddOn.objects.create(
         booking=booking,
@@ -370,7 +381,7 @@ def create_temp_hire_booking(
     has_motorcycle_license=False,
     motorcycle=None,
     package=None,
-    booked_package_price=None,
+    booked_package_price=None, # This will now represent the total package price for the temp booking
     driver_profile=None,
     is_international_booking=False,
     payment_option='online_full',
@@ -395,8 +406,10 @@ def create_temp_hire_booking(
         return_time = datetime.time(16, 0)
     if motorcycle and not booked_daily_rate:
         booked_daily_rate = motorcycle.daily_hire_rate
-    if package and not booked_package_price:
-        booked_package_price = package.package_price
+    # If package is provided but booked_package_price is not, use package's daily_cost as a default
+    # The actual calculation will happen in utils.
+    if package and booked_package_price is None:
+        booked_package_price = package.daily_cost # Using daily_cost as a sensible default for factory
 
     temp_booking = TempHireBooking.objects.create(
         session_uuid=session_uuid,
@@ -425,13 +438,15 @@ def create_temp_booking_addon(
     temp_booking,
     addon=None,
     quantity=1,
-    booked_addon_price=None
+    booked_addon_price=None # This will now represent the total addon price for the temp booking
 ):
     """Creates a TempBookingAddOn instance."""
     if not addon:
         addon = create_addon()
+    # If booked_addon_price is not provided, use addon's daily_cost as a default.
+    # The actual calculation (daily vs hourly, quantity) will happen in utils.
     if booked_addon_price is None:
-        booked_addon_price = addon.cost
+        booked_addon_price = addon.daily_cost * quantity # Default to daily cost * quantity
 
     return TempBookingAddOn.objects.create(
         temp_booking=temp_booking,
