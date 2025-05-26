@@ -9,7 +9,12 @@ class AddOn(models.Model):
     description = models.TextField(blank=True, null=True, help_text="Description of the add-on.")
 
     # Pricing
-    cost = models.DecimalField(
+    hourly_cost = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        help_text="Cost of the add-on per item per hour."
+    )
+    daily_cost = models.DecimalField(
         max_digits=8,
         decimal_places=2,
         help_text="Cost of the add-on per item per day."
@@ -41,8 +46,10 @@ class AddOn(models.Model):
         """
         super().clean()
         errors = {}
-        if self.cost < 0:
-            errors['cost'] = "Add-on cost cannot be negative."
+        if self.hourly_cost < 0:
+            errors['hourly_cost'] = "Add-on hourly cost cannot be negative."
+        if self.daily_cost < 0:
+            errors['daily_cost'] = "Add-on daily cost cannot be negative."
         
         # Validate min_quantity and max_quantity
         if self.min_quantity < 1:
@@ -52,7 +59,6 @@ class AddOn(models.Model):
         
         if errors:
             raise ValidationError(errors)
-
 
     class Meta:
         ordering = ['name']

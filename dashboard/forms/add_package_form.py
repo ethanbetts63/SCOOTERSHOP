@@ -13,21 +13,33 @@ class AddPackageForm(forms.ModelForm):
 
     class Meta:
         model = Package
-        fields = ['name', 'description', 'add_ons', 'package_price', 'is_available']
+        fields = ['name', 'description', 'add_ons', 'hourly_cost', 'daily_cost', 'is_available']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 4}),
+            # Added widgets for hourly_cost and daily_cost
+            'hourly_cost': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'daily_cost': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
         }
         help_texts = {
             'name': 'A unique name for the package (e.g., "Weekend Warrior Pack").',
-            'package_price': 'The total price for this package bundle (e.g., 99.99).',
+            # Updated help texts for hourly_cost and daily_cost
+            'hourly_cost': 'The total price for this package bundle per hour (e.g., 9.99).',
+            'daily_cost': 'The total price for this package bundle per day (e.g., 99.99).',
             'is_available': 'Check if this package should be available for customers to book.',
         }
 
-    def clean_package_price(self):
-        package_price = self.cleaned_data.get('package_price')
-        if package_price is not None and package_price < 0:
-            raise forms.ValidationError("Package price cannot be negative.")
-        return package_price
+    # Custom clean methods for new hourly_cost and daily_cost fields
+    def clean_hourly_cost(self):
+        hourly_cost = self.cleaned_data.get('hourly_cost')
+        if hourly_cost is not None and hourly_cost < 0:
+            raise forms.ValidationError("Package hourly cost cannot be negative.")
+        return hourly_cost
+
+    def clean_daily_cost(self):
+        daily_cost = self.cleaned_data.get('daily_cost')
+        if daily_cost is not None and daily_cost < 0:
+            raise forms.ValidationError("Package daily cost cannot be negative.")
+        return daily_cost
 
     def clean_add_ons(self):
         # This clean method will be called after individual field clean methods,

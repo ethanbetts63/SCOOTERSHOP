@@ -9,29 +9,41 @@ class AddAddOnForm(forms.ModelForm):
     """
     class Meta:
         model = AddOn
-        fields = ['name', 'description', 'cost', 'min_quantity', 'max_quantity', 'is_available'] # Added min_quantity and max_quantity
+        # Changed 'cost' to 'hourly_cost' and 'daily_cost'
+        fields = ['name', 'description', 'hourly_cost', 'daily_cost', 'min_quantity', 'max_quantity', 'is_available']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'cost': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'min_quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}), # Added min attribute
-            'max_quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}), # Added min attribute
+            # Updated widgets for hourly_cost and daily_cost
+            'hourly_cost': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'daily_cost': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'min_quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'max_quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
             'is_available': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
         help_texts = {
             'name': 'The name of the add-on (e.g., "Helmet", "GPS").',
             'description': 'A brief description of the add-on.',
-            'cost': 'The cost of the add-on per item per day.',
+            # Updated help texts for hourly_cost and daily_cost
+            'hourly_cost': 'The cost of the add-on per item per hour.',
+            'daily_cost': 'The cost of the add-on per item per day.',
             'min_quantity': 'The minimum quantity a user can select for this add-on (must be at least 1).',
             'max_quantity': 'The maximum quantity a user can select for this add-on (must be greater than or equal to min quantity).',
             'is_available': 'Check if this add-on is currently available for hire.',
         }
 
-    def clean_cost(self):
-        cost = self.cleaned_data.get('cost')
-        if cost is not None and cost < 0:
-            raise forms.ValidationError("Cost cannot be negative.")
-        return cost
+    # Custom clean methods for new hourly_cost and daily_cost fields
+    def clean_hourly_cost(self):
+        hourly_cost = self.cleaned_data.get('hourly_cost')
+        if hourly_cost is not None and hourly_cost < 0:
+            raise forms.ValidationError("Hourly cost cannot be negative.")
+        return hourly_cost
+
+    def clean_daily_cost(self):
+        daily_cost = self.cleaned_data.get('daily_cost')
+        if daily_cost is not None and daily_cost < 0:
+            raise forms.ValidationError("Daily cost cannot be negative.")
+        return daily_cost
 
     def clean(self):
         """

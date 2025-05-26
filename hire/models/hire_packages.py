@@ -19,10 +19,16 @@ class Package(models.Model):
     )
 
     # Current price of this package bundle
-    package_price = models.DecimalField(
+    hourly_cost = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        help_text="The current price of this package bundle."
+        help_text="The current price of this package bundle per hour."
+    )
+    
+    daily_cost = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="The current price of this package bundle per day."
     )
 
     # Availability
@@ -41,10 +47,15 @@ class Package(models.Model):
         Custom validation for Package data.
         """
         super().clean()
+        errors = {}
+        # Ensure package prices are not negative
+        if self.hourly_cost < 0:
+            errors['hourly_cost'] = "Package hourly cost cannot be negative."
+        if self.daily_cost < 0:
+            errors['daily_cost'] = "Package daily cost cannot be negative."
 
-        # Ensure package price is not negative
-        if self.package_price < 0:
-            raise ValidationError({'package_price': "Package price cannot be negative."})
+        if errors:
+            raise ValidationError(errors)
 
     class Meta:
         ordering = ['name']
