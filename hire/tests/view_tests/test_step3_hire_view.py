@@ -7,7 +7,7 @@ from django.contrib.messages import get_messages
 
 # Import the view directly to access its template_name
 from hire.views.step3_AddonPackage_view import AddonPackageView
-from hire.views.utils import calculate_hire_price, calculate_hire_duration_days
+from hire.views.utils import calculate_motorcycle_hire_price, calculate_hire_duration_days
 
 from hire.tests.test_helpers.model_factories import (
     create_motorcycle, create_temp_hire_booking, create_addon, create_package,
@@ -59,8 +59,8 @@ class AddonPackageViewTest(TestCase):
         # Simulate Step 2 completion: attach motorcycle and calculate hire price
         self.temp_booking.motorcycle = self.motorcycle
         
-        # Pass separate date and time components to calculate_hire_price
-        self.temp_booking.total_hire_price = calculate_hire_price(
+        # Pass separate date and time components to calculate_motorcycle_hire_price
+        self.temp_booking.total_hire_price = calculate_motorcycle_hire_price(
             self.motorcycle,
             self.temp_booking.pickup_date,
             self.temp_booking.return_date,

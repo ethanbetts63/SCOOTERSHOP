@@ -11,7 +11,7 @@ from django.http import HttpResponseRedirect # Import HttpResponseRedirect
 from inventory.models import Motorcycle
 from ..models import AddOn, Package, TempHireBooking, HireBooking, TempBookingAddOn
 from ..forms.step3_AddonPackage_form import Step3AddOnsPackagesForm
-from ..views.utils import calculate_hire_price, calculate_hire_duration_days, is_motorcycle_available # Import the utility function
+from ..views.utils import calculate_motorcycle_hire_price, calculate_hire_duration_days, is_motorcycle_available # Import the utility function
 from dashboard.models import HireSettings
 
 class AddonPackageView(View):
@@ -49,8 +49,8 @@ class AddonPackageView(View):
 
             temp_booking.motorcycle = motorcycle
             
-            # Pass separate date and time components to calculate_hire_price
-            temp_booking.total_hire_price = calculate_hire_price(
+            # Pass separate date and time components to calculate_motorcycle_hire_price
+            temp_booking.total_hire_price = calculate_motorcycle_hire_price(
                 motorcycle,
                 temp_booking.pickup_date,
                 temp_booking.return_date,

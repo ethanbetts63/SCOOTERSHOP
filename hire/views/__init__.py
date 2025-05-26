@@ -8,4 +8,4 @@ from .step4_NoAccount_view import NoAccountView
 from .step5_BookSumAndPaymentOptions_view import BookSumAndPaymentOptionsView
 from .step6_PaymentDetails_view import PaymentDetailsView
 from .step7_BookingConfirmation_view import BookingConfirmationView, BookingStatusCheckView
-from .utils import calculate_hire_duration_days, calculate_hire_price, get_overlapping_motorcycle_bookings
+from .utils import calculate_hire_duration_days, calculate_motorcycle_hire_price, get_overlapping_motorcycle_bookings

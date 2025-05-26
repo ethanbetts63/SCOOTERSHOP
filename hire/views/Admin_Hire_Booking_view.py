@@ -18,7 +18,7 @@ from dashboard.models import HireSettings, BlockedHireDate
 from ..forms.Admin_Hire_Booking_form import AdminHireBookingForm
 
 # Import utility functions
-from .utils import calculate_hire_price, calculate_hire_duration_days, get_overlapping_motorcycle_bookings
+from .utils import calculate_motorcycle_hire_price, calculate_hire_duration_days, get_overlapping_motorcycle_bookings
 
 
 class AdminHireBookingView(View):
