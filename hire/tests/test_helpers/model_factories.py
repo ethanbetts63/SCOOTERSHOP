@@ -297,14 +297,16 @@ def create_hire_booking(
     is_international_booking=False,
     booked_hourly_rate=Decimal('20.00'),
     booked_daily_rate=Decimal('100.00'),
-    total_price=Decimal('200.00'),
+    total_hire_price=Decimal('160.00'),
+    total_addons_price=Decimal('40.00'),
+    total_package_price=Decimal('0.00'),
+    grand_total=Decimal('200.00'),
     deposit_amount=Decimal('0.00'),
     amount_paid=Decimal('0.00'),
     payment_status='unpaid',
     payment_method='at_desk',
     status='pending',
     package=None,
-    booked_package_price=Decimal('0.00'), # This will now represent the total package price for the booking
     currency='AUD',
     payment=None,
     stripe_payment_intent_id=None,
@@ -327,11 +329,6 @@ def create_hire_booking(
     if not booking_reference:
         booking_reference = f"HIRE-{uuid.uuid4().hex[:8].upper()}"
 
-    # If package is provided but booked_package_price is not, use package's daily_cost as a default
-    # The actual calculation will happen in utils.
-    if package and booked_package_price == Decimal('0.00'):
-        booked_package_price = package.daily_cost # Using daily_cost as a sensible default for factory
-
     booking = HireBooking.objects.create(
         motorcycle=motorcycle,
         driver_profile=driver_profile,
@@ -343,14 +340,16 @@ def create_hire_booking(
         is_international_booking=is_international_booking,
         booked_hourly_rate=booked_hourly_rate,
         booked_daily_rate=booked_daily_rate,
-        total_price=total_price,
+        total_hire_price=total_hire_price,
+        total_addons_price=total_addons_price,
+        total_package_price=total_package_price,
+        grand_total=grand_total,
         deposit_amount=deposit_amount,
         amount_paid=amount_paid,
         payment_status=payment_status,
         payment_method=payment_method,
         status=status,
         package=package,
-        booked_package_price=booked_package_price,
         currency=currency,
         payment=payment,
         stripe_payment_intent_id=stripe_payment_intent_id,
@@ -389,11 +388,11 @@ def create_temp_hire_booking(
     has_motorcycle_license=False,
     motorcycle=None,
     package=None,
-    booked_package_price=None, # This will now represent the total package price for the temp booking
     driver_profile=None,
     is_international_booking=False,
     payment_option='online_full',
     booked_daily_rate=None,
+    booked_hourly_rate=None, # Added this to match TempHireBooking model
     total_hire_price=None,
     total_addons_price=Decimal('0.00'),
     total_package_price=Decimal('0.00'),
@@ -414,10 +413,12 @@ def create_temp_hire_booking(
         return_time = datetime.time(16, 0)
     if motorcycle and not booked_daily_rate:
         booked_daily_rate = motorcycle.daily_hire_rate
-    # If package is provided but booked_package_price is not, use package's daily_cost as a default
-    # The actual calculation will happen in utils.
-    if package and booked_package_price is None:
-        booked_package_price = package.daily_cost # Using daily_cost as a sensible default for factory
+    if motorcycle and not booked_hourly_rate: # Added this
+        booked_hourly_rate = motorcycle.hourly_hire_rate # Added this
+    
+    # If package is provided, set a default for total_package_price if not already set
+    if package and total_package_price is None:
+        total_package_price = package.daily_cost # Using daily_cost as a sensible default for factory
 
     temp_booking = TempHireBooking.objects.create(
         session_uuid=session_uuid,
@@ -428,11 +429,11 @@ def create_temp_hire_booking(
         has_motorcycle_license=has_motorcycle_license,
         motorcycle=motorcycle,
         package=package,
-        booked_package_price=booked_package_price,
         driver_profile=driver_profile,
         is_international_booking=is_international_booking,
         payment_option=payment_option,
         booked_daily_rate=booked_daily_rate,
+        booked_hourly_rate=booked_hourly_rate, # Added this
         total_hire_price=total_hire_price,
         total_addons_price=total_addons_price,
         total_package_price=total_package_price,
@@ -462,3 +463,4 @@ def create_temp_booking_addon(
         quantity=quantity,
         booked_addon_price=booked_addon_price
     )
+

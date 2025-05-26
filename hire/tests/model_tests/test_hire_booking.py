@@ -89,7 +89,7 @@ class HireBookingModelTest(TestCase):
             driver_profile=self.driver_profile_aus,
             pickup_date=pickup_date,
             return_date=return_date,
-            total_price=Decimal('100.00') # Ensure total_price is valid to avoid other errors
+            grand_total=Decimal('100.00') # Ensure grand_total is valid to avoid other errors
         )
         with self.assertRaises(ValidationError) as cm:
             booking.clean()
@@ -116,7 +116,7 @@ class HireBookingModelTest(TestCase):
             pickup_time=pickup_time,
             return_date=pickup_date, # Same day
             return_time=return_time,
-            total_price=Decimal('100.00')
+            grand_total=Decimal('100.00')
         )
         with self.assertRaises(ValidationError) as cm:
             booking.clean()
@@ -147,7 +147,7 @@ class HireBookingModelTest(TestCase):
             driver_profile=self.driver_profile_aus,
             pickup_date=future_pickup_datetime.date(),
             pickup_time=future_pickup_datetime.time(),
-            total_price=Decimal('100.00')
+            grand_total=Decimal('100.00')
         )
 
         with mock.patch('django.utils.timezone.now', return_value=fixed_now):
@@ -182,7 +182,7 @@ class HireBookingModelTest(TestCase):
             driver_profile=self.driver_profile_aus,
             pickup_date=safe_pickup_datetime.date(),
             pickup_time=safe_pickup_datetime.time(),
-            total_price=Decimal('100.00')
+            grand_total=Decimal('100.00')
         )
         # Patch timezone.now() to return our fixed_now for the duration of this test block
         with mock.patch('django.utils.timezone.now', return_value=fixed_now):
@@ -191,19 +191,66 @@ class HireBookingModelTest(TestCase):
             except ValidationError:
                 self.fail("ValidationError raised unexpectedly for valid pickup time.")
 
-    def test_clean_negative_total_price_raises_error(self):
+    def test_clean_negative_grand_total_raises_error(self):
         """
-        Test that clean() raises ValidationError if total_price is negative.
+        Test that clean() raises ValidationError if grand_total is negative.
         """
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
-            total_price=Decimal('-10.00')
+            grand_total=Decimal('-10.00')
         )
         with self.assertRaises(ValidationError) as cm:
             booking.clean()
-        self.assertIn('total_price', cm.exception.message_dict)
-        self.assertEqual(cm.exception.message_dict['total_price'][0], "Total price cannot be negative.")
+        self.assertIn('grand_total', cm.exception.message_dict)
+        self.assertEqual(cm.exception.message_dict['grand_total'][0], "Grand total cannot be negative.")
+
+    def test_clean_negative_total_hire_price_raises_error(self):
+        """
+        Test that clean() raises ValidationError if total_hire_price is negative.
+        """
+        booking = create_hire_booking(
+            motorcycle=self.motorcycle,
+            driver_profile=self.driver_profile_aus,
+            grand_total=Decimal('100.00'),
+            total_hire_price=Decimal('-10.00')
+        )
+        with self.assertRaises(ValidationError) as cm:
+            booking.clean()
+        self.assertIn('total_hire_price', cm.exception.message_dict)
+        self.assertEqual(cm.exception.message_dict['total_hire_price'][0], "Total hire price cannot be negative.")
+
+    def test_clean_negative_total_addons_price_raises_error(self):
+        """
+        Test that clean() raises ValidationError if total_addons_price is negative.
+        """
+        booking = create_hire_booking(
+            motorcycle=self.motorcycle,
+            driver_profile=self.driver_profile_aus,
+            grand_total=Decimal('100.00'),
+            total_addons_price=Decimal('-5.00')
+        )
+        with self.assertRaises(ValidationError) as cm:
+            booking.clean()
+        self.assertIn('total_addons_price', cm.exception.message_dict)
+        self.assertEqual(cm.exception.message_dict['total_addons_price'][0], "Total add-ons price cannot be negative.")
+
+    def test_clean_negative_total_package_price_raises_error(self):
+        """
+        Test that clean() raises ValidationError if total_package_price is negative.
+        """
+        booking = create_hire_booking(
+            motorcycle=self.motorcycle,
+            driver_profile=self.driver_profile_aus,
+            package=self.available_package,
+            grand_total=Decimal('100.00'),
+            total_package_price=Decimal('-20.00')
+        )
+        with self.assertRaises(ValidationError) as cm:
+            booking.clean()
+        self.assertIn('total_package_price', cm.exception.message_dict)
+        self.assertEqual(cm.exception.message_dict['total_package_price'][0], "Total package price cannot be negative.")
+
 
     def test_clean_negative_deposit_amount_raises_error(self):
         """
@@ -212,7 +259,7 @@ class HireBookingModelTest(TestCase):
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
-            total_price=Decimal('100.00'),
+            grand_total=Decimal('100.00'),
             deposit_amount=Decimal('-5.00')
         )
         with self.assertRaises(ValidationError) as cm:
@@ -227,7 +274,7 @@ class HireBookingModelTest(TestCase):
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
-            total_price=Decimal('100.00'),
+            grand_total=Decimal('100.00'),
             amount_paid=Decimal('-1.00')
         )
         with self.assertRaises(ValidationError) as cm:
@@ -235,15 +282,15 @@ class HireBookingModelTest(TestCase):
         self.assertIn('amount_paid', cm.exception.message_dict)
         self.assertEqual(cm.exception.message_dict['amount_paid'][0], "Amount paid cannot be negative.")
 
-    def test_clean_paid_status_amount_not_equal_total_raises_error(self):
+    def test_clean_paid_status_amount_not_equal_grand_total_raises_error(self):
         """
         Test that clean() raises ValidationError if payment_status is 'paid'
-        but amount_paid does not equal total_price.
+        but amount_paid does not equal grand_total.
         """
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
-            total_price=Decimal('100.00'),
+            grand_total=Decimal('100.00'),
             amount_paid=Decimal('50.00'), # Not fully paid
             payment_status='paid'
         )
@@ -252,7 +299,7 @@ class HireBookingModelTest(TestCase):
         self.assertIn('amount_paid', cm.exception.message_dict)
         self.assertEqual(
             cm.exception.message_dict['amount_paid'][0],
-            "Amount paid must equal total price when payment status is 'Paid'."
+            "Amount paid must equal grand total when payment status is 'Paid'."
         )
 
     def test_clean_deposit_paid_status_no_deposit_amount_raises_error(self):
@@ -263,7 +310,7 @@ class HireBookingModelTest(TestCase):
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
-            total_price=Decimal('100.00'),
+            grand_total=Decimal('100.00'),
             deposit_amount=Decimal('0.00'), # Invalid deposit amount
             amount_paid=Decimal('0.00'),
             payment_status='deposit_paid'
@@ -284,7 +331,7 @@ class HireBookingModelTest(TestCase):
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
-            total_price=Decimal('100.00'),
+            grand_total=Decimal('100.00'),
             deposit_amount=Decimal('20.00'),
             amount_paid=Decimal('10.00'), # Amount paid is not deposit amount
             payment_status='deposit_paid'
@@ -304,7 +351,7 @@ class HireBookingModelTest(TestCase):
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
-            total_price=Decimal('100.00'),
+            grand_total=Decimal('100.00'),
             booked_daily_rate=Decimal('-50.00')
         )
         with self.assertRaises(ValidationError) as cm:
@@ -312,21 +359,21 @@ class HireBookingModelTest(TestCase):
         self.assertIn('booked_daily_rate', cm.exception.message_dict)
         self.assertEqual(cm.exception.message_dict['booked_daily_rate'][0], "Booked daily rate cannot be negative.")
 
-    def test_clean_negative_booked_package_price_raises_error(self):
+    def test_clean_negative_booked_hourly_rate_raises_error(self):
         """
-        Test that clean() raises ValidationError if booked_package_price is negative.
+        Test that clean() raises ValidationError if booked_hourly_rate is negative.
         """
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
-            package=self.available_package,
-            total_price=Decimal('100.00'),
-            booked_package_price=Decimal('-20.00')
+            grand_total=Decimal('100.00'),
+            booked_hourly_rate=Decimal('-10.00')
         )
         with self.assertRaises(ValidationError) as cm:
             booking.clean()
-        self.assertIn('booked_package_price', cm.exception.message_dict)
-        self.assertEqual(cm.exception.message_dict['booked_package_price'][0], "Booked package price cannot be negative.")
+        self.assertIn('booked_hourly_rate', cm.exception.message_dict)
+        self.assertEqual(cm.exception.message_dict['booked_hourly_rate'][0], "Booked hourly rate cannot be negative.")
+
 
     def test_clean_unavailable_package_raises_error(self):
         """
@@ -336,7 +383,7 @@ class HireBookingModelTest(TestCase):
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
             package=self.unavailable_package, # This package is not available
-            total_price=Decimal('100.00')
+            grand_total=Decimal('100.00')
         )
         with self.assertRaises(ValidationError) as cm:
             booking.clean()
@@ -355,7 +402,7 @@ class HireBookingModelTest(TestCase):
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus, # Australian resident
             is_international_booking=True,
-            total_price=Decimal('100.00')
+            grand_total=Decimal('100.00')
         )
         with self.assertRaises(ValidationError) as cm:
             booking.clean()
@@ -388,12 +435,14 @@ class HireBookingModelTest(TestCase):
             is_international_booking=True, # Valid for non-Australian resident
             booked_hourly_rate=Decimal('20.00'),
             booked_daily_rate=Decimal('100.00'),
-            total_price=Decimal('200.00'),
+            total_hire_price=Decimal('150.00'),
+            total_addons_price=Decimal('20.00'),
+            total_package_price=Decimal('30.00'),
+            grand_total=Decimal('200.00'),
             deposit_amount=Decimal('50.00'),
             amount_paid=Decimal('50.00'),
             payment_status='deposit_paid',
             package=self.available_package,
-            booked_package_price=Decimal('30.00')
         )
         try:
             booking.clean()
@@ -402,12 +451,12 @@ class HireBookingModelTest(TestCase):
 
     def test_clean_paid_status_with_full_payment_passes(self):
         """
-        Test that a booking with 'paid' status and amount_paid equal to total_price passes clean().
+        Test that a booking with 'paid' status and amount_paid equal to grand_total passes clean().
         """
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
-            total_price=Decimal('100.00'),
+            grand_total=Decimal('100.00'),
             amount_paid=Decimal('100.00'),
             payment_status='paid'
         )
@@ -423,7 +472,7 @@ class HireBookingModelTest(TestCase):
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
-            total_price=Decimal('100.00'),
+            grand_total=Decimal('100.00'),
             amount_paid=Decimal('0.00'),
             payment_status='unpaid'
         )
@@ -447,7 +496,7 @@ class HireBookingModelTest(TestCase):
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
-            total_price=Decimal('100.00'),
+            grand_total=Decimal('100.00'),
             payment=payment_obj,
             stripe_payment_intent_id="pi_test_123" # This is stored on HireBooking
         )
@@ -464,7 +513,7 @@ class HireBookingModelTest(TestCase):
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
-            total_price=Decimal('100.00'),
+            grand_total=Decimal('100.00'),
             amount_paid=Decimal('10.00'), # Positive amount paid, but status is 'unpaid'
             payment_status='unpaid'
         )
@@ -489,7 +538,7 @@ class HireBookingModelTest(TestCase):
         hire_booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
-            total_price=Decimal('150.00'),
+            grand_total=Decimal('150.00'),
             payment=payment_obj,
             stripe_payment_intent_id="pi_new_test_456"
         )
@@ -541,8 +590,8 @@ class WebhookHandlerTest(TestCase):
         cls.hire_settings = create_hire_settings(booking_lead_time_hours=0) # Set to 0 for easier date handling
         cls.motorcycle = create_motorcycle()
         cls.driver_profile = create_driver_profile(is_australian_resident=True)
-        cls.addon1 = create_addon(name="GPS", cost=Decimal('15.00'))
-        cls.addon2 = create_addon(name="Jacket", cost=Decimal('25.00'))
+        cls.addon1 = create_addon(name="GPS", hourly_cost=Decimal('2.00'), daily_cost=Decimal('15.00'))
+        cls.addon2 = create_addon(name="Jacket", hourly_cost=Decimal('5.00'), daily_cost=Decimal('25.00'))
 
     def test_handle_hire_booking_succeeded_full_conversion(self):
         """
@@ -556,11 +605,12 @@ class WebhookHandlerTest(TestCase):
             grand_total=Decimal('200.00'),
             total_addons_price=Decimal('40.00'),
             total_hire_price=Decimal('160.00'),
+            total_package_price=Decimal('0.00'),
             deposit_amount=Decimal('0.00'), # No deposit for full payment
             currency='AUD'
         )
-        create_temp_booking_addon(temp_booking, self.addon1, quantity=1, booked_addon_price=self.addon1.cost)
-        create_temp_booking_addon(temp_booking, self.addon2, quantity=1, booked_addon_price=self.addon2.cost)
+        create_temp_booking_addon(temp_booking, self.addon1, quantity=1, booked_addon_price=self.addon1.daily_cost)
+        create_temp_booking_addon(temp_booking, self.addon2, quantity=1, booked_addon_price=self.addon2.daily_cost)
 
         payment_obj = create_payment(
             amount=Decimal('200.00'),
@@ -592,7 +642,10 @@ class WebhookHandlerTest(TestCase):
         # Check if HireBooking is created
         hire_booking = HireBooking.objects.get(stripe_payment_intent_id="pi_full_payment_123")
         self.assertIsNotNone(hire_booking)
-        self.assertEqual(hire_booking.total_price, Decimal('200.00'))
+        self.assertEqual(hire_booking.grand_total, Decimal('200.00'))
+        self.assertEqual(hire_booking.total_hire_price, Decimal('160.00'))
+        self.assertEqual(hire_booking.total_addons_price, Decimal('40.00'))
+        self.assertEqual(hire_booking.total_package_price, Decimal('0.00'))
         self.assertEqual(hire_booking.amount_paid, Decimal('200.00'))
         self.assertEqual(hire_booking.payment_status, 'paid')
         self.assertEqual(hire_booking.status, 'confirmed')
@@ -612,8 +665,7 @@ class WebhookHandlerTest(TestCase):
         self.assertTrue(booking_addons.filter(addon=self.addon1, quantity=1).exists())
         self.assertTrue(booking_addons.filter(addon=self.addon2, quantity=1).exists())
 
-        # FIX: Check if TempBookingAddOns are deleted by filtering on the original temp_booking_id
-        # The temp_booking object itself is deleted, so filtering by its ID is more robust.
+        # Check if TempBookingAddOns are deleted by filtering on the original temp_booking_id
         self.assertEqual(TempBookingAddOn.objects.filter(temp_booking__id=temp_booking.id).count(), 0)
 
 
@@ -627,6 +679,9 @@ class WebhookHandlerTest(TestCase):
             driver_profile=self.driver_profile,
             payment_option='online_deposit',
             grand_total=Decimal('200.00'),
+            total_hire_price=Decimal('150.00'),
+            total_addons_price=Decimal('50.00'),
+            total_package_price=Decimal('0.00'),
             deposit_amount=Decimal('50.00'), # Deposit amount
             currency='AUD'
         )
@@ -652,7 +707,10 @@ class WebhookHandlerTest(TestCase):
 
         # 3. Assertions
         hire_booking = HireBooking.objects.get(stripe_payment_intent_id="pi_deposit_payment_456")
-        self.assertEqual(hire_booking.total_price, Decimal('200.00'))
+        self.assertEqual(hire_booking.grand_total, Decimal('200.00'))
+        self.assertEqual(hire_booking.total_hire_price, Decimal('150.00'))
+        self.assertEqual(hire_booking.total_addons_price, Decimal('50.00'))
+        self.assertEqual(hire_booking.total_package_price, Decimal('0.00'))
         self.assertEqual(hire_booking.amount_paid, Decimal('50.00'))
         self.assertEqual(hire_booking.payment_status, 'deposit_paid') # Should be deposit_paid
 
@@ -715,6 +773,9 @@ class WebhookHandlerTest(TestCase):
             driver_profile=self.driver_profile,
             payment_option='online_full',
             grand_total=Decimal('200.00'),
+            total_hire_price=Decimal('160.00'),
+            total_addons_price=Decimal('40.00'),
+            total_package_price=Decimal('0.00'),
             currency='AUD'
         )
         create_temp_booking_addon(temp_booking, self.addon1, quantity=1)
@@ -744,7 +805,7 @@ class WebhookHandlerTest(TestCase):
         # Assertions: Check that everything was rolled back
         # TempHireBooking should NOT be deleted
         self.assertTrue(TempHireBooking.objects.filter(id=temp_booking.id).exists())
-        # FIX: Check TempBookingAddOns by filtering on the original temp_booking_id
+        # Check TempBookingAddOns by filtering on the original temp_booking_id
         self.assertEqual(TempBookingAddOn.objects.filter(temp_booking__id=temp_booking.id).count(), 1) # Temp add-on still exists
 
         # HireBooking should NOT be created

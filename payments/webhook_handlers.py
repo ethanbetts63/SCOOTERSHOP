@@ -18,7 +18,7 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
     This function is responsible for:
     1. Converting the TempHireBooking to a permanent HireBooking.
     2. Copying associated add-ons.
-    3. Deleting the temporary booking.
+    3. Deleting the temporary booking. (showd we consider making this step 5?)
     4. Updating the Payment object to link to the new HireBooking and DriverProfile.
     5. Updating the Payment object's status to reflect the successful payment.
 
@@ -51,8 +51,11 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
                 motorcycle=temp_booking.motorcycle,
                 driver_profile=temp_booking.driver_profile,
                 package=temp_booking.package,
-                # UPDATED FIELD: Changed from booked_package_price to total_package_price
-                total_package_price=temp_booking.total_package_price, # Total price for the package
+                # Pass individual price components as per HireBooking model
+                total_hire_price=temp_booking.total_hire_price,
+                total_addons_price=temp_booking.total_addons_price,
+                total_package_price=temp_booking.total_package_price,
+                grand_total=temp_booking.grand_total, # Corrected: Use grand_total instead of total_price
                 pickup_date=temp_booking.pickup_date,
                 pickup_time=temp_booking.pickup_time,
                 return_date=temp_booking.return_date,
@@ -60,7 +63,6 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
                 is_international_booking=temp_booking.is_international_booking,
                 booked_daily_rate=temp_booking.booked_daily_rate, # Motorcycle's daily rate at booking
                 booked_hourly_rate=temp_booking.booked_hourly_rate, # Motorcycle's hourly rate at booking
-                total_price=temp_booking.grand_total, # This is the grand total for the entire booking
                 deposit_amount=temp_booking.deposit_amount if temp_booking.deposit_amount else 0,
                 amount_paid=payment_obj.amount, # Use the amount from the Payment object (actual amount paid)
                 payment_status=hire_payment_status,

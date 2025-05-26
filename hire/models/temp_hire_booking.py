@@ -44,11 +44,6 @@ class TempHireBooking(models.Model):
         related_name='temp_hire_bookings',
         null=True, blank=True
     )
-    # Store booked price of package at the time of selection
-    total_package_price = models.DecimalField(
-        max_digits=10, decimal_places=2,
-        null=True, blank=True
-    )
 
     # Step 4: Driver Details
     driver_profile = models.ForeignKey(
@@ -89,6 +84,11 @@ class TempHireBooking(models.Model):
          default=0,
          help_text="Calculated total price for selected add-ons."
     )
+    # Store booked price of package at the time of selection
+    total_package_price = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        null=True, blank=True
+    )
     grand_total = models.DecimalField(
          max_digits=10, decimal_places=2,
          null=True, blank=True, # Calculated later
@@ -116,9 +116,6 @@ class TempHireBooking(models.Model):
         motorcycle_str = self.motorcycle.model if self.motorcycle else 'No bike selected'
         date_range = f"({self.pickup_date} to {self.return_date})" if self.pickup_date and self.return_date else "(Dates not set)"
         return f"Temp Booking ({str(self.session_uuid)[:8]}): {motorcycle_str} {date_range}"
-
-    # You can add clean methods here for cross-field validation if needed,
-    # similar to HireBooking, but form validation might be sufficient during the process.
 
     class Meta:
         ordering = ['-created_at']

@@ -79,13 +79,6 @@ class HireBooking(models.Model):
         help_text="The ID of the Stripe Payment Intent associated with this booking."
     )
 
-    # Package price at booking time
-    booked_package_price = models.DecimalField(
-        max_digits=10, decimal_places=2,
-        null=True, blank=True,
-        help_text="Price of the selected package at the time of booking."
-    )
-
     # Add-ons through intermediate model
     add_ons = models.ManyToManyField(
         'AddOn', # Using string literal as AddOn is in another file
@@ -108,7 +101,10 @@ class HireBooking(models.Model):
     # Financial Details
     booked_hourly_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     booked_daily_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    total_hire_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    total_addons_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_package_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    grand_total = models.DecimalField(max_digits=10, decimal_places=2)
     deposit_amount = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='unpaid')
@@ -173,7 +169,6 @@ class HireBooking(models.Model):
                         errors['pickup_date'] = f"Pickup must be at least {settings.booking_lead_time_hours} hours from now."
                         errors['pickup_time'] = f"Pickup must be at least {settings.booking_lead_time_hours} hours from now."
             except HireSettings.DoesNotExist:
-                # Handle missing settings if necessary
                 pass
             except Exception as e:
                 print(f"Error checking booking lead time: {e}")
@@ -181,30 +176,35 @@ class HireBooking(models.Model):
 
 
         # --- Financial Validation ---
-        if self.total_price is not None and self.total_price < 0:
-            errors['total_price'] = "Total price cannot be negative."
+        if self.grand_total is not None and self.grand_total < 0:
+            errors['grand_total'] = "Grand total cannot be negative."
+        if self.total_hire_price is not None and self.total_hire_price < 0:
+            errors['total_hire_price'] = "Total hire price cannot be negative."
+        if self.total_addons_price is not None and self.total_addons_price < 0:
+            errors['total_addons_price'] = "Total add-ons price cannot be negative."
+        if self.total_package_price is not None and self.total_package_price < 0:
+            errors['total_package_price'] = "Total package price cannot be negative."
         if self.deposit_amount is not None and self.deposit_amount < 0:
             errors['deposit_amount'] = "Deposit amount cannot be negative."
         if self.amount_paid is not None and self.amount_paid < 0:
             errors['amount_paid'] = "Amount paid cannot be negative."
 
         # Consistency between payment status and amount paid
-        if self.payment_status == 'paid' and self.amount_paid != self.total_price:
-            errors['amount_paid'] = "Amount paid must equal total price when payment status is 'Paid'."
+        if self.payment_status == 'paid' and self.amount_paid != self.grand_total:
+            errors['amount_paid'] = "Amount paid must equal grand total when payment status is 'Paid'."
         if self.payment_status == 'deposit_paid':
             if self.deposit_amount is None or self.deposit_amount <= 0:
                 errors['deposit_amount'] = "Deposit amount must be set when payment status is 'Deposit Paid'."
             if self.amount_paid != self.deposit_amount:
                 errors['amount_paid'] = "Amount paid must equal the deposit amount when payment status is 'Deposit Paid'."
         if self.payment_status == 'unpaid' and self.amount_paid > 0:
-            # Optionally add a check here if unpaid but amount paid > 0
-            pass # Or raise an error depending on desired strictness
+            pass
 
         # Booked rates non-negative
         if self.booked_daily_rate is not None and self.booked_daily_rate < 0:
             errors['booked_daily_rate'] = "Booked daily rate cannot be negative."
-        if self.booked_package_price is not None and self.booked_package_price < 0:
-            errors['booked_package_price'] = "Booked package price cannot be negative."
+        if self.booked_hourly_rate is not None and self.booked_hourly_rate < 0:
+            errors['booked_hourly_rate'] = "Booked hourly rate cannot be negative."
 
 
         # --- Relationship Consistency ---

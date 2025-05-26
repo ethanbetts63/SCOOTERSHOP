@@ -41,8 +41,8 @@ class TempHireBookingModelTest(TestCase):
         cls.motorcycle = create_motorcycle()
         cls.driver_profile = create_driver_profile()
         cls.package = create_package()
-        cls.addon1 = create_addon(name="GPS", cost=Decimal('15.00'))
-        cls.addon2 = create_addon(name="Extra Helmet", cost=Decimal('20.00'))
+        cls.addon1 = create_addon(name="GPS", hourly_cost=Decimal('2.00'), daily_cost=Decimal('15.00'))
+        cls.addon2 = create_addon(name="Extra Helmet", hourly_cost=Decimal('5.00'), daily_cost=Decimal('20.00'))
         cls.hire_settings = create_hire_settings() # Ensure settings exist
 
     def test_create_basic_temp_hire_booking(self):
@@ -163,7 +163,8 @@ class TempHireBookingModelTest(TestCase):
         self.assertEqual(temp_addon1.temp_booking, temp_booking)
         self.assertEqual(temp_addon1.addon, self.addon1)
         self.assertEqual(temp_addon1.quantity, 2)
-        self.assertEqual(temp_addon1.booked_addon_price, self.addon1.cost)
+        # The default for booked_addon_price in factory is addon.daily_cost * quantity
+        self.assertEqual(temp_addon1.booked_addon_price, self.addon1.daily_cost * 2)
 
         self.assertIsNotNone(temp_addon2.pk)
         self.assertEqual(temp_addon2.temp_booking, temp_booking)
