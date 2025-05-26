@@ -12,6 +12,7 @@ from hire.tests.test_helpers.model_factories import (
     create_temp_booking_addon,
     create_motorcycle,
     create_driver_profile,
+    create_hire_settings, # Import create_hire_settings
 )
 
 # Import the model directly to bypass factory defaults for specific tests
@@ -28,6 +29,9 @@ class TempBookingAddOnModelTest(TestCase):
         """
         Set up non-modified objects used by all test methods.
         """
+        # Ensure HireSettings exists for validation checks
+        cls.hire_settings = create_hire_settings()
+
         cls.motorcycle = create_motorcycle()
         cls.driver_profile = create_driver_profile()
         cls.temp_booking = create_temp_hire_booking(
@@ -35,8 +39,8 @@ class TempBookingAddOnModelTest(TestCase):
             driver_profile=cls.driver_profile,
             grand_total=Decimal('100.00')
         )
-        cls.addon_min1_max5 = create_addon(name="AddOn A", cost=Decimal('10.00'), min_quantity=1, max_quantity=5)
-        cls.addon_min2_max2 = create_addon(name="AddOn B", cost=Decimal('25.00'), min_quantity=2, max_quantity=2)
+        cls.addon_min1_max5 = create_addon(name="AddOn A", daily_cost=Decimal('10.00'), min_quantity=1, max_quantity=5)
+        cls.addon_min2_max2 = create_addon(name="AddOn B", daily_cost=Decimal('25.00'), min_quantity=2, max_quantity=2)
 
     def test_create_basic_temp_booking_addon(self):
         """
@@ -142,7 +146,8 @@ class TempBookingAddOnModelTest(TestCase):
         with self.assertRaises(ValidationError) as cm:
             temp_booking_addon.clean()
         self.assertIn('quantity', cm.exception.message_dict)
-        self.assertEqual(cm.exception.message_dict['quantity'][0], "Quantity cannot be null.")
+        # Updated assertion message to match the actual error from the model
+        self.assertEqual(cm.exception.message_dict['quantity'][0], "Quantity cannot be null if an add-on is selected.")
 
     def test_clean_booked_addon_price_mismatch_raises_error(self):
         """
@@ -158,9 +163,10 @@ class TempBookingAddOnModelTest(TestCase):
         with self.assertRaises(ValidationError) as cm:
             temp_booking_addon.clean()
         self.assertIn('booked_addon_price', cm.exception.message_dict)
+        # Updated assertion message to match the actual error from the model
         self.assertEqual(
             cm.exception.message_dict['booked_addon_price'][0],
-            f"Booked add-on price must match the current price of the add-on ({self.addon_min1_max5.cost})."
+            f"Booked add-on price must match the current price of the add-on ({self.addon_min1_max5.daily_cost})."
         )
 
     def test_clean_valid_temp_booking_addon_passes(self):
@@ -171,7 +177,7 @@ class TempBookingAddOnModelTest(TestCase):
             temp_booking=self.temp_booking,
             addon=self.addon_min1_max5,
             quantity=3, # Within min/max range
-            booked_addon_price=self.addon_min1_max5.cost # Match
+            booked_addon_price=self.addon_min1_max5.daily_cost # Match
         )
         try:
             temp_booking_addon.clean()
@@ -194,4 +200,3 @@ class TempBookingAddOnModelTest(TestCase):
             temp_booking_addon.clean()
         except ValidationError:
             self.fail("ValidationError raised unexpectedly for TempBookingAddOn with deleted addon.")
-
