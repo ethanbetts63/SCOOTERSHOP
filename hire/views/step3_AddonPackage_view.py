@@ -30,10 +30,12 @@ class AddonPackageView(View):
                 messages.error(request, "Selected motorcycle not found.")
                 return redirect('hire:step2_choose_bike')
 
+            # Check motorcycle availability using the helper method
+            # The helper method now adds specific error messages, so we don't add a generic one here.
             if not self._is_motorcycle_available(motorcycle, temp_booking):
-                messages.error(request, "The selected motorcycle is not available for your chosen dates/times or license type.")
                 return redirect('hire:step2_choose_bike')
 
+            # If motorcycle is available and valid, update temp_booking
             temp_booking.motorcycle = motorcycle
             hire_duration_days = calculate_hire_duration_days(
                 temp_booking.pickup_date, temp_booking.return_date, temp_booking.pickup_time, temp_booking.return_time
@@ -220,6 +222,11 @@ class AddonPackageView(View):
             return None
 
     def _is_motorcycle_available(self, motorcycle, temp_booking):
+        # New check: Ensure the motorcycle itself is available
+        if not motorcycle.is_available:
+            messages.error(self.request, "The selected motorcycle is currently not available.")
+            return False
+
         if not temp_booking.pickup_date or not temp_booking.pickup_time or \
            not temp_booking.return_date or not temp_booking.return_time:
             messages.error(self.request, "Please select valid pickup and return dates/times first.")
@@ -242,8 +249,12 @@ class AddonPackageView(View):
             return_date__gt=temp_booking.pickup_date
         ).exists()
 
+        if conflicting_bookings:
+            messages.error(self.request, "The selected motorcycle is not available for your chosen dates/times due to an existing booking.")
+            return False
+
         if not temp_booking.has_motorcycle_license and int(motorcycle.engine_size) > 50:
              messages.error(self.request, "You require a full motorcycle license for this motorcycle.")
              return False
 
-        return not conflicting_bookings
+        return True # If all checks pass, the motorcycle is available

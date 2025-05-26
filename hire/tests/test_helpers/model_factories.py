@@ -109,12 +109,13 @@ def create_hire_settings(
     default_deposit_calculation_method='percentage',
     deposit_percentage=Decimal('10.00'),
     deposit_amount=Decimal('50.00'),
-    default_daily_rate=Decimal('90.00'), # Added this parameter
-    # Add the missing payment option fields
+    default_daily_rate=Decimal('90.00'),
     enable_online_full_payment=False,
     enable_online_deposit_payment=False,
     enable_in_store_full_payment=False,
-    # Add other HireSettings fields as needed
+    # Add these new parameters
+    packages_enabled=True,
+    add_ons_enabled=True,
 ):
     """Creates or gets a HireSettings instance."""
     settings, created = HireSettings.objects.get_or_create(pk=1) # Assuming pk=1 for singleton
@@ -132,11 +133,13 @@ def create_hire_settings(
     settings.default_deposit_calculation_method = default_deposit_calculation_method
     settings.deposit_percentage = deposit_percentage
     settings.deposit_amount = deposit_amount
-    settings.default_daily_rate = default_daily_rate # Assigned the new parameter
-    # Assign the new payment option fields
+    settings.default_daily_rate = default_daily_rate
     settings.enable_online_full_payment = enable_online_full_payment
     settings.enable_online_deposit_payment = enable_online_deposit_payment
     settings.enable_in_store_full_payment = enable_in_store_full_payment
+    # Assign the new parameters
+    settings.packages_enabled = packages_enabled
+    settings.add_ons_enabled = add_ons_enabled
     settings.save()
     return settings
 

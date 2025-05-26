@@ -1,8 +1,12 @@
+# hire/views/utils.py
+
 import datetime
 from django.utils import timezone
 from django.db.models import Q # Import Q for complex queries
 from ..models import HireBooking # Import HireBooking model (assuming it's in a parent directory's models)
 from inventory.models import Motorcycle # Also need Motorcycle model for type hinting/clarity
+from django.contrib import messages # Import messages for the utility function
+from django.shortcuts import redirect
 
 def calculate_hire_price(motorcycle, duration_days, hire_settings):
     """
@@ -39,6 +43,9 @@ def calculate_hire_duration_days(pickup_date, return_date, pickup_time, return_t
      return days
 
 def get_overlapping_motorcycle_bookings(motorcycle, pickup_date, pickup_time, return_date, return_time, exclude_booking_id=None):
+    """
+    Checks for existing HireBookings that overlap with the given date/time range for a specific motorcycle.
+    """
     # Combine date and time into timezone-aware datetime objects
     pickup_datetime = timezone.make_aware(datetime.datetime.combine(pickup_date, pickup_time))
     return_datetime = timezone.make_aware(datetime.datetime.combine(return_date, return_time))
@@ -73,3 +80,29 @@ def get_overlapping_motorcycle_bookings(motorcycle, pickup_date, pickup_time, re
             actual_overlaps.append(booking)
 
     return actual_overlaps
+
+def is_motorcycle_available(request, motorcycle, temp_booking):
+
+    # Check: Is the motorcycle generally available?
+    if not motorcycle.is_available:
+        messages.error(request, "The selected motorcycle is currently not available.")
+        return False
+    
+    if not temp_booking.pickup_date or not temp_booking.pickup_time or \
+       not temp_booking.return_date or not temp_booking.return_time:
+        messages.error(request, "Please select valid pickup and return dates/times first.")
+        return redirect('hire:step2_choose_bike')
+
+    # Check: Are there any conflicting permanent bookings?
+    conflicting_bookings = get_overlapping_motorcycle_bookings(
+        motorcycle,
+        temp_booking.pickup_date,
+        temp_booking.pickup_time,
+        temp_booking.return_date,
+        temp_booking.return_time
+    )
+    if conflicting_bookings:
+        messages.error(request, "The selected motorcycle is not available for your chosen dates/times due to an existing booking.")
+        return False
+
+    return True 
