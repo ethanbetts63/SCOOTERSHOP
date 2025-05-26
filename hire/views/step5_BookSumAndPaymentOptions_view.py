@@ -9,6 +9,8 @@ from ..models import TempHireBooking
 from dashboard.models import HireSettings
 from ..forms.step5_BookSumAndPaymentOptions_form import PaymentOptionForm
 from ..views.utils import *
+# Import the new centralized pricing function
+from .hire_pricing import calculate_booking_grand_total
 
 class BookSumAndPaymentOptionsView(View):
     template_name = 'hire/step5_book_sum_and_payment_options.html'
@@ -23,6 +25,26 @@ class BookSumAndPaymentOptionsView(View):
         if not hire_settings:
             messages.error(request, "Hire settings not found.")
             return redirect('home') # Or some appropriate error page
+
+        # Recalculate all booking prices to ensure they are up-to-date
+        # This acts as a safeguard in case previous steps didn't save correctly
+        # or if the user navigates directly to this step.
+        calculated_prices = calculate_booking_grand_total(temp_booking, hire_settings)
+        temp_booking.total_hire_price = calculated_prices['motorcycle_price']
+        temp_booking.total_package_price = calculated_prices['package_price']
+        temp_booking.total_addons_price = calculated_prices['addons_total_price']
+        temp_booking.grand_total = calculated_prices['grand_total']
+
+        # Calculate deposit_amount based on the freshly calculated grand_total
+        if hire_settings and hire_settings.deposit_percentage is not None:
+            deposit_percentage = Decimal(str(hire_settings.deposit_percentage)) / Decimal('100')
+            temp_booking.deposit_amount = temp_booking.grand_total * deposit_percentage
+            temp_booking.deposit_amount = temp_booking.deposit_amount.quantize(Decimal('0.01'))
+        else:
+            temp_booking.deposit_amount = Decimal('0.00')
+
+        # Save the updated prices to the temporary booking before rendering the form
+        temp_booking.save()
 
         form = PaymentOptionForm(temp_booking=temp_booking, hire_settings=hire_settings)
 
@@ -48,44 +70,26 @@ class BookSumAndPaymentOptionsView(View):
 
         if form.is_valid():
             payment_option = form.cleaned_data['payment_method']
-            temp_booking.payment_option = payment_option # Correctly assign to the 'payment_option' field
+            temp_booking.payment_option = payment_option
 
-            # --- Ensure grand_total and deposit_amount are calculated and saved ---
-            # These values should ideally be calculated and saved in earlier steps
-            # (e.g., after selecting add-ons/packages), but we'll ensure they are here
-            # before proceeding to payment.
+            # --- Recalculate grand_total and other prices using the centralized function ---
+            # This ensures the prices are accurate based on the latest booking data
+            # and the current pricing strategies, just before saving and redirecting.
+            calculated_prices = calculate_booking_grand_total(temp_booking, hire_settings)
+            temp_booking.total_hire_price = calculated_prices['motorcycle_price']
+            temp_booking.total_package_price = calculated_prices['package_price']
+            temp_booking.total_addons_price = calculated_prices['addons_total_price']
+            temp_booking.grand_total = calculated_prices['grand_total']
 
-            # Recalculate grand_total if it's not already set or needs updating
-            # This logic might be more complex depending on how your prices are derived.
-            # For simplicity, assuming it's a sum of existing fields.
-            # You might have a method on TempHireBooking like `calculate_grand_total()`
-            if temp_booking.total_hire_price is None:
-                temp_booking.total_hire_price = Decimal('0.00') # Default if not set
-            if temp_booking.total_addons_price is None:
-                temp_booking.total_addons_price = Decimal('0.00')
-            if temp_booking.total_package_price is None:
-                temp_booking.total_package_price = Decimal('0.00')
-
-            # Ensure grand_total is set. If it's already correctly calculated in a prior step,
-            # this line might not be strictly necessary, but it ensures it's available.
-            temp_booking.grand_total = (
-                temp_booking.total_hire_price +
-                temp_booking.total_addons_price +
-                temp_booking.total_package_price
-            )
-
-            # Calculate deposit_amount based on grand_total and hire_settings
+            # Calculate deposit_amount based on the freshly calculated grand_total
             if hire_settings and hire_settings.deposit_percentage is not None:
-                # Ensure deposit_percentage is a Decimal for accurate calculation
                 deposit_percentage = Decimal(str(hire_settings.deposit_percentage)) / Decimal('100')
                 temp_booking.deposit_amount = temp_booking.grand_total * deposit_percentage
-                # Round to 2 decimal places for currency
                 temp_booking.deposit_amount = temp_booking.deposit_amount.quantize(Decimal('0.01'))
             else:
-                # Fallback if deposit_percentage is not set in HireSettings
-                temp_booking.deposit_amount = Decimal('0.00') # Or a default deposit amount if applicable
+                temp_booking.deposit_amount = Decimal('0.00') # Fallback if deposit_percentage is not set
 
-            # Save the updated TempHireBooking instance
+            # Save the updated TempHireBooking instance with all calculated prices
             temp_booking.save()
 
             # Redirect to the next step based on the payment option
@@ -110,4 +114,3 @@ class BookSumAndPaymentOptionsView(View):
             return TempHireBooking.objects.get(session_uuid=session_uuid)
         except TempHireBooking.DoesNotExist:
             return None
-
