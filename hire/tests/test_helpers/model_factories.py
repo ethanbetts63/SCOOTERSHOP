@@ -109,6 +109,7 @@ def create_hire_settings(
     default_deposit_calculation_method='percentage',
     deposit_percentage=Decimal('10.00'),
     deposit_amount=Decimal('50.00'),
+    default_daily_rate=Decimal('90.00'), # Added this parameter
     # Add the missing payment option fields
     enable_online_full_payment=False,
     enable_online_deposit_payment=False,
@@ -131,6 +132,7 @@ def create_hire_settings(
     settings.default_deposit_calculation_method = default_deposit_calculation_method
     settings.deposit_percentage = deposit_percentage
     settings.deposit_amount = deposit_amount
+    settings.default_daily_rate = default_daily_rate # Assigned the new parameter
     # Assign the new payment option fields
     settings.enable_online_full_payment = enable_online_full_payment
     settings.enable_online_deposit_payment = enable_online_deposit_payment
