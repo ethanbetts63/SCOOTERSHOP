@@ -6,12 +6,13 @@ from django.contrib import messages
 from django.utils import timezone
 import datetime
 from decimal import Decimal
-from django.http import HttpResponseRedirect # Import HttpResponseRedirect
+from django.http import HttpResponseRedirect
 
 from inventory.models import Motorcycle
 from ..models import AddOn, Package, TempHireBooking, HireBooking, TempBookingAddOn
 from ..forms.step3_AddonPackage_form import Step3AddOnsPackagesForm
-from ..views.utils import calculate_motorcycle_hire_price, calculate_hire_duration_days, is_motorcycle_available # Import the utility function
+from ..views.utils import calculate_hire_duration_days, is_motorcycle_available
+from ..views.hire_pricing import calculate_motorcycle_hire_price
 from dashboard.models import HireSettings
 
 class AddonPackageView(View):
