@@ -110,13 +110,15 @@ def create_hire_settings(
     deposit_percentage=Decimal('10.00'),
     deposit_amount=Decimal('50.00'),
     default_daily_rate=Decimal('90.00'),
-    default_hourly_rate=Decimal('15.00'), # Added default hourly rate
+    default_hourly_rate=Decimal('15.00'),
     enable_online_full_payment=False,
     enable_online_deposit_payment=False,
     enable_in_store_full_payment=False,
-    # Add these new parameters
     packages_enabled=True,
     add_ons_enabled=True,
+    # NEW: Add hire pricing strategy fields
+    hire_pricing_strategy='24_hour_customer_friendly', # Default to a sensible option
+    excess_hours_margin=2, # Default margin
 ):
     """Creates or gets a HireSettings instance."""
     settings, created = HireSettings.objects.get_or_create(pk=1) # Assuming pk=1 for singleton
@@ -135,13 +137,15 @@ def create_hire_settings(
     settings.deposit_percentage = deposit_percentage
     settings.deposit_amount = deposit_amount
     settings.default_daily_rate = default_daily_rate
-    settings.default_hourly_rate = default_hourly_rate # Assign default hourly rate
+    settings.default_hourly_rate = default_hourly_rate
     settings.enable_online_full_payment = enable_online_full_payment
     settings.enable_online_deposit_payment = enable_online_deposit_payment
     settings.enable_in_store_full_payment = enable_in_store_full_payment
-    # Assign the new parameters
     settings.packages_enabled = packages_enabled
     settings.add_ons_enabled = add_ons_enabled
+    # NEW: Assign the new pricing strategy fields
+    settings.hire_pricing_strategy = hire_pricing_strategy
+    settings.excess_hours_margin = excess_hours_margin
     settings.save()
     return settings
 
@@ -149,16 +153,16 @@ def create_payment(
     amount=Decimal('100.00'),
     currency='AUD',
     status='pending',
-    stripe_payment_intent_id=None, 
-    stripe_payment_method_id=None, 
+    stripe_payment_intent_id=None,
+    stripe_payment_method_id=None,
 ):
     """Creates a Payment instance."""
     return Payment.objects.create(
         amount=amount,
         currency=currency,
         status=status,
-        stripe_payment_intent_id=stripe_payment_intent_id, 
-        stripe_payment_method_id=stripe_payment_method_id, 
+        stripe_payment_intent_id=stripe_payment_intent_id,
+        stripe_payment_method_id=stripe_payment_method_id,
     )
 
 # --- Factories for Hire App Models ---
@@ -182,8 +186,8 @@ def create_driver_profile(
     license_photo=None,
     international_license_photo=None,
     passport_photo=None,
-    id_image=None, 
-    international_id_image=None, 
+    id_image=None,
+    international_id_image=None,
     # Add a flag to control default expiry dates for testing purposes
     _set_default_expiry_dates=True,
 ):
@@ -267,7 +271,7 @@ def create_package(
         is_available=is_available
     )
     if add_ons:
-        package.add_ons.set(add_ons) 
+        package.add_ons.set(add_ons)
     return package
 
 def create_hire_booking(
@@ -310,7 +314,7 @@ def create_hire_booking(
         return_time = datetime.time(16, 0)
     if not booking_reference:
         booking_reference = f"HIRE-{uuid.uuid4().hex[:8].upper()}"
-    
+
     booking = HireBooking.objects.create(
         motorcycle=motorcycle,
         driver_profile=driver_profile,
@@ -331,7 +335,7 @@ def create_hire_booking(
         package=package,
         booked_package_price=booked_package_price,
         currency=currency,
-        payment=payment, 
+        payment=payment,
         stripe_payment_intent_id=stripe_payment_intent_id,
         customer_notes=customer_notes,
         internal_notes=internal_notes,
@@ -342,13 +346,13 @@ def create_booking_addon(
     booking,
     addon=None,
     quantity=1,
-    booked_addon_price=None 
+    booked_addon_price=None
 ):
     """Creates a BookingAddOn instance."""
     if not addon:
         addon = create_addon()
     if booked_addon_price is None:
-        booked_addon_price = addon.cost 
+        booked_addon_price = addon.cost
 
     return BookingAddOn.objects.create(
         booking=booking,
@@ -421,7 +425,7 @@ def create_temp_booking_addon(
     temp_booking,
     addon=None,
     quantity=1,
-    booked_addon_price=None 
+    booked_addon_price=None
 ):
     """Creates a TempBookingAddOn instance."""
     if not addon:

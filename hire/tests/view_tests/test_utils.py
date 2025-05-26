@@ -331,7 +331,7 @@ class HireUtilsTests(TestCase):
         self.assertEqual(calculated_price, expected_price)
 
     # --- calculate_hire_duration_days Tests for each strategy ---
-    # Note: calculate_hire_duration_days now needs hire_settings as an argument
+    # Note: calculate_hire_duration_days now needs motorcycle and hire_settings as arguments
 
     def test_calculate_hire_duration_days_same_day_hire(self):
         """
@@ -342,19 +342,19 @@ class HireUtilsTests(TestCase):
         pickup_time = datetime.time(9, 0)
         return_date = pickup_date
         return_time = datetime.time(17, 0)
-        
+
         # Test with an arbitrary strategy, as same-day logic is separate
         self.hire_settings.hire_pricing_strategy = 'flat_24_hour'
         self.hire_settings.save()
         duration = calculate_hire_duration_days(
-            pickup_date, return_date, pickup_time, return_time, self.hire_settings
+            self.motorcycle_with_daily_rate, pickup_date, return_date, pickup_time, return_time, self.hire_settings
         )
         self.assertEqual(duration, 1)
 
         # Test very short duration (e.g., 15 minutes)
         return_time_short = datetime.time(9, 15)
         duration_short = calculate_hire_duration_days(
-            pickup_date, return_date, pickup_time, return_time_short, self.hire_settings
+            self.motorcycle_with_daily_rate, pickup_date, return_date, pickup_time, return_time_short, self.hire_settings
         )
         self.assertEqual(duration_short, 1)
 
@@ -371,13 +371,13 @@ class HireUtilsTests(TestCase):
         self.hire_settings.hire_pricing_strategy = 'flat_24_hour'
         self.hire_settings.save()
         duration = calculate_hire_duration_days(
-            pickup_date, return_date_zero, pickup_time, return_time_zero, self.hire_settings
+            self.motorcycle_with_daily_rate, pickup_date, return_date_zero, pickup_time, return_time_zero, self.hire_settings
         )
         self.assertEqual(duration, 0)
 
         return_date_negative = pickup_date - datetime.timedelta(days=1)
         duration_negative = calculate_hire_duration_days(
-            pickup_date, return_date_negative, pickup_time, return_time_zero, self.hire_settings
+            self.motorcycle_with_daily_rate, pickup_date, return_date_negative, pickup_time, return_time_zero, self.hire_settings
         )
         self.assertEqual(duration_negative, 0)
 
@@ -388,26 +388,27 @@ class HireUtilsTests(TestCase):
         self.hire_settings.hire_pricing_strategy = 'flat_24_hour'
         self.hire_settings.save()
 
-        # Exactly 24 hours
         pickup_date = timezone.now().date()
         pickup_time = datetime.time(9, 0)
+
+        # Exactly 24 hours
         return_date = pickup_date + datetime.timedelta(days=1)
         return_time = datetime.time(9, 0)
-        self.assertEqual(calculate_hire_duration_days(pickup_date, return_date, pickup_time, return_time, self.hire_settings), 1)
+        self.assertEqual(calculate_hire_duration_days(self.motorcycle_with_daily_rate, pickup_date, return_date, pickup_time, return_time, self.hire_settings), 1)
 
         # 24 hours + 1 minute (rounds up to 2 days)
         return_time_plus_minute = datetime.time(9, 1)
-        self.assertEqual(calculate_hire_duration_days(pickup_date, return_date, pickup_time, return_time_plus_minute, self.hire_settings), 2)
+        self.assertEqual(calculate_hire_duration_days(self.motorcycle_with_daily_rate, pickup_date, return_date, pickup_time, return_time_plus_minute, self.hire_settings), 2)
 
         # 47 hours 59 minutes (rounds up to 2 days)
         return_date_almost_2_days = pickup_date + datetime.timedelta(days=1)
         return_time_almost_2_days = datetime.time(8, 59)
-        self.assertEqual(calculate_hire_duration_days(pickup_date, return_date_almost_2_days, pickup_time, return_time_almost_2_days, self.hire_settings), 2)
+        self.assertEqual(calculate_hire_duration_days(self.motorcycle_with_daily_rate, pickup_date, return_date_almost_2_days, pickup_time, return_time_almost_2_days, self.hire_settings), 2)
 
         # 2 days and 6 hours (rounds up to 3 days)
         return_date_2_days_6_hours = pickup_date + datetime.timedelta(days=2)
         return_time_2_days_6_hours = datetime.time(15, 0)
-        self.assertEqual(calculate_hire_duration_days(pickup_date, return_date_2_days_6_hours, pickup_time, return_time_2_days_6_hours, self.hire_settings), 3)
+        self.assertEqual(calculate_hire_duration_days(self.motorcycle_with_daily_rate, pickup_date, return_date_2_days_6_hours, pickup_time, return_time_2_days_6_hours, self.hire_settings), 3)
 
 
     def test_calculate_hire_duration_days_24_hour_plus_margin_strategy(self):
@@ -424,19 +425,19 @@ class HireUtilsTests(TestCase):
         # Exactly 2 days (48 hours)
         return_date_exact = pickup_date + datetime.timedelta(days=2)
         return_time_exact = datetime.time(9, 0)
-        self.assertEqual(calculate_hire_duration_days(pickup_date, return_date_exact, pickup_time, return_time_exact, self.hire_settings), 2)
+        self.assertEqual(calculate_hire_duration_days(self.motorcycle_with_daily_rate, pickup_date, return_date_exact, pickup_time, return_time_exact, self.hire_settings), 2)
 
         # 2 days + 2 hours excess (within 3-hour margin, so 2 days)
         return_time_within_margin = datetime.time(11, 0)
-        self.assertEqual(calculate_hire_duration_days(pickup_date, return_date_exact, pickup_time, return_time_within_margin, self.hire_settings), 2)
+        self.assertEqual(calculate_hire_duration_days(self.motorcycle_with_daily_rate, pickup_date, return_date_exact, pickup_time, return_time_within_margin, self.hire_settings), 2)
 
         # 2 days + 3 hours excess (exactly at 3-hour margin, so 2 days)
         return_time_at_margin = datetime.time(12, 0)
-        self.assertEqual(calculate_hire_duration_days(pickup_date, return_date_exact, pickup_time, return_time_at_margin, self.hire_settings), 2)
+        self.assertEqual(calculate_hire_duration_days(self.motorcycle_with_daily_rate, pickup_date, return_date_exact, pickup_time, return_time_at_margin, self.hire_settings), 2)
 
         # 2 days + 4 hours excess (exceeds 3-hour margin, so 3 days)
         return_time_exceeds_margin = datetime.time(13, 0)
-        self.assertEqual(calculate_hire_duration_days(pickup_date, return_date_exact, pickup_time, return_time_exceeds_margin, self.hire_settings), 3)
+        self.assertEqual(calculate_hire_duration_days(self.motorcycle_with_daily_rate, pickup_date, return_date_exact, pickup_time, return_time_exceeds_margin, self.hire_settings), 3)
 
     def test_calculate_hire_duration_days_24_hour_customer_friendly_strategy(self):
         """
@@ -450,30 +451,33 @@ class HireUtilsTests(TestCase):
 
         pickup_date = timezone.now().date()
         pickup_time = datetime.time(9, 0)
-        daily_rate = self.motorcycle_with_daily_rate.daily_hire_rate
-        hourly_rate = self.motorcycle_with_daily_rate.hourly_hire_rate
+        
+        # We need to pass the motorcycle to calculate_hire_duration_days
+        motorcycle_for_test = self.motorcycle_with_daily_rate
+        # daily_rate = motorcycle_for_test.daily_hire_rate
+        # hourly_rate = motorcycle_for_test.hourly_hire_rate
 
         # Exactly 2 days (48 hours) -> 2 days
         return_date_exact = pickup_date + datetime.timedelta(days=2)
         return_time_exact = datetime.time(9, 0)
-        self.assertEqual(calculate_hire_duration_days(pickup_date, return_date_exact, pickup_time, return_time_exact, self.hire_settings), 2)
+        self.assertEqual(calculate_hire_duration_days(motorcycle_for_test, pickup_date, return_date_exact, pickup_time, return_time_exact, self.hire_settings), 2)
 
         # 2 days + 3 hours excess (3 * 20 = 60, which is < 100 daily) -> still 2 days
         return_time_hourly_cheaper = datetime.time(12, 0)
-        self.assertEqual(calculate_hire_duration_days(pickup_date, return_date_exact, pickup_time, return_time_hourly_cheaper, self.hire_settings), 2)
+        self.assertEqual(calculate_hire_duration_days(motorcycle_for_test, pickup_date, return_date_exact, pickup_time, return_time_hourly_cheaper, self.hire_settings), 2)
 
         # 2 days + 5 hours excess (5 * 20 = 100, which is == 100 daily) -> 3 days
         return_time_hourly_equals_daily = datetime.time(14, 0)
-        self.assertEqual(calculate_hire_duration_days(pickup_date, return_date_exact, pickup_time, return_time_hourly_equals_daily, self.hire_settings), 3)
+        self.assertEqual(calculate_hire_duration_days(motorcycle_for_test, pickup_date, return_date_exact, pickup_time, return_time_hourly_equals_daily, self.hire_settings), 3)
 
         # 2 days + 6 hours excess (6 * 20 = 120, which is > 100 daily) -> 3 days
         return_time_hourly_more_than_daily = datetime.time(15, 0)
-        self.assertEqual(calculate_hire_duration_days(pickup_date, return_date_exact, pickup_time, return_time_hourly_more_than_daily, self.hire_settings), 3)
+        self.assertEqual(calculate_hire_duration_days(motorcycle_for_test, pickup_date, return_date_exact, pickup_time, return_time_hourly_more_than_daily, self.hire_settings), 3)
 
         # Less than 24 hours (e.g., 5 hours) -> 1 day (handled by initial same-day check)
         return_date_same_day = pickup_date
         return_time_5_hours = datetime.time(14, 0)
-        self.assertEqual(calculate_hire_duration_days(return_date_same_day, return_date_same_day, pickup_time, return_time_5_hours, self.hire_settings), 1)
+        self.assertEqual(calculate_hire_duration_days(motorcycle_for_test, return_date_same_day, return_date_same_day, pickup_time, return_time_5_hours, self.hire_settings), 1)
 
 
     def test_calculate_hire_duration_days_daily_plus_excess_hourly_strategy(self):
@@ -491,25 +495,13 @@ class HireUtilsTests(TestCase):
         # Exactly 2 days (48 hours) -> 2 days
         return_date_exact = pickup_date + datetime.timedelta(days=2)
         return_time_exact = datetime.time(9, 0)
-        self.assertEqual(calculate_hire_duration_days(pickup_date, return_date_exact, pickup_time, return_time_exact, self.hire_settings), 2)
+        self.assertEqual(calculate_hire_duration_days(self.motorcycle_with_daily_rate, pickup_date, return_date_exact, pickup_time, return_time_exact, self.hire_settings), 2)
 
         # 2 days + 5.5 hours excess -> 2 days (excess is billed hourly, not as a full day)
         return_date_excess = pickup_date + datetime.timedelta(days=2)
         return_time_excess = datetime.time(14, 30)
-        self.assertEqual(calculate_hire_duration_days(pickup_date, return_date_excess, pickup_time, return_time_excess, self.hire_settings), 2)
+        self.assertEqual(calculate_hire_duration_days(self.motorcycle_with_daily_rate, pickup_date, return_date_excess, pickup_time, return_time_excess, self.hire_settings), 2)
 
-        # 0.5 days (12 hours) -> 0 days (but this would be caught by same-day logic and return 1 for display)
-        # We need to test multi-day scenarios for this part.
-        # If it's a multi-day rental but less than a full 24-hour block, it's 0 full days.
-        pickup_date_multi = timezone.now().date()
-        return_date_multi = pickup_date_multi + datetime.timedelta(hours=12) # Not a full day, but spans across midnight
-        # This scenario is tricky, as the `calculate_hire_price` handles it as hourly, but `calculate_hire_duration_days`
-        # for multi-day strictly counts full 24-hour blocks.
-        # Let's ensure the `calculate_hire_duration_days` reflects the *number of full days* correctly.
-        # If the duration is less than 24 hours but spans midnight, it's still 0 full 24-hour blocks.
-        # The `calculate_hire_price` function handles the "same day" logic first, which covers this.
-        # For `calculate_hire_duration_days`, if it's not same day, it's about full 24-hour blocks.
-        
         # Example: Pickup Mon 22:00, Return Tue 02:00 (4 hours total, spans midnight)
         pickup_date_span = timezone.now().date()
         pickup_time_span = datetime.time(22, 0)
@@ -517,7 +509,7 @@ class HireUtilsTests(TestCase):
         return_time_span = datetime.time(2, 0)
         # This is a multi-day rental, but less than 24 hours.
         # Should return 0 full 24-hour blocks.
-        self.assertEqual(calculate_hire_duration_days(pickup_date_span, return_date_span, pickup_time_span, return_time_span, self.hire_settings), 0)
+        self.assertEqual(calculate_hire_duration_days(self.motorcycle_with_daily_rate, pickup_date_span, return_date_span, pickup_time_span, return_time_span, self.hire_settings), 0)
 
 
     # --- get_overlapping_motorcycle_bookings Tests (unchanged as they already use separate date/time args) ---
