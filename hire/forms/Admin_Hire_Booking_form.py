@@ -8,7 +8,8 @@ import datetime
 from inventory.models import Motorcycle
 from ..models import AddOn, Package, DriverProfile, BookingAddOn
 from ..models.hire_booking import STATUS_CHOICES, PAYMENT_STATUS_CHOICES, PAYMENT_METHOD_CHOICES, HireBooking
-# No direct import of HireSettings here, it will be used in the view for default rates if needed.
+# Import pricing utility
+from hire.views.hire_pricing import calculate_addon_price # Import the new pricing function
 
 class AdminHireBookingForm(forms.Form):
     """
@@ -123,6 +124,8 @@ class AdminHireBookingForm(forms.Form):
     def __init__(self, *args, **kwargs):
         # Pop the instance if it exists
         instance = kwargs.pop('instance', None)
+        # Pop hire_settings for pricing calculations
+        self.hire_settings = kwargs.pop('hire_settings', None)
         super().__init__(*args, **kwargs)
 
         # Set queryset and label for motorcycle
@@ -132,8 +135,8 @@ class AdminHireBookingForm(forms.Form):
         # Set queryset for packages
         self.available_packages = Package.objects.filter(is_available=True)
         self.fields['package'].queryset = self.available_packages
-        # Updated label_from_instance for package to show name and price
-        self.fields['package'].label_from_instance = lambda obj: f"{obj.name} ({obj.package_price:.2f})"
+        # Updated label_from_instance for package to show name and new pricing fields
+        self.fields['package'].label_from_instance = lambda obj: f"{obj.name} (Daily: {obj.daily_cost:.2f}, Hourly: {obj.hourly_cost:.2f})"
 
 
         # Dynamically create add-on fields
@@ -249,11 +252,27 @@ class AdminHireBookingForm(forms.Form):
                         f"Quantity for {addon.name} must be between {addon.min_quantity}-{adjusted_max_quantity_for_validation}."
                     )
                 else:
-                    selected_addons_data.append({
-                        'addon': addon,
-                        'quantity': quantity,
-                        'price': addon.cost # Capture the current cost of the addon
-                    })
+                    # Calculate the actual price of the add-on using the new pricing logic
+                    # Ensure all necessary parameters for calculate_addon_price are available
+                    if all([addon, quantity, pickup_date, return_date, pickup_time, return_time, self.hire_settings]):
+                        calculated_addon_price = calculate_addon_price(
+                            addon_instance=addon,
+                            quantity=quantity,
+                            pickup_date=pickup_date,
+                            return_date=return_date,
+                            pickup_time=pickup_time,
+                            return_time=return_time,
+                            hire_settings=self.hire_settings
+                        )
+                        selected_addons_data.append({
+                            'addon': addon,
+                            'quantity': quantity,
+                            'price': calculated_addon_price # Store the calculated price
+                        })
+                    else:
+                        # If pricing parameters are missing, add an error
+                        form_errors[f'addon_{addon.id}_selected'] = "Cannot calculate add-on price due to missing booking details or hire settings."
+
         cleaned_data['selected_addons_data'] = selected_addons_data # Store for view/save
 
         # --- Section 5: Financial Details Validation ---

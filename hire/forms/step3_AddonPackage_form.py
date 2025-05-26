@@ -3,6 +3,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.forms import ModelChoiceField, RadioSelect
 from ..models import AddOn, Package
+from hire.views.hire_pricing import calculate_addon_price # Import the new pricing function
 
 class Step3AddOnsPackagesForm(forms.Form):
     package = ModelChoiceField(
@@ -18,9 +19,15 @@ class Step3AddOnsPackagesForm(forms.Form):
         all_addons_for_validation = kwargs.pop('available_addons', AddOn.objects.none()) 
         # The currently selected package instance
         self.selected_package_instance = kwargs.pop('selected_package_instance', None)
+        # Store temp_booking and hire_settings for pricing calculations in clean method
+        self.temp_booking = kwargs.pop('temp_booking', None)
+        self.hire_settings = kwargs.pop('hire_settings', None)
         
         super().__init__(*args, **kwargs)
         self.fields['package'].queryset = self.available_packages
+        # Update label_from_instance for package to show name and new pricing fields
+        self.fields['package'].label_from_instance = lambda obj: f"{obj.name} (Daily: {obj.daily_cost:.2f}, Hourly: {obj.hourly_cost:.2f})"
+
 
         # Initialize a list to hold add-ons that should be displayed as "additional"
         self.display_addons = []
@@ -100,6 +107,13 @@ class Step3AddOnsPackagesForm(forms.Form):
         if selected_package_from_form and not selected_package_from_form.is_available:
             errors['package'] = "The selected package is no longer available."
 
+        # Get booking dates and times from temp_booking instance
+        pickup_date = self.temp_booking.pickup_date if self.temp_booking else None
+        pickup_time = self.temp_booking.pickup_time if self.temp_booking else None
+        return_date = self.temp_booking.return_date if self.temp_booking else None
+        return_time = self.temp_booking.return_time if self.temp_booking else None
+
+
         # Process ALL submitted add-ons, not just those in display_addons
         # Iterate over the add-ons that were actually passed during form initialization
         for addon_id, addon in self.all_addons_for_validation.items():
@@ -133,11 +147,27 @@ class Step3AddOnsPackagesForm(forms.Form):
                     )
                     continue
                 
-                selected_addons.append({
-                    'addon': addon,
-                    'quantity': quantity,
-                    'price': addon.cost  # Capture current price
-                })
+                # Calculate the actual price of the add-on using the new pricing logic
+                # Ensure all necessary parameters for calculate_addon_price are available
+                if all([addon, quantity, pickup_date, return_date, pickup_time, return_time, self.hire_settings]):
+                    calculated_addon_price = calculate_addon_price(
+                        addon_instance=addon,
+                        quantity=quantity,
+                        pickup_date=pickup_date,
+                        return_date=return_date,
+                        pickup_time=pickup_time,
+                        return_time=return_time,
+                        hire_settings=self.hire_settings
+                    )
+                    selected_addons.append({
+                        'addon': addon,
+                        'quantity': quantity,
+                        'price': calculated_addon_price # Store the calculated price
+                    })
+                else:
+                    # If pricing parameters are missing, add an error
+                    errors.setdefault(f'addon_{addon.id}_selected', []).append("Cannot calculate add-on price due to missing booking details or hire settings.")
+
 
         # The package/add-on exclusivity check is no longer needed here
         # because the form's __init__ already filters out add-ons that are

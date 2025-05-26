@@ -13,8 +13,7 @@ from hire.views.hire_pricing import (
     calculate_booking_grand_total
   )
 
-from hire.views.utils import (# New
-    calculate_hire_duration_days,
+from hire.views.utils import (
     get_overlapping_motorcycle_bookings
 )
 
