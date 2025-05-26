@@ -62,8 +62,6 @@
                  {% if form.default_daily_rate.help_text %}<small>{{ form.default_daily_rate.help_text }}</small>{% endif %}
                  {% for error in form.default_daily_rate.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
              </div>
-            {# Removed old weekly rate field #}
-            {# Removed old monthly rate field #}
 
             {# Added new discount percentage fields #}
             <div class="form-field">
@@ -78,6 +76,23 @@
                  {% if form.monthly_discount_percentage.help_text %}<small>{{ form.monthly_discount_percentage.help_text }}</small>{% endif %}
                  {% for error in form.monthly_discount_percentage.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
              </div>
+        </div>
+
+        {# --- Hire Pricing Strategy --- #}
+        <div class="form-field">
+            <h3 class="booking-section-title">{% translate "Hire Pricing Strategy" %}</h3>
+            <div class="form-field">
+                {{ form.hire_pricing_strategy.label_tag }}
+                {{ form.hire_pricing_strategy }}
+                {% if form.hire_pricing_strategy.help_text %}<small>{{ form.hire_pricing_strategy.help_text }}</small>{% endif %}
+                {% for error in form.hire_pricing_strategy.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+            </div>
+            <div class="form-field" id="excessHoursMarginField">
+                {{ form.excess_hours_margin.label_tag }}
+                {{ form.excess_hours_margin }}
+                {% if form.excess_hours_margin.help_text %}<small>{{ form.excess_hours_margin.help_text }}</small>{% endif %}
+                {% for error in form.excess_hours_margin.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+            </div>
         </div>
 
         {# --- Payment Options --- #}
@@ -243,12 +258,6 @@
          {# --- Late Fees and Charges --- #}
         <div class="form-field">
             <h3 class="booking-section-title">{% translate "Late Fees and Charges" %}</h3>
-            <div class="form-field">
-                {{ form.late_fee_per_hour.label_tag }}
-                {{ form.late_fee_per_hour }}
-                {% if form.late_fee_per_hour.help_text %}<small>{{ form.late_fee_per_hour.help_text }}</small>{% endif %}
-                {% for error in form.late_fee_per_hour.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
-            </div>
              <div class="form-field">
                  {{ form.late_fee_per_day.label_tag }}
                  {{ form.late_fee_per_day }}
@@ -353,19 +362,19 @@
         const editButton = document.getElementById('editButton');
         const saveButton = document.getElementById('saveButton');
         const resetButton = document.getElementById('resetButton');
-        // Select the form fields within this specific form
-        // Assuming this is the only form for the main hire settings on the page
         const mainForm = document.querySelector('form[method="post"]');
         const formFields = mainForm.querySelectorAll('input, select, textarea');
+
+        // New elements for pricing strategy
+        const hirePricingStrategySelect = document.getElementById('id_hire_pricing_strategy');
+        const excessHoursMarginField = document.getElementById('excessHoursMarginField');
 
         // Function to set form fields read-only or enabled
         function setFormReadonly(readonly) {
             formFields.forEach(field => {
-                 // Ensure we don't accidentally affect the CSRF token input
                  if (field.name !== 'csrfmiddlewaretoken') {
                      if (readonly) {
                          field.setAttribute('readonly', true);
-                         // Prevent checkbox and select interaction when read-only
                           if (field.type === 'checkbox' || field.tagName === 'SELECT') {
                               field.setAttribute('disabled', true);
                           }
@@ -379,10 +388,20 @@
             });
         }
 
+        // Function to toggle visibility of excess_hours_margin field
+        function toggleExcessHoursMarginVisibility() {
+            if (hirePricingStrategySelect.value === '24_hour_plus_margin') {
+                excessHoursMarginField.style.display = 'block';
+            } else {
+                excessHoursMarginField.style.display = 'none';
+            }
+        }
+
         // Initial state: only show Edit button, form fields are read-only
         saveButton.style.display = 'none';
         resetButton.style.display = 'none';
         setFormReadonly(true);
+        toggleExcessHoursMarginVisibility(); // Set initial visibility
 
         // When Edit button is clicked
         editButton.addEventListener('click', function() {
@@ -390,20 +409,10 @@
             saveButton.style.display = 'inline-block';
             resetButton.style.display = 'inline-block';
             setFormReadonly(false);
+            toggleExcessHoursMarginVisibility(); // Re-evaluate visibility when editing
         });
 
-        // When Save Changes or Reset button is clicked
-        function handleSaveOrResetClick() {
-            saveButton.style.display = 'none';
-            resetButton.style.display = 'none';
-            editButton.style.display = 'inline-block';
-             // Form fields will become read-only again *after* the form submission or reset.
-             // For the 'Reset' button, we reset the form before changing button visibility.
-        }
-
          // Add event listener for Save button (it's a submit button)
-         // The form submission itself will handle the save action.
-         // We attach the click listener to change buttons BEFORE potential submission.
          saveButton.addEventListener('click', function() {
              // This will run before the form is submitted
              // The read-only state will be reset after the page reloads from submission
@@ -412,20 +421,19 @@
         resetButton.addEventListener('click', function(event) {
             event.preventDefault(); // Prevent the default button click behavior first
             mainForm.reset(); // Reset the form
-            // No need to call handleSaveOrResetClick() here,
-            // as the fields are immediately set read-only below and buttons are hidden.
             saveButton.style.display = 'none';
             resetButton.style.display = 'none';
             editButton.style.display = 'inline-block';
             setFormReadonly(true); // Ensure fields are read-only after reset
+            toggleExcessHoursMarginVisibility(); // Reset visibility on form reset
         });
+
+        // Listen for changes on the hire pricing strategy select to toggle excess hours margin
+        hirePricingStrategySelect.addEventListener('change', toggleExcessHoursMarginVisibility);
 
 
         // Re-apply read-only after potential form submission (page load)
          window.addEventListener('load', function() {
-             // Check if there were validation errors upon load.
-             // If there are errors, we likely want the form to remain editable.
-             // A simple check could be looking for error messages.
              const errorLists = mainForm.querySelectorAll('.errorlist');
              if (errorLists.length === 0) {
                  setFormReadonly(true);
@@ -433,18 +441,14 @@
                   resetButton.style.display = 'none';
                   editButton.style.display = 'inline-block';
              } else {
-                 // If there are errors, the form should remain editable
                  saveButton.style.display = 'inline-block';
                  resetButton.style.display = 'inline-block';
                  editButton.style.display = 'none';
                  setFormReadonly(false); // Ensure fields are editable
              }
-
+             toggleExcessHoursMarginVisibility(); // Ensure correct visibility on load
          });
 
-          // Handle the case where the Save button was clicked and the page reloaded with errors
-          // The window.onload logic above should handle this, but keeping this for clarity.
-          // If form has errors on page load, assume it was a failed submission and keep it editable.
           const errorsExistOnLoad = document.querySelectorAll('.errorlist').length > 0;
           if (window.performance && window.performance.getEntriesByType('navigation')[0].type === 'reload' && !errorsExistOnLoad) {
               setFormReadonly(true);

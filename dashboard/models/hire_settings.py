@@ -1,3 +1,5 @@
+# hire/models/hire_settings.py
+
 from django.db import models
 from datetime import time
 
@@ -5,6 +7,15 @@ DEPOSIT_CALC_CHOICES = [
     ('percentage', 'Percentage of Total'),
     ('fixed', 'Fixed Amount')
 ]
+
+# Define choices for the new hire pricing strategy
+HIRE_PRICING_STRATEGY_CHOICES = [
+    ('flat_24_hour', 'Flat 24-Hour Billing (Any excess rounds to full day)'),
+    ('24_hour_plus_margin', '24-Hour Billing with Margin (Excess hours within margin are free)'),
+    ('24_hour_customer_friendly', '24-Hour Billing (Excess hours: min(hourly_rate, daily_rate))'),
+    ('daily_plus_excess_hourly', 'Daily Rate + Excess Hourly (Every additional hour charged hourly)'),
+]
+
 
 class HireSettings(models.Model):
     # --- Rate Defaults ---
@@ -106,7 +117,7 @@ class HireSettings(models.Model):
     # --- Hire Duration and Timing Rules ---
     # Minimum hire duration in hours.
     minimum_hire_duration_hours = models.PositiveIntegerField(
-        default=2, 
+        default=2,
         help_text="Minimum duration for a hire booking in hours."
     )
 
@@ -133,21 +144,27 @@ class HireSettings(models.Model):
     hire_confirmation_email_subject = models.CharField(max_length=200, default="Your motorcycle hire booking has been confirmed", help_text="Subject line for hire booking confirmation emails")
     admin_hire_notification_email = models.EmailField(blank=True, null=True, help_text="Email address for hire booking notifications")
 
-    # --- Late Fees and Charges ---
-    # Fee charged per hour for late returns.
-    late_fee_per_hour = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
-        null=True, blank=True,
-        help_text="Fee charged per hour for late returns (if applicable).")
+    # --- NEW: Hire Pricing Strategy ---
+    hire_pricing_strategy = models.CharField(
+        max_length=50,
+        choices=HIRE_PRICING_STRATEGY_CHOICES,
+        default='24_hour_customer_friendly', # Setting a customer-friendly default
+        help_text="Defines how multi-day hire prices are calculated."
+    )
 
-    # Fee charged per day for late returns.
+    # NEW: Margin for '24_hour_plus_margin' strategy
+    excess_hours_margin = models.PositiveIntegerField(
+        default=2,
+        help_text="For '24-Hour Billing with Margin' strategy: number of excess hours allowed before charging for a full day."
+    )
+
     late_fee_per_day = models.DecimalField(
         max_digits=8,
         decimal_places=2,
         null=True, blank=True,
         help_text="Fee charged per full day for late returns (if applicable).")
 
+    # --- Cleaning Fee ---
     # Enable cleaning fee option.
     enable_cleaning_fee = models.BooleanField(
         default=False,

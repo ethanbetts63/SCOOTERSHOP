@@ -8,78 +8,190 @@ from inventory.models import Motorcycle # Also need Motorcycle model for type hi
 from django.contrib import messages # Import messages for the utility function
 from django.shortcuts import redirect
 from decimal import Decimal # Import Decimal for precise calculations
-from math import ceil # Import ceil for rounding up hours
+import datetime
+from decimal import Decimal, ROUND_HALF_UP
+from math import ceil, floor # Import these for rounding operations
 
+# Import models
+from dashboard.models import HireSettings
 
 def calculate_hire_price(motorcycle, pickup_date, return_date, pickup_time, return_time, hire_settings):
     """
-    Calculates the total hire price based on motorcycle, exact pickup/return datetimes, and hire settings.
-    Uses hourly rate for bookings of 1 day or less, and daily rate for bookings greater than 1 day.
+    Calculates the total hire price based on the selected motorcycle, dates, times,
+    and the configured hire pricing strategy in HireSettings.
     """
-    # Combine date and time into timezone-aware datetime objects
-    pickup_datetime = timezone.make_aware(datetime.datetime.combine(pickup_date, pickup_time))
-    return_datetime = timezone.make_aware(datetime.datetime.combine(return_date, return_time))
+    # Combine date and time into datetime objects
+    pickup_datetime = datetime.datetime.combine(pickup_date, pickup_time)
+    return_datetime = datetime.datetime.combine(return_date, return_time)
 
-    duration_timedelta = return_datetime - pickup_datetime
-
-    # If return is before or at pickup, price is 0
-    if duration_timedelta.total_seconds() <= 0:
+    # Ensure return_datetime is after pickup_datetime
+    if return_datetime <= pickup_datetime:
         return Decimal('0.00')
 
-    # Re-use calculate_hire_duration_days to determine "days" for pricing tiers.
-    # This function returns 1 for same-day bookings or bookings exactly 24 hours.
-    # It returns > 1 for bookings spanning more than one calendar day.
-    hire_duration_days_for_tiering = calculate_hire_duration_days(
-        pickup_date, return_date, pickup_time, return_time
-    )
+    # Get rates, prioritizing motorcycle-specific rates over default settings
+    daily_rate = motorcycle.daily_hire_rate if motorcycle.daily_hire_rate is not None else hire_settings.default_daily_rate
+    hourly_rate = motorcycle.hourly_hire_rate if motorcycle.hourly_hire_rate is not None else hire_settings.default_hourly_rate
 
-    if hire_duration_days_for_tiering <= 1:
-        # For bookings of 1 day or less, calculate price based on hours.
-        # Calculate total hours, rounding up to the nearest full hour.
-        total_hours = ceil(duration_timedelta.total_seconds() / 3600)
-        
-        # Ensure minimum 1 hour if duration is positive but very short (e.g., a few minutes)
-        if total_hours == 0 and duration_timedelta.total_seconds() > 0:
-            total_hours = 1
+    # Handle cases where rates are not set
+    if daily_rate is None or hourly_rate is None:
+        # This should ideally not happen if default rates are always set in HireSettings
+        # but as a safeguard, return 0 or raise an error.
+        print("WARNING: Daily or hourly rate not set for motorcycle or default settings.")
+        return Decimal('0.00')
 
-        # Use motorcycle's hourly rate, or fallback to hire settings' default hourly rate
-        hourly_rate = motorcycle.hourly_hire_rate or hire_settings.default_hourly_rate if hire_settings else Decimal('0.00')
-        
-        total_price = hourly_rate * total_hours
+    # Get the chosen pricing strategy
+    pricing_strategy = hire_settings.hire_pricing_strategy
+
+    # Calculate total duration in hours (as a Decimal for precision)
+    total_duration_seconds = (return_datetime - pickup_datetime).total_seconds()
+    total_duration_hours = Decimal(total_duration_seconds / 3600).quantize(Decimal('.01'), rounding=ROUND_HALF_UP) # Quantize to 2 decimal places
+
+    # Handle same-day hire (always hourly, rounded up to nearest hour)
+    if pickup_date == return_date:
+        # If duration is less than 1 hour but positive, still charge for 1 hour
+        billed_hours = max(Decimal('1.00'), total_duration_hours.quantize(Decimal('1.'), rounding=ROUND_HALF_UP))
+        return billed_hours * hourly_rate
+
+    # Dispatch to the appropriate pricing strategy function for multi-day hires
+    if pricing_strategy == 'flat_24_hour':
+        return _calculate_flat_24_hour_billing(total_duration_hours, daily_rate)
+    elif pricing_strategy == '24_hour_plus_margin':
+        return _calculate_24_hour_plus_margin_billing(total_duration_hours, daily_rate, hourly_rate, hire_settings.excess_hours_margin)
+    elif pricing_strategy == '24_hour_customer_friendly':
+        return _calculate_24_hour_customer_friendly_billing(total_duration_hours, daily_rate, hourly_rate)
+    elif pricing_strategy == 'daily_plus_excess_hourly':
+        return _calculate_daily_plus_excess_hourly_billing(total_duration_hours, daily_rate, hourly_rate)
     else:
-        # For bookings longer than 1 day, use the daily rate.
-        daily_rate = motorcycle.daily_hire_rate or hire_settings.default_daily_rate if hire_settings else Decimal('0.00')
-        total_price = daily_rate * hire_duration_days_for_tiering
+        # Fallback or error for unknown strategy
+        print(f"ERROR: Unknown hire pricing strategy: {pricing_strategy}")
+        return Decimal('0.00')
 
-    return total_price
 
-def calculate_hire_duration_days(pickup_date, return_date, pickup_time, return_time):
-     """
-     Calculates the number of hire days given separate date and time components.
-     This function determines the number of 'billing days'.
-     - If pickup and return are on the same day, it counts as 1 day (for hourly pricing).
-     - If return time is later than pickup time on the final day, it counts as an additional day.
-     """
-     # Combine date and time into timezone-aware datetime objects
-     pickup_datetime = timezone.make_aware(datetime.datetime.combine(pickup_date, pickup_time))
-     return_datetime = timezone.make_aware(datetime.datetime.combine(return_date, return_time))
+def _calculate_flat_24_hour_billing(total_duration_hours, daily_rate):
+    """
+    Strategy 1: Flat 24-hour billing cycle. If they go past the pickup time, it's an extra day.
+    Any partial hour pushes it to the next full day.
+    """
+    # Convert total_duration_hours to days, rounding up any fraction of a day.
+    # E.g., 24.01 hours becomes 2 days. 48 hours becomes 2 days.
+    billed_days = Decimal(ceil(total_duration_hours / 24)).quantize(Decimal('1.'), rounding=ROUND_HALF_UP)
+    return billed_days * daily_rate
 
-     # Handle cases where return_datetime is exactly equal to pickup_datetime or earlier, which should be 0 days
-     if return_datetime <= pickup_datetime:
-         return 0
 
-     # Calculate the difference in days directly from the date components of the combined datetimes
-     days = (return_datetime.date() - pickup_datetime.date()).days
+def _calculate_24_hour_plus_margin_billing(total_duration_hours, daily_rate, hourly_rate, excess_hours_margin):
+    """
+    Strategy 2: 24-hour billing cycle plus margin. If they go past the pickup time
+    on the final day, they have x number of hours margin before being charged for a full day.
+    """
+    full_24_hour_blocks = Decimal(floor(total_duration_hours / 24)).quantize(Decimal('1.'), rounding=ROUND_HALF_UP)
+    remaining_excess_hours = total_duration_hours % 24
 
-     # If the duration is positive but less than a full day (i.e., days is 0 but return_datetime > pickup_datetime)
-     # or if the hire spans multiple days and the return time is later than the pickup time on the final day,
-     # count as 1 more day.
-     if days == 0 and return_datetime > pickup_datetime:
-         days = 1
-     elif days > 0 and return_datetime.time() > pickup_datetime.time():
-         days += 1
+    additional_charge = Decimal('0.00')
+    if remaining_excess_hours > Decimal(excess_hours_margin):
+        # If excess hours exceed the margin, charge for a full extra day
+        additional_charge = daily_rate
+    # If remaining_excess_hours is 0 or within the margin, no additional charge for excess time.
 
-     return days
+    return (full_24_hour_blocks * daily_rate) + additional_charge
+
+
+def _calculate_24_hour_customer_friendly_billing(total_duration_hours, daily_rate, hourly_rate):
+    """
+    Strategy 3: 24-hour billing customer friendly. If they go past the pickup time
+    on the final day, they are charged the hourly price or day price whichever is less.
+    """
+    full_24_hour_blocks = Decimal(floor(total_duration_hours / 24)).quantize(Decimal('1.'), rounding=ROUND_HALF_UP)
+    remaining_excess_hours = total_duration_hours % 24
+
+    additional_cost = Decimal('0.00')
+    if remaining_excess_hours > 0:
+        # Round up remaining excess hours to the nearest full hour for hourly billing
+        billed_excess_hours = Decimal(ceil(remaining_excess_hours)).quantize(Decimal('1.'), rounding=ROUND_HALF_UP)
+        cost_by_hourly_rate = billed_excess_hours * hourly_rate
+        additional_cost = min(cost_by_hourly_rate, daily_rate) # Take the cheaper of hourly vs. full day
+
+    return (full_24_hour_blocks * daily_rate) + additional_cost
+
+
+def _calculate_daily_plus_excess_hourly_billing(total_duration_hours, daily_rate, hourly_rate):
+    """
+    Strategy 4: Daily plus excess hourly. Every additional hour after the pick up time
+    on the final day is charged at an hourly rate.
+    """
+    full_24_hour_blocks = Decimal(floor(total_duration_hours / 24)).quantize(Decimal('1.'), rounding=ROUND_HALF_UP)
+    remaining_excess_hours = total_duration_hours % 24
+
+    additional_cost = Decimal('0.00')
+    if remaining_excess_hours > 0:
+        # Round up remaining excess hours to the nearest full hour for hourly billing
+        billed_excess_hours = Decimal(ceil(remaining_excess_hours)).quantize(Decimal('1.'), rounding=ROUND_HALF_UP)
+        additional_cost = billed_excess_hours * hourly_rate
+
+    return (full_24_hour_blocks * daily_rate) + additional_cost
+
+
+def calculate_hire_duration_days(pickup_date, return_date, pickup_time, return_time, hire_settings):
+    """
+    Calculates the *billable* duration in days based on the selected pricing strategy.
+    This function will now also need access to hire_settings.
+    """
+    # Combine date and time into datetime objects
+    pickup_datetime = datetime.datetime.combine(pickup_date, pickup_time)
+    return_datetime = datetime.datetime.combine(return_date, return_time)
+
+    if return_datetime <= pickup_datetime:
+        return 0
+
+    # Get the chosen pricing strategy
+    pricing_strategy = hire_settings.hire_pricing_strategy
+
+    total_duration_seconds = (return_datetime - pickup_datetime).total_seconds()
+    total_duration_hours = Decimal(total_duration_seconds / 3600).quantize(Decimal('.01'), rounding=ROUND_HALF_UP)
+
+    # Handle same-day hire: Always 1 billable day for display if positive duration
+    if pickup_date == return_date:
+        return 1 if total_duration_hours > 0 else 0
+
+    # Dispatch to the appropriate logic for multi-day hires to determine billable days
+    if pricing_strategy == 'flat_24_hour':
+        # Any partial hour pushes it to the next full day.
+        return int(ceil(total_duration_hours / 24))
+    elif pricing_strategy == '24_hour_plus_margin':
+        full_24_hour_blocks = floor(total_duration_hours / 24)
+        remaining_excess_hours = total_duration_hours % 24
+        if remaining_excess_hours > Decimal(hire_settings.excess_hours_margin):
+            return int(full_24_hour_blocks + 1) # Charge for an extra day
+        else:
+            return int(full_24_hour_blocks) # Only full days are billed
+    elif pricing_strategy == '24_hour_customer_friendly':
+        full_24_hour_blocks = floor(total_duration_hours / 24)
+        remaining_excess_hours = total_duration_hours % 24
+        if remaining_excess_hours > 0:
+            billed_excess_hours = Decimal(ceil(remaining_excess_hours)).quantize(Decimal('1.'), rounding=ROUND_HALF_UP)
+            # If the hourly cost of excess is cheaper than a full day, it's still part of the *last* day
+            # If the hourly cost is more, it implies it's effectively another full day.
+            # For simplicity in 'billable days', we'll count it as an extra day if any excess is billed.
+            # This might be slightly less intuitive for "days" but accurate for "cost".
+            # A more precise "billable days" for this strategy might require careful thought.
+            # For now, let's say if there's any non-zero additional cost, it implies a partial or full extra day.
+            # If the cost of excess is less than a daily rate, it's still considered part of the last full day.
+            # If it's equal to or more than a daily rate, it's an additional day.
+            cost_by_hourly_rate = billed_excess_hours * (motorcycle.hourly_hire_rate if motorcycle.hourly_hire_rate is not None else hire_settings.default_hourly_rate)
+            daily_rate_val = (motorcycle.daily_hire_rate if motorcycle.daily_hire_rate is not None else hire_settings.default_daily_rate)
+            if cost_by_hourly_rate >= daily_rate_val:
+                return int(full_24_hour_blocks + 1)
+            else:
+                # If hourly cost is less than a day, it's still part of the last day.
+                # If there are no full 24-hour blocks but there are excess hours, it's 1 day.
+                return int(max(1, full_24_hour_blocks)) if remaining_excess_hours > 0 else int(full_24_hour_blocks)
+        else:
+            return int(full_24_hour_blocks)
+    elif pricing_strategy == 'daily_plus_excess_hourly':
+        # This strategy charges hourly for excess, so the 'days' count is just full 24-hour blocks.
+        return int(floor(total_duration_hours / 24))
+    else:
+        # Fallback for unknown strategy, perhaps default to calendar days or 0
+        return 0 # Or raise an error
 
 def get_overlapping_motorcycle_bookings(motorcycle, pickup_date, pickup_time, return_date, return_time, exclude_booking_id=None):
     """

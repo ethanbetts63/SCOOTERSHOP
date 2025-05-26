@@ -10,6 +10,8 @@ class HireBookingSettingsForm(forms.ModelForm):
             'default_hourly_rate',
             'weekly_discount_percentage',
             'monthly_discount_percentage',
+            'hire_pricing_strategy', # Added new pricing strategy field
+            'excess_hours_margin', # Added new excess hours margin field
             'minimum_hire_duration_hours',
             'maximum_hire_duration_days',
             'booking_lead_time_hours',
@@ -26,8 +28,7 @@ class HireBookingSettingsForm(forms.ModelForm):
             'grace_period_minutes',
             'hire_confirmation_email_subject',
             'admin_hire_notification_email',
-            'late_fee_per_hour',
-            'late_fee_per_day',
+            'late_fee_per_day', # Retained as it's per day, not hourly
             'enable_cleaning_fee',
             'default_cleaning_fee',
             'minimum_driver_age',
@@ -53,6 +54,8 @@ class HireBookingSettingsForm(forms.ModelForm):
             'default_daily_rate': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
             'weekly_discount_percentage': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'max': '100', 'step': '0.01'}),
             'monthly_discount_percentage': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'max': '100', 'step': '0.01'}),
+            'hire_pricing_strategy': forms.Select(attrs={'class': 'form-control'}), # Widget for new pricing strategy
+            'excess_hours_margin': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}), # Widget for new excess hours margin
             'minimum_hire_duration_hours': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
             'maximum_hire_duration_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
             'booking_lead_time_hours': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
@@ -69,7 +72,6 @@ class HireBookingSettingsForm(forms.ModelForm):
             'grace_period_minutes': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
             'hire_confirmation_email_subject': forms.TextInput(attrs={'class': 'form-control'}),
             'admin_hire_notification_email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'late_fee_per_hour': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
             'late_fee_per_day': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
             'enable_cleaning_fee': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'default_cleaning_fee': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
@@ -94,13 +96,17 @@ class HireBookingSettingsForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        min_days = cleaned_data.get('minimum_hire_duration_hours')
+        min_hours = cleaned_data.get('minimum_hire_duration_hours') # Changed from min_days to min_hours
         max_days = cleaned_data.get('maximum_hire_duration_days')
 
-        if min_days is not None and max_days is not None and min_days > max_days:
-            self.add_error('minimum_hire_duration_hours', _("Minimum duration must be less than or equal to maximum duration."))
-            if not self.has_error('minimum_hire_duration_hours'):
-                self.add_error('maximum_hire_duration_days', _("Maximum duration must be greater than or equal to minimum duration."))
+        # Updated validation for minimum hire duration (hours) vs maximum hire duration (days)
+        # It's difficult to directly compare hours and days without a conversion factor
+        # For now, we'll keep the basic validation for max_days.
+        # If a more complex comparison is needed (e.g., minimum hours cannot exceed X days),
+        # it would require additional logic.
+        if min_hours is not None and max_days is not None and (min_hours / 24) > max_days:
+            self.add_error('minimum_hire_duration_hours', _("Minimum duration in hours cannot exceed maximum duration in days."))
+
 
         deposit_calculation_method = cleaned_data.get('default_deposit_calculation_method')
         deposit_percentage = cleaned_data.get('deposit_percentage')
@@ -132,4 +138,17 @@ class HireBookingSettingsForm(forms.ModelForm):
             self.add_error('enable_online_deposit_payment', _("Cannot enable both online deposit and in-store full payment."))
             self.add_error('enable_in_store_full_payment', _("Cannot enable both online deposit and in-store full payment."))
 
+        # Validation for excess_hours_margin based on hire_pricing_strategy
+        hire_pricing_strategy = cleaned_data.get('hire_pricing_strategy')
+        excess_hours_margin = cleaned_data.get('excess_hours_margin')
+
+        if hire_pricing_strategy == '24_hour_plus_margin' and (excess_hours_margin is None or excess_hours_margin < 0):
+            self.add_error('excess_hours_margin', _("Excess hours margin is required and must be a non-negative value for '24-Hour Billing with Margin' strategy."))
+        elif hire_pricing_strategy != '24_hour_plus_margin' and excess_hours_margin is not None and excess_hours_margin > 0:
+            # Optional: Clear the value if not relevant, or add a warning/error
+            # For now, we'll just ensure it's not required if the strategy isn't '24_hour_plus_margin'
+            pass
+
+
         return cleaned_data
+
