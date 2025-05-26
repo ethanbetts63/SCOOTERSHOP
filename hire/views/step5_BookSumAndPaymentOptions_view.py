@@ -8,7 +8,7 @@ from decimal import Decimal # Import Decimal for precise calculations
 from ..models import TempHireBooking
 from dashboard.models import HireSettings
 from ..forms.step5_BookSumAndPaymentOptions_form import PaymentOptionForm
-from ..views.utils import calculate_hire_duration_days # This import might be unused if calculations are elsewhere
+from ..views.utils import *
 
 class BookSumAndPaymentOptionsView(View):
     template_name = 'hire/step5_book_sum_and_payment_options.html'

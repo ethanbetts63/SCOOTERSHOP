@@ -20,7 +20,6 @@ from .hire_pricing import (
 
 # Import new functions from utils.py
 from .utils import (
-    calculate_hire_duration_days,
     get_overlapping_motorcycle_bookings,
     is_motorcycle_available,
 )

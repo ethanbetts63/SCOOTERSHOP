@@ -7,7 +7,7 @@ from django.contrib.messages import get_messages
 
 # Import the view directly to access its template_name
 from hire.views.step3_AddonPackage_view import AddonPackageView
-from hire.views.utils import calculate_motorcycle_hire_price, calculate_hire_duration_days
+from hire.views.utils import calculate_motorcycle_hire_price
 
 from hire.tests.test_helpers.model_factories import (
     create_motorcycle, create_temp_hire_booking, create_addon, create_package,
