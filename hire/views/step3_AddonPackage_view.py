@@ -6,11 +6,12 @@ from django.contrib import messages
 from django.utils import timezone
 import datetime
 from decimal import Decimal
+from django.http import HttpResponseRedirect # Import HttpResponseRedirect
 
 from inventory.models import Motorcycle
 from ..models import AddOn, Package, TempHireBooking, HireBooking, TempBookingAddOn
 from ..forms.step3_AddonPackage_form import Step3AddOnsPackagesForm
-from ..views.utils import calculate_hire_price, calculate_hire_duration_days
+from ..views.utils import calculate_hire_price, calculate_hire_duration_days, is_motorcycle_available # Import the utility function
 from dashboard.models import HireSettings
 
 class AddonPackageView(View):
@@ -30,12 +31,22 @@ class AddonPackageView(View):
                 messages.error(request, "Selected motorcycle not found.")
                 return redirect('hire:step2_choose_bike')
 
-            # Check motorcycle availability using the helper method
-            # The helper method now adds specific error messages, so we don't add a generic one here.
-            if not self._is_motorcycle_available(motorcycle, temp_booking):
+            # Call the utility function to check motorcycle availability.
+            # This function now handles messages and redirects internally.
+            availability_result = is_motorcycle_available(request, motorcycle, temp_booking)
+            
+            # If the utility function returned a redirect, we should return that redirect.
+            # Otherwise, if it returned False, it means a message was added, and we should redirect.
+            if isinstance(availability_result, HttpResponseRedirect): # Correctly check for HttpResponseRedirect
+                return availability_result
+            elif not availability_result: # If it returned False (and added a message)
                 return redirect('hire:step2_choose_bike')
 
-            # If motorcycle is available and valid, update temp_booking
+            # License check: This remains in the view as it's specific to this step's logic
+            if not temp_booking.has_motorcycle_license and int(motorcycle.engine_size) > 50:
+                 messages.error(request, "You require a full motorcycle license for this motorcycle.")
+                 return redirect('hire:step2_choose_bike')
+
             temp_booking.motorcycle = motorcycle
             hire_duration_days = calculate_hire_duration_days(
                 temp_booking.pickup_date, temp_booking.return_date, temp_booking.pickup_time, temp_booking.return_time
@@ -221,40 +232,4 @@ class AddonPackageView(View):
         except TempHireBooking.DoesNotExist:
             return None
 
-    def _is_motorcycle_available(self, motorcycle, temp_booking):
-        # New check: Ensure the motorcycle itself is available
-        if not motorcycle.is_available:
-            messages.error(self.request, "The selected motorcycle is currently not available.")
-            return False
-
-        if not temp_booking.pickup_date or not temp_booking.pickup_time or \
-           not temp_booking.return_date or not temp_booking.return_time:
-            messages.error(self.request, "Please select valid pickup and return dates/times first.")
-            return False
-
-        pickup_datetime = timezone.make_aware(
-            datetime.datetime.combine(temp_booking.pickup_date, temp_booking.pickup_time)
-        )
-        return_datetime = timezone.make_aware(
-            datetime.datetime.combine(temp_booking.return_date, temp_booking.return_time)
-        )
-
-        if return_datetime <= pickup_datetime:
-            messages.error(self.request, "Return time must be after pickup time.")
-            return False
-
-        conflicting_bookings = HireBooking.objects.filter(
-            motorcycle=motorcycle,
-            pickup_date__lt=temp_booking.return_date,
-            return_date__gt=temp_booking.pickup_date
-        ).exists()
-
-        if conflicting_bookings:
-            messages.error(self.request, "The selected motorcycle is not available for your chosen dates/times due to an existing booking.")
-            return False
-
-        if not temp_booking.has_motorcycle_license and int(motorcycle.engine_size) > 50:
-             messages.error(self.request, "You require a full motorcycle license for this motorcycle.")
-             return False
-
-        return True # If all checks pass, the motorcycle is available
+    # Removed _is_motorcycle_available from here as it's now in utils.py
