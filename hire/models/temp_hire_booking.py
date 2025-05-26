@@ -76,6 +76,7 @@ class TempHireBooking(models.Model):
 
     # --- Calculated / Booked Prices ---
     # Store the rates and total price at the time the bike is selected/confirmed
+    booked_hourly_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     booked_daily_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
 
     total_hire_price = models.DecimalField(
@@ -87,11 +88,6 @@ class TempHireBooking(models.Model):
          max_digits=10, decimal_places=2,
          default=0,
          help_text="Calculated total price for selected add-ons."
-    )
-    total_package_price = models.DecimalField(
-         max_digits=10, decimal_places=2,
-         default=0,
-         help_text="Calculated total price for the selected package."
     )
     grand_total = models.DecimalField(
          max_digits=10, decimal_places=2,
