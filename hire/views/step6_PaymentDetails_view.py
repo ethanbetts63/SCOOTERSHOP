@@ -10,8 +10,8 @@ import json
 import logging
 
 from payments.models import Payment
-from hire.models import TempHireBooking, DriverProfile # Import DriverProfile
-from django.contrib.auth import get_user_model # Import get_user_model
+from hire.models import TempHireBooking, DriverProfile
+from django.contrib.auth import get_user_model
 
 logger = logging.getLogger(__name__)
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -21,47 +21,47 @@ class PaymentDetailsView(View):
         """
         Handles GET requests to display the payment form and create/retrieve Stripe PaymentIntent.
         """
-        print("DEBUG: Entering PaymentDetailsView GET method.") # Debug print
+        print("DEBUG: Entering PaymentDetailsView GET method.")
         logger.debug("In Step6PaymentDetailsView GET. Starting process.")
 
         temp_booking_id = request.session.get('temp_booking_id')
         logger.debug(f"In Step6PaymentDetailsView GET. temp_booking_id from session: {temp_booking_id}")
-        print(f"DEBUG: GET Request - temp_booking_id: {temp_booking_id}") # Debug print
+        print(f"DEBUG: GET Request - temp_booking_id: {temp_booking_id}")
 
         if not temp_booking_id:
             logger.debug("No temp_booking_id in session. Redirecting to step 2.")
-            print("DEBUG: No temp_booking_id. Redirecting to step 2.") # Debug print
+            print("DEBUG: No temp_booking_id. Redirecting to step 2.")
             return redirect('hire:step2_choose_bike')
 
         temp_booking = get_object_or_404(TempHireBooking, id=temp_booking_id)
         logger.debug(f"Retrieved TempHireBooking: {temp_booking.id}")
-        print(f"DEBUG: Retrieved TempHireBooking ID: {temp_booking.id}") # Debug print
+        print(f"DEBUG: Retrieved TempHireBooking ID: {temp_booking.id}")
 
         payment_option = temp_booking.payment_option
         logger.debug(f"TempHireBooking payment_option: {payment_option}")
-        print(f"DEBUG: Payment option: {payment_option}") # Debug print
+        print(f"DEBUG: Payment option: {payment_option}")
 
         amount_to_pay = None
         currency = temp_booking.currency if hasattr(temp_booking, 'currency') and temp_booking.currency else 'AUD'
         logger.debug(f"TempHireBooking currency: {currency}")
-        print(f"DEBUG: Currency: {currency}") # Debug print
+        print(f"DEBUG: Currency: {currency}")
 
         if payment_option == 'online_full':
             amount_to_pay = temp_booking.grand_total
             logger.debug(f"Payment option 'online_full'. Amount to pay: {amount_to_pay}")
-            print(f"DEBUG: Amount for 'online_full': {amount_to_pay}") # Debug print
+            print(f"DEBUG: Amount for 'online_full': {amount_to_pay}")
         elif payment_option == 'online_deposit':
             amount_to_pay = temp_booking.deposit_amount
             logger.debug(f"Payment option 'online_deposit'. Amount to pay: {amount_to_pay}")
-            print(f"DEBUG: Amount for 'online_deposit': {amount_to_pay}") # Debug print
+            print(f"DEBUG: Amount for 'online_deposit': {amount_to_pay}")
         else:
             logger.debug(f"Invalid payment option '{payment_option}'. Redirecting to step 5.")
-            print(f"DEBUG: Invalid payment option '{payment_option}'. Redirecting to step 5.") # Debug print
+            print(f"DEBUG: Invalid payment option '{payment_option}'. Redirecting to step 5.")
             return redirect('hire:step5_summary_payment_options')
 
         if amount_to_pay is None:
             logger.debug("amount_to_pay is None. Redirecting to step 5.")
-            print("DEBUG: Amount to pay is None. Redirecting to step 5.") # Debug print
+            print("DEBUG: Amount to pay is None. Redirecting to step 5.")
             return redirect('hire:step5_summary_payment_options')
 
         payment_description = f"Motorcycle hire booking for {temp_booking.motorcycle.year} {temp_booking.motorcycle.brand} {temp_booking.motorcycle.model}"
@@ -69,17 +69,15 @@ class PaymentDetailsView(View):
         payment_obj = Payment.objects.filter(temp_hire_booking=temp_booking).first()
         intent = None
 
-        # --- START: Added logging for user check and DriverProfile retrieval ---
         driver_profile = None
         if request.user.is_authenticated:
             logger.debug(f"Authenticated user ID: {request.user.id}")
-            print(f"DEBUG: User is authenticated. User ID: {request.user.id}") # Debug print
+            print(f"DEBUG: User is authenticated. User ID: {request.user.id}")
             User = get_user_model()
             try:
                 db_user = User.objects.get(id=request.user.id)
                 logger.debug(f"User {request.user.id} successfully retrieved from DB.")
-                print(f"DEBUG: User {request.user.id} found in DB.") # Debug print
-                # Try to get or create DriverProfile
+                print(f"DEBUG: User {request.user.id} found in DB.")
                 driver_profile, created = DriverProfile.objects.get_or_create(user=db_user)
                 if created:
                     logger.debug(f"Created new DriverProfile for user {db_user.id}")
@@ -89,23 +87,21 @@ class PaymentDetailsView(View):
                     print(f"DEBUG: Retrieved existing DriverProfile for user {db_user.id}")
             except User.DoesNotExist:
                 logger.error(f"CRITICAL ERROR: Authenticated user {request.user.id} DOES NOT EXIST in the database!")
-                print(f"DEBUG: CRITICAL ERROR - Authenticated user {request.user.id} NOT found in DB.") # Debug print
+                print(f"DEBUG: CRITICAL ERROR - Authenticated user {request.user.id} NOT found in DB.")
             except Exception as e:
                 logger.error(f"Error checking user {request.user.id} or DriverProfile in DB: {e}")
-                print(f"DEBUG: Error checking user {request.user.id} or DriverProfile in DB: {e}") # Debug print
+                print(f"DEBUG: Error checking user {request.user.id} or DriverProfile in DB: {e}")
         else:
             logger.debug("User is anonymous (not authenticated).")
-            print("DEBUG: User is anonymous.") # Debug print
-        # --- END: Added logging for user check and DriverProfile retrieval ---
+            print("DEBUG: User is anonymous.")
 
-        # Try to retrieve or create PaymentIntent and local Payment object
         try:
             if payment_obj and payment_obj.stripe_payment_intent_id:
-                print(f"DEBUG: Found existing payment_obj with Stripe Intent ID: {payment_obj.stripe_payment_intent_id}") # Debug print
+                print(f"DEBUG: Found existing payment_obj with Stripe Intent ID: {payment_obj.stripe_payment_intent_id}")
                 try:
                     intent = stripe.PaymentIntent.retrieve(payment_obj.stripe_payment_intent_id)
                     logger.debug(f"Retrieved Stripe PaymentIntent: {intent.id}, Status: {intent.status}")
-                    print(f"DEBUG: Retrieved Stripe PaymentIntent: {intent.id}, Status: {intent.status}") # Debug print
+                    print(f"DEBUG: Retrieved Stripe PaymentIntent: {intent.id}, Status: {intent.status}")
 
                     amount_changed = intent.amount != int(amount_to_pay * 100)
                     currency_changed = intent.currency.lower() != currency.lower()
@@ -113,7 +109,7 @@ class PaymentDetailsView(View):
 
                     if (amount_changed or currency_changed) and is_modifiable:
                         logger.debug(f"Mismatch in amount/currency for modifiable intent. Modifying PaymentIntent {intent.id}.")
-                        print(f"DEBUG: Modifying PaymentIntent {intent.id} due to mismatch.") # Debug print
+                        print(f"DEBUG: Modifying PaymentIntent {intent.id} due to mismatch.")
                         intent = stripe.PaymentIntent.modify(
                             payment_obj.stripe_payment_intent_id,
                             amount=int(amount_to_pay * 100),
@@ -121,7 +117,6 @@ class PaymentDetailsView(View):
                             description=payment_description,
                             metadata={
                                 'temp_booking_id': str(temp_booking.id),
-                                # Pass driver_profile.id if available, otherwise 'guest'
                                 'user_id': str(driver_profile.id) if driver_profile else 'guest',
                                 'booking_type': 'hire_booking',
                             }
@@ -132,65 +127,58 @@ class PaymentDetailsView(View):
                         payment_obj.description = payment_description
                         payment_obj.save()
                         logger.debug(f"Modified PaymentIntent: {intent.id}, New Amount: {intent.amount}, New Currency: {intent.currency}")
-                        print(f"DEBUG: Modified PaymentIntent {intent.id}. New status: {intent.status}") # Debug print
+                        print(f"DEBUG: Modified PaymentIntent {intent.id}. New status: {intent.status}")
                     elif not is_modifiable and intent.status not in ['succeeded', 'canceled', 'failed']:
                         logger.debug(f"Existing PaymentIntent {intent.id} is not modifiable ({intent.status}) and not succeeded/canceled/failed. Creating new PI and updating existing Payment object.")
-                        print(f"DEBUG: Existing PI {intent.id} not modifiable. Creating new PI and updating Payment object.") # Debug print
-                        # Set intent to None to trigger new PI creation, but keep payment_obj
+                        print(f"DEBUG: Existing PI {intent.id} not modifiable. Creating new PI and updating Payment object.")
                         intent = None
                     elif intent.status in ['canceled', 'failed']:
                         logger.debug(f"Existing PaymentIntent {intent.id} is {intent.status}. Creating new PI and updating existing Payment object.")
-                        print(f"DEBUG: Existing PI {intent.id} is {intent.status}. Creating new PI and updating Payment object.") # Debug print
-                        # Set intent to None to trigger new PI creation, but keep payment_obj
+                        print(f"DEBUG: Existing PI {intent.id} is {intent.status}. Creating new PI and updating Payment object.")
                         intent = None
                     else:
                         logger.debug(f"Re-using existing PaymentIntent {intent.id} (Status: {intent.status}).")
-                        print(f"DEBUG: Re-using existing PI {intent.id}. Status: {intent.status}") # Debug print
+                        print(f"DEBUG: Re-using existing PI {intent.id}. Status: {intent.status}")
                         if payment_obj.status != intent.status:
                             payment_obj.status = intent.status
                             payment_obj.save()
 
                 except stripe.error.StripeError as e:
                     logger.error(f"Stripe error retrieving or modifying existing PaymentIntent ({payment_obj.stripe_payment_intent_id}): {e}. Creating new PI and updating existing Payment object.")
-                    print(f"DEBUG: Stripe error with existing PI: {e}. Creating new PI and updating Payment object.") # Debug print
-                    # Set intent to None to trigger new PI creation, but keep payment_obj
+                    print(f"DEBUG: Stripe error with existing PI: {e}. Creating new PI and updating Payment object.")
                     intent = None
 
-            # If no existing intent is valid, create a new one
-            if not intent: # This condition now handles creating a new PI for an existing payment_obj or a brand new one
+            if not intent:
                 logger.debug("Creating new Stripe PaymentIntent.")
-                print("DEBUG: Creating new Stripe PaymentIntent.") # Debug print
+                print("DEBUG: Creating new Stripe PaymentIntent.")
                 intent = stripe.PaymentIntent.create(
                     amount=int(amount_to_pay * 100),
                     currency=currency,
                     metadata={
                         'temp_booking_id': str(temp_booking.id),
-                        # Pass driver_profile.id if available, otherwise 'guest'
                         'user_id': str(driver_profile.id) if driver_profile else 'guest',
                         'booking_type': 'hire_booking',
                     },
                     description=payment_description
                 )
                 logger.debug(f"Created new Stripe PaymentIntent: {intent.id}, Client Secret: {intent.client_secret}, Status: {intent.status}")
-                print(f"DEBUG: Created new Stripe PI: {intent.id}, Status: {intent.status}") # Debug print
+                print(f"DEBUG: Created new Stripe PI: {intent.id}, Status: {intent.status}")
 
-                # Now update or create the local Payment object
-                if payment_obj: # If payment_obj already exists, update it
+                if payment_obj:
                     payment_obj.stripe_payment_intent_id = intent.id
                     payment_obj.amount = amount_to_pay
                     payment_obj.currency = currency
                     payment_obj.status = intent.status
                     payment_obj.description = payment_description
-                    # Update driver_profile if it's now available and wasn't before
                     if driver_profile and not payment_obj.driver_profile:
                         payment_obj.driver_profile = driver_profile
                     payment_obj.save()
                     logger.debug(f"Updated existing Payment DB object: {payment_obj.id} with new Stripe Intent.")
-                    print(f"DEBUG: Updated existing Payment DB object {payment_obj.id}.") # Debug print
-                else: # If no payment_obj exists, create a new one
+                    print(f"DEBUG: Updated existing Payment DB object {payment_obj.id}.")
+                else:
                     payment_obj = Payment.objects.create(
                         temp_hire_booking=temp_booking,
-                        driver_profile=driver_profile, # Changed 'user' to 'driver_profile'
+                        driver_profile=driver_profile,
                         stripe_payment_intent_id=intent.id,
                         amount=amount_to_pay,
                         currency=currency,
@@ -198,21 +186,23 @@ class PaymentDetailsView(View):
                         description=payment_description
                     )
                     logger.debug(f"Created new Payment DB object: {payment_obj.id}")
-                    print(f"DEBUG: Created new Payment DB object {payment_obj.id}.") # Debug print
+                    print(f"DEBUG: Created new Payment DB object {payment_obj.id}.")
 
         except stripe.error.StripeError as e:
             logger.error(f"Stripe error during PaymentIntent creation/retrieval: {e}")
-            print(f"DEBUG: Stripe error during PI creation/retrieval: {e}. Redirecting.") # Debug print
+            print(f"DEBUG: Stripe error during PI creation/retrieval: {e}. Redirecting.")
+            # For GET, still redirect to step 5 on critical error
             return redirect('hire:step5_summary_payment_options')
         except Exception as e:
             logger.exception(f"An unexpected error occurred in PaymentDetailsView GET: {e}")
-            print(f"DEBUG: UNEXPECTED ERROR in PaymentDetailsView GET: {e}. Redirecting.") # Debug print
+            print(f"DEBUG: UNEXPECTED ERROR in PaymentDetailsView GET: {e}. Redirecting.")
+            # For GET, still redirect to step 5 on critical error
             return redirect('hire:step5_summary_payment_options')
 
 
         if not intent:
             logger.error("PaymentIntent could not be created or retrieved. Redirecting to step 5.")
-            print("DEBUG: PaymentIntent not created/retrieved. Redirecting to step 5.") # Debug print
+            print("DEBUG: PaymentIntent not created/retrieved. Redirecting to step 5.")
             return redirect('hire:step5_summary_payment_options')
 
         context = {
@@ -220,10 +210,10 @@ class PaymentDetailsView(View):
             'amount': amount_to_pay,
             'currency': currency.upper(),
             'temp_booking': temp_booking,
-            'stripe_publishable_key': settings.STRIPE_PUBLISHABLE_KEY, # FIXED TYPO HERE
+            'stripe_publishable_key': settings.STRIPE_PUBLISHABLE_KEY,
         }
         logger.debug("Rendering step6_payment_details.html with context.")
-        print("DEBUG: Rendering step6_payment_details.html") # Debug print
+        print("DEBUG: Rendering step6_payment_details.html")
         return render(request, 'hire/step6_payment_details.html', context)
 
     def post(self, request):
@@ -234,50 +224,43 @@ class PaymentDetailsView(View):
         The actual booking finalization (creating HireBooking, deleting TempHireBooking)
         is now handled by the Stripe webhook.
         """
-        print("DEBUG: Entering PaymentDetailsView POST method.") # Debug print
+        print("DEBUG: Entering PaymentDetailsView POST method.")
         logger.debug("Entering Step6PaymentDetailsView POST method for client-side update.")
 
         try:
             data = json.loads(request.body)
             payment_intent_id = data.get('payment_intent_id')
             logger.debug(f"Received payment_intent_id from client: {payment_intent_id}")
-            print(f"DEBUG: POST Request - Received payment_intent_id: {payment_intent_id}") # Debug print
+            print(f"DEBUG: POST Request - Received payment_intent_id: {payment_intent_id}")
         except json.JSONDecodeError:
             logger.error("Invalid JSON in request body.")
-            print("DEBUG: POST Request - Invalid JSON.") # Debug print
+            print("DEBUG: POST Request - Invalid JSON.")
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
         if not payment_intent_id:
             logger.error("No payment_intent_id provided in POST request.")
-            print("DEBUG: POST Request - No payment_intent_id.") # Debug print
+            print("DEBUG: POST Request - No payment_intent_id.")
             return JsonResponse({'error': 'Payment Intent ID is required'}, status=400)
 
         try:
             intent = stripe.PaymentIntent.retrieve(payment_intent_id)
             logger.debug(f"Retrieved Stripe PaymentIntent: {intent.id}, Status: {intent.status}")
-            print(f"DEBUG: POST Request - Retrieved Stripe PI: {intent.id}, Status: {intent.status}") # Debug print
+            print(f"DEBUG: POST Request - Retrieved Stripe PI: {intent.id}, Status: {intent.status}")
 
-            # Try to get the Payment object. It might have been deleted by the webhook already.
             payment_obj = Payment.objects.filter(stripe_payment_intent_id=intent.id).first()
-            print(f"DEBUG: POST Request - Payment object found: {payment_obj.id if payment_obj else 'None'}") # Debug print
+            print(f"DEBUG: POST Request - Payment object found: {payment_obj.id if payment_obj else 'None'}")
 
             if intent.status == 'succeeded':
-                print("DEBUG: POST Request - Payment Intent status: succeeded.") # Debug print
+                print("DEBUG: POST Request - Payment Intent status: succeeded.")
                 if payment_obj:
-                    # The webhook handler is responsible for the final state and deletion.
-                    # We should NOT attempt to save payment_obj here, as its related TempHireBooking
-                    # might have already been deleted by the webhook, leading to a FK error.
-                    # Just log that it was found or not, and proceed to redirect.
                     logger.info(f"Payment object for intent ID {payment_intent_id} found ({payment_obj.id}). Webhook will finalize.")
-                    print(f"DEBUG: POST Request - Payment object for {payment_intent_id} found. Webhook will finalize.") # Debug print
+                    print(f"DEBUG: POST Request - Payment object for {payment_intent_id} found. Webhook will finalize.")
                 else:
-                    # This means the webhook has already processed and deleted the TempHireBooking and Payment.
                     logger.info(f"Payment object for intent ID {payment_intent_id} not found in DB. Assuming webhook processed it.")
-                    print(f"DEBUG: POST Request - Payment object for {payment_intent_id} not found. Webhook likely processed.") # Debug print
+                    print(f"DEBUG: POST Request - Payment object for {payment_intent_id} not found. Webhook likely processed.")
 
-                # In either case (found or not found), if Stripe reports succeeded, redirect to step 7
                 logger.info("Client reports Payment Intent succeeded. Redirecting to Step 7 (awaiting webhook for finalization if not already done).")
-                print(f"DEBUG: POST Request - Redirecting to step 7 for PI: {payment_intent_id}") # Debug print
+                print(f"DEBUG: POST Request - Redirecting to step 7 for PI: {payment_intent_id}")
                 return JsonResponse({
                     'status': 'success',
                     'message': 'Payment processed successfully. Your booking is being finalized.',
@@ -285,38 +268,36 @@ class PaymentDetailsView(View):
                 })
 
             elif intent.status in ['requires_action', 'requires_confirmation', 'requires_payment_method']:
-                print(f"DEBUG: POST Request - Payment Intent requires action: {intent.status}") # Debug print
+                print(f"DEBUG: POST Request - Payment Intent requires action: {intent.status}")
                 if payment_obj:
                     if payment_obj.status != intent.status:
                         payment_obj.status = intent.status
-                        payment_obj.save() # Keep this save, as the object is still valid and not deleted by webhook
+                        payment_obj.save()
                 logger.info(f"Payment Intent requires further action or is pending: {intent.status}")
+                # Removed redirect_url for requires_action
                 return JsonResponse({
                     'status': 'requires_action',
-                    'message': 'Payment requires further action or is pending. Please follow prompts.',
-                    'redirect_url': f'/hire/payment_failed/?payment_intent_id={payment_intent_id}'
+                    'message': 'Payment requires further action or is pending. Please follow prompts.'
                 })
 
-            else:
-                print(f"DEBUG: POST Request - Payment Intent unexpected status: {intent.status}") # Debug print
+            else: # Covers 'failed' and other unexpected statuses
+                print(f"DEBUG: POST Request - Payment Intent unexpected status: {intent.status}")
                 if payment_obj:
                     if payment_obj.status != intent.status:
                         payment_obj.status = intent.status
-                        payment_obj.save() # Keep this save
+                        payment_obj.save()
                 logger.warning(f"Payment Intent status is unexpected from client: {intent.status}")
+                # Removed redirect_url for failed/unexpected status
                 return JsonResponse({
                     'status': 'failed',
-                    'message': 'Payment failed or an unexpected status occurred. Please try again.',
-                    'redirect_url': f'/hire/payment_failed/?payment_intent_id={payment_intent_id}'
+                    'message': 'Payment failed or an unexpected status occurred. Please try again.'
                 })
 
         except stripe.error.StripeError as e:
             logger.error(f"Stripe API Error in POST: {e}")
-            print(f"DEBUG: POST Request - Stripe API Error: {e}") # Debug print
-            # If Stripe API fails to retrieve the intent, it's a serious issue.
-            # We can't confirm the status, so we should return an error.
+            print(f"DEBUG: POST Request - Stripe API Error: {e}")
             return JsonResponse({'error': str(e)}, status=500)
         except Exception as e:
             logger.exception(f"An unexpected error occurred in POST for PaymentIntent {payment_intent_id}: {e}")
-            print(f"DEBUG: POST Request - Unexpected error: {e}") # Debug print
+            print(f"DEBUG: POST Request - Unexpected error: {e}")
             return JsonResponse({'error': 'An internal server error occurred'}, status=500)
