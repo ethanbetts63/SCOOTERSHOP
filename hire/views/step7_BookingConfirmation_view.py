@@ -52,7 +52,7 @@ class BookingConfirmationView(View):
                 'is_processing': True,
                 'payment_intent_id': payment_intent_id,
             }
-            return render(request, 'hire/step7_confirmation.html', context)
+            return render(request, 'hire/step7_booking_confirmation.html', context)
         elif not hire_booking: # This case should ideally not be reached if previous checks are robust
             return redirect('hire:step2_choose_bike')
 
