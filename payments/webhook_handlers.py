@@ -46,7 +46,9 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
             temp_booking=temp_booking,
             payment_method='online', # Payment method is online for webhook-triggered success
             booking_payment_status=hire_payment_status,
-            amount_paid_on_booking=Decimal(payment_intent_data['amount_received']) / Decimal('100'), # Amount received from Stripe
+            # CHANGE: Use 'amount' key from payment_intent_data, as 'amount_received' is causing KeyError.
+            # Stripe's PaymentIntent object typically uses 'amount' for the total amount.
+            amount_paid_on_booking=Decimal(payment_intent_data['amount']) / Decimal('100'), # Amount received from Stripe
             stripe_payment_intent_id=payment_obj.stripe_payment_intent_id,
             payment_obj=payment_obj, # Pass the existing payment_obj to be updated by the converter
         )
