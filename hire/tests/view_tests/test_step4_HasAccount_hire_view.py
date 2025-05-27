@@ -1,6 +1,7 @@
 import datetime
 from decimal import Decimal
 from unittest.mock import patch
+import uuid # Import uuid module for UUID object conversion
 
 from django.test import TestCase, Client
 from django.urls import reverse
@@ -13,8 +14,8 @@ from hire.models import TempHireBooking, DriverProfile, AddOn, Package
 from dashboard.models import HireSettings
 from hire.hire_pricing import calculate_booking_grand_total
 
-# Import factories
-from hire.model_factories import (
+# Import factories from the specified path
+from hire.tests.test_helpers.model_factories import (
     create_user,
     create_motorcycle,
     create_hire_settings,
@@ -68,6 +69,7 @@ class Step4HasAccountViewTest(TestCase):
             has_motorcycle_license=True,
             is_international_booking=False,
         )
+        # Ensure the session is correctly populated with the temp booking details
         self.client.session["temp_booking_id"] = self.temp_booking.id
         self.client.session["temp_booking_uuid"] = str(self.temp_booking.session_uuid)
         self.client.session.save()
@@ -81,11 +83,9 @@ class Step4HasAccountViewTest(TestCase):
 
     def tearDown(self):
         """Clean up after tests."""
-        # Ensure session is cleared
-        if "temp_booking_id" in self.client.session:
-            del self.client.session["temp_booking_id"]
-        if "temp_booking_uuid" in self.client.session:
-            del self.client.session["temp_booking_uuid"]
+        # Use .pop() with a default to avoid KeyError if key is already gone
+        self.client.session.pop("temp_booking_id", None)
+        self.client.session.pop("temp_booking_uuid", None)
         self.client.session.save()
 
     # --- GET Request Tests ---
@@ -95,8 +95,9 @@ class Step4HasAccountViewTest(TestCase):
         Test GET request when temp_booking is not in session.
         Should redirect to step2_choose_bike with an error message.
         """
-        del self.client.session["temp_booking_id"]
-        del self.client.session["temp_booking_uuid"]
+        # Explicitly remove the keys for this specific test
+        self.client.session.pop("temp_booking_id", None)
+        self.client.session.pop("temp_booking_uuid", None)
         self.client.session.save()
 
         response = self.client.get(self.url)
@@ -169,8 +170,9 @@ class Step4HasAccountViewTest(TestCase):
         Test POST request when temp_booking is not in session.
         Should redirect to step2_choose_bike with an error message.
         """
-        del self.client.session["temp_booking_id"]
-        del self.client.session["temp_booking_uuid"]
+        # Explicitly remove the keys for this specific test
+        self.client.session.pop("temp_booking_id", None)
+        self.client.session.pop("temp_booking_uuid", None)
         self.client.session.save()
 
         response = self.client.post(self.url, {})
