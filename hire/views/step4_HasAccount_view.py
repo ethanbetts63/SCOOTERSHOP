@@ -6,7 +6,7 @@ from hire.models import TempHireBooking, DriverProfile
 from django.contrib import messages
 from dashboard.models import HireSettings # Import HireSettings
 from hire.hire_pricing import calculate_booking_grand_total # Import the new pricing function
-
+import uuid # Import uuid module
 
 class HasAccountView(LoginRequiredMixin, View):
     """
@@ -16,7 +16,9 @@ class HasAccountView(LoginRequiredMixin, View):
     """
 
     def get(self, request, *args, **kwargs):
-        print(f"DEBUG: HasAccountView GET - User: {request.user}")
+        print(f"DEBUG: HasAccountView GET - User: {request.user}, Session Key: {request.session.session_key}")
+        print(f"DEBUG: HasAccountView GET - Full session data: {dict(request.session)}")
+
         temp_booking = self._get_temp_booking(request)
         if not temp_booking:
             messages.error(
@@ -26,20 +28,14 @@ class HasAccountView(LoginRequiredMixin, View):
 
         print(f"DEBUG: HasAccountView GET - temp_booking.driver_profile: {temp_booking.driver_profile}")
 
-        # Try to get the existing driver profile for the user.
-        # If it doesn't exist, create a new instance without saving it to the DB yet.
-        # This prevents the NOT NULL constraint error on GET for new profiles.
         driver_profile_instance = None
         try:
             driver_profile_instance = DriverProfile.objects.get(user=request.user)
             print(f"DEBUG: HasAccountView GET - Retrieved existing DriverProfile: {driver_profile_instance}")
         except DriverProfile.DoesNotExist:
-            # If no profile exists, create a new unsaved instance.
-            # The form will then handle populating and saving it.
             driver_profile_instance = DriverProfile(user=request.user)
             print("DEBUG: HasAccountView GET - Created new unsaved DriverProfile instance.")
 
-        # Pass the instance (either existing or new unsaved) to the form
         form = Step4HasAccountForm(user=request.user, instance=driver_profile_instance, temp_booking=temp_booking)
 
         context = {
@@ -49,7 +45,9 @@ class HasAccountView(LoginRequiredMixin, View):
         return render(request, "hire/step4_has_account.html", context)
 
     def post(self, request, *args, **kwargs):
-        print(f"DEBUG: HasAccountView POST - User: {request.user}")
+        print(f"DEBUG: HasAccountView POST - User: {request.user}, Session Key: {request.session.session_key}")
+        print(f"DEBUG: HasAccountView POST - Full session data: {dict(request.session)}")
+
         temp_booking = self._get_temp_booking(request)
         if not temp_booking:
             messages.error(
@@ -59,8 +57,6 @@ class HasAccountView(LoginRequiredMixin, View):
 
         print(f"DEBUG: HasAccountView POST - temp_booking.driver_profile: {temp_booking.driver_profile}")
         
-        # Always try to get the existing driver profile for the user.
-        # If it doesn't exist, create a new instance (which the form will then populate and save).
         driver_profile_instance = None
         try:
             driver_profile_instance = DriverProfile.objects.get(user=request.user)
@@ -74,13 +70,12 @@ class HasAccountView(LoginRequiredMixin, View):
 
         if form.is_valid():
             driver_profile = form.save(commit=False)
-            driver_profile.user = request.user  # Ensure user is linked
-            driver_profile.save() # Save the driver profile after all fields are validated and set
+            driver_profile.user = request.user
+            driver_profile.save()
 
             temp_booking.driver_profile = driver_profile
             print(f"DEBUG: HasAccountView POST - temp_booking.driver_profile after setting: {temp_booking.driver_profile}")
             
-            # --- Update pricing information before saving temp_booking and redirecting ---
             hire_settings = HireSettings.objects.first()
             if hire_settings:
                 calculated_prices = calculate_booking_grand_total(temp_booking, hire_settings)
@@ -88,12 +83,14 @@ class HasAccountView(LoginRequiredMixin, View):
                 temp_booking.total_package_price = calculated_prices['package_price']
                 temp_booking.total_addons_price = calculated_prices['addons_total_price']
                 temp_booking.grand_total = calculated_prices['grand_total']
+                temp_booking.deposit_amount = calculated_prices['deposit_amount']
+                temp_booking.currency = calculated_prices['currency']
                 print(f"DEBUG: HasAccountView POST - Updated temp_booking prices: {calculated_prices}")
             else:
                 messages.warning(request, "Hire settings not found. Cannot calculate accurate booking prices.")
                 print("WARNING: Hire settings not found. Cannot calculate accurate booking prices.")
 
-            temp_booking.save() # Save the temp booking with updated driver profile and prices
+            temp_booking.save()
             messages.success(request, "Driver details saved successfully.")
             return redirect("hire:step5_summary_payment_options")
         else:
@@ -105,14 +102,26 @@ class HasAccountView(LoginRequiredMixin, View):
             return render(request, "hire/step4_has_account.html", context)
 
     def _get_temp_booking(self, request):
-        temp_booking_id = request.session.get("temp_booking_id")
-        temp_booking_uuid = request.session.get("temp_booking_uuid")
-        if temp_booking_id and temp_booking_uuid:
+        temp_booking_uuid_str = request.session.get("temp_booking_uuid")
+        print(f"DEBUG: _get_temp_booking - Retrieved 'temp_booking_uuid' from request.session: '{temp_booking_uuid_str}' (type: {type(temp_booking_uuid_str)})")
+
+        if temp_booking_uuid_str:
             try:
-                return TempHireBooking.objects.get(
-                    id=temp_booking_id,
-                    session_uuid=temp_booking_uuid
-                )
+                # Ensure the retrieved value is a valid UUID format before querying
+                lookup_uuid = uuid.UUID(temp_booking_uuid_str)
+                temp_booking = TempHireBooking.objects.get(session_uuid=lookup_uuid)
+                print(f"DEBUG: _get_temp_booking - Found temp_booking (ID: {temp_booking.id}) for session_uuid: {lookup_uuid}")
+                return temp_booking
             except TempHireBooking.DoesNotExist:
+                print(f"DEBUG: _get_temp_booking - TempHireBooking.DoesNotExist for session_uuid: {lookup_uuid if 'lookup_uuid' in locals() else temp_booking_uuid_str}")
                 return None
+            except ValueError:
+                # This will catch cases where temp_booking_uuid_str is not a valid UUID string
+                print(f"DEBUG: _get_temp_booking - ValueError: '{temp_booking_uuid_str}' is not a valid UUID string.")
+                return None
+            except Exception as e: 
+                print(f"DEBUG: _get_temp_booking - An unexpected error occurred during temp_booking lookup: {e} (session_uuid_str: '{temp_booking_uuid_str}')")
+                return None
+        
+        print("DEBUG: _get_temp_booking - 'temp_booking_uuid' not found in request.session or is empty.")
         return None
