@@ -8,7 +8,7 @@ from decimal import Decimal
 from ..models import TempHireBooking
 from dashboard.models import HireSettings
 from ..forms.step5_BookSumAndPaymentOptions_form import PaymentOptionForm
-from ..utils import is_motorcycle_available
+from ..utils import is_motorcycle_available # This utility is expected to add messages
 from ..hire_pricing import calculate_booking_grand_total
 from hire.temp_hire_converter import convert_temp_to_hire_booking
 
@@ -82,8 +82,9 @@ class BookSumAndPaymentOptionsView(View):
 
             temp_booking.save()
 
+            # The is_motorcycle_available function is expected to add the message itself.
+            # Removing the redundant messages.error call here.
             if not is_motorcycle_available(request, temp_booking.motorcycle, temp_booking):
-                messages.error(request, "The selected motorcycle is no longer available for the chosen dates and times. Please select another motorcycle.")
                 return redirect('hire:step2_choose_bike')
 
             if payment_option == 'in_store_full':
