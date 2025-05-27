@@ -69,6 +69,8 @@ class NoAccountView(View):
             messages.success(request, "Driver details saved successfully.")
             return redirect("hire:step5_summary_payment_options")
         else:
+            # ADD THIS LINE TO DEBUG FORM ERRORS
+            print(f"DEBUG: Form errors: {form.errors}") 
             context = {
                 "form": form,
                 "temp_booking": temp_booking,

@@ -13,6 +13,7 @@ from ..utils import *
 from ..hire_pricing import calculate_booking_grand_total
 
 class BookSumAndPaymentOptionsView(View):
+    # FIX: Corrected the template name to match the actual file name
     template_name = 'hire/step5_book_sum_and_payment_options.html'
 
     def get(self, request, *args, **kwargs):
