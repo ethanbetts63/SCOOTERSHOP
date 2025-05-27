@@ -18,8 +18,8 @@ from dashboard.models import HireSettings, BlockedHireDate
 from ..forms.Admin_Hire_Booking_form import AdminHireBookingForm
 
 # Import utility functions
-from .utils import get_overlapping_motorcycle_bookings
-from .hire_pricing import calculate_motorcycle_hire_price, calculate_addon_price, calculate_booking_grand_total
+from ..utils import get_overlapping_motorcycle_bookings
+from ..hire_pricing import calculate_motorcycle_hire_price, calculate_addon_price, calculate_booking_grand_total
 
 class AdminHireBookingView(View):
     """

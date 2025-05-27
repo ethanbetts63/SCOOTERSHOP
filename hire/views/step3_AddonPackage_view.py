@@ -11,9 +11,9 @@ from django.http import HttpResponseRedirect
 from inventory.models import Motorcycle
 from ..models import AddOn, Package, TempHireBooking, HireBooking, TempBookingAddOn
 from ..forms.step3_AddonPackage_form import Step3AddOnsPackagesForm
-from ..views.utils import is_motorcycle_available
+from ..utils import is_motorcycle_available
 # Import all necessary pricing functions
-from ..views.hire_pricing import (
+from ..hire_pricing import (
     calculate_motorcycle_hire_price,
     calculate_package_price,
     calculate_addon_price,

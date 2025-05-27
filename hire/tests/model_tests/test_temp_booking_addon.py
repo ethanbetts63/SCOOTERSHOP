@@ -27,7 +27,7 @@ from hire.tests.test_helpers.model_factories import (
 )
 
 # Import the pricing utility (needed for accurate expected values)
-from hire.views.hire_pricing import calculate_addon_price
+from hire.hire_pricing import calculate_addon_price
 
 
 class TempBookingAddOnModelTest(TestCase):
@@ -57,6 +57,8 @@ class TempBookingAddOnModelTest(TestCase):
         cls.return_date = cls.pickup_date + datetime.timedelta(days=2) # This makes it span 3 calendar days
         cls.return_time = datetime.time(16, 0) # 6 hours into the third day
 
+        # This temp_booking is created once for the class and will exist for all tests.
+        # Tests that need an isolated count should create their own temp_booking and manage its lifecycle.
         cls.temp_booking_for_addons = create_temp_hire_booking(
             motorcycle=cls.motorcycle,
             pickup_date=cls.pickup_date,
@@ -92,6 +94,9 @@ class TempBookingAddOnModelTest(TestCase):
         """
         Test that a basic TempHireBooking instance can be created.
         """
+        # Get initial count to ensure this test is isolated in its assertion
+        initial_temp_booking_count = TempHireBooking.objects.count()
+
         temp_booking = create_temp_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile,
@@ -103,12 +108,14 @@ class TempBookingAddOnModelTest(TestCase):
         self.assertEqual(temp_booking.grand_total, Decimal('150.00'))
         self.assertIsNotNone(temp_booking.session_uuid)
         self.assertFalse(temp_booking.has_motorcycle_license) # Default value
+        self.assertEqual(TempHireBooking.objects.count(), initial_temp_booking_count + 1)
+
 
     def test_session_uuid_uniqueness(self):
         """
         Test that session_uuid is unique.
         """
-        # Create one temp booking
+        # Create one temp booking with a specific UUID
         create_temp_hire_booking(
             session_uuid=uuid.UUID('12345678-1234-5678-1234-567812345678'),
             motorcycle=self.motorcycle,
@@ -246,7 +253,12 @@ class TempBookingAddOnModelTest(TestCase):
         """
         Test that deleting a TempHireBooking also deletes its associated TempBookingAddOn instances.
         """
-        temp_booking = create_temp_hire_booking(
+        # Get the initial count of TempHireBooking objects before creating a new one for this test
+        initial_temp_booking_count = TempHireBooking.objects.count()
+        initial_temp_addon_count = TempBookingAddOn.objects.count()
+
+        # Create a new temp booking specifically for this deletion test
+        temp_booking_to_delete = create_temp_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile,
             grand_total=Decimal('200.00'),
@@ -255,16 +267,21 @@ class TempBookingAddOnModelTest(TestCase):
             return_date=self.return_date,
             return_time=self.return_time,
         )
-        create_temp_booking_addon(temp_booking, self.addon1, quantity=1, booked_addon_price=self.expected_addon1_price_per_unit_for_default_temp_booking * 1)
-        create_temp_booking_addon(temp_booking, self.addon2, quantity=1, booked_addon_price=self.expected_addon2_price_per_unit_for_default_temp_booking * 1)
+        # Create associated add-ons for this specific temp booking
+        create_temp_booking_addon(temp_booking_to_delete, self.addon1, quantity=1, booked_addon_price=self.expected_addon1_price_per_unit_for_default_temp_booking * 1)
+        create_temp_booking_addon(temp_booking_to_delete, self.addon2, quantity=1, booked_addon_price=self.expected_addon2_price_per_unit_for_default_temp_booking * 1)
 
-        self.assertEqual(TempHireBooking.objects.count(), 1)
-        self.assertEqual(TempBookingAddOn.objects.count(), 2)
+        # Assert that the count of temp bookings increased by 1 and add-ons by 2
+        self.assertEqual(TempHireBooking.objects.count(), initial_temp_booking_count + 1)
+        self.assertEqual(TempBookingAddOn.objects.count(), initial_temp_addon_count + 2)
 
-        temp_booking.delete()
+        # Now delete the specific temp booking
+        temp_booking_to_delete.delete()
 
-        self.assertEqual(TempHireBooking.objects.count(), 0)
-        self.assertEqual(TempBookingAddOn.objects.count(), 0)
+        # Assert that the counts have returned to their initial state (or decreased by the deleted objects)
+        self.assertEqual(TempHireBooking.objects.count(), initial_temp_booking_count)
+        self.assertEqual(TempBookingAddOn.objects.count(), initial_temp_addon_count)
+
 
     def test_update_temp_hire_booking(self):
         """

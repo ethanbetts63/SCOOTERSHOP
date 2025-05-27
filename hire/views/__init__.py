@@ -10,7 +10,7 @@ from .step6_PaymentDetails_view import PaymentDetailsView
 from .step7_BookingConfirmation_view import BookingConfirmationView, BookingStatusCheckView
 
 # Import new functions from hire_pricing.py
-from .hire_pricing import (
+from ..hire_pricing import (
     calculate_motorcycle_hire_price,
     calculate_package_price,
     calculate_addon_price,
@@ -19,7 +19,7 @@ from .hire_pricing import (
 )
 
 # Import new functions from utils.py
-from .utils import (
+from ..utils import (
     get_overlapping_motorcycle_bookings,
     is_motorcycle_available,
 )

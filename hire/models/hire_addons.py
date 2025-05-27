@@ -45,7 +45,7 @@ class BookingAddOn(models.Model):
         errors = {}
 
         # Import calculate_addon_price here to avoid circular import at module level
-        from hire.views.hire_pricing import calculate_addon_price
+        from hire.hire_pricing import calculate_addon_price
 
         # Ensure the selected add-on is available
         if self.addon and not self.addon.is_available:

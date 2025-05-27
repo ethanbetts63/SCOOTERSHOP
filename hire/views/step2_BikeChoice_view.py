@@ -10,7 +10,7 @@ from inventory.models import Motorcycle
 from dashboard.models import HireSettings, BlockedHireDate
 from hire.models import TempHireBooking # Import TempHireBooking model
 # Import the new pricing functions
-from .hire_pricing import calculate_motorcycle_hire_price 
+from ..hire_pricing import calculate_motorcycle_hire_price 
 
 
 class BikeChoiceView(View):

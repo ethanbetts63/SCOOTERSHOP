@@ -9,7 +9,7 @@ from inventory.models import Motorcycle
 from ..models import AddOn, Package, DriverProfile, BookingAddOn
 from ..models.hire_booking import STATUS_CHOICES, PAYMENT_STATUS_CHOICES, PAYMENT_METHOD_CHOICES, HireBooking
 # Import pricing utility
-from hire.views.hire_pricing import calculate_addon_price # Import the new pricing function
+from hire.hire_pricing import calculate_addon_price # Import the new pricing function
 
 class AdminHireBookingForm(forms.Form):
     """

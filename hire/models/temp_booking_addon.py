@@ -48,7 +48,7 @@ class TempBookingAddOn(models.Model):
         errors = {}
 
         # Import calculate_addon_price here to avoid circular import at module level
-        from hire.views.hire_pricing import calculate_addon_price
+        from hire.hire_pricing import calculate_addon_price
 
         # Ensure quantity is within the allowed range for the associated AddOn
         if self.addon:

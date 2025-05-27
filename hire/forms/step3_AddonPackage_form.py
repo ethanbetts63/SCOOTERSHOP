@@ -3,7 +3,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.forms import ModelChoiceField, RadioSelect
 from ..models import AddOn, Package
-from hire.views.hire_pricing import calculate_addon_price # Import the new pricing function
+from hire.hire_pricing import calculate_addon_price # Import the new pricing function
 
 class Step3AddOnsPackagesForm(forms.Form):
     package = ModelChoiceField(

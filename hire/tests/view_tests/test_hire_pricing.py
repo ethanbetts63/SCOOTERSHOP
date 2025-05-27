@@ -5,7 +5,7 @@ from decimal import Decimal
 from django.test import TestCase
 from django.utils import timezone
 
-from hire.views.hire_pricing import (
+from hire.hire_pricing import (
     calculate_motorcycle_hire_price, # Updated
     calculate_package_price,         # New
     calculate_addon_price,           # New
@@ -13,7 +13,7 @@ from hire.views.hire_pricing import (
     calculate_booking_grand_total
   )
 
-from hire.views.utils import (
+from hire.utils import (
     get_overlapping_motorcycle_bookings
 )
 

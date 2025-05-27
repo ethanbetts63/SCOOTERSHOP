@@ -16,7 +16,7 @@ from hire.tests.test_helpers.model_factories import (
 )
 
 # Import the pricing utility (needed for accurate expected values)
-from hire.views.hire_pricing import calculate_addon_price
+from hire.hire_pricing import calculate_addon_price
 import datetime
 from django.utils import timezone
 

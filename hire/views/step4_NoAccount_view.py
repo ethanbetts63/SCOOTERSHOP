@@ -5,7 +5,7 @@ from hire.forms import Step4NoAccountForm
 from hire.models import TempHireBooking, DriverProfile
 from django.contrib import messages
 from dashboard.models import HireSettings # Import HireSettings
-from hire.views.hire_pricing import calculate_booking_grand_total # Import the new pricing function
+from hire.hire_pricing import calculate_booking_grand_total # Import the new pricing function
 
 
 class NoAccountView(View):

@@ -3,7 +3,7 @@
 
 import datetime
 from django.utils import timezone
-from ..models import HireBooking
+from .models import HireBooking
 from inventory.models import Motorcycle
 from django.contrib import messages
 from decimal import Decimal, ROUND_HALF_UP

@@ -10,10 +10,10 @@ from django.utils import timezone
 # from hire.models import HireBooking
 # from dashboard.models import HireSettings # HireSettings is used via create_hire_settings
 
-from hire.views.utils import (  # New
+from hire.utils import (  # New
     get_overlapping_motorcycle_bookings
 )
-from hire.views.hire_pricing import (
+from hire.hire_pricing import (
     calculate_motorcycle_hire_price, # Updated
     calculate_package_price,         # New
     calculate_addon_price,           # New

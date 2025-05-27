@@ -8,9 +8,9 @@ from decimal import Decimal # Import Decimal for precise calculations
 from ..models import TempHireBooking
 from dashboard.models import HireSettings
 from ..forms.step5_BookSumAndPaymentOptions_form import PaymentOptionForm
-from ..views.utils import *
+from ..utils import *
 # Import the new centralized pricing function
-from .hire_pricing import calculate_booking_grand_total
+from ..hire_pricing import calculate_booking_grand_total
 
 class BookSumAndPaymentOptionsView(View):
     template_name = 'hire/step5_book_sum_and_payment_options.html'
