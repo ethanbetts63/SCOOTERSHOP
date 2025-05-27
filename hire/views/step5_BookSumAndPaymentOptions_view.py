@@ -24,7 +24,7 @@ class BookSumAndPaymentOptionsView(View):
         hire_settings = HireSettings.objects.first()
         if not hire_settings:
             messages.error(request, "Hire settings not found.")
-            return redirect('home') # Or some appropriate error page
+            return redirect('core:index') # Or some appropriate error page
 
         # Recalculate all booking prices to ensure they are up-to-date
         # This acts as a safeguard in case previous steps didn't save correctly
@@ -64,7 +64,7 @@ class BookSumAndPaymentOptionsView(View):
         hire_settings = HireSettings.objects.first()
         if not hire_settings:
             messages.error(request, "Hire settings not found.")
-            return redirect('home') # Or some appropriate error page
+            return redirect('core:index') # Or some appropriate error page
 
         form = PaymentOptionForm(request.POST, temp_booking=temp_booking, hire_settings=hire_settings)
 
