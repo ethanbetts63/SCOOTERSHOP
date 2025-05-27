@@ -89,11 +89,12 @@ class AdminHireBookingForm(forms.Form):
         label="Currency Code (e.g., AUD, USD)",
         required=True
     )
-    total_price = forms.DecimalField(
+    # Renamed from total_price to grand_total
+    grand_total = forms.DecimalField(
         max_digits=10, decimal_places=2,
-        label="Admin Entered Total Price",
+        label="Admin Entered Grand Total", # Updated label
         required=False, # Changed to False to allow custom validation in clean()
-        help_text="Enter the final total price. An estimated total will be calculated dynamically on the page."
+        help_text="Enter the final grand total price. An estimated total will be calculated dynamically on the page." # Updated help text
     )
     payment_method = forms.ChoiceField(
         choices=PAYMENT_METHOD_CHOICES,
@@ -202,7 +203,8 @@ class AdminHireBookingForm(forms.Form):
             self.fields['package'].initial = instance.package
             self.fields['driver_profile'].initial = instance.driver_profile
             self.fields['currency'].initial = instance.currency
-            self.fields['total_price'].initial = instance.total_price
+            # Changed from total_price to grand_total
+            self.fields['grand_total'].initial = instance.grand_total
             self.fields['payment_method'].initial = instance.payment_method
             self.fields['payment_status'].initial = instance.payment_status
             self.fields['status'].initial = instance.status
@@ -276,13 +278,14 @@ class AdminHireBookingForm(forms.Form):
         cleaned_data['selected_addons_data'] = selected_addons_data # Store for view/save
 
         # --- Section 5: Financial Details Validation ---
-        total_price = cleaned_data.get('total_price')
-        if total_price is not None and total_price < 0:
-            form_errors['total_price'] = "Total price cannot be negative."
+        # Changed from total_price to grand_total
+        grand_total = cleaned_data.get('grand_total')
+        if grand_total is not None and grand_total < 0:
+            form_errors['grand_total'] = "Grand total cannot be negative." # Updated error message
 
         payment_status = cleaned_data.get('payment_status')
-        if payment_status == 'paid' and (total_price is None or total_price <= 0):
-            form_errors['total_price'] = "Total price must be greater than 0 if payment status is 'Fully Paid'."
+        if payment_status == 'paid' and (grand_total is None or grand_total <= 0):
+            form_errors['grand_total'] = "Grand total must be greater than 0 if payment status is 'Fully Paid'." # Updated error message
 
         # --- Section 2: Booked Rates Validation ---
         booked_daily_rate = cleaned_data.get('booked_daily_rate')
