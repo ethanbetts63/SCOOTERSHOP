@@ -96,8 +96,11 @@ class BookSumAndPaymentOptionsView(View):
                         stripe_payment_intent_id=None,
                         payment_obj=None,
                     )
+                    # Store the booking reference in the session for Step 7
+                    request.session['final_booking_reference'] = hire_booking.booking_reference
                     messages.success(request, f"Your booking ({hire_booking.booking_reference}) has been successfully created. Please pay the full amount in-store at pickup.")
-                    return redirect('hire:step7_confirmation', payment_intent_id='in_store_full')
+                    # Redirect to step 7 without payment_intent_id for in-store bookings
+                    return redirect('hire:step7_confirmation')
                 except Exception as e:
                     messages.error(request, "There was an error finalizing your in-store booking. Please try again.")
                     return redirect('hire:step5_summary_payment_options')

@@ -34,7 +34,7 @@ class BookSumAndPaymentOptionsViewTest(TestCase):
         self.step5_url = reverse('hire:step5_summary_payment_options')
         self.step2_url = reverse('hire:step2_choose_bike')
         self.step6_url = reverse('hire:step6_payment_details') # Added for clarity
-        self.step7_url_base = reverse('hire:step7_confirmation') # Added for in-store test
+        self.step7_url_base = reverse('hire:step7_confirmation') # Base URL for step 7
         self.core_index_url = reverse('core:index')
 
         # Ensure HireSettings exists and payment options are enabled for testing
@@ -193,8 +193,8 @@ class BookSumAndPaymentOptionsViewTest(TestCase):
         form_data = {'payment_method': 'in_store_full'}
         response = self.client.post(self.step5_url, form_data)
 
-        # Expect redirection to step 7 with the 'in_store_full' placeholder
-        self.assertRedirects(response, self.step7_url_base + '?payment_intent_id=in_store_full')
+        # EXPECTATION CHANGED: Expect redirection to step 7 without payment_intent_id
+        self.assertRedirects(response, self.step7_url_base)
 
         # Verify TempHireBooking is deleted
         self.assertFalse(TempHireBooking.objects.filter(id=temp_booking.id).exists())
@@ -274,4 +274,3 @@ class BookSumAndPaymentOptionsViewTest(TestCase):
         self.assertEqual(len(messages), 1)
         self.assertIn("You require a full motorcycle license for this motorcycle.", str(messages[0]))
         self.assertTrue(TempHireBooking.objects.filter(id=temp_booking.id).exists())
-
