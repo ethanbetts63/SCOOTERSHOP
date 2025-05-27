@@ -154,7 +154,9 @@ class AddonPackageView(View):
             initial=initial_data,
             available_packages=available_packages,
             available_addons=all_addons_for_form, # Pass ALL add-ons to the form
-            selected_package_instance=temp_booking.package # Pass the selected package instance
+            selected_package_instance=temp_booking.package, # Pass the selected package instance
+            temp_booking=temp_booking, # Pass temp_booking for clean method
+            hire_settings=hire_settings # Pass hire_settings for clean method
         )
         print(f"DEBUG (View GET): Form's display_addons contains: {[a['addon'].name for a in form.display_addons]}")
 
@@ -191,7 +193,9 @@ class AddonPackageView(View):
             request.POST,
             available_packages=available_packages,
             available_addons=all_addons_for_form, # Pass ALL add-ons to the form
-            selected_package_instance=selected_package_instance_for_form # Pass for POST validation
+            selected_package_instance=selected_package_instance_for_form, # Pass for POST validation
+            temp_booking=temp_booking,  # <--- ADDED THIS LINE
+            hire_settings=hire_settings # <--- ADDED THIS LINE
         )
 
         if form.is_valid():

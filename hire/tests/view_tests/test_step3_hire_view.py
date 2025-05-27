@@ -1,5 +1,3 @@
-# hire/tests/view_tests/test_step3_hire_view.py
-
 import datetime
 from decimal import Decimal
 from django.test import TestCase, Client
@@ -9,7 +7,12 @@ from django.contrib.messages import get_messages
 
 # Import the view directly to access its template_name
 from hire.views.step3_AddonPackage_view import AddonPackageView
-from hire.hire_pricing import calculate_motorcycle_hire_price 
+# Import all necessary pricing functions from hire.hire_pricing
+from hire.hire_pricing import (
+    calculate_motorcycle_hire_price,
+    calculate_package_price, # ADDED THIS IMPORT
+    calculate_addon_price # ADDED THIS IMPORT
+)
 
 from hire.tests.test_helpers.model_factories import (
     create_motorcycle, create_temp_hire_booking, create_addon, create_package,
@@ -586,3 +589,4 @@ class AddonPackageViewTest(TestCase):
         self.assertEqual(len(messages), 1)
         # Updated expected message to match the actual message from the view
         self.assertEqual(str(messages[0]), "Return time must be after pickup time.")
+
