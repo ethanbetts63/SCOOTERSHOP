@@ -5,7 +5,6 @@ from django.core.exceptions import ValidationError
 from .temp_hire_booking import TempHireBooking # Import TempHireBooking
 from .hire_addon import AddOn # Import AddOn model
 from dashboard.models import HireSettings # Import HireSettings for pricing strategy
-# from hire.views.hire_pricing import calculate_addon_price # Moved to inside clean method to avoid circular import
 
 
 class TempBookingAddOn(models.Model):
@@ -30,7 +29,8 @@ class TempBookingAddOn(models.Model):
     booked_addon_price = models.DecimalField(
         max_digits=8,
         decimal_places=2,
-        null=True, blank=True # Store the price at time of booking
+        null=True, blank=True, # Store the price at time of booking
+        help_text="Total price for this quantity of add-on at the time of selection." # Updated help text
     )
 
     def __str__(self):
@@ -41,7 +41,7 @@ class TempBookingAddOn(models.Model):
         """
         Custom validation for TempBookingAddOn data.
         Ensures quantity is within the allowed range for the associated AddOn,
-        and that the booked_addon_price matches the calculated price for a single unit
+        and that the booked_addon_price matches the calculated total price for the given quantity
         of the add-on for the temporary booking's duration.
         """
         super().clean()
@@ -65,7 +65,6 @@ class TempBookingAddOn(models.Model):
             if self.booked_addon_price is not None:
                 hire_settings = HireSettings.objects.first()
 
-                # Ensure hire settings and temporary booking dates/times are available for price calculation
                 if not hire_settings:
                     errors['booked_addon_price'] = "Hire settings are not configured, cannot validate add-on price."
                 elif not (self.temp_booking and self.temp_booking.pickup_date and self.temp_booking.return_date and
@@ -82,19 +81,20 @@ class TempBookingAddOn(models.Model):
                         return_time=self.temp_booking.return_time,
                         hire_settings=hire_settings
                     )
+                    # Calculate the expected total price for the given quantity
+                    expected_total_addon_price = expected_addon_price_per_unit * self.quantity
 
-                    # Compare the booked price with the calculated expected price
-                    if self.booked_addon_price != expected_addon_price_per_unit:
+                    # Compare the booked price with the calculated expected total price
+                    if self.booked_addon_price != expected_total_addon_price:
                         errors['booked_addon_price'] = (
-                            f"Booked add-on price ({self.booked_addon_price}) must match the calculated price "
-                            f"({expected_addon_price_per_unit}) for one unit of {self.addon.name}."
+                            f"Booked add-on price ({self.booked_addon_price}) must match the calculated total price "
+                            f"({expected_total_addon_price}) for {self.quantity} unit(s) of {self.addon.name}."
                         )
 
         if errors:
             raise ValidationError(errors)
 
     class Meta:
-        # Ensure you can't add the same add-on to the same temp booking multiple times
         unique_together = ('temp_booking', 'addon')
         verbose_name = "Temporary Booking Add-On"
         verbose_name_plural = "Temporary Booking Add-Ons"

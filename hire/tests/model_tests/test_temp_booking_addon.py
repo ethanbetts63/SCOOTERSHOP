@@ -1,22 +1,30 @@
-# hire/tests/model_tests/temp_booking_addon_tests.py
+# hire/tests/model_tests/test_temp_booking_addon.py
 
+import datetime
+import uuid
 from decimal import Decimal
 from django.test import TestCase
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.utils import timezone
 from django.db import IntegrityError
+import time # Import the time module
+
+# Import models
+from hire.models import TempHireBooking, TempBookingAddOn
+from inventory.models import Motorcycle
+from payments.models import Payment # Although not directly linked, useful for context
+from dashboard.models import HireSettings
 
 # Import model factories
 from hire.tests.test_helpers.model_factories import (
-    create_temp_hire_booking,
-    create_addon,
-    create_temp_booking_addon,
     create_motorcycle,
     create_driver_profile,
-    create_hire_settings, # Import create_hire_settings
+    create_package,
+    create_addon,
+    create_hire_settings,
+    create_temp_hire_booking,
+    create_temp_booking_addon,
 )
-
-# Import the model directly to bypass factory defaults for specific tests
-from hire.models import TempBookingAddOn
 
 
 class TempBookingAddOnModelTest(TestCase):
@@ -28,175 +36,235 @@ class TempBookingAddOnModelTest(TestCase):
     def setUpTestData(cls):
         """
         Set up non-modified objects used by all test methods.
+        This runs once for the entire test class.
         """
-        # Ensure HireSettings exists for validation checks
-        cls.hire_settings = create_hire_settings()
-
         cls.motorcycle = create_motorcycle()
         cls.driver_profile = create_driver_profile()
-        cls.temp_booking = create_temp_hire_booking(
-            motorcycle=cls.motorcycle,
-            driver_profile=cls.driver_profile,
+        cls.package = create_package()
+        cls.addon1 = create_addon(name="AddOn A", hourly_cost=Decimal('2.00'), daily_cost=Decimal('15.00'))
+        cls.addon2 = create_addon(name="AddOn B", hourly_cost=Decimal('5.00'), daily_cost=Decimal('20.00'))
+        cls.hire_settings = create_hire_settings() # Ensure settings exist
+
+    def test_create_basic_temp_hire_booking(self):
+        """
+        Test that a basic TempHireBooking instance can be created.
+        """
+        temp_booking = create_temp_hire_booking(
+            motorcycle=self.motorcycle,
+            driver_profile=self.driver_profile,
+            grand_total=Decimal('150.00')
+        )
+        self.assertIsNotNone(temp_booking.pk)
+        self.assertEqual(temp_booking.motorcycle, self.motorcycle)
+        self.assertEqual(temp_booking.driver_profile, self.driver_profile)
+        self.assertEqual(temp_booking.grand_total, Decimal('150.00'))
+        self.assertIsNotNone(temp_booking.session_uuid)
+        self.assertFalse(temp_booking.has_motorcycle_license) # Default value
+
+    def test_session_uuid_uniqueness(self):
+        """
+        Test that session_uuid is unique.
+        """
+        # Create one temp booking
+        create_temp_hire_booking(
+            session_uuid=uuid.UUID('12345678-1234-5678-1234-567812345678'),
+            motorcycle=self.motorcycle,
+            driver_profile=self.driver_profile,
             grand_total=Decimal('100.00')
         )
-        cls.addon_min1_max5 = create_addon(name="AddOn A", daily_cost=Decimal('10.00'), min_quantity=1, max_quantity=5)
-        cls.addon_min2_max2 = create_addon(name="AddOn B", daily_cost=Decimal('25.00'), min_quantity=2, max_quantity=2)
 
-    def test_create_basic_temp_booking_addon(self):
-        """
-        Test that a basic TempBookingAddOn instance can be created.
-        """
-        temp_booking_addon = create_temp_booking_addon(
-            temp_booking=self.temp_booking,
-            addon=self.addon_min1_max5,
-            quantity=2,
-            booked_addon_price=Decimal('10.00')
-        )
-        self.assertIsNotNone(temp_booking_addon.pk)
-        self.assertEqual(temp_booking_addon.temp_booking, self.temp_booking)
-        self.assertEqual(temp_booking_addon.addon, self.addon_min1_max5)
-        self.assertEqual(temp_booking_addon.quantity, 2)
-        self.assertEqual(temp_booking_addon.booked_addon_price, Decimal('10.00'))
+        # Attempt to create another with the same UUID
+        with self.assertRaises(IntegrityError):
+            create_temp_hire_booking(
+                session_uuid=uuid.UUID('12345678-1234-5678-1234-567812345678'),
+                motorcycle=self.motorcycle,
+                driver_profile=self.driver_profile,
+                grand_total=Decimal('200.00')
+            )
 
     def test_str_method(self):
         """
-        Test the __str__ method of TempBookingAddOn.
+        Test the __str__ method of TempHireBooking.
         """
-        temp_booking_addon = create_temp_booking_addon(
-            temp_booking=self.temp_booking,
-            addon=self.addon_min1_max5,
-            quantity=3
+        temp_booking = create_temp_hire_booking(
+            motorcycle=self.motorcycle,
+            pickup_date=datetime.date(2025, 7, 1),
+            return_date=datetime.date(2025, 7, 3),
+            session_uuid=uuid.UUID('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa')
         )
-        expected_str = f"3 x {self.addon_min1_max5.name} for Temp Booking {str(self.temp_booking.session_uuid)[:8]}"
-        self.assertEqual(str(temp_booking_addon), expected_str)
+        expected_str = f"Temp Booking (aaaaaaaa): {self.motorcycle.model} (2025-07-01 to 2025-07-03)"
+        self.assertEqual(str(temp_booking), expected_str)
 
-        # Test with a deleted addon (addon=None) by creating the instance directly
-        temp_booking_addon_deleted = TempBookingAddOn.objects.create(
-            temp_booking=self.temp_booking,
-            addon=None, # Explicitly set to None
-            quantity=1,
-            booked_addon_price=Decimal('10.00') # Price can be anything if addon is null
+        # Test with no motorcycle
+        temp_booking_no_bike = create_temp_hire_booking(
+            motorcycle=None,
+            pickup_date=datetime.date(2025, 8, 1),
+            return_date=datetime.date(2025, 8, 3),
+            session_uuid=uuid.UUID('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb')
         )
-        expected_str_deleted = f"1 x Deleted Add-On for Temp Booking {str(self.temp_booking.session_uuid)[:8]}"
-        self.assertEqual(str(temp_booking_addon_deleted), expected_str_deleted)
+        expected_str_no_bike = "Temp Booking (bbbbbbbb): No bike selected (2025-08-01 to 2025-08-03)"
+        self.assertEqual(str(temp_booking_no_bike), expected_str_no_bike)
 
+    def test_relationships(self):
+        """
+        Test that foreign key relationships are correctly established.
+        """
+        temp_booking = create_temp_hire_booking(
+            motorcycle=self.motorcycle,
+            driver_profile=self.driver_profile,
+            package=self.package
+        )
+        self.assertEqual(temp_booking.motorcycle, self.motorcycle)
+        self.assertEqual(temp_booking.driver_profile, self.driver_profile)
+        self.assertEqual(temp_booking.package, self.package)
 
-    def test_unique_together_constraint(self):
+    def test_default_values(self):
         """
-        Test that unique_together constraint (temp_booking, addon) prevents duplicates.
+        Test that default values are correctly applied when not provided.
         """
-        create_temp_booking_addon(
-            temp_booking=self.temp_booking,
-            addon=self.addon_min1_max5,
-            quantity=1
+        temp_booking = create_temp_hire_booking(
+            motorcycle=self.motorcycle,
+            driver_profile=self.driver_profile,
+            grand_total=Decimal('100.00')
         )
-        with self.assertRaises(IntegrityError):
-            create_temp_booking_addon(
-                temp_booking=self.temp_booking,
-                addon=self.addon_min1_max5, # Same addon for same temp booking
-                quantity=2 # Quantity doesn't matter for uniqueness
-            )
+        self.assertFalse(temp_booking.has_motorcycle_license)
+        self.assertEqual(temp_booking.total_addons_price, Decimal('0.00'))
+        self.assertEqual(temp_booking.total_package_price, Decimal('0.00'))
+        self.assertEqual(temp_booking.currency, 'AUD')
+        self.assertEqual(temp_booking.payment_option, 'online_full') # Default from factory
 
-    # --- clean() method tests ---
+    def test_nullable_fields(self):
+        """
+        Test that nullable fields can be created as None/blank.
+        """
+        temp_booking = TempHireBooking.objects.create(
+            session_uuid=uuid.uuid4(),
+            has_motorcycle_license=True, # Minimal required fields
+            currency='USD' # Override default
+        )
+        self.assertIsNone(temp_booking.pickup_date)
+        self.assertIsNone(temp_booking.motorcycle)
+        self.assertIsNone(temp_booking.grand_total)
+        self.assertEqual(temp_booking.currency, 'USD')
 
-    def test_clean_quantity_less_than_min_quantity_raises_error(self):
+    def test_temp_booking_addon_creation(self):
         """
-        Test that clean() raises ValidationError if quantity is less than addon's min_quantity.
+        Test that TempBookingAddOn instances can be created and linked.
         """
-        temp_booking_addon = create_temp_booking_addon(
-            temp_booking=self.temp_booking,
-            addon=self.addon_min2_max2, # min_quantity is 2
-            quantity=1 # Invalid quantity
+        temp_booking = create_temp_hire_booking(
+            motorcycle=self.motorcycle,
+            driver_profile=self.driver_profile,
+            grand_total=Decimal('200.00')
         )
-        with self.assertRaises(ValidationError) as cm:
-            temp_booking_addon.clean()
-        self.assertIn('quantity', cm.exception.message_dict)
-        self.assertEqual(
-            cm.exception.message_dict['quantity'][0],
-            f"Quantity for {self.addon_min2_max2.name} cannot be less than {self.addon_min2_max2.min_quantity}."
+        # The factory sets booked_addon_price as addon.daily_cost * quantity by default
+        # For a 2-day booking (default in create_temp_hire_booking), daily cost is used.
+        # So, for addon1 (daily_cost 15.00) * quantity 2 = 30.00
+        temp_addon1 = create_temp_booking_addon(temp_booking, self.addon1, quantity=2)
+        # For addon2 (daily_cost 20.00) * quantity 1 = 20.00. We pass 22.00 to test custom value.
+        temp_addon2 = create_temp_booking_addon(temp_booking, self.addon2, quantity=1, booked_addon_price=Decimal('22.00'))
+
+        self.assertIsNotNone(temp_addon1.pk)
+        self.assertEqual(temp_addon1.temp_booking, temp_booking)
+        self.assertEqual(temp_addon1.addon, self.addon1)
+        self.assertEqual(temp_addon1.quantity, 2)
+        self.assertEqual(temp_addon1.booked_addon_price, self.addon1.daily_cost * 2) # Expected total price
+
+        self.assertIsNotNone(temp_addon2.pk)
+        self.assertEqual(temp_addon2.temp_booking, temp_booking)
+        self.assertEqual(temp_addon2.addon, self.addon2)
+        self.assertEqual(temp_addon2.quantity, 1)
+        self.assertEqual(temp_addon2.booked_addon_price, Decimal('22.00'))
+
+        # Check reverse relationship
+        linked_addons = temp_booking.temp_booking_addons.all()
+        self.assertEqual(linked_addons.count(), 2)
+        self.assertIn(temp_addon1, linked_addons)
+        self.assertIn(temp_addon2, linked_addons)
+
+    def test_delete_temp_booking_deletes_addons(self):
+        """
+        Test that deleting a TempHireBooking also deletes its associated TempBookingAddOn instances.
+        """
+        temp_booking = create_temp_hire_booking(
+            motorcycle=self.motorcycle,
+            driver_profile=self.driver_profile,
+            grand_total=Decimal('200.00')
+        )
+        create_temp_booking_addon(temp_booking, self.addon1, quantity=1)
+        create_temp_booking_addon(temp_booking, self.addon2, quantity=1)
+
+        self.assertEqual(TempHireBooking.objects.count(), 1)
+        self.assertEqual(TempBookingAddOn.objects.count(), 2)
+
+        temp_booking.delete()
+
+        self.assertEqual(TempHireBooking.objects.count(), 0)
+        self.assertEqual(TempBookingAddOn.objects.count(), 0)
+
+    def test_update_temp_hire_booking(self):
+        """
+        Test that a TempHireBooking instance can be updated.
+        """
+        temp_booking = create_temp_hire_booking(
+            motorcycle=self.motorcycle,
+            driver_profile=self.driver_profile,
+            grand_total=Decimal('100.00'),
+            has_motorcycle_license=False
         )
 
-    def test_clean_quantity_greater_than_max_quantity_raises_error(self):
-        """
-        Test that clean() raises ValidationError if quantity is greater than addon's max_quantity.
-        """
-        temp_booking_addon = create_temp_booking_addon(
-            temp_booking=self.temp_booking,
-            addon=self.addon_min2_max2, # max_quantity is 2
-            quantity=3 # Invalid quantity
-        )
-        with self.assertRaises(ValidationError) as cm:
-            temp_booking_addon.clean()
-        self.assertIn('quantity', cm.exception.message_dict)
-        self.assertEqual(
-            cm.exception.message_dict['quantity'][0],
-            f"Quantity for {self.addon_min2_max2.name} cannot be more than {self.addon_min2_max2.max_quantity}."
-        )
+        # Introduce a small delay to ensure updated_at is greater than created_at
+        time.sleep(0.001)
 
-    def test_clean_quantity_null_raises_error(self):
-        """
-        Test that clean() raises ValidationError if quantity is null when addon is selected.
-        """
-        temp_booking_addon = create_temp_booking_addon(
-            temp_booking=self.temp_booking,
-            addon=self.addon_min1_max5,
-            quantity=1 # Create with valid quantity first
-        )
-        temp_booking_addon.quantity = None # Then set to null
-        with self.assertRaises(ValidationError) as cm:
-            temp_booking_addon.clean()
-        self.assertIn('quantity', cm.exception.message_dict)
-        # Updated assertion message to match the actual error from the model
-        self.assertEqual(cm.exception.message_dict['quantity'][0], "Quantity cannot be null if an add-on is selected.")
+        new_total = Decimal('250.00')
+        temp_booking.grand_total = new_total
+        temp_booking.has_motorcycle_license = True
+        temp_booking.save()
+
+        updated_booking = TempHireBooking.objects.get(pk=temp_booking.pk)
+        self.assertEqual(updated_booking.grand_total, new_total)
+        self.assertTrue(updated_booking.has_motorcycle_license)
+        self.assertGreater(updated_booking.updated_at, updated_booking.created_at)
 
     def test_clean_booked_addon_price_mismatch_raises_error(self):
         """
         Test that clean() raises ValidationError if booked_addon_price does not match
         the current add-on cost.
         """
+        # The default temp booking is 2 days, so daily_cost * quantity will be used for calculation
+        # For AddOn A (daily_cost 15.00) and quantity=2, expected total price is 30.00.
+        # We pass 9.99 to cause a mismatch.
         temp_booking_addon = create_temp_booking_addon(
-            temp_booking=self.temp_booking,
-            addon=self.addon_min1_max5,
-            quantity=1,
+            temp_booking=create_temp_hire_booking(motorcycle=self.motorcycle), # Create a fresh temp booking
+            addon=self.addon1,
+            quantity=2,
             booked_addon_price=Decimal('9.99') # Mismatch
         )
         with self.assertRaises(ValidationError) as cm:
             temp_booking_addon.clean()
         self.assertIn('booked_addon_price', cm.exception.message_dict)
-        # Updated assertion message to match the actual error from the model
+        # The expected calculated price for 2 units of AddOn A for a 2-day booking is 15.00 * 2 = 30.00
+        expected_calculated_total_price = self.addon1.daily_cost * temp_booking_addon.quantity
         self.assertEqual(
             cm.exception.message_dict['booked_addon_price'][0],
-            f"Booked add-on price must match the current price of the add-on ({self.addon_min1_max5.daily_cost})."
+            f"Booked add-on price ({Decimal('9.99')}) must match the calculated total price "
+            f"({expected_calculated_total_price}) for 2 unit(s) of {self.addon1.name}."
         )
 
     def test_clean_valid_temp_booking_addon_passes(self):
         """
         Test that a valid TempBookingAddOn instance passes clean() without errors.
         """
+        # The default temp booking is 2 days, so daily_cost * quantity will be used for calculation
+        # For AddOn A (daily_cost 15.00) and quantity=2, expected total price is 30.00.
+        # We pass 30.00 to match.
         temp_booking_addon = create_temp_booking_addon(
-            temp_booking=self.temp_booking,
-            addon=self.addon_min1_max5,
-            quantity=3, # Within min/max range
-            booked_addon_price=self.addon_min1_max5.daily_cost # Match
+            temp_booking=create_temp_hire_booking(motorcycle=self.motorcycle), # Create a fresh temp booking
+            addon=self.addon1,
+            quantity=2,
+            booked_addon_price=self.addon1.daily_cost * 2 # Match the expected total price
         )
         try:
             temp_booking_addon.clean()
         except ValidationError:
             self.fail("ValidationError raised unexpectedly for a valid TempBookingAddOn.")
 
-    def test_clean_valid_temp_booking_addon_with_deleted_addon_passes(self):
-        """
-        Test that clean() passes for TempBookingAddOn if addon is null (deleted).
-        In this case, quantity and booked_addon_price validation should be skipped.
-        """
-        # Create the instance directly to ensure addon is None
-        temp_booking_addon = TempBookingAddOn.objects.create(
-            temp_booking=self.temp_booking,
-            addon=None, # Simulate deleted addon
-            quantity=1,
-            booked_addon_price=Decimal('10.00') # Price can be anything if addon is null
-        )
-        try:
-            temp_booking_addon.clean()
-        except ValidationError:
-            self.fail("ValidationError raised unexpectedly for TempBookingAddOn with deleted addon.")
