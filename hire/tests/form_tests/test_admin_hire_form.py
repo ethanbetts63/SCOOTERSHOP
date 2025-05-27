@@ -67,7 +67,7 @@ class AdminHireBookingFormTest(TestCase):
             'package': self.package.id,
             'driver_profile': self.driver_profile.id,
             'currency': 'AUD',
-            'total_price': Decimal('300.00'), # This field should likely be renamed to grand_total
+            'grand_total': Decimal('300.00'), # Renamed from total_price
             'payment_method': 'card',
             'payment_status': 'unpaid',
             'status': 'pending',
@@ -102,7 +102,8 @@ class AdminHireBookingFormTest(TestCase):
         create_booking_addon(booking=booking, addon=self.addon1, quantity=2)
         create_booking_addon(booking=booking, addon=self.addon2, quantity=1)
 
-        form = AdminHireBookingForm(instance=booking)
+        # Pass hire_settings to the form for initialization
+        form = AdminHireBookingForm(instance=booking, hire_settings=self.hire_settings)
 
         # Assert initial values are correctly set by checking form.fields[...].initial
         self.assertEqual(form.fields['pick_up_date'].initial, booking.pickup_date)
@@ -124,7 +125,8 @@ class AdminHireBookingFormTest(TestCase):
         """
         Test that a form with valid data passes validation.
         """
-        form = AdminHireBookingForm(data=self._get_valid_form_data())
+        # Pass hire_settings to the form for validation
+        form = AdminHireBookingForm(data=self._get_valid_form_data(), hire_settings=self.hire_settings)
         self.assertTrue(form.is_valid(), form.errors.as_json())
         # Check that selected_addons_data and selected_package_instance are populated
         self.assertIn('selected_addons_data', form.cleaned_data)
@@ -141,7 +143,8 @@ class AdminHireBookingFormTest(TestCase):
             return_date=date.today() + timedelta(days=2), # Same day
             return_time=time(9, 0) # Before pickup time
         )
-        form = AdminHireBookingForm(data=data)
+        # Pass hire_settings to the form for validation
+        form = AdminHireBookingForm(data=data, hire_settings=self.hire_settings)
         self.assertFalse(form.is_valid())
         self.assertIn('return_date', form.errors)
         self.assertIn('return_time', form.errors)
@@ -156,7 +159,8 @@ class AdminHireBookingFormTest(TestCase):
             return_date=date.today() + timedelta(days=2), # Same day
             return_time=time(10, 0) # Same time
         )
-        form = AdminHireBookingForm(data=data)
+        # Pass hire_settings to the form for validation
+        form = AdminHireBookingForm(data=data, hire_settings=self.hire_settings)
         self.assertFalse(form.is_valid())
         self.assertIn('return_date', form.errors)
 
@@ -166,7 +170,8 @@ class AdminHireBookingFormTest(TestCase):
         """
         # Renamed total_price to grand_total in the test data
         data = self._get_valid_form_data(grand_total=Decimal('-10.00')) 
-        form = AdminHireBookingForm(data=data)
+        # Pass hire_settings to the form for validation
+        form = AdminHireBookingForm(data=data, hire_settings=self.hire_settings)
         self.assertFalse(form.is_valid())
         # Check for grand_total error
         self.assertIn('grand_total', form.errors) 
@@ -178,15 +183,17 @@ class AdminHireBookingFormTest(TestCase):
         """
         # Renamed total_price to grand_total in the test data
         data = self._get_valid_form_data(grand_total=Decimal('0.00'), payment_status='paid') 
-        form = AdminHireBookingForm(data=data)
+        # Pass hire_settings to the form for validation
+        form = AdminHireBookingForm(data=data, hire_settings=self.hire_settings)
         self.assertFalse(form.is_valid())
         # Check for grand_total error
         self.assertIn('grand_total', form.errors) 
         self.assertEqual(form.errors['grand_total'][0], "Grand total must be greater than 0 if payment status is 'Fully Paid'.") # Updated error message
 
-        # Test with total_price=None when payment_status is 'paid'
+        # Test with grand_total=None when payment_status is 'paid'
         data = self._get_valid_form_data(grand_total=None, payment_status='paid') # Renamed total_price to grand_total
-        form = AdminHireBookingForm(data=data)
+        # Pass hire_settings to the form for validation
+        form = AdminHireBookingForm(data=data, hire_settings=self.hire_settings)
         self.assertFalse(form.is_valid())
         # Check for grand_total error
         self.assertIn('grand_total', form.errors) 
@@ -200,7 +207,8 @@ class AdminHireBookingFormTest(TestCase):
         data = self._get_valid_form_data(
             **{f'addon_{self.addon1.id}_selected': True, f'addon_{self.addon1.id}_quantity': 0}
         )
-        form = AdminHireBookingForm(data=data)
+        # Pass hire_settings to the form for validation
+        form = AdminHireBookingForm(data=data, hire_settings=self.hire_settings)
         self.assertFalse(form.is_valid())
         self.assertIn(f'addon_{self.addon1.id}_quantity', form.errors)
         self.assertIn(f"Quantity for {self.addon1.name} must be between {self.addon1.min_quantity}-{self.addon1.max_quantity}.",
@@ -210,7 +218,8 @@ class AdminHireBookingFormTest(TestCase):
         data = self._get_valid_form_data(
             **{f'addon_{self.addon1.id}_selected': True, f'addon_{self.addon1.id}_quantity': 3}
         )
-        form = AdminHireBookingForm(data=data)
+        # Pass hire_settings to the form for validation
+        form = AdminHireBookingForm(data=data, hire_settings=self.hire_settings)
         self.assertFalse(form.is_valid())
         self.assertIn(f'addon_{self.addon1.id}_quantity', form.errors)
         self.assertIn(f"Quantity for {self.addon1.name} must be between {self.addon1.min_quantity}-{self.addon1.max_quantity}.",
@@ -220,7 +229,8 @@ class AdminHireBookingFormTest(TestCase):
         data = self._get_valid_form_data(
             **{f'addon_{self.addon1.id}_selected': True, f'addon_{self.addon1.id}_quantity': 2}
         )
-        form = AdminHireBookingForm(data=data)
+        # Pass hire_settings to the form for validation
+        form = AdminHireBookingForm(data=data, hire_settings=self.hire_settings)
         self.assertTrue(form.is_valid(), form.errors.as_json())
         # Check that selected_addons_data contains the correct add-on and quantity
         selected_addon = next((item for item in form.cleaned_data['selected_addons_data'] if item['addon'] == self.addon1), None)
@@ -237,13 +247,15 @@ class AdminHireBookingFormTest(TestCase):
         Test that booked_daily_rate and booked_hourly_rate cannot be negative.
         """
         data = self._get_valid_form_data(booked_daily_rate=Decimal('-5.00'))
-        form = AdminHireBookingForm(data=data)
+        # Pass hire_settings to the form for validation
+        form = AdminHireBookingForm(data=data, hire_settings=self.hire_settings)
         self.assertFalse(form.is_valid())
         self.assertIn('booked_daily_rate', form.errors)
         self.assertEqual(form.errors['booked_daily_rate'][0], "Booked daily rate cannot be negative.")
 
         data = self._get_valid_form_data(booked_hourly_rate=Decimal('-2.00'))
-        form = AdminHireBookingForm(data=data)
+        # Pass hire_settings to the form for validation
+        form = AdminHireBookingForm(data=data, hire_settings=self.hire_settings)
         self.assertFalse(form.is_valid())
         self.assertIn('booked_hourly_rate', form.errors)
         self.assertEqual(form.errors['booked_hourly_rate'][0], "Booked hourly rate cannot be negative.")
@@ -271,7 +283,8 @@ class AdminHireBookingFormTest(TestCase):
             payment_status='paid',
             status='confirmed'
         )
-        form = AdminHireBookingForm(instance=booking)
+        # Pass hire_settings to the form for initialization
+        form = AdminHireBookingForm(instance=booking, hire_settings=self.hire_settings)
         # Check initial value on the field itself
         self.assertIsNone(form.fields['package'].initial)
 
@@ -290,7 +303,8 @@ class AdminHireBookingFormTest(TestCase):
             payment_status='paid',
             status='confirmed'
         )
-        form = AdminHireBookingForm(instance=booking)
+        # Pass hire_settings to the form for initialization
+        form = AdminHireBookingForm(instance=booking, hire_settings=self.hire_settings)
         # Check initial value on the field itself
         self.assertFalse(form.fields[f'addon_{self.addon1.id}_selected'].initial)
         self.assertEqual(form.fields[f'addon_{self.addon1.id}_quantity'].initial, 1) # Default quantity
@@ -300,7 +314,8 @@ class AdminHireBookingFormTest(TestCase):
         Test that add-on fields are dynamically created during form initialization.
         This now includes unavailable add-ons for admin purposes.
         """
-        form = AdminHireBookingForm()
+        # Pass hire_settings to the form for initialization
+        form = AdminHireBookingForm(hire_settings=self.hire_settings)
         self.assertIn(f'addon_{self.addon1.id}_selected', form.fields)
         self.assertIn(f'addon_{self.addon1.id}_quantity', form.fields)
         self.assertIn(f'addon_{self.addon2.id}_selected', form.fields)
@@ -313,7 +328,8 @@ class AdminHireBookingFormTest(TestCase):
         """
         Test the get_addon_fields helper method for template rendering.
         """
-        form = AdminHireBookingForm(data=self._get_valid_form_data())
+        # Pass hire_settings to the form for validation
+        form = AdminHireBookingForm(data=self._get_valid_form_data(), hire_settings=self.hire_settings)
         form.is_valid() # Clean the data to ensure display_addons is processed
 
         addon_fields = list(form.get_addon_fields())
@@ -337,7 +353,8 @@ class AdminHireBookingFormTest(TestCase):
         non_hire_motorcycle = create_motorcycle(title="For Sale Bike")
         non_hire_motorcycle.conditions.clear() # Remove 'hire' condition
 
-        form = AdminHireBookingForm()
+        # Pass hire_settings to the form for initialization
+        form = AdminHireBookingForm(hire_settings=self.hire_settings)
 
         # Check queryset filters for available and 'hire' condition
         queryset_ids = set(form.fields['motorcycle'].queryset.values_list('id', flat=True))
@@ -353,7 +370,8 @@ class AdminHireBookingFormTest(TestCase):
         """
         Test that package queryset is filtered and label_from_instance works.
         """
-        form = AdminHireBookingForm()
+        # Pass hire_settings to the form for initialization
+        form = AdminHireBookingForm(hire_settings=self.hire_settings)
 
         # Check queryset filters for available packages
         queryset_ids = set(form.fields['package'].queryset.values_list('id', flat=True))
@@ -362,5 +380,5 @@ class AdminHireBookingFormTest(TestCase):
 
         # Check label_from_instance
         label = form.fields['package'].label_from_instance(self.package)
-        # Updated to use daily_cost as package_price was removed
-        self.assertEqual(label, f"{self.package.name} ({self.package.daily_cost:.2f})")
+        # Updated assertion to match the new label format (including hourly rate)
+        self.assertEqual(label, f"{self.package.name} (Daily: {self.package.daily_cost:.2f}, Hourly: {self.package.hourly_cost:.2f})")

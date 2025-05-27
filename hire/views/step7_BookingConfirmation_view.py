@@ -101,7 +101,7 @@ class BookingConfirmationView(View):
             'hire_booking': hire_booking,
             'booking_status': hire_booking.status,
             'payment_status': hire_booking.payment_status,
-            'total_price': hire_booking.total_price,
+            'grand_total': hire_booking.grand_total, # Changed from total_price to grand_total
             'amount_paid': hire_booking.amount_paid,
             'currency': hire_booking.currency,
             'motorcycle_details': f"{hire_booking.motorcycle.year} {hire_booking.motorcycle.brand} {hire_booking.motorcycle.model}",
@@ -142,7 +142,7 @@ class BookingStatusCheckView(View):
                 'booking_reference': hire_booking.booking_reference,
                 'booking_status': hire_booking.status,
                 'payment_status': hire_booking.payment_status,
-                'total_price': str(hire_booking.total_price), # Convert Decimal to string for JSON
+                'grand_total': str(hire_booking.grand_total), # Changed from total_price to grand_total
                 'amount_paid': str(hire_booking.amount_paid),
                 'currency': hire_booking.currency,
                 'motorcycle_details': f"{hire_booking.motorcycle.year} {hire_booking.motorcycle.brand} {hire_booking.motorcycle.model}",

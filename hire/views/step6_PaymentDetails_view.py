@@ -10,7 +10,7 @@ import json
 import logging
 
 from payments.models import Payment
-from hire.models import TempHireBooking
+from hire.models import TempHireBooking, DriverProfile # Import DriverProfile
 from django.contrib.auth import get_user_model # Import get_user_model
 
 logger = logging.getLogger(__name__)
@@ -69,7 +69,8 @@ class PaymentDetailsView(View):
         payment_obj = Payment.objects.filter(temp_hire_booking=temp_booking).first()
         intent = None
 
-        # --- START: Added logging for user check ---
+        # --- START: Added logging for user check and DriverProfile retrieval ---
+        driver_profile = None
         if request.user.is_authenticated:
             logger.debug(f"Authenticated user ID: {request.user.id}")
             print(f"DEBUG: User is authenticated. User ID: {request.user.id}") # Debug print
@@ -78,16 +79,24 @@ class PaymentDetailsView(View):
                 db_user = User.objects.get(id=request.user.id)
                 logger.debug(f"User {request.user.id} successfully retrieved from DB.")
                 print(f"DEBUG: User {request.user.id} found in DB.") # Debug print
+                # Try to get or create DriverProfile
+                driver_profile, created = DriverProfile.objects.get_or_create(user=db_user)
+                if created:
+                    logger.debug(f"Created new DriverProfile for user {db_user.id}")
+                    print(f"DEBUG: Created new DriverProfile for user {db_user.id}")
+                else:
+                    logger.debug(f"Retrieved existing DriverProfile for user {db_user.id}")
+                    print(f"DEBUG: Retrieved existing DriverProfile for user {db_user.id}")
             except User.DoesNotExist:
                 logger.error(f"CRITICAL ERROR: Authenticated user {request.user.id} DOES NOT EXIST in the database!")
                 print(f"DEBUG: CRITICAL ERROR - Authenticated user {request.user.id} NOT found in DB.") # Debug print
             except Exception as e:
-                logger.error(f"Error checking user {request.user.id} in DB: {e}")
-                print(f"DEBUG: Error checking user {request.user.id} in DB: {e}") # Debug print
+                logger.error(f"Error checking user {request.user.id} or DriverProfile in DB: {e}")
+                print(f"DEBUG: Error checking user {request.user.id} or DriverProfile in DB: {e}") # Debug print
         else:
             logger.debug("User is anonymous (not authenticated).")
             print("DEBUG: User is anonymous.") # Debug print
-        # --- END: Added logging for user check ---
+        # --- END: Added logging for user check and DriverProfile retrieval ---
 
         # Try to retrieve or create PaymentIntent and local Payment object
         try:
@@ -112,7 +121,8 @@ class PaymentDetailsView(View):
                             description=payment_description,
                             metadata={
                                 'temp_booking_id': str(temp_booking.id),
-                                'user_id': str(request.user.id) if request.user.is_authenticated else 'guest',
+                                # Pass driver_profile.id if available, otherwise 'guest'
+                                'user_id': str(driver_profile.id) if driver_profile else 'guest',
                                 'booking_type': 'hire_booking',
                             }
                         )
@@ -155,7 +165,8 @@ class PaymentDetailsView(View):
                     currency=currency,
                     metadata={
                         'temp_booking_id': str(temp_booking.id),
-                        'user_id': str(request.user.id) if request.user.is_authenticated else 'guest',
+                        # Pass driver_profile.id if available, otherwise 'guest'
+                        'user_id': str(driver_profile.id) if driver_profile else 'guest',
                         'booking_type': 'hire_booking',
                     },
                     description=payment_description
@@ -170,13 +181,16 @@ class PaymentDetailsView(View):
                     payment_obj.currency = currency
                     payment_obj.status = intent.status
                     payment_obj.description = payment_description
+                    # Update driver_profile if it's now available and wasn't before
+                    if driver_profile and not payment_obj.driver_profile:
+                        payment_obj.driver_profile = driver_profile
                     payment_obj.save()
                     logger.debug(f"Updated existing Payment DB object: {payment_obj.id} with new Stripe Intent.")
                     print(f"DEBUG: Updated existing Payment DB object {payment_obj.id}.") # Debug print
                 else: # If no payment_obj exists, create a new one
                     payment_obj = Payment.objects.create(
                         temp_hire_booking=temp_booking,
-                        user=request.user if request.user.is_authenticated else None,
+                        driver_profile=driver_profile, # Changed 'user' to 'driver_profile'
                         stripe_payment_intent_id=intent.id,
                         amount=amount_to_pay,
                         currency=currency,
