@@ -117,21 +117,6 @@ class Step4HasAccountForm(forms.ModelForm):
 
         # The rest of the clean method logic can now use the boolean is_australian_resident
         if is_australian_resident:
-            # Validate that passport_photo is NOT provided for Australian residents
-            if passport_photo:
-                self.add_error('passport_photo', "Passport photo should not be provided for Australian residents.")
-            # Also ensure international license fields are not provided
-            if international_license_photo:
-                self.add_error('international_license_photo', "International Driver's License photo should not be provided for Australian residents.")
-            if international_license_issuing_country:
-                self.add_error('international_license_issuing_country', "International Driver's License issuing country should not be provided for Australian residents.")
-            if international_license_expiry_date:
-                self.add_error('international_license_expiry_date', "International Driver's License expiry date should not be provided for Australian residents.")
-            if passport_number:
-                self.add_error('passport_number', "Passport number should not be provided for Australian residents.")
-            if passport_expiry_date:
-                self.add_error('passport_expiry_date', "Passport expiry date should not be provided for Australian residents.")
-
             if not license_photo and not (self.instance and self.instance.license_photo):
                 self.add_error('license_photo', "Australian residents must upload their domestic driver's license photo.")
             if not license_number:
@@ -141,14 +126,6 @@ class Step4HasAccountForm(forms.ModelForm):
             elif return_date and license_expiry_date < return_date:
                 self.add_error('license_expiry_date', "Your Australian Driver's License must not expire before the end of your booking.")
         else:  # Not an Australian Resident (Foreigner)
-            # Validate that Australian license fields are NOT provided for foreign residents
-            if license_photo:
-                self.add_error('license_photo', "Domestic driver's license photo should not be provided for foreign residents.")
-            if license_number:
-                self.add_error('license_number', "Domestic license number should not be provided for foreign residents.")
-            if license_expiry_date:
-                self.add_error('license_expiry_date', "Domestic license expiry date should not be provided for foreign residents.")
-
             if not international_license_photo and not (self.instance and self.instance.international_license_photo):
                 self.add_error('international_license_photo',
                                 "Foreign drivers must upload their International Driver's License photo.")
