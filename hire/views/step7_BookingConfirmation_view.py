@@ -77,7 +77,7 @@ class BookingConfirmationView(View):
                 'is_processing': True,
                 'payment_intent_id': payment_intent_id,
             }
-            return render(request, 'hire/step7_booking_confirmation.html', context)
+            return render(request, 'hire/step7_confirmation.html', context)
         elif not hire_booking: # No booking found and no payment_intent_id to poll
             logger.debug("No HireBooking found by session or payment_intent_id. Redirecting to step 2.")
             print("DEBUG: GET Request - No HireBooking found at all. Redirecting to step 2.") # Debug print
@@ -112,9 +112,9 @@ class BookingConfirmationView(View):
             'addons': hire_booking.booking_addons.all(),
             'is_processing': False, # Explicitly set to False when booking is found
         }
-        logger.debug("Rendering step7_booking_confirmation.html with context.")
-        print("DEBUG: GET Request - Rendering step7_booking_confirmation.html with booking details.") # Debug print
-        return render(request, 'hire/step7_booking_confirmation.html', context)
+        logger.debug("Rendering step7_confirmation.html with context.")
+        print("DEBUG: GET Request - Rendering step7_confirmation.html with booking details.") # Debug print
+        return render(request, 'hire/step7_confirmation.html', context)
 
 
 class BookingStatusCheckView(View):

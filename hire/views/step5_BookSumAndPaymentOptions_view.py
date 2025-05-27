@@ -3,17 +3,16 @@
 from django.shortcuts import render, redirect
 from django.views import View
 from django.contrib import messages
-from decimal import Decimal # Import Decimal for precise calculations
+from decimal import Decimal
 
 from ..models import TempHireBooking
 from dashboard.models import HireSettings
 from ..forms.step5_BookSumAndPaymentOptions_form import PaymentOptionForm
-from ..utils import *
-# Import the new centralized pricing function
+from ..utils import is_motorcycle_available
 from ..hire_pricing import calculate_booking_grand_total
+from hire.temp_hire_converter import convert_temp_to_hire_booking
 
 class BookSumAndPaymentOptionsView(View):
-    # FIX: Corrected the template name to match the actual file name
     template_name = 'hire/step5_book_sum_and_payment_options.html'
 
     def get(self, request, *args, **kwargs):
@@ -25,18 +24,14 @@ class BookSumAndPaymentOptionsView(View):
         hire_settings = HireSettings.objects.first()
         if not hire_settings:
             messages.error(request, "Hire settings not found.")
-            return redirect('core:index') # Or some appropriate error page
+            return redirect('core:index')
 
-        # Recalculate all booking prices to ensure they are up-to-date
-        # This acts as a safeguard in case previous steps didn't save correctly
-        # or if the user navigates directly to this step.
         calculated_prices = calculate_booking_grand_total(temp_booking, hire_settings)
         temp_booking.total_hire_price = calculated_prices['motorcycle_price']
         temp_booking.total_package_price = calculated_prices['package_price']
         temp_booking.total_addons_price = calculated_prices['addons_total_price']
         temp_booking.grand_total = calculated_prices['grand_total']
 
-        # Calculate deposit_amount based on the freshly calculated grand_total
         if hire_settings and hire_settings.deposit_percentage is not None:
             deposit_percentage = Decimal(str(hire_settings.deposit_percentage)) / Decimal('100')
             temp_booking.deposit_amount = temp_booking.grand_total * deposit_percentage
@@ -44,7 +39,6 @@ class BookSumAndPaymentOptionsView(View):
         else:
             temp_booking.deposit_amount = Decimal('0.00')
 
-        # Save the updated prices to the temporary booking before rendering the form
         temp_booking.save()
 
         form = PaymentOptionForm(temp_booking=temp_booking, hire_settings=hire_settings)
@@ -65,7 +59,7 @@ class BookSumAndPaymentOptionsView(View):
         hire_settings = HireSettings.objects.first()
         if not hire_settings:
             messages.error(request, "Hire settings not found.")
-            return redirect('core:index') # Or some appropriate error page
+            return redirect('core:index')
 
         form = PaymentOptionForm(request.POST, temp_booking=temp_booking, hire_settings=hire_settings)
 
@@ -73,31 +67,45 @@ class BookSumAndPaymentOptionsView(View):
             payment_option = form.cleaned_data['payment_method']
             temp_booking.payment_option = payment_option
 
-            # --- Recalculate grand_total and other prices using the centralized function ---
-            # This ensures the prices are accurate based on the latest booking data
-            # and the current pricing strategies, just before saving and redirecting.
             calculated_prices = calculate_booking_grand_total(temp_booking, hire_settings)
             temp_booking.total_hire_price = calculated_prices['motorcycle_price']
             temp_booking.total_package_price = calculated_prices['package_price']
             temp_booking.total_addons_price = calculated_prices['addons_total_price']
             temp_booking.grand_total = calculated_prices['grand_total']
 
-            # Calculate deposit_amount based on the freshly calculated grand_total
             if hire_settings and hire_settings.deposit_percentage is not None:
                 deposit_percentage = Decimal(str(hire_settings.deposit_percentage)) / Decimal('100')
                 temp_booking.deposit_amount = temp_booking.grand_total * deposit_percentage
                 temp_booking.deposit_amount = temp_booking.deposit_amount.quantize(Decimal('0.01'))
             else:
-                temp_booking.deposit_amount = Decimal('0.00') # Fallback if deposit_percentage is not set
+                temp_booking.deposit_amount = Decimal('0.00')
 
-            # Save the updated TempHireBooking instance with all calculated prices
             temp_booking.save()
 
-            # Redirect to the next step based on the payment option
-            if payment_option == 'online_full' or payment_option == 'online_deposit':
-                return redirect('hire:step6_payment_details') # To payment gateway details
+            if not is_motorcycle_available(request, temp_booking.motorcycle, temp_booking):
+                messages.error(request, "The selected motorcycle is no longer available for the chosen dates and times. Please select another motorcycle.")
+                return redirect('hire:step2_choose_bike')
+
+            if payment_option == 'in_store_full':
+                try:
+                    hire_booking = convert_temp_to_hire_booking(
+                        temp_booking=temp_booking,
+                        payment_method='in_store',
+                        booking_payment_status='pending_in_store',
+                        amount_paid_on_booking=Decimal('0.00'),
+                        stripe_payment_intent_id=None,
+                        payment_obj=None,
+                    )
+                    messages.success(request, f"Your booking ({hire_booking.booking_reference}) has been successfully created. Please pay the full amount in-store at pickup.")
+                    return redirect('hire:step7_confirmation', payment_intent_id='in_store_full')
+                except Exception as e:
+                    messages.error(request, "There was an error finalizing your in-store booking. Please try again.")
+                    return redirect('hire:step5_summary_payment_options')
+            elif payment_option == 'online_full' or payment_option == 'online_deposit':
+                return redirect('hire:step6_payment_details')
             else:
-                return redirect('hire:step6_payment_details') # For in-store, we might just confirm details
+                messages.error(request, "An invalid payment option was selected. Please try again.")
+                return redirect('hire:step5_summary_payment_options')
 
         else:
             context = {
