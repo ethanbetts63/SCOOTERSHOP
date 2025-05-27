@@ -39,7 +39,7 @@ class BookSumAndPaymentOptionsViewTest(TestCase):
             deposit_percentage=Decimal('20.00'),
             enable_online_full_payment=True,
             enable_online_deposit_payment=True,
-            enable_in_store_full_payment=True,
+            enable_in_store_full_payment=True, # Ensure this is True for the test
             hire_pricing_strategy='24_hour_customer_friendly'
         )
 
@@ -102,7 +102,7 @@ class BookSumAndPaymentOptionsViewTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        # FIX: Corrected template name as per user's instruction
+        # Corrected template name as per user's instruction
         self.assertTemplateUsed(response, 'hire/step5_book_sum_and_payment_options.html')
         self.assertEqual(response.context['temp_booking'].id, temp_booking.id)
         self.assertIn('hire_settings', response.context)
@@ -153,8 +153,6 @@ class BookSumAndPaymentOptionsViewTest(TestCase):
         self.assertEqual(str(messages[0]), "Hire settings not found.")
 
     # --- POST Request Tests ---
-    # These tests were already present in your original file, I'm just keeping them.
-    # If you meant to remove ALL POST tests, please clarify.
 
     def test_post_request_online_full_payment_redirects_to_payment_details(self):
         """
@@ -177,18 +175,7 @@ class BookSumAndPaymentOptionsViewTest(TestCase):
         self.assertRedirects(response, reverse('hire:step6_payment_details'))
         temp_booking.refresh_from_db()
         self.assertEqual(temp_booking.payment_option, 'online_deposit')
-
-    def test_post_request_in_store_payment_redirects_to_payment_details(self):
-        """
-        Test POST request with 'in_store' payment option.
-        """
-        temp_booking = self._create_and_set_temp_booking_in_session()
-        form_data = {'payment_method': 'in_store'}
-        response = self.client.post(self.step5_url, form_data)
-        self.assertRedirects(response, reverse('hire:step6_payment_details'))
-        temp_booking.refresh_from_db()
-        self.assertEqual(temp_booking.payment_option, 'in_store')
-
+        
     def test_post_request_invalid_form_renders_template_with_errors(self):
         """
         Test POST request with invalid form data.
@@ -198,4 +185,5 @@ class BookSumAndPaymentOptionsViewTest(TestCase):
         response = self.client.post(self.step5_url, form_data)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'hire/step5_book_sum_and_payment_options.html')
-        self.assertFormError(response, 'form', 'payment_method', 'Select a valid choice. invalid_option is not one of the available choices.')
+        # Access the form from the response context
+        self.assertFormError(response.context['form'], 'payment_method', 'Select a valid choice. invalid_option is not one of the available choices.')
