@@ -26,6 +26,9 @@ from hire.tests.test_helpers.model_factories import (
     create_temp_booking_addon,
 )
 
+# Import the pricing utility (needed for accurate expected values)
+from hire.views.hire_pricing import calculate_addon_price
+
 
 class TempBookingAddOnModelTest(TestCase):
     """
@@ -43,7 +46,47 @@ class TempBookingAddOnModelTest(TestCase):
         cls.package = create_package()
         cls.addon1 = create_addon(name="AddOn A", hourly_cost=Decimal('2.00'), daily_cost=Decimal('15.00'))
         cls.addon2 = create_addon(name="AddOn B", hourly_cost=Decimal('5.00'), daily_cost=Decimal('20.00'))
-        cls.hire_settings = create_hire_settings() # Ensure settings exist
+        cls.hire_settings = create_hire_settings(
+            hire_pricing_strategy='24_hour_customer_friendly', # Ensure strategy is set
+            excess_hours_margin=2 # Ensure margin is set
+        )
+
+        # Define specific dates and times for the temporary booking to ensure consistent duration calculation
+        cls.pickup_date = timezone.now().date() + datetime.timedelta(days=1)
+        cls.pickup_time = datetime.time(10, 0)
+        cls.return_date = cls.pickup_date + datetime.timedelta(days=2) # This makes it span 3 calendar days
+        cls.return_time = datetime.time(16, 0) # 6 hours into the third day
+
+        cls.temp_booking_for_addons = create_temp_hire_booking(
+            motorcycle=cls.motorcycle,
+            pickup_date=cls.pickup_date,
+            pickup_time=cls.pickup_time,
+            return_date=cls.return_date,
+            return_time=cls.return_time,
+            grand_total=Decimal('100.00') # This value might need to be dynamic if calculated in future tests
+        )
+
+        # Calculate the expected price per unit for addon1 for the default temp booking duration
+        cls.expected_addon1_price_per_unit_for_default_temp_booking = calculate_addon_price(
+            addon_instance=cls.addon1,
+            quantity=1, # Calculate for a single unit
+            pickup_date=cls.temp_booking_for_addons.pickup_date,
+            return_date=cls.temp_booking_for_addons.return_date,
+            pickup_time=cls.temp_booking_for_addons.pickup_time,
+            return_time=cls.temp_booking_for_addons.return_time,
+            hire_settings=cls.hire_settings
+        )
+        # Calculate the expected price per unit for addon2 for the default temp booking duration
+        cls.expected_addon2_price_per_unit_for_default_temp_booking = calculate_addon_price(
+            addon_instance=cls.addon2,
+            quantity=1, # Calculate for a single unit
+            pickup_date=cls.temp_booking_for_addons.pickup_date,
+            return_date=cls.temp_booking_for_addons.return_date,
+            pickup_time=cls.temp_booking_for_addons.pickup_time,
+            return_time=cls.temp_booking_for_addons.return_time,
+            hire_settings=cls.hire_settings
+        )
+
 
     def test_create_basic_temp_hire_booking(self):
         """
@@ -154,26 +197,44 @@ class TempBookingAddOnModelTest(TestCase):
         temp_booking = create_temp_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile,
-            grand_total=Decimal('200.00')
+            grand_total=Decimal('200.00'),
+            pickup_date=self.pickup_date,
+            pickup_time=self.pickup_time,
+            return_date=self.return_date,
+            return_time=self.return_time,
         )
-        # The factory sets booked_addon_price as addon.daily_cost * quantity by default
-        # For a 2-day booking (default in create_temp_hire_booking), daily cost is used.
-        # So, for addon1 (daily_cost 15.00) * quantity 2 = 30.00
-        temp_addon1 = create_temp_booking_addon(temp_booking, self.addon1, quantity=2)
-        # For addon2 (daily_cost 20.00) * quantity 1 = 20.00. We pass 22.00 to test custom value.
-        temp_addon2 = create_temp_booking_addon(temp_booking, self.addon2, quantity=1, booked_addon_price=Decimal('22.00'))
+        
+        # For addon1 (daily_cost 15.00) and quantity 2
+        quantity1 = 2
+        expected_price1 = self.expected_addon1_price_per_unit_for_default_temp_booking * quantity1
+        temp_addon1 = create_temp_booking_addon(
+            temp_booking,
+            self.addon1,
+            quantity=quantity1,
+            booked_addon_price=expected_price1
+        )
+        
+        # For addon2 (daily_cost 20.00) and quantity 1. We pass 22.00 to test custom value.
+        quantity2 = 1
+        custom_booked_price2 = Decimal('22.00') # Intentionally different from calculated
+        temp_addon2 = create_temp_booking_addon(
+            temp_booking,
+            self.addon2,
+            quantity=quantity2,
+            booked_addon_price=custom_booked_price2
+        )
 
         self.assertIsNotNone(temp_addon1.pk)
         self.assertEqual(temp_addon1.temp_booking, temp_booking)
         self.assertEqual(temp_addon1.addon, self.addon1)
-        self.assertEqual(temp_addon1.quantity, 2)
-        self.assertEqual(temp_addon1.booked_addon_price, self.addon1.daily_cost * 2) # Expected total price
+        self.assertEqual(temp_addon1.quantity, quantity1)
+        self.assertEqual(temp_addon1.booked_addon_price, expected_price1) # Expected total price
 
         self.assertIsNotNone(temp_addon2.pk)
         self.assertEqual(temp_addon2.temp_booking, temp_booking)
         self.assertEqual(temp_addon2.addon, self.addon2)
-        self.assertEqual(temp_addon2.quantity, 1)
-        self.assertEqual(temp_addon2.booked_addon_price, Decimal('22.00'))
+        self.assertEqual(temp_addon2.quantity, quantity2)
+        self.assertEqual(temp_addon2.booked_addon_price, custom_booked_price2)
 
         # Check reverse relationship
         linked_addons = temp_booking.temp_booking_addons.all()
@@ -188,10 +249,14 @@ class TempBookingAddOnModelTest(TestCase):
         temp_booking = create_temp_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile,
-            grand_total=Decimal('200.00')
+            grand_total=Decimal('200.00'),
+            pickup_date=self.pickup_date,
+            pickup_time=self.pickup_time,
+            return_date=self.return_date,
+            return_time=self.return_time,
         )
-        create_temp_booking_addon(temp_booking, self.addon1, quantity=1)
-        create_temp_booking_addon(temp_booking, self.addon2, quantity=1)
+        create_temp_booking_addon(temp_booking, self.addon1, quantity=1, booked_addon_price=self.expected_addon1_price_per_unit_for_default_temp_booking * 1)
+        create_temp_booking_addon(temp_booking, self.addon2, quantity=1, booked_addon_price=self.expected_addon2_price_per_unit_for_default_temp_booking * 1)
 
         self.assertEqual(TempHireBooking.objects.count(), 1)
         self.assertEqual(TempBookingAddOn.objects.count(), 2)
@@ -209,7 +274,11 @@ class TempBookingAddOnModelTest(TestCase):
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile,
             grand_total=Decimal('100.00'),
-            has_motorcycle_license=False
+            has_motorcycle_license=False,
+            pickup_date=self.pickup_date,
+            pickup_time=self.pickup_time,
+            return_date=self.return_date,
+            return_time=self.return_time,
         )
 
         # Introduce a small delay to ensure updated_at is greater than created_at
@@ -228,40 +297,62 @@ class TempBookingAddOnModelTest(TestCase):
     def test_clean_booked_addon_price_mismatch_raises_error(self):
         """
         Test that clean() raises ValidationError if booked_addon_price does not match
-        the current add-on cost.
+        the calculated total price.
         """
-        # The default temp booking is 2 days, so daily_cost * quantity will be used for calculation
-        # For AddOn A (daily_cost 15.00) and quantity=2, expected total price is 30.00.
-        # We pass 9.99 to cause a mismatch.
+        # Create a fresh temp booking with defined dates/times for accurate price calculation
+        temp_booking = create_temp_hire_booking(
+            motorcycle=self.motorcycle,
+            pickup_date=self.pickup_date,
+            pickup_time=self.pickup_time,
+            return_date=self.return_date,
+            return_time=self.return_time,
+        )
+        
+        quantity = 2
+        # We pass a price that is intentionally incorrect to trigger the validation error.
+        incorrect_booked_price = self.expected_addon1_price_per_unit_for_default_temp_booking * quantity + Decimal('0.01') # Mismatch
+        
         temp_booking_addon = create_temp_booking_addon(
-            temp_booking=create_temp_hire_booking(motorcycle=self.motorcycle), # Create a fresh temp booking
+            temp_booking=temp_booking,
             addon=self.addon1,
-            quantity=2,
-            booked_addon_price=Decimal('9.99') # Mismatch
+            quantity=quantity,
+            booked_addon_price=incorrect_booked_price 
         )
         with self.assertRaises(ValidationError) as cm:
             temp_booking_addon.clean()
         self.assertIn('booked_addon_price', cm.exception.message_dict)
-        # The expected calculated price for 2 units of AddOn A for a 2-day booking is 15.00 * 2 = 30.00
-        expected_calculated_total_price = self.addon1.daily_cost * temp_booking_addon.quantity
+        
+        # The expected calculated total price for 2 units of AddOn A for the booking duration
+        expected_calculated_total_price = self.expected_addon1_price_per_unit_for_default_temp_booking * quantity
+        
         self.assertEqual(
             cm.exception.message_dict['booked_addon_price'][0],
-            f"Booked add-on price ({Decimal('9.99')}) must match the calculated total price "
-            f"({expected_calculated_total_price}) for 2 unit(s) of {self.addon1.name}."
+            f"Booked add-on price ({incorrect_booked_price}) must match the calculated total price "
+            f"({expected_calculated_total_price}) for {quantity} unit(s) of {self.addon1.name}."
         )
 
     def test_clean_valid_temp_booking_addon_passes(self):
         """
         Test that a valid TempBookingAddOn instance passes clean() without errors.
         """
-        # The default temp booking is 2 days, so daily_cost * quantity will be used for calculation
-        # For AddOn A (daily_cost 15.00) and quantity=2, expected total price is 30.00.
-        # We pass 30.00 to match.
+        # Create a fresh temp booking with defined dates/times for accurate price calculation
+        temp_booking = create_temp_hire_booking(
+            motorcycle=self.motorcycle,
+            pickup_date=self.pickup_date,
+            pickup_time=self.pickup_time,
+            return_date=self.return_date,
+            return_time=self.return_time,
+        )
+        
+        quantity = 2
+        # We pass a price that is intentionally correct to ensure validation passes.
+        correct_booked_price = self.expected_addon1_price_per_unit_for_default_temp_booking * quantity
+        
         temp_booking_addon = create_temp_booking_addon(
-            temp_booking=create_temp_hire_booking(motorcycle=self.motorcycle), # Create a fresh temp booking
+            temp_booking=temp_booking,
             addon=self.addon1,
-            quantity=2,
-            booked_addon_price=self.addon1.daily_cost * 2 # Match the expected total price
+            quantity=quantity,
+            booked_addon_price=correct_booked_price # Match the expected total price
         )
         try:
             temp_booking_addon.clean()
