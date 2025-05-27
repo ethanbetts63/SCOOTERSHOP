@@ -34,6 +34,7 @@ class BookingConfirmationView(View):
                 hire_booking = HireBooking.objects.get(stripe_payment_intent_id=payment_intent_id)
 
                 # If found this way, store the booking_reference in session for future use
+                # This is important for subsequent page loads or refreshes.
                 request.session['final_booking_reference'] = hire_booking.booking_reference
 
             except HireBooking.DoesNotExist:
@@ -57,9 +58,13 @@ class BookingConfirmationView(View):
             return redirect('hire:step2_choose_bike')
 
 
-        # Clear the session variable as the booking is now confirmed and persistent
-        if 'final_booking_reference' in request.session:
-            del request.session['final_booking_reference']
+        # --- REMOVED: Clearing 'final_booking_reference' here. ---
+        # It should persist in the session after a successful display,
+        # especially if the user refreshes the page.
+        # It can be cleared when the user moves to a different part of the site
+        # or when the session expires.
+        # if 'final_booking_reference' in request.session:
+        #     del request.session['final_booking_reference']
 
         # Also clear the temp_booking_id if it somehow still exists here
         if 'temp_booking_id' in request.session:
@@ -79,7 +84,7 @@ class BookingConfirmationView(View):
             'driver_name': hire_booking.driver_profile.name,
             'package_name': hire_booking.package.name if hire_booking.package else 'N/A',
             'addons': hire_booking.booking_addons.all(),
-            'is_processing': False, 
+            'is_processing': False,
         }
         return render(request, 'hire/step7_booking_confirmation.html', context)
 

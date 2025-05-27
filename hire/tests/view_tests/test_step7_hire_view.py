@@ -80,9 +80,9 @@ class BookingConfirmationViewTests(TestCase):
         # Add an addon to the booking for context testing
         self.addon1 = create_addon(name="GPS Navigation", daily_cost=Decimal("10.00"))
         self.booking_addon1 = create_booking_addon(
-            booking=self.hire_booking, 
-            addon=self.addon1, 
-            quantity=1, 
+            booking=self.hire_booking,
+            addon=self.addon1,
+            quantity=1,
             booked_addon_price=Decimal("20.00") # 2 days * 10.00
         )
         self.hire_booking.total_addons_price = Decimal("20.00")
@@ -94,6 +94,8 @@ class BookingConfirmationViewTests(TestCase):
     def test_get_confirmation_with_booking_reference_in_session(self):
         """
         Test GET request when 'final_booking_reference' is in session.
+        This test now expects 'final_booking_reference' to persist in the session
+        after the confirmation page is displayed, for consistency with online payments.
         """
         session = self.client.session
         session['final_booking_reference'] = self.hire_booking.booking_reference
@@ -109,8 +111,12 @@ class BookingConfirmationViewTests(TestCase):
         self.assertEqual(response.context.get('driver_name'), self.driver_profile.name)
         self.assertIn(self.addon1.name, [addon.addon.name for addon in response.context.get('addons')])
 
-        # Check session variables are cleared
-        self.assertNotIn('final_booking_reference', self.client.session)
+        # IMPORTANT: Refresh the session after the request to get the latest state
+        self.client.session.load()
+
+        # Check 'final_booking_reference' is now expected to be present
+        self.assertEqual(self.client.session.get('final_booking_reference'), self.hire_booking.booking_reference)
+        # 'temp_booking_id' should still be cleared
         self.assertNotIn('temp_booking_id', self.client.session)
 
     def test_get_confirmation_with_payment_intent_id_in_query(self):
@@ -121,7 +127,7 @@ class BookingConfirmationViewTests(TestCase):
         if 'final_booking_reference' in session: # Ensure it's not there initially
             del session['final_booking_reference']
         session['temp_booking_id'] = 12345 # Dummy temp booking id
-        session.save()
+        session.save() # Save the session state before making the request
 
         response = self.client.get(self.step7_url, {'payment_intent_id': self.hire_booking.stripe_payment_intent_id})
 
@@ -129,6 +135,9 @@ class BookingConfirmationViewTests(TestCase):
         self.assertTemplateUsed(response, 'hire/step7_booking_confirmation.html')
         self.assertFalse(response.context.get('is_processing'))
         self.assertEqual(response.context.get('hire_booking'), self.hire_booking)
+
+        # IMPORTANT: Refresh the session after the request to get the latest state
+        self.client.session.load()
 
         # Check 'final_booking_reference' is added to session and 'temp_booking_id' is cleared
         self.assertEqual(self.client.session.get('final_booking_reference'), self.hire_booking.booking_reference)
@@ -277,9 +286,9 @@ class BookingStatusCheckViewTests(TestCase):
         )
         self.addon = create_addon(name="Helmet Cam", daily_cost=Decimal("5.00"))
         self.booking_addon = create_booking_addon(
-            booking=self.hire_booking, 
-            addon=self.addon, 
-            quantity=1, 
+            booking=self.hire_booking,
+            addon=self.addon,
+            quantity=1,
             booked_addon_price=Decimal("5.00") # 1 day * 5.00 (adjust if booking duration changes)
         )
         # Re-calculate totals if needed, though factory should handle it.
