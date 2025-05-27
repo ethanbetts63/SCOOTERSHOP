@@ -1,3 +1,5 @@
+# hire/tests/view_tests/test_step3_hire_view.py
+
 import datetime
 from decimal import Decimal
 from django.test import TestCase, Client
@@ -7,7 +9,7 @@ from django.contrib.messages import get_messages
 
 # Import the view directly to access its template_name
 from hire.views.step3_AddonPackage_view import AddonPackageView
-from hire.utils import calculate_motorcycle_hire_price
+from hire.hire_pricing import calculate_motorcycle_hire_price 
 
 from hire.tests.test_helpers.model_factories import (
     create_motorcycle, create_temp_hire_booking, create_addon, create_package,
@@ -76,16 +78,16 @@ class AddonPackageViewTest(TestCase):
         self.session.save()
 
         # Create various add-on instances for testing
-        self.addon1 = create_addon(name="Helmet", cost=Decimal('10.00'), min_quantity=1, max_quantity=2)
-        self.addon2 = create_addon(name="Jacket", cost=Decimal('20.00'), min_quantity=1, max_quantity=1) # Max quantity 1, often included in packages
-        self.addon3 = create_addon(name="Gloves", cost=Decimal('5.00'), min_quantity=1, max_quantity=3)
-        self.addon_unavailable = create_addon(name="GPS", cost=Decimal('15.00'), is_available=False)
+        self.addon1 = create_addon(name="Helmet", daily_cost=Decimal('10.00'), hourly_cost=Decimal('2.00'), min_quantity=1, max_quantity=2)
+        self.addon2 = create_addon(name="Jacket", daily_cost=Decimal('20.00'), hourly_cost=Decimal('4.00'), min_quantity=1, max_quantity=1) # Max quantity 1, often included in packages
+        self.addon3 = create_addon(name="Gloves", daily_cost=Decimal('5.00'), hourly_cost=Decimal('1.00'), min_quantity=1, max_quantity=3)
+        self.addon_unavailable = create_addon(name="GPS", daily_cost=Decimal('15.00'), hourly_cost=Decimal('3.00'), is_available=False)
 
         # Create various package instances for testing
         # package1 includes addon1 (max_quantity 2) and addon2 (max_quantity 1)
-        self.package1 = create_package(name="Standard Pack", package_price=Decimal('30.00'), add_ons=[self.addon1, self.addon2]) 
-        self.package2 = create_package(name="Premium Pack", package_price=Decimal('70.00'), add_ons=[self.addon1, self.addon2, self.addon3])
-        self.package_unavailable = create_package(name="Old Pack", package_price=Decimal('20.00'), is_available=False)
+        self.package1 = create_package(name="Standard Pack", daily_cost=Decimal('30.00'), hourly_cost=Decimal('6.00'), add_ons=[self.addon1, self.addon2]) 
+        self.package2 = create_package(name="Premium Pack", daily_cost=Decimal('70.00'), hourly_cost=Decimal('14.00'), add_ons=[self.addon1, self.addon2, self.addon3])
+        self.package_unavailable = create_package(name="Old Pack", daily_cost=Decimal('20.00'), hourly_cost=Decimal('4.00'), is_available=False)
 
     # --- GET Request Tests ---
 
@@ -190,7 +192,8 @@ class AddonPackageViewTest(TestCase):
         
         basic_package = Package.objects.get(name="Basic Hire") # Retrieve the basic package
         self.assertIsNotNone(basic_package)
-        self.assertEqual(basic_package.package_price, Decimal('0.00'))
+        self.assertEqual(basic_package.daily_cost, Decimal('0.00')) # Changed from package_price
+        self.assertEqual(basic_package.hourly_cost, Decimal('0.00')) # Check hourly_cost as well
         
         self.temp_booking.refresh_from_db()
         self.assertEqual(self.temp_booking.package, basic_package) # Ensure basic package is selected
@@ -227,7 +230,7 @@ class AddonPackageViewTest(TestCase):
         
         # Pre-select a package in temp_booking to ensure it gets cleared
         self.temp_booking.package = self.package1
-        self.temp_booking.total_package_price = self.package1.package_price
+        self.temp_booking.total_package_price = self.package1.daily_cost # Changed from package_price
         self.temp_booking.save()
 
         response = self.client.get(reverse('hire:step3_addons_and_packages', args=[self.motorcycle.id]))
@@ -352,7 +355,7 @@ class AddonPackageViewTest(TestCase):
         """
         # self.temp_booking is already set up with a motorcycle and hire price in setUp
         # Prepare form data: select package1, 1 additional Helmet (addon1), and 2 Gloves (addon3)
-        # addon1 has max_quantity=2, and is in package1. So, adjusted max is 1.
+        # addon1 has max_quantity=2, in package1, so adjusted max is 1.
         # addon3 has max_quantity=3, and is not in package1. So, 2 are allowed.
         form_data = {
             'package': self.package1.id,
@@ -367,18 +370,44 @@ class AddonPackageViewTest(TestCase):
 
         self.temp_booking.refresh_from_db()
         self.assertEqual(self.temp_booking.package, self.package1)
-        self.assertEqual(self.temp_booking.total_package_price, self.package1.package_price)
+        
+        # Recalculate expected total_package_price based on the new pricing logic
+        expected_package_price = calculate_package_price(
+            package_instance=self.package1,
+            pickup_date=self.temp_booking.pickup_date,
+            return_date=self.temp_booking.return_date,
+            pickup_time=self.temp_booking.pickup_time,
+            return_time=self.temp_booking.return_time,
+            hire_settings=self.hire_settings
+        )
+        self.assertEqual(self.temp_booking.total_package_price, expected_package_price)
 
         # Calculate expected total_addons_price based on hire_duration_days (3 days from setUp calculation)
-        # Addon1 (additional 1 unit): 1 * 10.00 (cost) * 3 (days) = 30.00
-        # Addon3 (2 units): 2 * 5.00 (cost) * 3 (days) = 30.00
-        # Total expected additional add-ons price = 30.00 + 30.00 = 60.00
-        self.assertEqual(self.temp_booking.total_addons_price, Decimal('60.00'))
+        # Addon1 (additional 1 unit): 1 * calculate_addon_price(addon1, 1, ...)
+        # Addon3 (2 units): 2 * calculate_addon_price(addon3, 1, ...)
+        expected_addon1_price = calculate_addon_price(
+            addon_instance=self.addon1,
+            quantity=1,
+            pickup_date=self.temp_booking.pickup_date,
+            return_date=self.temp_booking.return_date,
+            pickup_time=self.temp_booking.pickup_time,
+            return_time=self.temp_booking.return_time,
+            hire_settings=self.hire_settings
+        )
+        expected_addon3_price = calculate_addon_price(
+            addon_instance=self.addon3,
+            quantity=2,
+            pickup_date=self.temp_booking.pickup_date,
+            return_date=self.temp_booking.return_date,
+            pickup_time=self.temp_booking.pickup_time,
+            return_time=self.temp_booking.return_time,
+            hire_settings=self.hire_settings
+        )
+        expected_total_addons_price = expected_addon1_price + expected_addon3_price
+        self.assertEqual(self.temp_booking.total_addons_price, expected_total_addons_price)
         
         # Calculate expected grand total: total_hire_price + total_package_price + total_addons_price
-        # self.temp_booking.total_hire_price is 300.00 (from setUp calculation: 100.00 daily_rate * 3 days)
-        # 300.00 (hire) + 30.00 (package) + 60.00 (addons) = 390.00
-        expected_grand_total = self.temp_booking.total_hire_price + self.package1.package_price + Decimal('60.00')
+        expected_grand_total = self.temp_booking.total_hire_price + expected_package_price + expected_total_addons_price
         self.assertEqual(self.temp_booking.grand_total, expected_grand_total)
 
         self.assertEqual(self.temp_booking.temp_booking_addons.count(), 2) # Two temporary add-ons should be created
