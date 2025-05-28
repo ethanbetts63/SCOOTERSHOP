@@ -10,6 +10,8 @@ from django.contrib.auth import get_user_model
 from inventory.models import Motorcycle, MotorcycleCondition
 from payments.models import Payment # Ensure Payment model is imported
 from dashboard.models import HireSettings
+# NEW: Import EmailLog model
+from mailer.models import EmailLog
 
 # Import models from the current 'hire' app
 from hire.models import (
@@ -237,7 +239,7 @@ def create_driver_profile(
         email=email,
         phone_number=phone_number,
         address_line_1=address_line_1,
-        city=city,
+        city="Sydney",
         country=country,
         date_of_birth=date_of_birth,
         is_australian_resident=is_australian_resident,
@@ -478,4 +480,29 @@ def create_temp_booking_addon(
         addon=addon,
         quantity=quantity,
         booked_addon_price=booked_addon_price
+    )
+
+# NEW: EmailLog Factory
+def create_email_log(
+    sender="sender@example.com",
+    recipient="recipient@example.com",
+    subject="Test Subject",
+    body="<html><body><h1>Test Email</h1></body></html>",
+    status='SENT',
+    error_message=None,
+    user=None,
+    driver_profile=None,
+    booking=None,
+):
+    """Creates an EmailLog instance."""
+    return EmailLog.objects.create(
+        sender=sender,
+        recipient=recipient,
+        subject=subject,
+        body=body,
+        status=status,
+        error_message=error_message,
+        user=user,
+        driver_profile=driver_profile,
+        booking=booking,
     )
