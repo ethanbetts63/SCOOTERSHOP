@@ -46,7 +46,7 @@ class AdminHireBookingFormTest(TestCase):
         cls.addon1 = create_addon(name="GPS", hourly_cost=Decimal('3.00'), daily_cost=Decimal('15.00'), min_quantity=1, max_quantity=2)
         cls.addon2 = create_addon(name="Extra Helmet", hourly_cost=Decimal('2.00'), daily_cost=Decimal('10.00'), min_quantity=1, max_quantity=1)
         # Ensure this add-on is initially unavailable to test the form's __init__ change
-        cls.unavailable_addon = create_addon(name="Unavailable Item", is_available=False) 
+        cls.unavailable_addon = create_addon(name="Unavailable Item", is_available=False)
         # Updated create_package to use hourly_cost and daily_cost
         cls.package = create_package(name="Premium Pack", hourly_cost=Decimal('15.00'), daily_cost=Decimal('75.00'), add_ons=[cls.addon1])
         cls.unavailable_package = create_package(name="Out of Stock Pack", is_available=False)
@@ -68,7 +68,7 @@ class AdminHireBookingFormTest(TestCase):
             'driver_profile': self.driver_profile.id,
             'currency': 'AUD',
             'grand_total': Decimal('300.00'), # Renamed from total_price
-            'payment_method': 'card',
+            'payment_method': 'in_store_full', # Updated to a valid choice
             'payment_status': 'unpaid',
             'status': 'pending',
             'internal_notes': 'Test booking notes.',
@@ -169,12 +169,12 @@ class AdminHireBookingFormTest(TestCase):
         Test that total_price cannot be negative.
         """
         # Renamed total_price to grand_total in the test data
-        data = self._get_valid_form_data(grand_total=Decimal('-10.00')) 
+        data = self._get_valid_form_data(grand_total=Decimal('-10.00'))
         # Pass hire_settings to the form for validation
         form = AdminHireBookingForm(data=data, hire_settings=self.hire_settings)
         self.assertFalse(form.is_valid())
         # Check for grand_total error
-        self.assertIn('grand_total', form.errors) 
+        self.assertIn('grand_total', form.errors)
         self.assertEqual(form.errors['grand_total'][0], "Grand total cannot be negative.") # Updated error message
 
     def test_total_price_zero_with_paid_status(self):
@@ -182,12 +182,12 @@ class AdminHireBookingFormTest(TestCase):
         Test that total_price must be > 0 if payment_status is 'Fully Paid'.
         """
         # Renamed total_price to grand_total in the test data
-        data = self._get_valid_form_data(grand_total=Decimal('0.00'), payment_status='paid') 
+        data = self._get_valid_form_data(grand_total=Decimal('0.00'), payment_status='paid')
         # Pass hire_settings to the form for validation
         form = AdminHireBookingForm(data=data, hire_settings=self.hire_settings)
         self.assertFalse(form.is_valid())
         # Check for grand_total error
-        self.assertIn('grand_total', form.errors) 
+        self.assertIn('grand_total', form.errors)
         self.assertEqual(form.errors['grand_total'][0], "Grand total must be greater than 0 if payment status is 'Fully Paid'.") # Updated error message
 
         # Test with grand_total=None when payment_status is 'paid'
@@ -196,7 +196,7 @@ class AdminHireBookingFormTest(TestCase):
         form = AdminHireBookingForm(data=data, hire_settings=self.hire_settings)
         self.assertFalse(form.is_valid())
         # Check for grand_total error
-        self.assertIn('grand_total', form.errors) 
+        self.assertIn('grand_total', form.errors)
         self.assertEqual(form.errors['grand_total'][0], "Grand total must be greater than 0 if payment status is 'Fully Paid'.") # Updated error message
 
     def test_addon_quantity_validation(self):

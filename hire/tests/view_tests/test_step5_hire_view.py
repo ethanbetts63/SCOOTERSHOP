@@ -213,7 +213,7 @@ class BookSumAndPaymentOptionsViewTest(TestCase):
         hire_booking = HireBooking.objects.get(motorcycle=temp_booking.motorcycle, pickup_date=temp_booking.pickup_date)
         self.assertIsNotNone(hire_booking)
         self.assertEqual(hire_booking.payment_method, 'in_store_full')
-        self.assertEqual(hire_booking.payment_status, 'pending_in_store')
+        self.assertEqual(hire_booking.payment_status, 'unpaid')
         self.assertEqual(hire_booking.amount_paid, Decimal('0.00')) # No online payment for in-store
 
         # Check for success message

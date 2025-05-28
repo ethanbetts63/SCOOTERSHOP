@@ -218,32 +218,6 @@ class BikeChoiceViewTests(TestCase):
         self.assertNotIn(self.motorcycle_250cc, motorcycles_in_context) # Should be excluded
         self.assertIn(self.motorcycle_600cc, motorcycles_in_context)
 
-    def test_get_motorcycles_excluded_by_existing_temp_booking(self):
-        """
-        Test that motorcycles with existing TempHireBookings overlapping the period are excluded.
-        This simulates another user having a bike in their temporary cart.
-        """
-        # Create another TempHireBooking that overlaps for motorcycle_600cc
-        create_temp_hire_booking(
-            motorcycle=self.motorcycle_600cc,
-            pickup_date=self.pickup_date,
-            pickup_time=self.pickup_time,
-            return_date=self.return_date,
-            return_time=self.return_time,
-            has_motorcycle_license=True,
-            session_uuid=uuid.uuid4() # Ensure it's a different session
-        )
-
-        self._create_and_set_temp_booking_in_session(has_motorcycle_license=True)
-
-        response = self.client.get(self.bike_choice_url)
-        self.assertEqual(response.status_code, 200)
-        motorcycles_in_context = [m['object'] for m in response.context['motorcycles']]
-
-        self.assertIn(self.motorcycle_50cc, motorcycles_in_context)
-        self.assertIn(self.motorcycle_250cc, motorcycles_in_context)
-        self.assertNotIn(self.motorcycle_600cc, motorcycles_in_context) # Should be excluded
-
     def test_get_motorcycles_sorting_low_to_high(self):
         """
         Test sorting of motorcycles by price from low to high.

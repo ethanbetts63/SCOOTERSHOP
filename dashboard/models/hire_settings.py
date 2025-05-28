@@ -60,32 +60,6 @@ class HireSettings(models.Model):
         help_text="Allow customers to pay the full amount in store."
     )
 
-    #  # --- OLD Payment Options ---
-    # enable_online_full_payment = models.BooleanField(
-    #     default=False,
-    #     help_text="Allow customers to pay the full amount online."
-    # )
-    # enable_online_deposit_payment = models.BooleanField(
-    #     default=False,
-    #     help_text="Allow customers to pay a deposit online."
-    # )
-    # enable_in_store_full_payment = models.BooleanField(
-    #     default=False,
-    #     help_text="Allow customers to pay the full amount in store."
-    # )
-    # enable_cash_payment = models.BooleanField(
-    #     default=False,
-    #     help_text="Allow customers to pay with cash in store."
-    # )
-    # enable_card_payment = models.BooleanField(
-    #     default=False,
-    #     help_text="Allow customers to pay with card in store."
-    # )
-    # enable_other_payment = models.BooleanField(
-    #     default=False,
-    #     help_text="Allow other payment methods."
-    # )
-
     # --- Deposit Defaults ---
     # Enable deposit option.
     deposit_enabled = models.BooleanField(
