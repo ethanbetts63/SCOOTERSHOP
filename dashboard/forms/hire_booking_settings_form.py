@@ -45,9 +45,6 @@ class HireBookingSettingsForm(forms.ModelForm):
             'enable_online_full_payment',
             'enable_online_deposit_payment',
             'enable_in_store_full_payment',
-            'enable_cash_payment',
-            'enable_card_payment',
-            'enable_other_payment',
         ]
         widgets = {
             'default_hourly_rate': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
@@ -148,4 +145,3 @@ class HireBookingSettingsForm(forms.ModelForm):
 
 
         return cleaned_data
-

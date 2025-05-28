@@ -87,8 +87,8 @@ class BookSumAndPaymentOptionsView(View):
                 try:
                     hire_booking = convert_temp_to_hire_booking(
                         temp_booking=temp_booking,
-                        payment_method='in_store',
-                        booking_payment_status='pending_in_store',
+                        payment_method='in_store_full',
+                        booking_payment_status='unpaid',
                         amount_paid_on_booking=Decimal('0.00'),
                         stripe_payment_intent_id=None,
                         payment_obj=None,
