@@ -84,7 +84,7 @@ class HasAccountView(LoginRequiredMixin, View):
                 temp_booking.total_addons_price = calculated_prices['addons_total_price']
                 temp_booking.grand_total = calculated_prices['grand_total']
                 temp_booking.deposit_amount = calculated_prices['deposit_amount']
-                temp_booking.currency = calculated_prices['currency']
+                temp_booking.currency = calculated_prices['currency'] # Added currency update
                 print(f"DEBUG: HasAccountView POST - Updated temp_booking prices: {calculated_prices}")
             else:
                 messages.warning(request, "Hire settings not found. Cannot calculate accurate booking prices.")

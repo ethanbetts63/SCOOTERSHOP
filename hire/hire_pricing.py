@@ -209,6 +209,8 @@ def calculate_booking_grand_total(temp_booking, hire_settings):
             'package_price': Decimal('0.00'),
             'addons_total_price': Decimal('0.00'),
             'grand_total': Decimal('0.00'),
+            'deposit_amount': Decimal('0.00'), # Ensure deposit_amount is always returned
+            'currency': 'AUD', # Default currency
         }
 
     motorcycle_total_price = Decimal('0.00')
@@ -251,9 +253,25 @@ def calculate_booking_grand_total(temp_booking, hire_settings):
     # Sums motorcycle, package, and add-on prices for the grand total.
     grand_total = motorcycle_total_price + package_total_price + addons_total_price
 
+    # Calculate deposit amount based on hire_settings.default_deposit_calculation_method
+    deposit_amount = Decimal('0.00')
+    if hire_settings.deposit_enabled:
+        if hire_settings.default_deposit_calculation_method == 'percentage' and hire_settings.deposit_percentage is not None:
+            deposit_percentage = Decimal(str(hire_settings.deposit_percentage)) / Decimal('100')
+            deposit_amount = grand_total * deposit_percentage
+            deposit_amount = deposit_amount.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        elif hire_settings.default_deposit_calculation_method == 'fixed' and hire_settings.deposit_amount is not None:
+            deposit_amount = hire_settings.deposit_amount
+            deposit_amount = deposit_amount.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+    
+    # Get currency from hire settings, default to AUD if not set
+    currency = hire_settings.currency_code if hire_settings.currency_code else 'AUD'
+
     return {
         'motorcycle_price': motorcycle_total_price,
         'package_price': package_total_price,
         'addons_total_price': addons_total_price,
         'grand_total': grand_total,
+        'deposit_amount': deposit_amount,
+        'currency': currency,
     }

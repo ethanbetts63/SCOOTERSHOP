@@ -30,18 +30,14 @@ class BookSumAndPaymentOptionsView(View):
             messages.error(request, "Hire settings not found.")
             return redirect('core:index')
 
+        # Recalculate prices to ensure they are up-to-date
         calculated_prices = calculate_booking_grand_total(temp_booking, hire_settings)
         temp_booking.total_hire_price = calculated_prices['motorcycle_price']
         temp_booking.total_package_price = calculated_prices['package_price']
         temp_booking.total_addons_price = calculated_prices['addons_total_price']
         temp_booking.grand_total = calculated_prices['grand_total']
-
-        if hire_settings and hire_settings.deposit_percentage is not None:
-            deposit_percentage = Decimal(str(hire_settings.deposit_percentage)) / Decimal('100')
-            temp_booking.deposit_amount = temp_booking.grand_total * deposit_percentage
-            temp_booking.deposit_amount = temp_booking.deposit_amount.quantize(Decimal('0.01'))
-        else:
-            temp_booking.deposit_amount = Decimal('0.00')
+        temp_booking.deposit_amount = calculated_prices['deposit_amount'] # Updated to use calculated deposit
+        temp_booking.currency = calculated_prices['currency'] # Updated to use calculated currency
 
         temp_booking.save()
 
@@ -71,18 +67,14 @@ class BookSumAndPaymentOptionsView(View):
             payment_option = form.cleaned_data['payment_method']
             temp_booking.payment_option = payment_option
 
+            # Recalculate prices to ensure they are up-to-date before saving and proceeding
             calculated_prices = calculate_booking_grand_total(temp_booking, hire_settings)
             temp_booking.total_hire_price = calculated_prices['motorcycle_price']
             temp_booking.total_package_price = calculated_prices['package_price']
             temp_booking.total_addons_price = calculated_prices['addons_total_price']
             temp_booking.grand_total = calculated_prices['grand_total']
-
-            if hire_settings and hire_settings.deposit_percentage is not None:
-                deposit_percentage = Decimal(str(hire_settings.deposit_percentage)) / Decimal('100')
-                temp_booking.deposit_amount = temp_booking.grand_total * deposit_percentage
-                temp_booking.deposit_amount = temp_booking.deposit_amount.quantize(Decimal('0.01'))
-            else:
-                temp_booking.deposit_amount = Decimal('0.00')
+            temp_booking.deposit_amount = calculated_prices['deposit_amount'] # Updated to use calculated deposit
+            temp_booking.currency = calculated_prices['currency'] # Updated to use calculated currency
 
             temp_booking.save()
 
