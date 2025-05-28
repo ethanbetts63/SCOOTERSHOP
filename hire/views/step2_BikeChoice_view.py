@@ -12,7 +12,7 @@ from inventory.models import Motorcycle
 from dashboard.models import HireSettings, BlockedHireDate
 from hire.models import TempHireBooking # Import TempHireBooking model
 # Import the new pricing functions
-from ..hire_pricing import calculate_motorcycle_hire_price 
+from ..hire_pricing import calculate_motorcycle_hire_price
 
 
 class BikeChoiceView(View):
@@ -27,11 +27,11 @@ class BikeChoiceView(View):
         # --- START: Abandoned TempHireBooking Cleanup ---
         # Define the abandonment threshold (2 hours)
         abandonment_threshold = timezone.now() - datetime.timedelta(hours=2)
-        
+
         # Query for abandoned TempHireBooking instances
         # We use 'updated_at' to check if the booking has been inactive for more than 2 hours.
         abandoned_bookings = TempHireBooking.objects.filter(updated_at__lt=abandonment_threshold)
-        
+
         # Delete the abandoned bookings
         if abandoned_bookings.exists():
             count = abandoned_bookings.count()
@@ -44,7 +44,7 @@ class BikeChoiceView(View):
         # Try to get TempHireBooking from session or URL parameters
         temp_booking_id = request.session.get('temp_booking_id') or request.GET.get('temp_booking_id')
         temp_booking_uuid = request.session.get('temp_booking_uuid') or request.GET.get('temp_booking_uuid')
-        
+
         print(f"--- Debugging BikeChoiceView.get ---")
         print(f"temp_booking_id from session/GET: {temp_booking_id}")
         print(f"temp_booking_uuid from session/GET: {temp_booking_uuid}")
@@ -95,7 +95,7 @@ class BikeChoiceView(View):
             if 'temp_booking_id' in request.session:
                 del request.session['temp_booking_id']
             if 'temp_booking_uuid' in request.session:
-                del request.session['temp_booking_uuid']
+                    del request.session['temp_booking_uuid']
             temp_booking = None # Ensure temp_booking is None in context
             print(f"Missing pickup/return dates/times in TempHireBooking. Clearing session.")
             context = {
@@ -109,7 +109,7 @@ class BikeChoiceView(View):
 
         pickup_datetime = timezone.make_aware(datetime.datetime.combine(pickup_date, pickup_time))
         return_datetime = timezone.make_aware(datetime.datetime.combine(return_date, return_time))
-        
+
         # The 'duration' variable here was previously used for a simplified calculation.
         # It's no longer directly used for the main pricing logic, as calculate_motorcycle_hire_price
         # handles duration internally based on datetimes.
@@ -119,12 +119,13 @@ class BikeChoiceView(View):
         #     duration = 1
 
         # Determine available motorcycles based on license and existing bookings
+        # CORRECTED: Removed the exclusion for TempHireBooking instances.
+        # Only confirmed HireBookings should block availability for other users.
         available_motorcycles = Motorcycle.objects.filter(
             is_available=True
         ).exclude(
-            # Exclude motorcycles that are already booked for any part of the requested period
-            Q(hire_bookings__pickup_date__lt=return_date, hire_bookings__return_date__gt=pickup_date) |
-            Q(temp_hire_bookings__pickup_date__lt=return_date, temp_hire_bookings__return_date__gt=pickup_date)
+            # Exclude motorcycles that are already booked by *confirmed* HireBookings
+            Q(hire_bookings__pickup_date__lt=return_date, hire_bookings__return_date__gt=pickup_date)
         )
         print(f"Motorcycles available before license filter (count): {available_motorcycles.count()}")
         print(f"Motorcycles available before license filter (IDs): {[m.id for m in available_motorcycles]}")
@@ -140,7 +141,7 @@ class BikeChoiceView(View):
             )
         else:
             print(f"User HAS a motorcycle license. All engine sizes are considered.")
-        
+
         print(f"Motorcycles available AFTER license filter (count): {available_motorcycles.count()}")
         print(f"Motorcycles available AFTER license filter (IDs): {[m.id for m in available_motorcycles]}")
         print(f"Motorcycles available AFTER license filter (Engine Sizes): {[m.engine_size for m in available_motorcycles]}")
@@ -159,7 +160,7 @@ class BikeChoiceView(View):
                 return_time=return_time,
                 hire_settings=hire_settings
             )
-            
+
             # Use the motorcycle's daily_hire_rate for display if available, otherwise fallback to default
             daily_hire_rate_display = motorcycle.daily_hire_rate if motorcycle.daily_hire_rate is not None else hire_settings.default_daily_rate
 
@@ -190,6 +191,6 @@ class BikeChoiceView(View):
             'current_order': order_by,
             'hire_settings': hire_settings,
             'temp_booking': temp_booking,
-            'blocked_hire_dates': BlockedHireDate 
+            'blocked_hire_dates': BlockedHireDate
         }
         return render(request, self.template_name, context)
