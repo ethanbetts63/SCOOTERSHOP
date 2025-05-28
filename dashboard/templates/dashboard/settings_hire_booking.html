@@ -372,7 +372,9 @@
 
         // Function to toggle visibility of excess_hours_margin field
         function toggleExcessHoursMarginVisibility() {
-            if (hirePricingStrategySelect.value === '24_hour_plus_margin') {
+            // Check if the selected strategy is either of the margin-based ones
+            if (hirePricingStrategySelect.value === '24_hour_plus_margin' || 
+                hirePricingStrategySelect.value === '24_hour_plus_margin_proportional') {
                 excessHoursMarginField.style.display = 'block';
             } else {
                 excessHoursMarginField.style.display = 'none';

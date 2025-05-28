@@ -15,7 +15,7 @@ HIRE_PRICING_STRATEGY_CHOICES = [
     ('24_hour_customer_friendly', '24-Hour Billing Friendly (Excess hours are billed at hourly rate or day rate, whichever is lower)'),
     ('daily_plus_excess_hourly', 'Daily Rate + Excess Hourly (Every additional hour charged hourly)'),
     ('daily_plus_proportional_excess', 'Daily Rate + Proportional Excess (Excess hours billed as percentage of daily rate)'),
-    ('24_hour_plus_margin_proportional', '24-Hour Billing with Margin (Excess hours beyond margin are proportional)'),
+    ('24_hour_plus_margin_proportional', '24-Hour Billing with Margin + Proportional (Excess hours beyond margin are proportional)'),
 ]
 
 
