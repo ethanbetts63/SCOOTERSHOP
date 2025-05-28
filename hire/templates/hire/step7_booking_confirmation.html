@@ -1,6 +1,5 @@
 {% extends 'core/layout.html' %}
 {% load static %}
-{# Removed: {% load custom_filters %} as we are handling string formatting in Python/JavaScript #}
 
 {% block title %}Booking Confirmation{% endblock %}
 
@@ -112,8 +111,7 @@
                             <div class="mb-6">
                                 <h3 class="text-xl font-semibold text-gray-800 mb-3">Package Details</h3>
                                 <p class="text-gray-700"><strong class="font-medium">Package Name:</strong> ${booking.package_name}</p>
-                                {% comment %} The backend does not currently send booked_package_price for JS rendering. Add if needed. {% endcomment %}
-                                {% comment %} <p class="text-gray-700"><strong class="font-medium">Package Price:</strong> ${booking.booked_package_price} ${booking.currency}</p> {% endcomment %}
+                                <p class="text-gray-700"><strong class="font-medium">Package Price:</strong> ${booking.total_package_price} ${booking.currency}</p>
                             </div>
                         `;
                     }
@@ -137,7 +135,9 @@
                                 <div>
                                     <p><strong class="font-medium">Booking Status:</strong> <span class="capitalize">${booking.booking_status.replace(/_/g, ' ')}</span></p>
                                     <p><strong class="font-medium">Payment Status:</strong> <span class="capitalize">${booking.payment_status.replace(/_/g, ' ')}</span></p>
-                                    <p><strong class="font-medium">Total Price:</strong> ${booking.total_price} ${booking.currency}</p>
+                                    <p><strong class="font-medium">Motorcycle Hire Price:</strong> ${booking.total_hire_price} ${booking.currency}</p>
+                                    <p><strong class="font-medium">Add-ons Total Price:</strong> ${booking.total_addons_price} ${booking.currency}</p>
+                                    <p><strong class="font-medium">Total Price:</strong> ${booking.grand_total} ${booking.currency}</p>
                                     <p><strong class="font-medium">Amount Paid:</strong> ${booking.amount_paid} ${booking.currency}</p>
                                 </div>
                             </div>
@@ -181,7 +181,9 @@
                         {# booking_status and payment_status are now pre-formatted in the view #}
                         <p><strong class="font-medium">Booking Status:</strong> <span class="capitalize">{{ booking_status }}</span></p>
                         <p><strong class="font-medium">Payment Status:</strong> <span class="capitalize">{{ payment_status }}</span></p>
-                        <p><strong class="font-medium">Total Price:</strong> {{ total_price }} {{ currency }}</p>
+                        <p><strong class="font-medium">Motorcycle Hire Price:</strong> {{ hire_booking.total_hire_price|floatformat:2 }} {{ currency }}</p>
+                        <p><strong class="font-medium">Add-ons Total Price:</strong> {{ hire_booking.total_addons_price|floatformat:2 }} {{ currency }}</p>
+                        <p><strong class="font-medium">Total Price:</strong> {{ hire_booking.grand_total|floatformat:2 }} {{ currency }}</p>
                         <p><strong class="font-medium">Amount Paid:</strong> {{ amount_paid }} {{ currency }}</p>
                     </div>
                 </div>
@@ -191,7 +193,7 @@
             <div class="mb-6">
                 <h3 class="text-xl font-semibold text-gray-800 mb-3">Package Details</h3>
                 <p class="text-gray-700"><strong class="font-medium">Package Name:</strong> {{ package_name }}</p>
-                <p class="text-gray-700"><strong class="font-medium">Package Price:</strong> {{ hire_booking.booked_package_price }} {{ currency }}</p>
+                <p class="text-gray-700"><strong class="font-medium">Package Price:</strong> {{ hire_booking.total_package_price|floatformat:2 }} {{ currency }}</p>
                 {% if hire_booking.package.description %}
                 <p class="text-gray-600 text-sm mt-1">{{ hire_booking.package.description }}</p>
                 {% endif %}
@@ -203,7 +205,7 @@
                 <h3 class="text-xl font-semibold text-gray-800 mb-3">Add-ons Included</h3>
                 <ul class="list-disc list-inside text-gray-700">
                     {% for addon in addons %}
-                    <li>{{ addon.quantity }} x {{ addon.addon.name }} ({{ addon.booked_addon_price }} {{ currency }} each)</li>
+                    <li>{{ addon.quantity }} x {{ addon.addon.name }} ({{ addon.booked_addon_price|floatformat:2 }} {{ currency }} each)</li>
                     {% endfor %}
                 </ul>
             </div>
