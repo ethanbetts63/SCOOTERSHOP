@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 
 # Import models from their respective apps
 from inventory.models import Motorcycle, MotorcycleCondition
-from payments.models import Payment
+from payments.models import Payment # Ensure Payment model is imported
 from dashboard.models import HireSettings
 
 # Import models from the current 'hire' app
@@ -157,23 +157,28 @@ def create_payment(
     status='pending',
     stripe_payment_intent_id=None,
     stripe_payment_method_id=None,
-    # Add description and related booking/driver profile fields
     description=None,
+    metadata=None, # Added metadata argument
     temp_hire_booking=None,
     hire_booking=None,
     driver_profile=None,
 ):
     """Creates a Payment instance."""
+    # Ensure metadata defaults to an empty dictionary if not provided
+    if metadata is None:
+        metadata = {}
+
     return Payment.objects.create(
         amount=amount,
         currency=currency,
         status=status,
         stripe_payment_intent_id=stripe_payment_intent_id,
         stripe_payment_method_id=stripe_payment_method_id,
-        description=description, # Pass description
-        temp_hire_booking=temp_hire_booking, # Pass temp_hire_booking
-        hire_booking=hire_booking, # Pass hire_booking
-        driver_profile=driver_profile, # Pass driver_profile
+        description=description,
+        metadata=metadata, # Pass metadata
+        temp_hire_booking=temp_hire_booking,
+        hire_booking=hire_booking,
+        driver_profile=driver_profile,
     )
 
 # --- Factories for Hire App Models ---

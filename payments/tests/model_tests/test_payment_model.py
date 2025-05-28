@@ -73,6 +73,7 @@ class PaymentModelTest(TestCase):
         """
         Test the __str__ method of Payment.
         """
+        # This payment uses the class-level self.temp_booking
         payment = create_payment(
             amount=Decimal('250.00'),
             currency='AUD',
@@ -88,13 +89,20 @@ class PaymentModelTest(TestCase):
         self.assertEqual(str(payment), expected_str)
 
         # Test with only temp_hire_booking
+        # Create a NEW temp_booking instance for this specific payment
+        new_temp_booking_for_str_test = create_temp_hire_booking(
+            motorcycle=self.motorcycle, # Re-use existing motorcycle
+            driver_profile=self.driver_profile, # Re-use existing driver profile
+            total_hire_price=Decimal('100.00'),
+            grand_total=Decimal('120.00')
+        )
         payment_temp_only = create_payment(
             amount=Decimal('50.00'),
-            temp_hire_booking=self.temp_booking,
+            temp_hire_booking=new_temp_booking_for_str_test, # Use the NEW temp_booking
             status='pending'
         )
         expected_str_temp_only = (
-            f"Payment {payment_temp_only.id} (Temp: {self.temp_booking.id}, Hire: N/A) "
+            f"Payment {payment_temp_only.id} (Temp: {new_temp_booking_for_str_test.id}, Hire: N/A) "
             f"- Amount: {payment_temp_only.amount} {payment_temp_only.currency} - Status: {payment_temp_only.status}"
         )
         self.assertEqual(str(payment_temp_only), expected_str_temp_only)
@@ -213,6 +221,7 @@ class PaymentModelTest(TestCase):
 
         # Test with more than 2 decimal places (should be rounded)
         payment_rounded = create_payment(amount=Decimal('100.123'))
+        payment_rounded.refresh_from_db() # Added to refresh from DB and ensure rounding
         self.assertEqual(payment_rounded.amount, Decimal('100.12'))
 
         # Test max_digits (99,999,999.99 should pass)
@@ -354,4 +363,3 @@ class PaymentModelTest(TestCase):
             stripe_payment_intent_id="pi_null_desc"
         )
         self.assertIsNone(payment_null_desc.description)
-
