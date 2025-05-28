@@ -1,7 +1,7 @@
 import datetime
 import uuid
 from decimal import Decimal
-
+from datetime import timedelta
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.utils import timezone
@@ -315,3 +315,66 @@ class BikeChoiceViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['motorcycles']), 4) # Should return last page
         self.assertEqual(response.context['page_obj'].number, 2)
+
+    def test_abandoned_temp_hire_bookings_are_deleted(self):
+        """
+        Tests that TempHireBooking instances older than 2 hours are deleted
+        when the BikeChoiceView is accessed.
+        """
+        # Create some TempHireBooking instances
+        now = timezone.now()
+        
+        # Booking older than 2 hours, should be deleted
+        old_booking_1 = create_temp_hire_booking(
+            pickup_date=now.date(),
+            pickup_time=now.time(),
+            return_date=(now + timedelta(days=1)).date(),
+            return_time=now.time(),
+        )
+        # Manually update updated_at directly in the database to bypass auto_now
+        TempHireBooking.objects.filter(id=old_booking_1.id).update(
+            created_at=now - timedelta(hours=2, minutes=5),
+            updated_at=now - timedelta(hours=2, minutes=5)
+        )
+
+        # Another booking older than 2 hours, should be deleted
+        old_booking_2 = create_temp_hire_booking(
+            pickup_date=now.date(),
+            pickup_time=now.time(),
+            return_date=(now + timedelta(days=1)).date(),
+            return_time=now.time(),
+        )
+        # Manually update updated_at directly in the database to bypass auto_now
+        TempHireBooking.objects.filter(id=old_booking_2.id).update(
+            created_at=now - timedelta(hours=3),
+            updated_at=now - timedelta(hours=3)
+        )
+
+        # Booking more recent than 2 hours, should NOT be deleted
+        recent_booking = create_temp_hire_booking(
+            pickup_date=now.date(),
+            pickup_time=now.time(),
+            return_date=(now + timedelta(days=1)).date(),
+            return_time=now.time(),
+        )
+        # Manually update updated_at directly in the database to bypass auto_now
+        TempHireBooking.objects.filter(id=recent_booking.id).update(
+            created_at=now - timedelta(hours=1),
+            updated_at=now - timedelta(hours=1)
+        )
+
+        # Access the BikeChoiceView (this should trigger the cleanup)
+        # We need a valid temp_booking in session for the view to proceed and trigger cleanup.
+        # This will create a *new* temp booking, but the cleanup logic runs *before* it tries
+        # to retrieve the session's temp booking.
+        self._create_and_set_temp_booking_in_session(has_motorcycle_license=True) 
+        response = self.client.get(self.bike_choice_url)
+        self.assertEqual(response.status_code, 200) # Ensure the view rendered successfully
+
+        # Check that the old bookings are deleted
+        self.assertFalse(TempHireBooking.objects.filter(id=old_booking_1.id).exists())
+        self.assertFalse(TempHireBooking.objects.filter(id=old_booking_2.id).exists())
+
+        # Check that the recent booking still exists
+        self.assertTrue(TempHireBooking.objects.filter(id=recent_booking.id).exists())
+
