@@ -56,12 +56,13 @@ class EmailLogModelTest(TestCase):
         """
         Test that an EmailLog instance is created with 'PENDING' status by default.
         """
+        # Fix: Do not pass status=None. Let the model's default take effect.
         email_log = create_email_log(
             sender="admin@example.com",
             recipient="customer@example.com",
             subject="Default Status Test",
             body="Test body.",
-            status=None # Let it default
+            # Removed status=None to allow model default
         )
         self.assertEqual(email_log.status, 'PENDING')
 
@@ -156,7 +157,7 @@ class EmailLogModelTest(TestCase):
 
     def test_email_log_timestamp_auto_now_add(self):
         """
-        Test that the timestamp is automatically set upon creation.
+        Test that the timestamp is automatically set upon creation when not provided.
         """
         # Create an EmailLog and capture the time immediately after
         before_creation = timezone.now()
@@ -164,7 +165,8 @@ class EmailLogModelTest(TestCase):
             sender="t@t.com",
             recipient="r@r.com",
             subject="Timestamp Test",
-            body="Body"
+            body="Body",
+            timestamp=None # Ensure it uses the default in the factory
         )
         after_creation = timezone.now()
 

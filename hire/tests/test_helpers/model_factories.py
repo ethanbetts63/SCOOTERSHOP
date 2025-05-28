@@ -488,21 +488,33 @@ def create_email_log(
     recipient="recipient@example.com",
     subject="Test Subject",
     body="<html><body><h1>Test Email</h1></body></html>",
-    status='SENT',
+    status=None, # Changed default to None
     error_message=None,
     user=None,
     driver_profile=None,
     booking=None,
+    timestamp=None,
 ):
     """Creates an EmailLog instance."""
-    return EmailLog.objects.create(
-        sender=sender,
-        recipient=recipient,
-        subject=subject,
-        body=body,
-        status=status,
-        error_message=error_message,
-        user=user,
-        driver_profile=driver_profile,
-        booking=booking,
-    )
+    if timestamp is None:
+        timestamp = timezone.now()
+
+    # Prepare kwargs for EmailLog.objects.create()
+    kwargs = {
+        'timestamp': timestamp,
+        'sender': sender,
+        'recipient': recipient,
+        'subject': subject,
+        'body': body,
+        'error_message': error_message,
+        'user': user,
+        'driver_profile': driver_profile,
+        'booking': booking,
+    }
+
+    # Only add status to kwargs if it's explicitly provided (not None)
+    # This allows the model's default to take effect if status is None
+    if status is not None:
+        kwargs['status'] = status
+
+    return EmailLog.objects.create(**kwargs)

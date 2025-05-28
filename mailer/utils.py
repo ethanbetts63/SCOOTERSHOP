@@ -7,6 +7,7 @@ from django.conf import settings
 from django.db import transaction
 import logging
 from django.utils import timezone
+import re # Import regex module
 
 # Import the EmailLog model
 from .models import EmailLog
@@ -64,8 +65,20 @@ def send_templated_email(
     # Render HTML content from template
     try:
         html_content = render_to_string(template_name, context)
-        # Create a plain text version for email clients that don't display HTML
-        text_content = strip_tags(html_content)
+        
+        # NEW FIX: Convert block-level HTML tags to newlines before stripping tags
+        # This ensures proper formatting in the plain text version.
+        # Replace <br> and </p> with newline characters
+        text_content_prep = re.sub(r'<br\s*/?>', '\n', html_content)
+        text_content_prep = re.sub(r'</p>', '\n\n', text_content_prep)
+        # Replace </div>, </h1>, </h2> etc. with a single newline
+        text_content_prep = re.sub(r'</(div|h[1-6]|ul|ol|li)>', '\n', text_content_prep)
+        # Replace <p>, <div>, <h1> etc. with their content followed by a newline
+        text_content_prep = re.sub(r'<(p|div|h[1-6]|ul|ol|li)[^>]*?>', '', text_content_prep)
+
+        # Finally, strip any remaining HTML tags
+        text_content = strip_tags(text_content_prep).strip() # .strip() to remove leading/trailing whitespace
+
     except Exception as e:
         logger.error(f"Error rendering email template '{template_name}': {e}")
         # Log the failed attempt to render the email
@@ -121,4 +134,3 @@ def send_templated_email(
             logger.critical(f"CRITICAL ERROR: Failed to log email for '{subject}' to {', '.join(recipient_list)}: {log_e}")
 
     return success
-
