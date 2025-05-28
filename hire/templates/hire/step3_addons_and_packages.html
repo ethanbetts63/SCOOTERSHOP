@@ -41,11 +41,11 @@
                                     <span>{{ temp_booking.return_date|date:"D, d M Y" }} at {{ temp_booking.return_time|time:"H:i" }}</span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    Motorcycle Hire Price:
+                                    Motorcycle Hire Price (for duration):
                                     <span>{{ hire_settings.currency_symbol }}{{ temp_booking.total_hire_price|floatformat:2 }}</span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    Selected Package:
+                                    Selected Package (for duration):
                                     <span id="selected-package-display">
                                         {% if temp_booking.package %}
                                             {{ temp_booking.package.name }} ({{ hire_settings.currency_symbol }}{{ temp_booking.total_package_price|floatformat:2 }})
@@ -55,11 +55,11 @@
                                     </span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    Selected Add-ons Price:
+                                    Selected Add-ons Price (for duration):
                                     <span id="addons-total-display">{{ hire_settings.currency_symbol }}{{ temp_booking.total_addons_price|floatformat:2 }}</span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center bg-light">
-                                    <strong>Estimated Total:</strong>
+                                    <strong>Estimated Total (for duration):</strong>
                                     <strong id="grand-total-display">{{ hire_settings.currency_symbol }}{{ temp_booking.grand_total|floatformat:2 }}</strong>
                                 </li>
                             </ul>
@@ -78,7 +78,8 @@
                                                         <h5 class="card-title">{{ package_obj.name }}</h5>
                                                         <p class="card-text">{{ package_obj.description }}</p>
                                                         <p class="card-text">
-                                                            <strong>Price: {{ hire_settings.currency_symbol }}<span class="package-price" data-package-price="{{ package_obj.package_price|floatformat:2 }}">{{ package_obj.package_price|floatformat:2 }}</span></strong>
+                                                            {# Display daily cost for clarity, but data-package-price holds total for JS calculation #}
+                                                            <strong>Price: {{ hire_settings.currency_symbol }}<span class="package-price" data-package-price="{{ package_obj.package_price|floatformat:2 }}">{{ package_obj.daily_cost|floatformat:2 }}</span> per day</strong>
                                                         </p>
                                                         {% if package_obj.add_ons.all %}
                                                             <p class="card-text text-muted small">Includes:</p>
@@ -118,11 +119,11 @@
                                                             <h5 class="card-title" data-original-title="{{ addon.name }}">{{ addon.name }}</h5>
                                                             <p class="card-text">{{ addon.description }}</p>
                                                             <p class="card-text">
-                                                                <strong>Cost: {{ hire_settings.currency_symbol }}<span class="addon-cost" data-addon-cost="{{ addon.cost|floatformat:2 }}">{{ addon.cost|floatformat:2 }}</span> per day</strong>
+                                                                <strong>Price: {{ hire_settings.currency_symbol }}<span class="addon-cost" data-addon-cost="{{ addon.cost|floatformat:2 }}">{{ addon.cost|floatformat:2 }}</span> per day</strong>
                                                             </p>
                                                             <div class="form-check mt-3">
                                                                 {{ field_info.selected_field.errors }}
-                                                                {# Manually render checkbox to include value attribute #}
+                                                                {# Manually render checkbox to include value attribute and addon cost #}
                                                                 <input type="checkbox"
                                                                        name="{{ field_info.selected_field.name }}"
                                                                        id="{{ field_info.selected_field.id_for_label }}"
@@ -131,7 +132,8 @@
                                                                        {% if field_info.selected_field.value %}checked{% endif %}
                                                                        data-addon-id="{{ addon.id }}"
                                                                        data-max-quantity="{{ field_info.quantity_field.field.max_value }}" {# Use the adjusted max_value from the form field #}
-                                                                       data-min-quantity="{{ field_info.quantity_field.field.min_value }}"> {# Use the min_value from the form field #}
+                                                                       data-min-quantity="{{ field_info.quantity_field.field.min_value }}" {# Use the min_value from the form field #}
+                                                                       data-addon-cost="{{ addon.cost|floatformat:2 }}"> {# ADDED data-addon-cost HERE #}
                                                                 <label class="form-check-label" for="{{ field_info.selected_field.id_for_label }}">Add to booking</label>
                                                             </div>
                                                             {# Conditionally display quantity input based on max_quantity #}
@@ -188,8 +190,23 @@
         const addonsTotalDisplay = document.getElementById('addons-total-display');
         const selectedPackageDisplay = document.getElementById('selected-package-display');
 
-        const pickupDate = new Date("{{ temp_booking.pickup_date|date:'Y-m-d' }}T{{ temp_booking.pickup_time|time:'H:i:s' }}");
-        const returnDate = new Date("{{ temp_booking.return_date|date:'Y-m-d' }}T{{ temp_booking.return_time|time:'H:i:s' }}");
+        // Parse dates and times safely
+        const pickupDateStr = "{{ temp_booking.pickup_date|date:'Y-m-d' }}";
+        const pickupTimeStr = "{{ temp_booking.pickup_time|time:'H:i:s' }}";
+        const returnDateStr = "{{ temp_booking.return_date|date:'Y-m-d' }}";
+        const returnTimeStr = "{{ temp_booking.return_time|time:'H:i:s' }}";
+
+        let pickupDate, returnDate;
+        try {
+            pickupDate = new Date(`${pickupDateStr}T${pickupTimeStr}`);
+            returnDate = new Date(`${returnDateStr}T${returnTimeStr}`);
+        } catch (e) {
+            console.error("Error parsing dates:", e);
+            // Fallback to current date or handle gracefully
+            pickupDate = new Date();
+            returnDate = new Date();
+        }
+
         const MS_PER_DAY = 1000 * 60 * 60 * 24;
         let hireDurationDays = Math.ceil((returnDate - pickupDate) / MS_PER_DAY);
         if (hireDurationDays === 0 && returnDate > pickupDate) {
@@ -203,9 +220,9 @@
 
         // Map packages to their prices for display update
         const packagesPriceMap = {};
-        '{% for package in available_packages %}'
+        "{% for package in available_packages %}"
             packagesPriceMap['{{ package.id }}'] = parseFloat("{{ package.package_price|floatformat:2 }}");
-        '{% endfor %}'
+        "{% endfor %}"
 
         // Function to update the total price
         function updateGrandTotal() {
@@ -223,12 +240,12 @@
 
             // Calculate add-ons price (these are now always "additional")
             addonCheckboxes.forEach(checkbox => {
+                // Get addonCost directly from the checkbox's data attribute
+                const addonCost = parseFloat(checkbox.dataset.addonCost);
                 const addonId = parseInt(checkbox.value);
                 const quantityInput = document.querySelector(`input[name="addon_${addonId}_quantity"]`);
-                const addonCostSpan = document.querySelector(`#addon-${addonId} .addon-cost`);
                 
-                if (addonCostSpan && checkbox.checked) {
-                    const addonCost = parseFloat(addonCostSpan.dataset.addonCost);
+                if (!isNaN(addonCost) && checkbox.checked) { // Ensure addonCost is a valid number
                     let quantity = 1;
                     // Use data-max-quantity for client-side logic (this is now the adjusted max)
                     const adjustedMaxQuantity = parseInt(checkbox.dataset.maxQuantity); 

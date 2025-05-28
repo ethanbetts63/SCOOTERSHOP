@@ -137,8 +137,30 @@ class AddonPackageView(View):
                 temp_booking.total_package_price = Decimal('0.00')
                 temp_booking.save()
 
-        # Get all add-ons (including unavailable ones) to pass to the form for comprehensive validation
+        # Calculate package_price for each package object to pass to the template
+        for package_obj in available_packages:
+            package_obj.package_price = calculate_package_price(
+                package_instance=package_obj,
+                pickup_date=temp_booking.pickup_date,
+                return_date=temp_booking.return_date,
+                pickup_time=temp_booking.pickup_time,
+                return_time=temp_booking.return_time,
+                hire_settings=hire_settings
+            )
+
+        # Calculate 'cost' attribute for each AddOn object to be used in the template
+        # This 'cost' represents the per-unit price for the booking duration
         all_addons_for_form = AddOn.objects.all()
+        for addon_obj in all_addons_for_form:
+            addon_obj.cost = calculate_addon_price(
+                addon_instance=addon_obj,
+                quantity=1, # Calculate per unit
+                pickup_date=temp_booking.pickup_date,
+                return_date=temp_booking.return_date,
+                pickup_time=temp_booking.pickup_time,
+                return_time=temp_booking.return_time,
+                hire_settings=hire_settings
+            )
 
         initial_data = {}
         if temp_booking.package:
@@ -283,6 +305,30 @@ class AddonPackageView(View):
         else:
             print(f"DEBUG (View POST - form invalid): Form errors: {form.errors}")
             messages.error(request, "Please correct the errors below.")
+            
+            # Recalculate package_price for each package object on form invalid
+            for package_obj in available_packages:
+                package_obj.package_price = calculate_package_price(
+                    package_instance=package_obj,
+                    pickup_date=temp_booking.pickup_date,
+                    return_date=temp_booking.return_date,
+                    pickup_time=temp_booking.pickup_time,
+                    return_time=temp_booking.return_time,
+                    hire_settings=hire_settings
+                )
+
+            # Recalculate 'cost' attribute for each AddOn object on form invalid
+            for addon_obj in all_addons_for_form:
+                addon_obj.cost = calculate_addon_price(
+                    addon_instance=addon_obj,
+                    quantity=1, # Calculate per unit
+                    pickup_date=temp_booking.pickup_date,
+                    return_date=temp_booking.return_date,
+                    pickup_time=temp_booking.pickup_time,
+                    return_time=temp_booking.return_time,
+                    hire_settings=hire_settings
+                )
+
             context = {
                 'temp_booking': temp_booking,
                 'form': form,
