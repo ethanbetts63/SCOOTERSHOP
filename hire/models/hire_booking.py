@@ -31,12 +31,19 @@ PAYMENT_STATUS_CHOICES = [
 
 # Choices for payment method
 PAYMENT_METHOD_CHOICES = [
-    ('cash', 'Cash'),
-    ('card', 'Card'),
-    ('online', 'Online'),
-    ('at_desk', 'At Desk (Pending Payment)'),
-    ('other', 'Other')
+    ('online_full', 'Full Payment Online'),
+    ('online_deposit', 'Deposit Payment Online'),
+    ('in_store_full', 'Full Payment Store'),
 ]
+
+# # Old Choices for payment method
+# PAYMENT_METHOD_CHOICES = [
+#     ('cash', 'Cash'),
+#     ('card', 'Card'),
+#     ('online', 'Online'),
+#     ('at_desk', 'At Desk (Pending Payment)'),
+#     ('other', 'Other')
+# ]
 
 
 class HireBooking(models.Model):

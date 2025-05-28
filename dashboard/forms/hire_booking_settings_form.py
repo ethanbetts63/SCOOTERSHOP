@@ -88,10 +88,7 @@ class HireBookingSettingsForm(forms.ModelForm):
             # --- New Payment Option Widgets ---
             'enable_online_full_payment': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'enable_online_deposit_payment': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'enable_in_store_full_payment': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'enable_cash_payment': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'enable_card_payment': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'enable_other_payment': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'enable_in_store_full_payment': forms.CheckboxInput(attrs={'class': 'form-check-input'})
         }
 
     def clean(self):

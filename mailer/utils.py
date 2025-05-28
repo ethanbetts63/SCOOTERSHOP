@@ -33,11 +33,11 @@ def send_templated_email(
     recipient_list,
     subject,
     template_name,
-    context,
+    context, # This context dictionary is what gets passed to the template
     from_email=None,
     user=None,
     driver_profile=None,
-    booking=None
+    booking=None # The booking object itself, passed here to be added to context
 ):
     """
     Sends an HTML email using a Django template and logs the email activity.
@@ -47,6 +47,7 @@ def send_templated_email(
         subject (str): The subject line of the email.
         template_name (str): The path to the HTML template file (e.g., 'emails/booking_confirmation_user.html').
         context (dict): A dictionary of data to pass to the email template for rendering.
+                        This dictionary will be updated with 'booking' if provided.
         from_email (str, optional): The sender's email address. Defaults to settings.DEFAULT_FROM_EMAIL.
         user (User, optional): An instance of the User model to link the email log to.
         driver_profile (DriverProfile, optional): An instance of the DriverProfile model to link the email log to.
@@ -62,6 +63,17 @@ def send_templated_email(
     # Determine sender email
     sender_email = from_email if from_email else settings.DEFAULT_FROM_EMAIL
 
+    # IMPORTANT: Ensure the booking object is in the context for the template
+    # The 'context' parameter is already a dictionary, so we update it.
+    if booking:
+        context['booking'] = booking
+        logger.debug(f"Added booking object to email context: {booking.booking_reference}")
+    else:
+        logger.warning("No booking object provided to send_templated_email. Template may be empty.")
+
+    # Log the full context being passed to the template (for debugging)
+    logger.debug(f"Email template context for '{template_name}': {context}")
+
     # Render HTML content from template
     try:
         html_content = render_to_string(template_name, context)
@@ -71,7 +83,7 @@ def send_templated_email(
         # Replace <br> and </p> with newline characters
         text_content_prep = re.sub(r'<br\s*/?>', '\n', html_content)
         text_content_prep = re.sub(r'</p>', '\n\n', text_content_prep)
-        # Replace </div>, </h1>, </h2> etc. with a single newline
+        # Replace </div>, <h1>, <h2> etc. with a single newline
         text_content_prep = re.sub(r'</(div|h[1-6]|ul|ol|li)>', '\n', text_content_prep)
         # Replace <p>, <div>, <h1> etc. with their content followed by a newline
         text_content_prep = re.sub(r'<(p|div|h[1-6]|ul|ol|li)[^>]*?>', '', text_content_prep)
