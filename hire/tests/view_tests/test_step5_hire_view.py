@@ -4,10 +4,13 @@ from django.contrib.messages import get_messages
 from decimal import Decimal
 import datetime
 import uuid
+from unittest.mock import patch # Import patch for mocking
+from django.conf import settings # Import settings to access ADMIN_EMAIL
 
 # Import models
 from hire.models import TempHireBooking, HireBooking # Import HireBooking to check its creation
 from dashboard.models import HireSettings
+from mailer.models import EmailLog # Import EmailLog to check its creation
 
 # Import model factories
 from hire.tests.test_helpers.model_factories import (
@@ -16,6 +19,7 @@ from hire.tests.test_helpers.model_factories import (
     create_temp_hire_booking,
     create_hire_booking, # Import create_hire_booking
     create_driver_profile, # Import create_driver_profile
+    create_user, # Import create_user
 )
 
 # Import pricing functions (now in hire.hire_pricing)
@@ -46,6 +50,8 @@ class BookSumAndPaymentOptionsViewTest(TestCase):
             enable_in_store_full_payment=True,
             hire_pricing_strategy='24_hour_customer_friendly'
         )
+        # Set a dummy ADMIN_EMAIL for testing purposes
+        settings.ADMIN_EMAIL = 'admin@example.com'
 
         # Create a motorcycle for default bookings
         self.motorcycle = create_motorcycle(
@@ -54,8 +60,10 @@ class BookSumAndPaymentOptionsViewTest(TestCase):
             is_available=True, # Ensure motorcycle is available
             engine_size=125 # Set engine size to require license
         )
-        # Create a driver profile to associate with bookings
-        self.driver_profile = create_driver_profile()
+        # Create a user and driver profile to associate with bookings
+        self.user = create_user(username="testuser", email="user@example.com")
+        self.driver_profile = create_driver_profile(user=self.user, email="driver@example.com")
+
 
         # Common booking dates/times
         self.pickup_date = datetime.date.today() + datetime.timedelta(days=1)
@@ -181,14 +189,16 @@ class BookSumAndPaymentOptionsViewTest(TestCase):
         temp_booking.refresh_from_db()
         self.assertEqual(temp_booking.payment_option, 'online_deposit')
 
-    def test_post_request_in_store_full_payment_redirects_to_confirmation(self):
+    # Removed @patch decorator for send_templated_email
+    def test_post_request_in_store_full_payment_redirects_to_confirmation_and_sends_emails(self):
         """
         Test POST request with 'in_store_full' payment option.
-        Should create a HireBooking and redirect to step 7.
+        Should create a HireBooking, redirect to step 7, and send confirmation emails.
         """
         temp_booking = self._create_and_set_temp_booking_in_session()
         # Verify no HireBooking exists initially for this temp_booking's motorcycle
         self.assertEqual(HireBooking.objects.filter(motorcycle=temp_booking.motorcycle).count(), 0)
+        self.assertEqual(EmailLog.objects.count(), 0) # Ensure no email logs initially
 
         form_data = {'payment_method': 'in_store_full'}
         response = self.client.post(self.step5_url, form_data)
@@ -212,6 +222,19 @@ class BookSumAndPaymentOptionsViewTest(TestCase):
         self.assertIn("Your booking", str(messages[0]))
         self.assertIn("has been successfully created", str(messages[0]))
         self.assertIn("Please pay the full amount in-store at pickup", str(messages[0]))
+
+        # Since send_templated_email is no longer mocked, we cannot assert on mock_send_email.call_count
+        # Instead, we directly verify the EmailLog entries.
+
+        # Verify EmailLog entries were created
+        self.assertEqual(EmailLog.objects.count(), 2)
+        user_email_log = EmailLog.objects.get(recipient=self.user.email)
+        admin_email_log = EmailLog.objects.get(recipient=settings.ADMIN_EMAIL)
+
+        self.assertEqual(user_email_log.booking.id, hire_booking.id)
+        self.assertEqual(admin_email_log.booking.id, hire_booking.id)
+        self.assertEqual(user_email_log.driver_profile.id, self.driver_profile.id)
+        self.assertIsNone(admin_email_log.driver_profile) # Admin email log should not have driver_profile
 
 
     def test_post_request_invalid_form_renders_template_with_errors(self):
@@ -274,3 +297,4 @@ class BookSumAndPaymentOptionsViewTest(TestCase):
         self.assertEqual(len(messages), 1)
         self.assertIn("You require a full motorcycle license for this motorcycle.", str(messages[0]))
         self.assertTrue(TempHireBooking.objects.filter(id=temp_booking.id).exists())
+
