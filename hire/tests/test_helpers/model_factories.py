@@ -1,3 +1,5 @@
+# hire/tests/test_helpers/model_factories.py
+
 import datetime
 from decimal import Decimal
 import uuid
@@ -155,6 +157,11 @@ def create_payment(
     status='pending',
     stripe_payment_intent_id=None,
     stripe_payment_method_id=None,
+    # Add description and related booking/driver profile fields
+    description=None,
+    temp_hire_booking=None,
+    hire_booking=None,
+    driver_profile=None,
 ):
     """Creates a Payment instance."""
     return Payment.objects.create(
@@ -163,6 +170,10 @@ def create_payment(
         status=status,
         stripe_payment_intent_id=stripe_payment_intent_id,
         stripe_payment_method_id=stripe_payment_method_id,
+        description=description, # Pass description
+        temp_hire_booking=temp_hire_booking, # Pass temp_hire_booking
+        hire_booking=hire_booking, # Pass hire_booking
+        driver_profile=driver_profile, # Pass driver_profile
     )
 
 # --- Factories for Hire App Models ---
@@ -463,4 +474,3 @@ def create_temp_booking_addon(
         quantity=quantity,
         booked_addon_price=booked_addon_price
     )
-
