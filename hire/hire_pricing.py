@@ -44,6 +44,37 @@ def _calculate_daily_plus_excess_hourly_billing(total_duration_hours, daily_rate
         additional_cost = billed_excess_hours * hourly_rate
     return (full_24_hour_blocks * daily_rate) + additional_cost
 
+def _calculate_daily_plus_proportional_excess_billing(total_duration_hours, daily_rate):
+    # Charges for full 24-hour blocks, plus a proportional amount of the daily rate for excess hours.
+    full_24_hour_blocks = Decimal(floor(float(total_duration_hours) / 24.0)).quantize(Decimal('1.'), rounding=ROUND_HALF_UP)
+    remaining_excess_hours = total_duration_hours % 24
+    additional_cost = Decimal('0.00')
+
+    if remaining_excess_hours > Decimal('0.00'):
+        # Calculate the percentage of a day taken by excess hours
+        excess_percentage_of_day = remaining_excess_hours / Decimal('24.00')
+        additional_cost = excess_percentage_of_day * daily_rate
+        additional_cost = additional_cost.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP) # Quantize to 2 decimal places
+
+    return (full_24_hour_blocks * daily_rate) + additional_cost
+
+def _calculate_24_hour_plus_margin_proportional_billing(total_duration_hours, daily_rate, excess_hours_margin):
+    # Charges for full 24-hour blocks. If excess hours exceed a margin,
+    # the hours beyond the margin are charged proportionally based on the daily rate.
+    full_24_hour_blocks = Decimal(floor(float(total_duration_hours) / 24.0)).quantize(Decimal('1.'), rounding=ROUND_HALF_UP)
+    remaining_excess_hours = total_duration_hours % 24
+    additional_charge = Decimal('0.00')
+
+    if remaining_excess_hours > Decimal('0.00') and remaining_excess_hours > Decimal(str(excess_hours_margin)):
+        # Calculate the hours to be proportionally billed (hours beyond the margin)
+        billable_excess_hours = remaining_excess_hours - Decimal(str(excess_hours_margin))
+        if billable_excess_hours > Decimal('0.00'):
+            excess_percentage_of_day = billable_excess_hours / Decimal('24.00')
+            additional_charge = excess_percentage_of_day * daily_rate
+            additional_charge = additional_charge.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP) # Quantize to 2 decimal places
+
+    return (full_24_hour_blocks * daily_rate) + additional_charge
+
 def _calculate_price_by_strategy(total_duration_hours, daily_rate, hourly_rate, pricing_strategy, excess_hours_margin=Decimal('0'), is_same_day_hire=False):
     # Returns 0.00 if essential rates are missing or duration is non-positive.
     if daily_rate is None or hourly_rate is None:
@@ -72,6 +103,10 @@ def _calculate_price_by_strategy(total_duration_hours, daily_rate, hourly_rate, 
         return _calculate_24_hour_customer_friendly_billing(total_duration_hours, daily_rate, hourly_rate)
     elif pricing_strategy == 'daily_plus_excess_hourly':
         return _calculate_daily_plus_excess_hourly_billing(total_duration_hours, daily_rate, hourly_rate)
+    elif pricing_strategy == 'daily_plus_proportional_excess':
+        return _calculate_daily_plus_proportional_excess_billing(total_duration_hours, daily_rate)
+    elif pricing_strategy == '24_hour_plus_margin_proportional':
+        return _calculate_24_hour_plus_margin_proportional_billing(total_duration_hours, daily_rate, Decimal(str(excess_hours_margin)))
     else:
         return Decimal('0.00')
 
