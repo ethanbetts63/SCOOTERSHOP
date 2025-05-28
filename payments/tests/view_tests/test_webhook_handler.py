@@ -64,6 +64,7 @@ class WebhookHandlerTest(TestCase):
         payment_intent_data = {
             'id': "pi_full_payment_123",
             'amount': 20000, # Cents
+            'amount_received': 20000, # Added: The actual amount received by Stripe
             'currency': 'aud',
             'status': 'succeeded',
             'metadata': {'booking_type': 'hire_booking', 'payment_id': str(payment_obj.id)}
@@ -135,6 +136,7 @@ class WebhookHandlerTest(TestCase):
         payment_intent_data = {
             'id': "pi_deposit_payment_456",
             'amount': 5000, # Cents
+            'amount_received': 5000, # Added: The actual amount received by Stripe for the deposit
             'currency': 'aud',
             'status': 'succeeded',
             'metadata': {'booking_type': 'hire_booking', 'payment_id': str(payment_obj.id)}
@@ -176,6 +178,7 @@ class WebhookHandlerTest(TestCase):
         payment_intent_data = {
             'id': "pi_missing_temp_booking_789",
             'amount': 10000,
+            'amount_received': 10000, # Added for consistency, though not directly used in this error path
             'currency': 'aud',
             'status': 'succeeded',
             'metadata': {'booking_type': 'hire_booking', 'payment_id': str(payment_obj.id)}
@@ -230,6 +233,7 @@ class WebhookHandlerTest(TestCase):
         payment_intent_data = {
             'id': "pi_rollback_test_123",
             'amount': 20000,
+            'amount_received': 20000, # Added: The actual amount received by Stripe
             'currency': 'aud',
             'status': 'succeeded',
             'metadata': {'booking_type': 'hire_booking', 'payment_id': str(payment_obj.id)}
