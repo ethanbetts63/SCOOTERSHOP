@@ -1,7 +1,7 @@
 # hire/tests/view_tests/test_hire_pricing.py
 
 import datetime
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP # Added ROUND_HALF_UP import
 from django.test import TestCase
 from django.utils import timezone
 
@@ -80,7 +80,7 @@ class MotorcyclePricingUtilsTests(TestCase): # Renamed for clarity
         return_time = datetime.time(8, 0) # 8 AM (10 hours duration)
 
         # This new rule should apply regardless of the detailed strategy for >24h hires
-        for strategy in ['flat_24_hour', '24_hour_plus_margin', '24_hour_customer_friendly', 'daily_plus_excess_hourly']:
+        for strategy in ['flat_24_hour', '24_hour_plus_margin', '24_hour_customer_friendly', 'daily_plus_excess_hourly', 'daily_plus_proportional_excess', '24_hour_plus_margin_proportional']:
             self.hire_settings.hire_pricing_strategy = strategy
             self.hire_settings.save()
 
@@ -317,6 +317,109 @@ class MotorcyclePricingUtilsTests(TestCase): # Renamed for clarity
         )
         self.assertEqual(calculated_price, expected_price)
 
+    def test_calculate_motorcycle_hire_price_daily_plus_proportional_excess(self):
+        self.hire_settings.hire_pricing_strategy = 'daily_plus_proportional_excess'
+        self.hire_settings.save()
+        pickup_date = timezone.now().date() + datetime.timedelta(days=1)
+        pickup_time = datetime.time(9, 0)
+
+        # Case 1: 2 days + 6 hours (54 hours total)
+        # 2 full days + (6/24) * daily_rate
+        return_datetime_val_1 = datetime.datetime.combine(pickup_date, pickup_time) + datetime.timedelta(days=2, hours=6)
+        return_date_1 = return_datetime_val_1.date()
+        return_time_1 = return_datetime_val_1.time()
+        
+        expected_price_1 = (self.motorcycle_with_rates.daily_hire_rate * 2) + \
+                           (Decimal('6') / Decimal('24')) * self.motorcycle_with_rates.daily_hire_rate
+        expected_price_1 = expected_price_1.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        calculated_price_1 = calculate_motorcycle_hire_price(
+            self.motorcycle_with_rates, pickup_date, return_date_1, pickup_time, return_time_1, self.hire_settings
+        )
+        self.assertEqual(calculated_price_1, expected_price_1)
+
+        # Case 2: 1 day + 12 hours (36 hours total)
+        # 1 full day + (12/24) * daily_rate
+        return_datetime_val_2 = datetime.datetime.combine(pickup_date, pickup_time) + datetime.timedelta(days=1, hours=12)
+        return_date_2 = return_datetime_val_2.date()
+        return_time_2 = return_datetime_val_2.time()
+
+        expected_price_2 = (self.motorcycle_with_rates.daily_hire_rate * 1) + \
+                           (Decimal('12') / Decimal('24')) * self.motorcycle_with_rates.daily_hire_rate
+        expected_price_2 = expected_price_2.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        calculated_price_2 = calculate_motorcycle_hire_price(
+            self.motorcycle_with_rates, pickup_date, return_date_2, pickup_time, return_time_2, self.hire_settings
+        )
+        self.assertEqual(calculated_price_2, expected_price_2)
+
+        # Case 3: Exact days (no excess)
+        return_datetime_val_3 = datetime.datetime.combine(pickup_date, pickup_time) + datetime.timedelta(days=2)
+        return_date_3 = return_datetime_val_3.date()
+        return_time_3 = return_datetime_val_3.time()
+
+        expected_price_3 = self.motorcycle_with_rates.daily_hire_rate * 2
+        calculated_price_3 = calculate_motorcycle_hire_price(
+            self.motorcycle_with_rates, pickup_date, return_date_3, pickup_time, return_time_3, self.hire_settings
+        )
+        self.assertEqual(calculated_price_3, expected_price_3)
+
+    def test_calculate_motorcycle_hire_price_24_hour_plus_margin_proportional(self):
+        self.hire_settings.hire_pricing_strategy = '24_hour_plus_margin_proportional'
+        self.hire_settings.excess_hours_margin = 3 # Margin of 3 hours
+        self.hire_settings.save()
+        pickup_date = timezone.now().date() + datetime.timedelta(days=1)
+        pickup_time = datetime.time(9, 0)
+
+        # Case 1: Excess within margin (2 days + 2 hours). Should be 2 full days.
+        return_datetime_val_1 = datetime.datetime.combine(pickup_date, pickup_time) + datetime.timedelta(days=2, hours=2)
+        return_date_1 = return_datetime_val_1.date()
+        return_time_1 = return_datetime_val_1.time()
+
+        expected_price_1 = self.motorcycle_with_rates.daily_hire_rate * 2
+        calculated_price_1 = calculate_motorcycle_hire_price(
+            self.motorcycle_with_rates, pickup_date, return_date_1, pickup_time, return_time_1, self.hire_settings
+        )
+        self.assertEqual(calculated_price_1, expected_price_1)
+
+        # Case 2: Excess exceeds margin (2 days + 4 hours). 1 hour beyond margin.
+        # Should be 2 full days + (1/24) * daily_rate
+        return_datetime_val_2 = datetime.datetime.combine(pickup_date, pickup_time) + datetime.timedelta(days=2, hours=4)
+        return_date_2 = return_datetime_val_2.date()
+        return_time_2 = return_datetime_val_2.time()
+
+        expected_price_2 = (self.motorcycle_with_rates.daily_hire_rate * 2) + \
+                           ((Decimal('4') - self.hire_settings.excess_hours_margin) / Decimal('24')) * self.motorcycle_with_rates.daily_hire_rate
+        expected_price_2 = expected_price_2.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        calculated_price_2 = calculate_motorcycle_hire_price(
+            self.motorcycle_with_rates, pickup_date, return_date_2, pickup_time, return_time_2, self.hire_settings
+        )
+        self.assertEqual(calculated_price_2, expected_price_2)
+
+        # Case 3: Exact days (no excess). Should be 2 full days.
+        return_datetime_val_3 = datetime.datetime.combine(pickup_date, pickup_time) + datetime.timedelta(days=2)
+        return_date_3 = return_datetime_val_3.date()
+        return_time_3 = return_datetime_val_3.time()
+
+        expected_price_3 = self.motorcycle_with_rates.daily_hire_rate * 2
+        calculated_price_3 = calculate_motorcycle_hire_price(
+            self.motorcycle_with_rates, pickup_date, return_date_3, pickup_time, return_time_3, self.hire_settings
+        )
+        self.assertEqual(calculated_price_3, expected_price_3)
+
+        # Case 4: Larger excess beyond margin (2 days + 10 hours). 7 hours beyond margin.
+        # Should be 2 full days + (7/24) * daily_rate
+        return_datetime_val_4 = datetime.datetime.combine(pickup_date, pickup_time) + datetime.timedelta(days=2, hours=10)
+        return_date_4 = return_datetime_val_4.date()
+        return_time_4 = return_datetime_val_4.time()
+
+        expected_price_4 = (self.motorcycle_with_rates.daily_hire_rate * 2) + \
+                           ((Decimal('10') - self.hire_settings.excess_hours_margin) / Decimal('24')) * self.motorcycle_with_rates.daily_hire_rate
+        expected_price_4 = expected_price_4.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        calculated_price_4 = calculate_motorcycle_hire_price(
+            self.motorcycle_with_rates, pickup_date, return_date_4, pickup_time, return_time_4, self.hire_settings
+        )
+        self.assertEqual(calculated_price_4, expected_price_4)
+
+
 # --- NEW Test Suites for Packages, Addons, Grand Total ---
 
 class PackagePricingUtilsTests(TestCase):
@@ -351,7 +454,7 @@ class PackagePricingUtilsTests(TestCase):
         return_date_overnight = pickup_date_overnight + datetime.timedelta(days=1) 
         return_time_overnight = datetime.time(8, 0) # 8 AM (10 hours duration)
 
-        for strategy in ['flat_24_hour', '24_hour_plus_margin', '24_hour_customer_friendly', 'daily_plus_excess_hourly']:
+        for strategy in ['flat_24_hour', '24_hour_plus_margin', '24_hour_customer_friendly', 'daily_plus_excess_hourly', 'daily_plus_proportional_excess', '24_hour_plus_margin_proportional']:
             self.hire_settings.hire_pricing_strategy = strategy
             self.hire_settings.save()
 
@@ -455,7 +558,7 @@ class AddOnPricingUtilsTests(TestCase):
         return_time_overnight = datetime.time(8, 0)  # 8 AM (10 hours duration)
         quantity = 2
 
-        for strategy in ['flat_24_hour', '24_hour_plus_margin', '24_hour_customer_friendly', 'daily_plus_excess_hourly']:
+        for strategy in ['flat_24_hour', '24_hour_plus_margin', '24_hour_customer_friendly', 'daily_plus_excess_hourly', 'daily_plus_proportional_excess', '24_hour_plus_margin_proportional']:
             self.hire_settings.hire_pricing_strategy = strategy
             self.hire_settings.save()
 
@@ -637,7 +740,7 @@ class GrandTotalUtilsTests(TestCase):
         create_temp_booking_addon(temp_booking=self.temp_booking, addon=self.addon2, quantity=2)
 
         # The new rule should apply daily_rate for each item, regardless of hire_settings.hire_pricing_strategy
-        for strategy in ['flat_24_hour', '24_hour_plus_margin', '24_hour_customer_friendly', 'daily_plus_excess_hourly']:
+        for strategy in ['flat_24_hour', '24_hour_plus_margin', '24_hour_customer_friendly', 'daily_plus_excess_hourly', 'daily_plus_proportional_excess', '24_hour_plus_margin_proportional']:
             self.hire_settings.hire_pricing_strategy = strategy
             self.hire_settings.save()
 
@@ -670,10 +773,3 @@ class GrandTotalUtilsTests(TestCase):
         self.temp_booking.save() # Save changes to self.temp_booking (which has dates from its setUp)
         results_only_dates = calculate_booking_grand_total(self.temp_booking, self.hire_settings)
         self.assertEqual(results_only_dates['grand_total'], Decimal('0.00'))
-
-
-
-
-
-
-
