@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "core.apps.CoreConfig",
     "users.apps.UsersConfig",
-    "dashboard.apps.DashboardConfig", 
+    "dashboard.apps.DashboardConfig",
     "inventory.apps.InventoryConfig",
     "service.apps.ServiceConfig",
     "hire.apps.HireConfig",
@@ -73,7 +73,7 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [BASE_DIR / 'templates'],
-        "APP_DIRS": True, 
+        "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.debug",
@@ -169,9 +169,9 @@ GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 
 
 # Session Settings
-SESSION_COOKIE_AGE = 3600 
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False 
-SESSION_SAVE_EVERY_REQUEST = True 
+SESSION_COOKIE_AGE = 3600
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_SAVE_EVERY_REQUEST = True
 
 # Stripe Settings
 STRIPE_PUBLISHABLE_KEY = "pk_test_51RRCzbPH0oVkn2F1ZCB43p08cHzPiROnrVDvRbggNjvm4WAsDHhNy8gzd00qhxCItqk5Y8yhtRi9BJSIlt8dr8x100D0oG7sKC"
@@ -181,18 +181,18 @@ STRIPE_PUBLISHABLE_KEY = "pk_test_51RRCzbPH0oVkn2F1ZCB43p08cHzPiROnrVDvRbggNjvm4
 # For development, 'console' backend prints emails to the console.
 # For production, you'd typically use 'django.core.mail.backends.smtp.EmailBackend'
 # and configure EMAIL_HOST, EMAIL_PORT, EMAIL_USE_TLS/SSL, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD.
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' # For production
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' # Changed to SMTP backend
 
 # Default email address to use for sending emails
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'webmaster@yourdomain.com')
+DEFAULT_FROM_EMAIL = 'ethan.betts.dev@gmail.com' # Set to your testing Gmail address
 
 # Administrator's email address for notifications
-ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'admin@yourdomain.com')
+ADMIN_EMAIL = 'ethan.betts.dev@gmail.com' # Set to your testing Gmail address
 
-# Optional: If you use an SMTP backend, uncomment and configure these:
-# EMAIL_HOST = 'smtp.sendgrid.net' # Example for SendGrid
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-# EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+# SMTP Configuration for Gmail
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'ethan.betts.dev@gmail.com' # Your Gmail address
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD") 
+
