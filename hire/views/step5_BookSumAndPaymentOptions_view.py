@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect
 from django.views import View
 from django.contrib import messages
 from decimal import Decimal
+from django.conf import settings # Import settings to access ADMIN_EMAIL
 
 from ..models import TempHireBooking
 from dashboard.models import HireSettings
@@ -11,6 +12,9 @@ from ..forms.step5_BookSumAndPaymentOptions_form import PaymentOptionForm
 from ..utils import is_motorcycle_available # This utility is expected to add messages
 from ..hire_pricing import calculate_booking_grand_total
 from hire.temp_hire_converter import convert_temp_to_hire_booking
+
+# Import the email sending utility
+from mailer.utils import send_templated_email
 
 class BookSumAndPaymentOptionsView(View):
     template_name = 'hire/step5_book_sum_and_payment_options.html'
@@ -100,6 +104,40 @@ class BookSumAndPaymentOptionsView(View):
                     # Store the booking reference in the session for Step 7
                     request.session['final_booking_reference'] = hire_booking.booking_reference
                     messages.success(request, f"Your booking ({hire_booking.booking_reference}) has been successfully created. Please pay the full amount in-store at pickup.")
+
+                    # --- Email Sending for In-Store Booking Confirmation ---
+                    # Context for email templates
+                    email_context = {
+                        'hire_booking': hire_booking,
+                        'user': request.user if request.user.is_authenticated else None,
+                        'driver_profile': hire_booking.driver_profile,
+                        'is_in_store': True, # Flag for template logic if needed
+                    }
+
+                    # Send confirmation email to the user
+                    user_email = hire_booking.driver_profile.user.email if hire_booking.driver_profile.user else hire_booking.driver_profile.email
+                    if user_email:
+                        send_templated_email(
+                            recipient_list=[user_email],
+                            subject=f"Your Motorcycle Hire Booking Confirmation - {hire_booking.booking_reference}",
+                            template_name='booking_confirmation_user.html',
+                            context=email_context,
+                            user=request.user if request.user.is_authenticated else None,
+                            driver_profile=hire_booking.driver_profile,
+                            booking=hire_booking
+                        )
+
+                    # Send notification email to the admin
+                    if settings.ADMIN_EMAIL:
+                        send_templated_email(
+                            recipient_list=[settings.ADMIN_EMAIL],
+                            subject=f"New Motorcycle Hire Booking (In-Store) - {hire_booking.booking_reference}",
+                            template_name='booking_confirmation_admin.html',
+                            context=email_context,
+                            booking=hire_booking
+                        )
+                    # --- End Email Sending ---
+
                     # Redirect to step 7 without payment_intent_id for in-store bookings
                     return redirect('hire:step7_confirmation')
                 except Exception as e:
