@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "service.apps.ServiceConfig",
     "hire.apps.HireConfig",
     "payments.apps.PaymentsConfig",
+    "mailer.apps.MailerConfig",
     'widget_tweaks',
     'mathfilters',
 ]
@@ -174,3 +175,24 @@ SESSION_SAVE_EVERY_REQUEST = True
 
 # Stripe Settings
 STRIPE_PUBLISHABLE_KEY = "pk_test_51RRCzbPH0oVkn2F1ZCB43p08cHzPiROnrVDvRbggNjvm4WAsDHhNy8gzd00qhxCItqk5Y8yhtRi9BJSIlt8dr8x100D0oG7sKC"
+
+
+# Email Settings
+# For development, 'console' backend prints emails to the console.
+# For production, you'd typically use 'django.core.mail.backends.smtp.EmailBackend'
+# and configure EMAIL_HOST, EMAIL_PORT, EMAIL_USE_TLS/SSL, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD.
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' # For production
+
+# Default email address to use for sending emails
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'webmaster@yourdomain.com')
+
+# Administrator's email address for notifications
+ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'admin@yourdomain.com')
+
+# Optional: If you use an SMTP backend, uncomment and configure these:
+# EMAIL_HOST = 'smtp.sendgrid.net' # Example for SendGrid
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+# EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
