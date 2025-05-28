@@ -1,3 +1,5 @@
+# hire/views/step2_BikeChoice_view.py
+
 import datetime
 from django.shortcuts import render
 from django.views import View
@@ -22,6 +24,20 @@ class BikeChoiceView(View):
     paginate_by = 9 # Number of motorcycles per page
 
     def get(self, request, *args, **kwargs):
+        # --- START: Abandoned TempHireBooking Cleanup ---
+        # Define the abandonment threshold (2 hours)
+        abandonment_threshold = timezone.now() - datetime.timedelta(hours=2)
+        
+        # Query for abandoned TempHireBooking instances
+        # We use 'updated_at' to check if the booking has been inactive for more than 2 hours.
+        abandoned_bookings = TempHireBooking.objects.filter(updated_at__lt=abandonment_threshold)
+        
+        # Delete the abandoned bookings
+        if abandoned_bookings.exists():
+            count = abandoned_bookings.count()
+            abandoned_bookings.delete()
+            print(f"Cleaned up {count} abandoned TempHireBooking instances older than {abandonment_threshold}.")
+
         # Retrieve hire settings
         hire_settings = HireSettings.objects.first()
 
