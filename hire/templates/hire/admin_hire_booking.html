@@ -108,11 +108,8 @@
                                 {{ form.package }}
                                 {% if form.package.errors %}<div class="text-danger small">{{ form.package.errors }}</div>{% endif %}
                                 <div class="form-text text-muted" id="package-price-display">
-                                    {% if form.package.value %}
-                                        Selected Package Price: {{ hire_settings.currency_symbol }}{{ form.package.value.instance.package_price|floatformat:2 }}
-                                    {% else %}
-                                        Selected Package Price: {{ hire_settings.currency_symbol }}0.00
-                                    {% endif %}
+                                    {# Initial display will be updated by JS #}
+                                    Selected Package Price: {{ hire_settings.currency_symbol }}0.00
                                 </div>
                             </div>
 
@@ -127,7 +124,8 @@
                                                         <h5 class="card-title">{{ addon.name }}</h5>
                                                         <p class="card-text">{{ addon.description }}</p>
                                                         <p class="card-text">
-                                                            <strong>Cost: {{ hire_settings.currency_symbol }}<span class="addon-cost" data-addon-cost="{{ addon.cost|floatformat:2 }}">{{ addon.cost|floatformat:2 }}</span> per day</strong>
+                                                            {# Updated to show both daily and hourly costs #}
+                                                            <strong>Cost: {{ hire_settings.currency_symbol }}<span class="addon-daily-cost" data-addon-daily-cost="{{ addon.daily_cost|floatformat:2 }}">{{ addon.daily_cost|floatformat:2 }}</span> per day / {{ hire_settings.currency_symbol }}<span class="addon-hourly-cost" data-addon-hourly-cost="{{ addon.hourly_cost|floatformat:2 }}">{{ addon.hourly_cost|floatformat:2 }}</span> per hour</strong>
                                                         </p>
                                                         <div class="form-check mt-3">
                                                             {{ field_info.selected_field.errors }}
@@ -188,10 +186,11 @@
                                 <p class="mb-1"><strong>Estimated Total Price of Selections: <span id="estimatedTotalPriceDisplay">{{ hire_settings.currency_symbol }}0.00</span></strong></p>
                             </div>
                             <div class="form-group mb-3">
-                                <label for="{{ form.total_price.id_for_label }}" class="form-label">{{ form.total_price.label }}<span class="required-indicator">*</span></label>
-                                {{ form.total_price }}
-                                <div class="form-text text-muted">{{ form.total_price.help_text }}</div>
-                                {% if form.total_price.errors %}<div class="text-danger small">{{ form.total_price.errors }}</div>{% endif %}
+                                {# Updated id, name, and label for grand_total #}
+                                <label for="{{ form.grand_total.id_for_label }}" class="form-label">{{ form.grand_total.label }}<span class="required-indicator">*</span></label>
+                                {{ form.grand_total }}
+                                <div class="form-text text-muted">{{ form.grand_total.help_text }}</div>
+                                {% if form.grand_total.errors %}<div class="text-danger small">{{ form.grand_total.errors }}</div>{% endif %}
                             </div>
                             <div class="form-group mb-3">
                                 <label for="{{ form.payment_method.id_for_label }}" class="form-label">{{ form.payment_method.label }}<span class="required-indicator">*</span></label>
@@ -249,6 +248,8 @@
 {{ packages_data|json_script:"packages-data" }}
 {# NEW: Pass default_hourly_rate to JS #}
 {{ default_hourly_rate|json_script:"default-hourly-rate" }}
+{# Pass addons_data to JS #}
+{{ addons_data|json_script:"addons-data" }}
 
 
 <script>
@@ -274,10 +275,12 @@
         const defaultDailyRate = parseFloat(document.getElementById('default-daily-rate').textContent);
         const defaultHourlyRate = parseFloat(document.getElementById('default-hourly-rate').textContent); // NEW: Default hourly rate
         const packagesData = JSON.parse(document.getElementById('packages-data').textContent);
+        const addonsData = JSON.parse(document.getElementById('addons-data').textContent); // NEW: Addons data
 
         // Create map for quick lookup
         const motorcycleMap = new Map(motorcyclesData.map(m => [m.id, m]));
         const packageMap = new Map(packagesData.map(p => [p.id, p]));
+        const addonMap = new Map(addonsData.map(a => [a.id, a])); // NEW: Addon map
 
 
         // --- Flatpickr related elements (kept for date logic) ---
@@ -483,15 +486,18 @@
         // --- Core Logic for Package Price Display ---
         function updatePackagePriceDisplay() {
             const selectedPackageId = parseInt(packageSelect.value);
-            let currentPackagePrice = 0;
+            let currentDailyPackageCost = 0;
+            let currentHourlyPackageCost = 0;
 
             if (selectedPackageId) {
                 const packageObj = packageMap.get(selectedPackageId);
                 if (packageObj) {
-                    currentPackagePrice = parseFloat(packageObj.package_price);
+                    currentDailyPackageCost = parseFloat(packageObj.daily_cost);
+                    currentHourlyPackageCost = parseFloat(packageObj.hourly_cost);
                 }
             }
-            packagePriceDisplay.textContent = `Selected Package Price: ${currencySymbol}${currentPackagePrice.toFixed(2)}`;
+            // Updated display to show both daily and hourly costs
+            packagePriceDisplay.textContent = `Selected Package Price: Daily ${currencySymbol}${currentDailyPackageCost.toFixed(2)}, Hourly ${currencySymbol}${currentHourlyPackageCost.toFixed(2)}`;
         }
 
         // --- New: Core Logic for Estimated Total Price Display (including add-ons) ---
@@ -502,7 +508,8 @@
             const returnTimeStr = returnTimeInput.value;
 
             let estimatedTotal = 0;
-            let baseRate = 0;
+            let motorcycleBaseRate = 0;
+            let packageBaseCost = 0;
             let durationMultiplier = 0; // This will be days or hours
 
             // Determine if it's a same-day booking
@@ -516,40 +523,53 @@
 
             if (isSameDayBooking) {
                 // Use hourly rate for same-day bookings
-                baseRate = parseFloat(bookedHourlyRateInput.value) || 0;
+                motorcycleBaseRate = parseFloat(bookedHourlyRateInput.value) || 0;
                 durationMultiplier = calculateDurationHours(pickupDate, pickupTimeStr, returnDate, returnTimeStr);
+                
+                const selectedPackageId = parseInt(packageSelect.value);
+                if (selectedPackageId) {
+                    const packageObj = packageMap.get(selectedPackageId);
+                    if (packageObj) {
+                        packageBaseCost = parseFloat(packageObj.hourly_cost);
+                    }
+                }
                 console.log("Using HOURLY rate.");
                 console.log("Duration (hours):", durationMultiplier);
             } else {
                 // Use daily rate for multi-day bookings
-                baseRate = parseFloat(bookedDailyRateInput.value) || 0;
+                motorcycleBaseRate = parseFloat(bookedDailyRateInput.value) || 0;
                 durationMultiplier = calculateDurationDays(pickupDate, pickupTimeStr, returnDate, returnTimeStr);
+
+                const selectedPackageId = parseInt(packageSelect.value);
+                if (selectedPackageId) {
+                    const packageObj = packageMap.get(selectedPackageId);
+                    if (packageObj) {
+                        packageBaseCost = parseFloat(packageObj.daily_cost);
+                    }
+                }
                 console.log("Using DAILY rate.");
                 console.log("Duration (days):", durationMultiplier);
             }
             
-            // Get selected package price
-            const selectedPackageId = parseInt(packageSelect.value);
-            let packagePrice = 0;
-            if (selectedPackageId) {
-                const packageObj = packageMap.get(selectedPackageId);
-                if (packageObj) {
-                    packagePrice = parseFloat(packageObj.package_price);
-                }
-            }
-
-            // Calculate add-on total (add-ons are still per day, or per hour depending on the duration multiplier)
-            let addonsTotal = 0;
+            // Calculate add-on total based on duration type
+            let addonsTotalCost = 0;
             addonCheckboxes.forEach(checkbox => {
                 if (checkbox.checked) {
-                    const addonId = checkbox.dataset.addonId;
-                    const addonCostElement = document.querySelector(`#addon-${addonId} .addon-cost`);
+                    const addonId = parseInt(checkbox.dataset.addonId);
+                    const addon = addonMap.get(addonId);
                     const addonQuantityInput = document.querySelector(`#quantityDiv${addonId} .addon-quantity`);
                     
-                    const addonCost = parseFloat(addonCostElement.dataset.addonCost) || 0;
                     const addonQuantity = parseInt(addonQuantityInput.value) || 0;
 
-                    addonsTotal += (addonCost * addonQuantity);
+                    if (addon) {
+                        let addonCostPerUnit = 0;
+                        if (isSameDayBooking) {
+                            addonCostPerUnit = parseFloat(addon.hourly_cost) || 0;
+                        } else {
+                            addonCostPerUnit = parseFloat(addon.daily_cost) || 0;
+                        }
+                        addonsTotalCost += (addonCostPerUnit * addonQuantity);
+                    }
                 }
             });
 
@@ -559,15 +579,13 @@
             console.log("Return Date:", returnDate);
             console.log("Pickup Time:", pickupTimeStr);
             console.log("Return Time:", returnTimeStr);
-            console.log("Base Rate:", baseRate);
-            console.log("Package Price (per unit of duration):", packagePrice);
-            console.log("Addons Total (per unit of duration):", addonsTotal);
-            console.log("Motorcycle Cost (Base Rate * Duration Multiplier):", baseRate * durationMultiplier);
-            console.log("Package Cost (Package Price * Duration Multiplier):", packagePrice * durationMultiplier);
-            console.log("Addons Cost (Addons Total * Duration Multiplier):", addonsTotal * durationMultiplier);
+            console.log("Motorcycle Base Rate (per unit of duration):", motorcycleBaseRate);
+            console.log("Package Base Cost (per unit of duration):", packageBaseCost);
+            console.log("Addons Total Cost (per unit of duration):", addonsTotalCost);
+            console.log("Duration Multiplier:", durationMultiplier);
+            
 
-
-            estimatedTotal = (baseRate * durationMultiplier) + (packagePrice * durationMultiplier) + (addonsTotal * durationMultiplier);
+            estimatedTotal = (motorcycleBaseRate + packageBaseCost + addonsTotalCost) * durationMultiplier;
             estimatedTotalPriceDisplay.textContent = `${currencySymbol}${estimatedTotal.toFixed(2)}`;
             console.log("Estimated Total:", estimatedTotal.toFixed(2));
             console.log("---------------------------------");

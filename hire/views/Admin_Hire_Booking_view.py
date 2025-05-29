@@ -49,11 +49,13 @@ class AdminHireBookingView(View):
                 for m in all_motorcycles
             ],
             'packages_data': [
-                {'id': p.id, 'name': p.name, 'package_price': str(p.package_price)}
+                # Updated to pass daily_cost and hourly_cost
+                {'id': p.id, 'name': p.name, 'daily_cost': str(p.daily_cost), 'hourly_cost': str(p.hourly_cost)}
                 for p in all_packages
             ],
             'addons_data': [
-                {'id': a.id, 'cost': str(a.cost), 'min_quantity': a.min_quantity, 'max_quantity': a.max_quantity}
+                # Updated to pass daily_cost and hourly_cost
+                {'id': a.id, 'daily_cost': str(a.daily_cost), 'hourly_cost': str(a.hourly_cost), 'min_quantity': a.min_quantity, 'max_quantity': a.max_quantity}
                 for a in all_addons
             ],
             'driver_profiles_data': [
@@ -76,13 +78,15 @@ class AdminHireBookingView(View):
         if pk:
             try:
                 booking_instance = get_object_or_404(HireBooking, pk=pk)
-                form = AdminHireBookingForm(instance=booking_instance)
+                # Pass hire_settings to the form for pricing calculations in clean method
+                form = AdminHireBookingForm(instance=booking_instance, hire_settings=HireSettings.objects.first())
                 messages.info(request, f"Editing Hire Booking: {booking_instance.booking_reference}")
             except Exception as e:
                 messages.error(request, f"Error loading booking for edit: {e}")
                 return redirect('dashboard:hire_bookings')
         else:
-            form = AdminHireBookingForm()
+            # Pass hire_settings to the form for pricing calculations in clean method
+            form = AdminHireBookingForm(hire_settings=HireSettings.objects.first())
             messages.info(request, "Creating New Hire Booking")
 
         if 'last_overlap_attempt' in request.session:
@@ -101,12 +105,14 @@ class AdminHireBookingView(View):
         if pk:
             try:
                 booking_instance = get_object_or_404(HireBooking, pk=pk)
-                form = AdminHireBookingForm(request.POST, instance=booking_instance)
+                # Pass hire_settings to the form for pricing calculations in clean method
+                form = AdminHireBookingForm(request.POST, instance=booking_instance, hire_settings=HireSettings.objects.first())
             except Exception as e:
                 messages.error(request, f"Error loading booking for update: {e}")
                 return redirect('dashboard:hire_bookings')
         else:
-            form = AdminHireBookingForm(request.POST)
+            # Pass hire_settings to the form for pricing calculations in clean method
+            form = AdminHireBookingForm(request.POST, hire_settings=HireSettings.objects.first())
 
         hire_settings = HireSettings.objects.first()
 
@@ -271,7 +277,7 @@ class AdminHireBookingView(View):
                     booking_instance.total_hire_price = total_hire_price
                     booking_instance.total_addons_price = total_addons_price
                     booking_instance.total_package_price = total_package_price
-                    booking_instance.grand_total = grand_total
+                    booking_instance.grand_total = grand_total # Ensure grand_total is set
                     booking_instance.deposit_amount = deposit_amount
                     booking_instance.amount_paid = amount_paid
                     booking_instance.payment_status = payment_status
@@ -286,20 +292,14 @@ class AdminHireBookingView(View):
                     # Update add-ons: clear existing and add new ones
                     booking_instance.booking_addons.all().delete()
                     for item in selected_addons_data:
-                        booked_addon_price_per_unit = calculate_addon_price(
-                            addon_instance=item['addon'],
-                            quantity=Decimal('1'), # Calculate per unit price
-                            pickup_date=pickup_date,
-                            return_date=return_date,
-                            pickup_time=pickup_time,
-                            return_time=return_time,
-                            hire_settings=hire_settings
-                        )
+                        # The price for the add-on is already calculated in the form's clean method
+                        # and stored in item['price'] (which is the total for the quantity).
+                        # We just need to ensure the quantity is also passed correctly.
                         BookingAddOn.objects.create(
                             booking=booking_instance,
                             addon=item['addon'],
                             quantity=item['quantity'],
-                            booked_addon_price=booked_addon_price_per_unit * item['quantity']
+                            booked_addon_price=item['price'] # Use the pre-calculated total price from the form
                         )
                     messages.success(request, f"Hire Booking {booking_instance.booking_reference} updated successfully!")
                 else:
@@ -316,7 +316,7 @@ class AdminHireBookingView(View):
                         total_hire_price=total_hire_price,
                         total_addons_price=total_addons_price,
                         total_package_price=total_package_price,
-                        grand_total=grand_total,
+                        grand_total=grand_total, # Ensure grand_total is set
                         deposit_amount=deposit_amount,
                         amount_paid=amount_paid,
                         payment_status=payment_status,
@@ -331,20 +331,14 @@ class AdminHireBookingView(View):
 
                     # Add add-ons through the intermediate model (BookingAddOn)
                     for item in selected_addons_data:
-                        booked_addon_price_per_unit = calculate_addon_price(
-                            addon_instance=item['addon'],
-                            quantity=Decimal('1'), # Calculate per unit price
-                            pickup_date=pickup_date,
-                            return_date=return_date,
-                            pickup_time=pickup_time,
-                            return_time=return_time,
-                            hire_settings=hire_settings
-                        )
+                        # The price for the add-on is already calculated in the form's clean method
+                        # and stored in item['price'] (which is the total for the quantity).
+                        # We just need to ensure the quantity is also passed correctly.
                         BookingAddOn.objects.create(
                             booking=hire_booking,
                             addon=item['addon'],
                             quantity=item['quantity'],
-                            booked_addon_price=booked_addon_price_per_unit * item['quantity']
+                            booked_addon_price=item['price'] # Use the pre-calculated total price from the form
                         )
                     messages.success(request, f"Hire Booking {hire_booking.booking_reference} created successfully!")
 

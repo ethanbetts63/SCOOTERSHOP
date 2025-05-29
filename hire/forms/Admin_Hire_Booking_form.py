@@ -172,7 +172,9 @@ class AdminHireBookingForm(forms.Form):
                     'data-addon-id': str(addon.id),
                     'data-original-max-quantity': str(addon.max_quantity),
                     'data-min-quantity': str(addon.min_quantity),
-                    'data-adjusted-max-quantity': str(addon.max_quantity) # Pass adjusted max to JS
+                    'data-adjusted-max-quantity': str(addon.max_quantity), # Pass adjusted max to JS
+                    'data-daily-cost': str(addon.daily_cost),
+                    'data-hourly-cost': str(addon.hourly_cost),
                 })
             )
             self.fields[f'addon_{addon.id}_quantity'] = forms.IntegerField(
@@ -257,19 +259,23 @@ class AdminHireBookingForm(forms.Form):
                     # Calculate the actual price of the add-on using the new pricing logic
                     # Ensure all necessary parameters for calculate_addon_price are available
                     if all([addon, quantity, pickup_date, return_date, pickup_time, return_time, self.hire_settings]):
-                        calculated_addon_price = calculate_addon_price(
+                        # Determine if it's a same-day booking for hourly vs. daily pricing
+                        is_same_day_booking = (pickup_date == return_date)
+
+                        calculated_addon_price_per_unit = calculate_addon_price(
                             addon_instance=addon,
-                            quantity=quantity,
+                            quantity=1, # Calculate for a single unit
                             pickup_date=pickup_date,
                             return_date=return_date,
                             pickup_time=pickup_time,
                             return_time=return_time,
                             hire_settings=self.hire_settings
                         )
+                        # Store the total calculated price for the quantity
                         selected_addons_data.append({
                             'addon': addon,
                             'quantity': quantity,
-                            'price': calculated_addon_price # Store the calculated price
+                            'price': calculated_addon_price_per_unit * quantity # Store the calculated total price for this addon
                         })
                     else:
                         # If pricing parameters are missing, add an error
