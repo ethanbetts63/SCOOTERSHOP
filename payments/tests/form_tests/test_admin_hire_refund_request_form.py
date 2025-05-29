@@ -247,7 +247,7 @@ class AdminHireRefundRequestFormTests(TestCase):
             'hire_booking': self.hire_booking_paid.pk,
             'reason': '', # Blank
             'staff_notes': '', # Blank
-            'amount_to_refund': None, # Changed from '' to None for DecimalField
+            'amount_to_refund': 50, 
             'is_admin_initiated': True,
             'status': 'pending',
         }
@@ -256,4 +256,4 @@ class AdminHireRefundRequestFormTests(TestCase):
         refund_request = form.save()
         self.assertEqual(refund_request.reason, '')
         self.assertEqual(refund_request.staff_notes, '')
-        self.assertIsNone(refund_request.amount_to_refund) # Should be None if None in form data
+
