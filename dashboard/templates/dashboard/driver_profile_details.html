@@ -1,0 +1,140 @@
+{% extends "dashboard/admin_layout.html" %}
+{% load static %}
+
+{% block admin_main_content %}
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-md-10 offset-md-1">
+                <div class="card shadow-lg">
+                    <div class="card-header bg-primary text-white">
+                        <h2 class="mb-0">{{ title }}</h2>
+                    </div>
+                    <div class="card-body">
+                        <h4 class="mb-3">Driver Profile Information</h4>
+                        <dl class="row">
+                            <dt class="col-sm-4">ID:</dt>
+                            <dd class="col-sm-8">{{ driver_profile.pk }}</dd>
+
+                            {% if driver_profile.user %}
+                                <dt class="col-sm-4">Linked User:</dt>
+                                <dd class="col-sm-8">{{ driver_profile.user.get_full_name }} ({{ driver_profile.user.email }})</dd>
+                            {% endif %}
+
+                            <dt class="col-sm-4">Full Name:</dt>
+                            <dd class="col-sm-8">{{ driver_profile.name }}</dd>
+
+                            <dt class="col-sm-4">Email Address:</dt>
+                            <dd class="col-sm-8">{{ driver_profile.email }}</dd>
+
+                            <dt class="col-sm-4">Phone Number:</dt>
+                            <dd class="col-sm-8">{{ driver_profile.phone_number }}</dd>
+
+                            <dt class="col-sm-4">Date of Birth:</dt>
+                            <dd class="col-sm-8">{{ driver_profile.date_of_birth|date:"F j, Y" }}</dd>
+
+                            <dt class="col-sm-4">Address Line 1:</dt>
+                            <dd class="col-sm-8">{{ driver_profile.address_line_1 }}</dd>
+
+                            <dt class="col-sm-4">Address Line 2:</dt>
+                            <dd class="col-sm-8">{% if driver_profile.address_line_2 %}{{ driver_profile.address_line_2 }}{% else %}N/A{% endif %}</dd>
+
+                            <dt class="col-sm-4">City:</dt>
+                            <dd class="col-sm-8">{{ driver_profile.city }}</dd>
+
+                            <dt class="col-sm-4">State/Province:</dt>
+                            <dd class="col-sm-8">{% if driver_profile.state %}{{ driver_profile.state }}{% else %}N/A{% endif %}</dd>
+
+                            <dt class="col-sm-4">Postal Code:</dt>
+                            <dd class="col-sm-8">{% if driver_profile.post_code %}{{ driver_profile.post_code }}{% else %}N/A{% endif %}</dd>
+
+                            <dt class="col-sm-4">Country:</dt>
+                            <dd class="col-sm-8">{{ driver_profile.country }}</dd>
+
+                            <dt class="col-sm-4">Australian Resident:</dt>
+                            <dd class="col-sm-8">{% if driver_profile.is_australian_resident %}Yes{% else %}No{% endif %}</dd>
+
+                            {% if driver_profile.is_australian_resident %}
+                                <dt class="col-sm-4">Primary License Number:</dt>
+                                <dd class="col-sm-8">{% if driver_profile.license_number %}{{ driver_profile.license_number }}{% else %}N/A{% endif %}</dd>
+
+                                <dt class="col-sm-4">Primary License Expiry Date:</dt>
+                                <dd class="col-sm-8">{% if driver_profile.license_expiry_date %}{{ driver_profile.license_expiry_date|date:"F j, Y" }}{% else %}N/A{% endif %}</dd>
+
+                                <dt class="col-sm-4">Primary License Photo:</dt>
+                                <dd class="col-sm-8">
+                                    {% if driver_profile.license_photo %}
+                                        <a href="{{ driver_profile.license_photo.url }}" target="_blank">View Photo</a>
+                                    {% else %}
+                                        No Photo
+                                    {% endif %}
+                                </dd>
+                            {% else %}
+                                <dt class="col-sm-4">International License Issuing Country:</dt>
+                                <dd class="col-sm-8">{% if driver_profile.international_license_issuing_country %}{{ driver_profile.international_license_issuing_country }}{% else %}N/A{% endif %}</dd>
+
+                                <dt class="col-sm-4">International License Expiry Date:</dt>
+                                <dd class="col-sm-8">{% if driver_profile.international_license_expiry_date %}{{ driver_profile.international_license_expiry_date|date:"F j, Y" }}{% else %}N/A{% endif %}</dd>
+
+                                <dt class="col-sm-4">International Driver's License Photo:</dt>
+                                <dd class="col-sm-8">
+                                    {% if driver_profile.international_license_photo %}
+                                        <a href="{{ driver_profile.international_license_photo.url }}" target="_blank">View Photo</a>
+                                    {% else %}
+                                        No Photo
+                                    {% endif %}
+                                </dd>
+
+                                <dt class="col-sm-4">Passport Number:</dt>
+                                <dd class="col-sm-8">{% if driver_profile.passport_number %}{{ driver_profile.passport_number }}{% else %}N/A{% endif %}</dd>
+
+                                <dt class="col-sm-4">Passport Expiry Date:</dt>
+                                <dd class="col-sm-8">{% if driver_profile.passport_expiry_date %}{{ driver_profile.passport_expiry_date|date:"F j, Y" }}{% else %}N/A{% endif %}</dd>
+
+                                <dt class="col-sm-4">Passport Photo:</dt>
+                                <dd class="col-sm-8">
+                                    {% if driver_profile.passport_photo %}
+                                        <a href="{{ driver_profile.passport_photo.url }}" target="_blank">View Photo</a>
+                                    {% else %}
+                                        No Photo
+                                    {% endif %}
+                                </dd>
+                            {% endif %}
+
+                            <dt class="col-sm-4">ID Image:</dt>
+                            <dd class="col-sm-8">
+                                {% if driver_profile.id_image %}
+                                    <a href="{{ driver_profile.id_image.url }}" target="_blank">View Photo</a>
+                                {% else %}
+                                    No Photo
+                                {% endif %}
+                            </dd>
+
+                            <dt class="col-sm-4">International ID Image:</dt>
+                            <dd class="col-sm-8">
+                                {% if driver_profile.international_id_image %}
+                                    <a href="{{ driver_profile.international_id_image.url }}" target="_blank">View Photo</a>
+                                {% else %}
+                                    No Photo
+                                {% endif %}
+                            </dd>
+
+                            <dt class="col-sm-4">Created At:</dt>
+                            <dd class="col-sm-8">{{ driver_profile.created_at|date:"F j, Y, P" }}</dd>
+
+                            <dt class="col-sm-4">Last Updated:</dt>
+                            <dd class="col-sm-8">{{ driver_profile.updated_at|date:"F j, Y, P" }}</dd>
+                        </dl>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-end">
+                            <a href="{% url 'dashboard:edit_driver_profile' pk=driver_profile.pk %}" class="btn btn-warning me-2">Edit Profile</a>
+                            <a href="{% url 'dashboard:delete_driver_profile' pk=driver_profile.pk %}" class="btn btn-danger">Delete Profile</a>
+                            <a href="{% url 'dashboard:settings_driver_profiles' %}" class="btn btn-secondary ms-2">Back to List</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

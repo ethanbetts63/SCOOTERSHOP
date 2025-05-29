@@ -69,4 +69,5 @@ urlpatterns = [
     path('settings/driver-profiles/add/', views.AddEditDriverProfileView.as_view(), name='add_driver_profile'),
     path('settings/driver-profiles/edit/<int:pk>/', views.AddEditDriverProfileView.as_view(), name='edit_driver_profile'),
     path('settings/driver-profiles/delete/<int:pk>/', views.DeleteDriverProfileView.as_view(), name='delete_driver_profile'),
+       path('settings/driver-profiles/details/<int:pk>/', views.DriverProfileDetailView.as_view(), name='driver_profile_details')
 ]

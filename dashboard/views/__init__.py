@@ -41,4 +41,5 @@ from .add_edit_driver_profile_view import *
 from .delete_driver_profile_view import *
 from .delete_driver_profile_view import *
 from .settings_driver_profiles import *
+from .driver_profile_details_view import *
 
