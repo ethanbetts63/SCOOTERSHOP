@@ -450,21 +450,21 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "cancellation_full_refund_days",
+                    "cancellation_upfront_full_refund_days",
                     models.PositiveIntegerField(
                         default=7,
                         help_text="Full refund if cancelled this many *full days* or more before pickup time.",
                     ),
                 ),
                 (
-                    "cancellation_partial_refund_days",
+                    "cancellation_upfront_partial_refund_days",
                     models.PositiveIntegerField(
                         default=3,
                         help_text="Partial refund if cancelled this many *full days* or more (but less than full refund threshold) before pickup time.",
                     ),
                 ),
                 (
-                    "cancellation_partial_refund_percentage",
+                    "cancellation_upfront_partial_refund_percentage",
                     models.DecimalField(
                         decimal_places=2,
                         default=50.0,
@@ -473,14 +473,14 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "cancellation_minimal_refund_days",
+                    "cancellation_upfront_minimal_refund_days",
                     models.PositiveIntegerField(
                         default=1,
                         help_text="Minimal refund percentage applies if cancelled this many *full days* or more (but less than partial refund threshold) before pickup time.",
                     ),
                 ),
                 (
-                    "cancellation_minimal_refund_percentage",
+                    "cancellation_upfront_minimal_refund_percentage",
                     models.DecimalField(
                         decimal_places=2,
                         default=0.0,

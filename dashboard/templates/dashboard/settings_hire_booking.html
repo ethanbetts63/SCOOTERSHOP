@@ -300,38 +300,73 @@
              </div>
         </div>
 
-        {# --- Cancellation Policy --- #}
+        {# --- Upfront Cancellation Policy --- #}
         <div class="form-field">
-            <h3 class="booking-section-title">{% translate "Cancellation Policy" %}</h3>
+            <h3 class="booking-section-title">{% translate "Upfront Payment Cancellation Policy" %}</h3>
             <div class="form-field">
-                {{ form.cancellation_full_refund_days.label_tag }}
-                {{ form.cancellation_full_refund_days }}
-                {% if form.cancellation_full_refund_days.help_text %}<small>{{ form.cancellation_full_refund_days.help_text }}</small>{% endif %}
-                {% for error in form.cancellation_full_refund_days.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+                {{ form.cancellation_upfront_full_refund_days.label_tag }}
+                {{ form.cancellation_upfront_full_refund_days }}
+                {% if form.cancellation_upfront_full_refund_days.help_text %}<small>{{ form.cancellation_upfront_full_refund_days.help_text }}</small>{% endif %}
+                {% for error in form.cancellation_upfront_full_refund_days.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
             </div>
              <div class="form-field">
-                 {{ form.cancellation_partial_refund_days.label_tag }}
-                 {{ form.cancellation_partial_refund_days }}
-                 {% if form.cancellation_partial_refund_days.help_text %}<small>{{ form.cancellation_partial_refund_days.help_text }}</small>{% endif %}
-                 {% for error in form.cancellation_partial_refund_days.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+                 {{ form.cancellation_upfront_partial_refund_days.label_tag }}
+                 {{ form.cancellation_upfront_partial_refund_days }}
+                 {% if form.cancellation_upfront_partial_refund_days.help_text %}<small>{{ form.cancellation_upfront_partial_refund_days.help_text }}</small>{% endif %}
+                 {% for error in form.cancellation_upfront_partial_refund_days.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
              </div>
              <div class="form-field">
-                 {{ form.cancellation_partial_refund_percentage.label_tag }}
-                 {{ form.cancellation_partial_refund_percentage }}
-                 {% if form.cancellation_partial_refund_percentage.help_text %}<small>{{ form.cancellation_partial_refund_percentage.help_text }}</small>{% endif %}
-                 {% for error in form.cancellation_partial_refund_percentage.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+                 {{ form.cancellation_upfront_partial_refund_percentage.label_tag }}
+                 {{ form.cancellation_upfront_partial_refund_percentage }}
+                 {% if form.cancellation_upfront_partial_refund_percentage.help_text %}<small>{{ form.cancellation_upfront_partial_refund_percentage.help_text }}</small>{% endif %}
+                 {% for error in form.cancellation_upfront_partial_refund_percentage.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
              </div>
              <div class="form-field">
-                 {{ form.cancellation_minimal_refund_days.label_tag }}
-                 {{ form.cancellation_minimal_refund_days }}
-                 {% if form.cancellation_minimal_refund_days.help_text %}<small>{{ form.cancellation_minimal_refund_days.help_text }}</small>{% endif %}
-                 {% for error in form.cancellation_minimal_refund_days.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+                 {{ form.cancellation_upfront_minimal_refund_days.label_tag }}
+                 {{ form.cancellation_upfront_minimal_refund_days }}
+                 {% if form.cancellation_upfront_minimal_refund_days.help_text %}<small>{{ form.cancellation_upfront_minimal_refund_days.help_text }}</small>{% endif %}
+                 {% for error in form.cancellation_upfront_minimal_refund_days.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
              </div>
              <div class="form-field">
-                 {{ form.cancellation_minimal_refund_percentage.label_tag }}
-                 {{ form.cancellation_minimal_refund_percentage }}
-                 {% if form.cancellation_minimal_refund_percentage.help_text %}<small>{{ form.cancellation_minimal_refund_percentage.help_text }}</small>{% endif %}
-                 {% for error in form.cancellation_minimal_refund_percentage.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+                 {{ form.cancellation_upfront_minimal_refund_percentage.label_tag }}
+                 {{ form.cancellation_upfront_minimal_refund_percentage }}
+                 {% if form.cancellation_upfront_minimal_refund_percentage.help_text %}<small>{{ form.cancellation_upfront_minimal_refund_percentage.help_text }}</small>{% endif %}
+                 {% for error in form.cancellation_upfront_minimal_refund_percentage.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
+        </div>
+
+        {# --- Deposit Cancellation Policy --- #}
+        <div class="form-field">
+            <h3 class="booking-section-title">{% translate "Deposit Cancellation Policy" %}</h3>
+            <div class="form-field">
+                {{ form.cancellation_deposit_full_refund_days.label_tag }}
+                {{ form.cancellation_deposit_full_refund_days }}
+                {% if form.cancellation_deposit_full_refund_days.help_text %}<small>{{ form.cancellation_deposit_full_refund_days.help_text }}</small>{% endif %}
+                {% for error in form.cancellation_deposit_full_refund_days.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+            </div>
+             <div class="form-field">
+                 {{ form.cancellation_deposit_partial_refund_days.label_tag }}
+                 {{ form.cancellation_deposit_partial_refund_days }}
+                 {% if form.cancellation_deposit_partial_refund_days.help_text %}<small>{{ form.cancellation_deposit_partial_refund_days.help_text }}</small>{% endif %}
+                 {% for error in form.cancellation_deposit_partial_refund_days.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
+             <div class="form-field">
+                 {{ form.cancellation_deposit_partial_refund_percentage.label_tag }}
+                 {{ form.cancellation_deposit_partial_refund_percentage }}
+                 {% if form.cancellation_deposit_partial_refund_percentage.help_text %}<small>{{ form.cancellation_deposit_partial_refund_percentage.help_text }}</small>{% endif %}
+                 {% for error in form.cancellation_deposit_partial_refund_percentage.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
+             <div class="form-field">
+                 {{ form.cancellation_deposit_minimal_refund_days.label_tag }}
+                 {{ form.cancellation_deposit_minimal_refund_days }}
+                 {% if form.cancellation_deposit_minimal_refund_days.help_text %}<small>{{ form.cancellation_deposit_minimal_refund_days.help_text }}</small>{% endif %}
+                 {% for error in form.cancellation_deposit_minimal_refund_days.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
+             </div>
+             <div class="form-field">
+                 {{ form.cancellation_deposit_minimal_refund_percentage.label_tag }}
+                 {{ form.cancellation_deposit_minimal_refund_percentage }}
+                 {% if form.cancellation_deposit_minimal_refund_percentage.help_text %}<small>{{ form.cancellation_deposit_minimal_refund_percentage.help_text }}</small>{% endif %}
+                 {% for error in form.cancellation_deposit_minimal_refund_percentage.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
              </div>
         </div>
     </form>
@@ -373,7 +408,7 @@
         // Function to toggle visibility of excess_hours_margin field
         function toggleExcessHoursMarginVisibility() {
             // Check if the selected strategy is either of the margin-based ones
-            if (hirePricingStrategySelect.value === '24_hour_plus_margin' || 
+            if (hirePricingStrategySelect.value === '24_hour_plus_margin' ||
                 hirePricingStrategySelect.value === '24_hour_plus_margin_proportional') {
                 excessHoursMarginField.style.display = 'block';
             } else {

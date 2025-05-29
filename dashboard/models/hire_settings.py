@@ -187,34 +187,62 @@ class HireSettings(models.Model):
     # Currency symbol.
     currency_symbol = models.CharField(max_length=5, default='$', help_text="Symbol for the currency.")
 
-
-    # --- Cancellation Policy ---
+    # --- Upfront Cancellation Policy ---
     # Full refund threshold in days.
-    cancellation_full_refund_days = models.PositiveIntegerField(
+    cancellation_upfront_full_refund_days = models.PositiveIntegerField(
         default=7,
-        help_text="Full refund if cancelled this many *full days* or more before pickup time."
+        help_text="Full refund if cancelled this many *full days* or more before pickup time (for upfront payments)."
     )
     # Partial refund threshold in days.
-    cancellation_partial_refund_days = models.PositiveIntegerField(
+    cancellation_upfront_partial_refund_days = models.PositiveIntegerField(
         default=3,
-        help_text="Partial refund if cancelled this many *full days* or more (but less than full refund threshold) before pickup time."
+        help_text="Partial refund if cancelled this many *full days* or more (but less than full refund threshold) before pickup time (for upfront payments)."
     )
     # Percentage for partial refund.
-    cancellation_partial_refund_percentage = models.DecimalField(
+    cancellation_upfront_partial_refund_percentage = models.DecimalField(
         max_digits=5, decimal_places=2,
         default=50.00,
-        help_text="Percentage of total hire price to refund for partial cancellations."
+        help_text="Percentage of total hire price to refund for partial cancellations (for upfront payments)."
     )
     # Minimal refund threshold in days.
-    cancellation_minimal_refund_days = models.PositiveIntegerField(
+    cancellation_upfront_minimal_refund_days = models.PositiveIntegerField(
          default=1,
-         help_text="Minimal refund percentage applies if cancelled this many *full days* or more (but less than partial refund threshold) before pickup time."
+         help_text="Minimal refund percentage applies if cancelled this many *full days* or more (but less than partial refund threshold) before pickup time (for upfront payments)."
     )
     # Percentage for minimal refund.
-    cancellation_minimal_refund_percentage = models.DecimalField(
+    cancellation_upfront_minimal_refund_percentage = models.DecimalField(
         max_digits=5, decimal_places=2,
         default=0.00,
-        help_text="Percentage of total hire price to refund for late cancellations."
+        help_text="Percentage of total hire price to refund for late cancellations (for upfront payments)."
+    )
+
+    # --- Deposit Cancellation Policy ---
+    # Full refund threshold in days for deposits.
+    cancellation_deposit_full_refund_days = models.PositiveIntegerField(
+        default=7,
+        help_text="Full refund of deposit if cancelled this many *full days* or more before pickup time."
+    )
+    # Partial refund threshold in days for deposits.
+    cancellation_deposit_partial_refund_days = models.PositiveIntegerField(
+        default=3,
+        help_text="Partial refund of deposit if cancelled this many *full days* or more (but less than full refund threshold) before pickup time."
+    )
+    # Percentage for partial deposit refund.
+    cancellation_deposit_partial_refund_percentage = models.DecimalField(
+        max_digits=5, decimal_places=2,
+        default=50.00,
+        help_text="Percentage of deposit to refund for partial cancellations."
+    )
+    # Minimal refund threshold in days for deposits.
+    cancellation_deposit_minimal_refund_days = models.PositiveIntegerField(
+         default=1,
+         help_text="Minimal refund percentage applies to deposit if cancelled this many *full days* or more (but less than partial refund threshold) before pickup time."
+    )
+    # Percentage for minimal deposit refund.
+    cancellation_deposit_minimal_refund_percentage = models.DecimalField(
+        max_digits=5, decimal_places=2,
+        default=0.00,
+        help_text="Percentage of deposit to refund for late cancellations."
     )
 
     # Ensures only one instance exists.
