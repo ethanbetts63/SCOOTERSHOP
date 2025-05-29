@@ -36,16 +36,6 @@ PAYMENT_METHOD_CHOICES = [
     ('in_store_full', 'Full Payment Store'),
 ]
 
-# # Old Choices for payment method
-# PAYMENT_METHOD_CHOICES = [
-#     ('cash', 'Cash'),
-#     ('card', 'Card'),
-#     ('online', 'Online'),
-#     ('at_desk', 'At Desk (Pending Payment)'),
-#     ('other', 'Other')
-# ]
-
-
 class HireBooking(models.Model):
     # Relationships
     motorcycle = models.ForeignKey(

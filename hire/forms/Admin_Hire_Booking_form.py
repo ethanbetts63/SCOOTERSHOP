@@ -93,7 +93,7 @@ class AdminHireBookingForm(forms.Form):
     grand_total = forms.DecimalField(
         max_digits=10, decimal_places=2,
         label="Admin Entered Grand Total", # Updated label
-        required=False, # Changed to False to allow custom validation in clean()
+        required=True, 
         help_text="Enter the final grand total price. An estimated total will be calculated dynamically on the page." # Updated help text
     )
     payment_method = forms.ChoiceField(
