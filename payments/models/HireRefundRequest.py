@@ -2,42 +2,44 @@
 
 from django.db import models
 from django.conf import settings # To link to Django's User model
-from hire.models import HireBooking 
-from payments.models import Payment
+from payments.models.PaymentModel import Payment # Import the Payment model
 
-class RefundRequest(models.Model):
+class HireRefundRequest(models.Model): # Renamed the model class
     STATUS_CHOICES = [
+        ('unverified', 'Unverified - Awaiting Email Confirmation'),
         ('pending', 'Pending Review'),
-        ('approved', 'Approved - Awaiting Refund'), # Approved by staff, but Stripe refund not yet initiated
+        ('approved', 'Approved - Awaiting Refund'),
         ('rejected', 'Rejected'),
-        ('refunded', 'Refunded'), # Stripe refund successfully processed
-        ('failed', 'Refund Failed'), # Stripe refund initiated but failed
+        ('refunded', 'Refunded'),
+        ('failed', 'Refund Failed'),
     ]
 
     hire_booking = models.ForeignKey(
-        HireBooking,
+        'hire.HireBooking', # Use string reference to avoid circular import
         on_delete=models.CASCADE,
         related_name='refund_requests',
         help_text="The booking for which the refund is requested."
     )
 
-    driver_profile = models.ForeignKey(
-        'hire.DriverProfile',
-        on_delete=models.SET_NULL, 
-        related_name='payments', 
-        null=False, 
-        blank=False,
-        help_text="The driver profile associated with this refund."
-    )
     payment = models.ForeignKey(
         Payment,
-        on_delete=models.SET_NULL, # If the payment record is deleted, don't delete the refund request
+        on_delete=models.SET_NULL,
         related_name='refund_requests',
         null=True,
         blank=True,
         help_text="The specific payment record associated with this refund request."
     )
+
+    driver_profile = models.ForeignKey(
+        'hire.DriverProfile',
+        on_delete=models.SET_NULL,
+        related_name='refund_requests_related_driver',
+        null=True,
+        blank=True,
+        help_text="The driver profile associated with this refund."
+    )
     reason = models.TextField(
+        blank=True,
         help_text="Customer's reason for requesting the refund."
     )
     requested_at = models.DateTimeField(
@@ -47,7 +49,7 @@ class RefundRequest(models.Model):
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default='pending',
+        default='unverified',
         help_text="Current status of the refund request."
     )
     amount_to_refund = models.DecimalField(
@@ -56,11 +58,6 @@ class RefundRequest(models.Model):
         null=True,
         blank=True,
         help_text="The amount to be refunded, set by staff upon approval (can be partial)."
-    )
-    refund_calculation_details = models.JSONField(
-        default=dict,
-        blank=True,
-        help_text="Stores a snapshot of details used for refund calculation (e.g., policy applied, original amount, calculated refund amount)."
     )
     processed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -79,20 +76,32 @@ class RefundRequest(models.Model):
         blank=True,
         help_text="Internal notes from staff regarding the processing of this request."
     )
-    is_admin_initiated = models.BooleanField(
-        default=False,
-        help_text="Indicates if this refund request was initiated by an administrator."
-    )
     stripe_refund_id = models.CharField(
         max_length=255,
         blank=True,
         help_text="Stripe Refund ID if the refund was processed via Stripe."
     )
+    is_admin_initiated = models.BooleanField(
+        default=False,
+        help_text="Indicates if this refund request was initiated by an administrator."
+    )
+    refund_calculation_details = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Stores a snapshot of details used for refund calculation (e.g., policy applied, original amount, calculated refund amount)."
+    )
+    request_email = models.EmailField(
+        blank=True,
+        null=True,
+        help_text="Email address provided by the user for this refund request."
+    )
+
 
     class Meta:
-        verbose_name = "Refund Request"
-        verbose_name_plural = "Refund Requests"
+        verbose_name = "Hire Refund Request" # Updated verbose name
+        verbose_name_plural = "Hire Refund Requests" # Updated verbose name plural
         ordering = ['-requested_at']
 
     def __str__(self):
-        return f"Refund Request for Booking {self.hire_booking.id} - Status: {self.status}"
+        return f"Refund Request for Booking {self.hire_booking.booking_reference if self.hire_booking else 'N/A'} - Status: {self.status}"
+

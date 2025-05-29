@@ -8,10 +8,11 @@ from django.contrib.auth import get_user_model
 
 # Import models from their respective apps
 from inventory.models import Motorcycle, MotorcycleCondition
-from payments.models import Payment # Ensure Payment model is imported
+from payments.models import Payment 
 from dashboard.models import HireSettings
-# NEW: Import EmailLog model
 from mailer.models import EmailLog
+from payments.models.HireRefundRequest import HireRefundRequest
+
 
 # Import models from the current 'hire' app
 from hire.models import (
@@ -28,11 +29,18 @@ User = get_user_model() # Get the custom User model
 
 # --- Helper for creating common related models ---
 
-def create_user(username, password="password123", email=None):
+def create_user(username, password="password123", email=None, is_staff=False, is_superuser=False):
     """Creates a Django User instance."""
     if not email:
         email = f"{username}@example.com"
-    return User.objects.create_user(username=username, password=password, email=email)
+    # Use create_user for regular users and create_superuser for superusers
+    if is_superuser:
+        return User.objects.create_superuser(username=username, password=password, email=email)
+    else:
+        user = User.objects.create_user(username=username, password=password, email=email)
+        user.is_staff = is_staff
+        user.save()
+        return user
 
 def create_motorcycle_condition(name, display_name):
     """Creates a MotorcycleCondition instance."""
@@ -123,6 +131,10 @@ def create_hire_settings(
     # NEW: Add hire pricing strategy fields
     hire_pricing_strategy='24_hour_customer_friendly', # Default to a sensible option
     excess_hours_margin=2, # Default margin
+    # NEW: Refund policy settings
+    full_refund_days=7,
+    partial_refund_days=3,
+    no_refund_days=1,
 ):
     """Creates or gets a HireSettings instance."""
     settings, created = HireSettings.objects.get_or_create(pk=1) # Assuming pk=1 for singleton
@@ -150,6 +162,10 @@ def create_hire_settings(
     # NEW: Assign the new pricing strategy fields
     settings.hire_pricing_strategy = hire_pricing_strategy
     settings.excess_hours_margin = excess_hours_margin
+    # NEW: Assign refund policy settings
+    settings.full_refund_days = full_refund_days
+    settings.partial_refund_days = partial_refund_days
+    settings.no_refund_days = no_refund_days
     settings.save()
     return settings
 
@@ -518,3 +534,65 @@ def create_email_log(
         kwargs['status'] = status
 
     return EmailLog.objects.create(**kwargs)
+
+def create_refund_request(
+    hire_booking=None,
+    payment=None,
+    driver_profile=None,
+    reason="Customer changed mind",
+    status='pending',
+    amount_to_refund=None,
+    processed_by=None,
+    staff_notes="",
+    stripe_refund_id="",
+    is_admin_initiated=False,
+    refund_calculation_details=None,
+    request_email=None,
+):
+    """Creates a RefundRequest instance."""
+    if not hire_booking:
+        # Create a paid booking by default for refund requests
+        driver_profile = create_driver_profile()
+        payment = create_payment(amount=Decimal('500.00'), status='succeeded', driver_profile=driver_profile)
+        hire_booking = create_hire_booking(
+            driver_profile=driver_profile,
+            payment=payment,
+            amount_paid=payment.amount,
+            grand_total=payment.amount,
+            payment_status='paid',
+            status='confirmed',
+        )
+        payment.hire_booking = hire_booking # Link payment to hire booking
+        payment.save()
+
+    if not driver_profile:
+        driver_profile = hire_booking.driver_profile
+
+    if not payment:
+        payment = hire_booking.payment
+
+    if amount_to_refund is None:
+        amount_to_refund = payment.amount # Default to full refund
+
+    if refund_calculation_details is None:
+        refund_calculation_details = {}
+
+    if request_email is None:
+        request_email = driver_profile.email
+
+
+    return HireRefundRequest.objects.create(
+        hire_booking=hire_booking,
+        payment=payment,
+        driver_profile=driver_profile,
+        reason=reason,
+        status=status,
+        amount_to_refund=amount_to_refund,
+        processed_by=processed_by,
+        staff_notes=staff_notes,
+        stripe_refund_id=stripe_refund_id,
+        is_admin_initiated=is_admin_initiated,
+        refund_calculation_details=refund_calculation_details,
+        request_email=request_email,
+    )
+
