@@ -223,7 +223,8 @@ def calculate_total_addons_price(temp_booking, hire_settings):
 
     total_price = Decimal('0.00')
     # Iterates through each add-on in the temporary booking and sums their calculated prices.
-    for temp_booking_addon in temp_booking.temp_booking_addons.all():
+    # Changed from .all() to calling the method directly
+    for temp_booking_addon in temp_booking.temp_booking_addons():
         if temp_booking_addon.addon and temp_booking_addon.quantity > 0:
             total_price += calculate_addon_price(
                 addon_instance=temp_booking_addon.addon,
@@ -279,7 +280,8 @@ def calculate_booking_grand_total(temp_booking, hire_settings):
             )
 
         # Calculates total add-ons price.
-        if temp_booking.temp_booking_addons.exists():
+        # Changed from .exists() to calling the method directly and checking if the list is not empty
+        if temp_booking.temp_booking_addons():
             addons_total_price = calculate_total_addons_price(
                 temp_booking=temp_booking,
                 hire_settings=hire_settings
