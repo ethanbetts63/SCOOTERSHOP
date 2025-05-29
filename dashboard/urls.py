@@ -63,4 +63,10 @@ urlpatterns = [
     path('settings/hire-packages/add/', views.AddEditPackageView.as_view(), name='add_hire_package'),
     path('settings/hire-packages/edit/<int:pk>/', views.AddEditPackageView.as_view(), name='edit_hire_package'),
     path('settings/hire-packages/delete/<int:pk>/', views.DeletePackageView.as_view(), name='delete_hire_package'),
+
+    # NEW: Driver Profiles URLs
+    path('settings/driver-profiles/', views.DriverProfilesSettingsView.as_view(), name='settings_driver_profiles'),
+    path('settings/driver-profiles/add/', views.AddEditDriverProfileView.as_view(), name='add_driver_profile'),
+    path('settings/driver-profiles/edit/<int:pk>/', views.AddEditDriverProfileView.as_view(), name='edit_driver_profile'),
+    path('settings/driver-profiles/delete/<int:pk>/', views.DeleteDriverProfileView.as_view(), name='delete_driver_profile'),
 ]

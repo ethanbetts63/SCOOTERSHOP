@@ -1,0 +1,93 @@
+{% extends "dashboard/admin_layout.html" %}
+
+{% block admin_main_content %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/service_type_styles.css' %}"> {# Re-using this CSS for general table/list styling #}
+
+    <div class="service-booking-container">
+        <div class="booking-progress">
+            <h2>Driver Profiles Management</h2>
+        </div>
+        <p class="mb-4">Manage driver profiles. These profiles can be linked to user accounts or exist independently for anonymous bookings.</p>
+
+        <a href="{% url 'dashboard:add_driver_profile' %}" class="btn btn-primary btn-sm mb-3">
+            <i class="fas fa-plus"></i> Add New Driver Profile
+        </a>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table" id="driverProfilesTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone Number</th>
+                            <th>DOB</th>
+                            <th>Australian Resident</th>
+                            <th>License No.</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for profile in driver_profiles %}
+                        <tr>
+                            <td>{{ profile.name }}</td>
+                            <td>{{ profile.email }}</td>
+                            <td>{{ profile.phone_number }}</td>
+                            <td>{{ profile.date_of_birth|date:"Y-m-d" }}</td>
+                            <td>
+                                {% if profile.is_australian_resident %}
+                                    <span class="badge badge-success">Yes</span>
+                                {% else %}
+                                    <span class="badge badge-info">No</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ profile.license_number|default:"N/A" }}</td>
+                            <td>
+                                <a href="{% url 'dashboard:edit_driver_profile' profile.pk %}" class="btn btn-info btn-sm">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <form method="post" action="{% url 'dashboard:delete_driver_profile' pk=profile.pk %}" class="inline-form" style="display:inline;">
+                                     {% csrf_token %}
+                                     <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete the driver profile for \'{{ profile.name }}\'?');">
+                                         <i class="fas fa-trash"></i> Delete
+                                     </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7">No driver profiles available.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Optional: DataTables initialization for search/pagination
+            // $('#driverProfilesTable').DataTable({
+            //     "paging": true,
+            //     "ordering": true,
+            //     "searching": true,
+            //     "info": true
+            // });
+        });
+    </script>
+{% endblock %}

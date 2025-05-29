@@ -1,0 +1,250 @@
+{% extends "dashboard/admin_layout.html" %}
+
+{% block admin_main_content %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/service_type_styles.css' %}"> {# Re-using this CSS for general form styling #}
+
+    <div class="service-booking-container">
+        <div class="booking-progress">
+            <h2>{{ title }}</h2>
+        </div>
+        <p class="mb-4">Use this form to {% if driver_profile %}edit{% else %}add{% endif %} a driver profile.</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" class="needs-validation" novalidate enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {# General Contact Information #}
+            <fieldset class="form-group border p-3 mb-4 rounded">
+                <legend class="w-auto px-2">Contact & Personal Information</legend>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.name.id_for_label }}">Full Name</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}<div class="invalid-feedback d-block">{% for error in form.name.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                        <small class="form-text text-muted">{{ form.name.help_text }}</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.email.id_for_label }}">Email Address</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="invalid-feedback d-block">{% for error in form.email.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                        <small class="form-text text-muted">{{ form.email.help_text }}</small>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.phone_number.id_for_label }}">Phone Number</label>
+                        {{ form.phone_number }}
+                        {% if form.phone_number.errors %}<div class="invalid-feedback d-block">{% for error in form.phone_number.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                        <small class="form-text text-muted">{{ form.phone_number.help_text }}</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.date_of_birth.id_for_label }}">Date of Birth</label>
+                        {{ form.date_of_birth }}
+                        {% if form.date_of_birth.errors %}<div class="invalid-feedback d-block">{% for error in form.date_of_birth.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                        <small class="form-text text-muted">{{ form.date_of_birth.help_text }}</small>
+                    </div>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="{{ form.address_line_1.id_for_label }}">Address Line 1</label>
+                    {{ form.address_line_1 }}
+                    {% if form.address_line_1.errors %}<div class="invalid-feedback d-block">{% for error in form.address_line_1.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    <small class="form-text text-muted">{{ form.address_line_1.help_text }}</small>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="{{ form.address_line_2.id_for_label }}">Address Line 2</label>
+                    {{ form.address_line_2 }}
+                    {% if form.address_line_2.errors %}<div class="invalid-feedback d-block">{% for error in form.address_line_2.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    <small class="form-text text-muted">{{ form.address_line_2.help_text }}</small>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.city.id_for_label }}">City</label>
+                        {{ form.city }}
+                        {% if form.city.errors %}<div class="invalid-feedback d-block">{% for error in form.city.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                        <small class="form-text text-muted">{{ form.city.help_text }}</small>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.state.id_for_label }}">State/Province</label>
+                        {{ form.state }}
+                        {% if form.state.errors %}<div class="invalid-feedback d-block">{% for error in form.state.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                        <small class="form-text text-muted">{{ form.state.help_text }}</small>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.post_code.id_for_label }}">Postal Code</label>
+                        {{ form.post_code }}
+                        {% if form.post_code.errors %}<div class="invalid-feedback d-block">{% for error in form.post_code.errors %}{{ error }}{{% endfor %}</div>{% endif %}
+                        <small class="form-text text-muted">{{ form.post_code.help_text }}</small>
+                    </div>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="{{ form.country.id_for_label }}">Country</label>
+                    {{ form.country }}
+                    {% if form.country.errors %}<div class="invalid-feedback d-block">{% for error in form.country.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    <small class="form-text text-muted">{{ form.country.help_text }}</small>
+                </div>
+            </fieldset>
+
+            {# Residency and Documentation #}
+            <fieldset class="form-group border p-3 mb-4 rounded">
+                <legend class="w-auto px-2">Residency & Documentation</legend>
+                <div class="form-group form-check mb-3">
+                    {{ form.is_australian_resident }}
+                    <label class="form-check-label" for="{{ form.is_australian_resident.id_for_label }}">
+                        {{ form.is_australian_resident.label }}
+                    </label>
+                    {% if form.is_australian_resident.errors %}<div class="invalid-feedback d-block">{% for error in form.is_australian_resident.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    <small class="form-text text-muted">{{ form.is_australian_resident.help_text }}</small>
+                </div>
+
+                {# Australian Resident Fields #}
+                <div id="australian-fields" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.license_number.id_for_label }}">Primary License Number</label>
+                            {{ form.license_number }}
+                            {% if form.license_number.errors %}<div class="invalid-feedback d-block">{% for error in form.license_number.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                            <small class="form-text text-muted">{{ form.license_number.help_text }}</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.license_expiry_date.id_for_label }}">Primary License Expiry Date</label>
+                            {{ form.license_expiry_date }}
+                            {% if form.license_expiry_date.errors %}<div class="invalid-feedback d-block">{% for error in form.license_expiry_date.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                            <small class="form-text text-muted">{{ form.license_expiry_date.help_text }}</small>
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="{{ form.license_photo.id_for_label }}">Primary License Photo</label>
+                        {% if driver_profile and driver_profile.license_photo %}<p>Current: <a href="{{ driver_profile.license_photo.url }}" target="_blank">View Photo</a></p>{% endif %}
+                        {{ form.license_photo }}
+                        {% if form.license_photo.errors %}<div class="invalid-feedback d-block">{% for error in form.license_photo.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                        <small class="form-text text-muted">{{ form.license_photo.help_text }}</small>
+                    </div>
+                </div>
+
+                {# Foreigner Fields #}
+                <div id="foreigner-fields" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.international_license_issuing_country.id_for_label }}">International License Issuing Country</label>
+                            {{ form.international_license_issuing_country }}
+                            {% if form.international_license_issuing_country.errors %}<div class="invalid-feedback d-block">{% for error in form.international_license_issuing_country.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                            <small class="form-text text-muted">{{ form.international_license_issuing_country.help_text }}</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.international_license_expiry_date.id_for_label }}">International License Expiry Date</label>
+                            {{ form.international_license_expiry_date }}
+                            {% if form.international_license_expiry_date.errors %}<div class="invalid-feedback d-block">{% for error in form.international_license_expiry_date.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                            <small class="form-text text-muted">{{ form.international_license_expiry_date.help_text }}</small>
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="{{ form.international_license_photo.id_for_label }}">International Driver's License Photo</label>
+                        {% if driver_profile and driver_profile.international_license_photo %}<p>Current: <a href="{{ driver_profile.international_license_photo.url }}" target="_blank">View Photo</a></p>{% endif %}
+                        {{ form.international_license_photo }}
+                        {% if form.international_license_photo.errors %}<div class="invalid-feedback d-block">{% for error in form.international_license_photo.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                        <small class="form-text text-muted">{{ form.international_license_photo.help_text }}</small>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.passport_number.id_for_label }}">Passport Number</label>
+                            {{ form.passport_number }}
+                            {% if form.passport_number.errors %}<div class="invalid-feedback d-block">{% for error in form.passport_number.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                            <small class="form-text text-muted">{{ form.passport_number.help_text }}</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.passport_expiry_date.id_for_label }}">Passport Expiry Date</label>
+                            {{ form.passport_expiry_date }}
+                            {% if form.passport_expiry_date.errors %}<div class="invalid-feedback d-block">{% for error in form.passport_expiry_date.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                            <small class="form-text text-muted">{{ form.passport_expiry_date.help_text }}</small>
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="{{ form.passport_photo.id_for_label }}">Passport Photo</label>
+                        {% if driver_profile and driver_profile.passport_photo %}<p>Current: <a href="{{ driver_profile.passport_photo.url }}" target="_blank">View Photo</a></p>{% endif %}
+                        {{ form.passport_photo }}
+                        {% if form.passport_photo.errors %}<div class="invalid-feedback d-block">{% for error in form.passport_photo.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                        <small class="form-text text-muted">{{ form.passport_photo.help_text }}</small>
+                    </div>
+                </div>
+
+                {# General ID Images (apply to both) #}
+                <div class="form-group mb-3">
+                    <label for="{{ form.id_image.id_for_label }}">ID Image</label>
+                    {% if driver_profile and driver_profile.id_image %}<p>Current: <a href="{{ driver_profile.id_image.url }}" target="_blank">View Photo</a></p>{% endif %}
+                    {{ form.id_image }}
+                    {% if form.id_image.errors %}<div class="invalid-feedback d-block">{% for error in form.id_image.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    <small class="form-text text-muted">{{ form.id_image.help_text }}</small>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="{{ form.international_id_image.id_for_label }}">International ID Image</label>
+                    {% if driver_profile and driver_profile.international_id_image %}<p>Current: <a href="{{ driver_profile.international_id_image.url }}" target="_blank">View Photo</a></p>{% endif %}
+                    {{ form.international_id_image }}
+                    {% if form.international_id_image.errors %}<div class="invalid-feedback d-block">{% for error in form.international_id_image.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    <small class="form-text text-muted">{{ form.international_id_image.help_text }}</small>
+                </div>
+            </fieldset>
+
+            <button type="submit" class="btn btn-success">Save Driver Profile</button>
+            <a href="{% url 'dashboard:settings_driver_profiles' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add Bootstrap's 'is-invalid' class for form errors dynamically
+            document.querySelectorAll('.invalid-feedback').forEach(function(feedback) {
+                const formControl = feedback.previousElementSibling;
+                if (formControl && (formControl.classList.contains('form-control') || formControl.classList.contains('form-check-input') || formControl.classList.contains('form-control-file'))) {
+                    formControl.classList.add('is-invalid');
+                }
+            });
+            document.querySelectorAll('input, select, textarea').forEach(function(input) {
+                // Check if the input itself has an invalid-feedback sibling (for non-checkboxes)
+                if (input.nextElementSibling && input.nextElementSibling.classList.contains('invalid-feedback')) {
+                    input.classList.add('is-invalid');
+                }
+                // Check if the input is a checkbox and its parent has an invalid-feedback
+                if (input.type === 'checkbox' && input.closest('.form-check') && input.closest('.form-check').querySelector('.invalid-feedback')) {
+                    input.classList.add('is-invalid');
+                }
+            });
+
+
+            const isAustralianResidentCheckbox = document.getElementById('id_is_australian_resident');
+            const australianFields = document.getElementById('australian-fields');
+            const foreignerFields = document.getElementById('foreigner-fields');
+
+            function toggleDriverProfileFields() {
+                if (isAustralianResidentCheckbox.checked) {
+                    australianFields.style.display = 'block';
+                    foreignerFields.style.display = 'none';
+                    // Optionally, clear or disable foreigner fields when Australian is selected
+                    // This is more about UX; model's clean method handles strict validation
+                } else {
+                    australianFields.style.display = 'none';
+                    foreignerFields.style.display = 'block';
+                    // Optionally, clear or disable Australian fields when Foreigner is selected
+                }
+            }
+
+            // Initial call to set visibility based on current state
+            toggleDriverProfileFields();
+
+            // Add event listener for changes to the checkbox
+            isAustralianResidentCheckbox.addEventListener('change', toggleDriverProfileFields);
+        });
+    </script>
+{% endblock %}
