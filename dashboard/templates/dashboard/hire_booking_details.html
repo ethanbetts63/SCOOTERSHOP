@@ -53,7 +53,7 @@
                                 <h4 class="text-primary mt-4">Financial Details</h4>
                                 <p><strong>Booked Daily Rate:</strong> {{ booking.currency }} {{ booking.booked_daily_rate|floatformat:2 }}</p>
                                 <p><strong>Booked Hourly Rate:</strong> {{ booking.currency }} {{ booking.booked_hourly_rate|floatformat:2 }}</p>
-                                <p><strong>Total Price:</strong> {{ booking.currency }} {{ booking.total_price|floatformat:2 }}</p>
+                                <p><strong>Total Price:</strong> {{ booking.currency }} {{ booking.grand_total|floatformat:2 }}</p>
                                 <p><strong>Amount Paid:</strong> {{ booking.currency }} {{ booking.amount_paid|floatformat:2 }}</p>
                                 <p><strong>Payment Status:</strong> <span class="badge bg-success">{{ booking.get_payment_status_display }}</span></p>
                                 <p><strong>Payment Method:</strong> {{ booking.get_payment_method_display|default:"N/A" }}</p>

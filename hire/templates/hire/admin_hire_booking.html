@@ -156,8 +156,8 @@
                                                 </div>
                                             </div>
                                         {% endwith %}
-                                    {% endfor %}
-                                </div>
+                                    </div>
+                                {% endfor %}
                             {% else %}
                                 <div class="alert alert-info">No individual add-ons are currently available.</div>
                             {% endif %}
@@ -183,7 +183,8 @@
                                 {% if form.currency.errors %}<div class="text-danger small">{{ form.currency.errors }}</div>{% endif %}
                             </div>
                             <div class="mb-3">
-                                <p class="mb-1"><strong>Estimated Total Price of Selections: <span id="estimatedTotalPriceDisplay">{{ hire_settings.currency_symbol }}0.00</span></strong></p>
+                                {# Changed label from "Estimated Total Price" to "Recommended Price" #}
+                                <p class="mb-1"><strong>Recommended Price: <span id="recommendedTotalPriceDisplay">{{ hire_settings.currency_symbol }}0.00</span></strong></p>
                             </div>
                             <div class="form-group mb-3">
                                 {# Updated id, name, and label for grand_total #}
@@ -257,31 +258,29 @@
         // --- DOM Elements ---
         const motorcycleSelect = document.getElementById('id_motorcycle');
         const bookedDailyRateInput = document.getElementById('id_booked_daily_rate');
-        const bookedHourlyRateInput = document.getElementById('id_booked_hourly_rate'); // NEW: Hourly rate input
+        const bookedHourlyRateInput = document.getElementById('id_booked_hourly_rate');
         const packageSelect = document.getElementById('id_package');
         const packagePriceDisplay = document.getElementById('package-price-display');
         const pickUpDateInput = document.getElementById('id_pick_up_date');
         const pickUpTimeInput = document.getElementById('id_pick_up_time');
         const returnDateInput = document.getElementById('id_return_date');
         const returnTimeInput = document.getElementById('id_return_time');
-        const estimatedTotalPriceDisplay = document.getElementById('estimatedTotalPriceDisplay');
+        const recommendedTotalPriceDisplay = document.getElementById('recommendedTotalPriceDisplay'); // Renamed
         const addonCheckboxes = document.querySelectorAll('.addon-checkbox');
         const addonQuantityInputs = document.querySelectorAll('.addon-quantity');
-        const returnTimeErrorDiv = document.getElementById('returnTimeError'); // NEW: Error div for return time
-
+        const returnTimeErrorDiv = document.getElementById('returnTimeError');
 
         // --- Data from Django Context (safely retrieved from json_script tags) ---
         const motorcyclesData = JSON.parse(document.getElementById('motorcycles-data').textContent);
         const defaultDailyRate = parseFloat(document.getElementById('default-daily-rate').textContent);
-        const defaultHourlyRate = parseFloat(document.getElementById('default-hourly-rate').textContent); // NEW: Default hourly rate
+        const defaultHourlyRate = parseFloat(document.getElementById('default-hourly-rate').textContent);
         const packagesData = JSON.parse(document.getElementById('packages-data').textContent);
-        const addonsData = JSON.parse(document.getElementById('addons-data').textContent); // NEW: Addons data
+        const addonsData = JSON.parse(document.getElementById('addons-data').textContent);
 
         // Create map for quick lookup
         const motorcycleMap = new Map(motorcyclesData.map(m => [m.id, m]));
         const packageMap = new Map(packagesData.map(p => [p.id, p]));
-        const addonMap = new Map(addonsData.map(a => [a.id, a])); // NEW: Addon map
-
+        const addonMap = new Map(addonsData.map(a => [a.id, a]));
 
         // --- Flatpickr related elements (kept for date logic) ---
         const hireSettings = {
@@ -304,8 +303,8 @@
             altFormat: "F j, Y",
             onChange: function(selectedDates, dateStr, instance) {
                 handleDateAndTimeUpdates();
-                validateReturnTime(); // NEW: Call validation on date change
-                updateEstimatedTotalPrice();
+                validateReturnTime();
+                updateRecommendedTotalPrice(); // Renamed
             }
         });
 
@@ -317,8 +316,8 @@
             altFormat: "F j, Y",
             onChange: function(selectedDates, dateStr, instance) {
                 handleDateAndTimeUpdates();
-                validateReturnTime(); // NEW: Call validation on date change
-                updateEstimatedTotalPrice();
+                validateReturnTime();
+                updateRecommendedTotalPrice(); // Renamed
             }
         });
 
@@ -332,7 +331,7 @@
                 // Set the minimum return date to be the pickup date itself.
                 // This overrides the minimum_hire_duration_days for the admin interface
                 // to allow same-day bookings for hourly rate testing.
-                returnDatePicker.set('minDate', pickUpDate); // This is the key change
+                returnDatePicker.set('minDate', pickUpDate);
 
                 let maximumAllowedReturnDate = new Date(pickUpDate);
                 maximumAllowedReturnDate.setDate(maximumAllowedReturnDate.getDate() + hireSettings.maximum_hire_duration_days);
@@ -342,13 +341,13 @@
                 if (returnDate) {
                     // If the currently selected return date is earlier than the new minimum (pickupDate), clear it.
                     // Or if it's beyond the maximum allowed.
-                    if (returnDate < pickUpDate || returnDate > maximumAllowedReturnDate) { // Changed requiredReturnDate to pickUpDate
+                    if (returnDate < pickUpDate || returnDate > maximumAllowedReturnDate) {
                         returnDatePicker.clear();
                     }
                 }
             } else {
                 // If pickup date is cleared, reset return date constraints
-                returnDatePicker.set('minDate', minDateForPickup); // Revert to global minDate
+                returnDatePicker.set('minDate', minDateForPickup);
                 returnDatePicker.set('maxDate', null);
                 if (returnDate) {
                     returnDatePicker.clear();
@@ -378,30 +377,7 @@
             return true; // Validation passed
         }
 
-
-        // Helper function to calculate duration in days, including partial days based on times
-        function calculateDurationDays(pickupDate, pickupTimeStr, returnDate, returnTimeStr) {
-            if (!pickupDate || !returnDate || !pickupTimeStr || !returnTimeStr) {
-                return 0; // Cannot calculate without full date/time info
-            }
-
-            const [puHours, puMinutes] = pickupTimeStr.split(':').map(Number);
-            const pickupDateTime = new Date(pickupDate.getFullYear(), pickupDate.getMonth(), pickupDate.getDate(), puHours, puMinutes);
-
-            const [rtHours, rtMinutes] = returnTimeStr.split(':').map(Number);
-            const returnDateTime = new Date(returnDate.getFullYear(), returnDate.getMonth(), returnDate.getDate(), rtHours, rtMinutes);
-
-            if (returnDateTime <= pickupDateTime) {
-                return 0;
-            }
-
-            const diffMs = returnDateTime.getTime() - pickupDateTime.getTime();
-            const diffDays = diffMs / (1000 * 60 * 60 * 24);
-
-            return Math.ceil(diffDays); // Round up to the nearest whole day for billing purposes
-        }
-
-        // NEW: Helper function to calculate duration in hours, including fractional hours
+        // Helper function to calculate duration in hours, including fractional hours
         function calculateDurationHours(pickupDate, pickupTimeStr, returnDate, returnTimeStr) {
             if (!pickupDate || !returnDate || !pickupTimeStr || !returnTimeStr) {
                 return 0;
@@ -421,6 +397,22 @@
             const diffHours = diffMs / (1000 * 60 * 60); // Convert milliseconds to hours
 
             return diffHours; // Return fractional hours for hourly billing
+        }
+
+        // NEW: Replicated _calculate_daily_plus_proportional_excess_billing logic from Python
+        function _calculate_daily_plus_proportional_excess_billing(total_duration_hours, daily_rate) {
+            const full_24_hour_blocks = Math.floor(total_duration_hours / 24.0);
+            const remaining_excess_hours = total_duration_hours % 24;
+            let additional_cost = 0;
+
+            if (remaining_excess_hours > 0) {
+                // Calculate the percentage of a day taken by excess hours
+                const excess_percentage_of_day = remaining_excess_hours / 24.0;
+                additional_cost = excess_percentage_of_day * daily_rate;
+                additional_cost = parseFloat(additional_cost.toFixed(2)); // Quantize to 2 decimal places
+            }
+
+            return (full_24_hour_blocks * daily_rate) + additional_cost;
         }
 
 
@@ -500,94 +492,107 @@
             packagePriceDisplay.textContent = `Selected Package Price: Daily ${currencySymbol}${currentDailyPackageCost.toFixed(2)}, Hourly ${currencySymbol}${currentHourlyPackageCost.toFixed(2)}`;
         }
 
-        // --- New: Core Logic for Estimated Total Price Display (including add-ons) ---
-        function updateEstimatedTotalPrice() {
+        // NEW: Core Logic for Recommended Total Price Display (including add-ons)
+        function updateRecommendedTotalPrice() { // Renamed from updateEstimatedTotalPrice
             const pickupDate = pickUpDatePicker.selectedDates[0];
             const returnDate = returnDatePicker.selectedDates[0];
             const pickupTimeStr = pickUpTimeInput.value;
             const returnTimeStr = returnTimeInput.value;
 
-            let estimatedTotal = 0;
-            let motorcycleBaseRate = 0;
-            let packageBaseCost = 0;
-            let durationMultiplier = 0; // This will be days or hours
+            let recommendedTotal = 0; // Renamed
+            let motorcyclePrice = 0;
+            let packagePrice = 0;
+            let addonsTotalCost = 0;
 
-            // Determine if it's a same-day booking
-            const isSameDayBooking = pickupDate && returnDate && pickupDate.toDateString() === returnDate.toDateString();
-
-            // Only proceed with calculation if time validation passes
-            if (!validateReturnTime()) {
-                estimatedTotalPriceDisplay.textContent = `${currencySymbol}0.00`; // Reset total if validation fails
+            // Only proceed with calculation if time validation passes and dates/times are available
+            if (!validateReturnTime() || !pickupDate || !returnDate || !pickupTimeStr || !returnTimeStr) {
+                recommendedTotalPriceDisplay.textContent = `${currencySymbol}0.00`; // Reset total if validation fails or data incomplete
                 return;
             }
 
+            const totalDurationHours = calculateDurationHours(pickupDate, pickupTimeStr, returnDate, returnTimeStr);
+            const isSameDayBooking = pickupDate.toDateString() === returnDate.toDateString();
+
             if (isSameDayBooking) {
-                // Use hourly rate for same-day bookings
-                motorcycleBaseRate = parseFloat(bookedHourlyRateInput.value) || 0;
-                durationMultiplier = calculateDurationHours(pickupDate, pickupTimeStr, returnDate, returnTimeStr);
-                
-                const selectedPackageId = parseInt(packageSelect.value);
-                if (selectedPackageId) {
-                    const packageObj = packageMap.get(selectedPackageId);
-                    if (packageObj) {
-                        packageBaseCost = parseFloat(packageObj.hourly_cost);
-                    }
+                // For same-day, always use hourly rate, rounded up to nearest hour (minimum 1 hour)
+                let billedHours = Math.ceil(totalDurationHours);
+                if (billedHours < 1 && totalDurationHours > 0) {
+                    billedHours = 1;
                 }
-                console.log("Using HOURLY rate.");
-                console.log("Duration (hours):", durationMultiplier);
-            } else {
-                // Use daily rate for multi-day bookings
-                motorcycleBaseRate = parseFloat(bookedDailyRateInput.value) || 0;
-                durationMultiplier = calculateDurationDays(pickupDate, pickupTimeStr, returnDate, returnTimeStr);
+
+                motorcyclePrice = (parseFloat(bookedHourlyRateInput.value) || 0) * billedHours;
 
                 const selectedPackageId = parseInt(packageSelect.value);
                 if (selectedPackageId) {
                     const packageObj = packageMap.get(selectedPackageId);
                     if (packageObj) {
-                        packageBaseCost = parseFloat(packageObj.daily_cost);
+                        packagePrice = (parseFloat(packageObj.hourly_cost) || 0) * billedHours;
                     }
                 }
-                console.log("Using DAILY rate.");
-                console.log("Duration (days):", durationMultiplier);
-            }
-            
-            // Calculate add-on total based on duration type
-            let addonsTotalCost = 0;
-            addonCheckboxes.forEach(checkbox => {
-                if (checkbox.checked) {
-                    const addonId = parseInt(checkbox.dataset.addonId);
-                    const addon = addonMap.get(addonId);
-                    const addonQuantityInput = document.querySelector(`#quantityDiv${addonId} .addon-quantity`);
-                    
-                    const addonQuantity = parseInt(addonQuantityInput.value) || 0;
 
-                    if (addon) {
-                        let addonCostPerUnit = 0;
-                        if (isSameDayBooking) {
-                            addonCostPerUnit = parseFloat(addon.hourly_cost) || 0;
-                        } else {
-                            addonCostPerUnit = parseFloat(addon.daily_cost) || 0;
+                addonCheckboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        const addonId = parseInt(checkbox.dataset.addonId);
+                        const addon = addonMap.get(addonId);
+                        const addonQuantityInput = document.querySelector(`#quantityDiv${addonId} .addon-quantity`);
+                        const addonQuantity = parseInt(addonQuantityInput.value) || 0;
+
+                        if (addon && addonQuantity > 0) {
+                            addonsTotalCost += (parseFloat(addon.hourly_cost) || 0) * billedHours * addonQuantity;
                         }
-                        addonsTotalCost += (addonCostPerUnit * addonQuantity);
+                    }
+                });
+
+            } else {
+                // For multi-day, always use _calculate_daily_plus_proportional_excess_billing
+                motorcyclePrice = _calculate_daily_plus_proportional_excess_billing(
+                    totalDurationHours,
+                    parseFloat(bookedDailyRateInput.value) || 0
+                );
+
+                const selectedPackageId = parseInt(packageSelect.value);
+                if (selectedPackageId) {
+                    const packageObj = packageMap.get(selectedPackageId);
+                    if (packageObj) {
+                        packagePrice = _calculate_daily_plus_proportional_excess_billing(
+                            totalDurationHours,
+                            parseFloat(packageObj.daily_cost) || 0
+                        );
                     }
                 }
-            });
+
+                addonCheckboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        const addonId = parseInt(checkbox.dataset.addonId);
+                        const addon = addonMap.get(addonId);
+                        const addonQuantityInput = document.querySelector(`#quantityDiv${addonId} .addon-quantity`);
+                        const addonQuantity = parseInt(addonQuantityInput.value) || 0;
+
+                        if (addon && addonQuantity > 0) {
+                            addonsTotalCost += _calculate_daily_plus_proportional_excess_billing(
+                                totalDurationHours,
+                                parseFloat(addon.daily_cost) || 0
+                            ) * addonQuantity;
+                        }
+                    }
+                });
+            }
 
             // Debugging logs
-            console.log("--- Calculating Estimated Total ---");
+            console.log("--- Calculating Recommended Total ---");
             console.log("Pickup Date:", pickupDate);
             console.log("Return Date:", returnDate);
             console.log("Pickup Time:", pickupTimeStr);
             console.log("Return Time:", returnTimeStr);
-            console.log("Motorcycle Base Rate (per unit of duration):", motorcycleBaseRate);
-            console.log("Package Base Cost (per unit of duration):", packageBaseCost);
-            console.log("Addons Total Cost (per unit of duration):", addonsTotalCost);
-            console.log("Duration Multiplier:", durationMultiplier);
+            console.log("Total Duration (hours):", totalDurationHours);
+            console.log("Is Same Day Booking:", isSameDayBooking);
+            console.log("Motorcycle Price:", motorcyclePrice.toFixed(2));
+            console.log("Package Price:", packagePrice.toFixed(2));
+            console.log("Addons Total Cost:", addonsTotalCost.toFixed(2));
             
-
-            estimatedTotal = (motorcycleBaseRate + packageBaseCost + addonsTotalCost) * durationMultiplier;
-            estimatedTotalPriceDisplay.textContent = `${currencySymbol}${estimatedTotal.toFixed(2)}`;
-            console.log("Estimated Total:", estimatedTotal.toFixed(2));
+            recommendedTotal = motorcyclePrice + packagePrice + addonsTotalCost;
+            recommendedTotalPriceDisplay.textContent = `${currencySymbol}${recommendedTotal.toFixed(2)}`;
+            console.log("Recommended Total:", recommendedTotal.toFixed(2));
             console.log("---------------------------------");
         }
 
@@ -601,38 +606,38 @@
         motorcycleSelect.addEventListener('change', function() {
             // When motorcycle changes, reset the override flags so rates can be automatically set
             bookedDailyRateInput.dataset.isOverridden = 'false';
-            bookedHourlyRateInput.dataset.isOverridden = 'false'; // NEW: Reset hourly rate override
+            bookedHourlyRateInput.dataset.isOverridden = 'false';
             updateBookedDailyRate();
-            updateBookedHourlyRate(); // NEW: Update hourly rate
-            updateEstimatedTotalPrice();
+            updateBookedHourlyRate();
+            updateRecommendedTotalPrice(); // Renamed
         });
 
         // Listen for manual changes to booked daily rate
         bookedDailyRateInput.addEventListener('input', function() {
             this.dataset.isOverridden = 'true';
-            updateEstimatedTotalPrice();
+            updateRecommendedTotalPrice(); // Renamed
         });
 
         // NEW: Listen for manual changes to booked hourly rate
         bookedHourlyRateInput.addEventListener('input', function() {
             this.dataset.isOverridden = 'true';
-            updateEstimatedTotalPrice();
+            updateRecommendedTotalPrice(); // Renamed
         });
 
         // Listen for changes on package selection
         packageSelect.addEventListener('change', function() {
             updatePackagePriceDisplay();
-            updateEstimatedTotalPrice();
+            updateRecommendedTotalPrice(); // Renamed
         });
 
         // Listen for changes on time inputs
         pickUpTimeInput.addEventListener('change', function() {
-            validateReturnTime(); // NEW: Call validation on time change
-            updateEstimatedTotalPrice();
+            validateReturnTime();
+            updateRecommendedTotalPrice(); // Renamed
         });
         returnTimeInput.addEventListener('change', function() {
-            validateReturnTime(); // NEW: Call validation on time change
-            updateEstimatedTotalPrice();
+            validateReturnTime();
+            updateRecommendedTotalPrice(); // Renamed
         });
 
         // Listen for changes on add-on checkboxes and quantity inputs
@@ -647,22 +652,22 @@
                     quantityDiv.classList.remove('d-block');
                     quantityDiv.classList.add('d-none');
                 }
-                updateEstimatedTotalPrice();
+                updateRecommendedTotalPrice(); // Renamed
             });
         });
 
         addonQuantityInputs.forEach(input => {
             input.addEventListener('input', function() {
-                updateEstimatedTotalPrice();
+                updateRecommendedTotalPrice(); // Renamed
             });
         });
 
 
         // Initial calls on page load
         updateBookedDailyRate();
-        updateBookedHourlyRate(); // NEW: Initial call for hourly rate
+        updateBookedHourlyRate();
         updatePackagePriceDisplay();
-        updateEstimatedTotalPrice();
+        updateRecommendedTotalPrice(); // Renamed
     });
 </script>
 {% endblock %}
