@@ -1,5 +1,15 @@
 {% extends "dashboard/admin_layout.html" %}
 
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .required-indicator {
+        color: red;
+        margin-left: 5px;
+    }
+</style>
+{% endblock %}
+
 {% block admin_main_content %}
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/service_type_styles.css' %}"> {# Re-using this CSS for general form styling #}
@@ -27,15 +37,22 @@
             {# General Contact Information #}
             <fieldset class="form-group border p-3 mb-4 rounded">
                 <legend class="w-auto px-2">Contact & Personal Information</legend>
+                {# New field for linking to an existing user #}
+                <div class="form-group mb-3">
+                    <label for="{{ form.user.id_for_label }}">{{ form.user.label }}</label>
+                    {{ form.user }}
+                    {% if form.user.errors %}<div class="invalid-feedback d-block">{% for error in form.user.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    <small class="form-text text-muted">{{ form.user.help_text }}</small>
+                </div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="{{ form.name.id_for_label }}">Full Name</label>
+                        <label for="{{ form.name.id_for_label }}">Full Name<span class="required-indicator">*</span></label>
                         {{ form.name }}
                         {% if form.name.errors %}<div class="invalid-feedback d-block">{% for error in form.name.errors %}{{ error }}{% endfor %}</div>{% endif %}
                         <small class="form-text text-muted">{{ form.name.help_text }}</small>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="{{ form.email.id_for_label }}">Email Address</label>
+                        <label for="{{ form.email.id_for_label }}">Email Address<span class="required-indicator">*</span></label>
                         {{ form.email }}
                         {% if form.email.errors %}<div class="invalid-feedback d-block">{% for error in form.email.errors %}{{ error }}{% endfor %}</div>{% endif %}
                         <small class="form-text text-muted">{{ form.email.help_text }}</small>
@@ -43,20 +60,20 @@
                 </div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="{{ form.phone_number.id_for_label }}">Phone Number</label>
+                        <label for="{{ form.phone_number.id_for_label }}">Phone Number<span class="required-indicator">*</span></label>
                         {{ form.phone_number }}
                         {% if form.phone_number.errors %}<div class="invalid-feedback d-block">{% for error in form.phone_number.errors %}{{ error }}{% endfor %}</div>{% endif %}
                         <small class="form-text text-muted">{{ form.phone_number.help_text }}</small>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="{{ form.date_of_birth.id_for_label }}">Date of Birth</label>
+                        <label for="{{ form.date_of_birth.id_for_label }}">Date of Birth<span class="required-indicator">*</span></label>
                         {{ form.date_of_birth }}
                         {% if form.date_of_birth.errors %}<div class="invalid-feedback d-block">{% for error in form.date_of_birth.errors %}{{ error }}{% endfor %}</div>{% endif %}
                         <small class="form-text text-muted">{{ form.date_of_birth.help_text }}</small>
                     </div>
                 </div>
                 <div class="form-group mb-3">
-                    <label for="{{ form.address_line_1.id_for_label }}">Address Line 1</label>
+                    <label for="{{ form.address_line_1.id_for_label }}">Address Line 1<span class="required-indicator">*</span></label>
                     {{ form.address_line_1 }}
                     {% if form.address_line_1.errors %}<div class="invalid-feedback d-block">{% for error in form.address_line_1.errors %}{{ error }}{% endfor %}</div>{% endif %}
                     <small class="form-text text-muted">{{ form.address_line_1.help_text }}</small>
@@ -69,7 +86,7 @@
                 </div>
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label for="{{ form.city.id_for_label }}">City</label>
+                        <label for="{{ form.city.id_for_label }}">City<span class="required-indicator">*</span></label>
                         {{ form.city }}
                         {% if form.city.errors %}<div class="invalid-feedback d-block">{% for error in form.city.errors %}{{ error }}{% endfor %}</div>{% endif %}
                         <small class="form-text text-muted">{{ form.city.help_text }}</small>
@@ -83,12 +100,12 @@
                     <div class="col-md-4 mb-3">
                         <label for="{{ form.post_code.id_for_label }}">Postal Code</label>
                         {{ form.post_code }}
-                        {% if form.post_code.errors %}<div class="invalid-feedback d-block">{% for error in form.post_code.errors %}{{ error }}{{% endfor %}</div>{% endif %}
+                        {% if form.post_code.errors %}<div class="invalid-feedback d-block">{% for error in form.post_code.errors %}{{ error }}{% endfor %}</div>{% endif %}
                         <small class="form-text text-muted">{{ form.post_code.help_text }}</small>
                     </div>
                 </div>
                 <div class="form-group mb-3">
-                    <label for="{{ form.country.id_for_label }}">Country</label>
+                    <label for="{{ form.country.id_for_label }}">Country<span class="required-indicator">*</span></label>
                     {{ form.country }}
                     {% if form.country.errors %}<div class="invalid-feedback d-block">{% for error in form.country.errors %}{{ error }}{% endfor %}</div>{% endif %}
                     <small class="form-text text-muted">{{ form.country.help_text }}</small>
@@ -117,7 +134,7 @@
                             <small class="form-text text-muted">{{ form.license_number.help_text }}</small>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="{{ form.license_expiry_date.id_for_label }}">Primary License Expiry Date</label>
+                            <label for="{{ form.license_expiry_date.id_for_label }}">Primary License Expiry Date<span class="required-indicator">*</span></label>
                             {{ form.license_expiry_date }}
                             {% if form.license_expiry_date.errors %}<div class="invalid-feedback d-block">{% for error in form.license_expiry_date.errors %}{{ error }}{% endfor %}</div>{% endif %}
                             <small class="form-text text-muted">{{ form.license_expiry_date.help_text }}</small>

@@ -10,6 +10,7 @@ from .service_booking_settings_form import ServiceBookingSettingsForm
 from .service_brand_form import ServiceBrandForm
 from .service_type_form import ServiceTypeForm
 from .visibility_settings_form import VisibilitySettingsForm
+from .driver_profile_form import DriverProfileForm
 
 # You can also define __all__ to explicitly list what is exported
 __all__ = [

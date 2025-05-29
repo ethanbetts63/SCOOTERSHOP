@@ -7,6 +7,7 @@ from django.views import View
 from django.contrib import messages
 from dashboard.forms.driver_profile_form import DriverProfileForm # Import the new form
 from hire.models.driver_profile import DriverProfile # Import the DriverProfile model
+from users.models import User # Import the User model to pass to context if needed
 
 @method_decorator(login_required, name='dispatch')
 class AddEditDriverProfileView(View):
@@ -22,7 +23,8 @@ class AddEditDriverProfileView(View):
             form = DriverProfileForm(instance=driver_profile)
             title = "Edit Driver Profile"
         else:
-            form = DriverProfileForm()
+            # When adding a new profile, ensure the 'user' field is blank by default
+            form = DriverProfileForm(initial={'user': None})
             title = "Add New Driver Profile"
 
         context = {

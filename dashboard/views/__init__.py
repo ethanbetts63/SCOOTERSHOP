@@ -40,5 +40,5 @@ from .service_bookings import (
 from .add_edit_driver_profile_view import *
 from .delete_driver_profile_view import *
 from .delete_driver_profile_view import *
-from settings_driver_profiles import *
+from .settings_driver_profiles import *
 
