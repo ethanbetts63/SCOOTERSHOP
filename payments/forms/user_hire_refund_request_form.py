@@ -84,6 +84,7 @@ class UserHireRefundRequestForm(forms.ModelForm):
                     status__in=['unverified', 'pending', 'approved']
                 )
                 if existing_refund_requests.exists():
+                    # Add non-field error
                     self.add_error(None, "A refund request for this booking is already in progress.")
                     return cleaned_data
 
@@ -104,7 +105,7 @@ class UserHireRefundRequestForm(forms.ModelForm):
             self.instance.status = 'unverified' # Set default status
             self.instance.is_admin_initiated = False # User initiated
             self.instance.reason = reason # Set the reason
-            self.instance.request_email = email # Store the email provided by the user
+            self.instance.request_email = email.lower() # Store the email provided by the user in lowercase
 
         return cleaned_data
 
@@ -117,4 +118,3 @@ class UserHireRefundRequestForm(forms.ModelForm):
         if commit:
             refund_request.save()
         return refund_request
-
