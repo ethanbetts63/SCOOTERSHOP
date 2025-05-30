@@ -49,8 +49,7 @@ def calculate_refund_amount(hire_booking, cancellation_datetime=None):
 
 
     # Combine pickup date and time into a single datetime object
-    pickup_datetime = datetime.combine(hire_booking.pickup_date, hire_booking.pickup_time)
-
+    pickup_datetime = timezone.make_aware(datetime.combine(hire_booking.pickup_date, hire_booking.pickup_time))
     # Calculate the time difference in full days
     time_difference = pickup_datetime - cancellation_datetime
     days_in_advance = time_difference.days # This gives full days

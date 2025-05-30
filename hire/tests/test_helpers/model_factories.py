@@ -8,8 +8,8 @@ from django.contrib.auth import get_user_model
 
 # Import models from their respective apps
 from inventory.models import Motorcycle, MotorcycleCondition
-from payments.models import Payment 
-from dashboard.models import HireSettings
+from payments.models import Payment
+from dashboard.models import HireSettings # Corrected import for HireSettings
 from mailer.models import EmailLog
 from payments.models.HireRefundRequest import HireRefundRequest
 
@@ -131,10 +131,18 @@ def create_hire_settings(
     # NEW: Add hire pricing strategy fields
     hire_pricing_strategy='24_hour_customer_friendly', # Default to a sensible option
     excess_hours_margin=2, # Default margin
-    # NEW: Refund policy settings
-    full_refund_days=7,
-    partial_refund_days=3,
-    no_refund_days=1,
+    # NEW: Refund policy settings (Upfront)
+    cancellation_upfront_full_refund_days=7,
+    cancellation_upfront_partial_refund_days=3,
+    cancellation_upfront_partial_refund_percentage=Decimal('50.00'),
+    cancellation_upfront_minimal_refund_days=1,
+    cancellation_upfront_minimal_refund_percentage=Decimal('0.00'),
+    # NEW: Refund policy settings (Deposit)
+    cancellation_deposit_full_refund_days=7,
+    cancellation_deposit_partial_refund_days=3,
+    cancellation_deposit_partial_refund_percentage=Decimal('50.00'),
+    cancellation_deposit_minimal_refund_days=1,
+    cancellation_deposit_minimal_refund_percentage=Decimal('0.00'),
 ):
     """Creates or gets a HireSettings instance."""
     settings, created = HireSettings.objects.get_or_create(pk=1) # Assuming pk=1 for singleton
@@ -162,10 +170,19 @@ def create_hire_settings(
     # NEW: Assign the new pricing strategy fields
     settings.hire_pricing_strategy = hire_pricing_strategy
     settings.excess_hours_margin = excess_hours_margin
-    # NEW: Assign refund policy settings
-    settings.full_refund_days = full_refund_days
-    settings.partial_refund_days = partial_refund_days
-    settings.no_refund_days = no_refund_days
+    # NEW: Assign refund policy settings (Upfront)
+    settings.cancellation_upfront_full_refund_days = cancellation_upfront_full_refund_days
+    settings.cancellation_upfront_partial_refund_days = cancellation_upfront_partial_refund_days
+    settings.cancellation_upfront_partial_refund_percentage = cancellation_upfront_partial_refund_percentage
+    settings.cancellation_upfront_minimal_refund_days = cancellation_upfront_minimal_refund_days
+    settings.cancellation_upfront_minimal_refund_percentage = cancellation_upfront_minimal_refund_percentage
+    # NEW: Assign refund policy settings (Deposit)
+    settings.cancellation_deposit_full_refund_days = cancellation_deposit_full_refund_days
+    settings.cancellation_deposit_partial_refund_days = cancellation_deposit_partial_refund_days
+    settings.cancellation_deposit_partial_refund_percentage = cancellation_deposit_partial_refund_percentage
+    settings.cancellation_deposit_minimal_refund_days = cancellation_deposit_minimal_refund_days
+    settings.cancellation_deposit_minimal_refund_percentage = cancellation_deposit_minimal_refund_percentage
+
     settings.save()
     return settings
 
@@ -449,7 +466,7 @@ def create_temp_hire_booking(
         booked_daily_rate = motorcycle.daily_hire_rate
     if motorcycle and not booked_hourly_rate: # Added this
         booked_hourly_rate = motorcycle.hourly_hire_rate # Added this
-    
+
     # If package is provided, set a default for total_package_price if not already set
     if package and total_package_price is None:
         total_package_price = package.daily_cost # Using daily_cost as a sensible default for factory
@@ -595,4 +612,3 @@ def create_refund_request(
         refund_calculation_details=refund_calculation_details,
         request_email=request_email,
     )
-
