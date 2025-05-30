@@ -3,7 +3,7 @@
 from django.urls import path
 from . import views # This imports all views exposed in __init__.py
 from hire.views import Admin_Hire_Booking_view # Ensure this is imported if used elsewhere
-
+from payments.views import HireRefunds
 app_name = 'dashboard' 
 
 urlpatterns = [
@@ -33,6 +33,8 @@ urlpatterns = [
     path('settings/visibility/', views.settings_visibility, name='settings_visibility'),
     path('settings/service-booking/', views.settings_service_booking, name='settings_service_booking'),
     path('settings/hire-booking/', views.settings_hire_booking, name='settings_hire_booking'),
+    path('settings/hire-refunds/', HireRefunds.AdminHireRefundManagement.as_view(), name='admin_hire_refund_management'),
+
 
 
     # --- Dashboard Service Brand Management Views ---
@@ -63,11 +65,10 @@ urlpatterns = [
     path('settings/hire-packages/add/', views.AddEditPackageView.as_view(), name='add_hire_package'),
     path('settings/hire-packages/edit/<int:pk>/', views.AddEditPackageView.as_view(), name='edit_hire_package'),
     path('settings/hire-packages/delete/<int:pk>/', views.DeletePackageView.as_view(), name='delete_hire_package'),
-
     # NEW: Driver Profiles URLs
     path('settings/driver-profiles/', views.DriverProfilesSettingsView.as_view(), name='settings_driver_profiles'),
     path('settings/driver-profiles/add/', views.AddEditDriverProfileView.as_view(), name='add_driver_profile'),
     path('settings/driver-profiles/edit/<int:pk>/', views.AddEditDriverProfileView.as_view(), name='edit_driver_profile'),
     path('settings/driver-profiles/delete/<int:pk>/', views.DeleteDriverProfileView.as_view(), name='delete_driver_profile'),
-       path('settings/driver-profiles/details/<int:pk>/', views.DriverProfileDetailView.as_view(), name='driver_profile_details')
+    path('settings/driver-profiles/details/<int:pk>/', views.DriverProfileDetailView.as_view(), name='driver_profile_details')
 ]
