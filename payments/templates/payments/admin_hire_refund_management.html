@@ -8,7 +8,14 @@
 
 {% block admin_main_content %}
 <div class="p-4">
-    <h1 class="text-2xl font-bold mb-6 text-gray-800">Motorcycle Hire Refund Requests</h1>
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Motorcycle Hire Refund Requests</h1>
+        {# Button to add a new refund request #}
+        <a href="{% url 'dashboard:add_hire_refund_request' %}"
+           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            Add New Refund Request
+        </a>
+    </div>
 
     <div class="mb-6 bg-white p-4 rounded-lg shadow-md">
         <form method="get" class="flex items-center space-x-4">
@@ -86,7 +93,8 @@
                                 {% if request.amount_to_refund %}{{ request.amount_to_refund|floatformat:2 }}{% else %}N/A{% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="#" class="text-indigo-600 hover:text-indigo-900">View Details</a>
+                                {# Link to the edit page for the specific refund request #}
+                                <a href="{% url 'dashboard:edit_hire_refund_request' pk=request.pk %}" class="text-indigo-600 hover:text-indigo-900">View/Edit Details</a>
                             </td>
                         </tr>
                     {% endfor %}

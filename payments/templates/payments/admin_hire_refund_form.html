@@ -1,0 +1,136 @@
+{% extends "dashboard/admin_layout.html" %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .required-indicator {
+        color: red;
+        margin-left: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block admin_main_content %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/service_type_styles.css' %}"> {# Re-using this CSS for general form styling #}
+
+    <div class="service-booking-container">
+        <div class="booking-progress">
+            <h2>{{ title }}</h2>
+        </div>
+        <p class="mb-4">Use this form to {% if hire_refund_request %}edit{% else %}create{% endif %} a hire refund request.</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+
+            {# General Refund Request Information #}
+            <fieldset class="form-group border p-3 mb-4 rounded">
+                <legend class="w-auto px-2">Refund Request Details</legend>
+
+                {# hire_booking field #}
+                <div class="form-group mb-3">
+                    <label for="{{ form.hire_booking.id_for_label }}">
+                        {{ form.hire_booking.label }}
+                        {% if form.hire_booking.field.required %}<span class="required-indicator">*</span>{% endif %}
+                    </label>
+                    {{ form.hire_booking }}
+                    {% if form.hire_booking.errors %}<div class="invalid-feedback d-block">{% for error in form.hire_booking.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    <small class="form-text text-muted">{{ form.hire_booking.help_text }}</small>
+                </div>
+
+                {# reason field #}
+                <div class="form-group mb-3">
+                    <label for="{{ form.reason.id_for_label }}">
+                        {{ form.reason.label }}
+                        {% if form.reason.field.required %}<span class="required-indicator">*</span>{% endif %}
+                    </label>
+                    {{ form.reason }}
+                    {% if form.reason.errors %}<div class="invalid-feedback d-block">{% for error in form.reason.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    <small class="form-text text-muted">{{ form.reason.help_text }}</small>
+                </div>
+
+                {# staff_notes field #}
+                <div class="form-group mb-3">
+                    <label for="{{ form.staff_notes.id_for_label }}">
+                        {{ form.staff_notes.label }}
+                        {% if form.staff_notes.field.required %}<span class="required-indicator">*</span>{% endif %}
+                    </label>
+                    {{ form.staff_notes }}
+                    {% if form.staff_notes.errors %}<div class="invalid-feedback d-block">{% for error in form.staff_notes.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    <small class="form-text text-muted">{{ form.staff_notes.help_text }}</small>
+                </div>
+
+                {# amount_to_refund field #}
+                <div class="form-group mb-3">
+                    <label for="{{ form.amount_to_refund.id_for_label }}">
+                        {{ form.amount_to_refund.label }}
+                        {% if form.amount_to_refund.field.required %}<span class="required-indicator">*</span>{% endif %}
+                    </label>
+                    {{ form.amount_to_refund }}
+                    {% if form.amount_to_refund.errors %}<div class="invalid-feedback d-block">{% for error in form.amount_to_refund.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    <small class="form-text text-muted">{{ form.amount_to_refund.help_text }}</small>
+                </div>
+
+                {# is_admin_initiated field #}
+                <div class="form-group form-check mb-3">
+                    {{ form.is_admin_initiated }}
+                    <label class="form-check-label" for="{{ form.is_admin_initiated.id_for_label }}">
+                        {{ form.is_admin_initiated.label }}
+                    </label>
+                    {% if form.is_admin_initiated.errors %}<div class="invalid-feedback d-block">{% for error in form.is_admin_initiated.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    <small class="form-text text-muted">{{ form.is_admin_initiated.help_text }}</small>
+                </div>
+
+                {# status field #}
+                <div class="form-group mb-3">
+                    <label for="{{ form.status.id_for_label }}">
+                        {{ form.status.label }}
+                        {% if form.status.field.required %}<span class="required-indicator">*</span>{% endif %}
+                    </label>
+                    {{ form.status }}
+                    {% if form.status.errors %}<div class="invalid-feedback d-block">{% for error in form.status.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    <small class="form-text text-muted">{{ form.status.help_text }}</small>
+                </div>
+
+            </fieldset>
+
+            <button type="submit" class="btn btn-success">Save Refund Request</button>
+            <a href="{% url 'dashboard:admin_hire_refund_management' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add Bootstrap's 'is-invalid' class for form errors dynamically
+            document.querySelectorAll('.invalid-feedback').forEach(function(feedback) {
+                const formControl = feedback.previousElementSibling;
+                if (formControl && (formControl.classList.contains('form-control') || formControl.classList.contains('form-check-input') || formControl.classList.contains('form-control-file'))) {
+                    formControl.classList.add('is-invalid');
+                }
+            });
+            document.querySelectorAll('input, select, textarea').forEach(function(input) {
+                // Check if the input itself has an invalid-feedback sibling (for non-checkboxes)
+                if (input.nextElementSibling && input.nextElementSibling.classList.contains('invalid-feedback')) {
+                    input.classList.add('is-invalid');
+                }
+                // Check if the input is a checkbox and its parent has an invalid-feedback
+                if (input.type === 'checkbox' && input.closest('.form-check') && input.closest('.form-check').querySelector('.invalid-feedback')) {
+                    input.classList.add('is-invalid');
+                }
+            });
+        });
+    </script>
+{% endblock %}

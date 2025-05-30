@@ -61,7 +61,7 @@
     <main class="admin-layout-content">
         {% if messages %}
             <ul class="reset-list admin-layout-messages">
-                {% for message in messages %}\
+                {% for message in messages %}
                     <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
                 {% endfor %}
             </ul>

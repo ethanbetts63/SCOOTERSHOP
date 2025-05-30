@@ -17,11 +17,12 @@ urlpatterns = [
     path('service-bookings/json/', views.get_service_bookings_json, name='get_service_bookings_json'),
 
     # --- Hire Booking Management Views ---
+
+    #WHY IS THERE hire-booking and hire-bookings? 
     path('hire-bookings/', views.hire_bookings_view, name='hire_bookings'),
     path('hire-bookings/<int:pk>/', views.hire_booking_details_view, name='hire_booking_details'), # Hire booking details view
     path('hire-bookings/search/', views.hire_booking_search_view, name='hire_booking_search'), # Hire booking search view
     path('hire-bookings/json/', views.get_hire_bookings_json, name='get_hire_bookings_json'), # Hire bookings JSON feed
-    # NEW: URL for deleting a hire booking
     path('hire-bookings/delete/<int:pk>/', views.delete_hire_booking_view, name='delete_hire_booking'),
 
 
@@ -34,7 +35,8 @@ urlpatterns = [
     path('settings/service-booking/', views.settings_service_booking, name='settings_service_booking'),
     path('settings/hire-booking/', views.settings_hire_booking, name='settings_hire_booking'),
     path('settings/hire-refunds/', HireRefunds.AdminHireRefundManagement.as_view(), name='admin_hire_refund_management'),
-
+    path('settings/hire-refunds/add/', HireRefunds.AdminAddEditRefundRequestView.as_view(), name='add_hire_refund_request'),
+    path('settings/hire-refunds/edit/<int:pk>/', HireRefunds.AdminAddEditRefundRequestView.as_view(), name='edit_hire_refund_request'),
 
 
     # --- Dashboard Service Brand Management Views ---
