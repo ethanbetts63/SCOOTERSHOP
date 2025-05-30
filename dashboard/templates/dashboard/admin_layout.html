@@ -41,8 +41,8 @@
                     <li><a href="{% url 'dashboard:settings_hire_addons' %}">Hire Add-Ons</a></li>
                     <li><a href="{% url 'dashboard:settings_hire_packages' %}">Hire Packages</a></li>
                     <li><a href="{% url 'dashboard:blocked_hire_dates_management' %}">Blocked Hire Dates</a></li>
-                    {# NEW: Link to Driver Profiles Management #}
                     <li><a href="{% url 'dashboard:settings_driver_profiles' %}">Driver Profiles</a></li>
+                    <li><a href="{% url 'payments:admin_hire_refund_management' %}">Hire Refund Requests</a></li>
                 </ul>
             </li>
 
@@ -61,7 +61,7 @@
     <main class="admin-layout-content">
         {% if messages %}
             <ul class="reset-list admin-layout-messages">
-                {% for message in messages %}
+                {% for message in messages %}\
                     <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
                 {% endfor %}
             </ul>

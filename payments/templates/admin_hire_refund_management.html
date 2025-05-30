@@ -1,0 +1,119 @@
+{% extends 'admin/base_site.html' %}
+
+{% block title %}Motorcycle Hire Refund Requests{% endblock %}
+
+{% block content %}
+<div class="p-4">
+    <h1 class="text-2xl font-bold mb-6 text-gray-800">Motorcycle Hire Refund Requests</h1>
+
+    <div class="mb-6 bg-white p-4 rounded-lg shadow-md">
+        <form method="get" class="flex items-center space-x-4">
+            <label for="status_filter" class="font-medium text-gray-700">Filter by Status:</label>
+            <select name="status" id="status_filter"
+                    class="block w-auto px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                <option value="all">All Statuses</option>
+                {% for value, display in status_choices %}
+                    <option value="{{ value }}" {% if value == current_status %}selected{% endif %}>
+                        {{ display }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button type="submit"
+                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Filter
+            </button>
+        </form>
+    </div>
+
+    {% if refund_requests %}
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            ID
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Booking Ref
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Requested By
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Request Date
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Refund Amount
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for request in refund_requests %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ request.id }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ request.hire_booking.booking_reference }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {% if request.driver_profile %}{{ request.driver_profile.email }}{% else %}N/A{% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ request.requested_at|date:"Y-m-d H:i" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                    {% if request.status == 'refunded' %}bg-green-100 text-green-800
+                                    {% elif request.status == 'approved' %}bg-blue-100 text-blue-800
+                                    {% elif request.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                    {% elif request.status == 'rejected' or request.status == 'failed' %}bg-red-100 text-red-800
+                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {{ request.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {% if request.amount_to_refund %}{{ request.amount_to_refund|floatformat:2 }}{% else %}N/A{% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <a href="#" class="text-indigo-600 hover:text-indigo-900">View Details</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if is_paginated %}
+            <div class="pagination mt-6 flex justify-center items-center space-x-2">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1&status={{ current_status }}"
+                           class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">&laquo; first</a>
+                        <a href="?page={{ page_obj.previous_page_number }}&status={{ current_status }}"
+                           class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">previous</a>
+                    {% endif %}
+                    <span class="current px-3 py-1 text-sm font-medium text-gray-700">
+                        Page {{ page_obj.number }} of {{ paginator.num_pages }}.
+                    </span>
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}&status={{ current_status }}"
+                           class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">next</a>
+                        <a href="?page={{ paginator.num_pages }}&status={{ current_status }}"
+                           class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">last &raquo;</a>
+                    {% endif %}
+                </span>
+            </div>
+        {% endif %}
+
+    {% else %}
+        <p class="text-gray-600">No refund requests found for the selected status.</p>
+    {% endif %}
+</div>
+{% endblock %}

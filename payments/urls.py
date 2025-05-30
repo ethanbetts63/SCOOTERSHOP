@@ -1,9 +1,12 @@
 # payments/urls.py
 from django.urls import path
 from . import views
+from views import *
+from views import HireRefunds
 
 app_name = 'payments'
 
 urlpatterns = [
     path('stripe-webhook/', views.stripe_webhook, name='stripe_webhook'),
+    path('admin/refunds/', HireRefunds.AdminHireRefundManagement.as_view(), name='admin_hire_refund_list'),
 ]
