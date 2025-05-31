@@ -19,6 +19,8 @@ from hire.tests.test_helpers.model_factories import (
 )
 from payments.models.HireRefundRequest import HireRefundRequest
 from payments.models import Payment # Import Payment model directly
+# No longer mocking AdminHireRefundRequestForm, so no explicit import needed here for tests.
+
 
 User = get_user_model()
 
@@ -81,7 +83,6 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         self.payment.save()
 
         # URLs for the view
-        # Corrected URL names as per dashboard/urls.py
         self.add_url = reverse('dashboard:add_hire_refund_request')
         self.edit_url = lambda pk: reverse('dashboard:edit_hire_refund_request', kwargs={'pk': pk})
         self.management_url = reverse('dashboard:admin_hire_refund_management')
@@ -122,7 +123,7 @@ class AdminAddEditRefundRequestViewTests(TestCase):
             reason="Duplicate booking",
             status='pending',
             amount_to_refund=Decimal('100.00'),
-            request_email="test@example.com",
+            request_email="test@example.com", # Ensure this is set in the factory
         )
         self._login_staff_user()
         response = self.client.get(self.edit_url(existing_refund_request.pk))
@@ -140,6 +141,10 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         self.assertEqual(form.initial['amount_to_refund'], existing_refund_request.amount_to_refund)
         self.assertEqual(form.initial['status'], 'pending')
         self.assertEqual(form.initial['reason'], "Duplicate booking")
+        # Removed the 'request_email' assertion as the form does not handle this field.
+        # If you later decide to add 'request_email' to AdminHireRefundRequestForm,
+        # you can re-add this assertion.
+
 
     def test_get_non_existent_refund_request_returns_404(self):
         """
@@ -161,12 +166,11 @@ class AdminAddEditRefundRequestViewTests(TestCase):
 
         form_data = {
             'hire_booking': self.hire_booking.pk,
-            'driver_profile': self.driver_profile.pk,
-            'payment': self.payment.pk,
+            # 'driver_profile' and 'payment' are set by the form's clean method
             'reason': 'Customer changed mind',
             'status': 'pending',
             'amount_to_refund': '250.00',
-            'request_email': 'customer@example.com',
+            # 'request_email' is not handled by the form, so removed from form_data
             'staff_notes': 'Initial request from customer',
             'is_admin_initiated': 'on', # Checkbox value
         }
@@ -183,7 +187,8 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         self.assertEqual(new_refund_request.reason, 'Customer changed mind')
         self.assertEqual(new_refund_request.status, 'pending')
         self.assertEqual(new_refund_request.amount_to_refund, Decimal('250.00'))
-        self.assertEqual(new_refund_request.request_email, 'customer@example.com')
+        # request_email is not set by this form, so it should remain None (or whatever default)
+        self.assertIsNone(new_refund_request.request_email)
         self.assertEqual(new_refund_request.staff_notes, 'Initial request from customer')
         self.assertTrue(new_refund_request.is_admin_initiated)
         self.assertIsNone(new_refund_request.processed_by)
@@ -197,30 +202,30 @@ class AdminAddEditRefundRequestViewTests(TestCase):
     def test_post_create_new_refund_request_invalid_data(self, mock_messages_error):
         """
         Test POST request to create a new refund request with invalid data.
+        (e.g., amount_to_refund <= 0)
         """
         self._login_staff_user()
         initial_count = HireRefundRequest.objects.count()
 
-        # Missing required 'reason' field
+        # Invalid data: amount_to_refund is negative (violates clean method validation)
         form_data = {
             'hire_booking': self.hire_booking.pk,
-            'driver_profile': self.driver_profile.pk,
-            'payment': self.payment.pk,
+            'reason': 'Customer changed mind', # Reason is optional, so this is fine
             'status': 'pending',
-            'amount_to_refund': '250.00',
-            'request_email': 'customer@example.com', # Keep this to test the email field specifically
+            'amount_to_refund': '-10.00', # Invalid amount
+            'staff_notes': 'Some notes',
         }
-        # Removed follow=True as we expect a 200 status code for re-rendering the form
         response = self.client.post(self.add_url, form_data)
 
-        self.assertEqual(response.status_code, 200) # Should re-render the form
+        self.assertEqual(response.status_code, 200) # Should re-render the form with errors
         self.assertTemplateUsed(response, 'payments/admin_hire_refund_form.html')
         self.assertEqual(HireRefundRequest.objects.count(), initial_count) # No new object created
 
         self.assertIn('form', response.context)
         form = response.context['form']
         self.assertTrue(form.errors)
-        self.assertIn('reason', form.errors)
+        self.assertIn('amount_to_refund', form.errors) # Assert specific error
+        self.assertIn("Amount to refund must be a positive value.", str(form.errors['amount_to_refund']))
         mock_messages_error.assert_called_once_with(mock.ANY, "Please correct the errors below.")
 
     @mock.patch('django.contrib.messages.success')
@@ -232,12 +237,9 @@ class AdminAddEditRefundRequestViewTests(TestCase):
 
         form_data = {
             'hire_booking': self.hire_booking.pk,
-            'driver_profile': self.driver_profile.pk,
-            'payment': self.payment.pk,
             'reason': 'Approved by admin',
             'status': 'approved', # Set to approved
             'amount_to_refund': '250.00',
-            'request_email': 'customer@example.com',
         }
         response = self.client.post(self.add_url, form_data, follow=True)
 
@@ -263,7 +265,7 @@ class AdminAddEditRefundRequestViewTests(TestCase):
             reason="Initial reason",
             status='pending',
             amount_to_refund=Decimal('100.00'),
-            request_email="original@example.com",
+            request_email="original@example.com", # This will remain unchanged by the form
             staff_notes="Old notes",
         )
         self._login_staff_user()
@@ -271,12 +273,9 @@ class AdminAddEditRefundRequestViewTests(TestCase):
 
         form_data = {
             'hire_booking': self.hire_booking.pk,
-            'driver_profile': self.driver_profile.pk,
-            'payment': self.payment.pk,
             'reason': 'Updated reason for refund',
             'status': 'pending', # Keep status as pending
             'amount_to_refund': '150.00',
-            'request_email': 'updated@example.com',
             'staff_notes': 'New staff notes added',
         }
         response = self.client.post(self.edit_url(existing_refund_request.pk), form_data, follow=True)
@@ -288,7 +287,8 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         existing_refund_request.refresh_from_db() # Reload from DB
         self.assertEqual(existing_refund_request.reason, 'Updated reason for refund')
         self.assertEqual(existing_refund_request.amount_to_refund, Decimal('150.00'))
-        self.assertEqual(existing_refund_request.request_email, 'updated@example.com')
+        # request_email should remain its original value as the form doesn't handle it
+        self.assertEqual(existing_refund_request.request_email, "original@example.com")
         self.assertEqual(existing_refund_request.staff_notes, 'New staff notes added')
         self.assertIsNone(existing_refund_request.processed_by) # Should still be None
         self.assertIsNone(existing_refund_request.processed_at) # Should still be None
@@ -301,6 +301,7 @@ class AdminAddEditRefundRequestViewTests(TestCase):
     def test_post_edit_existing_refund_request_invalid_data(self, mock_messages_error):
         """
         Test POST request to edit an existing refund request with invalid data.
+        (e.g., amount_to_refund exceeds payment amount)
         """
         existing_refund_request = create_refund_request(
             hire_booking=self.hire_booking,
@@ -309,35 +310,31 @@ class AdminAddEditRefundRequestViewTests(TestCase):
             reason="Initial reason",
             status='pending',
             amount_to_refund=Decimal('100.00'),
-            request_email="test@example.com", # Keep this for consistency
+            request_email="test@example.com",
         )
         self._login_staff_user()
         initial_count = HireRefundRequest.objects.count()
 
-        # Invalid data: 'reason' made empty (required field)
+        # Invalid data: amount_to_refund exceeds payment.amount (500.00)
         form_data = {
             'hire_booking': self.hire_booking.pk,
-            'driver_profile': self.driver_profile.pk,
-            'payment': self.payment.pk,
-            'reason': '', # Invalid
+            'reason': 'Initial reason',
             'status': 'pending',
-            'amount_to_refund': '150.00',
-            'request_email': 'test@example.com', # Keep this for consistency
+            'amount_to_refund': '600.00', # Invalid: exceeds paid amount
         }
-        # Removed follow=True as we expect a 200 status code for re-rendering the form
         response = self.client.post(self.edit_url(existing_refund_request.pk), form_data)
 
-        self.assertEqual(response.status_code, 200) # Should re-render the form
+        self.assertEqual(response.status_code, 200) # Should re-render the form with errors
         self.assertTemplateUsed(response, 'payments/admin_hire_refund_form.html')
         self.assertEqual(HireRefundRequest.objects.count(), initial_count) # No new object created
 
-        existing_refund_request.refresh_from_db() # Reload to ensure it wasn't changed
-        self.assertEqual(existing_refund_request.reason, "Initial reason") # Should not be updated
-
+        # We don't refresh_from_db() as the form was invalid and no save happened.
+        # Instead, we check the form errors in the context.
         self.assertIn('form', response.context)
         form = response.context['form']
         self.assertTrue(form.errors)
-        self.assertIn('reason', form.errors)
+        self.assertIn('amount_to_refund', form.errors)
+        self.assertIn(f"Amount to refund (${Decimal('600.00')}) cannot exceed the amount paid for this booking (${self.payment.amount}).", str(form.errors['amount_to_refund']))
         mock_messages_error.assert_called_once_with(mock.ANY, "Please correct the errors below.")
 
     @mock.patch('django.contrib.messages.success')
@@ -345,7 +342,6 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         """
         Test that processed_by and processed_at are set when changing status to 'approved'.
         """
-        # Create the refund request first
         existing_refund_request = create_refund_request(
             hire_booking=self.hire_booking,
             payment=self.payment,
@@ -357,18 +353,15 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         # Manually set processed_by and processed_at to None and save, as factory doesn't accept them
         existing_refund_request.processed_by = None
         existing_refund_request.processed_at = None
-        existing_refund_request.save()
+        existing_refund_request.save() # Save the instance after setting None
 
         self._login_staff_user()
 
         form_data = {
             'hire_booking': self.hire_booking.pk,
-            'driver_profile': self.driver_profile.pk,
-            'payment': self.payment.pk,
             'reason': 'Pending approval',
             'status': 'approved', # Change status to approved
             'amount_to_refund': '200.00',
-            'request_email': existing_refund_request.request_email, # Include existing email
         }
         response = self.client.post(self.edit_url(existing_refund_request.pk), form_data, follow=True)
 
@@ -384,7 +377,6 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         """
         Test that processed_by and processed_at are set when changing status to 'refunded'.
         """
-        # Create the refund request first
         existing_refund_request = create_refund_request(
             hire_booking=self.hire_booking,
             payment=self.payment,
@@ -396,18 +388,15 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         # Manually set processed_by and processed_at to None and save
         existing_refund_request.processed_by = None
         existing_refund_request.processed_at = None
-        existing_refund_request.save()
+        existing_refund_request.save() # Save the instance after setting None
 
         self._login_staff_user()
 
         form_data = {
             'hire_booking': self.hire_booking.pk,
-            'driver_profile': self.driver_profile.pk,
-            'payment': self.payment.pk,
             'reason': 'Refund processed',
             'status': 'refunded', # Change status to refunded
             'amount_to_refund': '200.00',
-            'request_email': existing_refund_request.request_email, # Include existing email
         }
         response = self.client.post(self.edit_url(existing_refund_request.pk), form_data, follow=True)
 
@@ -438,25 +427,23 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         # Manually set processed_by and processed_at and save
         existing_refund_request.processed_by = original_processed_by
         existing_refund_request.processed_at = original_processed_at
-        existing_refund_request.save()
+        existing_refund_request.save() # Save the instance after setting
 
         self._login_staff_user()
 
         form_data = {
             'hire_booking': self.hire_booking.pk,
-            'driver_profile': self.driver_profile.pk,
-            'payment': self.payment.pk,
             'reason': 'Updated notes for processed refund',
             'status': 'approved', # Keep status as approved
             'amount_to_refund': '200.00',
-            'request_email': existing_refund_request.request_email, # Include existing email
         }
         response = self.client.post(self.edit_url(existing_refund_request.pk), form_data, follow=True)
 
         self.assertEqual(response.status_code, 200)
         existing_refund_request.refresh_from_db()
-        self.assertEqual(existing_refund_request.processed_by, original_processed_by) # Should remain the same
-        self.assertEqual(existing_refund_request.processed_at, original_processed_at) # Should remain the same
+        # Assert that processed_by and processed_at were NOT overwritten
+        self.assertEqual(existing_refund_request.processed_by, original_processed_by)
+        self.assertEqual(existing_refund_request.processed_at, original_processed_at)
         mock_messages_success.assert_called_once()
 
     # --- Test Authentication ---
