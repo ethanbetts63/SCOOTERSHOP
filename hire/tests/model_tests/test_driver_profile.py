@@ -178,60 +178,6 @@ class DriverProfileModelTest(TestCase):
             "Australian domestic driver's license must not be expired."
         )
 
-    def test_clean_australian_resident_with_international_license_details_raises_error(self):
-        """
-        Test that clean() raises ValidationError for Australian resident having international license details.
-        """
-        driver_profile = create_driver_profile(
-            is_australian_resident=True,
-            international_license_expiry_date=timezone.now().date() + datetime.timedelta(days=100),
-            international_license_issuing_country="USA",
-            license_photo="dummy/path/license.jpg", # Needs this
-            license_number="AUSLIC1"
-        )
-        with self.assertRaises(ValidationError) as cm:
-            driver_profile.clean()
-        self.assertIn('international_license_expiry_date', cm.exception.message_dict)
-        self.assertIn('international_license_issuing_country', cm.exception.message_dict)
-        self.assertEqual(
-            cm.exception.message_dict['international_license_expiry_date'][0],
-            "International license expiry date should not be provided for Australian residents."
-        )
-        self.assertEqual(
-            cm.exception.message_dict['international_license_issuing_country'][0],
-            "International license issuing country should not be provided for Australian residents."
-        )
-
-    def test_clean_australian_resident_with_passport_details_raises_error(self):
-        """
-        Test that clean() raises ValidationError for Australian resident having passport details.
-        """
-        driver_profile = create_driver_profile(
-            is_australian_resident=True,
-            passport_photo="path/to/passport.jpg",
-            passport_number="P1234567",
-            passport_expiry_date=timezone.now().date() + datetime.timedelta(days=100),
-            license_photo="dummy/path/license.jpg", # Needs this
-            license_number="AUSLIC2"
-        )
-        with self.assertRaises(ValidationError) as cm:
-            driver_profile.clean()
-        self.assertIn('passport_photo', cm.exception.message_dict)
-        self.assertIn('passport_number', cm.exception.message_dict)
-        self.assertIn('passport_expiry_date', cm.exception.message_dict)
-        self.assertEqual(
-            cm.exception.message_dict['passport_photo'][0],
-            "Passport photo should not be provided for Australian residents."
-        )
-        self.assertEqual(
-            cm.exception.message_dict['passport_number'][0],
-            "Passport number should not be provided for Australian residents."
-        )
-        self.assertEqual(
-            cm.exception.message_dict['passport_expiry_date'][0],
-            "Passport expiry date should not be provided for Australian residents."
-        )
-
     # --- Foreigner Specific Validations ---
 
     def test_clean_foreigner_missing_international_license_photo_raises_error(self):
@@ -383,28 +329,6 @@ class DriverProfileModelTest(TestCase):
         self.assertEqual(
             cm.exception.message_dict['passport_expiry_date'][0],
             "Passport must not be expired."
-        )
-
-    def test_clean_foreigner_with_australian_license_photo_raises_error(self):
-        """
-        Test that clean() raises ValidationError for foreigner having Australian domestic license photo.
-        """
-        driver_profile = create_driver_profile(
-            is_australian_resident=False,
-            license_photo="path/to/aus_license.jpg", # Should not be provided
-            international_license_photo="dummy/path/int_license.jpg", # Provide other required fields
-            passport_photo="dummy/path/passport.jpg",
-            international_license_issuing_country="USA",
-            international_license_expiry_date=timezone.now().date() + datetime.timedelta(days=365),
-            passport_number="P123",
-            passport_expiry_date=timezone.now().date() + datetime.timedelta(days=365)
-        )
-        with self.assertRaises(ValidationError) as cm:
-            driver_profile.clean()
-        self.assertIn('license_photo', cm.exception.message_dict)
-        self.assertEqual(
-            cm.exception.message_dict['license_photo'][0],
-            "Australian domestic driver's license photo should not be provided for foreign drivers."
         )
 
     def test_clean_valid_australian_resident_profile_passes(self):

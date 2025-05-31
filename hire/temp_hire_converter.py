@@ -8,6 +8,8 @@ from decimal import Decimal
 from .models import TempHireBooking, HireBooking, BookingAddOn, TempBookingAddOn
 # Assuming Payment model is in payments/models.py
 from payments.models import Payment
+# Import HireSettings to capture refund policy snapshot
+from dashboard.models import HireSettings # Assuming HireSettings is in dashboard.models
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +29,7 @@ def convert_temp_to_hire_booking(
     2. Copying associated add-ons.
     3. Updating the related Payment object (if provided) to link to the new HireBooking.
     4. Deleting the temporary booking and its add-ons.
+    5. Capturing a snapshot of current refund policy settings and storing it in the Payment object.
 
     Args:
         temp_booking (TempHireBooking): The temporary booking instance to convert.
@@ -51,6 +54,33 @@ def convert_temp_to_hire_booking(
 
     try:
         with transaction.atomic():
+            # Retrieve current HireSettings to capture refund policy snapshot
+            hire_settings = HireSettings.objects.first()
+            current_refund_settings = {}
+            if hire_settings:
+                # Capture all relevant refund policy fields
+                current_refund_settings = {
+                    'cancellation_upfront_full_refund_days': hire_settings.cancellation_upfront_full_refund_days,
+                    'cancellation_upfront_partial_refund_days': hire_settings.cancellation_upfront_partial_refund_days,
+                    'cancellation_upfront_partial_refund_percentage': float(hire_settings.cancellation_upfront_partial_refund_percentage),
+                    'cancellation_upfront_minimal_refund_days': hire_settings.cancellation_upfront_minimal_refund_days,
+                    'cancellation_upfront_minimal_refund_percentage': float(hire_settings.cancellation_upfront_minimal_refund_percentage),
+                    'cancellation_deposit_full_refund_days': hire_settings.cancellation_deposit_full_refund_days,
+                    'cancellation_deposit_partial_refund_days': hire_settings.cancellation_deposit_partial_refund_days,
+                    'cancellation_deposit_partial_refund_percentage': float(hire_settings.cancellation_deposit_partial_refund_percentage),
+                    'cancellation_deposit_minimal_refund_days': hire_settings.cancellation_deposit_minimal_refund_days,
+                    'cancellation_deposit_minimal_refund_percentage': float(hire_settings.cancellation_deposit_minimal_refund_percentage),
+                    'deposit_enabled': hire_settings.deposit_enabled,
+                    'default_deposit_calculation_method': hire_settings.default_deposit_calculation_method,
+                    'deposit_percentage': float(hire_settings.deposit_percentage),
+                    'deposit_amount': float(hire_settings.deposit_amount),
+                    # Add any other relevant settings that affect refund calculation
+                }
+                print(f"DEBUG: Captured current refund settings: {current_refund_settings}")
+            else:
+                print("WARNING: HireSettings instance not found. Refund policy snapshot will be empty.")
+
+
             # Create the HireBooking instance
             hire_booking = HireBooking.objects.create(
                 motorcycle=temp_booking.motorcycle,
@@ -74,20 +104,20 @@ def convert_temp_to_hire_booking(
                 currency=temp_booking.currency,
                 status='confirmed', # Booking is confirmed upon successful conversion
                 stripe_payment_intent_id=stripe_payment_intent_id,
-                payment=payment_obj, # <--- ADDED THIS LINE: Link HireBooking to the Payment object
+                payment=payment_obj, # Link HireBooking to the Payment object
             )
             logger.info(f"Created new HireBooking: {hire_booking.booking_reference} from TempHireBooking {temp_booking.id}")
             print(f"DEBUG: Successfully created HireBooking: {hire_booking.booking_reference}")
 
             # If a payment object exists, update it to link to the new HireBooking
-            # (This part is still important for the Payment object to point back to HireBooking)
             if payment_obj:
                 payment_obj.hire_booking = hire_booking
                 payment_obj.driver_profile = hire_booking.driver_profile # Link payment to the driver
                 payment_obj.temp_hire_booking = None # Clear FK before temp_booking deletion
+                payment_obj.refund_policy_snapshot = current_refund_settings # Assign the snapshot
                 payment_obj.save()
-                logger.info(f"Updated Payment {payment_obj.id} to link to HireBooking {hire_booking.booking_reference}.")
-                print(f"DEBUG: Updated Payment object with HireBooking link.")
+                logger.info(f"Updated Payment {payment_obj.id} with HireBooking link and refund policy snapshot.")
+                print(f"DEBUG: Updated Payment object with HireBooking link and refund policy snapshot.")
 
             # Copy add-ons from TempBookingAddOn to BookingAddOn
             temp_booking_addons = TempBookingAddOn.objects.filter(temp_booking=temp_booking)

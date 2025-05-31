@@ -98,6 +98,13 @@ class Payment(models.Model):
         help_text="Arbitrary key-value pairs for additional payment information or Stripe metadata."
     )
 
+    # NEW FIELD: Stores a snapshot of refund policy settings at the time of booking
+    refund_policy_snapshot = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Snapshot of refund policy settings from HireSettings at the time of booking."
+    )
+
     # Timestamps for when the record was created and last updated.
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -115,4 +122,3 @@ class Payment(models.Model):
         temp_booking_id_str = str(self.temp_hire_booking.id) if self.temp_hire_booking else 'N/A'
         hire_booking_ref_str = self.hire_booking.booking_reference if self.hire_booking else 'N/A'
         return f"Payment {self.id} (Temp: {temp_booking_id_str}, Hire: {hire_booking_ref_str}) - Amount: {self.amount} {self.currency} - Status: {self.status}"
-
