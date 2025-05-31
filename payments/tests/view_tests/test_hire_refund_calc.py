@@ -63,18 +63,18 @@ class HireRefundCalcTests(TestCase):
         self.refund_policy_snapshot = {
             'cancellation_upfront_full_refund_days': self.hire_settings.cancellation_upfront_full_refund_days,
             'cancellation_upfront_partial_refund_days': self.hire_settings.cancellation_upfront_partial_refund_days,
-            'cancellation_upfront_partial_refund_percentage': str(self.hire_settings.cancellation_upfront_partial_refund_percentage), # Changed to str
+            'cancellation_upfront_partial_refund_percentage': str(self.hire_settings.cancellation_upfront_partial_refund_percentage),
             'cancellation_upfront_minimal_refund_days': self.hire_settings.cancellation_upfront_minimal_refund_days,
-            'cancellation_upfront_minimal_refund_percentage': str(self.hire_settings.cancellation_upfront_minimal_refund_percentage), # Changed to str
+            'cancellation_upfront_minimal_refund_percentage': str(self.hire_settings.cancellation_upfront_minimal_refund_percentage),
             'cancellation_deposit_full_refund_days': self.hire_settings.cancellation_deposit_full_refund_days,
             'cancellation_deposit_partial_refund_days': self.hire_settings.cancellation_deposit_partial_refund_days,
-            'cancellation_deposit_partial_refund_percentage': str(self.hire_settings.cancellation_deposit_partial_refund_percentage), # Changed to str
+            'cancellation_deposit_partial_refund_percentage': str(self.hire_settings.cancellation_deposit_partial_refund_percentage),
             'cancellation_deposit_minimal_refund_days': self.hire_settings.cancellation_deposit_minimal_refund_days,
-            'cancellation_deposit_minimal_refund_percentage': str(self.hire_settings.cancellation_deposit_minimal_refund_percentage), # Changed to str
+            'cancellation_deposit_minimal_refund_percentage': str(self.hire_settings.cancellation_deposit_minimal_refund_percentage),
             'deposit_enabled': self.hire_settings.deposit_enabled,
             'default_deposit_calculation_method': self.hire_settings.default_deposit_calculation_method,
-            'deposit_percentage': str(self.hire_settings.deposit_percentage), # Changed to str
-            'deposit_amount': str(self.hire_settings.deposit_amount), # Changed to str
+            'deposit_percentage': str(self.hire_settings.deposit_percentage),
+            'deposit_amount': str(self.hire_settings.deposit_amount),
         }
 
 
@@ -421,8 +421,8 @@ class HireRefundCalcTests(TestCase):
 
         self.assertEqual(results['entitled_amount'], Decimal('0.00'))
         # Updated expected message to match the logic in hire_refund_calc.py
-        self.assertIn("No Refund Policy: Payment amount does not match expected full or deposit payment.", results['details'])
-        self.assertEqual(results['days_before_pickup'], 10)
+        self.assertIn("No Refund Policy: Refund for 'in_store_full' payment method is handled manually.", results['details'])
+        self.assertEqual(results['days_before_pickup'], 'N/A') # Days before pickup is N/A for manual refunds
 
     def test_unrecognized_payment_method_no_refund(self):
         """
@@ -453,8 +453,8 @@ class HireRefundCalcTests(TestCase):
 
         self.assertEqual(results['entitled_amount'], Decimal('0.00'))
         # Updated expected message to match the logic in hire_refund_calc.py
-        self.assertIn("No Refund Policy: Payment amount does not match expected full or deposit payment.", results['details'])
-        self.assertEqual(results['days_before_pickup'], 10)
+        self.assertIn("No Refund Policy: Refund for 'some_new_method' payment method is handled manually.", results['details'])
+        self.assertEqual(results['days_before_pickup'], 'N/A') # Days before pickup is N/A for manual refunds
 
         # Test with payment_method=None - create a NEW payment for this booking
         payment_2 = create_payment(
@@ -479,7 +479,8 @@ class HireRefundCalcTests(TestCase):
         results_none = calculate_refund_amount(hire_booking_none_method, hire_booking_none_method.payment.refund_policy_snapshot, cancellation_datetime)
         self.assertEqual(results_none['entitled_amount'], Decimal('0.00'))
         # Updated expected message to match the logic in hire_refund_calc.py
-        self.assertIn("No Refund Policy: Payment amount does not match expected full or deposit payment.", results_none['details'])
+        self.assertIn("No Refund Policy: Refund for 'None' payment method is handled manually.", results_none['details'])
+        self.assertEqual(results_none['days_before_pickup'], 'N/A') # Days before pickup is N/A for manual refunds
 
 
     def test_cancellation_exactly_at_thresholds(self):

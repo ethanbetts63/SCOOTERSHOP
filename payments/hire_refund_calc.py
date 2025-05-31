@@ -35,6 +35,18 @@ def calculate_refund_amount(booking, refund_policy_snapshot: dict, cancellation_
             'days_before_pickup': 'N/A',
         }
 
+    # --- Early exit for specific payment methods that don't follow standard online refund policies ---
+    # Payments made in-store or via unrecognized methods are not handled by this automated calculation.
+    # They should result in a 0.00 calculated refund, with a note for manual processing.
+    if booking.payment_method in ['in_store_full'] or booking.payment_method not in ['online_full', 'online_deposit']:
+        return {
+            'entitled_amount': Decimal('0.00'),
+            'details': f"No Refund Policy: Refund for '{booking.payment_method}' payment method is handled manually.",
+            'policy_applied': f"Manual Refund Policy for {booking.payment_method}",
+            'days_before_pickup': 'N/A', # Not applicable for manual refunds
+        }
+
+
     # Combine pickup date and time into a single datetime object
     pickup_datetime = timezone.make_aware(datetime.combine(booking.pickup_date, booking.pickup_time))
     # Calculate the time difference in full days
@@ -47,10 +59,9 @@ def calculate_refund_amount(booking, refund_policy_snapshot: dict, cancellation_
 
     # Get the total amount paid for this specific payment from the linked Payment object
     # This is the base amount for our refund calculation
-    total_paid_for_calculation = booking.payment.amount if booking.payment and booking.payment.amount else Decimal('0.00')
+    total_paid_for_calculation = booking.payment.amount if booking.payment and booking.payment.amount else Decimal('00.00')
 
     # Determine which policy to apply based on the 'deposit_enabled' flag in the snapshot
-    # and the actual payment type (full vs. deposit) if deposits are enabled.
     deposit_enabled = refund_policy_snapshot.get('deposit_enabled', False)
 
     # Initialize policy variables with defaults that will be overwritten
@@ -72,9 +83,6 @@ def calculate_refund_amount(booking, refund_policy_snapshot: dict, cancellation_
         policy_prefix = "Upfront Payment Policy"
     else:
         # If deposits ARE enabled, we need to determine if the current payment was a deposit or a full payment.
-        # This requires comparing `total_paid_for_calculation` (amount from Payment model)
-        # with the total booking cost and the calculated deposit amount.
-        # CORRECTED: Using `booking.grand_total` as per the provided HireBooking model.
         total_booking_cost = booking.grand_total if hasattr(booking, 'grand_total') else Decimal('0.00')
 
         deposit_calculation_method = refund_policy_snapshot.get('default_deposit_calculation_method', 'percentage')
@@ -105,7 +113,8 @@ def calculate_refund_amount(booking, refund_policy_snapshot: dict, cancellation_
             minimal_refund_percentage = Decimal(str(refund_policy_snapshot.get('cancellation_deposit_minimal_refund_percentage', 0.0)))
             policy_prefix = "Deposit Payment Policy"
         else:
-            # Payment amount does not clearly match a full payment or a deposit
+            # This 'else' block should ideally not be hit for valid online payments
+            # but acts as a safeguard if the amount doesn't match expected full/deposit.
             return {
                 'entitled_amount': Decimal('0.00'),
                 'details': "No Refund Policy: Payment amount does not match expected full or deposit payment.",
