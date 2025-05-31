@@ -7,6 +7,28 @@
         color: red;
         margin-left: 5px;
     }
+    /* Basic styling for the details box */
+    #bookingDetailsDisplay {
+        border: 1px solid #e2e8f0; /* Tailwind gray-200 */
+        border-radius: 0.5rem; /* Tailwind rounded-lg */
+        padding: 1.5rem; /* Tailwind p-6 */
+        margin-bottom: 1rem; /* Tailwind mb-4 */
+        background-color: #f8fafc; /* Tailwind gray-50 */
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* Tailwind shadow-sm */
+    }
+    #bookingDetailsDisplay h4 {
+        font-size: 1.125rem; /* Tailwind text-lg */
+        font-weight: 600; /* Tailwind font-semibold */
+        color: #1a202c; /* Tailwind gray-900 */
+        margin-bottom: 1rem;
+    }
+    #bookingDetailsDisplay p {
+        margin-bottom: 0.5rem;
+        color: #4a5568; /* Tailwind gray-700 */
+    }
+    #bookingDetailsDisplay p strong {
+        color: #2d3748; /* Tailwind gray-800 */
+    }
 </style>
 {% endblock %}
 
@@ -47,6 +69,20 @@
                     {{ form.hire_booking }}
                     {% if form.hire_booking.errors %}<div class="invalid-feedback d-block">{% for error in form.hire_booking.errors %}{{ error }}{% endfor %}</div>{% endif %}
                     <small class="form-text text-muted">{{ form.hire_booking.help_text }}</small>
+                </div>
+
+                {# New section for displaying booking details #}
+                <div id="bookingDetailsDisplay" class="hidden">
+                    <h4>Selected Booking Details</h4>
+                    <p><strong>Booking Reference:</strong> <span id="detailBookingRef"></span></p>
+                    <p><strong>Customer Name:</strong> <span id="detailCustomerName"></span></p>
+                    <p><strong>Pickup:</strong> <span id="detailPickupDate"></span> at <span id="detailPickupTime"></span></p>
+                    <p><strong>Return:</strong> <span id="detailReturnDate"></span> at <span id="detailReturnTime"></span></p>
+                    <p><strong>Motorcycle:</strong> <span id="detailMotorcycle"></span></p>
+                    <p><strong>Booking Status:</strong> <span id="detailBookingStatus"></span></p>
+                    <p><strong>Payment Method:</strong> <span id="detailPaymentMethod"></span></p>
+                    <p><strong>Payment Date:</strong> <span id="detailPaymentDate"></span></p>
+                    <p><strong>Payment Amount:</strong> <span id="detailPaymentAmount"></span></p>
                 </div>
 
                 {# reason field #}
@@ -114,7 +150,7 @@
 {% block extra_js %}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Add Bootstrap's 'is-invalid' class for form errors dynamically
+            // Function to add Bootstrap's 'is-invalid' class for form errors dynamically
             document.querySelectorAll('.invalid-feedback').forEach(function(feedback) {
                 const formControl = feedback.previousElementSibling;
                 if (formControl && (formControl.classList.contains('form-control') || formControl.classList.contains('form-check-input') || formControl.classList.contains('form-control-file'))) {
@@ -122,15 +158,69 @@
                 }
             });
             document.querySelectorAll('input, select, textarea').forEach(function(input) {
-                // Check if the input itself has an invalid-feedback sibling (for non-checkboxes)
                 if (input.nextElementSibling && input.nextElementSibling.classList.contains('invalid-feedback')) {
                     input.classList.add('is-invalid');
                 }
-                // Check if the input is a checkbox and its parent has an invalid-feedback
                 if (input.type === 'checkbox' && input.closest('.form-check') && input.closest('.form-check').querySelector('.invalid-feedback')) {
                     input.classList.add('is-invalid');
                 }
             });
+
+            const hireBookingSelect = document.getElementById('id_hire_booking');
+            const bookingDetailsDisplay = document.getElementById('bookingDetailsDisplay');
+
+            // Function to update booking details display
+            function updateBookingDetails(details) {
+                if (details) {
+                    document.getElementById('detailBookingRef').textContent = details.booking_reference || 'N/A';
+                    document.getElementById('detailCustomerName').textContent = details.customer_name || 'N/A';
+                    document.getElementById('detailPickupDate').textContent = details.pickup_date || 'N/A';
+                    document.getElementById('detailPickupTime').textContent = details.pickup_time || 'N/A';
+                    document.getElementById('detailReturnDate').textContent = details.return_date || 'N/A';
+                    document.getElementById('detailReturnTime').textContent = details.return_time || 'N/A';
+                    document.getElementById('detailMotorcycle').textContent = `${details.motorcycle_year || ''} ${details.motorcycle_brand || ''} ${details.motorcycle_model || ''}`.trim() || 'N/A';
+                    document.getElementById('detailBookingStatus').textContent = details.booking_status || 'N/A';
+                    document.getElementById('detailPaymentMethod').textContent = details.payment_method || 'N/A';
+                    document.getElementById('detailPaymentDate').textContent = details.payment_date || 'N/A';
+                    document.getElementById('detailPaymentAmount').textContent = details.payment_amount ? `$${details.payment_amount.toFixed(2)}` : 'N/A';
+                    bookingDetailsDisplay.classList.remove('hidden');
+                } else {
+                    bookingDetailsDisplay.classList.add('hidden');
+                }
+            }
+
+            // Function to fetch booking details
+            async function fetchBookingDetails(bookingId) {
+                if (!bookingId) {
+                    updateBookingDetails(null); // Clear details if no booking selected
+                    return;
+                }
+
+                try {
+                    // Use Django's URL tag for robustness
+                    const url = `{% url 'payments:api_hire_booking_details' pk=0 %}`.replace('0', bookingId);
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    updateBookingDetails(data);
+                } catch (error) {
+                    console.error('Error fetching booking details:', error);
+                    updateBookingDetails(null); // Clear details on error
+                    // Optionally display an error message to the user
+                }
+            }
+
+            // Event listener for when the hire_booking dropdown changes
+            hireBookingSelect.addEventListener('change', function() {
+                fetchBookingDetails(this.value);
+            });
+
+            // Initial load: if a booking is already selected (e.g., when editing)
+            if (hireBookingSelect.value) {
+                fetchBookingDetails(hireBookingSelect.value);
+            }
         });
     </script>
 {% endblock %}

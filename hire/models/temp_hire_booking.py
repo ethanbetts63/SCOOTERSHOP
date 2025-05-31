@@ -55,15 +55,15 @@ class TempHireBooking(models.Model):
     # Need a way to track if this is an international booking based on driver profile
     is_international_booking = models.BooleanField(default=False)
 
-    # Step 5: Payment Option (NEW FIELD)
-    PAYMENT_OPTIONS = [
-        ('online_full', 'Online (Full Payment)'),
-        ('online_deposit', 'Online (Deposit Only)'),
-        ('in_store', 'Pay In Store'),
+    # Choices for payment method
+    PAYMENT_METHOD_CHOICES = [
+        ('online_full', 'Full Payment Online'),
+        ('online_deposit', 'Deposit Payment Online'),
+        ('in_store_full', 'Full Payment Store'),
     ]
     payment_option = models.CharField(
         max_length=20,
-        choices=PAYMENT_OPTIONS,
+        choices=PAYMENT_METHOD_CHOICES,
         null=True,
         blank=True,
         help_text="The selected payment option for this booking."

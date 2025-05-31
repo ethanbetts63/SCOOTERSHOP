@@ -42,7 +42,18 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
             raise TempHireBooking.DoesNotExist(f"TempHireBooking for Payment ID {payment_obj.id} does not exist.")
 
         # Determine payment_status for the HireBooking based on the original payment option
-        hire_payment_status = 'paid' if temp_booking.payment_option == 'online_full' else 'deposit_paid'
+        # Correctly map payment_option to hire_payment_status
+        if temp_booking.payment_option == 'online_full':
+            hire_payment_status = 'paid'
+        elif temp_booking.payment_option == 'online_deposit':
+            hire_payment_status = 'deposit_paid'
+        elif temp_booking.payment_option == 'in_store_full': # Handle in-store payments
+            hire_payment_status = 'unpaid' # Or 'in_store_unpaid' if you add that status
+        else:
+            # Default or error handling for unexpected payment_option
+            hire_payment_status = 'unpaid' # Or raise an error
+            logger.warning(f"Unexpected payment_option '{temp_booking.payment_option}' for TempHireBooking {temp_booking.pk}. Defaulting to 'unpaid'.")
+
 
         # Use the centralized converter function
         # The converter function already handles the transaction, creation of HireBooking,
