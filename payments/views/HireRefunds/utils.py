@@ -20,18 +20,36 @@ def get_hire_booking_details_json(request, pk):
         hire_booking = get_object_or_404(HireBooking, pk=pk)
         print(f"DEBUG: Successfully retrieved HireBooking with ID: {hire_booking.id}")
 
+        # Debugging driver profile and user details
+        print(f"DEBUG: hire_booking.driver_profile: {hire_booking.driver_profile}")
+        customer_name = 'N/A' # Default to N/A
+
+        if hire_booking.driver_profile:
+            print(f"DEBUG: driver_profile.name: {hire_booking.driver_profile.name}")
+            print(f"DEBUG: driver_profile.user: {hire_booking.driver_profile.user}")
+
+            if hire_booking.driver_profile.user:
+                user_full_name = hire_booking.driver_profile.user.get_full_name()
+                print(f"DEBUG: driver_profile.user.get_full_name(): '{user_full_name}'")
+                if user_full_name: # If get_full_name() returns a non-empty string
+                    customer_name = user_full_name
+                elif hire_booking.driver_profile.name: # Fallback to driver_profile.name if user full name is empty
+                    customer_name = hire_booking.driver_profile.name
+            elif hire_booking.driver_profile.name: # If no user linked, use driver_profile.name
+                customer_name = hire_booking.driver_profile.name
+        print(f"DEBUG: Final customer_name determined: '{customer_name}'")
+
+
         # Basic details of the chosen hire booking
         booking_details = {
             'id': hire_booking.id,
             'booking_reference': hire_booking.booking_reference,
-            # Corrected: Access driver's name via 'name' attribute or user's full name
-            'customer_name': hire_booking.driver_profile.user.get_full_name() if hire_booking.driver_profile and hire_booking.driver_profile.user else (hire_booking.driver_profile.name if hire_booking.driver_profile else 'N/A'),
+            'customer_name': customer_name, # Use the determined customer_name
             'pickup_date': hire_booking.pickup_date.strftime('%Y-%m-%d') if hire_booking.pickup_date else 'N/A',
             'pickup_time': hire_booking.pickup_time.strftime('%H:%M') if hire_booking.pickup_time else 'N/A',
             'return_date': hire_booking.return_date.strftime('%Y-%m-%d') if hire_booking.return_date else 'N/A',
             'return_time': hire_booking.return_time.strftime('%H:%M') if hire_booking.return_time else 'N/A',
             'motorcycle_year': hire_booking.motorcycle.year if hire_booking.motorcycle else 'N/A',
-            # Corrected: Directly use hire_booking.motorcycle.brand as it seems to be the string name
             'motorcycle_brand': hire_booking.motorcycle.brand if hire_booking.motorcycle else 'N/A',
             'motorcycle_model': hire_booking.motorcycle.model if hire_booking.motorcycle else 'N/A',
             'payment_method': hire_booking.get_payment_method_display() if hire_booking.payment_method else 'N/A',

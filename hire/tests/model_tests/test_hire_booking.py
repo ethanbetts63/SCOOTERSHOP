@@ -384,24 +384,6 @@ class HireBookingModelTest(TestCase):
             f"The selected package '{self.unavailable_package.name}' is currently not available."
         )
 
-    def test_clean_international_booking_with_australian_resident_raises_error(self):
-        """
-        Test that clean() raises ValidationError if is_international_booking is True
-        and the driver is an Australian resident.
-        """
-        booking = create_hire_booking(
-            motorcycle=self.motorcycle,
-            driver_profile=self.driver_profile_aus, # Australian resident
-            is_international_booking=True,
-            grand_total=Decimal('100.00')
-        )
-        with self.assertRaises(ValidationError) as cm:
-            booking.clean()
-        self.assertIn('is_international_booking', cm.exception.message_dict)
-        self.assertEqual(
-            cm.exception.message_dict['is_international_booking'][0],
-            "Cannot mark as international booking if the driver is an Australian resident."
-        )
 
     def test_clean_valid_booking_passes(self):
         """

@@ -74,11 +74,13 @@ def convert_temp_to_hire_booking(
                 currency=temp_booking.currency,
                 status='confirmed', # Booking is confirmed upon successful conversion
                 stripe_payment_intent_id=stripe_payment_intent_id,
+                payment=payment_obj, # <--- ADDED THIS LINE: Link HireBooking to the Payment object
             )
             logger.info(f"Created new HireBooking: {hire_booking.booking_reference} from TempHireBooking {temp_booking.id}")
             print(f"DEBUG: Successfully created HireBooking: {hire_booking.booking_reference}")
 
             # If a payment object exists, update it to link to the new HireBooking
+            # (This part is still important for the Payment object to point back to HireBooking)
             if payment_obj:
                 payment_obj.hire_booking = hire_booking
                 payment_obj.driver_profile = hire_booking.driver_profile # Link payment to the driver
