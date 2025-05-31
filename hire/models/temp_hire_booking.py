@@ -82,6 +82,7 @@ class TempHireBooking(models.Model):
     total_addons_price = models.DecimalField(
          max_digits=10, decimal_places=2,
          default=0,
+         null=True, blank=True,
          help_text="Calculated total price for selected add-ons."
     )
     # Store booked price of package at the time of selection

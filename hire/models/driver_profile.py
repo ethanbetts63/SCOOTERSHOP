@@ -44,11 +44,10 @@ class DriverProfile(models.Model):
     )
 
     # License details (Australian domestic for residents, International for foreigners)
-    # License number is only strictly required for Australian residents
+    # license_expiry_date changed to null=True, blank=True
     license_number = models.CharField(max_length=50, blank=True, null=True, help_text="Driver's license number.")
     international_license_issuing_country = models.CharField(max_length=100, blank=True, null=True, help_text="Country that issued the International Driver's License.")
-    # license_expiry_date was already required (no blank=True, null=True)
-    license_expiry_date = models.DateField(help_text="Expiry date of the license.")
+    license_expiry_date = models.DateField(null=True, blank=True, help_text="Expiry date of the license.") # Made nullable
     international_license_expiry_date = models.DateField(blank=True, null=True, help_text="Expiry date of the International Driver's License.")
 
     # Uploads (From User model)
@@ -90,7 +89,6 @@ class DriverProfile(models.Model):
 
         errors = {}  # Use an errors dictionary to collect all errors
         today = timezone.now().date()
-
         # --- Age Validation ---
         if self.date_of_birth:
             try:
@@ -101,7 +99,9 @@ class DriverProfile(models.Model):
                           ((today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day))
                     if age < settings.minimum_driver_age:
                         errors['date_of_birth'] = f"Driver must be at least {settings.minimum_driver_age} years old."
+                        print(f"DEBUG: DriverProfile clean - Age validation error: {errors['date_of_birth']}")
             except HireSettings.DoesNotExist:
+                print("DEBUG: DriverProfile clean - HireSettings not found for age validation.")
                 pass
             except Exception as e:
                 print(f"Error retrieving HireSettings for age validation: {e}")
@@ -109,53 +109,61 @@ class DriverProfile(models.Model):
 
         # --- Conditional Validation based on Residency ---
         if self.is_australian_resident:
+            print("DEBUG: DriverProfile clean - Validating as Australian resident.")
             if not self.license_photo:
                 errors['license_photo'] = "Australian residents must upload their domestic driver's license photo."
+                print(f"DEBUG: DriverProfile clean - Error: {errors['license_photo']}")
             if not self.license_number:
                 errors['license_number'] = "Australian residents must provide their domestic license number."
+                print(f"DEBUG: DriverProfile clean - Error: {errors['license_number']}")
+            # Only check expiry if license_expiry_date is provided (it's now nullable)
             if self.license_expiry_date and self.license_expiry_date < today:
                 errors['license_expiry_date'] = "Australian domestic driver's license must not be expired."
-            if self.international_license_expiry_date:
-                errors['international_license_expiry_date'] = "International license expiry date should not be provided for Australian residents."
-            if self.international_license_issuing_country:
-                errors['international_license_issuing_country'] = "International license issuing country should not be provided for Australian residents."
-            if self.passport_photo:
-                errors['passport_photo'] = "Passport photo should not be provided for Australian residents."
-            if self.passport_number:
-                errors['passport_number'] = "Passport number should not be provided for Australian residents."
-            if self.passport_expiry_date:
-                errors['passport_expiry_date'] = "Passport expiry date should not be provided for Australian residents."
+                print(f"DEBUG: DriverProfile clean - Error: {errors['license_expiry_date']}")
+            
+            # Removed checks that disallowed international/passport fields for Australian residents
+            # User wants to allow providing both sets of documents if they choose.
 
         else:  # Not an Australian Resident (Foreigner)
+            print("DEBUG: DriverProfile clean - Validating as Foreign driver.")
             if not self.international_license_photo:
                 errors[
                     'international_license_photo'] = "Foreign drivers must upload their International Driver's License photo."
+                print(f"DEBUG: DriverProfile clean - Error: {errors['international_license_photo']}")
             if not self.passport_photo:
                 errors['passport_photo'] = "Foreign drivers must upload their passport photo."
+                print(f"DEBUG: DriverProfile clean - Error: {errors['passport_photo']}")
             if not self.international_license_issuing_country:
                 errors[
                     'international_license_issuing_country'] = "Foreign drivers must provide the issuing country of their International Driver's License."
-            if self.license_expiry_date and self.license_expiry_date < today:
-                errors['license_expiry_date'] = "Primary Driver's License must not be expired."
+                print(f"DEBUG: DriverProfile clean - Error: {errors['international_license_issuing_country']}")
             if not self.international_license_expiry_date:
                 errors['international_license_expiry_date'] = "Foreign drivers must provide the expiry date of their International Driver's License."
-            elif self.international_license_expiry_date < today:
+                print(f"DEBUG: DriverProfile clean - Error: {errors['international_license_expiry_date']}")
+            elif self.international_license_expiry_date and self.international_license_expiry_date < today:
                 errors['international_license_expiry_date'] = "International Driver's License must not be expired."
+                print(f"DEBUG: DriverProfile clean - Error: {errors['international_license_expiry_date']}")
             if not self.passport_number:
                 errors['passport_number'] = "Foreign drivers must provide their passport number."
+                print(f"DEBUG: DriverProfile clean - Error: {errors['passport_number']}")
             if not self.passport_expiry_date:
                 errors['passport_expiry_date'] = "Foreign drivers must provide their passport expiry date."
-            if self.passport_expiry_date and self.passport_expiry_date < today:
+                print(f"DEBUG: DriverProfile clean - Error: {errors['passport_expiry_date']}")
+            elif self.passport_expiry_date and self.passport_expiry_date < today:
                 errors['passport_expiry_date'] = "Passport must not be expired."
-            if self.license_photo:
-                errors[
-                    'license_photo'] = "Australian domestic driver's license photo should not be provided for foreign drivers."
+                print(f"DEBUG: DriverProfile clean - Error: {errors['passport_expiry_date']}")
+            
+            # Removed check that disallowed Australian domestic license photo for foreign drivers.
+            # User wants to allow providing both sets of documents if they choose.
 
         # --- Raise Errors ---
         if errors:
+            print(f"DEBUG: DriverProfile clean - Raising ValidationError with errors: {errors}")
             raise ValidationError(errors)
+        print("DEBUG: DriverProfile clean - No errors found in model clean.")
 
     class Meta:
         ordering = ['name', 'email']
         verbose_name = "Driver Profile"
         verbose_name_plural = "Driver Profiles"
+

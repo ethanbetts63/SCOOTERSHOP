@@ -49,45 +49,21 @@ class Step4HasAccountForm(forms.ModelForm):
         self.temp_booking = kwargs.pop('temp_booking', None) # Store temp_booking for validation
         super().__init__(*args, **kwargs)
 
-        # Determine if the form is being initialized for an Australian resident
-        is_australian_resident_value = None
-        if self.data and 'is_australian_resident' in self.data:
-            is_australian_resident_value = (self.data['is_australian_resident'].lower() == 'true')
-        elif self.initial.get('is_australian_resident') is not None:
-            is_australian_resident_value = (str(self.initial.get('is_australian_resident')).lower() == 'true')
-        elif self.instance and self.instance.is_australian_resident is not None:
-            is_australian_resident_value = self.instance.is_australian_resident
-        else:
-            is_australian_resident_value = True # Default to Australian if no info is provided
+        # The 'required' status of fields like license_number, international_license_photo, etc.
+        # is now primarily determined by their 'blank=True/False' setting in the DriverProfile model.
+        # We are removing the explicit conditional 'required = True/False' settings here
+        # to allow users to provide both Australian and International documents if they wish.
+        # The 'clean' method will handle the conditional validation errors for *missing* required fields.
 
-        if not is_australian_resident_value: # If not an Australian resident (i.e., foreign)
-            self.fields['license_number'].required = False
-            self.fields['license_expiry_date'].required = False
-            self.fields['license_photo'].required = False
+        # Example: self.fields['license_number'].required will be False because it's blank=True in model.
+        # The clean method will then add an error if is_australian_resident is True AND license_number is missing.
 
-            # Ensure international and passport fields are required for foreigners
-            self.fields['international_license_photo'].required = True
-            self.fields['international_license_issuing_country'].required = True
-            self.fields['international_license_expiry_date'].required = True
-            self.fields['passport_photo'].required = True
-            self.fields['passport_number'].required = True
-            self.fields['passport_expiry_date'].required = True
-        else: # If an Australian resident
-            self.fields['international_license_photo'].required = False
-            self.fields['international_license_issuing_country'].required = False
-            self.fields['international_license_expiry_date'].required = False
-            self.fields['passport_photo'].required = False
-            self.fields['passport_number'].required = False
-            self.fields['passport_expiry_date'].required = False
-
-            # Ensure Australian fields are required for Australians
-            self.fields['license_number'].required = True
-            self.fields['license_expiry_date'].required = True
-            self.fields['license_photo'].required = True
+        print(f"DEBUG: Step4HasAccountForm __init__ - Form fields initialized. Conditional 'required' settings removed from __init__.")
 
 
     def clean(self):
         cleaned_data = super().clean()
+        print(f"DEBUG: Step4HasAccountForm clean - Initial cleaned_data: {cleaned_data}")
         
         # Get the string value from cleaned_data initially
         is_australian_resident_str = cleaned_data.get('is_australian_resident')
@@ -99,6 +75,8 @@ class Step4HasAccountForm(forms.ModelForm):
             cleaned_data['is_australian_resident'] = is_australian_resident # <--- Crucial line
         else:
             is_australian_resident = is_australian_resident_str # Already a boolean or None
+
+        print(f"DEBUG: Step4HasAccountForm clean - is_australian_resident (boolean): {is_australian_resident}")
 
         license_photo = cleaned_data.get('license_photo')
         international_license_photo = cleaned_data.get('international_license_photo')
@@ -114,37 +92,61 @@ class Step4HasAccountForm(forms.ModelForm):
         return_date = None
         if self.temp_booking and self.temp_booking.return_date:
             return_date = self.temp_booking.return_date
+        print(f"DEBUG: Step4HasAccountForm clean - return_date from temp_booking: {return_date}")
 
         # The rest of the clean method logic can now use the boolean is_australian_resident
         if is_australian_resident:
+            print("DEBUG: Step4HasAccountForm clean - Validating as Australian resident.")
             if not license_photo and not (self.instance and self.instance.license_photo):
                 self.add_error('license_photo', "Australian residents must upload their domestic driver's license photo.")
+                print("DEBUG: Step4HasAccountForm clean - Added error: license_photo (Australian missing)")
             if not license_number:
                 self.add_error('license_number', "Australian residents must provide their domestic license number.")
+                print("DEBUG: Step4HasAccountForm clean - Added error: license_number (Australian missing)")
             if not license_expiry_date:
                 self.add_error('license_expiry_date', "Australian residents must provide their domestic license expiry date.")
-            elif return_date and license_expiry_date < return_date:
+                print("DEBUG: Step4HasAccountForm clean - Added error: license_expiry_date (Australian missing)")
+            elif return_date and license_expiry_date and license_expiry_date < return_date:
                 self.add_error('license_expiry_date', "Your Australian Driver's License must not expire before the end of your booking.")
+                print("DEBUG: Step4HasAccountForm clean - Added error: license_expiry_date (Australian expired before return date)")
+            
+            # Removed checks that disallowed international/passport fields for Australian residents
+            # User wants to allow providing both sets of documents if they choose.
+
         else:  # Not an Australian Resident (Foreigner)
+            print("DEBUG: Step4HasAccountForm clean - Validating as Foreign driver.")
             if not international_license_photo and not (self.instance and self.instance.international_license_photo):
                 self.add_error('international_license_photo',
                                 "Foreign drivers must upload their International Driver's License photo.")
+                print("DEBUG: Step4HasAccountForm clean - Added error: international_license_photo (Foreign missing)")
             if not international_license_issuing_country:
                 self.add_error('international_license_issuing_country',
                                 "Foreign drivers must provide the issuing country of their International Driver's License.")
+                print("DEBUG: Step4HasAccountForm clean - Added error: international_license_issuing_country (Foreign missing)")
             if not international_license_expiry_date:
                 self.add_error('international_license_expiry_date',
                                 "Foreign drivers must provide the expiry date of their International Driver's License.")
+                print("DEBUG: Step4HasAccountForm clean - Added error: international_license_expiry_date (Foreign missing)")
             elif return_date and international_license_expiry_date and international_license_expiry_date < return_date:
                 self.add_error('international_license_expiry_date', "Your International Driver's License must not expire before the end of your booking.")
+                print("DEBUG: Step4HasAccountForm clean - Added error: international_license_expiry_date (Foreign expired before return date)")
             
             if not passport_photo and not (self.instance and self.instance.passport_photo):
                 self.add_error('passport_photo', "Foreign drivers must upload their passport photo.")
+                print("DEBUG: Step4HasAccountForm clean - Added error: passport_photo (Foreign missing)")
             if not passport_number:
                 self.add_error('passport_number', "Foreign drivers must provide their passport number.")
+                print("DEBUG: Step4HasAccountForm clean - Added error: passport_number (Foreign missing)")
             if not passport_expiry_date:
                 self.add_error('passport_expiry_date', "Foreign drivers must provide their passport expiry date.")
+                print("DEBUG: Step4HasAccountForm clean - Added error: passport_expiry_date (Foreign missing)")
             elif return_date and passport_expiry_date and passport_expiry_date < return_date:
                 self.add_error('passport_expiry_date', "Your passport must not expire before the end of your booking.")
+                print("DEBUG: Step4HasAccountForm clean - Added error: passport_expiry_date (Foreign expired before return date)")
+            
+            # Removed check that disallowed Australian domestic license photo for foreign drivers.
+            # User wants to allow providing both sets of documents if they choose.
+
+        print(f"DEBUG: Step4HasAccountForm clean - Form errors after conditional validation: {self.errors.as_json()}")
         return cleaned_data
 

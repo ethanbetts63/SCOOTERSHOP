@@ -7,6 +7,8 @@ from django.contrib import messages
 from dashboard.models import HireSettings # Import HireSettings
 from hire.hire_pricing import calculate_booking_grand_total # Import the new pricing function
 import uuid # Import uuid module
+from django.core.exceptions import ValidationError # Import ValidationError for model clean errors
+
 
 class HasAccountView(LoginRequiredMixin, View):
     """
@@ -47,6 +49,8 @@ class HasAccountView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         print(f"DEBUG: HasAccountView POST - User: {request.user}, Session Key: {request.session.session_key}")
         print(f"DEBUG: HasAccountView POST - Full session data: {dict(request.session)}")
+        print(f"DEBUG: HasAccountView POST - Request POST data: {request.POST}")
+        print(f"DEBUG: HasAccountView POST - Request FILES data: {request.FILES}")
 
         temp_booking = self._get_temp_booking(request)
         if not temp_booking:
@@ -67,11 +71,30 @@ class HasAccountView(LoginRequiredMixin, View):
 
 
         form = Step4HasAccountForm(request.POST, request.FILES, user=request.user, instance=driver_profile_instance, temp_booking=temp_booking)
+        print(f"DEBUG: HasAccountView POST - Form initialized with data and files.")
 
         if form.is_valid():
+            print("DEBUG: HasAccountView POST - Form is VALID.")
             driver_profile = form.save(commit=False)
             driver_profile.user = request.user
-            driver_profile.save()
+            
+            # Attempt to save the driver profile and catch model-level validation errors
+            try:
+                driver_profile.full_clean() # Call model's clean method
+                driver_profile.save()
+                print(f"DEBUG: HasAccountView POST - DriverProfile saved: {driver_profile}")
+            except ValidationError as e:
+                print(f"ERROR: HasAccountView POST - Model ValidationError during driver_profile save: {e.message_dict}")
+                for field, errors in e.message_dict.items():
+                    for error in errors:
+                        messages.error(request, f"Error in {field}: {error}")
+                context = {
+                    "form": form,
+                    "temp_booking": temp_booking,
+                }
+                messages.error(request, "Please correct the errors below (model validation).")
+                return render(request, "hire/step4_has_account.html", context)
+
 
             temp_booking.driver_profile = driver_profile
             print(f"DEBUG: HasAccountView POST - temp_booking.driver_profile after setting: {temp_booking.driver_profile}")
@@ -91,14 +114,21 @@ class HasAccountView(LoginRequiredMixin, View):
                 print("WARNING: Hire settings not found. Cannot calculate accurate booking prices.")
 
             temp_booking.save()
+            print("DEBUG: HasAccountView POST - TempHireBooking saved with updated driver profile and prices.")
             messages.success(request, "Driver details saved successfully.")
             return redirect("hire:step5_summary_payment_options")
         else:
+            print("DEBUG: HasAccountView POST - Form is INVALID.")
+            print(f"DEBUG: HasAccountView POST - Form errors: {form.errors.as_json()}")
             context = {
                 "form": form,
                 "temp_booking": temp_booking,
             }
-            messages.error(request, "Please correct the errors below.")
+            # Add form errors to messages
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"Error in {field}: {error}")
+            messages.error(request, "Please correct the errors below (form validation).")
             return render(request, "hire/step4_has_account.html", context)
 
     def _get_temp_booking(self, request):
@@ -125,3 +155,4 @@ class HasAccountView(LoginRequiredMixin, View):
         
         print("DEBUG: _get_temp_booking - 'temp_booking_uuid' not found in request.session or is empty.")
         return None
+
