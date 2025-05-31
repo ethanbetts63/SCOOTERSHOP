@@ -63,6 +63,20 @@
                             </div>
                         </div>
 
+                        {# NEW SECTION: Refund Policy at Booking #}
+                        <h4 class="text-primary mt-4">Refund Policy at Booking</h4>
+                        {% if refund_policy_snapshot %}
+                            <div class="row">
+                                {% for key, value in refund_policy_snapshot.items %}
+                                    <div class="col-md-6">
+                                        <p><strong>{{ key|title}}:</strong> {{ value }}</p>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p>No refund policy snapshot available for this booking.</p>
+                        {% endif %}
+
                         <h4 class="text-primary mt-4">Notes</h4>
                         <p><strong>Customer Notes:</strong> {{ booking.customer_notes|default:"None" }}</p>
                         <p><strong>Internal Notes:</strong> {{ booking.internal_notes|default:"None" }}</p>
@@ -72,7 +86,6 @@
                         <p><strong>Last Updated:</strong> {{ booking.updated_at|date:"F j, Y, h:i A" }}</p>
 
                         <div class="d-flex justify-content-start mt-5">
-    
                             <a href="{% url 'hire:admin_hire_booking_edit' pk=booking.pk %}" class="btn btn-warning me-2">Edit Booking</a>
 
                             {# Delete Button: Uses a form with a simple JavaScript confirm dialog #}

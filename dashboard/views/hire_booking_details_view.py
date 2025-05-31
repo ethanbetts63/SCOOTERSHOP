@@ -12,9 +12,17 @@ def hire_booking_details_view(request, pk):
     """
     booking = get_object_or_404(HireBooking, pk=pk)
 
+    # Retrieve the refund policy snapshot from the associated Payment object
+    refund_policy_snapshot = None
+    if booking.payment:
+        refund_policy_snapshot = booking.payment.refund_policy_snapshot
+    else:
+        messages.warning(request, "No payment record found for this booking, so no refund policy snapshot is available.")
+
     context = {
         'page_title': f'Hire Booking Details - {booking.booking_reference or booking.id}',
         'booking': booking,
+        'refund_policy_snapshot': refund_policy_snapshot, # Pass the snapshot to the template
     }
     return render(request, 'dashboard/hire_booking_details.html', context)
 
