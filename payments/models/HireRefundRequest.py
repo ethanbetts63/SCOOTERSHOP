@@ -101,8 +101,8 @@ class HireRefundRequest(models.Model): # Renamed the model class
     class Meta:
         verbose_name = "Hire Refund Request" # Updated verbose name
         verbose_name_plural = "Hire Refund Requests" # Updated verbose name plural
-        ordering = ['-requested_at']
-
+        ordering = ['-requested_at', 'pk'] # Added 'pk' as a secondary sort
+        
     def __str__(self):
         return f"Refund Request for Booking {self.hire_booking.booking_reference if self.hire_booking else 'N/A'} - Status: {self.status}"
 

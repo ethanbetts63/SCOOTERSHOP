@@ -46,13 +46,15 @@ def calculate_refund_amount(booking, refund_policy_snapshot: dict, cancellation_
     # Payments made in-store or via unrecognized methods are not handled by this automated calculation.
     # They should result in a 0.00 calculated refund, with a note for manual processing.
     # Based on hire_booking.py, payment methods are 'online_full', 'online_deposit', 'in_store_full'.
-    # So, only 'in_store_full' should be handled manually here.
-    if booking.payment_method == 'in_store_full':
+    # Any method not 'online_full' or 'online_deposit' should be handled manually.
+    if booking.payment_method not in ['online_full', 'online_deposit']:
         print(f"DEBUG_CALC: Manual refund policy triggered for payment_method: '{booking.payment_method}'")
+        # Use get_payment_method_display() for the message, but handle None gracefully
+        display_method = booking.get_payment_method_display() if booking.payment_method else 'None'
         return {
             'entitled_amount': Decimal('0.00'),
-            'details': f"No Refund Policy: Refund for '{booking.get_payment_method_display()}' payment method is handled manually.",
-            'policy_applied': f"Manual Refund Policy for {booking.get_payment_method_display()}",
+            'details': f"No Refund Policy: Refund for '{display_method}' payment method is handled manually.",
+            'policy_applied': f"Manual Refund Policy for {display_method}",
             'days_before_pickup': 'N/A', # Not applicable for manual refunds
         }
 

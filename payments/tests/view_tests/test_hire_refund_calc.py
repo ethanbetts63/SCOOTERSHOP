@@ -421,7 +421,7 @@ class HireRefundCalcTests(TestCase):
 
         self.assertEqual(results['entitled_amount'], Decimal('0.00'))
         # Updated expected message to match the logic in hire_refund_calc.py
-        self.assertIn("No Refund Policy: Refund for 'in_store_full' payment method is handled manually.", results['details'])
+        self.assertIn("No Refund Policy: Refund for 'Full Payment Store' payment method is handled manually.", results['details'])
         self.assertEqual(results['days_before_pickup'], 'N/A') # Days before pickup is N/A for manual refunds
 
     def test_unrecognized_payment_method_no_refund(self):
