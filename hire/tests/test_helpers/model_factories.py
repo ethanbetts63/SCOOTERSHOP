@@ -197,11 +197,15 @@ def create_payment(
     temp_hire_booking=None,
     hire_booking=None,
     driver_profile=None,
+    refund_policy_snapshot=None, # NEW: Added refund_policy_snapshot argument
 ):
     """Creates a Payment instance."""
     # Ensure metadata defaults to an empty dictionary if not provided
     if metadata is None:
         metadata = {}
+    # Ensure refund_policy_snapshot defaults to an empty dictionary if not provided
+    if refund_policy_snapshot is None:
+        refund_policy_snapshot = {}
 
     return Payment.objects.create(
         amount=amount,
@@ -214,6 +218,7 @@ def create_payment(
         temp_hire_booking=temp_hire_booking,
         hire_booking=hire_booking,
         driver_profile=driver_profile,
+        refund_policy_snapshot=refund_policy_snapshot, # NEW: Pass refund_policy_snapshot
     )
 
 # --- Factories for Hire App Models ---
@@ -273,7 +278,7 @@ def create_driver_profile(
         phone_number=phone_number,
         address_line_1=address_line_1,
         city="Sydney",
-        country=country,
+        country="Australia",
         date_of_birth=date_of_birth,
         is_australian_resident=is_australian_resident,
         license_number=license_number,
@@ -570,7 +575,31 @@ def create_refund_request(
     if not hire_booking:
         # Create a paid booking by default for refund requests
         driver_profile = create_driver_profile()
-        payment = create_payment(amount=Decimal('500.00'), status='succeeded', driver_profile=driver_profile)
+        # Create a payment with a snapshot of the default hire settings
+        default_hire_settings = create_hire_settings() # Ensure default settings exist
+        refund_policy_snapshot = {
+            'cancellation_upfront_full_refund_days': default_hire_settings.cancellation_upfront_full_refund_days,
+            'cancellation_upfront_partial_refund_days': default_hire_settings.cancellation_upfront_partial_refund_days,
+            'cancellation_upfront_partial_refund_percentage': str(default_hire_settings.cancellation_upfront_partial_refund_percentage), # Changed to str
+            'cancellation_upfront_minimal_refund_days': default_hire_settings.cancellation_upfront_minimal_refund_days,
+            'cancellation_upfront_minimal_refund_percentage': str(default_hire_settings.cancellation_upfront_minimal_refund_percentage), # Changed to str
+            'cancellation_deposit_full_refund_days': default_hire_settings.cancellation_deposit_full_refund_days,
+            'cancellation_deposit_partial_refund_days': default_hire_settings.cancellation_deposit_partial_refund_days,
+            'cancellation_deposit_partial_refund_percentage': str(default_hire_settings.cancellation_deposit_partial_refund_percentage), # Changed to str
+            'cancellation_deposit_minimal_refund_days': default_hire_settings.cancellation_deposit_minimal_refund_days,
+            'cancellation_deposit_minimal_refund_percentage': str(default_hire_settings.cancellation_deposit_minimal_refund_percentage), # Changed to str
+            'deposit_enabled': default_hire_settings.deposit_enabled,
+            'default_deposit_calculation_method': default_hire_settings.default_deposit_calculation_method,
+            'deposit_percentage': str(default_hire_settings.deposit_percentage), # Changed to str
+            'deposit_amount': str(default_hire_settings.deposit_amount), # Changed to str
+        }
+
+        payment = create_payment(
+            amount=Decimal('500.00'),
+            status='succeeded',
+            driver_profile=driver_profile,
+            refund_policy_snapshot=refund_policy_snapshot # Pass the snapshot
+        )
         hire_booking = create_hire_booking(
             driver_profile=driver_profile,
             payment=payment,
