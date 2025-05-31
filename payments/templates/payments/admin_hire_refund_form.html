@@ -106,7 +106,8 @@
                     <small class="form-text text-muted">{{ form.amount_to_refund.help_text }}</small>
                 </div>
 
-                {# is_admin_initiated field #}
+                {# is_admin_initiated field - REMOVED from direct rendering #}
+                {% comment %}
                 <div class="form-group form-check mb-3">
                     {{ form.is_admin_initiated }}
                     <label class="form-check-label" for="{{ form.is_admin_initiated.id_for_label }}">
@@ -115,17 +116,7 @@
                     {% if form.is_admin_initiated.errors %}<div class="invalid-feedback d-block">{% for error in form.is_admin_initiated.errors %}{{ error }}{% endfor %}</div>{% endif %}
                     <small class="form-text text-muted">{{ form.is_admin_initiated.help_text }}</small>
                 </div>
-
-                {# status field #}
-                <div class="form-group mb-3">
-                    <label for="{{ form.status.id_for_label }}">
-                        {{ form.status.label }}
-                        {% if form.status.field.required %}<span class="required-indicator">*</span>{% endif %}
-                    </label>
-                    {{ form.status }}
-                    {% if form.status.errors %}<div class="invalid-feedback d-block">{% for error in form.status.errors %}{{ error }}{% endfor %}</div>{% endif %}
-                    <small class="form-text text-muted">{{ form.status.help_text }}</small>
-                </div>
+                {% endcomment %}
 
             </fieldset>
 
@@ -239,3 +230,4 @@
         });
     </script>
 {% endblock %}
+

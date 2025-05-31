@@ -8,6 +8,7 @@ class HireRefundRequest(models.Model): # Renamed the model class
     STATUS_CHOICES = [
         ('unverified', 'Unverified - Awaiting Email Confirmation'),
         ('pending', 'Pending Review'),
+        ('reviewed_pending_approval', 'Reviewed - Pending Approval'), # New status
         ('approved', 'Approved - Awaiting Refund'),
         ('rejected', 'Rejected'),
         ('refunded', 'Refunded'),
@@ -47,7 +48,7 @@ class HireRefundRequest(models.Model): # Renamed the model class
         help_text="Timestamp when the request was submitted."
     )
     status = models.CharField(
-        max_length=20,
+        max_length=30, # Increased max_length to accommodate new status
         choices=STATUS_CHOICES,
         default='unverified',
         help_text="Current status of the refund request."

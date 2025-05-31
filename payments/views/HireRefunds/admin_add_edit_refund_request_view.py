@@ -60,14 +60,21 @@ class AdminAddEditRefundRequestView(View):
             # Save the form data to create or update the HireRefundRequest instance
             refund_request_instance = form.save(commit=False)
 
+            # Set is_admin_initiated to True, as this form is only for admin-initiated requests
+            refund_request_instance.is_admin_initiated = True
+
+            # If it's a new request or an existing one that was pending, set to 'reviewed_pending_approval'
+            if not pk or refund_request_instance.status == 'pending':
+                refund_request_instance.status = 'reviewed_pending_approval'
+
             # Automatically set processed_by and processed_at if status is approved or refunded
             if refund_request_instance.status in ['approved', 'refunded'] and not refund_request_instance.processed_by:
                 refund_request_instance.processed_by = request.user
                 refund_request_instance.processed_at = timezone.now()
-            
+
             refund_request_instance.save() # Save the instance to the database
 
-            messages.success(request, f"Hire Refund Request for booking '{refund_request_instance.hire_booking.booking_reference}' saved successfully!")
+            messages.success(request, f"Hire Refund Request for booking '{refund_request_instance.hire_booking.booking_reference}' saved successfully! Current Status: {refund_request_instance.get_status_display()}")
             return redirect('dashboard:admin_hire_refund_management') # Redirect to the management page
         else:
             # If the form is not valid, re-render the form with errors

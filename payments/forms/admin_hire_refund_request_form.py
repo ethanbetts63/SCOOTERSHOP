@@ -25,8 +25,7 @@ class AdminHireRefundRequestForm(forms.ModelForm):
             'reason',
             'staff_notes',
             'amount_to_refund',
-            'is_admin_initiated', # Include this field for admin to mark if they initiated it
-            'status', # Allow admin to set initial status (e.g., 'pending', 'approved')
+            # 'is_admin_initiated', # Removed from fields as it will be set automatically by the view
         ]
         widgets = {
             'reason': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Optional: Reason for refund request (e.g., customer cancellation, service issue).'}),
@@ -35,25 +34,19 @@ class AdminHireRefundRequestForm(forms.ModelForm):
         labels = {
             'reason': "Customer/Admin Reason",
             'amount_to_refund': "Amount to Refund ($)",
-            'is_admin_initiated': "Admin Initiated?",
-            'status': "Refund Status",
+            # 'is_admin_initiated': "Admin Initiated?", # Label no longer needed if field is removed
         }
         help_texts = {
             'amount_to_refund': "Enter the amount to be refunded. This cannot exceed the amount paid for the booking.",
-            'status': "Set the initial status of the refund request.",
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['reason'].required = False
         self.fields['staff_notes'].required = False
-        self.fields['amount_to_refund'].required = True 
+        self.fields['amount_to_refund'].required = True
 
-        # If an instance is being edited, pre-fill the fields.
-        # If it's a new instance, set default for is_admin_initiated
-        if not self.instance.pk: # Only for new instances
-            self.initial['is_admin_initiated'] = True
-            self.initial['status'] = 'pending' # Default status for new admin-created requests
+        # No need to set initial['is_admin_initiated'] here, as it will be set by the view.
 
     def clean(self):
         """
@@ -100,3 +93,4 @@ class AdminHireRefundRequestForm(forms.ModelForm):
         if commit:
             refund_request.save()
         return refund_request
+
