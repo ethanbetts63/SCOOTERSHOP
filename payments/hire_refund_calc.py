@@ -4,52 +4,39 @@ from decimal import Decimal
 from datetime import datetime, date, timedelta
 from django.utils import timezone
 
-# Assuming HireSettings is in dashboard.models or hire.models
-# Based on the provided file structure, it's likely in dashboard.models
-from dashboard.models import HireSettings # Adjust this import if HireSettings is elsewhere
-
-def calculate_refund_amount(hire_booking, cancellation_datetime=None):
+def calculate_refund_amount(booking, refund_policy_snapshot: dict, cancellation_datetime: datetime = None) -> dict:
     """
     Calculates the eligible refund amount for a given HireBooking based on
-    the cancellation policy defined in HireSettings, distinguishing between
-    upfront and deposit payments.
+    the cancellation policy *snapshot* stored at the time of booking.
 
     Args:
-        hire_booking (HireBooking): The instance of the HireBooking model.
+        booking (HireBooking): The instance of the HireBooking model.
+        refund_policy_snapshot (dict): The dictionary containing the refund policy
+                                       settings captured at the time of booking.
         cancellation_datetime (datetime, optional): The exact datetime when the
             cancellation request is made. If None, timezone.now() is used.
 
     Returns:
-        tuple: A tuple containing:
-            - Decimal: The calculated refund amount.
-            - dict: Details about how the refund was calculated (policy applied, days in advance, etc.).
+        dict: A dictionary containing:
+            - 'entitled_amount': The calculated refund amount (Decimal).
+            - 'details': A string explaining the calculation.
+            - 'policy_applied': Which policy (upfront/deposit) was used.
+            - 'days_before_pickup': Number of full days before pickup.
     """
     if not cancellation_datetime:
         cancellation_datetime = timezone.now()
 
-    # Ensure HireSettings exists
-    try:
-        hire_settings = HireSettings.objects.get(pk=1) # Assuming singleton
-    except HireSettings.DoesNotExist:
-        # Fallback to sensible defaults if settings are not configured
-        # These defaults should reflect the new 'upfront' and 'deposit' structure
-        hire_settings = type('obj', (object,), {
-            'cancellation_upfront_full_refund_days': 7,
-            'cancellation_upfront_partial_refund_days': 3,
-            'cancellation_upfront_partial_refund_percentage': Decimal('50.00'),
-            'cancellation_upfront_minimal_refund_days': 1,
-            'cancellation_upfront_minimal_refund_percentage': Decimal('0.00'),
-            'cancellation_deposit_full_refund_days': 7,
-            'cancellation_deposit_partial_refund_days': 3,
-            'cancellation_deposit_partial_refund_percentage': Decimal('50.00'),
-            'cancellation_deposit_minimal_refund_days': 1,
-            'cancellation_deposit_minimal_refund_percentage': Decimal('0.00'),
-        })()
-        # Log a warning here in a real application, e.g., logger.warning("HireSettings not found, using defaults.")
-
+    # If no snapshot is provided or it's empty, return default no-refund
+    if not refund_policy_snapshot:
+        return {
+            'entitled_amount': Decimal('0.00'),
+            'details': "No refund policy snapshot available for this booking.",
+            'policy_applied': 'N/A',
+            'days_before_pickup': 'N/A',
+        }
 
     # Combine pickup date and time into a single datetime object
-    pickup_datetime = timezone.make_aware(datetime.combine(hire_booking.pickup_date, hire_booking.pickup_time))
+    pickup_datetime = timezone.make_aware(datetime.combine(booking.pickup_date, booking.pickup_time))
     # Calculate the time difference in full days
     time_difference = pickup_datetime - cancellation_datetime
     days_in_advance = time_difference.days # This gives full days
@@ -57,73 +44,74 @@ def calculate_refund_amount(hire_booking, cancellation_datetime=None):
     refund_amount = Decimal('0.00')
     policy_applied = "No Refund"
     refund_percentage = Decimal('0.00')
-    total_paid_for_calculation = Decimal('0.00') # Initialize this
 
-    # Determine which policy to apply based on payment method
-    payment_method = hire_booking.payment_method
+    # Get the total amount paid for this specific payment from the linked Payment object
+    # This is the base amount for our refund calculation
+    total_paid_for_calculation = booking.payment.amount if booking.payment and booking.payment.amount else Decimal('0.00')
 
-    if payment_method == 'online_full':
-        # Apply upfront cancellation policy
-        total_paid_for_calculation = hire_booking.amount_paid # Use actual amount paid for full booking
-        full_refund_days = hire_settings.cancellation_upfront_full_refund_days
-        partial_refund_days = hire_settings.cancellation_upfront_partial_refund_days
-        partial_refund_percentage = hire_settings.cancellation_upfront_partial_refund_percentage
-        minimal_refund_days = hire_settings.cancellation_upfront_minimal_refund_days
-        minimal_refund_percentage = hire_settings.cancellation_upfront_minimal_refund_percentage
+    # Determine which policy to apply based on the 'deposit_enabled' flag in the snapshot
+    # and the actual payment type (full vs. deposit) if deposits are enabled.
+    deposit_enabled = refund_policy_snapshot.get('deposit_enabled', False)
+
+    # Initialize policy variables with defaults that will be overwritten
+    full_refund_days = 0
+    partial_refund_days = 0
+    partial_refund_percentage = Decimal('0.00')
+    minimal_refund_days = 0
+    minimal_refund_percentage = Decimal('0.00')
+    policy_prefix = "General Policy" # Default prefix
+
+    # Logic to select the correct policy based on snapshot settings
+    if not deposit_enabled:
+        # If deposits are NOT enabled, all payments are full payments, so apply upfront policy
+        full_refund_days = refund_policy_snapshot.get('cancellation_upfront_full_refund_days', 7)
+        partial_refund_days = refund_policy_snapshot.get('cancellation_upfront_partial_refund_days', 3)
+        partial_refund_percentage = Decimal(str(refund_policy_snapshot.get('cancellation_upfront_partial_refund_percentage', 50.0)))
+        minimal_refund_days = refund_policy_snapshot.get('cancellation_upfront_minimal_refund_days', 1)
+        minimal_refund_percentage = Decimal(str(refund_policy_snapshot.get('cancellation_upfront_minimal_refund_percentage', 0.0)))
         policy_prefix = "Upfront Payment Policy"
-
-    elif payment_method == 'online_deposit':
-        # Apply deposit cancellation policy
-        total_paid_for_calculation = hire_booking.deposit_amount # Use deposit amount for calculation
-        full_refund_days = hire_settings.cancellation_deposit_full_refund_days
-        partial_refund_days = hire_settings.cancellation_deposit_partial_refund_days
-        partial_refund_percentage = hire_settings.cancellation_deposit_partial_refund_percentage
-        minimal_refund_days = hire_settings.cancellation_deposit_minimal_refund_days
-        minimal_refund_percentage = hire_settings.cancellation_deposit_minimal_refund_percentage
-        policy_prefix = "Deposit Payment Policy"
-
-    elif payment_method == 'in_store_full':
-        # As per instruction, no refund calculation for in-store payments.
-        # It's assumed these are handled manually.
-        refund_amount = Decimal('0.00')
-        policy_applied = "In-Store Payment: Refund handled manually in store."
-        refund_percentage = Decimal('0.00')
-        total_paid_for_calculation = hire_booking.amount_paid # Still capture for details, but not used in calc
-
-        # Return early for in-store payments as no further calculation is needed
-        calculation_details = {
-            'cancellation_datetime': cancellation_datetime.isoformat(),
-            'pickup_datetime': pickup_datetime.isoformat(),
-            'days_in_advance': days_in_advance,
-            'total_paid_amount': str(total_paid_for_calculation),
-            'calculated_refund_amount': str(refund_amount),
-            'refund_percentage': str(refund_percentage),
-            'policy_applied': policy_applied,
-            'payment_method_used': payment_method,
-        }
-        return refund_amount, calculation_details
-
     else:
-        # Handle cases where payment_method is None or an unexpected value
-        # This could be an error or a booking not yet paid.
-        refund_amount = Decimal('0.00')
-        policy_applied = "No Refund Policy: Payment method not recognized or applicable."
-        refund_percentage = Decimal('0.00')
-        total_paid_for_calculation = hire_booking.amount_paid # Default to amount_paid for details
+        # If deposits ARE enabled, we need to determine if the current payment was a deposit or a full payment.
+        # This requires comparing `total_paid_for_calculation` (amount from Payment model)
+        # with the total booking cost and the calculated deposit amount.
+        # CORRECTED: Using `booking.grand_total` as per the provided HireBooking model.
+        total_booking_cost = booking.grand_total if hasattr(booking, 'grand_total') else Decimal('0.00')
 
-        # Return early for unrecognized payment methods
-        calculation_details = {
-            'cancellation_datetime': cancellation_datetime.isoformat(),
-            'pickup_datetime': pickup_datetime.isoformat(),
-            'days_in_advance': days_in_advance,
-            'total_paid_amount': str(total_paid_for_calculation),
-            'calculated_refund_amount': str(refund_amount),
-            'refund_percentage': str(refund_percentage),
-            'policy_applied': policy_applied,
-            'payment_method_used': payment_method,
-        }
-        return refund_amount, calculation_details
+        deposit_calculation_method = refund_policy_snapshot.get('default_deposit_calculation_method', 'percentage')
+        expected_deposit_amount = Decimal('0.00')
 
+        if deposit_calculation_method == 'percentage':
+            deposit_percentage = Decimal(str(refund_policy_snapshot.get('deposit_percentage', 10.0)))
+            expected_deposit_amount = (total_booking_cost * deposit_percentage) / Decimal('100.00')
+        else: # 'fixed_amount'
+            expected_deposit_amount = Decimal(str(refund_policy_snapshot.get('deposit_amount', 50.0)))
+
+        # Determine if the payment was a full payment or a deposit payment
+        # Using a small tolerance for floating point comparisons (though Decimal should minimize this)
+        if abs(total_paid_for_calculation - total_booking_cost) < Decimal('0.01'):
+            # This was a full payment, apply upfront policy
+            full_refund_days = refund_policy_snapshot.get('cancellation_upfront_full_refund_days', 7)
+            partial_refund_days = refund_policy_snapshot.get('cancellation_upfront_partial_refund_days', 3)
+            partial_refund_percentage = Decimal(str(refund_policy_snapshot.get('cancellation_upfront_partial_refund_percentage', 50.0)))
+            minimal_refund_days = refund_policy_snapshot.get('cancellation_upfront_minimal_refund_days', 1)
+            minimal_refund_percentage = Decimal(str(refund_policy_snapshot.get('cancellation_upfront_minimal_refund_percentage', 0.0)))
+            policy_prefix = "Upfront Payment Policy"
+        elif abs(total_paid_for_calculation - expected_deposit_amount) < Decimal('0.01'):
+            # This was a deposit payment, apply deposit policy
+            full_refund_days = refund_policy_snapshot.get('cancellation_deposit_full_refund_days', 7)
+            partial_refund_days = refund_policy_snapshot.get('cancellation_deposit_partial_refund_days', 3)
+            partial_refund_percentage = Decimal(str(refund_policy_snapshot.get('cancellation_deposit_partial_refund_percentage', 50.0)))
+            minimal_refund_days = refund_policy_snapshot.get('cancellation_deposit_minimal_refund_days', 1)
+            minimal_refund_percentage = Decimal(str(refund_policy_snapshot.get('cancellation_deposit_minimal_refund_percentage', 0.0)))
+            policy_prefix = "Deposit Payment Policy"
+        else:
+            # Payment amount does not clearly match a full payment or a deposit
+            return {
+                'entitled_amount': Decimal('0.00'),
+                'details': "No Refund Policy: Payment amount does not match expected full or deposit payment.",
+                'policy_applied': "N/A",
+                'days_before_pickup': days_in_advance,
+            }
 
     # Perform the refund calculation based on the selected policy
     if days_in_advance >= full_refund_days:
@@ -146,20 +134,15 @@ def calculate_refund_amount(hire_booking, cancellation_datetime=None):
     # Ensure refund amount is not negative and not more than what was paid
     refund_amount = max(Decimal('0.00'), min(refund_amount, total_paid_for_calculation))
 
-    calculation_details = {
-        'cancellation_datetime': cancellation_datetime.isoformat(),
-        'pickup_datetime': pickup_datetime.isoformat(),
-        'days_in_advance': days_in_advance,
-        'total_paid_amount': str(total_paid_for_calculation),
-        'calculated_refund_amount': str(refund_amount),
-        'refund_percentage': str(refund_percentage),
-        'policy_applied': policy_applied,
-        'payment_method_used': payment_method,
-        'full_refund_threshold_days': full_refund_days,
-        'partial_refund_threshold_days': partial_refund_days,
-        'partial_refund_percentage': str(partial_refund_percentage),
-        'minimal_refund_threshold_days': minimal_refund_days,
-        'minimal_refund_percentage': str(minimal_refund_percentage),
-    }
+    calculation_details_str = (
+        f"Cancellation {days_in_advance} days before pickup. "
+        f"Policy: {policy_applied}. "
+        f"Calculated: {refund_amount.quantize(Decimal('0.01'))} ({refund_percentage.quantize(Decimal('0.01'))}% of {total_paid_for_calculation.quantize(Decimal('0.01'))})."
+    )
 
-    return refund_amount, calculation_details
+    return {
+        'entitled_amount': refund_amount.quantize(Decimal('0.01')), # Round to 2 decimal places
+        'details': calculation_details_str,
+        'policy_applied': policy_applied,
+        'days_before_pickup': days_in_advance,
+    }

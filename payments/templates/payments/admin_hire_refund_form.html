@@ -7,6 +7,10 @@
         color: red;
         margin-left: 5px;
     }
+    /* Removed .refund-info-box custom styling as requested */
+    .hidden {
+        display: none;
+    }
 </style>
 {% endblock %}
 
@@ -61,6 +65,12 @@
                     <p><strong>Payment Method:</strong> <span id="detailPaymentMethod"></span></p>
                     <p><strong>Payment Date:</strong> <span id="detailPaymentDate"></span></p>
                     <p><strong>Payment Amount:</strong> <span id="detailPaymentAmount"></span></p>
+                </div>
+
+                {# New section for displaying entitled refund information - Simplified #}
+                <div id="entitledRefundInfo" class="mb-3 hidden">
+                    <p><strong>Calculated Entitled Refund:</strong> <span id="entitledRefundAmount"></span></p>
+                    <p><strong>Calculation Details:</strong> <span id="refundCalculationDetails"></span></p>
                 </div>
 
                 {# reason field #}
@@ -146,6 +156,11 @@
 
             const hireBookingSelect = document.getElementById('id_hire_booking');
             const bookingDetailsDisplay = document.getElementById('bookingDetailsDisplay');
+            const entitledRefundInfoDiv = document.getElementById('entitledRefundInfo');
+            const entitledRefundAmountSpan = document.getElementById('entitledRefundAmount');
+            const refundCalculationDetailsSpan = document.getElementById('refundCalculationDetails');
+            const amountToRefundInput = document.getElementById('id_amount_to_refund');
+
 
             // Function to update booking details display
             function updateBookingDetails(details) {
@@ -162,8 +177,24 @@
                     document.getElementById('detailPaymentDate').textContent = details.payment_date || 'N/A';
                     document.getElementById('detailPaymentAmount').textContent = details.payment_amount ? `$${details.payment_amount.toFixed(2)}` : 'N/A';
                     bookingDetailsDisplay.classList.remove('hidden');
+
+                    // Update and show entitled refund info
+                    if (details.entitled_refund_amount !== undefined && details.entitled_refund_amount !== null) {
+                        entitledRefundAmountSpan.textContent = `$${details.entitled_refund_amount.toFixed(2)}`;
+                        refundCalculationDetailsSpan.textContent = details.refund_calculation_details || 'N/A';
+                        entitledRefundInfoDiv.classList.remove('hidden');
+                    } else {
+                        entitledRefundInfoDiv.classList.add('hidden');
+                    }
+
+                    // Set default amount to refund to 0.00 if it's a new request and no value is set
+                    if (!amountToRefundInput.value) {
+                         amountToRefundInput.value = '0.00';
+                    }
+
                 } else {
                     bookingDetailsDisplay.classList.add('hidden');
+                    entitledRefundInfoDiv.classList.add('hidden'); // Hide refund info if no booking selected
                 }
             }
 
@@ -198,6 +229,12 @@
             // Initial load: if a booking is already selected (e.g., when editing)
             if (hireBookingSelect.value) {
                 fetchBookingDetails(hireBookingSelect.value);
+            } else {
+                // If no booking is selected on initial load (e.g., creating a new refund request)
+                // ensure the refund info section is hidden.
+                entitledRefundInfoDiv.classList.add('hidden');
+                // Also set amount to refund to 0.00 for new requests
+                amountToRefundInput.value = '0.00';
             }
         });
     </script>
