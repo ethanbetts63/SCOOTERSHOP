@@ -238,40 +238,47 @@ class HireRefundRequestModelTests(TestCase):
         # Ensure sufficient time difference to guarantee ordering, even with database precision
         now = timezone.now()
 
-        # Create newest first, then middle, then oldest to ensure unique timestamps
-        # and then assert the order when retrieved by default ordering (newest first)
-        refund_request_new = HireRefundRequest.objects.create(
+        # Create objects in an arbitrary order, but with specific requested_at times
+        # The PKs will be assigned sequentially based on creation order.
+        # Let's create them such that PKs are 1, 2, 3 and requested_at are newest, middle, oldest
+        refund_request_newest_pk1 = HireRefundRequest.objects.create(
             hire_booking=self.hire_booking_paid,
             payment=self.payment_succeeded,
             driver_profile=self.driver_profile,
-            request_email="new@example.com",
+            request_email="newest@example.com",
             requested_at=now + datetime.timedelta(seconds=3) # Newest
         )
-        refund_request_middle = HireRefundRequest.objects.create(
+        refund_request_middle_pk2 = HireRefundRequest.objects.create(
             hire_booking=self.hire_booking_paid,
             payment=self.payment_succeeded,
             driver_profile=self.driver_profile,
             request_email="middle@example.com",
             requested_at=now + datetime.timedelta(seconds=2) # Middle
         )
-        refund_request_old = HireRefundRequest.objects.create(
+        refund_request_oldest_pk3 = HireRefundRequest.objects.create(
             hire_booking=self.hire_booking_paid,
             payment=self.payment_succeeded,
             driver_profile=self.driver_profile,
-            request_email="old@example.com",
+            request_email="oldest@example.com",
             requested_at=now + datetime.timedelta(seconds=1) # Oldest
         )
 
-
-        # Retrieve all requests with default ordering
+        # Retrieve all requests with default ordering (by -requested_at)
         all_requests = HireRefundRequest.objects.all()
 
         # Get the primary keys in the order they were retrieved
         retrieved_pks = [req.pk for req in all_requests]
 
-        # Define the expected order of primary keys
-        # Since ordering is DESCENDING, it should be newest -> middle -> oldest
-        expected_pks = [refund_request_new.pk, refund_request_middle.pk, refund_request_old.pk]
+        # Define the expected order of primary keys based on requested_at descending
+        # This means the object with the latest requested_at should come first.
+        # Since we created them in order of requested_at (newest first),
+        # their PKs should also be in that order if auto-incrementing.
+        expected_pks = [
+            refund_request_newest_pk1.pk,
+            refund_request_middle_pk2.pk,
+            refund_request_oldest_pk3.pk
+        ]
 
         # Compare the lists of primary keys
         self.assertEqual(retrieved_pks, expected_pks)
+
