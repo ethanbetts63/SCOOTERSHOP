@@ -9,6 +9,7 @@ from datetime import timedelta
 import uuid
 
 from django.conf import settings # To get ADMIN_EMAIL and other settings
+from django.http import Http404 # Import Http404
 
 from payments.models.HireRefundRequest import HireRefundRequest
 from payments.hire_refund_calc import calculate_refund_amount # Import the calculation utility
@@ -35,6 +36,7 @@ class UserVerifyRefundView(View):
             return redirect(reverse('core:index'))
 
         try:
+            # Use get_object_or_404 to raise Http404 if not found
             refund_request = get_object_or_404(HireRefundRequest, verification_token=verification_token)
 
             # Check if the request is already verified or processed
@@ -58,7 +60,15 @@ class UserVerifyRefundView(View):
             # --- Send notification email to admin after successful user verification ---
             # Calculate the entitled refund amount for the admin notification
             # Use the refund_policy_snapshot from the payment model
-            refund_policy_snapshot = refund_request.payment.refund_policy_snapshot
+            # Ensure payment is not None before accessing its attributes
+            refund_policy_snapshot = {}
+            if refund_request.payment and refund_request.payment.refund_policy_snapshot:
+                refund_policy_snapshot = refund_request.payment.refund_policy_snapshot
+            else:
+                # Log or handle case where payment or snapshot is missing, though it should ideally exist
+                print(f"WARNING: Payment or refund_policy_snapshot missing for refund request {refund_request.pk}")
+
+
             calculated_refund_amount = calculate_refund_amount(
                 booking=refund_request.hire_booking,
                 refund_policy_snapshot=refund_policy_snapshot,
@@ -93,9 +103,9 @@ class UserVerifyRefundView(View):
             messages.success(request, "Your refund request has been successfully verified!")
             return redirect(reverse('payments:user_verified_refund')) # Redirect to the verified confirmation page
 
-        except HireRefundRequest.DoesNotExist:
+        except Http404: # Catch Http404 specifically
             messages.error(request, "The refund request associated with this token does not exist.")
             return redirect(reverse('core:index')) # Redirect to homepage or an error page
-        except Exception as e:
+        except Exception as e: # This must come AFTER more specific exceptions like Http404
             messages.error(request, f"An unexpected error occurred during verification: {e}")
-            return redirect(reverse('core:index'))
+            return redirect(reverse('core:index')) # Redirect to homepage on unexpected error

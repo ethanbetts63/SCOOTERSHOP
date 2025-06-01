@@ -570,6 +570,8 @@ def create_refund_request(
     is_admin_initiated=False,
     refund_calculation_details=None,
     request_email=None,
+    verification_token=None, # Added new parameter
+    token_created_at=None,   # Added new parameter
 ):
     """Creates a RefundRequest instance."""
     if not hire_booking:
@@ -626,6 +628,11 @@ def create_refund_request(
     if request_email is None:
         request_email = driver_profile.email
 
+    # Generate token and timestamp if not provided
+    if verification_token is None:
+        verification_token = uuid.uuid4()
+    if token_created_at is None:
+        token_created_at = timezone.now()
 
     return HireRefundRequest.objects.create(
         hire_booking=hire_booking,
@@ -640,4 +647,6 @@ def create_refund_request(
         is_admin_initiated=is_admin_initiated,
         refund_calculation_details=refund_calculation_details,
         request_email=request_email,
+        verification_token=verification_token, # Added
+        token_created_at=token_created_at,     # Added
     )
