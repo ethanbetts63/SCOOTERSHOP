@@ -15,7 +15,7 @@
 {% endblock %}
 
 {% block admin_main_content %}
-    {% load static %}
+    {% load static %}{# Load static files for CSS #}
     <link rel="stylesheet" href="{% static 'css/service_type_styles.css' %}"> {# Re-using this CSS for general form styling #}
 
     <div class="service-booking-container">
@@ -24,6 +24,7 @@
         </div>
         <p class="mb-4">Use this form to {% if hire_refund_request %}edit{% else %}create{% endif %} a hire refund request.</p>
 
+        {# Display Django messages (e.g., success, error) #}
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
@@ -36,24 +37,25 @@
         {% endif %}
 
         <form method="post" class="needs-validation" novalidate>
-            {% csrf_token %}
+            {% csrf_token %} {# Django's CSRF protection token #}
 
-            {# General Refund Request Information #}
+            {# General Refund Request Information Fieldset #}
             <fieldset class="form-group border p-3 mb-4 rounded">
                 <legend class="w-auto px-2">Refund Request Details</legend>
 
-                {# hire_booking field #}
+                {# hire_booking field - This is the dropdown for selecting a booking #}
                 <div class="form-group mb-3">
                     <label for="{{ form.hire_booking.id_for_label }}">
                         {{ form.hire_booking.label }}
                         {% if form.hire_booking.field.required %}<span class="required-indicator">*</span>{% endif %}
                     </label>
-                    {{ form.hire_booking }}
+                    {{ form.hire_booking }} {# Renders the select dropdown #}
+                    {# Display any errors for this field #}
                     {% if form.hire_booking.errors %}<div class="invalid-feedback d-block">{% for error in form.hire_booking.errors %}{{ error }}{% endfor %}</div>{% endif %}
                     <small class="form-text text-muted">{{ form.hire_booking.help_text }}</small>
                 </div>
 
-                {# New section for displaying booking details #}
+                {# Section for dynamically displaying selected booking details #}
                 <div id="bookingDetailsDisplay" class="hidden">
                     <h4>Selected Booking Details</h4>
                     <p><strong>Booking Reference:</strong> <span id="detailBookingRef"></span></p>
@@ -65,9 +67,11 @@
                     <p><strong>Payment Method:</strong> <span id="detailPaymentMethod"></span></p>
                     <p><strong>Payment Date:</strong> <span id="detailPaymentDate"></span></p>
                     <p><strong>Payment Amount:</strong> <span id="detailPaymentAmount"></span></p>
+                    {# NEW: Display the latest refund request status for this booking #}
+                    <p><strong>Latest Refund Request Status:</strong> <span id="detailRefundRequestStatus"></span></p>
                 </div>
 
-                {# New section for displaying entitled refund information - Simplified #}
+                {# Section for displaying calculated entitled refund information #}
                 <div id="entitledRefundInfo" class="mb-3 hidden">
                     <p><strong>Calculated Entitled Refund:</strong> <span id="entitledRefundAmount"></span></p>
                     <p><strong>Calculation Details:</strong> <span id="refundCalculationDetails"></span></p>
@@ -106,7 +110,7 @@
                     <small class="form-text text-muted">{{ form.amount_to_refund.help_text }}</small>
                 </div>
 
-                {# is_admin_initiated field - REMOVED from direct rendering #}
+                {# is_admin_initiated field - REMOVED from direct rendering as it's set in the view #}
                 {% comment %}
                 <div class="form-group form-check mb-3">
                     {{ form.is_admin_initiated }}
@@ -120,6 +124,7 @@
 
             </fieldset>
 
+            {# Form submission buttons #}
             <button type="submit" class="btn btn-success">Save Refund Request</button>
             <a href="{% url 'dashboard:admin_hire_refund_management' %}" class="btn btn-secondary">Cancel</a>
         </form>
@@ -153,7 +158,7 @@
             const amountToRefundInput = document.getElementById('id_amount_to_refund');
 
 
-            // Function to update booking details display
+            // Function to update booking details display with fetched data
             function updateBookingDetails(details) {
                 if (details) {
                     document.getElementById('detailBookingRef').textContent = details.booking_reference || 'N/A';
@@ -167,6 +172,8 @@
                     document.getElementById('detailPaymentMethod').textContent = details.payment_method || 'N/A';
                     document.getElementById('detailPaymentDate').textContent = details.payment_date || 'N/A';
                     document.getElementById('detailPaymentAmount').textContent = details.payment_amount ? `$${details.payment_amount.toFixed(2)}` : 'N/A';
+                    // NEW: Populate the latest refund request status
+                    document.getElementById('detailRefundRequestStatus').textContent = details.refund_request_status_for_booking || 'N/A';
                     bookingDetailsDisplay.classList.remove('hidden');
 
                     // Update and show entitled refund info
@@ -184,12 +191,13 @@
                     }
 
                 } else {
+                    // Hide sections if no booking is selected or details are null
                     bookingDetailsDisplay.classList.add('hidden');
-                    entitledRefundInfoDiv.classList.add('hidden'); // Hide refund info if no booking selected
+                    entitledRefundInfoDiv.classList.add('hidden');
                 }
             }
 
-            // Function to fetch booking details
+            // Function to fetch booking details from the API endpoint
             async function fetchBookingDetails(bookingId) {
                 if (!bookingId) {
                     updateBookingDetails(null); // Clear details if no booking selected
@@ -197,18 +205,18 @@
                 }
 
                 try {
-                    // Use Django's URL tag for robustness
+                    // Use Django's URL tag for robustness, replacing '0' with the actual bookingId
                     const url = `{% url 'payments:api_hire_booking_details' pk=0 %}`.replace('0', bookingId);
                     const response = await fetch(url);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const data = await response.json();
-                    updateBookingDetails(data);
+                    updateBookingDetails(data); // Update the display with fetched data
                 } catch (error) {
                     console.error('Error fetching booking details:', error);
                     updateBookingDetails(null); // Clear details on error
-                    // Optionally display an error message to the user
+                    // Optionally display an error message to the user, e.g., using a modal
                 }
             }
 
@@ -217,14 +225,14 @@
                 fetchBookingDetails(this.value);
             });
 
-            // Initial load: if a booking is already selected (e.g., when editing)
+            // Initial load: if a booking is already selected (e.g., when editing an existing refund request),
+            // fetch and display its details.
             if (hireBookingSelect.value) {
                 fetchBookingDetails(hireBookingSelect.value);
             } else {
-                // If no booking is selected on initial load (e.g., creating a new refund request)
-                // ensure the refund info section is hidden.
+                // If no booking is selected on initial load (e.g., creating a new refund request),
+                // ensure the refund info section is hidden and amount to refund is set to 0.00.
                 entitledRefundInfoDiv.classList.add('hidden');
-                // Also set amount to refund to 0.00 for new requests
                 amountToRefundInput.value = '0.00';
             }
         });

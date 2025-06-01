@@ -10,13 +10,15 @@ import json
 from datetime import datetime
 from django.utils import timezone
 from payments.hire_refund_calc import calculate_refund_amount # Import the correct calculator
+from payments.models import HireRefundRequest # NEW: Import HireRefundRequest model
 
 @require_GET
 @login_required
 def get_hire_booking_details_json(request, pk):
     """
     API endpoint to return details of a specific HireBooking as JSON.
-    Requires staff login.
+    Requires staff login. This endpoint now also includes the latest
+    refund request status associated with the booking.
     """
     print(f"DEBUG: Entering get_hire_booking_details_json for PK: {pk}")
     try:
@@ -56,6 +58,14 @@ def get_hire_booking_details_json(request, pk):
         else:
             print("DEBUG: hire_booking.payment is None. No refund policy snapshot available for calculation.")
 
+        # NEW: Get the latest refund request status for this booking
+        # We order by 'requested_at' in descending order to get the most recent request.
+        # If no refund requests exist for this booking, we set a default message.
+        latest_refund_request = HireRefundRequest.objects.filter(hire_booking=hire_booking).order_by('-requested_at').first()
+        refund_status_for_booking = latest_refund_request.get_status_display() if latest_refund_request else 'No Refund Request Yet'
+        print(f"DEBUG: Latest refund request status for booking {hire_booking.booking_reference}: {refund_status_for_booking}")
+
+
         # Calculate entitled refund amount using the new utility
         # Pass the retrieved refund_policy_snapshot
         refund_calculation_results = calculate_refund_amount(
@@ -86,6 +96,7 @@ def get_hire_booking_details_json(request, pk):
             'refund_calculation_details': refund_calculation_results['details'], # Add calculation details
             'refund_policy_applied': refund_calculation_results['policy_applied'],
             'refund_days_before_pickup': refund_calculation_results['days_before_pickup'],
+            'refund_request_status_for_booking': refund_status_for_booking, # NEW: Add the latest refund request status
             # Add any other details you might need
         }
         print(f"DEBUG: Constructed booking_details: {booking_details}")
@@ -96,3 +107,4 @@ def get_hire_booking_details_json(request, pk):
     except Exception as e:
         print(f"DEBUG: An unexpected error occurred while fetching booking details for PK {pk}: {str(e)}")
         return JsonResponse({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
+
