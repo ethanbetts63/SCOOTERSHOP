@@ -1,9 +1,9 @@
 # payments/webhook_handlers.py
 from django.db import transaction
-# import logging # Removed logging import
 from decimal import Decimal
 from django.conf import settings # Import settings to access ADMIN_EMAIL
 from django.utils import timezone # Import timezone
+import json # <--- ADDED THIS IMPORT
 
 # Import models from hire app
 from hire.models import TempHireBooking, HireBooking, BookingAddOn, TempBookingAddOn
@@ -17,7 +17,6 @@ from hire.temp_hire_converter import convert_temp_to_hire_booking
 # Import the email sending utility
 from mailer.utils import send_templated_email
 
-# logger = logging.getLogger(__name__) # Removed logger initialization
 
 def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dict):
     """
@@ -33,7 +32,7 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
         payment_obj (Payment): The Payment model instance linked to this intent.
         payment_intent_data (dict): The data object from the Stripe PaymentIntent event.
     """
-    print(f"DEBUG: Handling successful hire_booking payment for Payment ID: {payment_obj.id}")
+    print(f"DEBUG: Entering handle_hire_booking_succeeded for Payment ID: {payment_obj.id}")
 
     try:
         temp_booking = payment_obj.temp_hire_booking
@@ -99,6 +98,7 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
                 driver_profile=hire_booking.driver_profile,
                 booking=hire_booking
             )
+            print(f"DEBUG: Sent user booking confirmation email to {user_email}.") # Debug print
 
         # Send notification email to the admin
         if settings.ADMIN_EMAIL:
@@ -109,14 +109,15 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
                 context=email_context,
                 booking=hire_booking
             )
+            print(f"DEBUG: Sent admin booking confirmation email.") # Debug print
         # --- End Email Sending ---
 
     except TempHireBooking.DoesNotExist:
-        print(f"ERROR: TempHireBooking not found for Payment ID {payment_obj.id}. Cannot finalize booking.")
+        print(f"ERROR: TempHireBooking not found for Payment ID {payment_obj.id} in handle_hire_booking_succeeded. Cannot finalize booking.")
         # Re-raise the exception to ensure the webhook returns a 500, prompting Stripe to retry
         raise
     except Exception as e:
-        print(f"CRITICAL ERROR: Critical error finalizing hire booking for Payment ID {payment_obj.id}: {e}")
+        print(f"CRITICAL ERROR: Critical error finalizing hire booking for Payment ID {payment_obj.id} in handle_hire_booking_succeeded: {e}")
         # Re-raise the exception to ensure the webhook returns a 500, prompting Stripe to retry
         raise
 
@@ -139,30 +140,20 @@ def handle_hire_booking_refunded(payment_obj: Payment, event_data: dict):
                                       using the payment_intent_id from the event).
         event_data (dict): The data object from the Stripe 'charge.refunded' event.
     """
-    print(f"DEBUG: Handling 'charge.refunded' event for Payment ID: {payment_obj.id}")
+    print(f"DEBUG: Entering handle_hire_booking_refunded for Payment ID: {payment_obj.id}")
+    print(f"DEBUG: Received event_data: {json.dumps(event_data, indent=2)}") # Print full event data for inspection
 
     try:
         with transaction.atomic():  # Ensure database consistency for all updates
 
             # Extract refund data from the event payload
-            # The 'charge.refunded' event's 'data.object' is a Charge object,
-            # which contains a 'refunds' array if there are multiple refunds,
-            # or the primary refund details if it's a single refund.
-            # For simplicity, we'll assume the event refers to the most recent refund
-            # or the primary refund on the charge.
-            # Stripe's 'charge.refunded' event data object is the Charge itself,
-            # which contains the 'refunds' array.
             charge_object = event_data # This is the Charge object from the webhook payload
             refunds_list = charge_object.get('refunds', {}).get('data', [])
 
             if not refunds_list:
-                print(f"WARNING: No refund data found in 'charge.refunded' event for Payment ID: {payment_obj.id}")
+                print(f"WARNING: No refund data found in 'charge.refunded' event for Payment ID: {payment_obj.id}. Exiting handler.")
                 return # Nothing to process if no refund data
 
-            # Get the most recent refund object from the list
-            # The refunds list is typically ordered by creation time, so the last one is most recent.
-            # Or, you might want to iterate if handling multiple refunds in one go (less common for this event).
-            # For 'charge.refunded', typically one refund is being reported.
             stripe_refund_data = refunds_list[0] # Assuming the first (or only) refund in the list
 
             stripe_refund_id = stripe_refund_data['id']
@@ -171,36 +162,31 @@ def handle_hire_booking_refunded(payment_obj: Payment, event_data: dict):
             refund_reason = stripe_refund_data.get('reason')
             refund_status = stripe_refund_data.get('status') # e.g., 'succeeded', 'pending', 'failed'
 
-            print(f"DEBUG: Stripe Refund ID: {stripe_refund_id}, Amount: {refunded_amount_decimal}, Status: {refund_status}")
+            print(f"DEBUG: Extracted Stripe Refund ID: {stripe_refund_id}, Amount: {refunded_amount_decimal}, Status: {refund_status}")
 
             # 1. Find the associated HireRefundRequest
-            # We assume there's a HireRefundRequest linked to this payment intent
-            # that initiated this refund.
+            hire_refund_request = None
             try:
-                # Find the HireRefundRequest that is linked to this payment
-                # and is in an 'approved' or 'reviewed_pending_approval' state,
-                # or has no stripe_refund_id yet.
-                # Prioritize finding a request that matches the expected state.
-                # If multiple, pick the most recent one that's not yet 'refunded'.
+                # Try to find a request that is linked to this payment and is awaiting processing
                 hire_refund_request = HireRefundRequest.objects.filter(
                     payment=payment_obj,
-                    status__in=['approved', 'reviewed_pending_approval', 'pending'] # Target states before 'refunded'
+                    status__in=['approved', 'reviewed_pending_approval', 'pending']
                 ).order_by('-requested_at').first()
 
                 if not hire_refund_request:
-                    # Fallback: try to find by stripe_refund_id if already set (e.g., retry)
+                    # If not found by status, try to find by stripe_refund_id (for retries or external refunds)
                     hire_refund_request = HireRefundRequest.objects.filter(
                         stripe_refund_id=stripe_refund_id
                     ).first()
-                    if not hire_refund_request:
-                        print(f"WARNING: No matching HireRefundRequest found for Payment {payment_obj.id} and Stripe Refund ID {stripe_refund_id}. This refund might be external or already processed.")
-                        # If no matching request is found, we can't update our internal request.
-                        # However, we still need to update the Payment and Booking.
-                        pass # Continue to update Payment and HireBooking
 
-            except HireRefundRequest.DoesNotExist:
-                print(f"WARNING: No HireRefundRequest found for Payment {payment_obj.id}. This refund might be external.")
-                hire_refund_request = None # Ensure it's None if not found
+                if hire_refund_request:
+                    print(f"DEBUG: Found HireRefundRequest: {hire_refund_request.id} with current status: {hire_refund_request.status}")
+                else:
+                    print(f"WARNING: No matching HireRefundRequest found for Payment {payment_obj.id} and Stripe Refund ID {stripe_refund_id}. This refund might be external or already processed. Will proceed to update Payment and Booking if possible.")
+
+            except Exception as e:
+                print(f"ERROR: Error finding HireRefundRequest for Payment {payment_obj.id}: {e}")
+                hire_refund_request = None # Ensure it's None if an error occurred during lookup
 
             # 2. Update HireRefundRequest (if found)
             if hire_refund_request:
@@ -208,7 +194,7 @@ def handle_hire_booking_refunded(payment_obj: Payment, event_data: dict):
                     hire_refund_request.status = 'refunded'
                 elif refund_status == 'failed':
                     hire_refund_request.status = 'failed'
-                # You can add more status mappings if Stripe provides them
+                # Add more status mappings if Stripe provides them
                 hire_refund_request.stripe_refund_id = stripe_refund_id
                 hire_refund_request.amount_to_refund = refunded_amount_decimal # Update with actual refunded amount
                 hire_refund_request.processed_at = timezone.now() # Mark as processed by the system
@@ -227,7 +213,9 @@ def handle_hire_booking_refunded(payment_obj: Payment, event_data: dict):
             if payment_obj.refunded_amount >= payment_obj.amount:
                 payment_obj.status = 'refunded'
             else:
-                payment_obj.status = 'partially_refunded' # You might need to add this status to your Payment model choices
+                # Ensure 'partially_refunded' is a valid choice in your Payment model's status field
+                payment_obj.status = 'partially_refunded'
+                print("WARNING: 'partially_refunded' status used. Ensure this is a valid choice in your Payment model.")
 
             payment_obj.save()
             print(f"DEBUG: Updated Payment {payment_obj.id} status to '{payment_obj.status}' and refunded_amount to {payment_obj.refunded_amount}.")
@@ -235,42 +223,48 @@ def handle_hire_booking_refunded(payment_obj: Payment, event_data: dict):
             # 4. Update the associated HireBooking
             hire_booking = payment_obj.hire_booking
             if hire_booking:
+                print(f"DEBUG: Found associated HireBooking: {hire_booking.id} (current status: {hire_booking.status}, payment_status: {hire_booking.payment_status})")
                 # If the entire booking amount is refunded, mark the booking as cancelled
                 if payment_obj.status == 'refunded': # Check payment_obj's status after update
                     hire_booking.status = 'cancelled'
                     hire_booking.payment_status = 'refunded'
+                    print(f"DEBUG: HireBooking {hire_booking.id} fully refunded. Setting status to 'cancelled' and payment_status to 'refunded'.")
                 elif payment_obj.status == 'partially_refunded':
-                    # For partial refunds, the booking might remain 'confirmed' or go to a 'partially_refunded' status
-                    # depending on your business logic. For now, we'll keep it as is unless fully refunded.
-                    hire_booking.payment_status = 'partially_refunded' # You might need to add this status
+                    hire_booking.payment_status = 'partially_refunded' # Ensure this is a valid status
+                    print(f"DEBUG: HireBooking {hire_booking.id} partially refunded. Setting payment_status to 'partially_refunded'.")
                 hire_booking.save()
                 print(f"DEBUG: Updated HireBooking {hire_booking.id} status to '{hire_booking.status}' and payment_status to '{hire_booking.payment_status}'.")
+            else:
+                print(f"WARNING: No HireBooking associated with Payment {payment_obj.id}. Cannot update booking status.")
 
-            # 5. Send confirmation email to the user (if a request was found)
-            if hire_refund_request:
+            # 5. Send confirmation email to the user (if a request was found or email is available)
+            user_email = None
+            if hire_refund_request and hire_refund_request.request_email:
                 user_email = hire_refund_request.request_email
-                if not user_email and hire_refund_request.driver_profile and hire_refund_request.driver_profile.user:
-                    user_email = hire_refund_request.driver_profile.user.email
+            elif hire_refund_request and hire_refund_request.driver_profile and hire_refund_request.driver_profile.user:
+                user_email = hire_refund_request.driver_profile.user.email
+            elif payment_obj.driver_profile and payment_obj.driver_profile.user:
+                user_email = payment_obj.driver_profile.user.email
 
-                if user_email:
-                    email_context = {
-                        'refund_request': hire_refund_request,
-                        'refunded_amount': refunded_amount_decimal,
-                        'booking_reference': hire_booking.booking_reference if hire_booking else 'N/A',
-                        'admin_email': getattr(settings, 'ADMIN_EMAIL', settings.DEFAULT_FROM_EMAIL),
-                        'refund_policy_link': settings.SITE_BASE_URL + '/returns/' # Adjust as per your actual URL
-                    }
-                    send_templated_email(
-                        recipient_list=[user_email],
-                        subject=f"Your Refund for Booking {hire_booking.booking_reference if hire_booking else 'N/A'} Has Been Processed",
-                        template_name='user_refund_processed_confirmation.html', # New template for processed refund
-                        context=email_context,
-                        driver_profile=hire_refund_request.driver_profile,
-                        booking=hire_booking
-                    )
-                    print(f"DEBUG: Sent refund processed confirmation email to {user_email}.")
-                else:
-                    print(f"WARNING: Could not send refund processed email for HireRefundRequest {hire_refund_request.id}: no recipient email found.")
+            if user_email:
+                email_context = {
+                    'refund_request': hire_refund_request,
+                    'refunded_amount': refunded_amount_decimal,
+                    'booking_reference': hire_booking.booking_reference if hire_booking else 'N/A',
+                    'admin_email': getattr(settings, 'ADMIN_EMAIL', settings.DEFAULT_FROM_EMAIL),
+                    'refund_policy_link': settings.SITE_BASE_URL + '/returns/' # Adjust as per your actual URL
+                }
+                send_templated_email(
+                    recipient_list=[user_email],
+                    subject=f"Your Refund for Booking {hire_booking.booking_reference if hire_booking else 'N/A'} Has Been Processed",
+                    template_name='user_refund_processed_confirmation.html', # New template for processed refund
+                    context=email_context,
+                    driver_profile=hire_refund_request.driver_profile if hire_refund_request else payment_obj.driver_profile,
+                    booking=hire_booking
+                )
+                print(f"DEBUG: Sent refund processed confirmation email to {user_email}.")
+            else:
+                print(f"WARNING: Could not send user refund processed email for Payment {payment_obj.id}: no recipient email found.")
 
             # 6. Send notification email to the admin
             if settings.ADMIN_EMAIL:
