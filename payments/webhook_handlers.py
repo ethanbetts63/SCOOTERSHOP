@@ -123,7 +123,7 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
 WEBHOOK_HANDLERS = {
     'hire_booking': {
         'payment_intent.succeeded': handle_hire_booking_succeeded,
-        # Add other event types for hire_booking if needed, e.g., 'payment_intent.payment_failed': handle_hire_booking_failed
+        'charge.refunded': handle_hire_booking_refunded,
     },
     # 'service_booking': {
     #     'payment_intent.succeeded': handle_service_booking_succeeded,

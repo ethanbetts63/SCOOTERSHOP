@@ -33,6 +33,7 @@ class Payment(models.Model):
         blank=True,
         help_text="The permanent hire booking associated with this payment."
     )
+    
 
     # NEW: Link to the DriverProfile who made the payment.
     driver_profile = models.ForeignKey(
@@ -103,6 +104,15 @@ class Payment(models.Model):
         default=dict,
         blank=True,
         help_text="Snapshot of refund policy settings from HireSettings at the time of booking."
+    )
+
+    refunded_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0.00,
+        null=True, 
+        blank=True,
+        help_text="The total amount refunded for this payment."
     )
 
     # Timestamps for when the record was created and last updated.
