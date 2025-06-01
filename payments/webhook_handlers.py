@@ -1,15 +1,16 @@
 # payments/webhook_handlers.py
 from django.db import transaction
 from decimal import Decimal
-from django.conf import settings # Import settings to access ADMIN_EMAIL
-from django.utils import timezone # Import timezone
-import json # <--- Ensure this import is present
+from django.conf import settings
+from django.utils import timezone
+import json
+import stripe # Import stripe library to retrieve charge object
 
 # Import models from hire app
 from hire.models import TempHireBooking, HireBooking, BookingAddOn, TempBookingAddOn
 # Import Payment model from payments app
-from payments.models import Payment, HireRefundRequest # Import HireRefundRequest
-from hire.models import DriverProfile # Import DriverProfile
+from payments.models import Payment, HireRefundRequest
+from hire.models import DriverProfile
 
 # Import the new converter function
 from hire.temp_hire_converter import convert_temp_to_hire_booking
@@ -122,78 +123,90 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
         raise
 
 
-def handle_hire_booking_refunded(payment_obj: Payment, event_data: dict):
+def handle_hire_booking_refunded(payment_obj: Payment, event_object_data: dict):
     """
-    Handles the business logic for a successful 'charge.refunded' event
-    specifically for a 'hire_booking'. Also used by 'charge.refund.updated'.
-
-    This function is responsible for:
-    1. Extracting refund details from the Stripe event.
-    2. Finding and updating the associated HireRefundRequest.
-    3. Updating the Payment object's status and refunded_amount.
-    4. Updating the HireBooking's payment_status and overall status (e.g., to cancelled).
-    5. Sending confirmation emails to the user and admin.
-
-    Args:
-        payment_obj (Payment): The Payment model instance linked to this intent.
-                               (Note: This payment_obj is found by the webhook_view
-                                      using the payment_intent_id from the event).
-        event_data (dict): The data object from the Stripe 'charge.refunded' or 'charge.refund.updated' event.
+    Handles 'charge.refunded' and 'charge.refund.updated' events.
+    `event_object_data` can be either a Stripe Charge object or a Stripe Refund object.
     """
     print(f"DEBUG: Entering handle_hire_booking_refunded for Payment ID: {payment_obj.id}")
-    print(f"DEBUG: Received event_data: {json.dumps(event_data, indent=2)}") # Print full event data for inspection
+    print(f"DEBUG: Received event_object_data: {json.dumps(event_object_data, indent=2)}")
 
     try:
         with transaction.atomic():  # Ensure database consistency for all updates
 
-            # Extract refund data from the event payload
-            charge_object = event_data # This is the Charge object from the webhook payload
+            # Determine if the event_object_data is a Charge or a Refund object
+            is_charge_object = event_object_data.get('object') == 'charge'
+            is_refund_object = event_object_data.get('object') == 'refund'
 
-            # Try to get the refunds list. It might be directly under 'refunds' or 'refunds.data'.
-            # We'll prioritize the 'amount_refunded' from the charge itself,
-            # and rely on the stripe_refund_id being set on HireRefundRequest during initiation.
-            refunded_amount_cents = charge_object.get('amount_refunded')
-            if refunded_amount_cents is None:
-                print(f"WARNING: 'amount_refunded' not found in 'charge.refunded'/'charge.refund.updated' event for Payment ID: {payment_obj.id}. Exiting handler.")
-                return # Nothing to process if no refund amount
-
-            refunded_amount_decimal = Decimal(refunded_amount_cents) / Decimal('100')
-            
-            # The charge.refunded event's 'id' is the Charge ID, not the Refund ID.
-            # We need to find the actual Refund ID if available in the event data,
-            # or rely on the one saved in HireRefundRequest.
+            refunded_amount_decimal = Decimal('0.00')
             stripe_refund_id = None
-            refund_status = None # Initialize refund_status
+            refund_status = None
+            charge_id = None # To link back to the charge if we receive a refund object
 
-            # Attempt to find the most recent refund object within the charge's 'refunds' array
-            # This is crucial for 'charge.refund.updated' to get the latest status of the specific refund
-            if 'refunds' in charge_object and isinstance(charge_object['refunds'], dict) and 'data' in charge_object['refunds'] and charge_object['refunds']['data']:
-                # Sort by 'created' timestamp to get the latest refund object
-                latest_refund = max(charge_object['refunds']['data'], key=lambda r: r['created'])
-                stripe_refund_id = latest_refund.get('id')
-                refund_status = latest_refund.get('status')
-                print(f"DEBUG: Extracted Stripe Refund ID from refunds.data: {stripe_refund_id}, Status: {refund_status}")
-            elif 'refunds' in charge_object and isinstance(charge_object['refunds'], list) and charge_object['refunds']:
-                # Sort by 'created' timestamp to get the latest refund object
-                latest_refund = max(charge_object['refunds'], key=lambda r: r['created'])
-                stripe_refund_id = latest_refund.get('id')
-                refund_status = latest_refund.get('status')
-                print(f"DEBUG: Extracted Stripe Refund ID from refunds list: {stripe_refund_id}, Status: {refund_status}")
+            if is_charge_object:
+                # This is a charge object (e.g., from charge.refunded)
+                refunded_amount_cents = event_object_data.get('amount_refunded')
+                if refunded_amount_cents is not None:
+                    refunded_amount_decimal = Decimal(refunded_amount_cents) / Decimal('100')
+
+                # Try to get the latest refund object from the charge's refunds array
+                if 'refunds' in event_object_data and isinstance(event_object_data['refunds'], dict) and 'data' in event_object_data['refunds'] and event_object_data['refunds']['data']:
+                    latest_refund = max(event_object_data['refunds']['data'], key=lambda r: r['created'])
+                    stripe_refund_id = latest_refund.get('id')
+                    refund_status = latest_refund.get('status')
+                elif 'refunds' in event_object_data and isinstance(event_object_data['refunds'], list) and event_object_data['refunds']:
+                    latest_refund = max(event_object_data['refunds'], key=lambda r: r['created'])
+                    stripe_refund_id = latest_refund.get('id')
+                    refund_status = latest_refund.get('status')
+                else:
+                    print(f"WARNING: Could not find explicit Stripe Refund ID or status in charge object's 'refunds' array for Payment ID {payment_obj.id}.")
+                charge_id = event_object_data.get('id') # This is the charge ID
+
+            elif is_refund_object:
+                # This is a refund object (e.g., from charge.refund.updated)
+                stripe_refund_id = event_object_data.get('id')
+                refund_status = event_object_data.get('status')
+                charge_id = event_object_data.get('charge') # Get the charge ID associated with this refund
+
+                if charge_id:
+                    try:
+                        stripe.api_key = settings.STRIPE_SECRET_KEY # Ensure API key is set
+                        latest_charge = stripe.Charge.retrieve(charge_id)
+                        if latest_charge and latest_charge.get('amount_refunded') is not None:
+                            refunded_amount_decimal = Decimal(latest_charge.get('amount_refunded')) / Decimal('100')
+                            print(f"DEBUG: Fetched total amount_refunded from charge {charge_id}: {refunded_amount_decimal}")
+                        else:
+                            print(f"WARNING: Could not retrieve total amount_refunded from charge {charge_id}. Falling back to individual refund amount.")
+                            # Fallback to the individual refund amount if total is not found
+                            if event_object_data.get('amount') is not None:
+                                refunded_amount_decimal = Decimal(event_object_data.get('amount')) / Decimal('100')
+                    except stripe.error.StripeError as e:
+                        print(f"ERROR: Could not retrieve charge {charge_id} for refund update: {e}. Falling back to individual refund amount.")
+                        # Fallback to the individual refund amount if fetching charge fails
+                        if event_object_data.get('amount') is not None:
+                            refunded_amount_decimal = Decimal(event_object_data.get('amount')) / Decimal('100')
+                else:
+                    print(f"WARNING: No charge ID found in refund object for Payment ID {payment_obj.id}. Falling back to individual refund amount.")
+                    # Fallback to the individual refund amount if no charge ID
+                    if event_object_data.get('amount') is not None:
+                        refunded_amount_decimal = Decimal(event_object_data.get('amount')) / Decimal('100')
+
             else:
-                # Fallback: If no explicit refund object found in the event,
-                # the status of the charge itself might indicate refund status.
-                # For charge.refunded, the charge status is usually 'succeeded'.
-                # For charge.refund.updated, we really want the refund object's status.
-                # If we can't find it, we'll proceed with amount_refunded and rely on existing HireRefundRequest status.
-                print(f"WARNING: Could not find explicit Stripe Refund ID or status in event's 'refunds' array for Payment ID {payment_obj.id}.")
+                print(f"WARNING: Unknown object type in event_object_data: {event_object_data.get('object')}. Exiting handler.")
+                return # Cannot process unknown object type
 
+            # Now, check if we actually got a valid refunded_amount_decimal before proceeding
+            # This check is now after the logic for determining refunded_amount_decimal based on object type
+            if refunded_amount_decimal is None or refunded_amount_decimal <= 0:
+                print(f"WARNING: Deduced refunded_amount_decimal is invalid ({refunded_amount_decimal}) for Payment ID: {payment_obj.id}. Exiting handler.")
+                return # Nothing to process if no valid refund amount
 
-            print(f"DEBUG: Processed Refund Amount: {refunded_amount_decimal}, Deduced Status (from refund object if found, else N/A): {refund_status}")
+            print(f"DEBUG: Processed Refund Amount: {refunded_amount_decimal}, Deduced Status: {refund_status}, Stripe Refund ID: {stripe_refund_id}")
 
             # 1. Find the associated HireRefundRequest
             hire_refund_request = None
             try:
-                # Prioritize finding by the stripe_refund_id if we have it from the event
+                # Prioritize finding by the stripe_refund_id if we have it
                 if stripe_refund_id:
                     hire_refund_request = HireRefundRequest.objects.filter(
                         stripe_refund_id=stripe_refund_id
@@ -228,10 +241,11 @@ def handle_hire_booking_refunded(payment_obj: Payment, event_data: dict):
 
             # 2. Update HireRefundRequest (if found)
             if hire_refund_request:
-                # Update status based on the refund_status from the Stripe event
+                # Only update status if the incoming refund status is 'succeeded' or 'failed'
+                # and it's a more definitive state than the current one.
                 if refund_status == 'succeeded' and hire_refund_request.status not in ['refunded', 'partially_refunded']:
                     # If the total refunded amount equals the request amount, mark as refunded
-                    if refunded_amount_decimal >= hire_refund_request.amount_to_refund:
+                    if refunded_amount_decimal >= hire_refund_request.amount_to_refund: # Use the total refunded amount here
                         hire_refund_request.status = 'refunded'
                     else:
                         hire_refund_request.status = 'partially_refunded'
@@ -244,7 +258,7 @@ def handle_hire_booking_refunded(payment_obj: Payment, event_data: dict):
                      hire_refund_request.stripe_refund_id = stripe_refund_id # Ensure ID is saved if found later
 
                 # Always update the amount_to_refund with the latest actual refunded amount from Stripe
-                hire_refund_request.amount_to_refund = refunded_amount_decimal
+                hire_refund_request.amount_to_refund = refunded_amount_decimal # Update with actual total refunded amount
                 hire_refund_request.processed_at = timezone.now() # Mark as processed by the system
                 hire_refund_request.save()
                 print(f"DEBUG: Updated HireRefundRequest {hire_refund_request.id} to status '{hire_refund_request.status}'.")
@@ -334,7 +348,7 @@ def handle_hire_booking_refunded(payment_obj: Payment, event_data: dict):
                     'payment_id': payment_obj.id,
                     'payment_intent_id': payment_obj.stripe_payment_intent_id,
                     'status': refund_status, # Use the refund object's status if available
-                    'event_type': 'charge.refund.updated' # Indicate which event triggered this
+                    'event_type': 'charge.refund.updated' if is_refund_object else 'charge.refunded' # Indicate which event triggered this
                 }
                 send_templated_email(
                     recipient_list=[settings.ADMIN_EMAIL],
