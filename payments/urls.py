@@ -4,7 +4,6 @@ from . import views
 from .views import HireRefunds # This already imports the HireRefunds package
 
 # Import the new ProcessHireRefundView directly
-from .views.HireRefunds.process_refund_view import ProcessHireRefundView
 
 
 app_name = 'payments'

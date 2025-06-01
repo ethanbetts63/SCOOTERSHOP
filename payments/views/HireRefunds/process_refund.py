@@ -8,9 +8,10 @@ from django.contrib import messages
 from django.db import transaction
 from django.conf import settings
 from decimal import Decimal
+from django.utils import timezone
+
 
 from payments.models import HireRefundRequest, Payment # Import Payment model
-from mailer.utils import send_templated_email # Assuming you have this
 
 @method_decorator(login_required, name='dispatch')
 @method_decorator(staff_member_required, name='dispatch')
@@ -19,7 +20,7 @@ class ProcessHireRefundView(View):
         # 1. Get the HireRefundRequest instance
         hire_refund_request = get_object_or_404(HireRefundRequest, pk=pk)
 
-        # Basic validation: Only process if status is 'approved' or 'reviewed_pending_approval'
+        # Basic validation: Only process if status is 'approved' or 'reviewed_pending_approval' Im fairly sure this is wrong it should just be reviewed_pending_approval
         if hire_refund_request.status not in ['approved', 'reviewed_pending_approval']:
             messages.error(request, f"Refund request is not in an approvable state. Current status: {hire_refund_request.get_status_display()}")
             return redirect('dashboard:admin_hire_refund_management') # Redirect back to management page
@@ -39,7 +40,7 @@ class ProcessHireRefundView(View):
             return redirect('dashboard:admin_hire_refund_management')
 
         # Set your Stripe API key
-        stripe.api_key = settings.STRIPE_SECRET_KEY # Make sure this is correctly set in your settings.py
+        stripe.api_key = settings.STRIPE_SECRET_KEY 
 
         try:
             with transaction.atomic():

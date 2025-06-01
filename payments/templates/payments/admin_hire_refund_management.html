@@ -58,13 +58,13 @@
         background-color: #c7d2fe; /* indigo-200 */
     }
 
-    .btn-approve {
+    .btn-process-refund { /* NEW style for the refund button */
         color: #ffffff;
-        background-color: #10b981; /* green-500 */
-        border: 1px solid #059669; /* green-600 */
+        background-color: #22c55e; /* green-500 */
+        border: 1px solid #16a34a; /* green-600 */
     }
-    .btn-approve:hover {
-        background-color: #059669; /* green-600 */
+    .btn-process-refund:hover {
+        background-color: #16a34a; /* green-600 */
     }
 
     .btn-reject {
@@ -83,7 +83,7 @@
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Motorcycle Hire Refund Requests</h1>
         {# Button to add a new refund request #}
-        <a href="{% url 'dashboard:add_hire_refund_request' %}"
+        <a href="{% url 'payments:add_hire_refund_request' %}" {# Changed to payments namespace #}
            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
             Add New Refund Request
         </a>
@@ -168,12 +168,24 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium table-cell-padding">
                                 <div class="flex space-x-2">
                                     {# Link to the edit page for the specific refund request, text changed to "Review" #}
-                                    <a href="{% url 'dashboard:edit_hire_refund_request' pk=request.pk %}" class="action-button btn-review">Review</a>
+                                    <a href="{% url 'payments:edit_hire_refund_request' pk=request.pk %}" class="action-button btn-review">Review</a> {# Changed to payments namespace #}
 
-                                    {# Approve and Reject buttons, only shown if status is 'reviewed_pending_approval' #}
-                                    {% if request.status == 'reviewed_pending_approval' %}
-                                        <button type="button" class="action-button btn-approve">Approve</button>
-                                        <button type="button" class="action-button btn-reject">Reject</button>
+                                    {# Process Refund button, only shown if status is 'reviewed_pending_approval' or 'approved' #}
+                                    {% if request.status == 'reviewed_pending_approval' or request.status == 'approved' %}
+                                        <form action="{% url 'payments:process_hire_refund' pk=request.pk %}" method="post" style="display:inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="action-button btn-process-refund"
+                                                    onclick="return confirm('Are you sure you want to process this refund via Stripe? This action cannot be undone.');">
+                                                Process Refund
+                                            </button>
+                                        </form>
+                                        {# You might want a separate "Reject" button here if it's a distinct action #}
+                                        {# <button type="button" class="action-button btn-reject">Reject</button> #}
+                                    {% else %}
+                                        {# Display a disabled button or text if not in a state to be processed #}
+                                        <button type="button" class="action-button bg-gray-300 text-gray-600 cursor-not-allowed" disabled>
+                                            Refund {{ request.get_status_display }}
+                                        </button>
                                     {% endif %}
                                 </div>
                             </td>
