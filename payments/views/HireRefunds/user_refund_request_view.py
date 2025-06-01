@@ -4,11 +4,14 @@ from django.shortcuts import render, redirect
 from django.views import View
 from django.urls import reverse
 from django.contrib import messages
+from django.conf import settings # To get ADMIN_EMAIL and other settings
+from django.utils import timezone
+import uuid # For generating UUID tokens
+
 from payments.forms.user_hire_refund_request_form import UserHireRefundRequestForm
 from payments.models.HireRefundRequest import HireRefundRequest
-# You'll need to import send_verification_email and send_admin_notification_email
-# once those utility functions are created. For now, we'll just print a placeholder.
-# from .utils import send_verification_email, send_admin_notification_email
+from payments.hire_refund_calc import calculate_refund_amount # Import the calculation utility
+from mailer.utils import send_templated_email # Import your email utility
 
 class UserRefundRequestView(View):
     """
@@ -43,27 +46,75 @@ class UserRefundRequestView(View):
             # Save the HireRefundRequest instance.
             # The form's clean method has already linked hire_booking, driver_profile, and payment.
             # It also set the status to 'unverified' and is_admin_initiated to False.
-            refund_request = form.save()
+            refund_request = form.save(commit=False) # Don't commit yet, we need to add token
 
-            # --- Placeholder for email sending logic ---
-            # In a real application, you would generate a unique token for verification
-            # and include it in the email.
-            # Example: verification_token = generate_unique_token()
-            #          refund_request.verification_token = verification_token # Add this field to your model
-            #          refund_request.save()
+            # Generate a unique verification token and timestamp
+            refund_request.verification_token = uuid.uuid4()
+            refund_request.token_created_at = timezone.now()
+            refund_request.save() # Now save the instance with the token
 
-            # Send verification email to the user
-            # send_verification_email(refund_request)
-            print(f"DEBUG: Sending verification email to {refund_request.request_email} for refund request {refund_request.pk}")
+            # --- Send verification email to the user ---
+            verification_link = request.build_absolute_uri(
+                reverse('payments:user_verify_refund') + f'?token={str(refund_request.verification_token)}'
+            )
+            # Assuming you have a refund policy URL in your settings or core app
+            refund_policy_link = request.build_absolute_uri(reverse('core:returns')) # Adjust 'core:returns' as per your actual URL name
+            admin_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'admin@example.com') # Or a specific admin email
 
-            # Send notification email to admin
-            # send_admin_notification_email(refund_request)
-            print(f"DEBUG: Sending admin notification for new refund request {refund_request.pk}")
-            # --- End Placeholder ---
+            user_email_context = {
+                'refund_request': refund_request,
+                'verification_link': verification_link,
+                'refund_policy_link': refund_policy_link,
+                'admin_email': admin_email,
+            }
+
+            send_templated_email(
+                recipient_list=[refund_request.request_email],
+                subject=f"Confirm Your Refund Request for Booking {refund_request.hire_booking.booking_reference}",
+                template_name='emails/user_refund_request_verification.html',
+                context=user_email_context,
+                driver_profile=refund_request.driver_profile,
+                booking=refund_request.hire_booking
+            )
+
+            # --- Send notification email to admin ---
+            # Calculate the entitled refund amount for the admin notification
+            # Use the refund_policy_snapshot from the payment model
+            refund_policy_snapshot = refund_request.payment.refund_policy_snapshot
+            calculated_refund_amount = calculate_refund_amount(
+                booking=refund_request.hire_booking,
+                refund_policy_snapshot=refund_policy_snapshot,
+                cancellation_datetime=refund_request.requested_at # Use the request timestamp as cancellation time
+            )
+
+            admin_refund_link = request.build_absolute_uri(
+                reverse('dashboard:payments_hirerefundrequest_change', args=[refund_request.pk]) # Adjust if your admin URL is different
+            )
+
+            admin_email_context = {
+                'refund_request': refund_request,
+                'calculated_refund_amount': calculated_refund_amount,
+                'admin_refund_link': admin_refund_link,
+            }
+
+            # Assuming you have a list of admin emails in settings or a specific one
+            admin_recipient_list = [getattr(settings, 'ADMIN_EMAIL', 'admin@example.com')] # Define ADMIN_EMAIL in settings.py
+            if not admin_recipient_list or admin_recipient_list[0] == 'admin@example.com':
+                 # Fallback if ADMIN_EMAIL is not set or is default
+                admin_recipient_list = [settings.DEFAULT_FROM_EMAIL]
+
+
+            send_templated_email(
+                recipient_list=admin_recipient_list,
+                subject=f"NEW Refund Request for Booking {refund_request.hire_booking.booking_reference} (ID: {refund_request.pk})",
+                template_name='emails/admin_refund_request_notification.html',
+                context=admin_email_context,
+                driver_profile=refund_request.driver_profile,
+                booking=refund_request.hire_booking
+            )
 
             messages.success(request, 'Your refund request has been submitted. Please check your email to confirm your request.')
-            # Redirect to a confirmation page that tells the user to check their email
-            return redirect(reverse('payments:user_confirmation_refund_request')) # Assuming this URL exists
+            return redirect(reverse('payments:user_confirmation_refund_request'))
 
         else:
             # If the form is not valid, re-render the template with errors

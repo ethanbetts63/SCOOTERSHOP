@@ -15,5 +15,6 @@ urlpatterns = [
 
     # User page after clicking the verification link in email
     path('refund/verified/', HireRefunds.UserVerifiedRefundView.as_view(), name='user_verified_refund'),
-
+    # URL for the email verification link (e.g., /refund/verify/?token=...)
+    path('refund/verify/', HireRefunds.UserVerifyRefundView.as_view(), name='user_verify_refund'),
 ]

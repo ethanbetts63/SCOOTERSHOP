@@ -100,9 +100,9 @@ class HireRefundRequest(models.Model): # Renamed the model class
     )
     # NEW FIELDS for email verification
     verification_token = models.UUIDField(
-        default=uuid.uuid4,
         editable=False,
         unique=True,
+        null=True,
         help_text="Unique token for email verification of the refund request."
     )
     token_created_at = models.DateTimeField(
@@ -118,4 +118,10 @@ class HireRefundRequest(models.Model): # Renamed the model class
         
     def __str__(self):
         return f"Refund Request for Booking {self.hire_booking.booking_reference if self.hire_booking else 'N/A'} - Status: {self.status}"
+
+    def save(self, *args, **kwargs):
+        # Generate a UUID for verification_token if it's not already set
+        if not self.verification_token:
+            self.verification_token = uuid.uuid4()
+        super().save(*args, **kwargs)
 
