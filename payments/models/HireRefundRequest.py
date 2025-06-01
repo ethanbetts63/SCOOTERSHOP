@@ -13,6 +13,7 @@ class HireRefundRequest(models.Model): # Renamed the model class
         ('reviewed_pending_approval', 'Reviewed - Pending Approval'), # New status
         ('approved', 'Approved - Awaiting Refund'),
         ('rejected', 'Rejected'),
+        ('partially_refunded', 'Partially Refunded'),
         ('refunded', 'Refunded'),
         ('failed', 'Refund Failed'),
     ]
