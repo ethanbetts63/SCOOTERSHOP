@@ -16,6 +16,9 @@ from payments.views.HireRefunds.process_refund import ProcessHireRefundView
 from payments.models import HireRefundRequest, Payment
 from hire.models import HireBooking, DriverProfile
 
+# Import actual StripeError for mocking
+import stripe.error
+
 # Import model factories for creating test data
 from hire.tests.test_helpers.model_factories import (
     create_user,
@@ -25,9 +28,6 @@ from hire.tests.test_helpers.model_factories import (
     create_refund_request,
     create_hire_settings,
 )
-
-# Import actual StripeError for mocking
-import stripe.error
 
 # Mock Stripe for testing purposes
 STRIPE_REFUND_CREATE_PATH = 'payments.views.HireRefunds.process_refund.stripe.Refund.create'
@@ -307,15 +307,14 @@ class ProcessHireRefundViewTests(TestCase):
         Test that Stripe API errors are caught, a message is displayed,
         and the refund request status is updated to 'failed'.
         """
-        # FIX: Correctly mock StripeError by raising an instance of it
+        # FIX: Correctly mock StripeError by raising an instance of it, removing 'param'
         mock_stripe_refund_create.side_effect = stripe.error.StripeError(
             message='Stripe API error message',
             http_body='{}',
             http_status=400,
             json_body={},
             headers={},
-            code='some_code',
-            param='some_param'
+            code='some_code', # 'code' is a valid argument for StripeError
         )
 
         refund_request = create_refund_request(
