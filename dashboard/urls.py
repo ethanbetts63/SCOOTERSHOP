@@ -37,7 +37,7 @@ urlpatterns = [
     path('settings/hire-refunds/', HireRefunds.AdminHireRefundManagement.as_view(), name='admin_hire_refund_management'),
     path('settings/hire-refunds/add/', HireRefunds.AdminAddEditRefundRequestView.as_view(), name='add_hire_refund_request'),
     path('settings/hire-refunds/edit/<int:pk>/', HireRefunds.AdminAddEditRefundRequestView.as_view(), name='edit_hire_refund_request'),
-
+    path('settings/hire-refunds/process/<uuid:pk>/', HireRefunds.ProcessHireRefundView.as_view(), name='process_hire_refund'),
 
     # --- Dashboard Service Brand Management Views ---
     path('settings/service-brands/', views.service_brands_management, name='service_brands_management'),
