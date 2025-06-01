@@ -3,6 +3,8 @@
 from django.db import models
 from django.conf import settings # To link to Django's User model
 from payments.models.PaymentModel import Payment # Import the Payment model
+import uuid # Import uuid for the token
+from django.utils import timezone # Import timezone for token_created_at
 
 class HireRefundRequest(models.Model): # Renamed the model class
     STATUS_CHOICES = [
@@ -95,6 +97,17 @@ class HireRefundRequest(models.Model): # Renamed the model class
         blank=True,
         null=True,
         help_text="Email address provided by the user for this refund request."
+    )
+    # NEW FIELDS for email verification
+    verification_token = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        unique=True,
+        help_text="Unique token for email verification of the refund request."
+    )
+    token_created_at = models.DateTimeField(
+        default=timezone.now,
+        help_text="Timestamp when the verification token was created."
     )
 
 
