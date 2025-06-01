@@ -6,11 +6,12 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.contrib import messages
 from django.utils import timezone # Import timezone for setting processed_at
-
+from django.contrib.auth.decorators import user_passes_test
 from payments.forms.admin_hire_refund_request_form import AdminHireRefundRequestForm
 from payments.models.HireRefundRequest import HireRefundRequest
+from users.views.auth import is_admin
 
-@method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(is_admin), name='dispatch')
 class AdminAddEditRefundRequestView(View):
     """
     View for administrators to create or edit HireRefundRequest instances.

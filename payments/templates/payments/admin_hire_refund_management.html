@@ -83,7 +83,7 @@
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Motorcycle Hire Refund Requests</h1>
         {# Button to add a new refund request #}
-        <a href="{% url 'payments:add_hire_refund_request' %}" {# Changed to payments namespace #}
+        <a href="{% url 'dashboard:add_hire_refund_request' %}" {# Changed to payments namespace #}
            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
             Add New Refund Request
         </a>
@@ -168,11 +168,11 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium table-cell-padding">
                                 <div class="flex space-x-2">
                                     {# Link to the edit page for the specific refund request, text changed to "Review" #}
-                                    <a href="{% url 'payments:edit_hire_refund_request' pk=request.pk %}" class="action-button btn-review">Review</a> {# Changed to payments namespace #}
+                                    <a href="{% url 'dashboard:edit_hire_refund_request' pk=request.pk %}" class="action-button btn-review">Review</a> {# Changed to payments namespace #}
 
                                     {# Process Refund button, only shown if status is 'reviewed_pending_approval' or 'approved' #}
                                     {% if request.status == 'reviewed_pending_approval' or request.status == 'approved' %}
-                                        <form action="{% url 'payments:process_hire_refund' pk=request.pk %}" method="post" style="display:inline;">
+                                        <form action="{% url 'dashboard:process_hire_refund' pk=request.pk %}" method="post" style="display:inline;">
                                             {% csrf_token %}
                                             <button type="submit" class="action-button btn-process-refund"
                                                     onclick="return confirm('Are you sure you want to process this refund via Stripe? This action cannot be undone.');">
