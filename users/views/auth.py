@@ -10,7 +10,7 @@ from django.contrib.auth import get_user_model
 # The User model is now in the 'users' app, but get_user_model() finds it correctly
 User = get_user_model()
 def is_admin(user):
-    return user.is_superuser
+    return user.is_staff
 # Handles user login
 def login_view(request):
     if request.method == "POST":
