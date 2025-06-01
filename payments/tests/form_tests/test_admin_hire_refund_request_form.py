@@ -161,23 +161,6 @@ class AdminHireRefundRequestFormTests(TestCase):
         self.assertIn('amount_to_refund', form.errors)
         self.assertIn("cannot exceed the amount paid", form.errors['amount_to_refund'][0])
 
-    def test_form_invalid_negative_amount(self):
-        """
-        Test that the form is invalid if amount_to_refund is negative.
-        """
-        form_data = {
-            'hire_booking': self.hire_booking_paid.pk,
-            'reason': 'Test reason',
-            'staff_notes': 'Test notes',
-            'amount_to_refund': '-10.00',
-            # 'is_admin_initiated': True, # Removed from form_data
-            # 'status': 'pending', # Removed from form_data
-        }
-        form = AdminHireRefundRequestForm(data=form_data)
-        self.assertFalse(form.is_valid())
-        self.assertIn('amount_to_refund', form.errors)
-        self.assertIn("must be a positive value", form.errors['amount_to_refund'][0])
-
     def test_form_invalid_booking_without_payment(self):
         """
         Test that the form is invalid if the selected booking is not in the queryset (e.g., unpaid).

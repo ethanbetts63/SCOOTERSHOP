@@ -72,8 +72,9 @@ class AdminHireRefundRequestForm(forms.ModelForm):
 
             # Validate amount_to_refund against the actual amount paid for the booking
             if amount_to_refund is not None:
-                if amount_to_refund <= 0:
-                    self.add_error('amount_to_refund', "Amount to refund must be a positive value.")
+                # Changed from <= 0 to < 0 to allow 0 as a valid refund amount.
+                if amount_to_refund < 0:
+                    self.add_error('amount_to_refund', "Amount to refund cannot be a negative value.")
                 elif amount_to_refund > hire_booking.payment.amount:
                     self.add_error('amount_to_refund', f"Amount to refund (${amount_to_refund}) cannot exceed the amount paid for this booking (${hire_booking.payment.amount}).")
 
@@ -93,4 +94,3 @@ class AdminHireRefundRequestForm(forms.ModelForm):
         if commit:
             refund_request.save()
         return refund_request
-
