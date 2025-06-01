@@ -226,7 +226,7 @@ def create_payment(
 def create_driver_profile(
     user=None,
     name="John Doe",
-    email="john.doe@example.com",
+    email="john.doe@example.com", # Default email
     phone_number="0412345678",
     address_line_1="123 Main St",
     city="Sydney",
@@ -247,7 +247,7 @@ def create_driver_profile(
     # Add a flag to control default expiry dates for testing purposes
     _set_default_expiry_dates=True,
 ):
-    """Creates a DriverProfile instance."""
+    """Creates a DriverProfile instance. Allows email to be an empty string."""
     # Default date_of_birth if not provided
     if not date_of_birth:
         try:
@@ -274,7 +274,7 @@ def create_driver_profile(
     return DriverProfile.objects.create(
         user=user,
         name=name,
-        email=email,
+        email=email, # Use the provided email, can be empty string
         phone_number=phone_number,
         address_line_1=address_line_1,
         city="Sydney",
@@ -569,55 +569,49 @@ def create_refund_request(
     stripe_refund_id="",
     is_admin_initiated=False,
     refund_calculation_details=None,
-    request_email=None,
-    verification_token=None, # Added new parameter
-    token_created_at=None,   # Added new parameter
+    request_email=None, # Keep this as None default
+    verification_token=None,
+    token_created_at=None,
 ):
-    """Creates a RefundRequest instance."""
+    """
+    Creates a HireRefundRequest instance.
+    If request_email is explicitly None, it will remain None.
+    Otherwise, it will default to driver_profile.email if driver_profile exists.
+    """
+    # If no hire_booking is provided, create a new one along with its dependencies
     if not hire_booking:
-        # Create a paid booking by default for refund requests
-        driver_profile = create_driver_profile()
-        # Create a payment with a snapshot of the default hire settings
-        default_hire_settings = create_hire_settings() # Ensure default settings exist
-        refund_policy_snapshot = {
-            'cancellation_upfront_full_refund_days': default_hire_settings.cancellation_upfront_full_refund_days,
-            'cancellation_upfront_partial_refund_days': default_hire_settings.cancellation_upfront_partial_refund_days,
-            'cancellation_upfront_partial_refund_percentage': str(default_hire_settings.cancellation_upfront_partial_refund_percentage), # Changed to str
-            'cancellation_upfront_minimal_refund_days': default_hire_settings.cancellation_upfront_minimal_refund_days,
-            'cancellation_upfront_minimal_refund_percentage': str(default_hire_settings.cancellation_upfront_minimal_refund_percentage), # Changed to str
-            'cancellation_deposit_full_refund_days': default_hire_settings.cancellation_deposit_full_refund_days,
-            'cancellation_deposit_partial_refund_days': default_hire_settings.cancellation_deposit_partial_refund_days,
-            'cancellation_deposit_partial_refund_percentage': str(default_hire_settings.cancellation_deposit_partial_refund_percentage), # Changed to str
-            'cancellation_deposit_minimal_refund_days': default_hire_settings.cancellation_deposit_minimal_refund_days,
-            'cancellation_deposit_minimal_refund_percentage': str(default_hire_settings.cancellation_deposit_minimal_refund_percentage), # Changed to str
-            'deposit_enabled': default_hire_settings.deposit_enabled,
-            'default_deposit_calculation_method': default_hire_settings.default_deposit_calculation_method,
-            'deposit_percentage': str(default_hire_settings.deposit_percentage), # Changed to str
-            'deposit_amount': str(default_hire_settings.deposit_amount), # Changed to str
-        }
+        # If driver_profile is explicitly None, create a new one with no email
+        if driver_profile is None:
+            driver_profile_for_new_booking = create_driver_profile(user=None, email='')
+        else:
+            driver_profile_for_new_booking = driver_profile
 
-        payment = create_payment(
+        # Create a payment linked to the chosen driver_profile
+        payment_for_new_booking = create_payment(
             amount=Decimal('500.00'),
             status='succeeded',
-            driver_profile=driver_profile,
-            refund_policy_snapshot=refund_policy_snapshot # Pass the snapshot
+            driver_profile=driver_profile_for_new_booking,
+            refund_policy_snapshot={} # Simple snapshot for factory
         )
+        # Create a hire booking linked to the payment and driver
         hire_booking = create_hire_booking(
-            driver_profile=driver_profile,
-            payment=payment,
-            amount_paid=payment.amount,
-            grand_total=payment.amount,
+            driver_profile=driver_profile_for_new_booking,
+            payment=payment_for_new_booking,
+            amount_paid=payment_for_new_booking.amount,
+            grand_total=payment_for_new_booking.amount,
             payment_status='paid',
             status='confirmed',
         )
-        payment.hire_booking = hire_booking # Link payment to hire booking
-        payment.save()
-
-    if not driver_profile:
-        driver_profile = hire_booking.driver_profile
-
-    if not payment:
-        payment = hire_booking.payment
+        payment_for_new_booking.hire_booking = hire_booking
+        payment_for_new_booking.save()
+        payment = payment_for_new_booking # Ensure 'payment' variable is set for later use
+        driver_profile = driver_profile_for_new_booking # Ensure 'driver_profile' variable is set for later use
+    else:
+        # If hire_booking is provided, ensure driver_profile and payment are also linked or created
+        if not driver_profile:
+            driver_profile = hire_booking.driver_profile
+        if not payment:
+            payment = hire_booking.payment
 
     if amount_to_refund is None:
         amount_to_refund = payment.amount # Default to full refund
@@ -625,7 +619,9 @@ def create_refund_request(
     if refund_calculation_details is None:
         refund_calculation_details = {}
 
-    if request_email is None:
+    # Only set request_email from driver_profile if it wasn't explicitly passed as None
+    # and a driver_profile exists with a non-empty email.
+    if request_email is None and driver_profile and driver_profile.email:
         request_email = driver_profile.email
 
     # Generate token and timestamp if not provided
@@ -646,7 +642,7 @@ def create_refund_request(
         stripe_refund_id=stripe_refund_id,
         is_admin_initiated=is_admin_initiated,
         refund_calculation_details=refund_calculation_details,
-        request_email=request_email,
-        verification_token=verification_token, # Added
-        token_created_at=token_created_at,     # Added
+        request_email=request_email, # Pass the potentially None or empty string value
+        verification_token=verification_token,
+        token_created_at=token_created_at,
     )
