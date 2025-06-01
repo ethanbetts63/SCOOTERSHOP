@@ -91,7 +91,7 @@ class UserRefundRequestView(View):
             user_email_sent = send_templated_email(
                 recipient_list=[refund_request.request_email],
                 subject=f"Confirm Your Refund Request for Booking {refund_request.hire_booking.booking_reference}",
-                template_name='emails/user_refund_request_verification.html',
+                template_name='user_refund_request_verification.html', # Changed from 'emails/user_refund_request_verification.html'
                 context=user_email_context,
                 driver_profile=refund_request.driver_profile,
                 booking=refund_request.hire_booking
@@ -110,8 +110,6 @@ class UserRefundRequestView(View):
                 cancellation_datetime=refund_request.requested_at # Use the request timestamp as cancellation time
             )
 
-            # FIX: Corrected the admin refund link based on the provided URL patterns
-            # Assuming 'dashboard' is the app_name for the admin-related URLs
             admin_refund_link = request.build_absolute_uri(
                 reverse('dashboard:edit_hire_refund_request', args=[refund_request.pk])
             )
@@ -121,7 +119,7 @@ class UserRefundRequestView(View):
             admin_email_context = {
                 'refund_request': refund_request,
                 'calculated_refund_amount': calculated_refund_amount,
-                'admin_refund_link': admin_refund_link, # Now re-enabled
+                'admin_refund_link': admin_refund_link,
             }
 
             # Assuming you have a list of admin emails in settings or a specific one
@@ -136,7 +134,7 @@ class UserRefundRequestView(View):
             admin_email_sent = send_templated_email(
                 recipient_list=admin_recipient_list,
                 subject=f"NEW Refund Request for Booking {refund_request.hire_booking.booking_reference} (ID: {refund_request.pk})",
-                template_name='emails/admin_refund_request_notification.html',
+                template_name='admin_refund_request_notification.html', # Changed from 'emails/admin_refund_request_notification.html'
                 context=admin_email_context,
                 driver_profile=refund_request.driver_profile,
                 booking=refund_request.hire_booking
