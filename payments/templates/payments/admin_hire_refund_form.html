@@ -39,6 +39,18 @@
         <form method="post" class="needs-validation" novalidate>
             {% csrf_token %} {# Django's CSRF protection token #}
 
+            {# NEW: Display non-field errors #}
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">
+                    <strong>Form Errors:</strong>
+                    <ul>
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
             {# General Refund Request Information Fieldset #}
             <fieldset class="form-group border p-3 mb-4 rounded">
                 <legend class="w-auto px-2">Refund Request Details</legend>
@@ -110,18 +122,6 @@
                     <small class="form-text text-muted">{{ form.amount_to_refund.help_text }}</small>
                 </div>
 
-                {# is_admin_initiated field - REMOVED from direct rendering as it's set in the view #}
-                {% comment %}
-                <div class="form-group form-check mb-3">
-                    {{ form.is_admin_initiated }}
-                    <label class="form-check-label" for="{{ form.is_admin_initiated.id_for_label }}">
-                        {{ form.is_admin_initiated.label }}
-                    </label>
-                    {% if form.is_admin_initiated.errors %}<div class="invalid-feedback d-block">{% for error in form.is_admin_initiated.errors %}{{ error }}{% endfor %}</div>{% endif %}
-                    <small class="form-text text-muted">{{ form.is_admin_initiated.help_text }}</small>
-                </div>
-                {% endcomment %}
-
             </fieldset>
 
             {# Form submission buttons #}
@@ -172,7 +172,7 @@
                     document.getElementById('detailPaymentMethod').textContent = details.payment_method || 'N/A';
                     document.getElementById('detailPaymentDate').textContent = details.payment_date || 'N/A';
                     document.getElementById('detailPaymentAmount').textContent = details.payment_amount ? `$${details.payment_amount.toFixed(2)}` : 'N/A';
-                    // NEW: Populate the latest refund request status
+                    // Populate the latest refund request status
                     document.getElementById('detailRefundRequestStatus').textContent = details.refund_request_status_for_booking || 'N/A';
                     bookingDetailsDisplay.classList.remove('hidden');
 
@@ -238,4 +238,3 @@
         });
     </script>
 {% endblock %}
-
