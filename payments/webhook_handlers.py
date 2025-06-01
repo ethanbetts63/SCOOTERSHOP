@@ -60,7 +60,7 @@ def handle_hire_booking_succeeded(payment_obj: Payment, payment_intent_data: dic
         # copying of add-ons, and deletion of TempHireBooking.
         hire_booking = convert_temp_to_hire_booking(
             temp_booking=temp_booking,
-            payment_method='online', # Payment method is online for webhook-triggered success
+            payment_method=temp_booking.payment_option, # Payment method is online for webhook-triggered success
             booking_payment_status=hire_payment_status,
             # Use 'amount_received' from payment_intent_data for the actual amount paid by customer.
             # 'amount' is the requested amount, 'amount_received' is what was actually paid.
