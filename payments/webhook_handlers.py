@@ -3,7 +3,7 @@ from django.db import transaction
 from decimal import Decimal
 from django.conf import settings # Import settings to access ADMIN_EMAIL
 from django.utils import timezone # Import timezone
-import json # <--- ADDED THIS IMPORT
+import json # <--- Ensure this import is present
 
 # Import models from hire app
 from hire.models import TempHireBooking, HireBooking, BookingAddOn, TempBookingAddOn
@@ -148,41 +148,74 @@ def handle_hire_booking_refunded(payment_obj: Payment, event_data: dict):
 
             # Extract refund data from the event payload
             charge_object = event_data # This is the Charge object from the webhook payload
-            refunds_list = charge_object.get('refunds', {}).get('data', [])
 
-            if not refunds_list:
-                print(f"WARNING: No refund data found in 'charge.refunded' event for Payment ID: {payment_obj.id}. Exiting handler.")
-                return # Nothing to process if no refund data
+            # Try to get the refunds list. It might be directly under 'refunds' or 'refunds.data'.
+            # Based on the log, it seems 'refunds' might be missing or empty.
+            # We'll prioritize the 'amount_refunded' from the charge itself,
+            # and rely on the stripe_refund_id being set on HireRefundRequest during initiation.
+            refunded_amount_cents = charge_object.get('amount_refunded')
+            if refunded_amount_cents is None:
+                print(f"WARNING: 'amount_refunded' not found in 'charge.refunded' event for Payment ID: {payment_obj.id}. Exiting handler.")
+                return # Nothing to process if no refund amount
 
-            stripe_refund_data = refunds_list[0] # Assuming the first (or only) refund in the list
-
-            stripe_refund_id = stripe_refund_data['id']
-            refunded_amount_cents = stripe_refund_data['amount'] # Amount in cents
             refunded_amount_decimal = Decimal(refunded_amount_cents) / Decimal('100')
-            refund_reason = stripe_refund_data.get('reason')
-            refund_status = stripe_refund_data.get('status') # e.g., 'succeeded', 'pending', 'failed'
+            
+            # The charge.refunded event's 'id' is the Charge ID, not the Refund ID.
+            # We need to find the actual Refund ID if available in the event data,
+            # or rely on the one saved in HireRefundRequest.
+            stripe_refund_id = None
+            if 'refunds' in charge_object and isinstance(charge_object['refunds'], dict) and 'data' in charge_object['refunds'] and charge_object['refunds']['data']:
+                # This path is for when 'refunds.data' is present and contains the refund object
+                stripe_refund_id = charge_object['refunds']['data'][0].get('id')
+                refund_status = charge_object['refunds']['data'][0].get('status')
+                print(f"DEBUG: Extracted Stripe Refund ID from refunds.data: {stripe_refund_id}, Status: {refund_status}")
+            elif 'refunds' in charge_object and isinstance(charge_object['refunds'], list) and charge_object['refunds']:
+                # This path is for when 'refunds' is directly a list of refund objects
+                stripe_refund_id = charge_object['refunds'][0].get('id')
+                refund_status = charge_object['refunds'][0].get('status')
+                print(f"DEBUG: Extracted Stripe Refund ID from refunds list: {stripe_refund_id}, Status: {refund_status}")
+            else:
+                # Fallback: If no explicit refund object found in the event,
+                # the status of the charge itself might indicate refund status.
+                # Or, we rely on the status being set by ProcessHireRefundView.
+                # For charge.refunded, the charge status is usually 'succeeded'.
+                refund_status = charge_object.get('status') # This is the charge status, not refund status
+                print(f"WARNING: Could not find explicit Stripe Refund ID or status in event's 'refunds' array. Using charge status: {refund_status}")
 
-            print(f"DEBUG: Extracted Stripe Refund ID: {stripe_refund_id}, Amount: {refunded_amount_decimal}, Status: {refund_status}")
+
+            print(f"DEBUG: Processed Refund Amount: {refunded_amount_decimal}, Deduced Status: {refund_status}")
 
             # 1. Find the associated HireRefundRequest
             hire_refund_request = None
             try:
-                # Try to find a request that is linked to this payment and is awaiting processing
-                hire_refund_request = HireRefundRequest.objects.filter(
-                    payment=payment_obj,
-                    status__in=['approved', 'reviewed_pending_approval', 'pending']
-                ).order_by('-requested_at').first()
-
-                if not hire_refund_request:
-                    # If not found by status, try to find by stripe_refund_id (for retries or external refunds)
+                # Prioritize finding by the stripe_refund_id if we have it from the event
+                if stripe_refund_id:
                     hire_refund_request = HireRefundRequest.objects.filter(
                         stripe_refund_id=stripe_refund_id
                     ).first()
+                    if hire_refund_request:
+                        print(f"DEBUG: Found HireRefundRequest by stripe_refund_id: {hire_refund_request.id}")
+
+                # If not found by stripe_refund_id, or if stripe_refund_id was not available from event,
+                # try to find by payment_obj and expected statuses.
+                if not hire_refund_request:
+                    hire_refund_request = HireRefundRequest.objects.filter(
+                        payment=payment_obj,
+                        status__in=['approved', 'reviewed_pending_approval', 'pending']
+                    ).order_by('-requested_at').first()
+                    if hire_refund_request:
+                        print(f"DEBUG: Found HireRefundRequest by payment_obj and status: {hire_refund_request.id}")
+                        # If found this way, and we didn't get stripe_refund_id from event,
+                        # use the one already saved on the request (from ProcessHireRefundView)
+                        if not stripe_refund_id:
+                            stripe_refund_id = hire_refund_request.stripe_refund_id
+                            print(f"DEBUG: Using stripe_refund_id from HireRefundRequest: {stripe_refund_id}")
+
 
                 if hire_refund_request:
-                    print(f"DEBUG: Found HireRefundRequest: {hire_refund_request.id} with current status: {hire_refund_request.status}")
+                    print(f"DEBUG: Final HireRefundRequest found: {hire_refund_request.id} with current status: {hire_refund_request.status}")
                 else:
-                    print(f"WARNING: No matching HireRefundRequest found for Payment {payment_obj.id} and Stripe Refund ID {stripe_refund_id}. This refund might be external or already processed. Will proceed to update Payment and Booking if possible.")
+                    print(f"WARNING: No matching HireRefundRequest found for Payment {payment_obj.id}. This refund might be external or already processed. Will proceed to update Payment and Booking if possible.")
 
             except Exception as e:
                 print(f"ERROR: Error finding HireRefundRequest for Payment {payment_obj.id}: {e}")
@@ -190,15 +223,18 @@ def handle_hire_booking_refunded(payment_obj: Payment, event_data: dict):
 
             # 2. Update HireRefundRequest (if found)
             if hire_refund_request:
-                if refund_status == 'succeeded':
+                # Only update status if the incoming refund status is 'succeeded' or 'failed'
+                # and it's a more definitive state than the current one.
+                if refund_status == 'succeeded' and hire_refund_request.status != 'refunded':
                     hire_refund_request.status = 'refunded'
-                elif refund_status == 'failed':
+                elif refund_status == 'failed' and hire_refund_request.status != 'failed':
                     hire_refund_request.status = 'failed'
-                # Add more status mappings if Stripe provides them
-                hire_refund_request.stripe_refund_id = stripe_refund_id
+                
+                if stripe_refund_id and not hire_refund_request.stripe_refund_id:
+                     hire_refund_request.stripe_refund_id = stripe_refund_id # Ensure ID is saved if found later
+
                 hire_refund_request.amount_to_refund = refunded_amount_decimal # Update with actual refunded amount
                 hire_refund_request.processed_at = timezone.now() # Mark as processed by the system
-                # processed_by might remain null or be set to a system user if desired
                 hire_refund_request.save()
                 print(f"DEBUG: Updated HireRefundRequest {hire_refund_request.id} to status '{hire_refund_request.status}'.")
             else:

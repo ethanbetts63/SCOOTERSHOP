@@ -71,6 +71,7 @@ class ProcessHireRefundView(View):
                 hire_refund_request.status = 'approved' # Or 'approved_awaiting_stripe' if you add that status
                 hire_refund_request.processed_by = request.user
                 hire_refund_request.processed_at = timezone.now()
+                hire_refund_request.stripe_refund_id = stripe_refund.id # <--- ADDED THIS LINE
                 hire_refund_request.save()
 
                 messages.success(request, f"Refund for booking '{hire_refund_request.hire_booking.booking_reference}' initiated successfully with Stripe (ID: {stripe_refund.id}). Status updated to '{hire_refund_request.get_status_display()}'.")
