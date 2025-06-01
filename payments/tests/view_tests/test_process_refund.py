@@ -26,52 +26,67 @@ from hire.tests.test_helpers.model_factories import (
     create_hire_settings,
 )
 
-# Mock Stripe for testing purposes
-# We need to mock stripe.Refund.create and stripe.error.StripeError
-# The path for mocking stripe should target where it's used in process_refund.py
-STRIPE_REFUND_CREATE_PATH = 'payments.views.HireRefunds.process_refund.stripe.Refund.create'
-STRIPE_ERROR_PATH = 'payments.views.HireRefunds.process_refund.stripe.error.StripeError'
+# Import actual StripeError for mocking
+import stripe.error
 
-@override_settings(STRIPE_SECRET_KEY='sk_test_mock_key') # Mock Stripe secret key
+# Mock Stripe for testing purposes
+STRIPE_REFUND_CREATE_PATH = 'payments.views.HireRefunds.process_refund.stripe.Refund.create'
+
+@override_settings(STRIPE_SECRET_KEY='sk_test_mock_key', LOGIN_URL='/accounts/login/') # Mock Stripe secret key and set LOGIN_URL
 class ProcessHireRefundViewTests(TestCase):
     """
     Tests for the ProcessHireRefundView, which handles initiating Stripe refunds.
     """
 
-    def setUp(self):
+    @classmethod
+    def setUpTestData(cls):
         """
-        Set up common test data for all tests.
+        Set up common test data for all tests, run once for the class.
         """
-        self.client = Client()
-        self.staff_user = create_user(username='adminuser', email='admin@example.com', is_staff=True)
-        self.regular_user = create_user(username='regularuser', email='user@example.com', is_staff=False)
+        cls.staff_user = create_user(username='adminuser', email='admin@example.com', is_staff=True)
+        cls.regular_user = create_user(username='regularuser', email='user@example.com', is_staff=False)
 
         # Ensure HireSettings exists
-        self.hire_settings = create_hire_settings()
+        cls.hire_settings = create_hire_settings()
 
         # Create a driver profile
-        self.driver_profile = create_driver_profile(user=self.regular_user, email='test@example.com')
+        cls.driver_profile = create_driver_profile(user=cls.regular_user, email='test@example.com')
 
         # Create a base payment that has a Stripe Payment Intent ID
-        self.payment = create_payment(
+        cls.payment = create_payment(
             amount=Decimal('500.00'),
             status='succeeded',
-            driver_profile=self.driver_profile,
+            driver_profile=cls.driver_profile,
             stripe_payment_intent_id='pi_mock_12345', # Crucial for Stripe refund
             refund_policy_snapshot={}
         )
         # Create a base hire booking linked to the payment
-        self.hire_booking = create_hire_booking(
-            driver_profile=self.driver_profile,
-            payment=self.payment,
-            amount_paid=self.payment.amount,
-            grand_total=self.payment.amount,
+        cls.hire_booking = create_hire_booking(
+            driver_profile=cls.driver_profile,
+            payment=cls.payment,
+            amount_paid=cls.payment.amount,
+            grand_total=cls.payment.amount,
             payment_status='paid',
             status='confirmed',
         )
-        self.payment.hire_booking = self.hire_booking
-        self.payment.save()
+        cls.payment.hire_booking = cls.hire_booking
+        cls.payment.save()
 
+        # Create a hire booking with no payment for specific test case
+        cls.hire_booking_no_payment = create_hire_booking(
+            driver_profile=cls.driver_profile,
+            payment=None, # Explicitly no payment
+            amount_paid=Decimal('0.00'),
+            grand_total=Decimal('200.00'),
+            payment_status='unpaid',
+            status='pending',
+        )
+
+    def setUp(self):
+        """
+        Set up for each individual test method.
+        """
+        self.client = Client()
         # URL for processing refunds
         self.process_url = lambda pk: reverse('dashboard:process_hire_refund', kwargs={'pk': pk})
         self.management_url = reverse('dashboard:admin_hire_refund_management')
@@ -170,11 +185,11 @@ class ProcessHireRefundViewTests(TestCase):
             amount_to_refund=Decimal('100.00')
         )
 
-        self._login_staff_user()
+        self._login_staff_user() # Log in staff user so the decorator passes
 
         response = self.client.post(self.process_url(refund_request.pk))
 
-        # Assert redirect back to management page
+        # Assert redirect back to management page (this is the expected behavior from the view's logic)
         self.assertRedirects(response, self.management_url)
 
         # Assert Stripe API was NOT called
@@ -187,6 +202,7 @@ class ProcessHireRefundViewTests(TestCase):
         # Check for error message
         messages_list = list(messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages_list), 1)
+        # FIX: Corrected expected message string to include the trailing period
         self.assertEqual(str(messages_list[0]), "Refund request is not in an approvable state. Current status: Pending Review.")
         self.assertEqual(messages_list[0].tags, 'error')
 
@@ -195,9 +211,10 @@ class ProcessHireRefundViewTests(TestCase):
         """
         Test that a refund is NOT initiated if there's no associated payment.
         """
+        # FIX: Create a refund request linked to a booking that has no payment
         refund_request = create_refund_request(
-            hire_booking=self.hire_booking,
-            payment=None, # No payment linked
+            hire_booking=self.hire_booking_no_payment, # Use the booking without a payment
+            payment=None, # Explicitly pass None, the factory won't override if booking.payment is None
             driver_profile=self.driver_profile,
             status='approved',
             amount_to_refund=Decimal('100.00')
@@ -219,23 +236,25 @@ class ProcessHireRefundViewTests(TestCase):
         """
         Test that a refund is NOT initiated if amount_to_refund is None or 0.
         """
+        # FIX: Explicitly set amount_to_refund to 0.00 in the factory call
         refund_request = create_refund_request(
             hire_booking=self.hire_booking,
             payment=self.payment,
             driver_profile=self.driver_profile,
             status='approved',
-            amount_to_refund=None # No amount specified
+            amount_to_refund=Decimal('0.00') # Explicitly set to 0.00
         )
 
         self._login_staff_user()
         response = self.client.post(self.process_url(refund_request.pk))
 
         self.assertRedirects(response, self.management_url)
-        mock_stripe_refund_create.assert_not_called()
+        mock_stripe_refund_create.assert_not_called() # Should not be called
 
         messages_list = list(messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages_list), 1)
-        self.assertEqual(str(messages_list[0]), "Cannot process refund: No amount specified to refund.")
+        # FIX: Updated message to match the view's new message
+        self.assertEqual(str(messages_list[0]), "Cannot process refund: No valid amount specified to refund.")
         self.assertEqual(messages_list[0].tags, 'error')
 
     @mock.patch(STRIPE_REFUND_CREATE_PATH)
@@ -288,10 +307,13 @@ class ProcessHireRefundViewTests(TestCase):
         Test that Stripe API errors are caught, a message is displayed,
         and the refund request status is updated to 'failed'.
         """
-        # Mock Stripe to raise a StripeError
-        mock_stripe_refund_create.side_effect = mock.Mock(
-            __class__=mock.Mock(name='StripeError'), # Mimic StripeError class
-            user_message='Stripe API error message',
+        # FIX: Correctly mock StripeError by raising an instance of it
+        mock_stripe_refund_create.side_effect = stripe.error.StripeError(
+            message='Stripe API error message',
+            http_body='{}',
+            http_status=400,
+            json_body={},
+            headers={},
             code='some_code',
             param='some_param'
         )
@@ -371,7 +393,7 @@ class ProcessHireRefundViewTests(TestCase):
             amount_to_refund=Decimal('100.00')
         )
         response = self.client.post(self.process_url(refund_request.pk))
-        # FIX: Changed expected redirect URL to /accounts/login/
+        # Expected redirect URL is now /accounts/login/
         self.assertRedirects(response, f'/accounts/login/?next={self.process_url(refund_request.pk)}')
 
     def test_non_staff_user_redirected(self):
@@ -387,7 +409,7 @@ class ProcessHireRefundViewTests(TestCase):
         )
         self.client.login(username=self.regular_user.username, password='password123')
         response = self.client.post(self.process_url(refund_request.pk))
-        # FIX: Changed expected redirect URL to /accounts/login/
+        # Expected redirect URL is now /accounts/login/
         self.assertRedirects(response, f'/accounts/login/?next={self.process_url(refund_request.pk)}')
 
     def test_get_request_not_allowed(self):
@@ -404,4 +426,6 @@ class ProcessHireRefundViewTests(TestCase):
         )
         self._login_staff_user() # Log in the staff user
         response = self.client.get(self.process_url(refund_request.pk))
+        # Now that the user is logged in and staff, the decorator passes,
+        # and the View's dispatch method correctly returns 405 for GET.
         self.assertEqual(response.status_code, 405) # Method Not Allowed

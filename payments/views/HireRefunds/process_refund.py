@@ -23,7 +23,7 @@ class ProcessHireRefundView(View):
 
         # Basic validation: Only process if status is 'approved' or 'reviewed_pending_approval' Im fairly sure this is wrong it should just be reviewed_pending_approval
         if hire_refund_request.status not in ['approved', 'reviewed_pending_approval']:
-            messages.error(request, f"Refund request is not in an approvable state. Current status: {hire_refund_request.get_status_display()}")
+            messages.error(request, f"Refund request is not in an approvable state. Current status: {hire_refund_request.get_status_display()}.") # Added period
             return redirect('dashboard:admin_hire_refund_management') # Redirect back to management page
 
         # Ensure there's a linked payment and an amount to refund
@@ -31,8 +31,9 @@ class ProcessHireRefundView(View):
             messages.error(request, "Cannot process refund: No associated payment found for this request.")
             return redirect('dashboard:admin_hire_refund_management')
 
-        if not hire_refund_request.amount_to_refund:
-            messages.error(request, "Cannot process refund: No amount specified to refund.")
+        # FIX: Changed validation to check for None or zero/negative amount
+        if hire_refund_request.amount_to_refund is None or hire_refund_request.amount_to_refund <= 0:
+            messages.error(request, "Cannot process refund: No valid amount specified to refund.")
             return redirect('dashboard:admin_hire_refund_management')
 
         # Ensure the payment has a Stripe Payment Intent ID
