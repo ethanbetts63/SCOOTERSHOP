@@ -3,7 +3,79 @@
 
 {% block extra_css %}
 {{ block.super }}
+<style>
+    /* Basic styling for table cells and actions for a more professional look */
+    .table-cell-padding {
+        padding: 12px 24px; /* More vertical and horizontal padding */
+    }
 
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 9999px; /* Fully rounded */
+        font-weight: 600; /* Semi-bold */
+        font-size: 0.75rem; /* text-xs */
+        line-height: 1rem; /* leading-5 */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Specific badge colors - ensure these match your Tailwind config or are added to it */
+    .status-refunded { background-color: #d1fae5; color: #065f46; } /* green-100, green-800 */
+    .status-approved { background-color: #dbeafe; color: #1e40af; } /* blue-100, blue-800 */
+    .status-pending { background-color: #fffbeb; color: #92400e; } /* yellow-100, yellow-800 */
+    .status-reviewed-pending-approval { background-color: #fef3c7; color: #9a3412; } /* orange-100, orange-800 */
+    .status-rejected, .status-failed { background-color: #fee2e2; color: #991b1b; } /* red-100, red-800 */
+    .status-unverified { background-color: #e5e7eb; color: #4b5563; } /* gray-100, gray-800 */
+
+    /* Action buttons styling */
+    .action-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 16px;
+        border-radius: 0.375rem; /* rounded-md */
+        font-size: 0.875rem; /* text-sm */
+        font-weight: 500; /* font-medium */
+        line-height: 1.25rem; /* leading-5 */
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+        transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, color 0.15s ease-in-out;
+        text-decoration: none; /* Remove underline from links */
+        cursor: pointer;
+    }
+
+    .action-button:hover {
+        opacity: 0.9;
+    }
+
+    .btn-review {
+        color: #4f46e5; /* indigo-600 */
+        border: 1px solid #c7d2fe; /* indigo-200 */
+        background-color: #e0e7ff; /* indigo-100 */
+    }
+    .btn-review:hover {
+        color: #3730a3; /* indigo-900 */
+        background-color: #c7d2fe; /* indigo-200 */
+    }
+
+    .btn-approve {
+        color: #ffffff;
+        background-color: #10b981; /* green-500 */
+        border: 1px solid #059669; /* green-600 */
+    }
+    .btn-approve:hover {
+        background-color: #059669; /* green-600 */
+    }
+
+    .btn-reject {
+        color: #ffffff;
+        background-color: #ef4444; /* red-500 */
+        border: 1px solid #dc2626; /* red-600 */
+    }
+    .btn-reject:hover {
+        background-color: #dc2626; /* red-600 */
+    }
+</style>
 {% endblock %}
 
 {% block admin_main_content %}
@@ -67,34 +139,43 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     {% for request in refund_requests %}
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 table-cell-padding">
                                 {{ request.id }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
                                 {{ request.hire_booking.booking_reference }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
                                 {% if request.driver_profile %}{{ request.driver_profile.email }}{% else %}N/A{% endif %}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
                                 {{ request.requested_at|date:"Y-m-d H:i" }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                    {% if request.status == 'refunded' %}bg-green-100 text-green-800
-                                    {% elif request.status == 'approved' %}bg-blue-100 text-blue-800
-                                    {% elif request.status == 'pending' %}bg-yellow-100 text-yellow-800
-                                    {% elif request.status == 'rejected' or request.status == 'failed' %}bg-red-100 text-red-800
-                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
+                                <span class="status-badge
+                                    {% if request.status == 'refunded' %}status-refunded
+                                    {% elif request.status == 'approved' %}status-approved
+                                    {% elif request.status == 'pending' %}status-pending
+                                    {% elif request.status == 'reviewed_pending_approval' %}status-reviewed-pending-approval
+                                    {% elif request.status == 'rejected' or request.status == 'failed' %}status-rejected
+                                    {% else %}status-unverified{% endif %}">
                                     {{ request.get_status_display }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
                                 {% if request.amount_to_refund %}{{ request.amount_to_refund|floatformat:2 }}{% else %}N/A{% endif %}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                {# Link to the edit page for the specific refund request #}
-                                <a href="{% url 'dashboard:edit_hire_refund_request' pk=request.pk %}" class="text-indigo-600 hover:text-indigo-900">View/Edit Details</a>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium table-cell-padding">
+                                <div class="flex space-x-2">
+                                    {# Link to the edit page for the specific refund request, text changed to "Review" #}
+                                    <a href="{% url 'dashboard:edit_hire_refund_request' pk=request.pk %}" class="action-button btn-review">Review</a>
+
+                                    {# Approve and Reject buttons, only shown if status is 'reviewed_pending_approval' #}
+                                    {% if request.status == 'reviewed_pending_approval' %}
+                                        <button type="button" class="action-button btn-approve">Approve</button>
+                                        <button type="button" class="action-button btn-reject">Reject</button>
+                                    {% endif %}
+                                </div>
                             </td>
                         </tr>
                     {% endfor %}
