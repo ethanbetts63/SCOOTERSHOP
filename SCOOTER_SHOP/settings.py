@@ -161,7 +161,7 @@ AUTH_USER_MODEL = 'users.User'
 LOGIN_REDIRECT_URL = reverse_lazy('core:index') # Recommended
 # URL to redirect to after logging out - use namespaced URL if applicable
 LOGOUT_REDIRECT_URL = reverse_lazy('core:index') # Recommended
-
+SITE_BASE_URL = 'http://localhost:8000'
 
 # API Keys and external service settings
 GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
