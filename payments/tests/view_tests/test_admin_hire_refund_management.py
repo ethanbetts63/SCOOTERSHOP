@@ -130,7 +130,8 @@ class AdminHireRefundManagementTests(TestCase):
         self.assertIn("Has Expired", call_kwargs['subject'])
         self.assertEqual(call_kwargs['template_name'], 'emails/user_refund_request_expired_unverified.html')
         # Compare UUIDs as strings
-        self.assertEqual(str(call_kwargs['context']['refund_request'].pk), str(expired_request.pk))
+        # Compare the verification_token to ensure the correct request was processed
+        self.assertEqual(call_kwargs['context']['refund_request'].verification_token, expired_request.verification_token)
 
     # Corrected mock path
     @mock.patch('payments.views.HireRefunds.admin_hire_refund_management.send_templated_email')
