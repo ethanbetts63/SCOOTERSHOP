@@ -1,0 +1,101 @@
+{% extends "core/layout.html" %}
+{% load static %}
+
+{% block title %}Scootershop Australia - {{ page_title }}{% endblock %}
+
+{% block extra_css %}
+{# Any page-specific CSS can go here if needed, but for now, it's empty #}
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8">
+    <div class="bg-white p-6 md:p-8 rounded-lg shadow-xl border border-gray-200 mt-8 mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 text-center mb-6">{{ page_title }}</h1>
+
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <div class="p-3 rounded-md {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %} mb-2" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <p class="text-gray-600 text-center mb-8">{{ intro_text }}</p>
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md relative mb-4" role="alert">
+                    <strong class="font-bold">Oops!</strong>
+                    <span class="block sm:inline">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </span>
+                </div>
+            {% endif %}
+
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                    <label for="{{ form.booking_reference.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ form.booking_reference.label }}
+                    </label>
+                    <input type="text" name="{{ form.booking_reference.name }}" id="{{ form.booking_reference.id_for_label }}"
+                           value="{{ form.booking_reference.value|default_if_none:'' }}"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm {% if form.booking_reference.errors %}border-red-500{% endif %}"
+                           placeholder="{{ form.booking_reference.help_text }}"
+                           maxlength="{{ form.booking_reference.field.max_length }}"
+                           {% if form.booking_reference.field.required %}required{% endif %}>
+                    <p class="mt-2 text-sm text-gray-500">{{ form.booking_reference.help_text }}</p>
+                    {% if form.booking_reference.errors %}
+                        {% for error in form.booking_reference.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ form.email.label }}
+                    </label>
+                    <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}"
+                           value="{{ form.email.value|default_if_none:'' }}"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm {% if form.email.errors %}border-red-500{% endif %}"
+                           placeholder="{{ form.email.help_text }}"
+                           {% if form.email.field.required %}required{% endif %}>
+                    <p class="mt-2 text-sm text-gray-500">{{ form.email.help_text }}</p>
+                    {% if form.email.errors %}
+                        {% for error in form.email.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div>
+                <label for="{{ form.reason.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                    {{ form.reason.label }}
+                </label>
+                <textarea name="{{ form.reason.name }}" id="{{ form.reason.id_for_label }}"
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm resize-y {% if form.reason.errors %}border-red-500{% endif %}"
+                          rows="4" placeholder="{{ form.reason.widget.attrs.placeholder }}">{{ form.reason.value|default_if_none:'' }}</textarea>
+                <p class="mt-2 text-sm text-gray-500">{{ form.reason.help_text }}</p>
+                {% if form.reason.errors %}
+                    {% for error in form.reason.errors %}
+                        <p class="mt-2 text-sm text-red-600">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="flex justify-center">
+                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Submit Refund Request
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

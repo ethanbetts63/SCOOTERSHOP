@@ -175,6 +175,13 @@
                             </li>
                         {% endif %}
 
+                        {# NEW: Link to Hire Refunds #}
+                        <li>
+                            <a href="{% url 'payments:user_refund_request_hire' %}">
+                                Hire Refunds
+                            </a>
+                        </li>
+
                         {% if settings.enable_contact_page or settings.enable_about_page or user.is_staff %}
                             <li>
                                 <a href="{% url 'core:contact' %}"
