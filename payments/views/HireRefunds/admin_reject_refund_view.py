@@ -20,7 +20,7 @@ class AdminRejectRefundView(View):
     It allows the admin to provide a reason for rejection and
     optionally send an automated email to the user.
     """
-    template_name = 'payments/admin_reject_refund_form.html' # We'll create this template next
+    template_name = 'payments/admin_reject_refund_form.html'
 
     def get(self, request, pk, *args, **kwargs):
         """
@@ -68,7 +68,7 @@ class AdminRejectRefundView(View):
                     email_context = {
                         'refund_request': refund_request_instance,
                         'admin_email': settings.DEFAULT_FROM_EMAIL, # Or a specific admin contact email
-                        'refund_policy_link': settings.REFUND_POLICY_URL, # Assuming you have this in settings
+                        # 'refund_policy_link': settings.REFUND_POLICY_URL, # Removed as per user request
                     }
                     try:
                         send_templated_email(

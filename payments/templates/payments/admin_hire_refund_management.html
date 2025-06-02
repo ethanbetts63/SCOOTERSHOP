@@ -168,8 +168,8 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium table-cell-padding">
                                 <div class="flex space-x-2">
                                     {# Link to the edit page for the specific refund request, text changed to "Review/Edit" #}
-                                    {# Only show if status is NOT 'partially_refunded' or 'refunded' #}
-                                    {% if request.status not in 'partially_refunded,refunded' %}
+                                    {# Only show if status is NOT 'partially_refunded', 'refunded', or 'rejected' #}
+                                    {% if request.status not in 'partially_refunded,refunded,rejected' %}
                                         <a href="{% url 'dashboard:edit_hire_refund_request' pk=request.pk %}" class="action-button btn-review">Review/Edit</a>
                                     {% endif %}
 
@@ -186,11 +186,10 @@
 
                                     {# Reject button, always appears unless status is approved, rejected, partially_refunded, refunded, or failed #}
                                     {% if request.status not in 'approved,rejected,partially_refunded,refunded,failed' %}
-                                        {# The reject button currently doesn't have an action, but it will appear #}
-                                        <button type="button" class="action-button btn-reject"
-                                                onclick="alert('Reject functionality to be implemented.');">
+                                        {# Link to the reject refund form #}
+                                        <a href="{% url 'dashboard:reject_hire_refund_request' pk=request.pk %}" class="action-button btn-reject">
                                             Reject
-                                        </button>
+                                        </a>
                                     {% endif %}
                                 </div>
                             </td>
