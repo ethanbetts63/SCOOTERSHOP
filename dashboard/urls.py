@@ -3,8 +3,9 @@
 from django.urls import path
 from . import views # This imports all views exposed in __init__.py
 from hire.views import Admin_Hire_Booking_view # Ensure this is imported if used elsewhere
-from payments.views import HireRefunds
-app_name = 'dashboard' 
+from payments.views import HireRefunds # Import the HireRefunds package, which should contain AdminRejectRefundView
+
+app_name = 'dashboard'
 
 urlpatterns = [
     # --- Dashboard Index ---
@@ -18,7 +19,7 @@ urlpatterns = [
 
     # --- Hire Booking Management Views ---
 
-    #WHY IS THERE hire-booking and hire-bookings? 
+    #WHY IS THERE hire-booking and hire-bookings?
     path('hire-bookings/', views.hire_bookings_view, name='hire_bookings'),
     path('hire-bookings/<int:pk>/', views.hire_booking_details_view, name='hire_booking_details'), # Hire booking details view
     path('hire-bookings/search/', views.hire_booking_search_view, name='hire_booking_search'), # Hire booking search view
@@ -38,6 +39,9 @@ urlpatterns = [
     path('settings/hire-refunds/add/', HireRefunds.AdminAddEditRefundRequestView.as_view(), name='add_hire_refund_request'),
     path('settings/hire-refunds/edit/<int:pk>/', HireRefunds.AdminAddEditRefundRequestView.as_view(), name='edit_hire_refund_request'),
     path('settings/hire-refunds/process/<int:pk>/', HireRefunds.ProcessHireRefundView.as_view(), name='process_hire_refund'),
+    # NEW: URL for rejecting a refund request
+    path('settings/hire-refunds/reject/<int:pk>/', HireRefunds.AdminRejectRefundView.as_view(), name='reject_hire_refund_request'),
+
 
     # --- Dashboard Service Brand Management Views ---
     path('settings/service-brands/', views.service_brands_management, name='service_brands_management'),

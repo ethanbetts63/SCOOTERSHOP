@@ -1,0 +1,126 @@
+{% extends "dashboard/admin_layout.html" %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .required-indicator {
+        color: red;
+        margin-left: 5px;
+    }
+    /* Basic styling for form elements, consistent with other admin forms */
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #374151; /* gray-700 */
+    }
+    .form-control {
+        display: block;
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #d1d5db; /* gray-300 */
+        border-radius: 0.375rem; /* rounded-md */
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    .form-control:focus {
+        border-color: #60a5fa; /* blue-400 */
+        outline: 0;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.5); /* ring-blue-500 with opacity */
+    }
+    .invalid-feedback {
+        color: #ef4444; /* red-500 */
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    .form-check {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    .form-check-input {
+        margin-right: 0.5rem;
+    }
+    .form-check-label {
+        margin-bottom: 0;
+    }
+</style>
+{% endblock %}
+
+{% block admin_main_content %}
+    <div class="service-booking-container p-4">
+        <div class="booking-progress mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">{{ title }}</h2>
+        </div>
+        <p class="mb-4 text-gray-600">Provide a reason for rejecting the refund request for booking <strong>{{ hire_refund_request.hire_booking.booking_reference }}</strong>.</p>
+
+        {# Display Django messages (e.g., success, error) #}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %} {# Django's CSRF protection token #}
+
+            {# NEW: Display non-field errors #}
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">
+                    <strong>Form Errors:</strong>
+                    <ul>
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <fieldset class="form-group border p-4 mb-4 rounded-lg shadow-sm bg-white">
+                <legend class="w-auto px-2 text-lg font-semibold text-gray-700">Rejection Details</legend>
+
+                {# rejection_reason field #}
+                <div class="form-group mb-4">
+                    <label for="{{ form.rejection_reason.id_for_label }}">
+                        {{ form.rejection_reason.label }}
+                        {% if form.rejection_reason.field.required %}<span class="required-indicator">*</span>{% endif %}
+                    </label>
+                    {{ form.rejection_reason }}
+                    {% if form.rejection_reason.errors %}<div class="invalid-feedback d-block">{% for error in form.rejection_reason.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    <small class="form-text text-muted">{{ form.rejection_reason.help_text }}</small>
+                </div>
+
+                {# send_rejection_email checkbox #}
+                <div class="form-group form-check mb-4">
+                    {{ form.send_rejection_email }}
+                    <label class="form-check-label" for="{{ form.send_rejection_email.id_for_label }}">
+                        {{ form.send_rejection_email.label }}
+                    </label>
+                    {% if form.send_rejection_email.errors %}<div class="invalid-feedback d-block">{% for error in form.send_rejection_email.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    <small class="form-text text-muted ml-2">{{ form.send_rejection_email.help_text }}</small>
+                </div>
+
+            </fieldset>
+
+            {# Form submission buttons #}
+            <div class="flex space-x-2">
+                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    Confirm Rejection
+                </button>
+                <a href="{% url 'dashboard:admin_hire_refund_management' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+{% endblock %}
