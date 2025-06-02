@@ -79,7 +79,7 @@
                                                         <p class="card-text">{{ package_obj.description }}</p>
                                                         <p class="card-text">
                                                             {# Display daily cost for clarity, but data-package-price holds total for JS calculation #}
-                                                            <strong>Price: {{ hire_settings.currency_symbol }}<span class="package-price" data-package-price="{{ package_obj.package_price|floatformat:2 }}">{{ package_obj.daily_cost|floatformat:2 }}</span> per day</strong>
+                                                            <strong>Price: {{ hire_settings.currency_symbol }}<span class="package-price" data-package-price="{{ package_obj.package_price|floatformat:2 }}">{{ package_obj.package_price|floatformat:2 }}</span> for hire period</strong>
                                                         </p>
                                                         {% if package_obj.add_ons.all %}
                                                             <p class="card-text text-muted small">Includes:</p>
@@ -119,7 +119,8 @@
                                                             <h5 class="card-title" data-original-title="{{ addon.name }}">{{ addon.name }}</h5>
                                                             <p class="card-text">{{ addon.description }}</p>
                                                             <p class="card-text">
-                                                                <strong>Price: {{ hire_settings.currency_symbol }}<span class="addon-cost" data-addon-cost="{{ addon.cost|floatformat:2 }}">{{ addon.cost|floatformat:2 }}</span> per day</strong>
+                                                                {# MODIFIED: Changed "per day" to "for hire period" #}
+                                                                <strong>Price: {{ hire_settings.currency_symbol }}<span class="addon-cost" data-addon-cost="{{ addon.cost|floatformat:2 }}">{{ addon.cost|floatformat:2 }}</span> for hire period</strong>
                                                             </p>
                                                             <div class="form-check mt-3">
                                                                 {{ field_info.selected_field.errors }}
@@ -133,7 +134,7 @@
                                                                        data-addon-id="{{ addon.id }}"
                                                                        data-max-quantity="{{ field_info.quantity_field.field.max_value }}" {# Use the adjusted max_value from the form field #}
                                                                        data-min-quantity="{{ field_info.quantity_field.field.min_value }}" {# Use the min_value from the form field #}
-                                                                       data-addon-cost="{{ addon.cost|floatformat:2 }}"> {# ADDED data-addon-cost HERE #}
+                                                                       data-addon-cost="{{ addon.cost|floatformat:2 }}">
                                                                 <label class="form-check-label" for="{{ field_info.selected_field.id_for_label }}">Add to booking</label>
                                                             </div>
                                                             {# Conditionally display quantity input based on max_quantity #}
@@ -207,13 +208,17 @@
             returnDate = new Date();
         }
 
+        // This hireDurationDays calculation was used in the problematic JS.
+        // It's not strictly needed anymore for the add-on price calculation if addonCost is for the full duration,
+        // but keeping it here in case it's used elsewhere or for future reference.
         const MS_PER_DAY = 1000 * 60 * 60 * 24;
         let hireDurationDays = Math.ceil((returnDate - pickupDate) / MS_PER_DAY);
         if (hireDurationDays === 0 && returnDate > pickupDate) {
-            hireDurationDays = 1;
+            hireDurationDays = 1; // Ensure at least 1 day for same-day hires spanning across midnight or for short hires
         } else if (hireDurationDays < 0) {
-            hireDurationDays = 0;
+            hireDurationDays = 0; // Should not happen with proper date validation
         }
+
 
         const initialMotorcyclePrice = parseFloat("{{ temp_booking.total_hire_price|floatformat:2 }}");
         const currencySymbol = "{{ hire_settings.currency_symbol }}";
@@ -238,29 +243,30 @@
             }
             selectedPackageDisplay.textContent = `${selectedPackageName} (${currencySymbol}${currentPackagePrice.toFixed(2)})`;
 
-            // Calculate add-ons price (these are now always "additional")
+            // Calculate add-ons price
             addonCheckboxes.forEach(checkbox => {
                 // Get addonCost directly from the checkbox's data attribute
-                const addonCost = parseFloat(checkbox.dataset.addonCost);
+                const addonCost = parseFloat(checkbox.dataset.addonCost); // This is price for DURATION
                 const addonId = parseInt(checkbox.value);
                 const quantityInput = document.querySelector(`input[name="addon_${addonId}_quantity"]`);
                 
-                if (!isNaN(addonCost) && checkbox.checked) { // Ensure addonCost is a valid number
+                if (!isNaN(addonCost) && checkbox.checked) { 
                     let quantity = 1;
-                    // Use data-max-quantity for client-side logic (this is now the adjusted max)
                     const adjustedMaxQuantity = parseInt(checkbox.dataset.maxQuantity); 
                     const minQuantity = parseInt(checkbox.dataset.minQuantity);
 
                     if (adjustedMaxQuantity > 1 && quantityInput && !quantityInput.closest('.quantity-input-group').classList.contains('d-none')) {
                         quantity = parseInt(quantityInput.value);
                         if (isNaN(quantity) || quantity < minQuantity || quantity > adjustedMaxQuantity) {
-                            quantity = minQuantity; // Fallback to min if invalid
-                            quantityInput.value = minQuantity; // Reset input
+                            quantity = minQuantity; 
+                            quantityInput.value = minQuantity; 
                         }
-                    } else if (adjustedMaxQuantity === 1) { // If max quantity is 1, quantity is always 1
+                    } else if (adjustedMaxQuantity === 1) { 
                          quantity = 1;
                     }
-                    currentAddonsPrice += (addonCost * quantity * hireDurationDays);
+                    // MODIFIED: Removed multiplication by hireDurationDays
+                    // addonCost is already the price for the entire duration for one unit.
+                    currentAddonsPrice += (addonCost * quantity); 
                 }
             });
 
@@ -271,51 +277,44 @@
 
         // Function to handle add-on visibility based on selected package (simplified)
         function updateAddonVisibility() {
-            // This function is now simpler as the form already filters what's displayed.
-            // We only need to manage the quantity input visibility based on checkbox state and max_quantity.
             addonCheckboxes.forEach(checkbox => {
                 const addonId = parseInt(checkbox.value);
                 const quantityDiv = document.getElementById(`quantityDiv${addonId}`);
                 const quantityInput = document.querySelector(`input[name="addon_${addonId}_quantity"]`);
-                const adjustedMaxQuantity = parseInt(checkbox.dataset.maxQuantity); // This is now the adjusted max
+                const adjustedMaxQuantity = parseInt(checkbox.dataset.maxQuantity);
 
-                if (quantityDiv) { // Ensure quantityDiv exists for this addon
+                if (quantityDiv) { 
                     if (adjustedMaxQuantity > 1 && checkbox.checked) {
                         quantityDiv.classList.replace('d-none', 'd-block');
                     } else {
                         quantityDiv.classList.replace('d-block', 'd-none');
-                        if (quantityInput) quantityInput.value = 1; // Reset quantity if hidden
+                        if (quantityInput) quantityInput.value = 1; 
                     }
                 }
             });
-            updateGrandTotal(); // Recalculate after updating visibility
+            updateGrandTotal(); 
         }
 
 
         // Event Listeners for Package Radios
         packageRadios.forEach(radio => {
             radio.addEventListener('change', function() {
-                // Remove border from all package tiles
                 document.querySelectorAll('.package-tile').forEach(tile => {
                     tile.classList.remove('border-primary');
                 });
-                // Add border to the newly selected package tile
                 const packageId = this.value;
                 const selectedPackageTile = document.getElementById(`package-${packageId}`);
                 if (selectedPackageTile) {
                     selectedPackageTile.classList.add('border-primary');
                 }
-                // When package changes, we need to re-submit the form to get the
-                // correct filtered/adjusted add-ons from the server.
-                // This is the most robust way to handle the dynamic filtering.
-                this.form.submit(); // Submit the form to reload with new addon options
+                this.form.submit(); 
             });
         });
 
         // Event Listeners for Add-on Checkboxes
         addonCheckboxes.forEach(checkbox => {
             checkbox.addEventListener('change', function() {
-                updateAddonVisibility(); // Simply update visibility and total
+                updateAddonVisibility(); 
             });
         });
 
@@ -325,13 +324,13 @@
             input.addEventListener('change', function() {
                 updateGrandTotal();
             });
-            input.addEventListener('input', function() { // For real-time updates while typing
+            input.addEventListener('input', function() { 
                 updateGrandTotal();
             });
         });
 
         // Initial update on page load
-        updateAddonVisibility(); // Call this to set initial visibility
+        updateAddonVisibility(); 
         updateGrandTotal();
     });
 </script>
