@@ -48,7 +48,10 @@ class AdminRejectRefundView(View):
         hire_refund_request = get_object_or_404(HireRefundRequest, pk=pk)
         form = AdminRejectRefundForm(request.POST, instance=hire_refund_request)
 
+        print(f"DEBUG: AdminRejectRefundView POST for request PK: {pk}")
+
         if form.is_valid():
+            print("DEBUG: Form is valid.")
             # Update the status to 'rejected'
             refund_request_instance = form.save(commit=False)
             refund_request_instance.status = 'rejected'
@@ -58,36 +61,44 @@ class AdminRejectRefundView(View):
 
             messages.success(request, f"Refund Request for booking '{hire_refund_request.hire_booking.booking_reference}' has been successfully rejected.")
 
+            print(f"DEBUG: send_rejection_email checkbox value: {form.cleaned_data.get('send_rejection_email')}")
+
             # Check if the admin opted to send the rejection email
             if form.cleaned_data.get('send_rejection_email'):
+                print("DEBUG: 'send_rejection_email' is checked. Attempting to send email.")
                 recipient_email = refund_request_instance.request_email
                 if not recipient_email and refund_request_instance.driver_profile and refund_request_instance.driver_profile.user:
                     recipient_email = refund_request_instance.driver_profile.user.email
+
+                print(f"DEBUG: Determined recipient email: {recipient_email}")
 
                 if recipient_email:
                     email_context = {
                         'refund_request': refund_request_instance,
                         'admin_email': settings.DEFAULT_FROM_EMAIL, # Or a specific admin contact email
-                        # 'refund_policy_link': settings.REFUND_POLICY_URL, # Removed as per user request
                     }
                     try:
+                        print(f"DEBUG: Calling send_templated_email for {recipient_email} with template 'mailer/user_refund_request_rejected.html'")
                         send_templated_email(
                             recipient_list=[recipient_email],
                             subject=f"Update: Your Refund Request for Booking {hire_refund_request.hire_booking.booking_reference} Has Been Rejected",
-                            template_name='emails/user_refund_request_rejected.html',
+                            template_name='user_refund_request_rejected.html', # Corrected template path
                             context=email_context,
                             driver_profile=refund_request_instance.driver_profile,
                             booking=refund_request_instance.hire_booking
                         )
+                        print("DEBUG: send_templated_email call completed.")
                         messages.info(request, "Automated rejection email sent to the user.")
                     except Exception as e:
                         messages.warning(request, f"Failed to send rejection email: {e}")
                         print(f"ERROR: Failed to send rejection email for refund request {pk}: {e}")
                 else:
                     messages.warning(request, "Could not send automated rejection email: No recipient email found for the user.")
+                    print(f"DEBUG: No recipient email found for refund request {pk}.")
 
             return redirect('dashboard:admin_hire_refund_management')
         else:
+            print(f"DEBUG: Form is NOT valid. Errors: {form.errors}")
             # If the form is not valid, re-render the form with errors
             messages.error(request, "Please correct the errors below.")
             context = {
