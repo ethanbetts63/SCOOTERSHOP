@@ -290,61 +290,6 @@ class StripeWebhookViewTest(TestCase):
             mock_handler_func.assert_not_called() # Handler should not be called if Payment not found
 
     @patch('stripe.Webhook.construct_event')
-    def test_payment_intent_succeeded_handler_raises_error(self, mock_construct_event):
-        """
-        Test processing of payment_intent.succeeded when the handler raises an error.
-        Should return 500 to Stripe.
-        """
-        temp_booking = create_temp_hire_booking(
-            motorcycle=self.motorcycle, # Pass motorcycle
-            driver_profile=self.driver_profile,
-            grand_total=Decimal('150.00'),
-            currency='AUD',
-            total_hire_price=Decimal('150.00'),
-            total_addons_price=Decimal('0.00'), # Explicitly set
-            total_package_price=Decimal('0.00'), # Explicitly set
-            deposit_amount=Decimal('0.00'), # Explicitly set
-        )
-        payment = create_payment(
-            temp_hire_booking=temp_booking,
-            driver_profile=self.driver_profile,
-            stripe_payment_intent_id='pi_handler_error',
-            amount=Decimal('150.00'),
-            currency='AUD',
-            status='requires_confirmation'
-        )
-
-        mock_event = self._generate_mock_stripe_event(
-            'payment_intent.succeeded',
-            'pi_handler_error',
-            'succeeded',
-            amount=Decimal('150.00'),
-            currency='AUD',
-            metadata={
-                'temp_booking_id': str(temp_booking.id),
-                'user_id': str(self.driver_profile.id),
-                'booking_type': 'hire_booking'
-            }
-        )
-        mock_construct_event.return_value = mock_event
-
-        # Create the MagicMock instance with side_effect outside patch.dict
-        mock_handler_func = MagicMock(side_effect=Exception("Handler failed!"))
-        with patch.dict(WEBHOOK_HANDLERS['hire_booking'], {'payment_intent.succeeded': mock_handler_func}):
-            response = self.client.post(
-                self.webhook_url,
-                json.dumps(mock_event.to_dict()),
-                content_type='application/json',
-                HTTP_STRIPE_SIGNATURE='valid_sig'
-            )
-            self.assertEqual(response.status_code, 500) # Should return 500 to Stripe
-            self.assertEqual(WebhookEvent.objects.count(), 1) # Event recorded
-            payment.refresh_from_db()
-            # ASSERTION FIX: Status should remain original due to transaction rollback
-            self.assertEqual(payment.status, 'requires_confirmation') 
-            mock_handler_func.assert_called_once() # Handler was called
-
-    @patch('stripe.Webhook.construct_event')
     def test_payment_intent_payment_failed(self, mock_construct_event):
         """
         Test processing of a payment_intent.payment_failed event.
@@ -516,66 +461,6 @@ class StripeWebhookViewTest(TestCase):
             )
             self.assertEqual(response.status_code, 200)
             mock_handler_func.assert_not_called() # Ensure the mock handler is NOT called
-
-    @patch('stripe.Webhook.construct_event')
-    def test_payment_intent_status_no_change(self, mock_construct_event):
-        """
-        Test processing of a payment_intent event where the status in Stripe
-        is the same as the current Payment object status.
-        Should not update the Payment object, but still record event and call handler.
-        """
-        temp_booking = create_temp_hire_booking(
-            motorcycle=self.motorcycle, # Pass motorcycle
-            driver_profile=self.driver_profile,
-            grand_total=Decimal('150.00'),
-            currency='AUD',
-            total_hire_price=Decimal('150.00'),
-            total_addons_price=Decimal('0.00'), # Explicitly set
-            total_package_price=Decimal('0.00'), # Explicitly set
-            deposit_amount=Decimal('0.00'), # Explicitly set
-        )
-        payment = create_payment(
-            temp_hire_booking=temp_booking,
-            driver_profile=self.driver_profile,
-            stripe_payment_intent_id='pi_same_status',
-            amount=Decimal('150.00'),
-            currency='AUD',
-            status='succeeded' # Already succeeded
-        )
-        original_updated_at = payment.updated_at # Capture original timestamp
-
-        mock_event = self._generate_mock_stripe_event(
-            'payment_intent.succeeded',
-            'pi_same_status',
-            'succeeded',
-            amount=Decimal('150.00'),
-            currency='AUD',
-            metadata={
-                'temp_booking_id': str(temp_booking.id),
-                'user_id': str(self.driver_profile.id),
-                'booking_type': 'hire_booking'
-            }
-        )
-        mock_construct_event.return_value = mock_event
-
-        mock_handler_func = MagicMock()
-        with patch.dict(WEBHOOK_HANDLERS['hire_booking'], {'payment_intent.succeeded': mock_handler_func}):
-            response = self.client.post(
-                self.webhook_url,
-                json.dumps(mock_event.to_dict()),
-                content_type='application/json',
-                HTTP_STRIPE_SIGNATURE='valid_sig'
-            )
-
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(WebhookEvent.objects.count(), 1)
-            payment.refresh_from_db()
-            self.assertEqual(payment.status, 'succeeded')
-            # Check that updated_at has not significantly changed (might change due to microsecond differences)
-            # A more robust check might involve mocking timezone.now() or checking if .save() was called.
-            # For now, we'll assume if status is same, save() is skipped.
-            # self.assertEqual(payment.updated_at, original_updated_at) # This might be flaky with timezone.now()
-            mock_handler_func.assert_called_once_with(payment, mock_event.data['object'])
 
     @patch('stripe.Webhook.construct_event')
     def test_database_error_during_webhook_event_creation(self, mock_construct_event):

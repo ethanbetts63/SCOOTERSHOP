@@ -768,7 +768,6 @@ class WebhookHandlerTest(TestCase):
             stripe_refund_id='re_stripe_fail',
             request_email=self.driver_profile.email
         )
-
         event_refund_object_data = {
             'object': 'refund',
             'id': 're_stripe_fail',
