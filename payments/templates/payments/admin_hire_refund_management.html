@@ -168,7 +168,10 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium table-cell-padding">
                                 <div class="flex space-x-2">
                                     {# Link to the edit page for the specific refund request, text changed to "Review/Edit" #}
-                                    <a href="{% url 'dashboard:edit_hire_refund_request' pk=request.pk %}" class="action-button btn-review">Review/Edit</a>
+                                    {# Only show if status is NOT 'partially_refunded' or 'refunded' #}
+                                    {% if request.status not in 'partially_refunded,refunded' %}
+                                        <a href="{% url 'dashboard:edit_hire_refund_request' pk=request.pk %}" class="action-button btn-review">Review/Edit</a>
+                                    {% endif %}
 
                                     {# Approve button, only shown if status is 'reviewed_pending_approval' #}
                                     {% if request.status == 'reviewed_pending_approval' %}

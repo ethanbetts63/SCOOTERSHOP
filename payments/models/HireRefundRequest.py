@@ -46,6 +46,11 @@ class HireRefundRequest(models.Model): # Renamed the model class
         blank=True,
         help_text="Customer's reason for requesting the refund."
     )
+    rejection_reason = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Reason provided by staff for rejecting the refund request."
+    )
     requested_at = models.DateTimeField(
         auto_now_add=True,
         help_text="Timestamp when the request was submitted."

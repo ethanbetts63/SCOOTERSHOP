@@ -1,0 +1,109 @@
+{# payments/templates/emails/admin_refund_request_rejected.html #}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refund Request Rejected Notification</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header img { max-width: 150px; }
+        .content { margin-bottom: 20px; }
+        .details-table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 20px; }
+        .details-table th, .details-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .details-table th { background-color: #f2f2f2; }
+        /* Changed highlight color for rejection */
+        .highlight { background-color: #f8d7da; padding: 10px; border-left: 5px solid #dc3545; margin-bottom: 15px; }
+        .footer { text-align: center; font-size: 0.9em; color: #777; border-top: 1px solid #eee; padding-top: 15px; margin-top: 20px; }
+        .button-container { text-align: center; margin-top: 20px; }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="{% static 'images/logo_scootershop_tight_crop.png' %}" alt="Scootershop Logo">
+            <h2>Refund Request Rejected</h2>
+        </div>
+
+        <div class="content">
+            <p>Dear Administrator,</p>
+            <p>This is to confirm that the refund request for booking <strong>{{ refund_request.hire_booking.booking_reference }}</strong> has been marked as rejected.</p>
+
+            <div class="highlight">
+                <strong>Refund Request ID:</strong> {{ refund_request.pk }}<br>
+                <strong>Booking Reference:</strong> {{ refund_request.hire_booking.booking_reference }}<br>
+                <strong>Processed By:</strong> {{ refund_request.processed_by.get_full_name|default:refund_request.processed_by.username }}<br>
+                <strong>Processed At:</strong> {{ refund_request.processed_at|date:"D, d M Y H:i" }}
+            </div>
+
+            <h3>Booking Details:</h3>
+            <table class="details-table">
+                <tr>
+                    <th>Motorcycle:</th>
+                    <td>{{ refund_request.hire_booking.motorcycle.name }}</td>
+                </tr>
+                <tr>
+                    <th>Pickup:</th>
+                    <td>{{ refund_request.hire_booking.pickup_date|date:"D, d M Y" }} at {{ refund_request.hire_booking.pickup_time|time:"H:i" }}</td>
+                </tr>
+                <tr>
+                    <th>Return:</th>
+                    <td>{{ refund_request.hire_booking.return_date|date:"D, d M Y" }} at {{ refund_request.hire_booking.return_time|time:"H:i" }}</td>
+                </tr>
+                <tr>
+                    <th>Original Total Paid:</th>
+                    <td>{{ refund_request.payment.amount|floatformat:2 }} {{ refund_request.payment.currency }}</td>
+                </tr>
+                <tr>
+                    <th>Current Booking Status:</th>
+                    <td>{{ refund_request.hire_booking.get_status_display }}</td>
+                </tr>
+                <tr>
+                    <th>Current Payment Status:</th>
+                    <td>{{ refund_request.hire_booking.get_payment_status_display }}</td>
+                </tr>
+            </table>
+
+            <h3>Refund Request Details:</h3>
+            <table class="details-table">
+                <tr>
+                    <th>Reason Provided by User:</th>
+                    <td>{{ refund_request.reason|default:"No reason provided by user." }}</td>
+                </tr>
+                <tr>
+                    <th>Staff Notes:</th>
+                    <td>{{ refund_request.staff_notes|default:"No staff notes." }}</td>
+                </tr>
+                <tr>
+                    <th>Rejection Reason:</th>
+                    <td>{{ refund_request.rejection_reason|default:"No specific rejection reason provided." }}</td>
+                </tr>
+            </table>
+
+            <p>You can view the full details in the admin panel:</p>
+            <div class="button-container">
+                <a href="{{ admin_refund_link }}" class="button">View Refund Request in Admin</a>
+            </div>
+
+            <p>Thank you,</p>
+            <p>Scootershop Automated System</p>
+        </div>
+
+        <div class="footer">
+            <p>This is an automated notification. Please do not reply directly to this email.</p>
+        </div>
+    </div>
+</body>
+</html>
