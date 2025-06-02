@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 import uuid
 import datetime
-
+import stripe
 from inventory.models import Motorcycle
 from .driver_profile import DriverProfile
 from dashboard.models import HireSettings

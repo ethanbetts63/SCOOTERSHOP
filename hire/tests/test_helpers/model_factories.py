@@ -193,19 +193,24 @@ def create_payment(
     stripe_payment_intent_id=None,
     stripe_payment_method_id=None,
     description=None,
-    metadata=None, # Added metadata argument
+    metadata=None,
     temp_hire_booking=None,
     hire_booking=None,
     driver_profile=None,
-    refund_policy_snapshot=None, # NEW: Added refund_policy_snapshot argument
+    refund_policy_snapshot=None,
+    refunded_amount=None, # <<< ADD THIS NEW ARGUMENT
 ):
     """Creates a Payment instance."""
-    # Ensure metadata defaults to an empty dictionary if not provided
     if metadata is None:
         metadata = {}
-    # Ensure refund_policy_snapshot defaults to an empty dictionary if not provided
     if refund_policy_snapshot is None:
         refund_policy_snapshot = {}
+
+    # Handle default for refunded_amount if your model doesn't have a default
+    # or if you want to be explicit. The Payment model already has default=0.00
+    # so passing None will use the model's default.
+    # If you wanted to ensure it's always a Decimal here:
+    # actual_refunded_amount = refunded_amount if refunded_amount is not None else Decimal('0.00')
 
     return Payment.objects.create(
         amount=amount,
@@ -214,11 +219,12 @@ def create_payment(
         stripe_payment_intent_id=stripe_payment_intent_id,
         stripe_payment_method_id=stripe_payment_method_id,
         description=description,
-        metadata=metadata, # Pass metadata
+        metadata=metadata,
         temp_hire_booking=temp_hire_booking,
         hire_booking=hire_booking,
         driver_profile=driver_profile,
-        refund_policy_snapshot=refund_policy_snapshot, # NEW: Pass refund_policy_snapshot
+        refund_policy_snapshot=refund_policy_snapshot,
+        refunded_amount=refunded_amount, # <<< PASS IT HERE
     )
 
 # --- Factories for Hire App Models ---
