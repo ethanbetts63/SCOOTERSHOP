@@ -22,6 +22,7 @@ STATUS_CHOICES = [
 ]
 
 # Choices for payment status
+# note for later: does this not need a partial refund status? 
 PAYMENT_STATUS_CHOICES = [
     ('unpaid', 'Unpaid'),
     ('deposit_paid', 'Deposit Paid'),

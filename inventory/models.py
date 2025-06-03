@@ -46,7 +46,7 @@ class Motorcycle(models.Model):
     # Additional identification fields
     vin_number = models.CharField(max_length=50, blank=True, null=True, help_text="Vehicle Identification Number")
     engine_number = models.CharField(max_length=50, blank=True, null=True, help_text="Engine number/identifier")
-    # Use the User model from the users app
+    # Use the User model from the users app (we need to get rid of this)
     owner = models.ForeignKey(User, on_delete=models.SET_NULL, related_name="owned_motorcycles", null=True, blank=True)
 
     # Keep the original field for backwards compatibility / simple cases
