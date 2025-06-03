@@ -93,7 +93,7 @@ class AdminHireBookingForm(forms.Form):
     grand_total = forms.DecimalField(
         max_digits=10, decimal_places=2,
         label="Admin Entered Grand Total", # Updated label
-        required=True, 
+        required=False, # Set to False to allow custom validation in clean()
         help_text="Enter the final grand total price. An estimated total will be calculated dynamically on the page." # Updated help text
     )
     payment_method = forms.ChoiceField(
@@ -284,14 +284,20 @@ class AdminHireBookingForm(forms.Form):
         cleaned_data['selected_addons_data'] = selected_addons_data # Store for view/save
 
         # --- Section 5: Financial Details Validation ---
-        # Changed from total_price to grand_total
         grand_total = cleaned_data.get('grand_total')
-        if grand_total is not None and grand_total < 0:
-            form_errors['grand_total'] = "Grand total cannot be negative." # Updated error message
-
         payment_status = cleaned_data.get('payment_status')
+
+        # 1. Grand total cannot be negative
+        if grand_total is not None and grand_total < 0:
+            form_errors['grand_total'] = "Grand total cannot be negative."
+        
+        # 2. Grand total must be > 0 if payment status is 'Fully Paid'
+        # This covers both grand_total being None or grand_total being 0 or negative
+        # The previous separate check for grand_total is None and payment_status in ['paid', 'deposit_paid']
+        # is now subsumed by this more general check to ensure a single error message for these cases.
         if payment_status == 'paid' and (grand_total is None or grand_total <= 0):
-            form_errors['grand_total'] = "Grand total must be greater than 0 if payment status is 'Fully Paid'." # Updated error message
+            form_errors['grand_total'] = "Grand total must be greater than 0 if payment status is 'Fully Paid'."
+
 
         # --- Section 2: Booked Rates Validation ---
         booked_daily_rate = cleaned_data.get('booked_daily_rate')
