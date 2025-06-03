@@ -224,7 +224,8 @@ class TestHasAccountView(TestCase):
         self.assertIn('name', form.errors) # Expect error for the missing name
 
         messages_list = list(get_messages(response.wsgi_request))
-        self.assertTrue(any("Please correct the errors below." in str(m) for m in messages_list))
+        # CHANGED: Updated the expected message to match the view's exact message
+        self.assertTrue(any("Please correct the errors below (form validation)." in str(m) for m in messages_list))
         
         mock_calculate_total.assert_not_called() # Price calculation should not happen on invalid form
 
@@ -242,4 +243,3 @@ class TestHasAccountView(TestCase):
         response_followed = self.client.post(self.url, data=post_data_fields, files=post_data_files)
         messages_list = list(get_messages(response_followed.wsgi_request))
         self.assertTrue(any("Your booking session has expired." in str(m) for m in messages_list))
-
