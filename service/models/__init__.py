@@ -1,4 +1,4 @@
-from service.models.blocked_service_date import BlockedHireDate
+from blocked_service_date import BlockedServiceDate
 from customer_motorcycle import CustomerMotorcycle
 from service_booking import ServiceBooking
 from service_profile import ServiceProfile
