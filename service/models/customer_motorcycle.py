@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from service.models import ServiceProfile
+from datetime import date
 
 class CustomerMotorcycle(models.Model):
     """
@@ -39,14 +40,32 @@ class CustomerMotorcycle(models.Model):
 
     def clean(self):
         super().clean()
-        if self.brand and self.brand.lower() == 'other' and not self.other_brand_name:
-            raise ValidationError({'other_brand_name': "Please specify the brand name if 'Other' is selected."})
-        if self.brand and self.brand.lower() != 'other' and self.other_brand_name:
-            # Clear other_brand_name if a specific brand is chosen
-            self.other_brand_name = None
+
+        # Rule 1: Ensure required fields are not empty
+        if not self.brand:
+            raise ValidationError({'brand': "Motorcycle brand is required."})
+        if not self.make:
+            raise ValidationError({'make': "Motorcycle make is required."})
+        if not self.model:
+            raise ValidationError({'model': "Motorcycle model is required."})
+        if not self.year:
+            raise ValidationError({'year': "Motorcycle year is required."})
+
+        # Rule 2: Validate motorcycle year
+        current_year = date.today().year
+        if self.year and self.year > current_year:
+            raise ValidationError({'year': "Motorcycle year cannot be in the future."})
+        if self.year and self.year < current_year - 100: 
+            raise ValidationError({'year': "Motorcycle year seems too old. Please check the year."})
+
+        # Rule 3: Validate VIN number length if provided
+        if self.vin_number and len(self.vin_number) != 17:
+            raise ValidationError({'vin_number': "VIN number must be 17 characters long."})
+        
+        # Rule 4: Ensure odometer reading is not negative if provided
+        if self.odometer is not None and self.odometer < 0:
+            raise ValidationError({'odometer': "Odometer reading cannot be negative."})
 
     class Meta:
         verbose_name = "Customer Motorcycle"
         verbose_name_plural = "Customer Motorcycles"
-        # A customer might have multiple motorcycles with the same make/model but different VIN/rego.
-        # unique_together = (('service_profile', 'vin_number'),) # If VIN must be unique per profile.

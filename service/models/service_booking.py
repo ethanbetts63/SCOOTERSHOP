@@ -5,7 +5,7 @@ from service.models import ServiceProfile, ServiceType, CustomerMotorcycle
 
 class ServiceBooking(models.Model):
     """
-    Temporary model to incrementally store booking data during the multi-step user flow.
+    Full model to incrementally store booking data during the multi-step user flow.
     """
     # Choices for payment method
     PAYMENT_METHOD_CHOICES = [
@@ -29,7 +29,6 @@ class ServiceBooking(models.Model):
         ('no_show', 'No Show'),
     ]
 
-    session_uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, help_text="Unique identifier for retrieving the temporary booking.")
     booking_reference = models.CharField(max_length=20, unique=True, blank=True, null=True)
     service_type = models.ForeignKey(
         ServiceType,
@@ -93,11 +92,7 @@ class ServiceBooking(models.Model):
 
     booking_status = models.CharField(max_length=30, choices=BOOKING_STATUS_CHOICES, default='PENDING_CONFIRMATION')
     customer_notes = models.TextField(blank=True, null=True, help_text="Any additional notes from the customer.")
-    calculated_deposit_amount = models.DecimalField(
-        max_digits=10, decimal_places=2,
-        null=True, blank=True, # Deposit might not be applicable or calculated yet.
-        help_text="Calculated deposit amount, if applicable."
-    )
+    
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

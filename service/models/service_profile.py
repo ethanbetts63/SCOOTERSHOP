@@ -1,6 +1,15 @@
 from django.db import models
 from django.conf import settings
-from users.models import User
+from django.core.exceptions import ValidationError
+# Assuming 'User' model exists in 'users.models' as per your snippets
+# from users.models import User 
+# If User is not directly accessible or needs a custom import, adjust this line.
+# For demonstration, we'll assume a placeholder for User if not explicitly provided.
+try:
+    from users.models import User
+except ImportError:
+    # Placeholder for User model if not available, adjust as per your project structure
+    User = settings.AUTH_USER_MODEL 
 
 class ServiceProfile(models.Model):
     """
@@ -12,7 +21,6 @@ class ServiceProfile(models.Model):
         related_name='service_profile',
         null=True, blank=True
     )
-    #needs link to customer motorcycle
 
     # Contact Information
     name = models.CharField(max_length=100, blank=False, null=False, help_text="Full name of the customer.")
@@ -41,7 +49,12 @@ class ServiceProfile(models.Model):
         Custom validation for the ServiceProfile model.
         """
         super().clean()
-        pass 
+        
+        if self.phone_number and not self.phone_number.replace(' ', '').replace('-', '').isdigit():
+            raise ValidationError({'phone_number': "Phone number must contain only digits, spaces, or hyphens."})
+        if self.user:
+            if self.email and self.user.email and self.email != self.user.email:
+                pass # For now, allow discrepancy, or raise ValidationError if strict.
 
     class Meta:
         verbose_name = "Service Customer Profile"
