@@ -15,32 +15,26 @@ class SelectDateTimeView(View):
     """
     Handles the submission of the Step 1 Date/Time/License form.
     This view is POST-only. It processes the form, creates a new temporary
-    booking, and redirects to Step 2.
+    booking, or updates an existing one, and redirects to Step 2.
     """
 
     def post(self, request, *args, **kwargs):
         # --- Clear session variables for a completely fresh start ---
-        # This ensures that each submission of Step 1 initiates a new booking flow.
+        # This ensures that a new booking flow is initiated only when 'final_booking_reference' is present.
+        # temp_booking_id and temp_booking_uuid are now handled by update/create logic below.
         if 'final_booking_reference' in request.session:
             del request.session['final_booking_reference']
             print("Cleared 'final_booking_reference' from session at the start of Step 1.")
         
-        if 'temp_booking_id' in request.session:
-            del request.session['temp_booking_id']
-            print("Cleared 'temp_booking_id' from session at the start of Step 1.")
-
-        if 'temp_booking_uuid' in request.session:
-            del request.session['temp_booking_uuid']
-            print("Cleared 'temp_booking_uuid' from session at the start of Step 1.")
-        # --- End of clearing ---
-
         form = Step1DateTimeForm(request.POST)
         hire_settings = HireSettings.objects.first()
 
-        print(f"--- Debugging SelectDateTimeView.post (Fresh Start) ---")
+        print(f"--- Debugging SelectDateTimeView.post ---")
         print(f"Form data: {request.POST}")
         print(f"Hire Settings: {hire_settings}")
-        # (Further debug prints for hire_settings can be kept if useful)
+        print(f"Session temp_booking_id: {request.session.get('temp_booking_id')}")
+        print(f"Session temp_booking_uuid: {request.session.get('temp_booking_uuid')}")
+
 
         if form.is_valid():
             pickup_date = form.cleaned_data['pick_up_date']
@@ -58,8 +52,6 @@ class SelectDateTimeView(View):
             pickup_datetime_utc = pickup_datetime_local.astimezone(datetime.timezone.utc)
             return_datetime_utc = return_datetime_local.astimezone(datetime.timezone.utc)
             now_utc = now_local.astimezone(datetime.timezone.utc)
-
-            # (Debug prints for parsed dates and times can be kept if useful)
 
             # --- Validation Checks ---
             errors_exist = False
@@ -97,41 +89,60 @@ class SelectDateTimeView(View):
 
             if errors_exist:
                 print(f"Redirecting back to step2_choose_bike due to view-level validation errors.")
-                # It's generally better to redirect to the page that displays the form
-                # so the user can see the errors and correct their input.
-                # Assuming step2_choose_bike is where the step 1 form is displayed if errors occur.
                 return redirect('hire:step2_choose_bike') 
 
-            # --- Create New TempHireBooking ---
-            # Since session IDs are cleared, we always create a new TempHireBooking.
+            # --- Retrieve or Create TempHireBooking ---
+            temp_booking = None
+            temp_booking_id = request.session.get('temp_booking_id')
+            temp_booking_uuid = request.session.get('temp_booking_uuid')
+
+            if temp_booking_id and temp_booking_uuid:
+                try:
+                    temp_booking = TempHireBooking.objects.get(
+                        id=temp_booking_id, 
+                        session_uuid=temp_booking_uuid
+                    )
+                    print(f"Found existing TempHireBooking: ID {temp_booking.id}, UUID {temp_booking.session_uuid}")
+                except TempHireBooking.DoesNotExist:
+                    print(f"Existing TempHireBooking not found for ID {temp_booking_id}, UUID {temp_booking_uuid}. Will create new.")
+                    temp_booking = None # Ensure it's None if not found
+
             driver_profile_for_temp_booking = None
             if request.user.is_authenticated:
                 try:
-                    # Attempt to get the driver profile if the user is logged in.
-                    # This allows linking the TempHireBooking to an existing profile early.
                     driver_profile_for_temp_booking = request.user.driver_profile
                 except DriverProfile.DoesNotExist:
-                    # If the authenticated user doesn't have a DriverProfile,
-                    # it will be created or handled in Step 4.
-                    print(f"Authenticated user {request.user.username} has no DriverProfile yet. It will be handled in Step 4.")
-                    pass # It's okay for driver_profile to be None at this stage.
+                    print(f"Authenticated user {request.user.username} has no DriverProfile yet.")
+                    pass
 
             try:
-                temp_booking = TempHireBooking.objects.create(
-                    session_uuid=uuid.uuid4(), # Generate a new UUID for each new temp booking
-                    pickup_date=pickup_date,
-                    pickup_time=pickup_time,
-                    return_date=return_date,
-                    return_time=return_time,
-                    has_motorcycle_license=has_motorcycle_license,
-                    driver_profile=driver_profile_for_temp_booking
-                )
-                # Store the new temporary booking's ID and UUID in the session
-                request.session['temp_booking_id'] = temp_booking.id
-                request.session['temp_booking_uuid'] = str(temp_booking.session_uuid)
-                
-                messages.success(request, "Dates selected. Please choose your motorcycle.")
-                print(f"New TempHireBooking created: ID {temp_booking.id}, UUID {temp_booking.session_uuid}")
+                if temp_booking:
+                    # Update existing TempHireBooking
+                    temp_booking.pickup_date = pickup_date
+                    temp_booking.pickup_time = pickup_time
+                    temp_booking.return_date = return_date
+                    temp_booking.return_time = return_time
+                    temp_booking.has_motorcycle_license = has_motorcycle_license
+                    temp_booking.driver_profile = driver_profile_for_temp_booking # Update driver profile if available
+                    temp_booking.save()
+                    messages.success(request, "Dates updated. Please choose your motorcycle.")
+                    print(f"Updated TempHireBooking: ID {temp_booking.id}, UUID {temp_booking.session_uuid}")
+                else:
+                    # Create new TempHireBooking
+                    temp_booking = TempHireBooking.objects.create(
+                        session_uuid=uuid.uuid4(), # Generate a new UUID for each new temp booking
+                        pickup_date=pickup_date,
+                        pickup_time=pickup_time,
+                        return_date=return_date,
+                        return_time=return_time,
+                        has_motorcycle_license=has_motorcycle_license,
+                        driver_profile=driver_profile_for_temp_booking
+                    )
+                    # Store the new temporary booking's ID and UUID in the session
+                    request.session['temp_booking_id'] = temp_booking.id
+                    request.session['temp_booking_uuid'] = str(temp_booking.session_uuid)
+                    messages.success(request, "Dates selected. Please choose your motorcycle.")
+                    print(f"New TempHireBooking created: ID {temp_booking.id}, UUID {temp_booking.session_uuid}")
 
                 # Redirect to step 2, passing the new temp_booking_id and uuid
                 redirect_url = reverse('hire:step2_choose_bike') + f'?temp_booking_id={temp_booking.id}&temp_booking_uuid={temp_booking.session_uuid}'
@@ -139,10 +150,10 @@ class SelectDateTimeView(View):
                 return redirect(redirect_url)
 
             except Exception as e:
-                # Catch any unexpected errors during TempHireBooking creation
+                # Catch any unexpected errors during TempHireBooking creation/update
                 messages.error(request, f"An unexpected error occurred while saving your selection: {e}")
-                print(f"Error creating TempHireBooking: {e}")
-                return redirect('hire:step2_choose_bike') # Redirect back if creation fails
+                print(f"Error saving TempHireBooking: {e}")
+                return redirect('hire:step2_choose_bike') # Redirect back if saving fails
 
         else:
             # Form is not valid.
@@ -152,3 +163,4 @@ class SelectDateTimeView(View):
                     messages.error(request, error)
             # Redirect back to the page displaying the form (assumed to be step2_choose_bike or where step1_date_time_include.html is used)
             return redirect('hire:step2_choose_bike')
+

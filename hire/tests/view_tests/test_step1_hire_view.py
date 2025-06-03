@@ -90,7 +90,7 @@ class SelectDateTimeViewTests(TestCase):
 
         # Check success message
         messages = self._get_messages(response)
-        self.assertIn("Booking dates saved.", messages)
+        self.assertIn("Dates selected. Please choose your motorcycle.", messages)
 
     def test_post_valid_data_new_temp_booking_authenticated_user_no_driver_profile(self):
         """
@@ -114,7 +114,7 @@ class SelectDateTimeViewTests(TestCase):
         expected_redirect_path = f"{self.redirect_url_step2}?temp_booking_id={temp_booking.id}&temp_booking_uuid={temp_booking.session_uuid}"
         self.assertRedirects(response, expected_redirect_path)
         messages = self._get_messages(response)
-        self.assertIn("Booking dates saved.", messages)
+        self.assertIn("Dates selected. Please choose your motorcycle.", messages)
 
     def test_post_valid_data_new_temp_booking_authenticated_user_with_driver_profile(self):
         """
@@ -140,7 +140,7 @@ class SelectDateTimeViewTests(TestCase):
         expected_redirect_path = f"{self.redirect_url_step2}?temp_booking_id={temp_booking.id}&temp_booking_uuid={temp_booking.session_uuid}"
         self.assertRedirects(response, expected_redirect_path)
         messages = self._get_messages(response)
-        self.assertIn("Booking dates saved.", messages)
+        self.assertIn("Dates selected. Please choose your motorcycle.", messages)
 
     def test_post_valid_data_update_existing_temp_booking(self):
         """
@@ -180,7 +180,8 @@ class SelectDateTimeViewTests(TestCase):
         expected_redirect_path = f"{self.redirect_url_step2}?temp_booking_id={updated_temp_booking.id}&temp_booking_uuid={updated_temp_booking.session_uuid}"
         self.assertRedirects(response, expected_redirect_path)
         messages = self._get_messages(response)
-        self.assertIn("Booking dates updated.", messages)
+        # Corrected assertion for the updated message
+        self.assertIn("Dates updated. Please choose your motorcycle.", messages)
 
     # --- Test Invalid Form Submissions (Form-level errors) ---
 
@@ -354,5 +355,5 @@ class SelectDateTimeViewTests(TestCase):
         expected_redirect_path = f"{self.redirect_url_step2}?temp_booking_id={temp_booking.id}&temp_booking_uuid={temp_booking.session_uuid}"
         self.assertRedirects(response, expected_redirect_path)
         messages = self._get_messages(response)
-        self.assertIn("Booking dates saved.", messages)
+        self.assertIn("Dates selected. Please choose your motorcycle.", messages)
 
