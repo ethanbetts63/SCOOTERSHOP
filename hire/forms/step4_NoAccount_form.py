@@ -120,6 +120,8 @@ class Step4NoAccountForm(forms.ModelForm):
                                 "Foreign drivers must provide the expiry date of their International Driver's License.")
                 print("DEBUG: Step4NoAccountForm clean - Added error: international_license_expiry_date (Foreign missing)")
             elif return_date and international_license_expiry_date and international_license_expiry_date < return_date:
+                print(f"DEBUG: Step4NoAccountForm clean - international_license_expiry_date: {international_license_expiry_date}, return_date: {return_date}")
+                print(f"DEBUG: Step4NoAccountForm clean - Comparison result (international_license_expiry_date < return_date): {international_license_expiry_date < return_date}")
                 self.add_error('international_license_expiry_date', "Your International Driver's License must not expire before the end of your booking.")
                 print("DEBUG: Step4NoAccountForm clean - Added error: international_license_expiry_date (Foreign expired before return date)")
             
@@ -141,4 +143,3 @@ class Step4NoAccountForm(forms.ModelForm):
 
         print(f"DEBUG: Step4NoAccountForm clean - Form errors after conditional validation: {self.errors.as_json()}")
         return cleaned_data
-

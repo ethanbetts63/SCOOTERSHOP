@@ -90,7 +90,8 @@ class Step4NoAccountFormTests(TestCase):
             'license_photo': self.dummy_license
         }, temp_booking=self.temp_booking_future_return)
         self.assertTrue(form.is_valid(), form.errors)
-        self.assertEqual(form.cleaned_data['is_australian_resident'], 'True')
+        # CHANGED: Expect boolean True, not string 'True'
+        self.assertEqual(form.cleaned_data['is_australian_resident'], True)
 
     def test_clean_australian_resident_missing_license_photo(self):
         """
@@ -159,7 +160,8 @@ class Step4NoAccountFormTests(TestCase):
             'passport_photo': self.dummy_passport
         }, temp_booking=self.temp_booking_future_return)
         self.assertTrue(form.is_valid(), form.errors)
-        self.assertEqual(form.cleaned_data['is_australian_resident'], 'False')
+        # CHANGED: Expect boolean False, not string 'False'
+        self.assertEqual(form.cleaned_data['is_australian_resident'], False)
 
     def test_clean_foreign_resident_missing_international_license_photo(self):
         """
@@ -222,7 +224,16 @@ class Step4NoAccountFormTests(TestCase):
         Test international license expiry date before return date.
         """
         form_data = self.base_foreign_data.copy()
-        form_data['international_license_expiry_date'] = self.return_date_future - datetime.timedelta(days=1) # Before return date
+        # THIS IS THE LINE TO KEEP: Set expiry date to be BEFORE return date
+        form_data['international_license_expiry_date'] = self.return_date_future - datetime.timedelta(days=1) 
+        
+        # REMOVED THE FOLLOWING LINE WHICH WAS OVERWRITING THE EXPIRY DATE:
+        # form_data['international_license_expiry_date'] = self.return_date_future + datetime.timedelta(days=1) # Ensure this is valid
+
+        # Ensure other fields are valid so this specific error can be tested in isolation
+        form_data['international_license_issuing_country'] = 'USA' # Ensure this is present
+        form_data['passport_number'] = 'P1234567' # Ensure this is present
+
         # Ensure files are passed for other validations to pass
         form = Step4NoAccountForm(data=form_data, files={
             'international_license_photo': self.dummy_int_license,
@@ -281,4 +292,3 @@ class Step4NoAccountFormTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('passport_expiry_date', form.errors)
         self.assertIn("Your passport must not expire before the end of your booking.", form.errors['passport_expiry_date'])
-
