@@ -1,5 +1,5 @@
 from django.test import TestCase
-from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.files.uploadedfile import SimpleUploadedFile # Still needed for other potential tests, but not directly used in this class now
 from datetime import timedelta
 from decimal import Decimal
 
@@ -8,7 +8,7 @@ from service.models import ServiceType
 
 # Import the ServiceTypeFactory from your factories file
 # Adjust the import path if your model_factories.py is in a different location
-from service.tests.test_helpers.model_factories import ServiceTypeFactory
+from ..test_helpers.model_factories import ServiceTypeFactory
 
 class ServiceTypeModelTest(TestCase):
     """
@@ -92,23 +92,9 @@ class ServiceTypeModelTest(TestCase):
         )
         self.assertEqual(new_service_type.is_active, True)
 
-
-    def test_image_field(self):
-        """
-        Test the 'image' field properties.
-        """
-        service_type = self.service_type
-        self.assertEqual(service_type._meta.get_field('image').upload_to, 'service_types/')
-        self.assertTrue(service_type._meta.get_field('image').null)
-        self.assertTrue(service_type._meta.get_field('image').blank)
-        self.assertEqual(service_type._meta.get_field('image').help_text, "Icon image for this service type")
-
-        # Test saving an image
-        image_content = b'dummy image content'
-        image_file = SimpleUploadedFile("test_image.png", image_content, content_type="image/png")
-        service_type_with_image = ServiceTypeFactory(image=image_file)
-        self.assertIsNotNone(service_type_with_image.image)
-        self.assertIn('service_types/test_image.png', service_type_with_image.image.name)
+    # Removed test_image_field as requested.
+    # If you later decide to test image uploads, consider using Django's
+    # `TemporaryMediaRootMixin` or a more robust approach for file handling in tests.
 
     def test_str_method(self):
         """

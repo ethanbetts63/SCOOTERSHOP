@@ -4,6 +4,10 @@ import uuid
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from decimal import Decimal
+from faker import Faker # <--- Already there
+
+# Initialize Faker outside the factory classes for efficiency
+fake = Faker() # <--- Already there
 
 # Import your models from the 'service' app
 # Make sure the paths are correct based on your project structure
@@ -96,8 +100,13 @@ class ServiceTypeFactory(factory.django.DjangoModelFactory):
 
     name = factory.Sequence(lambda n: f'Service Type {n}')
     description = factory.Faker('paragraph')
-    estimated_duration = factory.LazyFunction(lambda: datetime.timedelta(hours=factory.Faker('random_int', min=1, max=8)))
-    base_price = factory.LazyFunction(lambda: Decimal(f"{factory.Faker('pydecimal', left_digits=3, right_digits=2, positive=True)}"))
+    estimated_duration = factory.LazyFunction(
+        lambda: datetime.timedelta(hours=fake.random_int(min=1, max=8))
+    )
+    # Corrected: Directly use fake.pydecimal to get the Decimal value
+    base_price = factory.LazyFunction(
+        lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True)
+    )
     is_active = True
     # image field is optional, so we don't need to generate it by default
 
@@ -225,7 +234,7 @@ class TempServiceBookingFactory(factory.django.DjangoModelFactory):
     customer_motorcycle = factory.SubFactory(CustomerMotorcycleFactory, service_profile=factory.SelfAttribute('..service_profile'))
     payment_option = factory.Faker('random_element', elements=[choice[0] for choice in TempServiceBooking.PAYMENT_METHOD_CHOICES])
     dropoff_date = factory.LazyFunction(lambda: factory.Faker('date_between', start_date='today', end_date='+30d'))
-    dropoff_time = factory.LazyFunction(lambda: factory.Faker('time_object'))
+    dropoff_time = factory.Faker('time_object')
     estimated_pickup_date = None # Set to None by default, can be overridden
     customer_notes = factory.Faker('paragraph')
     calculated_deposit_amount = factory.LazyFunction(lambda: Decimal(f"{factory.Faker('pydecimal', left_digits=2, right_digits=2, positive=True)}"))
@@ -253,7 +262,7 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
     currency = 'AUD'
     stripe_payment_intent_id = factory.Sequence(lambda n: f"pi_{uuid.uuid4().hex[:24]}")
     dropoff_date = factory.LazyFunction(lambda: factory.Faker('date_between', start_date='today', end_date='+30d'))
-    dropoff_time = factory.LazyFunction(lambda: factory.Faker('time_object'))
+    dropoff_time = factory.Faker('time_object')
     estimated_pickup_date = factory.LazyAttribute(lambda o: o.dropoff_date + datetime.timedelta(days=factory.Faker('random_int', min=1, max=5)))
     booking_status = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.BOOKING_STATUS_CHOICES])
     customer_notes = factory.Faker('paragraph')
