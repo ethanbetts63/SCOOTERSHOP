@@ -82,13 +82,16 @@ class PaymentFactory(factory.django.DjangoModelFactory):
 
     stripe_payment_intent_id = factory.Sequence(lambda n: f"pi_{uuid.uuid4().hex[:24]}_{n}")
     stripe_payment_method_id = factory.Faker('md5') # Just a dummy hash for method ID
-    amount = factory.LazyFunction(lambda: Decimal(f"{factory.Faker('pydecimal', left_digits=3, right_digits=2, positive=True)}"))
+    # FIX: Directly call fake.pydecimal() which returns a Decimal object
+    amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True))
     currency = 'AUD'
     status = factory.Faker('random_element', elements=['succeeded', 'requires_payment_method', 'requires_action', 'canceled'])
     description = factory.Faker('sentence')
-    metadata = factory.LazyFunction(lambda: {'test_key': factory.Faker('word')})
+    # FIX: Call fake.word() to get the actual string value for JSON serialization
+    metadata = factory.LazyFunction(lambda: {'test_key': fake.word()})
     refund_policy_snapshot = factory.LazyFunction(lambda: {'policy_version': '1.0', 'deduct_fees': True})
-    refunded_amount = factory.LazyFunction(lambda: Decimal(f"{factory.Faker('pydecimal', left_digits=2, right_digits=2, positive=True)}"))
+    # FIX: Directly call fake.pydecimal() which returns a Decimal object
+    refunded_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
 
 # --- Service App Model Factories ---
 
@@ -117,7 +120,7 @@ class ServiceTypeFactory(factory.django.DjangoModelFactory):
     estimated_duration = factory.LazyFunction(
         lambda: datetime.timedelta(hours=fake.random_int(min=1, max=8))
     )
-    # Corrected: Directly use fake.pydecimal to get the Decimal value
+    # This was already correct: Directly use fake.pydecimal to get the Decimal value
     base_price = factory.LazyFunction(
         lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True)
     )
@@ -157,7 +160,8 @@ class CustomerMotorcycleFactory(factory.django.DjangoModelFactory):
     brand = factory.Faker('word', ext_word_list=['Honda', 'Yamaha', 'Kawasaki', 'Suzuki', 'Ducati', 'Harley-Davidson', 'Other'])
     make = factory.Faker('word')
     model = factory.Faker('word')
-    year = factory.LazyFunction(lambda: factory.Faker('year'))
+    # This was fixed in the previous turn: Correctly call fake.year() to get the actual year value
+    year = factory.LazyFunction(lambda: fake.year())
     engine_size = factory.Faker('numerify', text='###cc')
     rego = factory.Faker('bothify', text='???###')
     vin_number = factory.Faker('bothify', text='#################') # 17 characters
@@ -254,7 +258,8 @@ class TempServiceBookingFactory(factory.django.DjangoModelFactory):
     dropoff_time = factory.Faker('time_object')
     estimated_pickup_date = None # Set to None by default, can be overridden
     customer_notes = factory.Faker('paragraph')
-    calculated_deposit_amount = factory.LazyFunction(lambda: Decimal(f"{fake.pydecimal(left_digits=2, right_digits=2, positive=True)}"))
+    # FIX: Directly call fake.pydecimal() which returns a Decimal object
+    calculated_deposit_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
 
 
 class ServiceBookingFactory(factory.django.DjangoModelFactory):
@@ -271,8 +276,10 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
     customer_motorcycle = factory.SubFactory(CustomerMotorcycleFactory, service_profile=factory.SelfAttribute('..service_profile'))
     payment_option = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.PAYMENT_METHOD_CHOICES])
     payment = factory.SubFactory(PaymentFactory) # Link to a Payment instance
-    calculated_total = factory.LazyFunction(lambda: Decimal(f"{fake.pydecimal(left_digits=4, right_digits=2, positive=True)}"))
-    calculated_deposit_amount = factory.LazyFunction(lambda: Decimal(f"{fake.pydecimal(left_digits=2, right_digits=2, positive=True)}"))
+    # FIX: Directly call fake.pydecimal() which returns a Decimal object
+    calculated_total = factory.LazyFunction(lambda: fake.pydecimal(left_digits=4, right_digits=2, positive=True))
+    # FIX: Directly call fake.pydecimal() which returns a Decimal object
+    calculated_deposit_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
     amount_paid = factory.LazyAttribute(lambda o: o.calculated_total) # Assume full payment by default
     payment_status = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.PAYMENT_STATUS_CHOICES])
     payment_method = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.PAYMENT_METHOD_CHOICES])
