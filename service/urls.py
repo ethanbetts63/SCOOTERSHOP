@@ -29,7 +29,6 @@
     # path('service-bookings/search/', views.service_booking_search_view, name='service_booking_search'),
     # path('service-bookings/json/', views.get_service_bookings_json, name='get_service_bookings_json'),
 
-app_name = 'service'
 
 
 # app_name = 'service'
@@ -57,3 +56,16 @@ app_name = 'service'
 #     # New AJAX endpoint for getting available time slots
 #     path('book/ajax/available-slots/', get_available_slots_ajax, name='get_available_slots_ajax'),
 # ]
+
+
+
+# service/urls.py
+
+app_name = 'service'
+
+from django.urls import path
+from service.views import user_views, admin_views
+
+urlpatterns = [
+    
+]
