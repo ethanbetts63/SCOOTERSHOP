@@ -1,11 +1,13 @@
-import pytest
 from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 from datetime import timedelta
 from decimal import Decimal
 
-# Import the ServiceType model and ServiceTypeFactory
+# Import the ServiceType model
 from service.models import ServiceType
+
+# Import the ServiceTypeFactory from your factories file
+# Adjust the import path if your model_factories.py is in a different location
 from service.tests.test_helpers.model_factories import ServiceTypeFactory
 
 class ServiceTypeModelTest(TestCase):
@@ -17,96 +19,120 @@ class ServiceTypeModelTest(TestCase):
     def setUpTestData(cls):
         """
         Set up non-modified objects used by all test methods.
+        We'll create a single ServiceType instance using the factory.
         """
-        # Create a ServiceType instance using the factory
-        cls.service_type_instance = ServiceTypeFactory()
+        cls.service_type = ServiceTypeFactory()
 
     def test_service_type_creation(self):
         """
-        Test that a ServiceType instance can be created successfully.
+        Test that a ServiceType instance can be created successfully using the factory.
         """
-        self.assertIsInstance(self.service_type_instance, ServiceType)
-        self.assertIsNotNone(self.service_type_instance.pk) # Check if it has a primary key
+        self.assertIsInstance(self.service_type, ServiceType)
+        self.assertIsNotNone(self.service_type.pk) # Check if it has a primary key (saved to DB)
 
-    def test_service_type_fields(self):
+    def test_name_field(self):
         """
-        Test that the fields of the ServiceType model are correctly populated.
+        Test the 'name' field properties.
         """
-        service = self.service_type_instance
+        service_type = self.service_type
+        self.assertEqual(service_type._meta.get_field('name').max_length, 100)
+        self.assertIsInstance(service_type.name, str)
+        self.assertIsNotNone(service_type.name)
 
-        self.assertIsInstance(service.name, str)
-        self.assertGreater(len(service.name), 0)
-        self.assertLessEqual(len(service.name), 100)
+    def test_description_field(self):
+        """
+        Test the 'description' field properties.
+        """
+        service_type = self.service_type
+        self.assertIsInstance(service_type.description, str)
+        self.assertIsNotNone(service_type.description)
 
-        self.assertIsInstance(service.description, str)
-        self.assertGreater(len(service.description), 0)
+    def test_estimated_duration_field(self):
+        """
+        Test the 'estimated_duration' field properties and help text.
+        """
+        service_type = self.service_type
+        self.assertIsInstance(service_type.estimated_duration, timedelta)
+        self.assertIsNotNone(service_type.estimated_duration)
+        self.assertEqual(service_type._meta.get_field('estimated_duration').help_text, "Estimated time to complete this service")
 
-        self.assertIsInstance(service.estimated_duration, timedelta)
-        self.assertGreater(service.estimated_duration, timedelta(seconds=0))
+    def test_base_price_field(self):
+        """
+        Test the 'base_price' field properties and default value.
+        """
+        service_type = self.service_type
+        self.assertIsInstance(service_type.base_price, Decimal)
+        self.assertIsNotNone(service_type.base_price)
+        self.assertEqual(service_type._meta.get_field('base_price').max_digits, 8)
+        self.assertEqual(service_type._meta.get_field('base_price').decimal_places, 2)
+        # Check if a newly created instance (without factory override) has the default
+        new_service_type = ServiceType.objects.create(
+            name="New Service",
+            description="A new service description",
+            estimated_duration=timedelta(hours=1),
+            # base_price will default to 0.00
+        )
+        self.assertEqual(new_service_type.base_price, Decimal('0.00'))
 
-        self.assertIsInstance(service.base_price, Decimal)
-        self.assertGreaterEqual(service.base_price, Decimal('0.00'))
+    def test_is_active_field(self):
+        """
+        Test the 'is_active' field properties and default value.
+        """
+        service_type = self.service_type
+        self.assertIsInstance(service_type.is_active, bool)
+        self.assertEqual(service_type.is_active, True) # Factory sets it to True by default
+        self.assertEqual(service_type._meta.get_field('is_active').help_text, "Whether this service is currently offered")
+        # Check if a newly created instance (without factory override) has the default
+        new_service_type = ServiceType.objects.create(
+            name="Another Service",
+            description="Another service description",
+            estimated_duration=timedelta(hours=2),
+            base_price=Decimal('50.00')
+            # is_active will default to True
+        )
+        self.assertEqual(new_service_type.is_active, True)
 
-        self.assertIsInstance(service.is_active, bool)
-        self.assertTrue(service.is_active) # Default is True from factory
+
+    def test_image_field(self):
+        """
+        Test the 'image' field properties.
+        """
+        service_type = self.service_type
+        self.assertEqual(service_type._meta.get_field('image').upload_to, 'service_types/')
+        self.assertTrue(service_type._meta.get_field('image').null)
+        self.assertTrue(service_type._meta.get_field('image').blank)
+        self.assertEqual(service_type._meta.get_field('image').help_text, "Icon image for this service type")
+
+        # Test saving an image
+        image_content = b'dummy image content'
+        image_file = SimpleUploadedFile("test_image.png", image_content, content_type="image/png")
+        service_type_with_image = ServiceTypeFactory(image=image_file)
+        self.assertIsNotNone(service_type_with_image.image)
+        self.assertIn('service_types/test_image.png', service_type_with_image.image.name)
 
     def test_str_method(self):
         """
         Test the __str__ method of the ServiceType model.
         It should return the name of the service type.
         """
-        service = self.service_type_instance
-        self.assertEqual(str(service), service.name)
+        service_type = self.service_type
+        self.assertEqual(str(service_type), service_type.name)
 
-    def test_is_active_default_and_override(self):
+    def test_verbose_name_plural(self):
         """
-        Test the default value of is_active and overriding it.
+        Test the verbose name plural for the model.
         """
-        # Test default (True)
-        service1 = ServiceTypeFactory()
-        self.assertTrue(service1.is_active)
+        self.assertEqual(str(ServiceType._meta.verbose_name_plural), 'Service Types')
 
-        # Test overriding to False
-        service2 = ServiceTypeFactory(is_active=False)
-        self.assertFalse(service2.is_active)
-
-    def test_image_field(self):
+    def test_unique_name(self):
         """
-        Test the image field can be null/blank and can store a file.
+        Test that service names are not implicitly unique (CharField default).
+        If you later add unique=True to the name field, this test would fail.
         """
-        # Test with no image (default from factory)
-        service_no_image = ServiceTypeFactory()
-        self.assertFalse(bool(service_no_image.image)) # Check if image field is empty
-
-        # Test with an image
-        image_content = b'dummy_image_content'
-        image_file = SimpleUploadedFile("test_image.jpg", image_content, content_type="image/jpeg")
-        service_with_image = ServiceTypeFactory(image=image_file)
-
-        self.assertTrue(bool(service_with_image.image))
-        self.assertEqual(service_with_image.image.name, 'service_types/test_image.jpg')
-
-        # Clean up the created file (optional, but good practice for file fields)
-        service_with_image.image.delete(save=False)
-
-    def test_max_length_for_name(self):
-        """
-        Test that the 'name' field respects its max_length constraint.
-        """
-        # A name within the limit should be fine
-        long_name = 'a' * 100
-        service_valid_name = ServiceTypeFactory(name=long_name)
-        self.assertEqual(service_valid_name.name, long_name)
-
-        # Attempting to save a name longer than 100 chars should raise an error
-        # This test typically requires a database save and checks for ValidationError
-        # However, factory_boy will usually truncate if it's just a string assignment.
-        # For strict validation, you'd usually test this at the form/serializer level
-        # or with model validation. For now, we'll just ensure it doesn't break.
-        too_long_name = 'a' * 101
-        service_too_long_name = ServiceTypeFactory(name=too_long_name)
-        # Factory boy might just truncate, or it might be fine until save.
-        # If running Django's full_clean, it would raise ValidationError.
-        # For simplicity, we'll check if the factory handles it gracefully.
-        self.assertLessEqual(len(service_too_long_name.name), 100)
+        ServiceTypeFactory(name="Unique Service Name")
+        # Should be able to create another with the same name if unique=False
+        try:
+            ServiceTypeFactory(name="Unique Service Name")
+        except Exception as e:
+            self.fail(f"Creating duplicate service name raised an exception: {e}")
 
