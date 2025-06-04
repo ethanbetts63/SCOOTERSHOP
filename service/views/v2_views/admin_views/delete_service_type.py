@@ -1,21 +1,27 @@
-# # SCOOTER_SHOP/dashboard/views/delete_service_type.py
+from django.shortcuts import redirect, get_object_or_404
+from django.views import View
+from django.contrib import messages
 
-# from django.shortcuts import render, redirect, get_object_or_404
-# from django.contrib import messages
-# from django.contrib.auth.decorators import user_passes_test
+from service.models import ServiceType
 
-# from service.models import ServiceType
+class ServiceTypeDeleteView(View):
+    """
+    Class-based view for deleting a specific service type.
+    Handles POST requests for deletion.
+    """
 
-# @user_passes_test(lambda u: u.is_staff)
-# def delete_service_type(request, pk):
-#     service_type = get_object_or_404(ServiceType, pk=pk)
-#     if request.method == 'POST':
-#         name = service_type.name
-#         service_type.delete()
-#         messages.success(request, f"Service type '{name}' deleted successfully!")
-#         return redirect('dashboard:settings_service_types')
-#     context = {
-#         'page_title': 'Delete Service Type',
-#         'service_type': service_type
-#     }
-#     return render(request, 'dashboard/delete_service_type.html', context)
+    def post(self, request, pk, *args, **kwargs):
+        """
+        Handles POST requests: deletes the ServiceType instance
+        identified by the primary key (pk).
+        """
+        service_type = get_object_or_404(ServiceType, pk=pk)
+        name = service_type.name # Get name before deletion for message
+        try:
+            service_type.delete()
+            messages.success(request, f"Service type '{name}' deleted successfully!")
+        except Exception as e:
+            messages.error(request, f"Error deleting service type: {e}")
+        # Redirect back to the management page after deletion
+        return redirect('service:service_types_management')
+

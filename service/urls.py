@@ -80,8 +80,10 @@ urlpatterns = [
     path('service-book/step7/', user_views.Step7ConfirmationView.as_view(), name='service_book_step7'),
 
     # Admin-facing management
-    path('blocked-dates/', admin_views.BlockedServiceDateView.as_view(), name='blocked_service_dates_management'),
+    path('blocked-dates/', admin_views.BlockedServiceDateManagementView.as_view(), name='blocked_service_dates_management'),
     path('blocked-dates/delete/<int:pk>/', admin_views.BlockedServiceDateDeleteView.as_view(), name='delete_blocked_service_date'),
     path('service-brands/', admin_views.ServiceBrandManagementView.as_view(), name='service_brands_management'),
     path('service-brands/delete/<int:pk>/', admin_views.ServiceBrandDeleteView.as_view(), name='delete_service_brand'),
+    path('service-types/', admin_views.ServiceTypeManagementView.as_view(), name='service_types_management'),
+    path('service-types/delete/<int:pk>/', admin_views.ServiceTypeDeleteView.as_view(), name='delete_service_type'),
 ]

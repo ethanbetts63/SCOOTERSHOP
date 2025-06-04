@@ -7,7 +7,7 @@ from django.contrib import messages
 from service.models import BlockedServiceDate
 from service.forms import BlockedServiceDateForm
 
-class BlockedServiceDateView(View):
+class BlockedServiceDateManagementView(View):
     """
     Class-based view for managing (listing and adding) blocked service dates.
     Handles both GET (display form and list) and POST (add new blocked date).
