@@ -104,7 +104,6 @@ class ServiceBrandFactory(factory.django.DjangoModelFactory):
         django_get_or_create = ('name',) # Ensure uniqueness for name field
 
     name = factory.Sequence(lambda n: f'Brand {n}')
-    is_primary = False
     # image field is optional, so we don't need to generate it by default
     # For testing image fields, you'd typically use SimpleUploadedFile if needed.
 

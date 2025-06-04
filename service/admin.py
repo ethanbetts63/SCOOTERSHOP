@@ -82,8 +82,7 @@ class ServiceProfileAdmin(admin.ModelAdmin):
 
 @admin.register(ServiceBrand)
 class ServiceBrandAdmin(admin.ModelAdmin):
-    list_display = ('name', 'is_primary', 'last_updated')
-    list_filter = ('is_primary',)
+    list_display = ('name', 'last_updated')
     search_fields = ('name',)
 
 @admin.register(ServiceSettings)

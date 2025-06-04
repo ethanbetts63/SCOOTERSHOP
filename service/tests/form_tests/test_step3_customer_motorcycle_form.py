@@ -23,9 +23,9 @@ class CustomerMotorcycleFormTest(TestCase):
         ServiceSettings.objects.get_or_create(pk=1)
 
         # Create some primary brands for testing the 'brand' field choices
-        cls.honda_brand = ServiceBrandFactory(name="Honda", is_primary=True)
-        cls.yamaha_brand = ServiceBrandFactory(name="Yamaha", is_primary=True)
-        cls.other_brand_entry = ServiceBrandFactory(name="Other", is_primary=False) # Ensure 'Other' option exists
+        cls.honda_brand = ServiceBrandFactory(name="Honda")
+        cls.yamaha_brand = ServiceBrandFactory(name="Yamaha")
+        cls.other_brand_entry = ServiceBrandFactory(name="Other") # Ensure 'Other' option exists
 
     def _get_valid_data(self, brand_name="Honda", include_other_brand_name=False, other_brand_value=""):
         """
