@@ -1,7 +1,7 @@
 from django.db import models
 import uuid
-from payments.models import Payment
-from service.models import ServiceProfile, ServiceType, CustomerMotorcycle
+from payments.models import Payment # Keep this import as it's from a different app
+# from service.models import ServiceProfile, ServiceType, CustomerMotorcycle # Remove this direct import
 
 class ServiceBooking(models.Model):
     """
@@ -27,27 +27,27 @@ class ServiceBooking(models.Model):
         ('in_progress', 'In Progress'),
         ('completed', 'Completed'),
         ('no_show', 'No Show'),
+        ('DECLINED_REFUNDED', 'Declined and Refunded'), # Added for clarity in refund process
     ]
 
     booking_reference = models.CharField(max_length=20, unique=True, blank=True, null=True)
     service_type = models.ForeignKey(
-        ServiceType,
-        on_delete=models.PROTECT, # Don't allow deleting a ServiceType if temp bookings exist for it.
-                                 # Consider models.SET_NULL or specific handling if ServiceType can be deleted.
-        related_name='temp_service_bookings',
+        'service.ServiceType', # Changed to string literal
+        on_delete=models.PROTECT,
+        related_name='service_bookings', # Changed related_name for clarity
         help_text="Selected service type."
     )
     service_profile = models.ForeignKey(
-        ServiceProfile,
-        on_delete=models.CASCADE, # If profile is deleted, temp booking is also deleted.
-        related_name='temp_service_bookings',
+        'service.ServiceProfile', # Changed to string literal
+        on_delete=models.CASCADE,
+        related_name='service_bookings', # Changed related_name for clarity
         help_text="The customer profile associated with this temporary booking."
     )
     customer_motorcycle = models.ForeignKey(
-        CustomerMotorcycle,
+        'service.CustomerMotorcycle', # Changed to string literal
         on_delete=models.SET_NULL,           
         null=True, blank=True, 
-        related_name='temp_service_bookings',
+        related_name='service_bookings', # Changed related_name for clarity
         help_text="Chosen motorcycle for this service (set in a later step)."
     )
     payment_option = models.CharField(
@@ -88,7 +88,7 @@ class ServiceBooking(models.Model):
     dropoff_date = models.DateField(help_text="Requested date for the service.")
     dropoff_time = models.TimeField(help_text="Requested drop-off time for the service.")
     estimated_pickup_date = models.DateField(null=True, blank=True, help_text="Estimated pickup date set by admin.")
-
+    estimated_pickup_time = models.TimeField(null=True, blank=True, help_text="Estimated pickup time set by admin.") # Added this field
 
     booking_status = models.CharField(max_length=30, choices=BOOKING_STATUS_CHOICES, default='PENDING_CONFIRMATION')
     customer_notes = models.TextField(blank=True, null=True, help_text="Any additional notes from the customer.")
@@ -104,9 +104,12 @@ class ServiceBooking(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Temp Booking {self.uuid} for {self.service_profile.name} on {self.appointment_date}"
+        # Corrected __str__ to use actual fields from ServiceBooking
+        # Assuming appointment_date is meant to be dropoff_date
+        return f"Booking {self.booking_reference} for {self.service_profile.name} on {self.dropoff_date}"
 
     class Meta:
-        verbose_name = "Temporary Service Booking"
-        verbose_name_plural = "Temporary Service Bookings"
+        verbose_name = "Service Booking"
+        verbose_name_plural = "Service Bookings"
         ordering = ['-created_at']
+

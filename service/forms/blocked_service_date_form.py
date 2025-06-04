@@ -1,5 +1,5 @@
 from django import forms
-from ..models import BlockedServiceDate
+from service.models import BlockedServiceDate
 
 class BlockedServiceDateForm(forms.ModelForm):
     class Meta:

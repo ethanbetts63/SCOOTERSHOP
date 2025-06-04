@@ -12,7 +12,7 @@ from django.http import JsonResponse
 from django.utils.dateparse import parse_datetime
 
 from service.models import ServiceBooking, ServiceType # Ensure your model path is correct
-from dashboard.models import BlockedServiceDate # Corrected import
+from service.models import BlockedServiceDate # Corrected import
 
 # REMOVE the is_staff_check function definition here
 

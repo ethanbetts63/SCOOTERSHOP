@@ -4,18 +4,18 @@ from django.urls import path
 from . import views # This imports all views exposed in __init__.py
 from hire.views import Admin_Hire_Booking_view # Ensure this is imported if used elsewhere
 from payments.views import HireRefunds # Import the HireRefunds package, which should contain AdminRejectRefundView
-
+from service.views import *
 app_name = 'dashboard'
 
 urlpatterns = [
     # --- Dashboard Index ---
     path('', views.dashboard_index, name='dashboard_index'),
 
-    # --- Service Booking Management Views ---
-    path('service-bookings/', views.service_bookings_view, name='service_bookings'),
-    path('service-bookings/<int:pk>/', views.service_booking_details_view, name='service_booking_details'),
-    path('service-bookings/search/', views.service_booking_search_view, name='service_booking_search'),
-    path('service-bookings/json/', views.get_service_bookings_json, name='get_service_bookings_json'),
+    # # --- Service Booking Management Views ---
+    # path('service-bookings/', views.service_bookings_view, name='service_bookings'),
+    # path('service-bookings/<int:pk>/', views.service_booking_details_view, name='service_booking_details'),
+    # path('service-bookings/search/', views.service_booking_search_view, name='service_booking_search'),
+    # path('service-bookings/json/', views.get_service_bookings_json, name='get_service_bookings_json'),
 
     # --- Hire Booking Management Views ---
 
@@ -33,7 +33,7 @@ urlpatterns = [
     # --- Dashboard Settings Views ---
     path('settings/business-info/', views.settings_business_info, name='settings_business_info'),
     path('settings/visibility/', views.settings_visibility, name='settings_visibility'),
-    path('settings/service-booking/', views.settings_service_booking, name='settings_service_booking'),
+
     path('settings/hire-booking/', views.settings_hire_booking, name='settings_hire_booking'),
     path('settings/hire-refunds/', HireRefunds.AdminHireRefundManagement.as_view(), name='admin_hire_refund_management'),
     path('settings/hire-refunds/add/', HireRefunds.AdminAddEditRefundRequestView.as_view(), name='add_hire_refund_request'),
@@ -48,15 +48,15 @@ urlpatterns = [
     path('settings/service-brands/delete/<int:pk>/', views.delete_service_brand, name='delete_service_brand'),
 
     # --- Dashboard Service Type Management Views ---
-    path('settings/service-types/', views.settings_service_types, name='settings_service_types'),
-    path('settings/service-types/add/', views.add_service_type, name='add_service_type'),
-    path('settings/service-types/edit/<int:pk>/', views.edit_service_type, name='edit_service_type'),
-    path('settings/service-types/delete/<int:pk>/', views.delete_service_type, name='delete_service_type'),
-    path('settings/service-types/toggle-active/<int:pk>/', views.toggle_service_type_active_status, name='toggle_service_type_active_status'),
+    # path('settings/service-types/', views.settings_service_types, name='settings_service_types'),
+    # path('settings/service-types/add/', views.add_service_type, name='add_service_type'),
+    # path('settings/service-types/edit/<int:pk>/', views.edit_service_type, name='edit_service_type'),
+    # path('settings/service-types/delete/<int:pk>/', views.delete_service_type, name='delete_service_type'),
+    # path('settings/service-types/toggle-active/<int:pk>/', views.toggle_service_type_active_status, name='toggle_service_type_active_status'),
 
-    # --- Blocked Dates Management Views ---
-    path('settings/blocked-service-dates/', views.blocked_service_dates_management, name='blocked_service_dates_management'),
-    path('settings/blocked-service-dates/delete/<int:pk>/', views.delete_blocked_service_date, name='delete_blocked_service_date'),
+    # # --- Blocked Dates Management Views ---
+    # path('settings/blocked-service-dates/', views.blocked_service_dates_management, name='blocked_service_dates_management'),
+    # path('settings/blocked-service-dates/delete/<int:pk>/', views.delete_blocked_service_date, name='delete_blocked_service_date'),
     path('settings/blocked-hire-dates/', views.blocked_hire_dates_management, name='blocked_hire_dates_management'),
     path('settings/blocked-hire-dates/delete/<int:pk>/', views.delete_blocked_hire_date, name='delete_blocked_hire_date'),
 

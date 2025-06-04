@@ -4,7 +4,7 @@ from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 
-from dashboard.models import ServiceBrand
+from service.models import ServiceBrand
 
 @user_passes_test(lambda u: u.is_staff)
 def delete_service_brand(request, pk):

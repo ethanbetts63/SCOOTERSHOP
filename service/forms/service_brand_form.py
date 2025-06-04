@@ -1,5 +1,5 @@
 from django import forms
-from ..models import ServiceBrand
+from service.models import ServiceBrand
 
 class ServiceBrandForm(forms.ModelForm):
     class Meta:

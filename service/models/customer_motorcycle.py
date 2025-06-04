@@ -1,6 +1,4 @@
 from django.db import models
-from django.core.exceptions import ValidationError
-from service.models import ServiceProfile
 from datetime import date
 
 class CustomerMotorcycle(models.Model):
@@ -8,7 +6,7 @@ class CustomerMotorcycle(models.Model):
     Stores details of a customer's motorcycle for service bookings.
     """
     service_profile = models.ForeignKey(
-        ServiceProfile,
+        'service.ServiceProfile',
         on_delete=models.CASCADE,
         related_name='customer_motorcycles',
         help_text="The customer profile this motorcycle belongs to."

@@ -5,8 +5,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.db import transaction
 
-from dashboard.models import ServiceBrand
-from dashboard.forms import ServiceBrandForm
+from service.models import ServiceBrand
+from service.forms import ServiceBrandForm
 
 @user_passes_test(lambda u: u.is_staff)
 def service_brands_management(request):

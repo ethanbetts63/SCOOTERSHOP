@@ -5,16 +5,16 @@ from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 
 from dashboard.models import SiteSettings
-from dashboard.forms import ServiceBookingSettingsForm
+from service.forms import ServiceSettingsForm
 
 @user_passes_test(lambda u: u.is_staff)
 def settings_service_booking(request):
     settings = SiteSettings.get_settings()
-    form = ServiceBookingSettingsForm(instance=settings)
+    form = ServiceSettingsForm(instance=settings)
 
     if request.method == 'POST':
         if 'service_settings_submit' in request.POST:
-            form = ServiceBookingSettingsForm(request.POST, instance=settings)
+            form = ServiceSettingsForm(request.POST, instance=settings)
             if form.is_valid():
                 form.save()
                 messages.success(request, 'Service booking settings updated successfully!')

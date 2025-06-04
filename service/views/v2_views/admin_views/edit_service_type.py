@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 
 from service.models import ServiceType
-from dashboard.forms import ServiceTypeForm
+from service.forms import ServiceTypeForm
 
 @user_passes_test(lambda u: u.is_staff)
 def edit_service_type(request, pk):

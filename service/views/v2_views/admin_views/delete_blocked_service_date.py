@@ -1,10 +1,9 @@
-# SCOOTER_SHOP/dashboard/views/delete_blocked_service_date.py
 
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 
-from dashboard.models import BlockedServiceDate
+from service.models import BlockedServiceDate
 
 @user_passes_test(lambda u: u.is_staff)
 def delete_blocked_service_date(request, pk):

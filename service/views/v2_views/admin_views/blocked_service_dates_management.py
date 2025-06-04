@@ -4,8 +4,8 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 
-from dashboard.models import BlockedServiceDate
-from dashboard.forms import BlockedServiceDateForm
+from service.models import BlockedServiceDate
+from service.forms import BlockedServiceDateForm
 
 @user_passes_test(lambda u: u.is_staff)
 def blocked_service_dates_management(request):
