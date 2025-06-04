@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from decimal import Decimal # Import Decimal
 
 class ServiceSettings(models.Model):
     """
@@ -114,20 +115,21 @@ class ServiceSettings(models.Model):
         return "Service Booking Settings"
 
     def clean(self):
-        # Ensure percentages are within valid range (0.0 to 1.0)
-        percentage_fields = [
-            'deposit_percentage', 
+        # General percentage fields validation (0.0 to 1.0)
+        general_percentage_fields = [
+            'deposit_percentage',
             'cancel_full_payment_max_refund_percentage', 'cancel_full_payment_partial_refund_percentage', 'cancel_full_payment_min_refund_percentage',
             'cancel_deposit_max_refund_percentage', 'cancel_deposit_partial_refund_percentage', 'cancel_deposit_min_refund_percentage',
-            'stripe_fee_percentage'
         ]
-        for field_name in percentage_fields:
+        for field_name in general_percentage_fields:
             value = getattr(self, field_name)
-            if value is not None and not (0 <= value <= 1):
-                if field_name == 'stripe_fee_percentage' and not (0 <= value <= 0.1): # Stripe fees are usually small percentages
-                     raise ValidationError({field_name: f"Ensure {field_name.replace('_', ' ')} is a sensible rate (e.g., 0.01 to 0.1 for 1-10%)."})
-                elif field_name != 'stripe_fee_percentage':
-                     raise ValidationError({field_name: f"Ensure {field_name.replace('_', ' ')} is between 0.00 (0%) and 1.00 (100%)."})
+            if value is not None and not (Decimal('0.00') <= value <= Decimal('1.00')):
+                raise ValidationError({field_name: f"Ensure {field_name.replace('_', ' ')} is between 0.00 (0%) and 1.00 (100%)."})
+
+        # Specific validation for stripe_fee_percentage (0.0 to 0.1)
+        stripe_fee_percentage_value = self.stripe_fee_percentage
+        if stripe_fee_percentage_value is not None and not (Decimal('0.00') <= stripe_fee_percentage_value <= Decimal('0.10')):
+            raise ValidationError({'stripe_fee_percentage': f"Ensure stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."})
 
 
     def save(self, *args, **kwargs):
