@@ -12,17 +12,17 @@
 
 <div class="card shadow mb-4">
     <div class="card-header">
-        <div class="button-group-spaced mb-4"> {# Using existing class for spacing, added margin-bottom #}
+        <div class="button-group-spaced mb-4">
             {# Link to create booking for existing user #}
-            <a href="{% url 'service:admin_booking_user' %}" class="btn-primary"> {# Using existing button primary style #}
+            <a href="{% url 'service:admin_booking_user' %}" class="btn-primary">
                 Create booking (existing user)
             </a>
             {# Link to create booking for one-off user #}
-            <a href="{% url 'service:admin_booking_anon' %}" class="btn-primary"> {# Using existing button primary style #}
+            <a href="{% url 'service:admin_booking_anon' %}" class="btn-primary">
                 Create booking (one-off user)
             </a>
-            {# Link to search bookings - keeping the existing search button, just moving it #}
-            <a href="{% url 'dashboard:service_booking_search' %}" class="btn-primary"> {# Using existing button primary style #}
+            {# Link to search bookings - updated URL #}
+            <a href="{% url 'service:service_booking_search' %}" class="btn-primary">
                  Search bookings
             </a>
         </div>
@@ -43,6 +43,9 @@
             <div class="color-key-item">
                 <span class="color-box status-completed"></span> Completed
             </div>
+            <div class="color-key-item">
+                <span class="color-box status-blocked"></span> Blocked
+            </div>
         </div>
 
     </div> {# End of card-body #}
@@ -56,29 +59,22 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        var calendarEl = document.getElementById('fullcalendar'); // Get the HTML element
+        var calendarEl = document.getElementById('fullcalendar');
 
         var calendar = new FullCalendar.Calendar(calendarEl, {
-            // ** REQUIRED OPTIONS **
-            initialView: 'dayGridMonth', // Specifies the default view (e.g., month view)
-
-            // ** OPTIONAL CONFIGURATION **
-            headerToolbar: { // Customize the buttons and title at the top
+            initialView: 'dayGridMonth',
+            headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
-                right: '' // Removed all buttons from the right side
+                right: ''
             },
 
-            // --- Event Source ---
-            // Fetch events from the Django backend JSON feed
-            events: '{% url "dashboard:get_service_bookings_json" %}',
+            // Fetch events from the Django backend JSON feed - UPDATED URL
+            events: '{% url "service:get_service_bookings_json" %}',
 
-            // --- Event Rendering ---
             eventContent: function(arg) {
-                // Check if the event is a blocked date event using the extendedProps.is_blocked flag
                 if (arg.event.extendedProps.is_blocked) {
-                    // This is a blocked date event
-                    let blockedDescription = arg.event.extendedProps.description || ''; // Use description if available
+                    let blockedDescription = arg.event.extendedProps.description || '';
 
                     let html = `
                         <div class="blocked-title">Blocked</div>
@@ -86,36 +82,27 @@
                     `;
 
                     let eventEl = document.createElement('div');
-                    // Apply the base class, the custom main class, and the specific blocked status class
                     eventEl.classList.add('calendar-tile-base');
-                    eventEl.classList.add('fc-event-main-custom'); // Add this class
-                    eventEl.classList.add('status-blocked'); // Add this class
-                    eventEl.innerHTML = html;
-
-                    // Optional: Add original title as a title attribute for tooltip if description was used
-                     if (arg.event.extendedProps.description) {
-                         eventEl.setAttribute('title', arg.event.title); // Original title is 'Blocked Day'
+                    eventEl.classList.add('fc-event-main-custom');
+                    eventEl.classList.add('status-blocked');
+                    if (arg.event.extendedProps.description) {
+                         eventEl.setAttribute('title', arg.event.title);
                      }
-
-
                     return { domNodes: [eventEl] };
 
                 } else {
-                    // This is a service booking event - use the existing rendering logic
                     let customerName = arg.event.extendedProps.customer_name || 'N/A';
                     let vehicleMake = arg.event.extendedProps.vehicle_make || '';
                     let vehicleModel = arg.event.extendedProps.vehicle_model || '';
                     let serviceType = arg.event.extendedProps.service_type || 'Service';
-                    let status = arg.event.extendedProps.status || 'pending'; // Default to pending if status is not set
+                    let status = arg.event.extendedProps.status || 'pending';
 
-                    // Construct the vehicle string, only if make or model exists
                     let vehicleString = '';
                     if (vehicleMake || vehicleModel) {
                         vehicleString = `${vehicleMake} ${vehicleModel}`.trim();
                     }
 
-                    // Use a shorter version of the customer name if it's too long for the tile
-                    if (customerName.length > 15) { // Adjust length as needed
+                    if (customerName.length > 15) {
                         customerName = customerName.substring(0, 15) + '...';
                     }
 
@@ -127,67 +114,38 @@
                          html += `<div class="booking-details">${vehicleString}</div>`;
                     }
 
-
-                    // The main container for the custom content
                     let eventEl = document.createElement('div');
-                    // Apply the base class and the specific service booking class
                     eventEl.classList.add('calendar-tile-base');
-                    eventEl.classList.add('fc-event-main-custom'); // Keep original class for status styling
-                    eventEl.classList.add(`status-${status}`); // e.g., status-confirmed
-                    eventEl.innerHTML = html;
-
+                    eventEl.classList.add('fc-event-main-custom');
+                    eventEl.classList.add(`status-${status}`);
                     return { domNodes: [eventEl] };
                 }
             },
 
-
-            // --- Interactivity (Using the interaction plugin) ---
-            // The dateClick function has been removed to make days non-clickable.
-            // dateClick: function(info) {
-            //     // This function is called when a date is clicked
-            //     console.log('Date clicked:', info.dateStr);
-            //     // Redirect to your day view
-            //     const year = info.date.getFullYear();
-            //     const month = info.date.getMonth() + 1; // Month is 0-indexed
-            //     const day = info.date.getDate();
-            //     // You might want to add logic here to prevent redirecting if the date is blocked
-            //     window.location.href = `/dashboard/service-bookings/${year}/${month}/${day}/`;
-            // },
-
             eventClick: function(info) {
-                // This function is called when an event (booking) is clicked
-                console.log('Event clicked:', info.event.title); // Original title
+                console.log('Event clicked:', info.event.title);
                 console.log('Event ID:', info.event.id);
                 console.log('Event URL:', info.event.url);
                 console.log('Event Extended Props:', info.event.extendedProps);
 
-                 // Prevent clicking on blocked date tiles
                  if (info.event.extendedProps.is_blocked) {
-                     info.jsEvent.preventDefault(); // Prevent the default action (like following a URL)
-                     return; // Stop further execution for blocked events
+                     info.jsEvent.preventDefault();
+                     return;
                  }
 
-
-                // Redirect to the booking details page using the event's URL property
                 if (info.event.url) {
                     window.location.href = info.event.url;
                 }
             },
-
         });
 
-        // Render the calendar first
         calendar.render();
 
-        // --- Move the color key into the FullCalendar header ---
         var colorKeyElement = document.getElementById('status-color-key');
-        // Find the right-hand side chunk of the FullCalendar header
         var headerRightChunk = calendarEl.querySelector('.fc-toolbar-chunk:last-child');
 
         if (colorKeyElement && headerRightChunk) {
-            // Append the color key element to the right chunk
             headerRightChunk.appendChild(colorKeyElement);
-            // Make it visible after moving
             colorKeyElement.style.display = 'flex';
         }
     });

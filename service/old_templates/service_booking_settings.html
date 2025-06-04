@@ -36,90 +36,50 @@
         </div>
         {# End added buttons #}
 
-        <div class="form-field">
-            <h3 class="booking-section-title">Booking Options</h3>
-
+        {# Loop through all fields in the form to render them dynamically #}
+        {% for field in form %}
             <div class="form-field">
-                <div class="form-field">
-                    <input type="checkbox" id="{{ form.allow_anonymous_bookings.id_for_label }}" name="{{ form.allow_anonymous_bookings.html_name }}" {% if form.allow_anonymous_bookings.value %}checked{% endif %}>
-                    <label for="{{ form.allow_anonymous_bookings.id_for_label }}">Allow Anonymous Bookings</label>
-                    <small>Allow users to book services without creating an account</small>
-                </div>
-            </div>
+                {# Render non-checkbox labels explicitly #}
+                {% if field.field.widget.input_type != 'checkbox' %}
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% endif %}
 
+                {# Render the field itself #}
+                {{ field }}
+
+                {# Render checkbox labels after the input #}
+                {% if field.field.widget.input_type == 'checkbox' %}
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% endif %}
+
+                {# Display help text #}
+                {% if field.help_text %}
+                    <small>{{ field.help_text }}</small>
+                {% endif %}
+
+                {# Display field-specific errors #}
+                {% if field.errors %}
+                    {% for error in field.errors %}
+                        <small style="color: red;">{{ error }}</small>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        {# Display non-field errors (e.g., from clean method in form or model) #}
+        {% if form.non_field_errors %}
             <div class="form-field">
-                <div class="form-field">
-                    <input type="checkbox" id="{{ form.allow_account_bookings.id_for_label }}" name="{{ form.allow_account_bookings.html_name }}" {% if form.allow_account_bookings.value %}checked{% endif %}>
-                    <label for="{{ form.allow_account_bookings.id_for_label }}">Allow Account Bookings</label>
-                    <small>Allow users to book services with their account</small>
-                </div>
+                {% for error in form.non_field_errors %}
+                    <small style="color: red;">{{ error }}</small>
+                {% endfor %}
             </div>
-
-            <div class="form-field">
-                <label for="{{ form.booking_open_days.id_for_label }}">Booking Open Days</label>
-                {{ form.booking_open_days }}
-                <small>Number of days in advance that bookings can be made</small>
-            </div>
-
-            <div class="form-field">
-                <label for="{{ form.booking_advance_notice.id_for_label }}">Booking Advance Notice</label>
-                {{ form.booking_advance_notice }}
-                <small>Minimum number of days notice required for a booking</small>
-            </div>
-
-            <div class="form-field">
-                <label for="{{ form.max_visible_slots_per_day.id_for_label }}">Max Visible Slots Per Day</label>
-                {{ form.max_visible_slots_per_day }}
-                <small>Maximum number of booking slots to show per day</small>
-            </div>
-        </div>
-
-        <div class="form-field">
-            <h3 class="booking-section-title">Booking Time Settings</h3>
-
-            <div class="form-field">
-                <label for="{{ form.drop_off_start_time.id_for_label }}">Drop-Off Start Time</label>
-                {{ form.drop_off_start_time }}
-                <small>Earliest time of the day for a drop off</small>
-            </div>
-
-            <div class="form-field">
-                <label for="{{ form.drop_off_end_time.id_for_label }}">Drop-off End Time</label>
-                {{ form.drop_off_end_time }}
-                <small>Latest time of day for a drop off</small>
-            </div>
-        </div>
-
-        <div class="form-field">
-            <h3 class="booking-section-title">Notification Settings</h3>
-
-            <div class="form-field">
-                <label for="{{ form.service_confirmation_email_subject.id_for_label }}">Confirmation Email Subject</label>
-                {{ form.service_confirmation_email_subject }}
-                <small>Subject line for booking confirmation emails</small>
-            </div>
-
-            <div class="form-field">
-                <label for="{{ form.service_pending_email_subject.id_for_label }}">Pending Email Subject</label>
-                {{ form.service_pending_email_subject }}
-                <small>Subject line for booking request emails</small>
-            </div>
-
-            <div class="form-field">
-                <label for="{{ form.admin_service_notification_email.id_for_label }}">Admin Notification Email</label>
-                {{ form.admin_service_notification_email }}
-                <small>Email address to receive booking notifications</small>
-            </div>
-        </div>
-
-        {# Original Save Service Settings button is replaced by the one in the added div #}
-        {# <button type="submit" name="service_settings_submit">Save Service Settings</button> #}
+        {% endif %}
     </form>
     {# End of the first form #}
 
     <hr>
 
-    {# Blocked Service Dates section (remains unaffected by the JS for the first form) #}
+    {# Blocked Service Dates section #}
     <div class="form-field">
         <h3 class="booking-section-title">Blocked Service Dates</h3>
 
@@ -135,7 +95,7 @@
                     {{ blocked_service_date_form.start_date }}
                     {% if blocked_service_date_form.start_date.errors %}
                         {% for error in blocked_service_date_form.start_date.errors %}
-                            <small>{{ error }}</small>
+                            <small style="color: red;">{{ error }}</small>
                         {% endfor %}
                     {% endif %}
                     <small>{{ blocked_service_date_form.start_date.help_text }}</small>
@@ -146,7 +106,7 @@
                     {{ blocked_service_date_form.end_date }}
                     {% if blocked_service_date_form.end_date.errors %}
                         {% for error in blocked_service_date_form.end_date.errors %}
-                            <small>{{ error }}</small>
+                            <small style="color: red;">{{ error }}</small>
                         {% endfor %}
                     {% endif %}
                     <small>{{ blocked_service_date_form.end_date.help_text }}</small>
@@ -157,7 +117,7 @@
                     {{ blocked_service_date_form.description }}
                     {% if blocked_service_date_form.description.errors %}
                         {% for error in blocked_service_date_form.description.errors %}
-                            <small>{{ error }}</small>
+                            <small style="color: red;">{{ error }}</small>
                         {% endfor %}
                     {% endif %}
                     <small>{{ blocked_service_date_form.description.help_text }}</small>
@@ -166,7 +126,7 @@
                 {% if blocked_service_date_form.non_field_errors %}
                     <div class="form-field">
                         {% for error in blocked_service_date_form.non_field_errors %}
-                            <small>{{ error }}</small>
+                            <small style="color: red;">{{ error }}</small>
                         {% endfor %}
                     </div>
                 {% endif %}
@@ -217,14 +177,14 @@
         const saveButton = document.getElementById('saveButton');
         const resetButton = document.getElementById('resetButton');
         // Select form fields specifically within the FIRST form on the page
-        const mainForm = document.querySelector('form[method="post"]');
+        const mainForm = document.querySelector('form[name="service_settings_submit"]'); // Target the form by the submit button's name
         const formFields = mainForm.querySelectorAll('input, select, textarea');
 
         // Function to set form fields read-only or enabled
         function setFormReadonly(readonly) {
             formFields.forEach(field => {
-                // Ensure we don't accidentally affect the CSRF token input in the other forms
-                if (field.name !== 'csrfmiddlewaretoken') {
+                // Ensure we don't accidentally affect the CSRF token input or the buttons themselves
+                if (field.name !== 'csrfmiddlewaretoken' && field.type !== 'submit' && field.type !== 'button') {
                     if (readonly) {
                         field.setAttribute('readonly', true);
                         // Prevent checkbox interaction when read-only
