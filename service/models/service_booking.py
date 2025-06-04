@@ -64,7 +64,7 @@ class ServiceBooking(models.Model):
         null=True, blank=True, 
         help_text="Link to the associated payment record."
     )
-    calculated_total = models.DecimalField(max_digits=10, decimal_places=2)
+    calculated_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     calculated_deposit_amount = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='unpaid')
