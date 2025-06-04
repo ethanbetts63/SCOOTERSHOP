@@ -4,10 +4,10 @@ import uuid
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from decimal import Decimal
-from faker import Faker # <--- Already there
+from faker import Faker
 
 # Initialize Faker outside the factory classes for efficiency
-fake = Faker() # <--- Already there
+fake = Faker()
 
 # Import your models from the 'service' app
 # Make sure the paths are correct based on your project structure
@@ -19,6 +19,7 @@ from service.models import (
     ServiceSettings,
     ServiceType,
     TempServiceBooking,
+    ServiceBrand, # Import ServiceBrand
 )
 
 # Import Payment model from the payments app
@@ -91,6 +92,19 @@ class PaymentFactory(factory.django.DjangoModelFactory):
 
 # --- Service App Model Factories ---
 
+class ServiceBrandFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for the ServiceBrand model.
+    """
+    class Meta:
+        model = ServiceBrand
+        django_get_or_create = ('name',) # Ensure uniqueness for name field
+
+    name = factory.Sequence(lambda n: f'Brand {n}')
+    is_primary = False
+    # image field is optional, so we don't need to generate it by default
+    # For testing image fields, you'd typically use SimpleUploadedFile if needed.
+
 class ServiceTypeFactory(factory.django.DjangoModelFactory):
     """
     Factory for the ServiceType model.
@@ -109,6 +123,7 @@ class ServiceTypeFactory(factory.django.DjangoModelFactory):
     )
     is_active = True
     # image field is optional, so we don't need to generate it by default
+
 
 class ServiceProfileFactory(factory.django.DjangoModelFactory):
     """
