@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError # Import ValidationError
 
 # New model for blocked dates
 class BlockedServiceDate(models.Model):
@@ -14,6 +15,16 @@ class BlockedServiceDate(models.Model):
             return f"Blocked: {self.start_date.strftime('%Y-%m-%d')}"
         else:
             return f"Blocked: {self.start_date.strftime('%Y-%m-%d')} to {self.end_date.strftime('%Y-%m-%d')}"
+
+    def clean(self):
+        """
+        Custom validation to ensure end_date is not before start_date.
+        """
+        super().clean()
+        if self.start_date and self.end_date and self.end_date < self.start_date:
+            raise ValidationError({
+                'end_date': "End date cannot be before the start date."
+            })
 
     class Meta:
         ordering = ['start_date']

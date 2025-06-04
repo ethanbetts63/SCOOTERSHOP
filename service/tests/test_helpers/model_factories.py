@@ -173,8 +173,9 @@ class BlockedServiceDateFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = BlockedServiceDate
 
-    start_date = factory.LazyFunction(lambda: factory.Faker('date_between', start_date='today', end_date='+30d'))
-    end_date = factory.LazyAttribute(lambda o: o.start_date + datetime.timedelta(days=factory.Faker('random_int', min=0, max=7)))
+    start_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+30d'))
+    # Corrected: Call fake.random_int() to get the integer value
+    end_date = factory.LazyAttribute(lambda o: o.start_date + datetime.timedelta(days=fake.random_int(min=0, max=7)))
     description = factory.Faker('sentence')
 
 class ServiceSettingsFactory(factory.django.DjangoModelFactory):
@@ -249,11 +250,11 @@ class TempServiceBookingFactory(factory.django.DjangoModelFactory):
     service_profile = factory.SubFactory(ServiceProfileFactory)
     customer_motorcycle = factory.SubFactory(CustomerMotorcycleFactory, service_profile=factory.SelfAttribute('..service_profile'))
     payment_option = factory.Faker('random_element', elements=[choice[0] for choice in TempServiceBooking.PAYMENT_METHOD_CHOICES])
-    dropoff_date = factory.LazyFunction(lambda: factory.Faker('date_between', start_date='today', end_date='+30d'))
+    dropoff_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+30d'))
     dropoff_time = factory.Faker('time_object')
     estimated_pickup_date = None # Set to None by default, can be overridden
     customer_notes = factory.Faker('paragraph')
-    calculated_deposit_amount = factory.LazyFunction(lambda: Decimal(f"{factory.Faker('pydecimal', left_digits=2, right_digits=2, positive=True)}"))
+    calculated_deposit_amount = factory.LazyFunction(lambda: Decimal(f"{fake.pydecimal(left_digits=2, right_digits=2, positive=True)}"))
 
 
 class ServiceBookingFactory(factory.django.DjangoModelFactory):
@@ -270,15 +271,15 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
     customer_motorcycle = factory.SubFactory(CustomerMotorcycleFactory, service_profile=factory.SelfAttribute('..service_profile'))
     payment_option = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.PAYMENT_METHOD_CHOICES])
     payment = factory.SubFactory(PaymentFactory) # Link to a Payment instance
-    calculated_total = factory.LazyFunction(lambda: Decimal(f"{factory.Faker('pydecimal', left_digits=4, right_digits=2, positive=True)}"))
-    calculated_deposit_amount = factory.LazyFunction(lambda: Decimal(f"{factory.Faker('pydecimal', left_digits=2, right_digits=2, positive=True)}"))
+    calculated_total = factory.LazyFunction(lambda: Decimal(f"{fake.pydecimal(left_digits=4, right_digits=2, positive=True)}"))
+    calculated_deposit_amount = factory.LazyFunction(lambda: Decimal(f"{fake.pydecimal(left_digits=2, right_digits=2, positive=True)}"))
     amount_paid = factory.LazyAttribute(lambda o: o.calculated_total) # Assume full payment by default
     payment_status = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.PAYMENT_STATUS_CHOICES])
     payment_method = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.PAYMENT_METHOD_CHOICES])
     currency = 'AUD'
     stripe_payment_intent_id = factory.Sequence(lambda n: f"pi_{uuid.uuid4().hex[:24]}")
-    dropoff_date = factory.LazyFunction(lambda: factory.Faker('date_between', start_date='today', end_date='+30d'))
+    dropoff_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+30d'))
     dropoff_time = factory.Faker('time_object')
-    estimated_pickup_date = factory.LazyAttribute(lambda o: o.dropoff_date + datetime.timedelta(days=factory.Faker('random_int', min=1, max=5)))
+    estimated_pickup_date = factory.LazyAttribute(lambda o: o.dropoff_date + datetime.timedelta(days=fake.random_int(min=1, max=5)))
     booking_status = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.BOOKING_STATUS_CHOICES])
     customer_notes = factory.Faker('paragraph')
