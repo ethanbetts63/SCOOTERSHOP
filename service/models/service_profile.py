@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
+import re # Import the regular expression module
+
 # Assuming 'User' model exists in 'users.models' as per your snippets
 # from users.models import User 
 # If User is not directly accessible or needs a custom import, adjust this line.
@@ -49,9 +51,13 @@ class ServiceProfile(models.Model):
         Custom validation for the ServiceProfile model.
         """
         super().clean()
+        if self.phone_number:
+            # Remove spaces and hyphens for a cleaner check
+            cleaned_phone_number = self.phone_number.replace(' ', '').replace('-', '')
+            if not re.fullmatch(r'^\+?\d+$', cleaned_phone_number):
+                raise ValidationError({'phone_number': "Phone number must contain only digits, spaces, hyphens, and an optional leading '+'. "
+                                                       "Example: '+61412345678' or '0412 345 678'."})
         
-        if self.phone_number and not self.phone_number.replace(' ', '').replace('-', '').isdigit():
-            raise ValidationError({'phone_number': "Phone number must contain only digits, spaces, or hyphens."})
         if self.user:
             if self.email and self.user.email and self.email != self.user.email:
                 pass # For now, allow discrepancy, or raise ValidationError if strict.
