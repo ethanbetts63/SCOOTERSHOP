@@ -290,15 +290,14 @@ class ServiceDetailsForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control'}),
         required=True
     )
-    # Changed from DateTimeField to DateField
-    appointment_date = forms.DateField(
+    dropoff_date = forms.DateField(
         label="Preferred Date",
         # We will use Flatpickr for the date input in the template
-        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'text'}), # Use type text for Flatpickr
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'text'}), 
         required=True
     )
-    # Added a ChoiceField for drop-off time
-    drop_off_time = forms.ChoiceField(
+    # Added a ChoiceField for dropoff time
+    dropoff_time = forms.ChoiceField(
         label="Preferred Drop-off Time",
         choices=[], # Choices will be populated dynamically in the view
         widget=forms.Select(attrs={'class': 'form-control'}),
