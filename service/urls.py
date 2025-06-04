@@ -82,10 +82,15 @@ urlpatterns = [
     # Admin-facing management
     path('service-booking-management/', admin_views.ServiceBookingManagementView.as_view(), name='service_booking_management'),
     path('service-booking-settings/', admin_views.ServiceBookingSettingsView.as_view(), name='service_booking_settings'),
+    
     path('blocked-dates/', admin_views.BlockedServiceDateManagementView.as_view(), name='blocked_service_dates_management'),
     path('blocked-dates/delete/<int:pk>/', admin_views.BlockedServiceDateDeleteView.as_view(), name='delete_blocked_service_date'),
+
     path('service-brands/', admin_views.ServiceBrandManagementView.as_view(), name='service_brands_management'),
     path('service-brands/delete/<int:pk>/', admin_views.ServiceBrandDeleteView.as_view(), name='delete_service_brand'),
+
     path('service-types/', admin_views.ServiceTypeManagementView.as_view(), name='service_types_management'),
+    path('service-types/add/', admin_views.ServiceTypeCreateUpdateView.as_view(), name='add_service_type'), 
+    path('service-types/edit/<int:pk>/', admin_views.ServiceTypeCreateUpdateView.as_view(), name='edit_service_type'),
     path('service-types/delete/<int:pk>/', admin_views.ServiceTypeDeleteView.as_view(), name='delete_service_type'),
 ]

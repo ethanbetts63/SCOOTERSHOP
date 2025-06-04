@@ -7,8 +7,7 @@ class ServiceBrandForm(forms.ModelForm):
         fields = ['name', 'image'] 
         help_texts = {
             'name': "The name of the service brand.",
-            'image': "Upload an optional image for this brand.",
-            
+            'image': "Upload an optional image for this brand.",        
         }
 
 

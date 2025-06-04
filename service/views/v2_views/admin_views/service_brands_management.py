@@ -1,3 +1,4 @@
+# SCOOTER_SHOP/service/views/service_brands_management.py
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
@@ -6,14 +7,14 @@ from django.db import transaction
 
 from service.models import ServiceBrand # Assuming ServiceBrand model exists
 from service.forms import ServiceBrandForm # Assuming ServiceBrandForm exists
-from service.models import ServiceSettings # Import ServiceSettings to get max_primary_brands
+# Removed ServiceSettings import as max_primary_brands is no longer used
 
 class ServiceBrandManagementView(View):
     """
     Class-based view for managing (listing, adding, and editing) service brands.
     Handles GET (display form and list) and POST (add/edit brand).
     """
-    template_name = 'dashboard/service_brands_management.html'
+    template_name = 'service/service_brands_management.html'
     form_class = ServiceBrandForm
 
     # Temporarily skipping UserPassesTestMixin as per instructions
@@ -22,13 +23,10 @@ class ServiceBrandManagementView(View):
 
     def get_context_data(self, form=None, edit_brand=None):
         """Helper method to get context data for rendering the template."""
-        service_brands = ServiceBrand.objects.all().order_by('-is_primary', 'name')
-        primary_brands_count = ServiceBrand.objects.filter(is_primary=True).count()
-        
-        # Get max_primary_brands from ServiceSettings
-        # Assuming ServiceSettings is a singleton and always has one instance
-        service_settings = ServiceSettings.objects.first() 
-        max_primary_brands = service_settings.max_primary_brands if service_settings else 5 # Default to 5 if settings not found
+        # Order service brands alphabetically by name
+        service_brands = ServiceBrand.objects.all().order_by('name')
+
+        # Removed primary_brands_count and max_primary_brands as they are no longer needed
 
         if form is None:
             form = self.form_class(instance=edit_brand)
@@ -37,8 +35,6 @@ class ServiceBrandManagementView(View):
             'form': form,
             'edit_brand': edit_brand,
             'service_brands': service_brands,
-            'primary_brands_count': primary_brands_count,
-            'max_primary_brands': max_primary_brands,
             'page_title': 'Manage Service Brands',
         }
         return context
@@ -52,7 +48,7 @@ class ServiceBrandManagementView(View):
         edit_brand = None
         if edit_brand_pk:
             edit_brand = get_object_or_404(ServiceBrand, pk=edit_brand_pk)
-        
+
         context = self.get_context_data(edit_brand=edit_brand)
         return render(request, self.template_name, context)
 
@@ -78,17 +74,16 @@ class ServiceBrandManagementView(View):
                         brand = form.save()
 
                     action = "updated" if brand_id else "added"
-                    messages.success(request, f"Service brand '{brand.name}' {action} successfully.")
+                    messages.success(self.request, f"Service brand '{brand.name}' {action} successfully.")
                     return redirect('service:service_brands_management')
                 except ValueError as e:
-                    messages.error(request, str(e))
+                    messages.error(self.request, str(e))
                 except Exception as e:
-                    messages.error(request, f"Error saving service brand: {e}")
+                    messages.error(self.request, f"Error saving service brand: {e}")
             else:
-                messages.error(request, "Please correct the errors below.")
-        
+                messages.error(self.request, "Please correct the errors below.")
+
         # If form is invalid or another action was attempted (e.g., direct edit click)
         # re-render the page with appropriate context
         context = self.get_context_data(form=form, edit_brand=edit_brand)
         return render(request, self.template_name, context)
-

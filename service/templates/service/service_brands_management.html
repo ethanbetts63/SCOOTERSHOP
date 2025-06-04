@@ -73,8 +73,7 @@
     {% endif %}
     <div>
         <p>Adding a brand to this list will allow a user to book a service with a bike of that brand. If the brand is not on this list it can not be serviced.</p>
-        <p>Primary brands are brands who's logo will be displayed on in the "Book your bike in" pop up. Therefore you need to upload a picture of the brands logo for this pop up to look okay.</p>
-        <p>You do not have to upload images for non-primary brands.</p>
+        {# Removed primary brand specific explanation #}
     </div>
 
     {# Section for adding a new brand #}
@@ -115,19 +114,6 @@
                  {% endif %}
             </div>
 
-            <div class="form-field checkbox-field">
-                <input type="checkbox" id="{{ form.is_primary.id_for_label }}" name="{{ form.is_primary.html_name }}" {% if form.is_primary.value %}checked{% endif %}>
-                <label for="{{ form.is_primary.id_for_label }}">{{ form.is_primary.label }}</label>
-                {% if form.is_primary.errors %}
-                    {% for error in form.is_primary.errors %}
-                        <small class="error-text">{{ error }}</small>
-                    {% endfor %}
-                {% endif %}
-                 {% if form.is_primary.help_text %}
-                    <small>{{ form.is_primary.help_text }}</small>
-                 {% endif %}
-            </div>
-
             {# Non-field errors for the form #}
             {% if form.non_field_errors %}
                 <div class="form-field">
@@ -146,15 +132,12 @@
     {# Section for listing existing brands #}
     <div class="form-field">
         <h3 class="booking-section-title">Existing Service Brands ({{ service_brands.count }})</h3>
-        {% if primary_brands_count >= max_primary_brands %}
-             <p class="warning-text">You currently have {{ primary_brands_count }} primary brands. The maximum allowed is {{ max_primary_brands }}. You must delete a primary brand before adding another primary brand.</p>
-        {% endif %}
-
+        {# Removed primary brand warning #}
 
         {% if service_brands %}
             <ul class="brands-list">
                 {% for brand in service_brands %}
-                    <li class="brand-item {% if brand.is_primary %}primary{% endif %}">
+                    <li class="brand-item"> {# Removed {% if brand.is_primary %}primary{% endif %} #}
                         {% if brand.image %}
                             <div class="brand-image">
                                 <img src="{{ brand.image.url }}" alt="{{ brand.name }} image">
@@ -162,10 +145,8 @@
                         {% endif %}
                         <div class="brand-info">
                             <h4>{{ brand.name }}</h4>
-                            <p>Status: {% if brand.is_primary %}Primary{% else %}Standard{% endif %}</p>
-                             {% if not brand.image and brand.is_primary %}
-                                <p class="error-text">Error: This primary brand is missing an image!</p>
-                            {% endif %}
+                            {# Removed primary status display #}
+                            {# Removed missing image error for primary brands #}
                         </div>
                         <div class="brand-actions">
                              {# Form for deleting a brand - now uses a custom modal #}
@@ -200,11 +181,6 @@
     document.addEventListener('DOMContentLoaded', function() {
         const addBrandForm = document.getElementById('addBrandForm');
         const imageInput = addBrandForm.querySelector('#{{ form.image.id_for_label }}');
-        const isPrimaryCheckbox = addBrandForm.querySelector('#{{ form.is_primary.id_for_label }}');
-        // Retrieve maxPrimaryBrands and currentPrimaryBrands from template context
-        const maxPrimaryBrands = parseInt('{{ max_primary_brands }}');
-        const currentPrimaryBrands = parseInt('{{ primary_brands_count }}');
-
         // Modal elements
         const deleteButtons = document.querySelectorAll('.delete-button');
         const modal = document.getElementById('confirmationModal');
@@ -214,42 +190,6 @@
         let currentForm = null;
         let brandNameToDelete = '';
 
-        // Function to update the disabled state of the 'is_primary' checkbox
-        function updatePrimaryCheckboxState() {
-            const fileSelected = imageInput.files && imageInput.files.length > 0;
-
-            if (!fileSelected) {
-                isPrimaryCheckbox.disabled = true;
-                if (isPrimaryCheckbox.checked) {
-                    isPrimaryCheckbox.checked = false;
-                }
-            } else {
-                // If a file is selected, enable the checkbox unless the limit is reached
-                // AND the checkbox is currently unchecked (meaning user wants to make it primary)
-                if (currentPrimaryBrands >= maxPrimaryBrands && !isPrimaryCheckbox.checked) {
-                    isPrimaryCheckbox.disabled = true;
-                } else {
-                    isPrimaryCheckbox.disabled = false;
-                }
-            }
-        }
-
-        // Add event listener to the image input
-        imageInput.addEventListener('change', updatePrimaryCheckboxState);
-
-        // Add click listener to the checkbox for immediate feedback on limit
-        isPrimaryCheckbox.addEventListener('click', function(event) {
-             if (!isPrimaryCheckbox.checked && currentPrimaryBrands >= maxPrimaryBrands) {
-                  const fileSelected = imageInput.files && imageInput.files.length > 0;
-                  if (fileSelected) {
-                     alert('You have reached the maximum number of primary brands (' + maxPrimaryBrands + '). Please delete a primary brand before adding a new one.');
-                     event.preventDefault(); // Prevent checking the box
-                  }
-             }
-         });
-
-        // Initial state setup on page load
-        updatePrimaryCheckboxState();
 
         // --- Modal Logic for Deletion ---
         deleteButtons.forEach(button => {

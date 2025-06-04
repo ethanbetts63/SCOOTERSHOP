@@ -6,3 +6,4 @@ from .service_booking_management import *
 from .service_booking_settings import *
 from .service_brands_management import *
 from .service_type_mangement import *
+from .service_type_create_update import *

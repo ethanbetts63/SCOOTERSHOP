@@ -8,7 +8,7 @@ class ServiceTypeManagementView(View):
     Class-based view for displaying a list of all service types.
     This replaces the function-based settings_service_types view.
     """
-    template_name = 'dashboard/service_type_management.html' # Original template name from the provided HTML
+    template_name = 'service/service_type_management.html' # Original template name from the provided HTML
 
 
     def get(self, request, *args, **kwargs):
