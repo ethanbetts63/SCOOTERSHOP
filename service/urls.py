@@ -67,5 +67,5 @@ from django.urls import path
 from service.views import user_views, admin_views
 
 urlpatterns = [
-    
+    path('', user_views.service, name='service'),
 ]
