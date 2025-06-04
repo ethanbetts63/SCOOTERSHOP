@@ -44,8 +44,8 @@ urlpatterns = [
 
 
     # --- Dashboard Service Brand Management Views ---
-    path('settings/service-brands/', views.service_brands_management, name='service_brands_management'),
-    path('settings/service-brands/delete/<int:pk>/', views.delete_service_brand, name='delete_service_brand'),
+    # path('settings/service-brands/', views.service_brands_management, name='service_brands_management'),
+    # path('settings/service-brands/delete/<int:pk>/', views.delete_service_brand, name='delete_service_brand'),
 
     # --- Dashboard Service Type Management Views ---
     # path('settings/service-types/', views.settings_service_types, name='settings_service_types'),
