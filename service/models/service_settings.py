@@ -101,13 +101,23 @@ class ServiceSettings(models.Model):
         default=True, 
         help_text="Policy: If true, refunds (especially for admin declined 'Other' brand bookings) may have Stripe transaction fees deducted."
     )
-    stripe_fee_percentage = models.DecimalField(
-        max_digits=5, decimal_places=4, default=0.0290, null=True, blank=True, # e.g., 0.029 for 2.9%
-        help_text="Stripe's percentage fee (e.g., 0.029 for 2.9%). For informational/calculation purposes."
+
+    # New fields for domestic and international Stripe fees
+    stripe_fee_percentage_domestic = models.DecimalField(
+        max_digits=5, decimal_places=4, default=0.0170, # 1.70%
+        help_text="Stripe's percentage fee for domestic cards (e.g., 0.0170 for 1.70%)."
     )
-    stripe_fee_fixed = models.DecimalField(
-        max_digits=5, decimal_places=2, default=0.30, null=True, blank=True, # e.g., 0.30 for $0.30
-        help_text="Stripe's fixed fee per transaction (e.g., 0.30 for $0.30). For informational/calculation purposes."
+    stripe_fee_fixed_domestic = models.DecimalField(
+        max_digits=5, decimal_places=2, default=0.30, # A$0.30
+        help_text="Stripe's fixed fee per transaction for domestic cards (e.g., 0.30 for A$0.30)."
+    )
+    stripe_fee_percentage_international = models.DecimalField(
+        max_digits=5, decimal_places=4, default=0.0350, # 3.5%
+        help_text="Stripe's percentage fee for international cards (e.g., 0.0350 for 3.5%)."
+    )
+    stripe_fee_fixed_international = models.DecimalField(
+        max_digits=5, decimal_places=2, default=0.30, # A$0.30
+        help_text="Stripe's fixed fee per transaction for international cards (e.g., 0.30 for A$0.30)."
     )
 
 
@@ -126,10 +136,14 @@ class ServiceSettings(models.Model):
             if value is not None and not (Decimal('0.00') <= value <= Decimal('1.00')):
                 raise ValidationError({field_name: f"Ensure {field_name.replace('_', ' ')} is between 0.00 (0%) and 1.00 (100%)."})
 
-        # Specific validation for stripe_fee_percentage (0.0 to 0.1)
-        stripe_fee_percentage_value = self.stripe_fee_percentage
-        if stripe_fee_percentage_value is not None and not (Decimal('0.00') <= stripe_fee_percentage_value <= Decimal('0.10')):
-            raise ValidationError({'stripe_fee_percentage': f"Ensure stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."})
+        # Specific validation for new stripe fee percentage fields (0.0 to 0.1)
+        # Domestic percentage
+        if self.stripe_fee_percentage_domestic is not None and not (Decimal('0.00') <= self.stripe_fee_percentage_domestic <= Decimal('0.10')):
+            raise ValidationError({'stripe_fee_percentage_domestic': "Ensure domestic stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."})
+        
+        # International percentage
+        if self.stripe_fee_percentage_international is not None and not (Decimal('0.00') <= self.stripe_fee_percentage_international <= Decimal('0.10')):
+            raise ValidationError({'stripe_fee_percentage_international': "Ensure international stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."})
 
 
     def save(self, *args, **kwargs):
@@ -143,3 +157,4 @@ class ServiceSettings(models.Model):
     class Meta:
         verbose_name = "Service Settings"
         verbose_name_plural = "Service Settings"
+

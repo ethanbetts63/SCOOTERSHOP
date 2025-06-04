@@ -96,15 +96,26 @@ class ServiceSettingsModelTest(TestCase):
         self.assertEqual(settings._meta.get_field('deposit_percentage').max_digits, 5)
         self.assertEqual(settings._meta.get_field('deposit_percentage').decimal_places, 2)
 
-        self.assertIsInstance(settings.stripe_fee_percentage, Decimal)
-        self.assertEqual(settings.stripe_fee_percentage, Decimal('0.0290'))
-        self.assertEqual(settings._meta.get_field('stripe_fee_percentage').max_digits, 5)
-        self.assertEqual(settings._meta.get_field('stripe_fee_percentage').decimal_places, 4)
+        # New Stripe fee fields
+        self.assertIsInstance(settings.stripe_fee_percentage_domestic, Decimal)
+        self.assertEqual(settings.stripe_fee_percentage_domestic, Decimal('0.0170'))
+        self.assertEqual(settings._meta.get_field('stripe_fee_percentage_domestic').max_digits, 5)
+        self.assertEqual(settings._meta.get_field('stripe_fee_percentage_domestic').decimal_places, 4)
 
-        self.assertIsInstance(settings.stripe_fee_fixed, Decimal)
-        self.assertEqual(settings.stripe_fee_fixed, Decimal('0.30'))
-        self.assertEqual(settings._meta.get_field('stripe_fee_fixed').max_digits, 5)
-        self.assertEqual(settings._meta.get_field('stripe_fee_fixed').decimal_places, 2)
+        self.assertIsInstance(settings.stripe_fee_fixed_domestic, Decimal)
+        self.assertEqual(settings.stripe_fee_fixed_domestic, Decimal('0.30'))
+        self.assertEqual(settings._meta.get_field('stripe_fee_fixed_domestic').max_digits, 5)
+        self.assertEqual(settings._meta.get_field('stripe_fee_fixed_domestic').decimal_places, 2)
+
+        self.assertIsInstance(settings.stripe_fee_percentage_international, Decimal)
+        self.assertEqual(settings.stripe_fee_percentage_international, Decimal('0.0350'))
+        self.assertEqual(settings._meta.get_field('stripe_fee_percentage_international').max_digits, 5)
+        self.assertEqual(settings._meta.get_field('stripe_fee_percentage_international').decimal_places, 4)
+
+        self.assertIsInstance(settings.stripe_fee_fixed_international, Decimal)
+        self.assertEqual(settings.stripe_fee_fixed_international, Decimal('0.30'))
+        self.assertEqual(settings._meta.get_field('stripe_fee_fixed_international').max_digits, 5)
+        self.assertEqual(settings._meta.get_field('stripe_fee_fixed_international').decimal_places, 2)
 
         # Choices field
         self.assertEqual(settings.deposit_calc_method, 'FLAT_FEE')
@@ -141,33 +152,56 @@ class ServiceSettingsModelTest(TestCase):
             settings.full_clean()
         settings.cancel_deposit_max_refund_percentage = Decimal('1.00') # Reset
 
-    def test_clean_method_stripe_fee_percentage_validation(self):
+    def test_clean_method_stripe_fee_validation(self):
         """
-        Test the clean method's specific validation for stripe_fee_percentage (0.00 to 0.10).
+        Test the clean method's specific validation for stripe fee percentage fields (0.00 to 0.10).
         """
         settings = self.settings
 
-        # Test valid stripe_fee_percentage
-        settings.stripe_fee_percentage = Decimal('0.05')
+        # Test valid domestic stripe_fee_percentage
+        settings.stripe_fee_percentage_domestic = Decimal('0.05')
         settings.full_clean() # Should not raise error
 
-        settings.stripe_fee_percentage = Decimal('0.00')
+        settings.stripe_fee_percentage_domestic = Decimal('0.00')
         settings.full_clean() # Should not raise error
 
-        settings.stripe_fee_percentage = Decimal('0.10')
+        settings.stripe_fee_percentage_domestic = Decimal('0.10')
         settings.full_clean() # Should not raise error
 
-        # Test invalid stripe_fee_percentage (greater than 0.10)
-        settings.stripe_fee_percentage = Decimal('0.11')
-        with self.assertRaisesMessage(ValidationError, "Ensure stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."):
+        # Test invalid domestic stripe_fee_percentage (greater than 0.10)
+        settings.stripe_fee_percentage_domestic = Decimal('0.11')
+        with self.assertRaisesMessage(ValidationError, "Ensure domestic stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."):
             settings.full_clean()
-        settings.stripe_fee_percentage = Decimal('0.0290') # Reset
+        settings.stripe_fee_percentage_domestic = Decimal('0.0170') # Reset
 
-        # Test invalid stripe_fee_percentage (less than 0.00)
-        settings.stripe_fee_percentage = Decimal('-0.01')
-        with self.assertRaisesMessage(ValidationError, "Ensure stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."):
+        # Test invalid domestic stripe_fee_percentage (less than 0.00)
+        settings.stripe_fee_percentage_domestic = Decimal('-0.01')
+        with self.assertRaisesMessage(ValidationError, "Ensure domestic stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."):
             settings.full_clean()
-        settings.stripe_fee_percentage = Decimal('0.0290') # Reset
+        settings.stripe_fee_percentage_domestic = Decimal('0.0170') # Reset
+
+
+        # Test valid international stripe_fee_percentage
+        settings.stripe_fee_percentage_international = Decimal('0.05')
+        settings.full_clean() # Should not raise error
+
+        settings.stripe_fee_percentage_international = Decimal('0.00')
+        settings.full_clean() # Should not raise error
+
+        settings.stripe_fee_percentage_international = Decimal('0.10')
+        settings.full_clean() # Should not raise error
+
+        # Test invalid international stripe_fee_percentage (greater than 0.10)
+        settings.stripe_fee_percentage_international = Decimal('0.11')
+        with self.assertRaisesMessage(ValidationError, "Ensure international stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."):
+            settings.full_clean()
+        settings.stripe_fee_percentage_international = Decimal('0.0350') # Reset
+
+        # Test invalid international stripe_fee_percentage (less than 0.00)
+        settings.stripe_fee_percentage_international = Decimal('-0.01')
+        with self.assertRaisesMessage(ValidationError, "Ensure international stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."):
+            settings.full_clean()
+        settings.stripe_fee_percentage_international = Decimal('0.0350') # Reset
 
 
     def test_str_method(self):
@@ -183,3 +217,4 @@ class ServiceSettingsModelTest(TestCase):
         """
         self.assertEqual(ServiceSettings._meta.verbose_name, "Service Settings")
         self.assertEqual(ServiceSettings._meta.verbose_name_plural, "Service Settings")
+

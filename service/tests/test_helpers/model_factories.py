@@ -224,8 +224,11 @@ class ServiceSettingsFactory(factory.django.DjangoModelFactory):
     cancel_deposit_min_refund_days = 1
     cancel_deposit_min_refund_percentage = Decimal('0.00')
     refund_deducts_stripe_fee_policy = True
-    stripe_fee_percentage = Decimal('0.0290')
-    stripe_fee_fixed = Decimal('0.30')
+    # Updated to include new domestic and international stripe fee fields
+    stripe_fee_percentage_domestic = Decimal('0.0170')
+    stripe_fee_fixed_domestic = Decimal('0.30')
+    stripe_fee_percentage_international = Decimal('0.0350')
+    stripe_fee_fixed_international = Decimal('0.30')
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
@@ -290,3 +293,4 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
     estimated_pickup_date = factory.LazyAttribute(lambda o: o.dropoff_date + datetime.timedelta(days=fake.random_int(min=1, max=5)))
     booking_status = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.BOOKING_STATUS_CHOICES])
     customer_notes = factory.Faker('paragraph')
+
