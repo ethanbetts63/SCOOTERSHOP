@@ -1,23 +1,33 @@
-# # SCOOTER_SHOP/dashboard/views/delete_service_brand.py
+# SCOOTER_SHOP/service/views/admin_views.py (continued)
 
-# from django.shortcuts import redirect, get_object_or_404
-# from django.contrib import messages
-# from django.contrib.auth.decorators import user_passes_test
+from django.shortcuts import redirect, get_object_or_404
+from django.views import View
+from django.contrib import messages
 
-# from service.models import ServiceBrand
+from service.models import ServiceBrand
 
-# @user_passes_test(lambda u: u.is_staff)
-# def delete_service_brand(request, pk):
-#     if request.method != 'POST':
-#         messages.error(request, "Invalid request method. Please use the form to delete brands.")
-#         return redirect('dashboard:service_brands_management')
+class ServiceBrandDeleteView(View):
+    """
+    Class-based view for deleting a specific service brand.
+    Handles POST requests for deletion.
+    """
+    # Temporarily skipping UserPassesTestMixin as per instructions
+    # def test_func(self):
+    #     return self.request.user.is_staff
 
-#     try:
-#         brand_to_delete = get_object_or_404(ServiceBrand, pk=pk)
-#         brand_name = brand_to_delete.name
-#         brand_to_delete.delete()
-#         messages.success(request, f"Service brand '{brand_name}' deleted successfully.")
-#     except Exception as e:
-#         messages.error(request, f"Error deleting service brand: {e}")
+    def post(self, request, pk, *args, **kwargs):
+        """
+        Handles POST requests: deletes the ServiceBrand instance
+        identified by the primary key (pk).
+        """
+        brand_to_delete = get_object_or_404(ServiceBrand, pk=pk)
+        brand_name = brand_to_delete.name # Get name before deletion for message
+        try:
+            brand_to_delete.delete()
+            messages.success(request, f"Service brand '{brand_name}' deleted successfully.")
+        except Exception as e:
+            messages.error(request, f"Error deleting service brand: {e}")
+        
+        # Redirect back to the management page after deletion
+        return redirect('service:service_brands_management')
 
-#     return redirect('dashboard:service_brands_management')

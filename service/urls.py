@@ -67,5 +67,21 @@ from django.urls import path
 from service.views import user_views, admin_views
 
 urlpatterns = [
+    # User-facing service main page
     path('', user_views.service, name='service'),
+
+    # User-facing booking flow steps
+    path('service-book/step1/', user_views.Step1ServiceDetailsView.as_view(), name='service_book_step1'),
+    path('service-book/step2/', user_views.Step2MotorcycleSelectionView.as_view(), name='service_book_step2'),
+    path('service-book/step3/', user_views.Step3CustomerMotorcycleView.as_view(), name='service_book_step3'),
+    path('service-book/step4/', user_views.Step4ServiceProfileView.as_view(), name='service_book_step4'),
+    path('service-book/step5/', user_views.Step5PaymentChoiceAndTermsView.as_view(), name='service_book_step5'),
+    path('service-book/step6/', user_views.Step6PaymentView.as_view(), name='service_book_step6'),
+    path('service-book/step7/', user_views.Step7ConfirmationView.as_view(), name='service_book_step7'),
+
+    # Admin-facing management
+    path('blocked-dates/', admin_views.BlockedServiceDateView.as_view(), name='blocked_service_dates_management'),
+    path('blocked-dates/delete/<int:pk>/', admin_views.BlockedServiceDateDeleteView.as_view(), name='delete_blocked_service_date'),
+    path('service-brands/', admin_views.ServiceBrandManagementView.as_view(), name='service_brands_management'),
+    path('service-brands/delete/<int:pk>/', admin_views.ServiceBrandDeleteView.as_view(), name='delete_service_brand'),
 ]

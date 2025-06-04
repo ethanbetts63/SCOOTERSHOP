@@ -4,11 +4,59 @@
 {% block extra_css %}
 {{ block.super }}
     <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
+    <style>
+        /* Basic Modal Styles (you'll want to enhance these) */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .modal-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .modal-buttons button {
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .modal-buttons .btn-confirm {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+        }
+        .modal-buttons .btn-cancel {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+        }
+    </style>
 {% endblock %}
 
 {% block admin_main_content %}
-<div class="service-booking-container"> {# Use the main container class from the example #}
-    <div class="booking-progress"> {# Use the header class from the example #}
+<div class="service-booking-container">
+    <div class="booking-progress">
         <h2>{{ page_title }}</h2>
     </div>
 
@@ -25,24 +73,28 @@
     {% endif %}
     <div>
         <p>Adding a brand to this list will allow a user to book a service with a bike of that brand. If the brand is not on this list it can not be serviced.</p>
-        <p>Primary brands are brands who's logo will be displayed on in the "Book your bike in" pop up. Therefor you need to upload a picture of the brands logo for this pop up to look okay.</p>
+        <p>Primary brands are brands who's logo will be displayed on in the "Book your bike in" pop up. Therefore you need to upload a picture of the brands logo for this pop up to look okay.</p>
         <p>You do not have to upload images for non-primary brands.</p>
     </div>
 
     {# Section for adding a new brand #}
-    <div class="form-field"> {# Using form-field class for structure #}
-        <h3 class="booking-section-title">Add New Service Brand</h3> {# Use booking-section-title #}
+    <div class="form-field">
+        <h3 class="booking-section-title">Add New Service Brand</h3>
 
         {# Form for adding a new brand - MUST include enctype for file uploads #}
         <form method="post" enctype="multipart/form-data" id="addBrandForm">
             {% csrf_token %}
+            {# Hidden input for brand_id when editing #}
+            {% if edit_brand %}
+                <input type="hidden" name="brand_id" value="{{ edit_brand.pk }}">
+            {% endif %}
 
             <div class="form-field">
                 {{ form.name.label_tag }}
                 {{ form.name }}
                 {% if form.name.errors %}
                     {% for error in form.name.errors %}
-                        <small class="error-text">{{ error }}</small> {# Keep error-text #}
+                        <small class="error-text">{{ error }}</small>
                     {% endfor %}
                 {% endif %}
                  {% if form.name.help_text %}
@@ -55,7 +107,7 @@
                 {{ form.image }}
                 {% if form.image.errors %}
                     {% for error in form.image.errors %}
-                        <small class="error-text">{{ error }}</small> {# Keep error-text #}
+                        <small class="error-text">{{ error }}</small>
                     {% endfor %}
                 {% endif %}
                  {% if form.image.help_text %}
@@ -63,12 +115,12 @@
                  {% endif %}
             </div>
 
-            <div class="form-field checkbox-field"> {# Keep checkbox-field #}
+            <div class="form-field checkbox-field">
                 <input type="checkbox" id="{{ form.is_primary.id_for_label }}" name="{{ form.is_primary.html_name }}" {% if form.is_primary.value %}checked{% endif %}>
                 <label for="{{ form.is_primary.id_for_label }}">{{ form.is_primary.label }}</label>
                 {% if form.is_primary.errors %}
                     {% for error in form.is_primary.errors %}
-                        <small class="error-text">{{ error }}</small> {# Keep error-text #}
+                        <small class="error-text">{{ error }}</small>
                     {% endfor %}
                 {% endif %}
                  {% if form.is_primary.help_text %}
@@ -80,31 +132,29 @@
             {% if form.non_field_errors %}
                 <div class="form-field">
                     {% for error in form.non_field_errors %}
-                        <small class="error-text">{{ error }}</small> {# Keep error-text #}
+                        <small class="error-text">{{ error }}</small>
                     {% endfor %}
                 </div>
             {% endif %}
 
-            <button type="submit" name="add_brand_submit">Add Service Brand</button>
+            <button type="submit" name="add_brand_submit">{% if edit_brand %}Update Service Brand{% else %}Add Service Brand{% endif %}</button>
         </form>
     </div>
 
     <hr>
 
     {# Section for listing existing brands #}
-    <div class="form-field"> {# Using form-field class for structure #}
-        <h3 class="booking-section-title">Existing Service Brands ({{ service_brands.count }})</h3> {# Use booking-section-title #}
-        {% if primary_brands_count >= 5 %}
-             <p class="warning-text">You currently have {{ primary_brands_count }} primary brands. The maximum allowed is {{ 5 }}. You must delete a primary brand before adding another primary brand.</p> {# Keep warning-text #}
+    <div class="form-field">
+        <h3 class="booking-section-title">Existing Service Brands ({{ service_brands.count }})</h3>
+        {% if primary_brands_count >= max_primary_brands %}
+             <p class="warning-text">You currently have {{ primary_brands_count }} primary brands. The maximum allowed is {{ max_primary_brands }}. You must delete a primary brand before adding another primary brand.</p>
         {% endif %}
 
 
         {% if service_brands %}
-            <ul class="brands-list"> {# Changed to ul and added brands-list class #}
+            <ul class="brands-list">
                 {% for brand in service_brands %}
-                    {# Add 'primary' class if the brand is primary #}
-                    <li class="brand-item {% if brand.is_primary %}primary{% endif %}"> {# Changed to li and added brand-item class #}
-                        {# Display image if available #}
+                    <li class="brand-item {% if brand.is_primary %}primary{% endif %}">
                         {% if brand.image %}
                             <div class="brand-image">
                                 <img src="{{ brand.image.url }}" alt="{{ brand.name }} image">
@@ -114,15 +164,16 @@
                             <h4>{{ brand.name }}</h4>
                             <p>Status: {% if brand.is_primary %}Primary{% else %}Standard{% endif %}</p>
                              {% if not brand.image and brand.is_primary %}
-                                <p class="error-text">Error: This primary brand is missing an image!</p> {# Keep error-text #}
+                                <p class="error-text">Error: This primary brand is missing an image!</p>
                             {% endif %}
                         </div>
                         <div class="brand-actions">
-                             {# Form for deleting a brand - separate form for each item #}
-                             <form method="post" action="{% url 'dashboard:delete_service_brand' pk=brand.pk %}" class="inline-form">
+                             {# Form for deleting a brand - now uses a custom modal #}
+                             <form method="post" class="inline-form delete-form" data-delete-url="{% url 'service:delete_service_brand' pk=brand.pk %}">
                                  {% csrf_token %}
-                                 <button type="submit" class="btn-delete" onclick="return confirm('Are you sure you want to delete the service brand \'{{ brand.name }}\'?');">Delete</button> {# Keep btn-delete #}
+                                 <button type="button" class="btn-delete delete-button">Delete</button>
                              </form>
+                             <a href="{% url 'service:service_brands_management' %}?edit_brand_pk={{ brand.pk }}" class="btn-edit">Edit</a>
                         </div>
                     </li>
                 {% endfor %}
@@ -134,62 +185,105 @@
 
 </div>
 
-{% block extra_js %}
+{# Custom Confirmation Modal #}
+<div id="confirmationModal" class="modal">
+  <div class="modal-content">
+    <p id="modalMessage">Are you sure you want to delete this service brand?</p>
+    <div class="modal-buttons">
+      <button id="confirmDeleteBtn" class="btn-confirm">Delete</button>
+      <button id="cancelDeleteBtn" class="btn-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const addBrandForm = document.getElementById('addBrandForm');
-        const imageInput = addBrandForm.querySelector('#{{ form.image.id_for_label }}'); // Get the image file input by its generated ID
-        const isPrimaryCheckbox = addBrandForm.querySelector('#{{ form.is_primary.id_for_label }}'); // Get the checkbox by its generated ID
-        const maxPrimaryBrands = 5;
-        const currentPrimaryBrands = '{{ primary_brands_count }}'; // Get current count from context
+        const imageInput = addBrandForm.querySelector('#{{ form.image.id_for_label }}');
+        const isPrimaryCheckbox = addBrandForm.querySelector('#{{ form.is_primary.id_for_label }}');
+        // Retrieve maxPrimaryBrands and currentPrimaryBrands from template context
+        const maxPrimaryBrands = parseInt('{{ max_primary_brands }}');
+        const currentPrimaryBrands = parseInt('{{ primary_brands_count }}');
+
+        // Modal elements
+        const deleteButtons = document.querySelectorAll('.delete-button');
+        const modal = document.getElementById('confirmationModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+        let currentForm = null;
+        let brandNameToDelete = '';
 
         // Function to update the disabled state of the 'is_primary' checkbox
         function updatePrimaryCheckboxState() {
-            // Check if a file is selected in the image input
             const fileSelected = imageInput.files && imageInput.files.length > 0;
 
-            // Disable the checkbox if no file is selected OR if the primary limit is reached
-            if (!fileSelected || (currentPrimaryBrands >= maxPrimaryBrands && !isPrimaryCheckbox.checked)) {
+            if (!fileSelected) {
                 isPrimaryCheckbox.disabled = true;
-                // If it was checked but now disabled (because image removed or limit reached), uncheck it
-                if (!fileSelected && isPrimaryCheckbox.checked) {
+                if (isPrimaryCheckbox.checked) {
                     isPrimaryCheckbox.checked = false;
                 }
-                 // If limit reached and user is trying to check it, prevent it
-                 if (currentPrimaryBrands >= maxPrimaryBrands && !isPrimaryCheckbox.checked && fileSelected) {
-                     // This specific case is better handled on click for immediate feedback
-                 }
-
-
             } else {
-                // Enable the checkbox if a file IS selected and limit is not reached (or it's already primary)
-                isPrimaryCheckbox.disabled = false;
+                // If a file is selected, enable the checkbox unless the limit is reached
+                // AND the checkbox is currently unchecked (meaning user wants to make it primary)
+                if (currentPrimaryBrands >= maxPrimaryBrands && !isPrimaryCheckbox.checked) {
+                    isPrimaryCheckbox.disabled = true;
+                } else {
+                    isPrimaryCheckbox.disabled = false;
+                }
             }
         }
 
         // Add event listener to the image input
         imageInput.addEventListener('change', updatePrimaryCheckboxState);
 
-         // Add click listener to the checkbox for immediate feedback on limit
+        // Add click listener to the checkbox for immediate feedback on limit
         isPrimaryCheckbox.addEventListener('click', function(event) {
-             // If the checkbox is currently unchecked and the limit is reached
              if (!isPrimaryCheckbox.checked && currentPrimaryBrands >= maxPrimaryBrands) {
-                  // Check if an image is selected - it *should* be enabled if we reach here
                   const fileSelected = imageInput.files && imageInput.files.length > 0;
-                  if (fileSelected) { // Only show message if they have an image but hit the limit
+                  if (fileSelected) {
                      alert('You have reached the maximum number of primary brands (' + maxPrimaryBrands + '). Please delete a primary brand before adding a new one.');
                      event.preventDefault(); // Prevent checking the box
                   }
-                  // If no fileSelected, the updatePrimaryCheckboxState already disabled it.
              }
-             // updatePrimaryCheckboxState will run after this click handler if the state changes
          });
-
 
         // Initial state setup on page load
         updatePrimaryCheckboxState();
+
+        // --- Modal Logic for Deletion ---
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                currentForm = this.closest('.delete-form');
+                const brandItem = this.closest('.brand-item');
+                brandNameToDelete = brandItem.querySelector('h4').textContent; // Get the brand name
+                modalMessage.textContent = `Are you sure you want to delete the service brand '${brandNameToDelete}'?`;
+                modal.style.display = 'flex'; // Show the modal
+            });
+        });
+
+        confirmDeleteBtn.addEventListener('click', function() {
+            if (currentForm) {
+                currentForm.action = currentForm.dataset.deleteUrl;
+                currentForm.submit();
+            }
+            modal.style.display = 'none'; // Hide the modal
+        });
+
+        cancelDeleteBtn.addEventListener('click', function() {
+            modal.style.display = 'none'; // Hide the modal
+            currentForm = null; // Reset current form
+            brandNameToDelete = ''; // Reset brand name
+        });
+
+        // Hide modal if clicked outside
+        window.addEventListener('click', function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+                currentForm = null;
+                brandNameToDelete = '';
+            }
+        });
     });
 </script>
-{% endblock %}
-
 {% endblock %}

@@ -1,74 +1,94 @@
-# # SCOOTER_SHOP/dashboard/views/service_brands_management.py
 
-# from django.shortcuts import render, redirect, get_object_or_404
-# from django.contrib import messages
-# from django.contrib.auth.decorators import user_passes_test
-# from django.db import transaction
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views import View
+from django.contrib import messages
+from django.db import transaction
 
-# from service.models import ServiceBrand
-# from service.forms import ServiceBrandForm
+from service.models import ServiceBrand # Assuming ServiceBrand model exists
+from service.forms import ServiceBrandForm # Assuming ServiceBrandForm exists
+from service.models import ServiceSettings # Import ServiceSettings to get max_primary_brands
 
-# @user_passes_test(lambda u: u.is_staff)
-# def service_brands_management(request):
-#     service_brands = ServiceBrand.objects.all().order_by('-is_primary', 'name')
-#     primary_brands_count = ServiceBrand.objects.filter(is_primary=True).count()
+class ServiceBrandManagementView(View):
+    """
+    Class-based view for managing (listing, adding, and editing) service brands.
+    Handles GET (display form and list) and POST (add/edit brand).
+    """
+    template_name = 'dashboard/service_brands_management.html'
+    form_class = ServiceBrandForm
 
-#     form = None
-#     edit_brand = None
+    # Temporarily skipping UserPassesTestMixin as per instructions
+    # def test_func(self):
+    #     return self.request.user.is_staff
 
-#     if request.method == 'POST':
-#         if 'add_brand_submit' in request.POST:
-#             brand_id = request.POST.get('brand_id')
-#             if brand_id:
-#                 edit_brand = get_object_or_404(ServiceBrand, pk=brand_id)
-#                 form = ServiceBrandForm(request.POST, request.FILES, instance=edit_brand)
-#             else:
-#                 form = ServiceBrandForm(request.POST, request.FILES)
+    def get_context_data(self, form=None, edit_brand=None):
+        """Helper method to get context data for rendering the template."""
+        service_brands = ServiceBrand.objects.all().order_by('-is_primary', 'name')
+        primary_brands_count = ServiceBrand.objects.filter(is_primary=True).count()
+        
+        # Get max_primary_brands from ServiceSettings
+        # Assuming ServiceSettings is a singleton and always has one instance
+        service_settings = ServiceSettings.objects.first() 
+        max_primary_brands = service_settings.max_primary_brands if service_settings else 5 # Default to 5 if settings not found
 
-#             if form.is_valid():
-#                 try:
-#                     with transaction.atomic():
-#                         brand = form.save()
+        if form is None:
+            form = self.form_class(instance=edit_brand)
 
-#                     action = "updated" if brand_id else "added"
-#                     messages.success(request, f"Service brand '{brand.name}' {action} successfully.")
-#                     return redirect('dashboard:service_brands_management')
-#                 except ValueError as e:
-#                     messages.error(request, str(e))
-#                 except Exception as e:
-#                     messages.error(request, f"Error saving service brand: {e}")
-#             else:
-#                 messages.error(request, "Please correct the errors below.")
+        context = {
+            'form': form,
+            'edit_brand': edit_brand,
+            'service_brands': service_brands,
+            'primary_brands_count': primary_brands_count,
+            'max_primary_brands': max_primary_brands,
+            'page_title': 'Manage Service Brands',
+        }
+        return context
 
-#         elif 'delete_brand_pk' in request.POST:
-#             brand_pk = request.POST.get('delete_brand_pk')
-#             try:
-#                 brand_to_delete = get_object_or_404(ServiceBrand, pk=brand_pk)
-#                 brand_name = brand_to_delete.name
-#                 brand_to_delete.delete()
-#                 messages.success(request, f"Service brand '{brand_name}' deleted successfully.")
-#             except Exception as e:
-#                 messages.error(request, f"Error deleting service brand: {e}")
-#             return redirect('dashboard:service_brands_management')
+    def get(self, request, *args, **kwargs):
+        """
+        Handles GET requests: displays the form for adding/editing brands
+        and lists all existing service brands.
+        """
+        edit_brand_pk = request.GET.get('edit_brand_pk')
+        edit_brand = None
+        if edit_brand_pk:
+            edit_brand = get_object_or_404(ServiceBrand, pk=edit_brand_pk)
+        
+        context = self.get_context_data(edit_brand=edit_brand)
+        return render(request, self.template_name, context)
 
-#         elif 'edit_brand_pk' in request.POST:
-#             brand_pk = request.POST.get('edit_brand_pk')
-#             edit_brand = get_object_or_404(ServiceBrand, pk=brand_pk)
-#             form = ServiceBrandForm(instance=edit_brand)
+    def post(self, request, *args, **kwargs):
+        """
+        Handles POST requests: processes form submissions for adding,
+        editing, or deleting a service brand.
+        """
+        form = None
+        edit_brand = None
 
-#         else:
-#             messages.error(request, "Invalid request.")
+        if 'add_brand_submit' in request.POST:
+            brand_id = request.POST.get('brand_id') # Hidden input for editing existing brand
+            if brand_id:
+                edit_brand = get_object_or_404(ServiceBrand, pk=brand_id)
+                form = self.form_class(request.POST, request.FILES, instance=edit_brand)
+            else:
+                form = self.form_class(request.POST, request.FILES)
 
-#     if form is None:
-#         form = ServiceBrandForm(instance=edit_brand)
+            if form.is_valid():
+                try:
+                    with transaction.atomic():
+                        brand = form.save()
 
-#     context = {
-#         'form': form,
-#         'edit_brand': edit_brand,
-#         'service_brands': service_brands,
-#         'primary_brands_count': primary_brands_count,
-#         'max_primary_brands': 5,
-#         'page_title': 'Manage Service Brands',
-#     }
+                    action = "updated" if brand_id else "added"
+                    messages.success(request, f"Service brand '{brand.name}' {action} successfully.")
+                    return redirect('service:service_brands_management')
+                except ValueError as e:
+                    messages.error(request, str(e))
+                except Exception as e:
+                    messages.error(request, f"Error saving service brand: {e}")
+            else:
+                messages.error(request, "Please correct the errors below.")
+        
+        # If form is invalid or another action was attempted (e.g., direct edit click)
+        # re-render the page with appropriate context
+        context = self.get_context_data(form=form, edit_brand=edit_brand)
+        return render(request, self.template_name, context)
 
-#     return render(request, 'dashboard/service_brands_management.html', context)
