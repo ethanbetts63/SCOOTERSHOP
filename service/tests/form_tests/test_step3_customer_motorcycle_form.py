@@ -39,7 +39,7 @@ class CustomerMotorcycleFormTest(TestCase):
             'rego': 'ABC123',
             'vin_number': '1HFPC4000L700001',
             'odometer': 15000,
-            'transmission': CustomerMotorcycle.TRANSMISSION_MANUAL,
+            'transmission': CustomerMotorcycle.transmission,
             'engine_number': 'ENG12345',
         }
         if include_other_brand_name:

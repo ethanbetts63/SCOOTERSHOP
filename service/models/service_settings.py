@@ -39,11 +39,11 @@ class ServiceSettings(models.Model):
         help_text="Method to calculate the deposit amount."
     )
     deposit_flat_fee_amount = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0.00,
+        max_digits=10, decimal_places=2, default=Decimal('0.00'), # Changed to Decimal
         help_text="Flat fee amount for deposit if 'Flat Fee' method is chosen."
     )
     deposit_percentage = models.DecimalField(
-        max_digits=5, decimal_places=2, default=0.00, # e.g., 0.10 for 10%
+        max_digits=5, decimal_places=2, default=Decimal('0.00'), # Changed to Decimal
         help_text="Percentage for deposit if 'Percentage' method is chosen (e.g., 0.1 for 10%)."
     )
 
@@ -61,19 +61,19 @@ class ServiceSettings(models.Model):
         default=7, null=True, blank=True, help_text="Days before booking for maximum refund (e.g., 7 days for 100%)."
     )
     cancel_full_payment_max_refund_percentage = models.DecimalField(
-        max_digits=5, decimal_places=2, default=1.00, null=True, blank=True, help_text="Max refund percentage (e.g., 1.00 for 100%)."
+        max_digits=5, decimal_places=2, default=Decimal('1.00'), null=True, blank=True, help_text="Max refund percentage (e.g., 1.00 for 100%)." # Changed to Decimal
     )
     cancel_full_payment_partial_refund_days = models.IntegerField(
         default=3, null=True, blank=True, help_text="Days before booking for partial refund (e.g., 3 days for 50%)."
     )
     cancel_full_payment_partial_refund_percentage = models.DecimalField(
-        max_digits=5, decimal_places=2, default=0.50, null=True, blank=True, help_text="Partial refund percentage (e.g., 0.50 for 50%)."
+        max_digits=5, decimal_places=2, default=Decimal('0.50'), null=True, blank=True, help_text="Partial refund percentage (e.g., 0.50 for 50%)." # Changed to Decimal
     )
     cancel_full_payment_min_refund_days = models.IntegerField(
         default=1, null=True, blank=True, help_text="Days before booking for minimum or no refund (e.g., 1 day for 0%)."
     )
     cancel_full_payment_min_refund_percentage = models.DecimalField(
-        max_digits=5, decimal_places=2, default=0.00, null=True, blank=True, help_text="Min refund percentage (e.g., 0.00 for 0%)."
+        max_digits=5, decimal_places=2, default=Decimal('0.00'), null=True, blank=True, help_text="Min refund percentage (e.g., 0.00 for 0%)." # Changed to Decimal
     )
     
     # Refund & Cancellation Policy (Deposit) - "Repeat cancellation variables for deposit"
@@ -81,19 +81,19 @@ class ServiceSettings(models.Model):
         default=7, null=True, blank=True, help_text="Days before booking for maximum deposit refund."
     )
     cancel_deposit_max_refund_percentage = models.DecimalField(
-        max_digits=5, decimal_places=2, default=1.00, null=True, blank=True, help_text="Max deposit refund percentage."
+        max_digits=5, decimal_places=2, default=Decimal('1.00'), null=True, blank=True, help_text="Max deposit refund percentage." # Changed to Decimal
     )
     cancel_deposit_partial_refund_days = models.IntegerField(
         default=3, null=True, blank=True, help_text="Days before booking for partial deposit refund."
     )
     cancel_deposit_partial_refund_percentage = models.DecimalField(
-        max_digits=5, decimal_places=2, default=0.50, null=True, blank=True, help_text="Partial deposit refund percentage."
+        max_digits=5, decimal_places=2, default=Decimal('0.50'), null=True, blank=True, help_text="Partial deposit refund percentage." # Changed to Decimal
     )
     cancel_deposit_min_refund_days = models.IntegerField(
         default=1, null=True, blank=True, help_text="Days before booking for minimum or no deposit refund."
     )
     cancel_deposit_min_refund_percentage = models.DecimalField(
-        max_digits=5, decimal_places=2, default=0.00, null=True, blank=True, help_text="Min deposit refund percentage."
+        max_digits=5, decimal_places=2, default=Decimal('0.00'), null=True, blank=True, help_text="Min deposit refund percentage." # Changed to Decimal
     )
     
     # Stripe Fee consideration on refund (This is a policy point, actual handling is complex)
@@ -104,20 +104,20 @@ class ServiceSettings(models.Model):
 
     # New fields for domestic and international Stripe fees
     stripe_fee_percentage_domestic = models.DecimalField(
-        max_digits=5, decimal_places=4, default=0.0170, # 1.70%
+        max_digits=5, decimal_places=4, default=Decimal('0.0170'), # Changed to Decimal
         help_text="Stripe's percentage fee for domestic cards (e.g., 0.0170 for 1.70%)."
     )
     stripe_fee_fixed_domestic = models.DecimalField(
-        max_digits=5, decimal_places=2, default=0.30, # A$0.30
+        max_digits=5, decimal_places=2, default=Decimal('0.30'), # Changed to Decimal
         help_text="Stripe's fixed fee per transaction for domestic cards (e.g., 0.30 for A$0.30)."
     )
     stripe_fee_percentage_international = models.DecimalField(
-        max_digits=5, decimal_places=4, default=0.0350, # 3.5%
+        max_digits=5, decimal_places=4, default=Decimal('0.0350'), # Changed to Decimal
         help_text="Stripe's percentage fee for international cards (e.g., 0.0350 for 3.5%)."
     )
     stripe_fee_fixed_international = models.DecimalField(
-        max_digits=5, decimal_places=2, default=0.30, # A$0.30
-        help_text="Stripe's fixed fee per transaction for international cards (e.g., 0.30 for A$0.30)."
+        max_digits=5, decimal_places=2, default=Decimal('0.30'), # Changed to Decimal
+        help_text="Stripe's fixed fee per transaction for international cards (e.30 for A$0.30)."
     )
 
 
@@ -125,6 +125,8 @@ class ServiceSettings(models.Model):
         return "Service Booking Settings"
 
     def clean(self):
+        errors = {} # Dictionary to collect errors
+
         # General percentage fields validation (0.0 to 1.0)
         general_percentage_fields = [
             'deposit_percentage',
@@ -134,16 +136,19 @@ class ServiceSettings(models.Model):
         for field_name in general_percentage_fields:
             value = getattr(self, field_name)
             if value is not None and not (Decimal('0.00') <= value <= Decimal('1.00')):
-                raise ValidationError({field_name: f"Ensure {field_name.replace('_', ' ')} is between 0.00 (0%) and 1.00 (100%)."})
+                errors[field_name] = [f"Ensure {field_name.replace('_', ' ')} is between 0.00 (0%) and 1.00 (100%)."]
 
         # Specific validation for new stripe fee percentage fields (0.0 to 0.1)
         # Domestic percentage
         if self.stripe_fee_percentage_domestic is not None and not (Decimal('0.00') <= self.stripe_fee_percentage_domestic <= Decimal('0.10')):
-            raise ValidationError({'stripe_fee_percentage_domestic': "Ensure domestic stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."})
+            errors['stripe_fee_percentage_domestic'] = ["Ensure domestic stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."]
         
         # International percentage
         if self.stripe_fee_percentage_international is not None and not (Decimal('0.00') <= self.stripe_fee_percentage_international <= Decimal('0.10')):
-            raise ValidationError({'stripe_fee_percentage_international': "Ensure international stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."})
+            errors['stripe_fee_percentage_international'] = ["Ensure international stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."]
+
+        if errors:
+            raise ValidationError(errors)
 
 
     def save(self, *args, **kwargs):
@@ -151,10 +156,14 @@ class ServiceSettings(models.Model):
         # This is a common way to handle it, but can be done via admin restrictions too.
         if not self.pk and ServiceSettings.objects.exists():
             raise ValidationError("Only one instance of ServiceSettings can be created. Please edit the existing one.")
+        
+        # The full_clean() method calls clean_fields(), clean_form(), and then clean()
+        # The error you reported indicates an issue from clean_fields() (max_digits/decimal_places)
+        # which happens *before* your custom clean() method is invoked.
         self.full_clean() # Call clean method before saving
+
         super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Service Settings"
         verbose_name_plural = "Service Settings"
-
