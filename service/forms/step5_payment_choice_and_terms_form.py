@@ -38,8 +38,9 @@ class PaymentOptionForm(forms.Form):
         # Conditionally add payment options based on ServiceSettings
         if service_settings.enable_deposit:
             # Display the deposit amount if it's a flat fee, otherwise indicate calculation
+            # FIX: Changed 'flat_fee' to 'FLAT_FEE' to match the model's constant.
             deposit_display = f"Pay Deposit Online ({service_settings.currency_symbol}{service_settings.deposit_flat_fee_amount:.2f})" \
-                              if service_settings.deposit_calc_method == 'flat_fee' and service_settings.deposit_flat_fee_amount is not None \
+                              if service_settings.deposit_calc_method == 'FLAT_FEE' and service_settings.deposit_flat_fee_amount is not None \
                               else "Pay Deposit Online (calculated)"
             payment_choices.append((PAYMENT_OPTION_DEPOSIT, deposit_display))
 
