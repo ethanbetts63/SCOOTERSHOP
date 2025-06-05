@@ -1,220 +1,363 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
+from django.db import models, IntegrityError # Import IntegrityError for specific checks
 from decimal import Decimal
+import datetime
+import uuid
+from faker import Faker # Import Faker for generating dates/times
 
-# Import the ServiceSettings model
-from service.models import ServiceSettings
+fake = Faker() # Initialize Faker
 
-# Import the ServiceSettingsFactory from your factories file
+# Import the ServiceBooking model
+from service.models import ServiceBooking
+
+# Import the ServiceBookingFactory from your factories file
 # Adjust the import path if your model_factories.py is in a different location
-from ..test_helpers.model_factories import ServiceSettingsFactory
+from ..test_helpers.model_factories import ServiceBookingFactory, ServiceTypeFactory, ServiceProfileFactory, CustomerMotorcycleFactory, PaymentFactory
 
-class ServiceSettingsModelTest(TestCase):
+class ServiceBookingModelTest(TestCase):
     """
-    Tests for the ServiceSettings model, including its singleton pattern
-    and field validations.
+    Tests for the ServiceBooking model.
     """
 
     @classmethod
     def setUpTestData(cls):
         """
-        Set up the single instance of ServiceSettings used by all test methods.
-        The ServiceSettingsFactory ensures only one instance exists (pk=1).
+        Set up non-modified objects used by all test methods.
+        Ensure required date/time fields for ServiceBooking are provided.
         """
-        cls.settings = ServiceSettingsFactory()
+        # Generate valid dates and times for required fields to prevent errors during factory creation
+        test_dropoff_date = fake.date_between(start_date='today', end_date='+30d')
+        test_dropoff_time = fake.time_object()
+        # service_date can be on or after dropoff_date
+        test_service_date = test_dropoff_date + datetime.timedelta(days=fake.random_int(min=0, max=7))
 
-    def test_singleton_creation(self):
+        cls.service_booking = ServiceBookingFactory(
+            service_date=test_service_date,
+            dropoff_date=test_dropoff_date,
+            dropoff_time=test_dropoff_time,
+            # The factory's sequence should handle service_booking_reference now
+        )
+
+    def test_service_booking_creation(self):
         """
-        Test that only one instance of ServiceSettings can be created.
-        The factory's django_get_or_create and the model's save method
-        should ensure this.
+        Test that a ServiceBooking instance can be created using the factory.
         """
-        # Verify the instance created in setUpTestData exists
-        self.assertIsNotNone(self.settings)
-        self.assertEqual(ServiceSettings.objects.count(), 1)
+        self.assertIsNotNone(self.service_booking)
+        self.assertIsInstance(self.service_booking, ServiceBooking)
+        self.assertEqual(ServiceBooking.objects.count(), 1)
 
-        # Attempt to create another instance directly, it should raise ValidationError
-        with self.assertRaisesMessage(ValidationError, "Only one instance of ServiceSettings can be created. Please edit the existing one."):
-            # We need to explicitly set pk=None or omit it to simulate a new object creation
-            # The save method's logic checks `if not self.pk`
-            ServiceSettings(pk=None, enable_service_booking=False).save()
-
-        # Verify that still only one instance exists in the database
-        self.assertEqual(ServiceSettings.objects.count(), 1)
-
-        # Test that calling the factory again returns the same instance
-        retrieved_settings = ServiceSettingsFactory()
-        self.assertEqual(self.settings.pk, retrieved_settings.pk)
-        self.assertEqual(self.settings.enable_service_booking, retrieved_settings.enable_service_booking)
-
-
-    def test_field_defaults_and_types(self):
+    def test_service_booking_reference_generation_on_save(self):
         """
-        Test the default values and data types of various fields.
+        Test that service_booking_reference is automatically generated if not provided.
         """
-        settings = self.settings
+        # Create a booking without explicitly providing service_booking_reference
+        # The factory's default sequence should handle this
+        booking = ServiceBookingFactory()
+        
+        # Check that a reference was generated and it's not empty
+        self.assertIsNotNone(booking.service_booking_reference)
+        self.assertNotEqual(booking.service_booking_reference, "")
+        self.assertTrue(booking.service_booking_reference.startswith("SERVICE-"))
+        self.assertEqual(len(booking.service_booking_reference), 8 + len("SERVICE-")) # SERVICE-XXXXXXXX
 
-        # Boolean fields
-        self.assertIsInstance(settings.enable_service_booking, bool)
-        self.assertTrue(settings.enable_service_booking)
-        self.assertIsInstance(settings.allow_anonymous_bookings, bool)
-        self.assertTrue(settings.allow_anonymous_bookings)
-        self.assertIsInstance(settings.enable_deposit, bool)
-        self.assertFalse(settings.enable_deposit)
-        self.assertIsInstance(settings.refund_deducts_stripe_fee_policy, bool)
-        self.assertTrue(settings.refund_deducts_stripe_fee_policy)
-
-        # Integer fields
-        self.assertIsInstance(settings.booking_advance_notice, int)
-        self.assertEqual(settings.booking_advance_notice, 1)
-        self.assertIsInstance(settings.max_visible_slots_per_day, int)
-        self.assertEqual(settings.max_visible_slots_per_day, 6)
-        self.assertIsInstance(settings.cancel_full_payment_max_refund_days, int)
-        self.assertEqual(settings.cancel_full_payment_max_refund_days, 7)
-
-        # CharField fields
-        self.assertIsInstance(settings.booking_open_days, str)
-        self.assertEqual(settings.booking_open_days, "Mon,Tue,Wed,Thu,Fri")
-        self.assertEqual(settings._meta.get_field('booking_open_days').max_length, 255)
-        self.assertIsInstance(settings.currency_code, str)
-        self.assertEqual(settings.currency_code, 'AUD')
-        self.assertIsInstance(settings.currency_symbol, str)
-        self.assertEqual(settings.currency_symbol, '$')
-
-        # TextField
-        self.assertIsInstance(settings.other_brand_policy_text, str)
-        self.assertEqual(settings._meta.get_field('other_brand_policy_text').blank, True)
-
-        # DecimalField fields
-        self.assertIsInstance(settings.deposit_flat_fee_amount, Decimal)
-        self.assertEqual(settings.deposit_flat_fee_amount, Decimal('0.00'))
-        self.assertEqual(settings._meta.get_field('deposit_flat_fee_amount').max_digits, 10)
-        self.assertEqual(settings._meta.get_field('deposit_flat_fee_amount').decimal_places, 2)
-
-        self.assertIsInstance(settings.deposit_percentage, Decimal)
-        self.assertEqual(settings.deposit_percentage, Decimal('0.00'))
-        self.assertEqual(settings._meta.get_field('deposit_percentage').max_digits, 5)
-        self.assertEqual(settings._meta.get_field('deposit_percentage').decimal_places, 2)
-
-        # New Stripe fee fields
-        self.assertIsInstance(settings.stripe_fee_percentage_domestic, Decimal)
-        self.assertEqual(settings.stripe_fee_percentage_domestic, Decimal('0.0170'))
-        self.assertEqual(settings._meta.get_field('stripe_fee_percentage_domestic').max_digits, 5)
-        self.assertEqual(settings._meta.get_field('stripe_fee_percentage_domestic').decimal_places, 4)
-
-        self.assertIsInstance(settings.stripe_fee_fixed_domestic, Decimal)
-        self.assertEqual(settings.stripe_fee_fixed_domestic, Decimal('0.30'))
-        self.assertEqual(settings._meta.get_field('stripe_fee_fixed_domestic').max_digits, 5)
-        self.assertEqual(settings._meta.get_field('stripe_fee_fixed_domestic').decimal_places, 2)
-
-        self.assertIsInstance(settings.stripe_fee_percentage_international, Decimal)
-        self.assertEqual(settings.stripe_fee_percentage_international, Decimal('0.0350'))
-        self.assertEqual(settings._meta.get_field('stripe_fee_percentage_international').max_digits, 5)
-        self.assertEqual(settings._meta.get_field('stripe_fee_percentage_international').decimal_places, 4)
-
-        self.assertIsInstance(settings.stripe_fee_fixed_international, Decimal)
-        self.assertEqual(settings.stripe_fee_fixed_international, Decimal('0.30'))
-        self.assertEqual(settings._meta.get_field('stripe_fee_fixed_international').max_digits, 5)
-        self.assertEqual(settings._meta.get_field('stripe_fee_fixed_international').decimal_places, 2)
-
-        # Choices field
-        self.assertEqual(settings.deposit_calc_method, 'FLAT_FEE')
-        self.assertIn(('FLAT_FEE', 'Flat Fee'), settings.DEPOSIT_CALC_CHOICES)
-        self.assertIn(('PERCENTAGE', 'Percentage of Booking Total'), settings.DEPOSIT_CALC_CHOICES)
-
-
-    def test_clean_method_percentage_validation(self):
-        """
-        Test the clean method's validation for percentage fields (0.00 to 1.00).
-        """
-        settings = self.settings
-
-        # Test valid percentages
-        settings.deposit_percentage = Decimal('0.50')
-        settings.cancel_full_payment_max_refund_percentage = Decimal('1.00')
-        settings.cancel_deposit_min_refund_percentage = Decimal('0.00')
-        settings.full_clean() # Should not raise error
-
-        # Test invalid percentages (greater than 1.00)
-        settings.deposit_percentage = Decimal('1.01')
-        with self.assertRaisesMessage(ValidationError, "Ensure deposit percentage is between 0.00 (0%) and 1.00 (100%)."):
-            settings.full_clean()
-        settings.deposit_percentage = Decimal('0.50') # Reset
-
-        settings.cancel_full_payment_partial_refund_percentage = Decimal('1.50')
-        with self.assertRaisesMessage(ValidationError, "Ensure cancel full payment partial refund percentage is between 0.00 (0%) and 1.00 (100%)."):
-            settings.full_clean()
-        settings.cancel_full_payment_partial_refund_percentage = Decimal('0.50') # Reset
-
-        # Test invalid percentages (less than 0.00)
-        settings.cancel_deposit_max_refund_percentage = Decimal('-0.10')
-        with self.assertRaisesMessage(ValidationError, "Ensure cancel deposit max refund percentage is between 0.00 (0%) and 1.00 (100%)."):
-            settings.full_clean()
-        settings.cancel_deposit_max_refund_percentage = Decimal('1.00') # Reset
-
-    def test_clean_method_stripe_fee_validation(self):
-        """
-        Test the clean method's specific validation for stripe fee percentage fields (0.00 to 0.10).
-        """
-        settings = self.settings
-
-        # Test valid domestic stripe_fee_percentage
-        settings.stripe_fee_percentage_domestic = Decimal('0.05')
-        settings.full_clean() # Should not raise error
-
-        settings.stripe_fee_percentage_domestic = Decimal('0.00')
-        settings.full_clean() # Should not raise error
-
-        settings.stripe_fee_percentage_domestic = Decimal('0.10')
-        settings.full_clean() # Should not raise error
-
-        # Test invalid domestic stripe_fee_percentage (greater than 0.10)
-        settings.stripe_fee_percentage_domestic = Decimal('0.11')
-        with self.assertRaisesMessage(ValidationError, "Ensure domestic stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."):
-            settings.full_clean()
-        settings.stripe_fee_percentage_domestic = Decimal('0.0170') # Reset
-
-        # Test invalid domestic stripe_fee_percentage (less than 0.00)
-        settings.stripe_fee_percentage_domestic = Decimal('-0.01')
-        with self.assertRaisesMessage(ValidationError, "Ensure domestic stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."):
-            settings.full_clean()
-        settings.stripe_fee_percentage_domestic = Decimal('0.0170') # Reset
-
-
-        # Test valid international stripe_fee_percentage
-        settings.stripe_fee_percentage_international = Decimal('0.05')
-        settings.full_clean() # Should not raise error
-
-        settings.stripe_fee_percentage_international = Decimal('0.00')
-        settings.full_clean() # Should not raise error
-
-        settings.stripe_fee_percentage_international = Decimal('0.10')
-        settings.full_clean() # Should not raise error
-
-        # Test invalid international stripe_fee_percentage (greater than 0.10)
-        settings.stripe_fee_percentage_international = Decimal('0.11')
-        with self.assertRaisesMessage(ValidationError, "Ensure international stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."):
-            settings.full_clean()
-        settings.stripe_fee_percentage_international = Decimal('0.0350') # Reset
-
-        # Test invalid international stripe_fee_percentage (less than 0.00)
-        settings.stripe_fee_percentage_international = Decimal('-0.01')
-        with self.assertRaisesMessage(ValidationError, "Ensure international stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."):
-            settings.full_clean()
-        settings.stripe_fee_percentage_international = Decimal('0.0350') # Reset
-
+        # Test saving an existing booking (should not change the reference)
+        old_reference = booking.service_booking_reference
+        booking.customer_notes = "Updated notes"
+        booking.save()
+        self.assertEqual(booking.service_booking_reference, old_reference)
 
     def test_str_method(self):
         """
-        Test the __str__ method of the ServiceSettings model.
+        Test the __str__ method of the ServiceBooking model.
         """
-        settings = self.settings
-        self.assertEqual(str(settings), "Service Booking Settings")
+        expected_str = f"Booking {self.service_booking.service_booking_reference} for {self.service_booking.service_profile.name} on {self.service_booking.dropoff_date}"
+        self.assertEqual(str(self.service_booking), expected_str)
 
-    def test_meta_options(self):
+    def test_field_attributes(self):
         """
-        Test the Meta options of the ServiceSettings model.
+        Test the attributes of various fields in the ServiceBooking model.
         """
-        self.assertEqual(ServiceSettings._meta.verbose_name, "Service Settings")
-        self.assertEqual(ServiceSettings._meta.verbose_name_plural, "Service Settings")
+        booking = self.service_booking
 
+        # service_booking_reference (Updated field name)
+        field = booking._meta.get_field('service_booking_reference')
+        self.assertEqual(field.max_length, 20)
+        self.assertTrue(field.unique)
+        self.assertTrue(field.blank)
+        self.assertTrue(field.null)
+
+        # service_type
+        field = booking._meta.get_field('service_type')
+        self.assertIsInstance(field, models.ForeignKey)
+        self.assertEqual(field.related_model.__name__, 'ServiceType')
+        self.assertEqual(field.remote_field.on_delete, models.PROTECT)
+
+        # service_profile
+        field = booking._meta.get_field('service_profile')
+        self.assertIsInstance(field, models.ForeignKey)
+        self.assertEqual(field.related_model.__name__, 'ServiceProfile')
+        self.assertEqual(field.remote_field.on_delete, models.CASCADE)
+
+        # customer_motorcycle
+        field = booking._meta.get_field('customer_motorcycle')
+        self.assertIsInstance(field, models.ForeignKey)
+        self.assertEqual(field.related_model.__name__, 'CustomerMotorcycle')
+        self.assertEqual(field.remote_field.on_delete, models.SET_NULL)
+        self.assertTrue(field.null)
+        self.assertTrue(field.blank)
+
+        # payment_option
+        field = booking._meta.get_field('payment_option')
+        self.assertIsInstance(field, models.CharField)
+        self.assertEqual(field.max_length, 20)
+        self.assertTrue(field.null)
+        self.assertTrue(field.blank)
+        self.assertGreater(len(field.choices), 0)
+
+        # payment
+        field = booking._meta.get_field('payment')
+        self.assertIsInstance(field, models.OneToOneField)
+        self.assertEqual(field.related_model.__name__, 'Payment')
+        self.assertEqual(field.remote_field.on_delete, models.SET_NULL)
+        self.assertTrue(field.null)
+        self.assertTrue(field.blank)
+
+        # calculated_total, calculated_deposit_amount, amount_paid
+        for field_name in ['calculated_total', 'calculated_deposit_amount', 'amount_paid']:
+            field = booking._meta.get_field(field_name)
+            self.assertIsInstance(field, models.DecimalField)
+            self.assertEqual(field.decimal_places, 2)
+            self.assertIsInstance(getattr(booking, field_name), Decimal)
+            self.assertGreaterEqual(getattr(booking, field_name), Decimal('0.00'))
+
+        self.assertEqual(booking._meta.get_field('calculated_total').max_digits, 10)
+        self.assertEqual(booking._meta.get_field('calculated_deposit_amount').max_digits, 8)
+        self.assertEqual(booking._meta.get_field('amount_paid').max_digits, 10)
+
+        # payment_status
+        field = booking._meta.get_field('payment_status')
+        self.assertIsInstance(field, models.CharField)
+        self.assertEqual(field.max_length, 20)
+        self.assertEqual(field.default, 'unpaid')
+        self.assertGreater(len(field.choices), 0)
+
+        # payment_method
+        field = booking._meta.get_field('payment_method')
+        self.assertIsInstance(field, models.CharField)
+        self.assertEqual(field.max_length, 20)
+        self.assertTrue(field.null)
+        self.assertTrue(field.blank)
+        self.assertGreater(len(field.choices), 0)
+
+        # currency
+        field = booking._meta.get_field('currency')
+        self.assertIsInstance(field, models.CharField)
+        self.assertEqual(field.max_length, 3)
+        self.assertEqual(field.default, 'AUD')
+
+        # stripe_payment_intent_id
+        field = booking._meta.get_field('stripe_payment_intent_id')
+        self.assertIsInstance(field, models.CharField)
+        self.assertEqual(field.max_length, 100)
+        self.assertTrue(field.unique)
+        self.assertTrue(field.blank)
+        self.assertTrue(field.null)
+
+        # service_date (newly added)
+        field = booking._meta.get_field('service_date')
+        self.assertIsInstance(field, models.DateField)
+        self.assertIsInstance(booking.service_date, datetime.date)
+
+        # dropoff_date
+        field = booking._meta.get_field('dropoff_date')
+        self.assertIsInstance(field, models.DateField)
+        self.assertIsInstance(booking.dropoff_date, datetime.date)
+
+        # dropoff_time
+        field = booking._meta.get_field('dropoff_time')
+        self.assertIsInstance(field, models.TimeField)
+        self.assertIsInstance(booking.dropoff_time, datetime.time)
+
+        # estimated_pickup_date
+        field = booking._meta.get_field('estimated_pickup_date')
+        self.assertIsInstance(field, models.DateField)
+        self.assertTrue(field.null)
+        self.assertTrue(field.blank)
+        # Check that it's a date object if set, or None
+        self.assertIsInstance(booking.estimated_pickup_date, (datetime.date, type(None)))
+
+        # booking_status
+        field = booking._meta.get_field('booking_status')
+        self.assertIsInstance(field, models.CharField)
+        self.assertEqual(field.max_length, 30)
+        self.assertEqual(field.default, 'PENDING_CONFIRMATION')
+        self.assertGreater(len(field.choices), 0)
+
+        # customer_notes
+        field = booking._meta.get_field('customer_notes')
+        self.assertIsInstance(field, models.TextField)
+        self.assertTrue(field.blank)
+        self.assertTrue(field.null)
+
+        # created_at, updated_at
+        field = booking._meta.get_field('created_at')
+        self.assertIsInstance(field, models.DateTimeField)
+        self.assertTrue(field.auto_now_add)
+        field = booking._meta.get_field('updated_at')
+        self.assertIsInstance(field, models.DateTimeField)
+        self.assertTrue(field.auto_now)
+
+    def test_service_booking_reference_unique_constraint(self):
+        """
+        Test that service_booking_reference enforces uniqueness.
+        """
+        # Create a booking with a specific reference
+        existing_booking = ServiceBookingFactory(service_booking_reference="SERVICE-TESTREF")
+        
+        # Attempt to create another booking with the same service_booking_reference
+        with self.assertRaises(IntegrityError) as cm:
+            # We need to explicitly provide required fields for the factory to create a valid instance
+            ServiceBookingFactory(
+                service_booking_reference="SERVICE-TESTREF",
+                service_date=fake.date_between(start_date='today', end_date='+30d'),
+                dropoff_date=fake.date_between(start_date='today', end_date='+30d'),
+                dropoff_time=fake.time_object()
+            )
+        self.assertIn("unique constraint failed", str(cm.exception).lower())
+
+    def test_stripe_payment_intent_id_unique_constraint(self):
+        """
+        Test that stripe_payment_intent_id enforces uniqueness.
+        """
+        # Create a booking with a specific stripe_payment_intent_id
+        existing_booking = ServiceBookingFactory(stripe_payment_intent_id="pi_test_intent_123")
+
+        # Attempt to create another booking with the same stripe_payment_intent_id
+        with self.assertRaises(IntegrityError) as cm:
+            # We need to explicitly provide required fields for the factory to create a valid instance
+            ServiceBookingFactory(
+                stripe_payment_intent_id="pi_test_intent_123",
+                service_date=fake.date_between(start_date='today', end_date='+30d'),
+                dropoff_date=fake.date_between(start_date='today', end_date='+30d'),
+                dropoff_time=fake.time_object()
+            )
+        self.assertIn("unique constraint failed", str(cm.exception).lower())
+
+
+    def test_default_values(self):
+        """
+        Test that default values are correctly applied when not explicitly set.
+        """
+        # Create a booking with minimal required fields
+        service_type = ServiceTypeFactory()
+        service_profile = ServiceProfileFactory()
+        service_date = datetime.date.today() + datetime.timedelta(days=7) # Add service_date
+        dropoff_date = datetime.date.today() + datetime.timedelta(days=7)
+        dropoff_time = datetime.time(10, 0, 0)
+
+        booking = ServiceBooking.objects.create(
+            service_type=service_type,
+            service_profile=service_profile,
+            service_date=service_date, # Pass service_date
+            dropoff_date=dropoff_date,
+            dropoff_time=dropoff_time,
+        )
+
+        self.assertEqual(booking.calculated_total, Decimal('0.00'))
+        self.assertEqual(booking.calculated_deposit_amount, Decimal('0.00'))
+        self.assertEqual(booking.amount_paid, Decimal('0.00'))
+        self.assertEqual(booking.payment_status, 'unpaid')
+        self.assertEqual(booking.currency, 'AUD')
+        self.assertEqual(booking.booking_status, 'PENDING_CONFIRMATION')
+        self.assertIsNone(booking.customer_motorcycle)
+        self.assertIsNone(booking.payment_option)
+        self.assertIsNone(booking.payment)
+        self.assertIsNone(booking.payment_method)
+        self.assertIsNone(booking.stripe_payment_intent_id)
+        self.assertIsNone(booking.estimated_pickup_date)
+        self.assertIsNone(booking.customer_notes) 
+
+    def test_timestamps_auto_now_add_and_auto_now(self):
+        """
+        Test that created_at is set on creation and updated_at is updated on save.
+        """
+        booking = ServiceBookingFactory() # Factory should provide all required fields
+        initial_created_at = booking.created_at
+        initial_updated_at = booking.updated_at
+
+        # created_at should be set on creation
+        self.assertIsNotNone(initial_created_at)
+        self.assertIsNotNone(initial_updated_at)
+        # For auto_now_add and auto_now fields, they might be very close,
+        # but created_at should be slightly before or equal to updated_at initially
+        self.assertLessEqual(initial_created_at, initial_updated_at)
+
+        # Update the booking and save
+        import time
+        time.sleep(0.01) # Ensure a slight time difference for updated_at to change
+        booking.customer_notes = "Updated notes for timestamp test."
+        booking.save()
+
+        # updated_at should be greater than its initial value
+        self.assertGreater(booking.updated_at, initial_updated_at)
+        # created_at should remain the same
+        self.assertEqual(booking.created_at, initial_created_at)
+
+    def test_related_name_accessors(self):
+        """
+        Test that related_name accessors work as expected.
+        """
+        service_type = ServiceTypeFactory()
+        service_profile = ServiceProfileFactory()
+        customer_motorcycle = CustomerMotorcycleFactory(service_profile=service_profile)
+        payment = PaymentFactory()
+
+        booking = ServiceBookingFactory(
+            service_type=service_type,
+            service_profile=service_profile,
+            customer_motorcycle=customer_motorcycle,
+            payment=payment
+        )
+
+        # Test reverse relationships
+        self.assertIn(booking, service_type.service_bookings.all())
+        self.assertIn(booking, service_profile.service_bookings.all())
+        self.assertIn(booking, customer_motorcycle.service_bookings.all())
+        self.assertEqual(booking, payment.related_service_booking_payment)
+
+    def test_on_delete_behavior(self):
+        """
+        Test the on_delete behavior for foreign keys.
+        """
+        # PROTECT for service_type
+        # Create a new service type and booking to ensure isolation for this test
+        service_type_for_protect = ServiceTypeFactory()
+        booking_for_protect_test = ServiceBookingFactory(service_type=service_type_for_protect)
+        
+        with self.assertRaises(models.ProtectedError):
+            service_type_for_protect.delete()
+        
+        # CASCADE for service_profile
+        # Create a new service profile and booking for this test
+        service_profile_for_cascade = ServiceProfileFactory()
+        booking_for_cascade_test = ServiceBookingFactory(service_profile=service_profile_for_cascade)
+        booking_id_for_cascade = booking_for_cascade_test.id
+        
+        service_profile_for_cascade.delete()
+        
+        # The service booking should be deleted if its service profile is deleted
+        self.assertFalse(ServiceBooking.objects.filter(id=booking_id_for_cascade).exists())
+        
+        # SET_NULL for customer_motorcycle and payment
+        # Recreate a booking for this test
+        booking_for_null_test = ServiceBookingFactory()
+        customer_motorcycle = booking_for_null_test.customer_motorcycle
+        payment = booking_for_null_test.payment
+
+        customer_motorcycle.delete()
+        payment.delete()
+
+        booking_for_null_test.refresh_from_db()
+        self.assertIsNone(booking_for_null_test.customer_motorcycle)
+        self.assertIsNone(booking_for_null_test.payment)
