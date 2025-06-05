@@ -107,7 +107,7 @@ class Step1ServiceDetailsView(View):
                     if service_profile_for_temp_booking.customer_motorcycles.exists():
                         customer_motorcycles_exist = True
                 except ServiceProfile.DoesNotExist:
-                    pass # No service profile for the user
+                    pass 
 
             try:
                 # Update existing temporary booking or create a new one
