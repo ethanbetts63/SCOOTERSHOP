@@ -178,8 +178,7 @@ class Step3CustomerMotorcycleViewTest(TestCase):
         self.temp_booking.save()
 
         post_data = {
-            'brand': self.honda_brand.name, # Use a brand that exists in the database
-            'make': 'CBR',
+            'brand': self.honda_brand.name, 
             'model': '600RR',
             'year': 2020,
             'engine_size': '600cc',
@@ -216,7 +215,6 @@ class Step3CustomerMotorcycleViewTest(TestCase):
 
         post_data = {
             'brand': self.yamaha_brand.name, # Use a brand that exists in the database
-            'make': 'YZF',
             'model': 'R1',
             'year': 2022,
             'engine_size': '1000cc',
@@ -247,7 +245,6 @@ class Step3CustomerMotorcycleViewTest(TestCase):
         """
         # Missing 'brand' (which is now a required ChoiceField)
         post_data = {
-            'make': 'CBR',
             'model': '600RR',
             'year': 2020,
             'engine_size': '600cc',
@@ -276,7 +273,6 @@ class Step3CustomerMotorcycleViewTest(TestCase):
         """
         post_data = {
             'brand': 'Other', # This is now a valid choice
-            'make': 'Custom',
             'model': 'Bike',
             'year': 2023,
             'engine_size': '500cc',
@@ -309,7 +305,6 @@ class Step3CustomerMotorcycleViewTest(TestCase):
         post_data = {
             'brand': 'Other',
             'other_brand_name': 'My Custom Brand',
-            'make': 'Custom',
             'model': 'Bike',
             'year': 2023,
             'engine_size': '500cc',
@@ -342,7 +337,7 @@ class Step3CustomerMotorcycleViewTest(TestCase):
         existing_motorcycle = CustomerMotorcycleFactory(
             service_profile=self.auth_user_service_profile, # Ensure it belongs to the user
             brand=self.sym_brand.name, # Use an existing brand
-            make='OldMake', model='OldModel', year=2000
+            model='OldModel', year=2000
         )
         self.temp_booking.customer_motorcycle = existing_motorcycle
         self.temp_booking.save()
@@ -350,7 +345,6 @@ class Step3CustomerMotorcycleViewTest(TestCase):
         updated_year = existing_motorcycle.year + 1
         post_data = {
             'brand': existing_motorcycle.brand, # Use the existing valid brand name
-            'make': existing_motorcycle.make,
             'model': existing_motorcycle.model,
             'year': updated_year, # Change a field
             'engine_size': existing_motorcycle.engine_size,
@@ -382,7 +376,6 @@ class Step3CustomerMotorcycleViewTest(TestCase):
         existing_motorcycle = CustomerMotorcycleFactory(
             service_profile=self.auth_user_service_profile,
             brand=self.vespa_brand.name, # Use an existing brand
-            make='GoodMake', model='GoodModel', year=2000
         )
         self.temp_booking.customer_motorcycle = existing_motorcycle
         self.temp_booking.save()
@@ -390,7 +383,6 @@ class Step3CustomerMotorcycleViewTest(TestCase):
         # Invalid data: 'year' in future
         post_data = {
             'brand': existing_motorcycle.brand, # Use the existing valid brand name
-            'make': existing_motorcycle.make,
             'model': existing_motorcycle.model,
             'year': datetime.date.today().year + 5, # Invalid year
             'engine_size': existing_motorcycle.engine_size,

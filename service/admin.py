@@ -20,9 +20,9 @@ class ServiceTypeAdmin(admin.ModelAdmin):
 
 @admin.register(CustomerMotorcycle)
 class CustomerMotorcycleAdmin(admin.ModelAdmin):
-    list_display = ('year', 'brand', 'make', 'model', 'service_profile_name', 'rego')
-    list_filter = ('brand', 'make', 'year')
-    search_fields = ('brand', 'make', 'model', 'rego', 'vin_number', 'service_profile__name', 'service_profile__email')
+    list_display = ('year', 'brand', 'model', 'service_profile_name', 'rego')
+    list_filter = ('brand', 'year')
+    search_fields = ('brand', 'model', 'rego', 'vin_number', 'service_profile__name', 'service_profile__email')
     raw_id_fields = ('service_profile',) # Use if you have many service profiles for performance
 
     def service_profile_name(self, obj):
@@ -48,7 +48,6 @@ class ServiceBookingAdmin(admin.ModelAdmin):
         'service_profile__name',
         'service_profile__email',
         'service_profile__phone_number',
-        'customer_motorcycle__make',
         'customer_motorcycle__model',
     )
     raw_id_fields = ('service_type', 'service_profile', 'customer_motorcycle', 'payment')
@@ -63,7 +62,7 @@ class ServiceBookingAdmin(admin.ModelAdmin):
 
     def motorcycle_info(self, obj):
         if obj.customer_motorcycle:
-            return f"{obj.customer_motorcycle.year} {obj.customer_motorcycle.brand} {obj.customer_motorcycle.make}"
+            return f"{obj.customer_motorcycle.year} {obj.customer_motorcycle.brand}"
         return "N/A"
     motorcycle_info.short_description = 'Motorcycle'
 
@@ -123,7 +122,6 @@ class TempServiceBookingAdmin(admin.ModelAdmin):
         'session_uuid',
         'service_profile__name',
         'service_profile__email',
-        'customer_motorcycle__make',
         'customer_motorcycle__model',
     )
     raw_id_fields = ('service_type', 'service_profile', 'customer_motorcycle')

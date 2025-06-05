@@ -66,7 +66,6 @@ class PaymentFactory(factory.django.DjangoModelFactory):
     are referenced by string. If you need to create these related objects
     within the PaymentFactory, you'll need to define their factories
     and import them, or pass existing instances.
-    For simplicity, we'll make them optional here.
     """
     class Meta:
         model = Payment
@@ -157,7 +156,6 @@ class CustomerMotorcycleFactory(factory.django.DjangoModelFactory):
 
     service_profile = factory.SubFactory(ServiceProfileFactory)
     brand = factory.Faker('word', ext_word_list=['Honda', 'Yamaha', 'Kawasaki', 'Suzuki', 'Ducati', 'Harley-Davidson', 'Other'])
-    make = factory.Faker('word')
     model = factory.Faker('word')
     # This was fixed in the previous turn: Correctly call fake.year() to get the actual year value
     year = factory.LazyFunction(lambda: fake.year())

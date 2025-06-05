@@ -31,7 +31,6 @@ class CustomerMotorcycleFormTest(TestCase):
 
         data = {
             'brand': brand_name,
-            'make': 'CBR',
             'model': '600RR',
             'year': 2020,
             'engine_size': '600cc',
@@ -58,7 +57,6 @@ class CustomerMotorcycleFormTest(TestCase):
         motorcycle.save()
         self.assertIsNotNone(motorcycle.pk)
         self.assertEqual(motorcycle.brand, self.honda_brand.name)
-        self.assertEqual(motorcycle.make, 'CBR')
         self.assertEqual(motorcycle.odometer, 15000)
         self.assertEqual(motorcycle.service_profile, self.service_profile)
 
@@ -96,7 +94,6 @@ class CustomerMotorcycleFormTest(TestCase):
         existing_motorcycle = CustomerMotorcycleFactory(
             service_profile=self.service_profile,
             brand=self.honda_brand.name, # Ensure this brand exists as a ServiceBrand
-            make='CBR',
             model='600RR',
             year=2018,
             odometer=25000
@@ -104,7 +101,6 @@ class CustomerMotorcycleFormTest(TestCase):
         form = CustomerMotorcycleForm(instance=existing_motorcycle)
 
         self.assertEqual(form.initial['brand'], existing_motorcycle.brand)
-        self.assertEqual(form.initial['make'], existing_motorcycle.make)
         self.assertEqual(form.initial['model'], existing_motorcycle.model)
         self.assertEqual(form.initial['year'], existing_motorcycle.year)
         self.assertEqual(form.initial['odometer'], existing_motorcycle.odometer)
@@ -120,7 +116,6 @@ class CustomerMotorcycleFormTest(TestCase):
         existing_motorcycle = CustomerMotorcycleFactory(
             service_profile=self.service_profile,
             brand=custom_brand_name, # This brand does not exist as a ServiceBrand object
-            make='Custom',
             model='Bike',
             year=2021,
             odometer=1000
@@ -137,7 +132,6 @@ class CustomerMotorcycleFormTest(TestCase):
         original_motorcycle = CustomerMotorcycleFactory(
             service_profile=self.service_profile,
             brand=self.honda_brand.name,
-            make='CBR',
             model='600RR',
             year=2018,
             odometer=25000,
@@ -162,7 +156,6 @@ class CustomerMotorcycleFormTest(TestCase):
         original_motorcycle = CustomerMotorcycleFactory(
             service_profile=self.service_profile,
             brand=self.honda_brand.name,
-            make='CBR',
             model='600RR',
             year=2018,
             odometer=25000,
@@ -184,7 +177,7 @@ class CustomerMotorcycleFormTest(TestCase):
         self.assertFalse(form.is_valid())
 
         expected_required_fields = [
-            'brand', 'make', 'model', 'year'
+            'brand', 'model', 'year'
         ]
 
         for field_name in expected_required_fields:

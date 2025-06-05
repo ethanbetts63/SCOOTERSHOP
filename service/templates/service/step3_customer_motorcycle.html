@@ -72,12 +72,7 @@
         </div>
 
         {# Explicitly list other required fields #}
-        <p>
-            <label for="{{ form.make.id_for_label }}" class="required-label">{{ form.make.label }}</label>
-            {{ form.make }}
-            {% if form.make.help_text %}<small>{{ form.make.help_text }}</small>{% endif %}
-            {% for error in form.make.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
-        </p>
+        {# Removed 'make' field #}
 
         <p>
             <label for="{{ form.model.id_for_label }}" class="required-label">{{ form.model.label }}</label>
@@ -86,6 +81,7 @@
             {% for error in form.model.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
         </p>
 
+        {# Engine Size - Remains in required section, placed under model, and marked as required #}
         <p>
             <label for="{{ form.engine_size.id_for_label }}" class="required-label">{{ form.engine_size.label }}</label>
             {{ form.engine_size }}

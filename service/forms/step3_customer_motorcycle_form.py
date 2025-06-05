@@ -48,15 +48,12 @@ class CustomerMotorcycleForm(forms.ModelForm):
                 self.initial['brand'] = 'Other'
                 self.initial['other_brand_name'] = self.instance.brand # Populate the 'other_brand_name' field
 
-        # Removed the 'ordered_fields' logic and 'is_required_field' custom attribute
-        # as fields are now explicitly ordered in the HTML template.
-
 
     class Meta:
         model = CustomerMotorcycle
         fields = [
             'brand',
-            'make',
+            # Removed 'make' field
             'model',
             'year',
             'engine_size',
@@ -68,22 +65,22 @@ class CustomerMotorcycleForm(forms.ModelForm):
             'image',
         ]
         widgets = {
-            'make': forms.TextInput(attrs={'class': 'form-control'}),
+            # Removed 'make' widget
             'model': forms.TextInput(attrs={'class': 'form-control'}),
             'year': forms.NumberInput(attrs={'class': 'form-control'}),
             'engine_size': forms.TextInput(attrs={'class': 'form-control'}),
             'rego': forms.TextInput(attrs={'class': 'form-control'}),
             'vin_number': forms.TextInput(attrs={'class': 'form-control'}),
             'odometer': forms.NumberInput(attrs={'class': 'form-control'}),
-            'transmission': forms.Select(attrs={'class': 'form-control'}), # Changed to Select for choices
+            'transmission': forms.Select(attrs={'class': 'form-control'}),
             'engine_number': forms.TextInput(attrs={'class': 'form-control'}),
             'image': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
         }
         labels = {
-            'make': _('Make'),
+            # Removed 'make' label
             'model': _('Model'),
             'year': _('Year'),
-            'engine_size': _('Engine Size'),
+            'engine_size': _('Engine Size (e.g., 600cc, 1000cc)'),
             'rego': _('Registration Number'),
             'vin_number': _('VIN Number'),
             'odometer': _('Odometer Reading (km)'),

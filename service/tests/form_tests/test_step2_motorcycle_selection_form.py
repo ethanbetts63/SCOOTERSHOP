@@ -16,15 +16,28 @@ class MotorcycleSelectionFormTest(TestCase):
     def setUpTestData(cls):
         """
         Set up non-modified objects used by all test methods.
+        Updated to remove 'make' and include all required fields for CustomerMotorcycleFactory.
         """
         cls.service_profile_with_bikes = ServiceProfileFactory()
         cls.motorcycle1 = CustomerMotorcycleFactory(
             service_profile=cls.service_profile_with_bikes,
-            brand="Honda", make="CBR", model="600RR", rego="ABC123"
+            brand="Honda",
+            # Removed 'make'
+            model="600RR",
+            rego="ABC123",
+            odometer=10000, # Added required odometer
+            transmission="MANUAL", # Added required transmission
+            engine_size="600cc", # Added required engine_size
         )
         cls.motorcycle2 = CustomerMotorcycleFactory(
             service_profile=cls.service_profile_with_bikes,
-            brand="Yamaha", make="YZF", model="R1", rego="XYZ789"
+            brand="Yamaha",
+            # Removed 'make'
+            model="R1",
+            rego="XYZ789",
+            odometer=12000, # Added required odometer
+            transmission="MANUAL", # Added required transmission
+            engine_size="1000cc", # Added required engine_size
         )
 
         cls.service_profile_no_bikes = ServiceProfileFactory()
@@ -33,6 +46,7 @@ class MotorcycleSelectionFormTest(TestCase):
         """
         Test that the form initializes correctly with existing motorcycles
         for a service profile.
+        Updated to reflect removal of 'make' in string representation.
         """
         form = MotorcycleSelectionForm(service_profile=self.service_profile_with_bikes)
         choices = form.fields['selected_motorcycle'].choices
@@ -44,9 +58,9 @@ class MotorcycleSelectionFormTest(TestCase):
         # Check the 'Add New' option
         self.assertEqual(choices[0], (ADD_NEW_MOTORCYCLE_OPTION, "--- Add a New Motorcycle ---"))
 
-        # Check existing motorcycles
-        self.assertIn((str(self.motorcycle1.pk), f"{self.motorcycle1.brand} {self.motorcycle1.make} {self.motorcycle1.model} ({self.motorcycle1.rego})"), choices)
-        self.assertIn((str(self.motorcycle2.pk), f"{self.motorcycle2.brand} {self.motorcycle2.make} {self.motorcycle2.model} ({self.motorcycle2.rego})"), choices)
+        # Check existing motorcycles - updated to reflect removal of 'make'
+        self.assertIn((str(self.motorcycle1.pk), f"{self.motorcycle1.brand} {self.motorcycle1.model} ({self.motorcycle1.rego})"), choices)
+        self.assertIn((str(self.motorcycle2.pk), f"{self.motorcycle2.brand} {self.motorcycle2.model} ({self.motorcycle2.rego})"), choices)
 
         # Initial should not be set if motorcycles exist (or should be 'add_new' if explicitly desired, but default is usually first option)
         # Based on the form's __init__, initial is only set to ADD_NEW_MOTORCYCLE_OPTION if not motorcycles.
@@ -121,9 +135,13 @@ class MotorcycleSelectionFormTest(TestCase):
         Test that the form is INVALID if a valid integer ID is submitted
         that does not belong to the user's ServiceProfile, because the form's
         choices are dynamically filtered by the service_profile.
+        Ensure all required fields are provided when creating `unowned_motorcycle`.
         """
         # Create a motorcycle belonging to a *different* service profile
-        unowned_motorcycle = CustomerMotorcycleFactory()
+        unowned_motorcycle = CustomerMotorcycleFactory(
+            brand="Kawasaki", model="Ninja", year=2022, rego="KLM789", odometer=15000,
+            transmission="MANUAL", engine_size="400cc"
+        )
         
         form = MotorcycleSelectionForm(
             service_profile=self.service_profile_with_bikes, # Form initialized with THIS profile's bikes

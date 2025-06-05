@@ -36,7 +36,7 @@ class MotorcycleSelectionForm(forms.Form):
         for mc in motorcycles:
             # Use the motorcycle's primary key as the value
             # and a descriptive string for the display name
-            choices.append((str(mc.pk), f"{mc.brand} {mc.make} {mc.model} ({mc.rego})"))
+            choices.append((str(mc.pk), f"{mc.brand} {mc.model} ({mc.rego})"))
 
         # Set the choices for the selected_motorcycle field
         self.fields['selected_motorcycle'].choices = choices
