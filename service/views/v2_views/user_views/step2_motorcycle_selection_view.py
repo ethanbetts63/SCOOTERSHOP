@@ -13,7 +13,7 @@ class Step2MotorcycleSelectionView(LoginRequiredMixin, View):
     Allows an authenticated user to select an existing motorcycle from their
     ServiceProfile or choose to add a new one.
     """
-    template_name = 'service/service_book_step2.html'
+    template_name = 'service/step2_motorcycle_selection.html'
 
     def dispatch(self, request, *args, **kwargs):
         """
@@ -40,7 +40,9 @@ class Step2MotorcycleSelectionView(LoginRequiredMixin, View):
 
         self.service_profile = self.temp_booking.service_profile
 
-        if not self.service_profile.customer_motorcycles.exists():
+        has_motorcycles = self.service_profile.customer_motorcycles.exists()
+
+        if not has_motorcycles:
             return redirect(reverse('service:service_book_step3'))
 
         # If all checks pass and the user has motorcycles, proceed with the view
