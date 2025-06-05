@@ -48,6 +48,10 @@ class CustomerMotorcycleForm(forms.ModelForm):
                 self.initial['brand'] = 'Other'
                 self.initial['other_brand_name'] = self.instance.brand # Populate the 'other_brand_name' field
 
+        # Removed the 'ordered_fields' logic and 'is_required_field' custom attribute
+        # as fields are now explicitly ordered in the HTML template.
+
+
     class Meta:
         model = CustomerMotorcycle
         fields = [
@@ -71,7 +75,7 @@ class CustomerMotorcycleForm(forms.ModelForm):
             'rego': forms.TextInput(attrs={'class': 'form-control'}),
             'vin_number': forms.TextInput(attrs={'class': 'form-control'}),
             'odometer': forms.NumberInput(attrs={'class': 'form-control'}),
-            'transmission': forms.TextInput(attrs={'class': 'form-control'}),
+            'transmission': forms.Select(attrs={'class': 'form-control'}), # Changed to Select for choices
             'engine_number': forms.TextInput(attrs={'class': 'form-control'}),
             'image': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
         }
@@ -79,7 +83,7 @@ class CustomerMotorcycleForm(forms.ModelForm):
             'make': _('Make'),
             'model': _('Model'),
             'year': _('Year'),
-            'engine_size': _('Engine Size (e.g., 600cc, 1000cc)'),
+            'engine_size': _('Engine Size'),
             'rego': _('Registration Number'),
             'vin_number': _('VIN Number'),
             'odometer': _('Odometer Reading (km)'),
@@ -96,6 +100,7 @@ class CustomerMotorcycleForm(forms.ModelForm):
         if brand == 'Other' and not other_brand_name:
             self.add_error('other_brand_name', _("Please specify the brand name when 'Other' is selected."))
         elif brand != 'Other' and other_brand_name:
+            # If a specific brand is chosen, clear other_brand_name
             cleaned_data['other_brand_name'] = ''
 
         return cleaned_data
@@ -116,4 +121,3 @@ class CustomerMotorcycleForm(forms.ModelForm):
             instance.save()
             self.save_m2m()
         return instance
-

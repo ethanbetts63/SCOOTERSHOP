@@ -27,7 +27,7 @@ class CustomerMotorcycle(models.Model):
         ('SEMI_AUTO', 'Semi-Automatic'),
     ]
     transmission = models.CharField(max_length=20, choices=transmission_choices)
-    engine_size = models.CharField(max_length=50, blank=True, null=True, help_text="(optional) Engine displacement (e.g., 250cc, 1000cc).")
+    engine_size = models.CharField(max_length=50, help_text="(optional) Engine displacement (e.g., 250cc, 1000cc).")
     vin_number = models.CharField(max_length=17, blank=True, null=True, unique=True, help_text="(optional) Vehicle Identification Number.")
     engine_number = models.CharField(max_length=50, blank=True, null=True, help_text="(optional) Engine serial number.")
     image = models.ImageField(upload_to='motorcycle_images/', blank=True, null=True, help_text="(optional) Image of the motorcycle.")
@@ -55,6 +55,9 @@ class CustomerMotorcycle(models.Model):
             raise ValidationError({'year': "Motorcycle odometer is required."})
         if not self.rego:
             raise ValidationError({'year': "Motorcycle registration is required."})
+        if not self.engine_size:
+            raise ValidationError({'year': "Motorcycle engine size is required."})
+        
         
 
         # Rule 2: Validate motorcycle year

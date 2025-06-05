@@ -6,6 +6,18 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
+<style>
+    .required-label::after {
+        content: " *";
+        color: red;
+    }
+    /* Add some spacing for help text */
+    small {
+        display: block; /* Ensures help text appears on a new line */
+        margin-top: 2px;
+        color: #666; /* Slightly lighter color for help text */
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -33,99 +45,118 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
 
-        {# Brand Field with Conditional 'Other' Input #}
+        {# Required Fields Section #}
+        <h4>Required Information</h4>
+        {# Brand Field with Conditional 'Other' Input - Always required #}
         <p>
-            <label for="{{ form.brand.id_for_label }}">{{ form.brand.label }}</label>
+            <label for="{{ form.brand.id_for_label }}" class="required-label">{{ form.brand.label }}</label>
             {{ form.brand }}
-            {% if form.brand.help_text %}<br><small>{{ form.brand.help_text }}</small>{% endif %}
+            {% if form.brand.help_text %}<small>{{ form.brand.help_text }}</small>{% endif %}
             {% for error in form.brand.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
         </p>
 
         <div id="otherBrandNameDiv" style="display: none;">
             <p>
-                <label for="{{ form.other_brand_name.id_for_label }}">{{ form.other_brand_name.label }}</label>
+                {# This label should also have the required-label class because if 'Other' is selected, this becomes required #}
+                <label for="{{ form.other_brand_name.id_for_label }}" class="required-label">{{ form.other_brand_name.label }}</label>
                 {{ form.other_brand_name }}
-                {% if form.other_brand_name.help_text %}<br><small>{{ form.other_brand_name.help_text }}</small>{% endif %}
+                {% if form.other_brand_name.help_text %}<small>{{ form.other_brand_name.help_text }}</small>{% endif %}
                 {% for error in form.other_brand_name.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
             </p>
             
             {% if enable_service_brands and other_brand_policy_text %}
-                <p style="color: blue; border: 1px solid lightblue; padding: 5px;">
+                <p style="color: blue; border: 1px solid lightblue; padding: 5px; border-radius: 5px; margin-top: 10px;">
                     {{ other_brand_policy_text }}
                 </p>
             {% endif %}
         </div>
 
-        {# Other fields #}
+        {# Explicitly list other required fields #}
         <p>
-            <label for="{{ form.make.id_for_label }}">{{ form.make.label }}</label>
+            <label for="{{ form.make.id_for_label }}" class="required-label">{{ form.make.label }}</label>
             {{ form.make }}
+            {% if form.make.help_text %}<small>{{ form.make.help_text }}</small>{% endif %}
             {% for error in form.make.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
         </p>
 
         <p>
-            <label for="{{ form.model.id_for_label }}">{{ form.model.label }}</label>
+            <label for="{{ form.model.id_for_label }}" class="required-label">{{ form.model.label }}</label>
             {{ form.model }}
+            {% if form.model.help_text %}<small>{{ form.model.help_text }}</small>{% endif %}
             {% for error in form.model.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
         </p>
 
         <p>
-            <label for="{{ form.year.id_for_label }}">{{ form.year.label }}</label>
-            {{ form.year }}
-            {% for error in form.year.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
-        </p>
-
-        <p>
-            <label for="{{ form.engine_size.id_for_label }}">{{ form.engine_size.label }}</label>
+            <label for="{{ form.engine_size.id_for_label }}" class="required-label">{{ form.engine_size.label }}</label>
             {{ form.engine_size }}
+            {% if form.engine_size.help_text %}<small>{{ form.engine_size.help_text }}</small>{% endif %}
             {% for error in form.engine_size.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
         </p>
 
         <p>
-            <label for="{{ form.rego.id_for_label }}">{{ form.rego.label }}</label>
+            <label for="{{ form.year.id_for_label }}" class="required-label">{{ form.year.label }}</label>
+            {{ form.year }}
+            {% if form.year.help_text %}<small>{{ form.year.help_text }}</small>{% endif %}
+            {% for error in form.year.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
+        </p>
+
+        <p>
+            <label for="{{ form.rego.id_for_label }}" class="required-label">{{ form.rego.label }}</label>
             {{ form.rego }}
+            {% if form.rego.help_text %}<small>{{ form.rego.help_text }}</small>{% endif %}
             {% for error in form.rego.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
         </p>
 
         <p>
-            <label for="{{ form.vin_number.id_for_label }}">{{ form.vin_number.label }}</label>
-            {{ form.vin_number }}
-            {% for error in form.vin_number.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
-        </p>
-
-        <p>
-            <label for="{{ form.odometer.id_for_label }}">{{ form.odometer.label }}</label>
+            <label for="{{ form.odometer.id_for_label }}" class="required-label">{{ form.odometer.label }}</label>
             {{ form.odometer }}
+            {% if form.odometer.help_text %}<small>{{ form.odometer.help_text }}</small>{% endif %}
             {% for error in form.odometer.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
         </p>
 
+        {# Transmission Type - Remains in required section and marked as required #}
         <p>
-            <label for="{{ form.transmission.id_for_label }}">{{ form.transmission.label }}</label>
+            <label for="{{ form.transmission.id_for_label }}" class="required-label">{{ form.transmission.label }}</label>
             {{ form.transmission }}
+            {% if form.transmission.help_text %}<small>{{ form.transmission.help_text }}</small>{% endif %}
             {% for error in form.transmission.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
+        </p>
+
+
+        {# Optional Fields Section #}
+        <h4>Optional Information</h4>
+        {# Explicitly list optional fields #}
+
+        <p>
+            <label for="{{ form.vin_number.id_for_label }}">{{ form.vin_number.label }}</label>
+            {{ form.vin_number }}
+            {% if form.vin_number.help_text %}<small>{{ form.vin_number.help_text }}</small>{% endif %}
+            {% for error in form.vin_number.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
         </p>
 
         <p>
             <label for="{{ form.engine_number.id_for_label }}">{{ form.engine_number.label }}</label>
             {{ form.engine_number }}
+            {% if form.engine_number.help_text %}<small>{{ form.engine_number.help_text }}</small>{% endif %}
             {% for error in form.engine_number.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
         </p>
 
         <p>
             <label for="{{ form.image.id_for_label }}">{{ form.image.label }}</label>
             {{ form.image }}
+            {% if form.image.help_text %}<small>{{ form.image.help_text }}</small>{% endif %}
             {% for error in form.image.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
             {% if form.instance.image %}
                 <div class="image-preview">
                     <p>Current Image:</p>
-                    <img src="{{ form.instance.image.url }}" alt="Current Motorcycle Image" style="max-width: 150px; height: auto;">
+                    <img src="{{ form.instance.image.url }}" alt="Current Motorcycle Image" style="max-width: 150px; height: auto; border-radius: 5px;">
                 </div>
             {% endif %}
         </p>
         
-        <div>
-            <a href="{% url 'service:service_book_step2' %}">Back to Step 2</a>
-            <button type="submit">Continue to Step 4</button>
+        <div class="flex justify-between mt-6">
+            <a href="{% url 'service:service_book_step2' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out">Back to Step 2</a>
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out">Continue to Step 4</button>
         </div>
     </form>
 </div>
