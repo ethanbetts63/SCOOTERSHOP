@@ -58,7 +58,7 @@
                                     </td>
                                     <td data-label="Actions">
                                         <div class="button-group-spaced">
-                                            <a href="{% url 'dashboard:edit_service_type' pk=service_type.pk %}" class="btn-service-action edit">
+                                            <a href="{% url 'service:edit_service_type' pk=service_type.pk %}" class="btn-service-action edit">
                                                 <i class="fas fa-edit"></i> Edit
                                             </a>
                                             {# Replaced Delete button with Toggle Active button #}
@@ -66,7 +66,7 @@
                                                     data-id="{{ service_type.id }}"
                                                     data-name="{{ service_type.name }}"
                                                     data-is-active="{{ service_type.is_active|lower }}"
-                                                    data-toggle-url="{% url 'dashboard:toggle_service_type_active_status' pk=service_type.pk %}">
+                                                    data-toggle-url="">
                                                 {% if service_type.is_active %}
                                                     <i class="fas fa-eye-slash"></i> Deactivate
                                                 {% else %}

@@ -8,7 +8,7 @@ import json # Import json for serializing blocked dates
 
 # Import models from other apps as needed
 from dashboard.models import SiteSettings, HireSettings
-from service.models import ServiceSettings, BlockedServiceDate, TempServiceBooking, ServiceProfile # Import Service related models
+from service.models import ServiceSettings, BlockedServiceDate, TempServiceBooking # Import Service related models
 from service.forms import ServiceDetailsForm # Import the ServiceDetailsForm
 
 # Import the utility function for featured motorcycles if still needed
@@ -16,6 +16,9 @@ from inventory.views.utils import get_featured_motorcycles
 
 # Import TempHireBooking for potential pre-population of step1 form
 from hire.models import TempHireBooking
+
+# Import your new service date availability utility function
+from service.utils import get_service_date_availability
 
 
 # Home Page
@@ -102,14 +105,8 @@ def index(request):
                 del request.session['temp_booking_uuid']
             temp_service_booking = None
 
-    # Serialize blocked service dates to JSON for JavaScript
-    blocked_service_dates_queryset = BlockedServiceDate.objects.all()
-    blocked_service_dates_list = [
-        {'start': str(b.start_date), 'end': str(b.end_date)}
-        for b in blocked_service_dates_queryset
-    ]
-    blocked_service_dates_json = json.dumps(blocked_service_dates_list)
-
+    # Call the new utility function to get min_date and disabled_dates_json
+    min_date_for_flatpickr, disabled_dates_json = get_service_date_availability()
 
     # Pass the filtered 5-star reviews and featured bikes to the template
     context = {
@@ -123,7 +120,8 @@ def index(request):
         # New context for service booking Step 1
         'form': service_form, # The ServiceDetailsForm instance
         'service_settings': service_settings, # Pass service settings for the service include
-        'blocked_service_dates_json': blocked_service_dates_json, # Blocked dates for service
+        'blocked_service_dates_json': disabled_dates_json, # Blocked dates for service from utility
+        'min_service_date_flatpickr': min_date_for_flatpickr.strftime('%Y-%m-%d'), # Pass min date for Flatpickr
         'temp_service_booking': temp_service_booking, # Pass temp_service_booking for pre-populating service form
     }
 

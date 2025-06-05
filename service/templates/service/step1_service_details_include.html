@@ -21,14 +21,12 @@
                             <input type="text" id="id_dropoff_date" name="dropoff_date"
                                    class="form-control"
                                    placeholder="Select drop-off date"
-                                   data-booking-advance-notice="{{ service_settings.booking_advance_notice|default:0 }}">
+                                   data-min-date-flatpickr="{{ min_service_date_flatpickr|default:'' }}">
                         </div>
                         <div class="form-field">
                             <label for="id_dropoff_time">Drop-off Time</label>
                              <select id="id_dropoff_time" name="dropoff_time"
-                                     class="form-control"
-                                     data-start-time="{{ service_settings.drop_off_start_time|time:'H:i' }}"
-                                     data-end-time="{{ service_settings.drop_off_end_time|time:'H:i' }}">
+                                     class="form-control">
                                  <option value="">Select drop-off time</option>
                              </select>
                         </div>
@@ -62,12 +60,13 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const dropOffTimeSelect = document.getElementById('id_dropoff_time');
+        const dropOffDatePickerInput = document.getElementById('id_dropoff_date');
         
-        // Retrieve settings from data attributes
-        const bookingAdvanceNotice = parseInt(document.getElementById('id_dropoff_date').getAttribute('data-booking-advance-notice')) || 0;
-        
-        // Retrieve blocked dates JSON, ensure it's safe to parse
-        const blockedDatesRaw = "{{ blocked_service_dates_json|escapejs }}"; // New context variable name
+        // Retrieve min date from data attribute (set by Django context)
+        const minDateFlatpickr = dropOffDatePickerInput.getAttribute('data-min-date-flatpickr');
+
+        // Retrieve blocked dates JSON from Django context, ensure it's safe to parse
+        const blockedDatesRaw = "{{ blocked_service_dates_json|escapejs }}";
         let blockedDates = [];
         try {
             blockedDates = JSON.parse(blockedDatesRaw || '[]');
@@ -75,105 +74,115 @@
             console.error("Error parsing blocked dates JSON:", e);
         }
 
-        const now = new Date();
-        // Calculate the minimum allowed date based on booking advance notice
-        let minDateForDropoff = new Date();
-        minDateForDropoff.setDate(now.getDate() + bookingAdvanceNotice);
-        minDateForDropoff.setHours(0, 0, 0, 0); // Start of the calculated day
-
         const dropOffDatePicker = flatpickr("#id_dropoff_date", {
             dateFormat: "Y-m-d",
-            minDate: minDateForDropoff, // Apply minimum date
+            minDate: minDateFlatpickr, // Use min date from context
             altInput: true,
             altFormat: "F j, Y",
-            // Rule: Disable dates explicitly marked as blocked.
-            disable: blockedDates.map(range => ({ from: range.start, to: range.end })),
+            disable: blockedDates, // Directly use the parsed blockedDates
             onChange: function(selectedDates, dateStr, instance) {
-                populateDropOffTimeDropdown(); // Repopulate time on date change
+                if (selectedDates.length > 0) {
+                    // When a date is selected, fetch available times for that date
+                    fetchAvailableTimes(dateStr);
+                } else {
+                    // If date is cleared (e.g., by user clearing the field), clear time options
+                    clearTimeOptions("Select drop-off time"); // Reset to default text
+                }
             }
         });
 
-        const dropOffStartTimeAttr = dropOffTimeSelect ? dropOffTimeSelect.getAttribute('data-start-time') : null;
-        const dropOffEndTimeAttr = dropOffTimeSelect ? dropOffTimeSelect.getAttribute('data-end-time') : null;
-
-        function populateTimeDropdown(selectElement, startTimeStr, endTimeStr, intervalMinutes) {
-            if (!selectElement || !startTimeStr || !endTimeStr) {
-                return;
+        /**
+         * Clears all options from the drop-off time select dropdown,
+         * and adds a default option with custom text.
+         * @param {string} defaultText - The text to display for the default option.
+         */
+        function clearTimeOptions(defaultText = "Select drop-off time") {
+            // Remove all existing options
+            while (dropOffTimeSelect.options.length > 0) {
+                dropOffTimeSelect.remove(0);
             }
+            // Add the default option with customizable text
+            const defaultOption = document.createElement('option');
+            defaultOption.value = "";
+            defaultOption.text = defaultText;
+            dropOffTimeSelect.appendChild(defaultOption);
+            dropOffTimeSelect.value = ""; // Reset the select to its default (empty) value
+        }
 
-            const currentValue = selectElement.value; // Store current value to re-select if valid
+        /**
+         * Fetches available time slots for a given date via AJAX and populates the dropdown.
+         * @param {string} date - The selected date in "YYYY-MM-DD" format.
+         */
+        async function fetchAvailableTimes(date) {
+            clearTimeOptions("Loading times..."); // Set initial text to "Loading times..."
+            dropOffTimeSelect.disabled = true; // Disable during fetch
 
-            // Clear existing options, keeping the first "Select time" option
-            while (selectElement.options.length > 1) {
-                selectElement.remove(1);
-            }
+            try {
+                // Construct the URL for the AJAX endpoint
+                const url = `{% url 'service:get_available_times_for_date' %}?date=${date}`;
+                const response = await fetch(url);
+                const data = await response.json();
 
-            const [startHour, startMinute] = startTimeStr.split(':').map(Number);
-            const [endHour, endMinute] = endTimeStr.split(':').map(Number);
+                // Always clear and reset to "Select drop-off time" after fetch completes
+                // This ensures "Loading times..." is replaced.
+                clearTimeOptions("Select drop-off time"); 
 
-            let currentTime = new Date();
-            currentTime.setHours(startHour, startMinute, 0, 0);
+                if (response.ok) {
+                    if (data.available_times && data.available_times.length > 0) {
+                        // Add fetched times
+                        data.available_times.forEach(time => {
+                            const option = document.createElement('option');
+                            option.value = time.value; // e.g., "09:00"
+                            option.text = time.text;   // e.g., "09:00"
+                            dropOffTimeSelect.appendChild(option);
+                        });
+                    } else {
+                        // If no times are available, update the default option text
+                        dropOffTimeSelect.options[0].text = "No times available";
+                    }
+                } else {
+                    // Handle server-side errors
+                    dropOffTimeSelect.options[0].text = data.error || "Error loading times"; // Display error from backend
+                    console.error("Error fetching available times:", data.error);
+                }
+            } catch (error) {
+                // Handle network errors or other unexpected issues
+                console.error('Network error fetching available times:', error);
+                dropOffTimeSelect.options[0].text = "Error loading times"; // Set error message
+            } finally {
+                // Always re-enable the select dropdown after the fetch operation
+                dropOffTimeSelect.disabled = false;
 
-            const endTime = new Date();
-            endTime.setHours(endHour, endMinute, 0, 0);
-
-            // Handle cases where end time is on the next day (e.g., if operational hours cross midnight, though less likely for service drop-off)
-            if (endTime < currentTime) {
-                endTime.setDate(endTime.getDate() + 1);
-            }
-
-            while (currentTime <= endTime) {
-                const option = document.createElement('option');
-                const hours = currentTime.getHours().toString().padStart(2, '0');
-                const minutes = currentTime.getMinutes().toString().padStart(2, '0');
-                const timeValue = `${hours}:${minutes}`;
-                option.value = timeValue;
-                option.text = timeValue;
-                selectElement.appendChild(option);
-                currentTime.setMinutes(currentTime.getMinutes() + intervalMinutes);
-            }
-
-            // Restore previously selected value if it's still valid
-            if ([...selectElement.options].some(opt => opt.value === currentValue)) {
-                selectElement.value = currentValue;
-            } else {
-                selectElement.value = ""; // Clear if current value is no longer valid
+                // Attempt to re-select the initial drop-off time if it was pre-filled
+                // from the Django context (temp_service_booking) and is now available.
+                const initialDropOffTime = "{{ temp_service_booking.dropoff_time|time:'H:i'|default:'' }}";
+                if (initialDropOffTime && [...dropOffTimeSelect.options].some(opt => opt.value === initialDropOffTime)) {
+                    dropOffTimeSelect.value = initialDropOffTime;
+                }
             }
         }
 
-        function populateDropOffTimeDropdown() {
-            // Populate drop-off time dropdown with full range from settings.
-            populateTimeDropdown(dropOffTimeSelect, dropOffStartTimeAttr, dropOffEndTimeAttr, 15);
-        }
-
-        // Initial population of time dropdown
-        if (dropOffTimeSelect && dropOffStartTimeAttr && dropOffEndTimeAttr) {
-            populateDropOffTimeDropdown();
-        }
-
+        // --- Initial Load Logic ---
         // Populate form fields from Django context if available (from TempServiceBooking)
-        const initialDropOffDate = "{{ temp_booking.dropoff_date|date:'Y-m-d'|default:'' }}";
-        const initialDropOffTime = "{{ temp_booking.dropoff_time|time:'H:i'|default:'' }}";
-        const initialServiceType = "{{ temp_booking.service_type.pk|default:'' }}"; // Assuming PK for pre-selecting service type
+        const initialDropOffDate = "{{ temp_service_booking.dropoff_date|date:'Y-m-d'|default:'' }}";
+        const initialServiceType = "{{ temp_service_booking.service_type.pk|default:'' }}";
 
+        // If an initial drop-off date is provided from the backend (e.g., returning to this step),
+        // set the date in Flatpickr and then fetch the available times for that date.
         if (initialDropOffDate) {
             dropOffDatePicker.setDate(initialDropOffDate);
+            fetchAvailableTimes(initialDropOffDate); 
+        } else {
+            // If no initial date, ensure the time dropdown is set to "Select drop-off time"
+            clearTimeOptions("Select drop-off time");
         }
 
-        if (initialDropOffTime && dropOffTimeSelect) {
-            if ([...dropOffTimeSelect.options].some(opt => opt.value === initialDropOffTime)) {
-                dropOffTimeSelect.value = initialDropOffTime;
-            }
-        }
-
+        // Pre-select the service type if an initial value is provided
         const serviceTypeSelect = document.getElementById('id_service_type');
         if (initialServiceType && serviceTypeSelect) {
             if ([...serviceTypeSelect.options].some(opt => opt.value === initialServiceType)) {
                 serviceTypeSelect.value = initialServiceType;
             }
         }
-        
-        // Call populateDropOffTimeDropdown again after initial data is set to ensure correct values are selected
-        populateDropOffTimeDropdown(); 
     });
 </script>

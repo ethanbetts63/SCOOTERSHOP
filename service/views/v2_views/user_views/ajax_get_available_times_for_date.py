@@ -1,7 +1,7 @@
 import datetime
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
-from service.utils import get_available_service_dropoff_times 
+from service.utils.get_available_service_dropoff_times import get_available_dropoff_times
 
 @require_GET
 def get_available_times_for_date(request):
@@ -25,7 +25,7 @@ def get_available_times_for_date(request):
 
     # Call the utility function to get available times based on settings and existing bookings.
     # The utility function itself handles the logic of start/end times and spacing.
-    available_times = get_available_service_dropoff_times(selected_date)
+    available_times = get_available_dropoff_times(selected_date)
 
     # Format times for the frontend (e.g., "09:00", "09:30")
     # The 'value' and 'text' fields are standard for populating select dropdowns in JS.
