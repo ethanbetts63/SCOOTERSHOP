@@ -168,8 +168,8 @@
             if (this.value) {
                 // Service type selected: Enable date input, Flatpickr becomes interactive
                 dropOffDatePickerInput.disabled = false;
-                // Optionally open the calendar. Flatpickr will use its original minDate and disable rules.
-                // dropOffDatePicker.open(); 
+                // Open the calendar automatically
+                dropOffDatePicker.open(); 
                 resetTimeField("Select drop-off time"); // Time field is reset and remains disabled
             } else {
                 // Service type cleared: Reset and disable date field, which also resets and disables time field
@@ -208,6 +208,7 @@
                 } else {
                     // Service type is selected, but no initial date. Date picker is enabled.
                     // Time field remains disabled (already handled by initial resetTimeField).
+                    // We do not auto-open calendar here, only on manual change.
                 }
             } else {
                 // No service type selected initially. Reset and disable the date field.
