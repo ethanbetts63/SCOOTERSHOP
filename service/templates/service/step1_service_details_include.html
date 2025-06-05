@@ -17,19 +17,13 @@
 
                     <div class="date-time-row">
                         <div class="form-field">
-                            <label for="id_dropoff_date">Drop-off Date</label>
-                            <input type="text" id="id_dropoff_date" name="dropoff_date"
+                            <label for="id_service_date">Service Date</label> {# Updated label #}
+                            <input type="text" id="id_service_date" name="service_date" {# Updated id and name #}
                                    class="form-control"
-                                   placeholder="Select drop-off date"
+                                   placeholder="Select service date" {# Updated placeholder #}
                                    data-min-date-flatpickr="{{ min_service_date_flatpickr|default:'' }}">
                         </div>
-                        <div class="form-field">
-                            <label for="id_dropoff_time">Drop-off Time</label>
-                             <select id="id_dropoff_time" name="dropoff_time"
-                                     class="form-control">
-                                 <option value="">Select drop-off time</option>
-                             </select>
-                        </div>
+                        {# Removed drop-off time field #}
                     </div>
 
                     <div class="search-button-column">
@@ -42,7 +36,7 @@
                 {# Hidden fields for GET parameters to persist filters/sorting #}
                 {% if request.GET %}
                     {% for key, value in request.GET.items %}
-                        {% if key not in 'dropoff_date,dropoff_time,service_type' %} {# Adjusted for service booking fields #}
+                        {% if key not in 'service_date,service_type' %} {# Updated for service booking fields #}
                             <input type="hidden" name="{{ key }}" value="{{ value }}">
                         {% endif %}
                     {% endfor %}
@@ -60,10 +54,9 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const serviceTypeSelect = document.getElementById('id_service_type');
-        const dropOffDatePickerInput = document.getElementById('id_dropoff_date');
-        const dropOffTimeSelect = document.getElementById('id_dropoff_time');
+        const serviceDatePickerInput = document.getElementById('id_service_date'); // Updated variable name
         
-        const minDateFlatpickr = dropOffDatePickerInput.getAttribute('data-min-date-flatpickr');
+        const minDateFlatpickr = serviceDatePickerInput.getAttribute('data-min-date-flatpickr');
         const blockedDatesRaw = "{{ blocked_service_dates_json|escapejs }}";
         let blockedDates = [];
         try {
@@ -72,121 +65,46 @@
             console.error("Error parsing blocked dates JSON:", e);
         }
 
-        // Initialize Flatpickr for the drop-off date
-        // It will respect the input's disabled state initially.
-        const dropOffDatePicker = flatpickr(dropOffDatePickerInput, {
+        // Initialize Flatpickr for the service date
+        const serviceDatePicker = flatpickr(serviceDatePickerInput, { // Updated variable name
             dateFormat: "Y-m-d",
             minDate: minDateFlatpickr,
             altInput: true,
             altFormat: "F j, Y",
             disable: blockedDates, // These are dates that should *always* be disabled
             onChange: function(selectedDates, dateStr, instance) {
-                if (selectedDates.length > 0) {
-                    // A date has been picked, fetch times. fetchAvailableTimes will handle enabling time select.
-                    fetchAvailableTimes(dateStr);
-                } else {
-                    // Date was cleared
-                    resetTimeField("Select drop-off time"); // Reset and disable time field
-                }
+                // No time selection logic here, simply handle date selection.
+                // The submit button will be used to move to the next step.
             }
         });
-
-        /**
-         * Resets and disables the time field.
-         * @param {string} defaultText - The text for the default option.
-         */
-        function resetTimeField(defaultText = "Select drop-off time") {
-            while (dropOffTimeSelect.options.length > 0) {
-                dropOffTimeSelect.remove(0);
-            }
-            const defaultOption = document.createElement('option');
-            defaultOption.value = "";
-            defaultOption.text = defaultText;
-            dropOffTimeSelect.appendChild(defaultOption);
-            dropOffTimeSelect.value = "";
-            dropOffTimeSelect.disabled = true; 
-        }
 
         /**
          * Resets the date field (clears selection and disables the input).
          */
         function resetDateField() {
-            dropOffDatePicker.clear(); // Clear the selected date in Flatpickr
-            dropOffDatePickerInput.disabled = true; // Disable the HTML input
-        }
-
-        /**
-         * Fetches available time slots for a given date.
-         * @param {string} date - The selected date in "YYYY-MM-DD" format.
-         */
-        async function fetchAvailableTimes(date) {
-            resetTimeField("Loading times..."); // Keep disabled while loading
-            dropOffTimeSelect.disabled = true; // Explicitly disable
-
-            try {
-                const url = `{% url 'service:get_available_times_for_date' %}?date=${date}`;
-                const response = await fetch(url);
-                const data = await response.json();
-
-                resetTimeField("Select drop-off time"); // Reset to default before populating or showing error
-
-                if (response.ok) {
-                    if (data.available_times && data.available_times.length > 0) {
-                        data.available_times.forEach(time => {
-                            const option = document.createElement('option');
-                            option.value = time.value;
-                            option.text = time.text;
-                            dropOffTimeSelect.appendChild(option);
-                        });
-                        dropOffTimeSelect.disabled = false; // Enable if times are available
-                    } else {
-                        dropOffTimeSelect.options[0].text = "No times available";
-                        dropOffTimeSelect.disabled = true; 
-                    }
-                } else {
-                    dropOffTimeSelect.options[0].text = data.error || "Error loading times";
-                    dropOffTimeSelect.disabled = true;
-                    console.error("Error fetching available times:", data.error);
-                }
-            } catch (error) {
-                console.error('Network error fetching available times:', error);
-                resetTimeField("Error loading times"); 
-                dropOffTimeSelect.disabled = true;
-            } finally {
-                // Attempt to re-select initial time if form was pre-filled and time is now available
-                const initialDropOffTime = "{{ temp_service_booking.dropoff_time|time:'H:i'|default:'' }}";
-                if (!dropOffTimeSelect.disabled && initialDropOffTime && [...dropOffTimeSelect.options].some(opt => opt.value === initialDropOffTime)) {
-                    dropOffTimeSelect.value = initialDropOffTime;
-                } else if (dropOffTimeSelect.disabled && dropOffTimeSelect.options.length <= 1) {
-                     dropOffTimeSelect.value = "";
-                }
-            }
+            serviceDatePicker.clear(); // Clear the selected date in Flatpickr
+            serviceDatePickerInput.disabled = true; // Disable the HTML input
         }
 
         // Event listener for Service Type change
         serviceTypeSelect.addEventListener('change', function() {
             if (this.value) {
                 // Service type selected: Enable date input, Flatpickr becomes interactive
-                dropOffDatePickerInput.disabled = false;
+                serviceDatePickerInput.disabled = false;
                 // Open the calendar automatically
-                dropOffDatePicker.open(); 
-                resetTimeField("Select drop-off time"); // Time field is reset and remains disabled
+                serviceDatePicker.open(); 
             } else {
-                // Service type cleared: Reset and disable date field, which also resets and disables time field
+                // Service type cleared: Reset and disable date field
                 resetDateField();
-                resetTimeField("Select drop-off time");
             }
         });
         
         // --- Initial Form State Setup ---
         function initializeFormState() {
             const initialServiceTypePk = "{{ temp_service_booking.service_type.pk|default:'' }}";
-            const initialDropOffDate = "{{ temp_service_booking.dropoff_date|date:'Y-m-d'|default:'' }}";
+            const initialServiceDate = "{{ temp_service_booking.service_date|date:'Y-m-d'|default:'' }}"; // Updated variable name
 
-            // 1. Always reset and disable the time field initially.
-            resetTimeField("Select drop-off time");
-
-            // 2. Pre-select service type if an initial value is provided from context.
+            // 1. Pre-select service type if an initial value is provided from context.
             if (initialServiceTypePk && serviceTypeSelect) {
                 // Check if the option actually exists before trying to set it
                 if ([...serviceTypeSelect.options].some(opt => opt.value === initialServiceTypePk)) {
@@ -194,21 +112,16 @@
                 }
             }
             
-            // 3. Determine date picker state based on whether a service type is selected (either pre-filled or not).
+            // 2. Determine date picker state based on whether a service type is selected (either pre-filled or not).
             if (serviceTypeSelect.value) {
                 // A service type is selected (or was pre-filled). Enable the date input.
-                dropOffDatePickerInput.disabled = false;
+                serviceDatePickerInput.disabled = false;
 
-                // If an initial drop-off date is also provided from context, set it in Flatpickr.
-                // Then, fetch available times for that date.
-                if (initialDropOffDate) {
-                    dropOffDatePicker.setDate(initialDropOffDate, false); // Set date, false to not trigger its own onChange
-                    // fetchAvailableTimes will handle enabling the time select if times are found
-                    fetchAvailableTimes(initialDropOffDate); 
+                // If an initial service date is also provided from context, set it in Flatpickr.
+                if (initialServiceDate) {
+                    serviceDatePicker.setDate(initialServiceDate, false); // Set date, false to not trigger its own onChange
                 } else {
                     // Service type is selected, but no initial date. Date picker is enabled.
-                    // Time field remains disabled (already handled by initial resetTimeField).
-                    // We do not auto-open calendar here, only on manual change.
                 }
             } else {
                 // No service type selected initially. Reset and disable the date field.

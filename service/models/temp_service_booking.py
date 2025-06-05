@@ -41,7 +41,8 @@ class TempServiceBooking(models.Model):
         help_text="The selected payment option for this booking."
     )
     
-    dropoff_date = models.DateField(help_text="Requested date for the service.")
+    service_date = models.DateField(help_text="Requested date for the service.")
+    dropoff_date = models.DateField(help_text="Requested date for the drop off.")
     dropoff_time = models.TimeField(help_text="Requested drop-off time for the service.")
     estimated_pickup_date = models.DateField(null=True, blank=True, help_text="Estimated pickup date set by admin.")
     estimated_pickup_time = models.TimeField(null=True, blank=True, help_text="Estimated pickup time set by admin.") # Added this field

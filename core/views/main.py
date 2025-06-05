@@ -96,8 +96,7 @@ def index(request):
             # If found, pre-populate the form with its data
             service_form = ServiceDetailsForm(initial={
                 'service_type': temp_service_booking.service_type,
-                'dropoff_date': temp_service_booking.dropoff_date,
-                'dropoff_time': temp_service_booking.dropoff_time,
+                'service_date': temp_service_booking.service_date, # Updated field name
             })
         except TempServiceBooking.DoesNotExist:
             # If temp booking doesn't exist, clear session key

@@ -28,6 +28,12 @@ class ServiceSettings(models.Model):
     
     drop_off_spacing_mins = models.IntegerField(default=30, help_text="The minimum interval in minutes between two booking drop offs on the same day.")
 
+    # New field: Maximum days in advance a customer can drop off their bike before the service date.
+    max_advance_dropoff_days = models.IntegerField(
+        default=0, # Default to 0, meaning drop-off must be on the service date or later (before service)
+        help_text="Maximum number of days in advance a customer can drop off their motorcycle before the service date."
+    )
+
     enable_service_brands = models.BooleanField(default=True, help_text="Enable filtering or special handling by motorcycle brand.")
     other_brand_policy_text = models.TextField(
         blank=True,
@@ -143,6 +149,10 @@ class ServiceSettings(models.Model):
         # Validate drop_off_spacing_mins
         if self.drop_off_spacing_mins is not None and (self.drop_off_spacing_mins <= 0 or self.drop_off_spacing_mins > 60):
             errors['drop_off_spacing_mins'] = ["Drop-off spacing must be a positive integer, typically between 1 and 60 minutes."]
+
+        # Validate max_advance_dropoff_days
+        if self.max_advance_dropoff_days is not None and self.max_advance_dropoff_days < 0:
+            errors['max_advance_dropoff_days'] = ["Maximum advance drop-off days cannot be negative."]
 
         general_percentage_fields = [
             'deposit_percentage',
