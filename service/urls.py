@@ -71,6 +71,7 @@ urlpatterns = [
     path('', user_views.service, name='service'),
 
     # User-facing booking flow steps
+    path('service-book/get-available-times/', user_views.get_available_times_for_date, name='get_available_times_for_date'),
     path('service-book/step1/', user_views.Step1ServiceDetailsView.as_view(), name='service_book_step1'),
     path('service-book/step2/', user_views.Step2MotorcycleSelectionView.as_view(), name='service_book_step2'),
     path('service-book/step3/', user_views.Step3CustomerMotorcycleView.as_view(), name='service_book_step3'),

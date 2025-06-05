@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-from decimal import Decimal # Import Decimal
-from datetime import time # Import time for default values
+from decimal import Decimal
+from datetime import time
 
 class ServiceSettings(models.Model):
     """
@@ -11,7 +11,7 @@ class ServiceSettings(models.Model):
     # General Booking Settings
     enable_service_booking = models.BooleanField(default=True, help_text="Globally enable or disable the service booking system.")
     booking_advance_notice = models.IntegerField(default=1, help_text="Minimum number of days notice required for a booking (e.g., 1 for next day).")
-    max_visible_slots_per_day = models.IntegerField(default=6, help_text="Maximum number of booking slots to show per day in the calendar.")
+    max_visible_slots_per_day = models.IntegerField(default=2, help_text="Maximum number of booking slots to show per day in the calendar.")
     
     # User Types & Access
     allow_anonymous_bookings = models.BooleanField(default=True, help_text="Allow users to book without creating an account.")
@@ -23,9 +23,10 @@ class ServiceSettings(models.Model):
         help_text="Comma-separated list of days when bookings are open (e.g., Mon,Tue,Wed,Thu,Fri,Sat,Sun)."
     )
     
-    # Added drop_off_start_time and drop_off_end_time
     drop_off_start_time = models.TimeField(default=time(9, 0), help_text="The earliest time customers can drop off their motorcycle.")
     drop_off_end_time = models.TimeField(default=time(17, 0), help_text="The latest time customers can drop off their motorcycle.")
+    
+    drop_off_spacing_mins = models.IntegerField(default=30, help_text="The minimum interval in minutes between two booking drop offs on the same day.")
 
     enable_service_brands = models.BooleanField(default=True, help_text="Enable filtering or special handling by motorcycle brand.")
     other_brand_policy_text = models.TextField(
@@ -37,7 +38,7 @@ class ServiceSettings(models.Model):
     enable_deposit = models.BooleanField(default=False, help_text="Enable deposit requirement for bookings.")
     DEPOSIT_CALC_CHOICES = [
         ('FLAT_FEE', 'Flat Fee'),
-        ('PERCENTAGE', 'Percentage of Booking Total'), # 'Booking Total' needs definition if services have variable prices
+        ('PERCENTAGE', 'Percentage of Booking Total'),
     ]
     deposit_calc_method = models.CharField(
         max_length=20, choices=DEPOSIT_CALC_CHOICES, default='FLAT_FEE',
@@ -81,7 +82,7 @@ class ServiceSettings(models.Model):
         max_digits=5, decimal_places=2, default=Decimal('0.00'), null=True, blank=True, help_text="Min refund percentage (e.g., 0.00 for 0%)."
     )
     
-    # Refund & Cancellation Policy (Deposit) - "Repeat cancellation variables for deposit"
+    # Refund & Cancellation Policy (Deposit)
     cancel_deposit_max_refund_days = models.IntegerField(
         default=7, null=True, blank=True, help_text="Days before booking for maximum deposit refund."
     )
@@ -101,7 +102,7 @@ class ServiceSettings(models.Model):
         max_digits=5, decimal_places=2, default=Decimal('0.00'), null=True, blank=True, help_text="Min deposit refund percentage."
     )
     
-    # Stripe Fee consideration on refund (This is a policy point, actual handling is complex)
+    # Stripe Fee consideration on refund
     refund_deducts_stripe_fee_policy = models.BooleanField(
         default=True, 
         help_text="Policy: If true, refunds (especially for admin declined 'Other' brand bookings) may have Stripe transaction fees deducted."
@@ -130,9 +131,8 @@ class ServiceSettings(models.Model):
         return "Service Booking Settings"
 
     def clean(self):
-        errors = {} # Dictionary to collect errors
+        errors = {}
 
-        # Validate drop-off times
         start_time = self.drop_off_start_time
         end_time = self.drop_off_end_time
 
@@ -140,8 +140,10 @@ class ServiceSettings(models.Model):
             errors['drop_off_start_time'] = ["Booking start time must be earlier than end time."]
             errors['drop_off_end_time'] = ["Booking end time must be earlier than start time."]
 
+        # Validate drop_off_spacing_mins
+        if self.drop_off_spacing_mins is not None and (self.drop_off_spacing_mins <= 0 or self.drop_off_spacing_mins > 60):
+            errors['drop_off_spacing_mins'] = ["Drop-off spacing must be a positive integer, typically between 1 and 60 minutes."]
 
-        # General percentage fields validation (0.0 to 1.0)
         general_percentage_fields = [
             'deposit_percentage',
             'cancel_full_payment_max_refund_percentage', 'cancel_full_payment_partial_refund_percentage', 'cancel_full_payment_min_refund_percentage',
@@ -152,17 +154,12 @@ class ServiceSettings(models.Model):
             if value is not None and not (Decimal('0.00') <= value <= Decimal('1.00')):
                 errors[field_name] = [f"Ensure {field_name.replace('_', ' ')} is between 0.00 (0%) and 1.00 (100%)."]
 
-        # Specific validation for new stripe fee percentage fields (0.0 to 0.1)
-        # Domestic percentage
         if self.stripe_fee_percentage_domestic is not None and not (Decimal('0.00') <= self.stripe_fee_percentage_domestic <= Decimal('0.10')):
             errors['stripe_fee_percentage_domestic'] = ["Ensure domestic stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."]
         
-        # International percentage
         if self.stripe_fee_percentage_international is not None and not (Decimal('0.00') <= self.stripe_fee_percentage_international <= Decimal('0.10')):
-            errors['stripe_fee_percentage_international'] = ["Ensure international stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."]
+            errors['stripe_fee_percentage_international'] = ["Ensure international stripe fee percentage is a sensible rate (e.00 to 0.10 for 0-10%)."]
 
-        # Refund days order validation (max >= partial >= min)
-        # Full payment refund days
         max_full_days = self.cancel_full_payment_max_refund_days
         partial_full_days = self.cancel_full_payment_partial_refund_days
         min_full_days = self.cancel_full_payment_min_refund_days
@@ -172,7 +169,6 @@ class ServiceSettings(models.Model):
         if partial_full_days is not None and min_full_days is not None and partial_full_days < min_full_days:
             errors['cancel_full_payment_partial_refund_days'] = ["Partial refund days must be greater than or equal to min refund days."]
 
-        # Deposit refund days
         max_deposit_days = self.cancel_deposit_max_refund_days
         partial_deposit_days = self.cancel_deposit_partial_refund_days
         min_deposit_days = self.cancel_deposit_min_refund_days
@@ -188,15 +184,10 @@ class ServiceSettings(models.Model):
 
 
     def save(self, *args, **kwargs):
-        # Enforce singleton: only one instance of ServiceSettings.
-        # This is a common way to handle it, but can be done via admin restrictions too.
         if not self.pk and ServiceSettings.objects.exists():
             raise ValidationError("Only one instance of ServiceSettings can be created. Please edit the existing one.")
         
-        # The full_clean() method calls clean_fields(), clean_form(), and then clean()
-        # The error you reported indicates an issue from clean_fields() (max_digits/decimal_places)
-        # which happens *before* your custom clean() method is invoked.
-        self.full_clean() # Call clean method before saving
+        self.full_clean()
 
         super().save(*args, **kwargs)
 
