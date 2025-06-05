@@ -16,7 +16,7 @@ class Step4ServiceProfileView(View):
         temp_booking_uuid = request.session.get('temp_booking_uuid')
         if not temp_booking_uuid:
             messages.error(request, "Your booking session has expired or is invalid. Please start over.")
-            return None, redirect(reverse('service:service_book_step1')) # Or 'service:service'
+            return None, redirect(reverse('service:service'))
 
         try:
             temp_booking = TempServiceBooking.objects.select_related(
@@ -27,7 +27,7 @@ class Step4ServiceProfileView(View):
         except TempServiceBooking.DoesNotExist:
             request.session.pop('temp_booking_uuid', None) # Clean up invalid session data
             messages.error(request, "Your booking session could not be found. Please start over.")
-            return None, redirect(reverse('service:service_book_step1')) # Or 'service:service'
+            return None, redirect(reverse('service:service')) # Or 'service:service'
 
     def _get_service_profile_instance(self, request, temp_booking):
         """
