@@ -41,18 +41,10 @@ class Step4ServiceProfileView(View):
         # 2. If user is authenticated, try to get their existing service_profile
         if request.user.is_authenticated:
             try:
-                # Assuming ServiceProfile has a OneToOneField to User named 'user'
-                # and related_name is 'service_profile'
                 return request.user.service_profile
             except ServiceProfile.DoesNotExist:
-                return None # Authenticated user, but no profile yet
-            except AttributeError: # In case request.user doesn't have service_profile directly
-                # This might happen if related_name isn't set or is different
-                # Or if the OneToOneField is on User model instead of ServiceProfile
-                # For now, we assume ServiceProfile.user is the link
-                # If User.service_profile is the way, adjust access.
-                # For safety, falling back to None if direct access fails.
-                # It's better to ensure ServiceProfile.user is correctly set up.
+                return None 
+            except AttributeError:
                 profile = ServiceProfile.objects.filter(user=request.user).first()
                 return profile
 
@@ -85,8 +77,8 @@ class Step4ServiceProfileView(View):
         context = {
             'form': form,
             'temp_booking': self.temp_booking,
-            'step': 4, # Current step number
-            'total_steps': 7, # Assuming 7 total steps, adjust if different
+            'step': 4, 
+            'total_steps': 7,
         }
         return render(request, self.template_name, context)
 
