@@ -19,18 +19,18 @@ class CustomerMotorcycle(models.Model):
     make = models.CharField(max_length=100, help_text="Specific make of the motorcycle (e.g., CBR600RR for Honda).")
     model = models.CharField(max_length=100, help_text="Model year or specific model identifier.")
     year = models.PositiveIntegerField(help_text="Manufacturing year of the motorcycle.")
-    engine_size = models.CharField(max_length=50, blank=True, null=True, help_text="Engine displacement (e.g., 250cc, 1000cc).")
-    rego = models.CharField(max_length=20, blank=True, null=True, help_text="Registration number (license plate).")
-    vin_number = models.CharField(max_length=17, blank=True, null=True, unique=True, help_text="Vehicle Identification Number.") # VINs are typically 17 chars and unique.
-    odometer = models.PositiveIntegerField(blank=True, null=True, help_text="Odometer reading in km or miles.")
+    rego = models.CharField(max_length=20, help_text="Registration number (license plate).")
+    odometer = models.PositiveIntegerField(help_text="Odometer reading in km.")
     transmission_choices = [
         ('MANUAL', 'Manual'),
         ('AUTOMATIC', 'Automatic'),
         ('SEMI_AUTO', 'Semi-Automatic'),
     ]
-    transmission = models.CharField(max_length=20, choices=transmission_choices, blank=True, null=True)
-    engine_number = models.CharField(max_length=50, blank=True, null=True, help_text="Engine serial number.")
-    image = models.ImageField(upload_to='motorcycle_images/', blank=True, null=True, help_text="Optional image of the motorcycle.")
+    transmission = models.CharField(max_length=20, choices=transmission_choices)
+    engine_size = models.CharField(max_length=50, blank=True, null=True, help_text="(optional) Engine displacement (e.g., 250cc, 1000cc).")
+    vin_number = models.CharField(max_length=17, blank=True, null=True, unique=True, help_text="(optional) Vehicle Identification Number.")
+    engine_number = models.CharField(max_length=50, blank=True, null=True, help_text="(optional) Engine serial number.")
+    image = models.ImageField(upload_to='motorcycle_images/', blank=True, null=True, help_text="(optional) Image of the motorcycle.")
 
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
@@ -51,6 +51,11 @@ class CustomerMotorcycle(models.Model):
             raise ValidationError({'model': "Motorcycle model is required."})
         if not self.year:
             raise ValidationError({'year': "Motorcycle year is required."})
+        if not self.odometer:
+            raise ValidationError({'year': "Motorcycle odometer is required."})
+        if not self.rego:
+            raise ValidationError({'year': "Motorcycle registration is required."})
+        
 
         # Rule 2: Validate motorcycle year
         current_year = date.today().year
