@@ -32,10 +32,15 @@ class TempServiceBookingModelTest(TestCase):
         cls.service_type = ServiceTypeFactory()
         cls.service_profile = ServiceProfileFactory()
         cls.customer_motorcycle = CustomerMotorcycleFactory(service_profile=cls.service_profile) # Link to the created service_profile
+        
+        # Ensure required date fields are provided for the factory
         cls.temp_booking = TempServiceBookingFactory(
             service_type=cls.service_type,
             service_profile=cls.service_profile,
-            customer_motorcycle=cls.customer_motorcycle
+            customer_motorcycle=cls.customer_motorcycle,
+            service_date=date.today() + timedelta(days=5), # Provide a valid service_date
+            dropoff_date=date.today() + timedelta(days=3), # Provide a valid dropoff_date
+            dropoff_time=time(10, 0) # Provide a valid dropoff_time
         )
 
     def test_temp_service_booking_creation(self):
@@ -103,6 +108,12 @@ class TempServiceBookingModelTest(TestCase):
         self.assertTrue(field.blank)
         self.assertGreater(len(field.choices), 0)
 
+        # service_date
+        field = booking._meta.get_field('service_date')
+        self.assertIsInstance(field, models.DateField)
+        self.assertFalse(field.null)
+        self.assertFalse(field.blank)
+
         # dropoff_date
         field = booking._meta.get_field('dropoff_date')
         self.assertIsInstance(field, models.DateField)
@@ -118,12 +129,6 @@ class TempServiceBookingModelTest(TestCase):
         # estimated_pickup_date
         field = booking._meta.get_field('estimated_pickup_date')
         self.assertIsInstance(field, models.DateField)
-        self.assertTrue(field.null)
-        self.assertTrue(field.blank)
-
-        # estimated_pickup_time
-        field = booking._meta.get_field('estimated_pickup_time')
-        self.assertIsInstance(field, models.TimeField)
         self.assertTrue(field.null)
         self.assertTrue(field.blank)
 
@@ -151,7 +156,7 @@ class TempServiceBookingModelTest(TestCase):
 
     def test_required_fields_validation(self):
         """
-        Test that required fields (service_type, service_profile, dropoff_date, dropoff_time)
+        Test that required fields (service_type, service_profile, service_date, dropoff_date, dropoff_time)
         raise ValidationError when missing.
         """
         # Test missing service_type
@@ -159,6 +164,7 @@ class TempServiceBookingModelTest(TestCase):
             TempServiceBookingFactory.build(
                 service_type=None,
                 service_profile=self.service_profile, # Provide required FK
+                service_date=date.today(),
                 dropoff_date=date.today(),
                 dropoff_time=time(9,0)
             ).full_clean()
@@ -169,17 +175,30 @@ class TempServiceBookingModelTest(TestCase):
             TempServiceBookingFactory.build(
                 service_type=self.service_type, # Provide required FK
                 service_profile=None,
+                service_date=date.today(),
                 dropoff_date=date.today(),
                 dropoff_time=time(9,0)
             ).full_clean()
         self.assertIn('service_profile', cm.exception.message_dict)
+
+        # Test missing service_date
+        with self.assertRaises(ValidationError) as cm:
+            TempServiceBookingFactory.build(
+                service_type=self.service_type,
+                service_profile=self.service_profile,
+                service_date=None, # Explicitly set to None for testing
+                dropoff_date=date.today(), # Ensure dropoff_date is provided
+                dropoff_time=time(9,0)
+            ).full_clean()
+        self.assertIn('service_date', cm.exception.message_dict)
 
         # Test missing dropoff_date
         with self.assertRaises(ValidationError) as cm:
             TempServiceBookingFactory.build(
                 service_type=self.service_type,
                 service_profile=self.service_profile,
-                dropoff_date=None,
+                service_date=date.today(), # Ensure service_date is provided
+                dropoff_date=None, # Explicitly set to None for testing
                 dropoff_time=time(9,0)
             ).full_clean()
         self.assertIn('dropoff_date', cm.exception.message_dict)
@@ -189,7 +208,8 @@ class TempServiceBookingModelTest(TestCase):
             TempServiceBookingFactory.build(
                 service_type=self.service_type,
                 service_profile=self.service_profile,
-                dropoff_date=date.today(),
+                service_date=date.today(), # Ensure service_date is provided
+                dropoff_date=date.today(), # Ensure dropoff_date is provided
                 dropoff_time=None
             ).full_clean()
         self.assertIn('dropoff_time', cm.exception.message_dict)
@@ -198,7 +218,10 @@ class TempServiceBookingModelTest(TestCase):
         try:
             TempServiceBookingFactory.build(
                 service_type=self.service_type,
-                service_profile=self.service_profile
+                service_profile=self.service_profile,
+                service_date=date.today(),
+                dropoff_date=date.today(),
+                dropoff_time=time(9,0)
             ).full_clean()
         except ValidationError as e:
             self.fail(f"full_clean raised ValidationError unexpectedly: {e.message_dict}")
@@ -270,6 +293,7 @@ class TempServiceBookingModelTest(TestCase):
             TempServiceBookingFactory.build(
                 service_type=self.service_type,
                 service_profile=self.service_profile,
+                service_date=date.today(), # Ensure required field is present
                 dropoff_date=past_date
             ).full_clean()
         except ValidationError:
@@ -280,6 +304,7 @@ class TempServiceBookingModelTest(TestCase):
             TempServiceBookingFactory.build(
                 service_type=self.service_type,
                 service_profile=self.service_profile,
+                service_date=date.today(), # Ensure required field is present
                 dropoff_date=date.today()
             ).full_clean()
         except ValidationError as e:
@@ -291,6 +316,7 @@ class TempServiceBookingModelTest(TestCase):
             TempServiceBookingFactory.build(
                 service_type=self.service_type,
                 service_profile=self.service_profile,
+                service_date=date.today(), # Ensure required field is present
                 dropoff_date=future_date
             ).full_clean()
         except ValidationError as e:
@@ -427,4 +453,3 @@ class TempServiceBookingModelTest(TestCase):
         self.assertIsNone(booking_with_motorcycle.customer_motorcycle)
         # Ensure the booking itself still exists
         self.assertTrue(TempServiceBooking.objects.filter(pk=booking_with_motorcycle.pk).exists())
-

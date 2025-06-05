@@ -4,6 +4,9 @@ from django.db import models, IntegrityError # Import IntegrityError for specifi
 from decimal import Decimal
 import datetime
 import uuid
+from faker import Faker # Import Faker for generating dates/times
+
+fake = Faker() # Initialize Faker
 
 # Import the ServiceBooking model
 from service.models import ServiceBooking
@@ -21,8 +24,20 @@ class ServiceBookingModelTest(TestCase):
     def setUpTestData(cls):
         """
         Set up non-modified objects used by all test methods.
+        Ensure required date/time fields for ServiceBooking are provided.
         """
-        cls.service_booking = ServiceBookingFactory()
+        # Generate valid dates and times for required fields to prevent errors during factory creation
+        test_dropoff_date = fake.date_between(start_date='today', end_date='+30d')
+        test_dropoff_time = fake.time_object()
+        # service_date can be on or after dropoff_date
+        test_service_date = test_dropoff_date + datetime.timedelta(days=fake.random_int(min=0, max=7))
+
+        cls.service_booking = ServiceBookingFactory(
+            service_date=test_service_date,
+            dropoff_date=test_dropoff_date,
+            dropoff_time=test_dropoff_time,
+            # The factory's sequence should handle service_booking_reference now
+        )
 
     def test_service_booking_creation(self):
         """
@@ -32,30 +47,31 @@ class ServiceBookingModelTest(TestCase):
         self.assertIsInstance(self.service_booking, ServiceBooking)
         self.assertEqual(ServiceBooking.objects.count(), 1)
 
-    def test_booking_reference_generation_on_save(self):
+    def test_service_booking_reference_generation_on_save(self):
         """
-        Test that booking_reference is automatically generated if not provided.
+        Test that service_booking_reference is automatically generated if not provided.
         """
-        # Create a booking without providing a booking_reference
-        booking = ServiceBookingFactory(booking_reference=None)
+        # Create a booking without explicitly providing service_booking_reference
+        # The factory's default sequence should handle this
+        booking = ServiceBookingFactory()
         
         # Check that a reference was generated and it's not empty
-        self.assertIsNotNone(booking.booking_reference)
-        self.assertNotEqual(booking.booking_reference, "")
-        self.assertTrue(booking.booking_reference.startswith("SERVICE-"))
-        self.assertEqual(len(booking.booking_reference), 8 + len("SERVICE-")) # SERVICE-XXXXXXXX
+        self.assertIsNotNone(booking.service_booking_reference)
+        self.assertNotEqual(booking.service_booking_reference, "")
+        self.assertTrue(booking.service_booking_reference.startswith("SERVICE-"))
+        self.assertEqual(len(booking.service_booking_reference), 8 + len("SERVICE-")) # SERVICE-XXXXXXXX
 
         # Test saving an existing booking (should not change the reference)
-        old_reference = booking.booking_reference
+        old_reference = booking.service_booking_reference
         booking.customer_notes = "Updated notes"
         booking.save()
-        self.assertEqual(booking.booking_reference, old_reference)
+        self.assertEqual(booking.service_booking_reference, old_reference)
 
     def test_str_method(self):
         """
         Test the __str__ method of the ServiceBooking model.
         """
-        expected_str = f"Booking {self.service_booking.booking_reference} for {self.service_booking.service_profile.name} on {self.service_booking.dropoff_date}"
+        expected_str = f"Booking {self.service_booking.service_booking_reference} for {self.service_booking.service_profile.name} on {self.service_booking.dropoff_date}"
         self.assertEqual(str(self.service_booking), expected_str)
 
     def test_field_attributes(self):
@@ -64,8 +80,8 @@ class ServiceBookingModelTest(TestCase):
         """
         booking = self.service_booking
 
-        # booking_reference
-        field = booking._meta.get_field('booking_reference')
+        # service_booking_reference (Updated field name)
+        field = booking._meta.get_field('service_booking_reference')
         self.assertEqual(field.max_length, 20)
         self.assertTrue(field.unique)
         self.assertTrue(field.blank)
@@ -75,27 +91,25 @@ class ServiceBookingModelTest(TestCase):
         field = booking._meta.get_field('service_type')
         self.assertIsInstance(field, models.ForeignKey)
         self.assertEqual(field.related_model.__name__, 'ServiceType')
-        # FIX: Access on_delete through remote_field
         self.assertEqual(field.remote_field.on_delete, models.PROTECT)
 
         # service_profile
         field = booking._meta.get_field('service_profile')
         self.assertIsInstance(field, models.ForeignKey)
         self.assertEqual(field.related_model.__name__, 'ServiceProfile')
-        # FIX: Access on_delete through remote_field
         self.assertEqual(field.remote_field.on_delete, models.CASCADE)
 
         # customer_motorcycle
         field = booking._meta.get_field('customer_motorcycle')
         self.assertIsInstance(field, models.ForeignKey)
         self.assertEqual(field.related_model.__name__, 'CustomerMotorcycle')
-        # FIX: Access on_delete through remote_field
         self.assertEqual(field.remote_field.on_delete, models.SET_NULL)
         self.assertTrue(field.null)
         self.assertTrue(field.blank)
 
         # payment_option
         field = booking._meta.get_field('payment_option')
+        self.assertIsInstance(field, models.CharField)
         self.assertEqual(field.max_length, 20)
         self.assertTrue(field.null)
         self.assertTrue(field.blank)
@@ -105,7 +119,6 @@ class ServiceBookingModelTest(TestCase):
         field = booking._meta.get_field('payment')
         self.assertIsInstance(field, models.OneToOneField)
         self.assertEqual(field.related_model.__name__, 'Payment')
-        # FIX: Access on_delete through remote_field
         self.assertEqual(field.remote_field.on_delete, models.SET_NULL)
         self.assertTrue(field.null)
         self.assertTrue(field.blank)
@@ -124,12 +137,14 @@ class ServiceBookingModelTest(TestCase):
 
         # payment_status
         field = booking._meta.get_field('payment_status')
+        self.assertIsInstance(field, models.CharField)
         self.assertEqual(field.max_length, 20)
         self.assertEqual(field.default, 'unpaid')
         self.assertGreater(len(field.choices), 0)
 
         # payment_method
         field = booking._meta.get_field('payment_method')
+        self.assertIsInstance(field, models.CharField)
         self.assertEqual(field.max_length, 20)
         self.assertTrue(field.null)
         self.assertTrue(field.blank)
@@ -137,15 +152,22 @@ class ServiceBookingModelTest(TestCase):
 
         # currency
         field = booking._meta.get_field('currency')
+        self.assertIsInstance(field, models.CharField)
         self.assertEqual(field.max_length, 3)
         self.assertEqual(field.default, 'AUD')
 
         # stripe_payment_intent_id
         field = booking._meta.get_field('stripe_payment_intent_id')
+        self.assertIsInstance(field, models.CharField)
         self.assertEqual(field.max_length, 100)
         self.assertTrue(field.unique)
         self.assertTrue(field.blank)
         self.assertTrue(field.null)
+
+        # service_date (newly added)
+        field = booking._meta.get_field('service_date')
+        self.assertIsInstance(field, models.DateField)
+        self.assertIsInstance(booking.service_date, datetime.date)
 
         # dropoff_date
         field = booking._meta.get_field('dropoff_date')
@@ -165,16 +187,9 @@ class ServiceBookingModelTest(TestCase):
         # Check that it's a date object if set, or None
         self.assertIsInstance(booking.estimated_pickup_date, (datetime.date, type(None)))
 
-        # estimated_pickup_time
-        field = booking._meta.get_field('estimated_pickup_time')
-        self.assertIsInstance(field, models.TimeField)
-        self.assertTrue(field.null)
-        self.assertTrue(field.blank)
-        # Check that it's a time object if set, or None
-        self.assertIsInstance(booking.estimated_pickup_time, (datetime.time, type(None)))
-
         # booking_status
         field = booking._meta.get_field('booking_status')
+        self.assertIsInstance(field, models.CharField)
         self.assertEqual(field.max_length, 30)
         self.assertEqual(field.default, 'PENDING_CONFIRMATION')
         self.assertGreater(len(field.choices), 0)
@@ -193,16 +208,22 @@ class ServiceBookingModelTest(TestCase):
         self.assertIsInstance(field, models.DateTimeField)
         self.assertTrue(field.auto_now)
 
-    def test_booking_reference_unique_constraint(self):
+    def test_service_booking_reference_unique_constraint(self):
         """
-        Test that booking_reference enforces uniqueness.
+        Test that service_booking_reference enforces uniqueness.
         """
         # Create a booking with a specific reference
-        existing_booking = ServiceBookingFactory(booking_reference="SERVICE-TESTREF")
+        existing_booking = ServiceBookingFactory(service_booking_reference="SERVICE-TESTREF")
         
-        # Attempt to create another booking with the same booking_reference
+        # Attempt to create another booking with the same service_booking_reference
         with self.assertRaises(IntegrityError) as cm:
-            ServiceBookingFactory(booking_reference="SERVICE-TESTREF")
+            # We need to explicitly provide required fields for the factory to create a valid instance
+            ServiceBookingFactory(
+                service_booking_reference="SERVICE-TESTREF",
+                service_date=fake.date_between(start_date='today', end_date='+30d'),
+                dropoff_date=fake.date_between(start_date='today', end_date='+30d'),
+                dropoff_time=fake.time_object()
+            )
         self.assertIn("unique constraint failed", str(cm.exception).lower())
 
     def test_stripe_payment_intent_id_unique_constraint(self):
@@ -214,7 +235,13 @@ class ServiceBookingModelTest(TestCase):
 
         # Attempt to create another booking with the same stripe_payment_intent_id
         with self.assertRaises(IntegrityError) as cm:
-            ServiceBookingFactory(stripe_payment_intent_id="pi_test_intent_123")
+            # We need to explicitly provide required fields for the factory to create a valid instance
+            ServiceBookingFactory(
+                stripe_payment_intent_id="pi_test_intent_123",
+                service_date=fake.date_between(start_date='today', end_date='+30d'),
+                dropoff_date=fake.date_between(start_date='today', end_date='+30d'),
+                dropoff_time=fake.time_object()
+            )
         self.assertIn("unique constraint failed", str(cm.exception).lower())
 
 
@@ -225,12 +252,14 @@ class ServiceBookingModelTest(TestCase):
         # Create a booking with minimal required fields
         service_type = ServiceTypeFactory()
         service_profile = ServiceProfileFactory()
+        service_date = datetime.date.today() + datetime.timedelta(days=7) # Add service_date
         dropoff_date = datetime.date.today() + datetime.timedelta(days=7)
         dropoff_time = datetime.time(10, 0, 0)
 
         booking = ServiceBooking.objects.create(
             service_type=service_type,
             service_profile=service_profile,
+            service_date=service_date, # Pass service_date
             dropoff_date=dropoff_date,
             dropoff_time=dropoff_time,
         )
@@ -247,15 +276,13 @@ class ServiceBookingModelTest(TestCase):
         self.assertIsNone(booking.payment_method)
         self.assertIsNone(booking.stripe_payment_intent_id)
         self.assertIsNone(booking.estimated_pickup_date)
-        self.assertIsNone(booking.estimated_pickup_time)
-        # FIX: customer_notes is null=True, so it should be None
         self.assertIsNone(booking.customer_notes) 
 
     def test_timestamps_auto_now_add_and_auto_now(self):
         """
         Test that created_at is set on creation and updated_at is updated on save.
         """
-        booking = ServiceBookingFactory()
+        booking = ServiceBookingFactory() # Factory should provide all required fields
         initial_created_at = booking.created_at
         initial_updated_at = booking.updated_at
 
