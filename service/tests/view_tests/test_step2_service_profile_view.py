@@ -77,7 +77,7 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         request.user = self.user # Ensure user is logged in for this dispatch
         response = Step2MotorcycleSelectionView().dispatch(request)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('core:index'))
+        self.assertEqual(response.url, reverse('service:service'))
 
     def test_dispatch_invalid_temp_booking_uuid_in_session(self):
         """
@@ -88,7 +88,7 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         request.user = self.user
         response = Step2MotorcycleSelectionView().dispatch(request)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('core:index'))
+        self.assertEqual(response.url, reverse('service:service'))
         self.assertNotIn('temp_booking_uuid', request.session)
 
     def test_dispatch_temp_booking_missing_service_profile(self):
@@ -102,7 +102,7 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         request.user = self.user
         response = Step2MotorcycleSelectionView().dispatch(request)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('core:index'))
+        self.assertEqual(response.url, reverse('service:service_book_step3'))
 
     def test_dispatch_no_motorcycles_redirects_to_step3(self):
         """

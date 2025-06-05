@@ -10,7 +10,9 @@ class CustomerMotorcycle(models.Model):
         'service.ServiceProfile',
         on_delete=models.CASCADE,
         related_name='customer_motorcycles',
-        help_text="The customer profile this motorcycle belongs to."
+        help_text="The customer profile this motorcycle belongs to.",
+        null=True,
+        blank=True
     )
 
     brand = models.CharField(max_length=100, help_text="Brand of the motorcycle (e.g., Honda, Yamaha, or 'Other').")

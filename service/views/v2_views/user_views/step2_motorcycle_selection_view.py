@@ -24,24 +24,25 @@ class Step2MotorcycleSelectionView(LoginRequiredMixin, View):
         """
         session_uuid = request.session.get('temp_booking_uuid')
 
-        # If no temporary booking UUID in session, redirect to the start of the flow
+        # If no temporary booking UUID in session, redirect to the start of the service flow
         if not session_uuid:
-            return redirect(reverse('core:index')) # Or 'service:service_book_step1' if you want them to restart service flow
+            return redirect(reverse('service:service'))
 
         try:
             self.temp_booking = TempServiceBooking.objects.get(session_uuid=session_uuid)
         except TempServiceBooking.DoesNotExist:
-            # If temp booking doesn't exist for the UUID, clear invalid UUID and redirect
             request.session.pop('temp_booking_uuid', None)
-            return redirect(reverse('core:index')) # Or 'service:service_book_step1'
+            return redirect(reverse('service:service'))
 
         if not self.temp_booking.service_profile:
-            return redirect(reverse('core:index')) # Consider redirecting to step 4 or an error page
+            return redirect(reverse('service:service_book_step3'))
+
 
         self.service_profile = self.temp_booking.service_profile
 
         has_motorcycles = self.service_profile.customer_motorcycles.exists()
 
+        # If the user has no existing motorcycles, redirect them to Step 3 to add one.
         if not has_motorcycles:
             return redirect(reverse('service:service_book_step3'))
 
@@ -64,7 +65,8 @@ class Step2MotorcycleSelectionView(LoginRequiredMixin, View):
         """
         Handles POST requests, processing the selected motorcycle or 'add new' option.
         """
-        form = MotorcycleSelectionForm(self.service_profile, request.POST)
+        # The form needs the service_profile to filter the motorcycles
+        form = MotorcycleSelectionForm(service_profile=self.service_profile, data=request.POST)
 
         if form.is_valid():
             selected_motorcycle_value = form.cleaned_data['selected_motorcycle']
@@ -80,7 +82,7 @@ class Step2MotorcycleSelectionView(LoginRequiredMixin, View):
                     motorcycle = get_object_or_404(
                         CustomerMotorcycle,
                         pk=motorcycle_id,
-                        service_profile=self.service_profile
+                        service_profile=self.service_profile # Ensure the motorcycle belongs to this profile
                     )
                     # Link the selected motorcycle to the temporary booking
                     self.temp_booking.customer_motorcycle = motorcycle
@@ -97,3 +99,4 @@ class Step2MotorcycleSelectionView(LoginRequiredMixin, View):
             'temp_booking': self.temp_booking,
         }
         return render(request, self.template_name, context)
+

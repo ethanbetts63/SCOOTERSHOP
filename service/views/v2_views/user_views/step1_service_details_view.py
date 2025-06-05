@@ -12,6 +12,8 @@ from service.models import TempServiceBooking, ServiceProfile, ServiceType, Serv
 from service.models import CustomerMotorcycle
 
 class Step1ServiceDetailsView(View):
+    template_name = 'service/step1_service_details_include.html' # Define the template name
+
     def post(self, request, *args, **kwargs):
         # Clear any existing service booking reference from the session
         if 'service_booking_reference' in request.session:
@@ -136,11 +138,9 @@ class Step1ServiceDetailsView(View):
                 # Conditional redirection logic based on user authentication and existing motorcycles
                 if request.user.is_authenticated and customer_motorcycles_exist:
                     # Redirect to step 2 if authenticated and has motorcycles
-                    # Corrected URL name: service_book_step2
                     redirect_url = reverse('service:service_book_step2') + f'?temp_booking_uuid={temp_booking.session_uuid}'
                 else:
                     # Redirect to step 3 if not authenticated or no motorcycles
-                    # Corrected URL name: service_book_step3
                     redirect_url = reverse('service:service_book_step3') + f'?temp_booking_uuid={temp_booking.session_uuid}'
                 
                 return redirect(redirect_url)
