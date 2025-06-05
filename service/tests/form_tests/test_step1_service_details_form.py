@@ -25,29 +25,23 @@ class ServiceDetailsFormTest(TestCase):
         cls.inactive_service_type = ServiceTypeFactory(name="Engine Rebuild", is_active=False)
 
         # Define some common valid data for convenience
+        # 'dropoff_date' and 'dropoff_time' have been removed/renamed from the form
         cls.valid_data = {
             'service_type': cls.active_service_type_1.pk,
-            'dropoff_date': date.today() + timedelta(days=7),
-            'dropoff_time': '09:00',
+            'service_date': date.today() + timedelta(days=7), # Renamed from dropoff_date
         }
-        # Example choices for dropoff_time (would be dynamically populated in view)
-        cls.time_choices = [
-            ('09:00', '09:00 AM'),
-            ('10:00', '10:00 AM'),
-            ('11:00', '11:00 AM'),
-        ]
+        # Removed cls.time_choices as dropoff_time field no longer exists in the form
 
     def test_form_valid_data(self):
         """
         Test that the form is valid with all correct data.
         """
         form = ServiceDetailsForm(data=self.valid_data)
-        # Manually set choices for dropoff_time as they are dynamic
-        form.fields['dropoff_time'].choices = self.time_choices
+        # No need to manually set choices for dropoff_time as it's removed
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
         self.assertEqual(form.cleaned_data['service_type'], self.active_service_type_1)
-        self.assertEqual(form.cleaned_data['dropoff_date'], self.valid_data['dropoff_date'])
-        self.assertEqual(form.cleaned_data['dropoff_time'], self.valid_data['dropoff_time'])
+        self.assertEqual(form.cleaned_data['service_date'], self.valid_data['service_date'])
+        # Removed assertion for dropoff_time as it's no longer in the form
 
 
     def test_form_invalid_data_missing_fields(self):
@@ -58,28 +52,19 @@ class ServiceDetailsFormTest(TestCase):
         data = self.valid_data.copy()
         data['service_type'] = ''
         form = ServiceDetailsForm(data=data)
-        form.fields['dropoff_time'].choices = self.time_choices # Still need to set choices
+        # No need to set choices for dropoff_time
         self.assertFalse(form.is_valid())
         self.assertIn('service_type', form.errors)
         self.assertIn('This field is required.', form.errors['service_type'])
 
-        # Test missing dropoff_date
+        # Test missing service_date (updated from dropoff_date)
         data = self.valid_data.copy()
-        data['dropoff_date'] = ''
+        data['service_date'] = ''
         form = ServiceDetailsForm(data=data)
-        form.fields['dropoff_time'].choices = self.time_choices
+        # No need to set choices for dropoff_time
         self.assertFalse(form.is_valid())
-        self.assertIn('dropoff_date', form.errors)
-        self.assertIn('This field is required.', form.errors['dropoff_date'])
-
-        # Test missing dropoff_time
-        data = self.valid_data.copy()
-        data['dropoff_time'] = ''
-        form = ServiceDetailsForm(data=data)
-        form.fields['dropoff_time'].choices = self.time_choices # Choices are set, but input is empty
-        self.assertFalse(form.is_valid())
-        self.assertIn('dropoff_time', form.errors)
-        self.assertIn('This field is required.', form.errors['dropoff_time'])
+        self.assertIn('service_date', form.errors)
+        self.assertIn('This field is required.', form.errors['service_date'])
 
     def test_service_type_queryset(self):
         """
@@ -98,66 +83,37 @@ class ServiceDetailsFormTest(TestCase):
         self.assertEqual(queryset.count(), ServiceType.objects.filter(is_active=True).count())
 
 
-    def test_dropoff_date_past_date_validation(self):
+    def test_service_date_past_date_validation(self): # Renamed from test_dropoff_date_past_date_validation
         """
-        Test that dropoff_date cannot be in the past.
+        Test that service_date cannot be in the past.
         """
         # Test with a past date
         past_date = date.today() - timedelta(days=1)
         data = self.valid_data.copy()
-        data['dropoff_date'] = past_date
+        data['service_date'] = past_date # Updated field name
         form = ServiceDetailsForm(data=data)
-        form.fields['dropoff_time'].choices = self.time_choices
+        # No need to set choices for dropoff_time
         
         self.assertFalse(form.is_valid()) # Should be False because of past date
-        self.assertIn('dropoff_date', form.errors)
-        self.assertIn('Drop-off date cannot be in the past.', form.errors['dropoff_date'])
+        self.assertIn('service_date', form.errors) # Updated field name
+        self.assertIn('Service date cannot be in the past.', form.errors['service_date']) # Updated error message
 
         # Test with today's date (should be valid)
         today_date = date.today()
         data = self.valid_data.copy()
-        data['dropoff_date'] = today_date
+        data['service_date'] = today_date # Updated field name
         form = ServiceDetailsForm(data=data)
-        form.fields['dropoff_time'].choices = self.time_choices
+        # No need to set choices for dropoff_time
         self.assertTrue(form.is_valid(), f"Form is not valid with today's date: {form.errors}")
-        self.assertEqual(form.cleaned_data['dropoff_date'], today_date)
+        self.assertEqual(form.cleaned_data['service_date'], today_date) # Updated field name
 
         # Test with a future date (should be valid)
         future_date = date.today() + timedelta(days=1)
         data = self.valid_data.copy()
-        data['dropoff_date'] = future_date
+        data['service_date'] = future_date # Updated field name
         form = ServiceDetailsForm(data=data)
-        form.fields['dropoff_time'].choices = self.time_choices
+        # No need to set choices for dropoff_time
         self.assertTrue(form.is_valid(), f"Form is not valid with future date: {form.errors}")
-        self.assertEqual(form.cleaned_data['dropoff_date'], future_date)
+        self.assertEqual(form.cleaned_data['service_date'], future_date) # Updated field name
 
-    def test_dropoff_time_choices_validation(self):
-        """
-        Test that dropoff_time validates against the provided choices.
-        """
-        # Test with a valid time choice
-        data = self.valid_data.copy()
-        data['dropoff_time'] = '10:00'
-        form = ServiceDetailsForm(data=data)
-        form.fields['dropoff_time'].choices = self.time_choices
-        self.assertTrue(form.is_valid(), f"Form is not valid with valid time: {form.errors}")
-        self.assertEqual(form.cleaned_data['dropoff_time'], '10:00')
-
-        # Test with an invalid time choice
-        data = self.valid_data.copy()
-        data['dropoff_time'] = '08:30' # Not in self.time_choices
-        form = ServiceDetailsForm(data=data)
-        form.fields['dropoff_time'].choices = self.time_choices
-        self.assertFalse(form.is_valid())
-        self.assertIn('dropoff_time', form.errors)
-        self.assertIn('Select a valid choice. 08:30 is not one of the available choices.', form.errors['dropoff_time'])
-
-        # Test with empty choices (should fail if a value is provided)
-        data = self.valid_data.copy()
-        data['dropoff_time'] = '09:00'
-        form = ServiceDetailsForm(data=data)
-        form.fields['dropoff_time'].choices = [] # No choices provided
-        self.assertFalse(form.is_valid())
-        self.assertIn('dropoff_time', form.errors)
-        self.assertIn('Select a valid choice. 09:00 is not one of the available choices.', form.errors['dropoff_time'])
-
+    

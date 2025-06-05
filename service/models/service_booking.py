@@ -99,14 +99,14 @@ class ServiceBooking(models.Model):
 
     def save(self, *args, **kwargs):
         # Generate booking reference if not provided
-        if not self.booking_reference:
+        if not self.service_booking_reference:
             self.booking_reference = f"SERVICE-{uuid.uuid4().hex[:8].upper()}"
         super().save(*args, **kwargs)
 
     def __str__(self):
         # Corrected __str__ to use actual fields from ServiceBooking
         # Assuming appointment_date is meant to be dropoff_date
-        return f"Booking {self.booking_reference} for {self.service_profile.name} on {self.dropoff_date}"
+        return f"Booking {self.service_booking_reference} for {self.service_profile.name} on {self.dropoff_date}"
 
     class Meta:
         verbose_name = "Service Booking"

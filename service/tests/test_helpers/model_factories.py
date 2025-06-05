@@ -271,7 +271,7 @@ class TempServiceBookingFactory(factory.django.DjangoModelFactory):
     ) # Use a max of 7 days for factory, reflecting potential advance dropoff
     
     estimated_pickup_date = None # Set to None by default, can be overridden
-    # Removed estimated_pickup_time as per user instruction
+    # estimated_pickup_time removed as per user instruction
     customer_notes = factory.Faker('paragraph')
     # FIX: Directly call fake.pydecimal() which returns a Decimal object
     calculated_deposit_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
@@ -285,7 +285,8 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ServiceBooking
 
-    booking_reference = factory.Sequence(lambda n: f"SERVICE-{n:08d}")
+    # Renamed from booking_reference to service_booking_reference to match model
+    service_booking_reference = factory.Sequence(lambda n: f"SERVICE-{n:08d}") 
     service_type = factory.SubFactory(ServiceTypeFactory)
     service_profile = factory.SubFactory(ServiceProfileFactory)
     customer_motorcycle = factory.SubFactory(CustomerMotorcycleFactory, service_profile=factory.SelfAttribute('..service_profile'))
@@ -311,7 +312,7 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
     ) # Use a max of 7 days for factory, reflecting potential advance dropoff
     
     estimated_pickup_date = factory.LazyAttribute(lambda o: o.service_date + datetime.timedelta(days=fake.random_int(min=1, max=5)))
-    # Removed estimated_pickup_time as per user instruction
+    # estimated_pickup_time removed as per user instruction
     
     booking_status = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.BOOKING_STATUS_CHOICES])
     customer_notes = factory.Faker('paragraph')
