@@ -34,6 +34,7 @@ class TempServiceBookingModelTest(TestCase):
         cls.customer_motorcycle = CustomerMotorcycleFactory(service_profile=cls.service_profile) # Link to the created service_profile
         
         # Ensure required date fields are provided for the factory
+        # Note: dropoff_date and dropoff_time are now nullable, but we'll provide them for the base instance
         cls.temp_booking = TempServiceBookingFactory(
             service_type=cls.service_type,
             service_profile=cls.service_profile,
@@ -57,15 +58,20 @@ class TempServiceBookingModelTest(TestCase):
         Test the __str__ method of the TempServiceBooking model.
         """
         # The __str__ method uses session_uuid, service_profile.name, and dropoff_date
+        # Handle cases where service_profile or dropoff_date might be None (though not in this base instance)
+        profile_name = self.temp_booking.service_profile.name if self.temp_booking.service_profile else "Anonymous"
+        dropoff_date_str = str(self.temp_booking.dropoff_date) if self.temp_booking.dropoff_date else "N/A"
+
         expected_str = (
             f"Temp Booking {self.temp_booking.session_uuid} for "
-            f"{self.temp_booking.service_profile.name} on {self.temp_booking.dropoff_date}"
+            f"{profile_name} on {dropoff_date_str}"
         )
         self.assertEqual(str(self.temp_booking), expected_str)
 
     def test_field_attributes(self):
         """
         Test the attributes of various fields in the TempServiceBooking model.
+        Updated to reflect nullable fields.
         """
         booking = self.temp_booking
 
@@ -81,16 +87,16 @@ class TempServiceBookingModelTest(TestCase):
         self.assertIsInstance(field, models.ForeignKey)
         self.assertEqual(field.related_model.__name__, 'ServiceType')
         self.assertEqual(field.remote_field.on_delete, models.PROTECT)
-        self.assertFalse(field.null) # Should be required
-        self.assertFalse(field.blank)
+        self.assertFalse(field.null) # Still required
+        self.assertFalse(field.blank) # Still required
 
         # service_profile
         field = booking._meta.get_field('service_profile')
         self.assertIsInstance(field, models.ForeignKey)
         self.assertEqual(field.related_model.__name__, 'ServiceProfile')
         self.assertEqual(field.remote_field.on_delete, models.CASCADE)
-        self.assertFalse(field.null) # Should be required
-        self.assertFalse(field.blank)
+        self.assertTrue(field.null) # Now nullable
+        self.assertTrue(field.blank) # Now blankable
 
         # customer_motorcycle
         field = booking._meta.get_field('customer_motorcycle')
@@ -111,20 +117,20 @@ class TempServiceBookingModelTest(TestCase):
         # service_date
         field = booking._meta.get_field('service_date')
         self.assertIsInstance(field, models.DateField)
-        self.assertFalse(field.null)
-        self.assertFalse(field.blank)
+        self.assertFalse(field.null) # Still required
+        self.assertFalse(field.blank) # Still required
 
         # dropoff_date
         field = booking._meta.get_field('dropoff_date')
         self.assertIsInstance(field, models.DateField)
-        self.assertFalse(field.null)
-        self.assertFalse(field.blank)
+        self.assertTrue(field.null) # Now nullable
+        self.assertTrue(field.blank) # Now blankable
 
         # dropoff_time
         field = booking._meta.get_field('dropoff_time')
         self.assertIsInstance(field, models.TimeField)
-        self.assertFalse(field.null)
-        self.assertFalse(field.blank)
+        self.assertTrue(field.null) # Now nullable
+        self.assertTrue(field.blank) # Now blankable
 
         # estimated_pickup_date
         field = booking._meta.get_field('estimated_pickup_date')
@@ -156,72 +162,77 @@ class TempServiceBookingModelTest(TestCase):
 
     def test_required_fields_validation(self):
         """
-        Test that required fields (service_type, service_profile, service_date, dropoff_date, dropoff_time)
+        Test that truly required fields (service_type, service_date)
         raise ValidationError when missing.
+        Nullable fields (service_profile, dropoff_date, dropoff_time) should not.
         """
         # Test missing service_type
         with self.assertRaises(ValidationError) as cm:
             TempServiceBookingFactory.build(
                 service_type=None,
-                service_profile=self.service_profile, # Provide required FK
+                service_profile=self.service_profile, # Provide valid FK for context
                 service_date=date.today(),
                 dropoff_date=date.today(),
                 dropoff_time=time(9,0)
             ).full_clean()
         self.assertIn('service_type', cm.exception.message_dict)
 
-        # Test missing service_profile
-        with self.assertRaises(ValidationError) as cm:
-            TempServiceBookingFactory.build(
-                service_type=self.service_type, # Provide required FK
-                service_profile=None,
-                service_date=date.today(),
-                dropoff_date=date.today(),
-                dropoff_time=time(9,0)
-            ).full_clean()
-        self.assertIn('service_profile', cm.exception.message_dict)
-
         # Test missing service_date
         with self.assertRaises(ValidationError) as cm:
             TempServiceBookingFactory.build(
                 service_type=self.service_type,
-                service_profile=self.service_profile,
+                service_profile=self.service_profile, # Provide valid FK for context
                 service_date=None, # Explicitly set to None for testing
                 dropoff_date=date.today(), # Ensure dropoff_date is provided
                 dropoff_time=time(9,0)
             ).full_clean()
         self.assertIn('service_date', cm.exception.message_dict)
 
-        # Test missing dropoff_date
-        with self.assertRaises(ValidationError) as cm:
+        # Test missing service_profile (should NOT raise ValidationError now, as it's nullable)
+        try:
             TempServiceBookingFactory.build(
-                service_type=self.service_type,
-                service_profile=self.service_profile,
-                service_date=date.today(), # Ensure service_date is provided
-                dropoff_date=None, # Explicitly set to None for testing
-                dropoff_time=time(9,0)
+                service_type=self.service_type, # Still required
+                service_profile=None, # Now nullable
+                service_date=date.today(), # Still required
+                dropoff_date=date.today(), # Now nullable
+                dropoff_time=time(9,0) # Now nullable
             ).full_clean()
-        self.assertIn('dropoff_date', cm.exception.message_dict)
+        except ValidationError:
+            self.fail("ValidationError raised unexpectedly for nullable service_profile.")
 
-        # Test missing dropoff_time
-        with self.assertRaises(ValidationError) as cm:
+        # Test missing dropoff_date (should NOT raise ValidationError now, as it's nullable)
+        try:
             TempServiceBookingFactory.build(
-                service_type=self.service_type,
+                service_type=self.service_type, # Still required
                 service_profile=self.service_profile,
-                service_date=date.today(), # Ensure service_date is provided
-                dropoff_date=date.today(), # Ensure dropoff_date is provided
-                dropoff_time=None
+                service_date=date.today(), # Still required
+                dropoff_date=None, # Now nullable
+                dropoff_time=time(9,0) # Now nullable
             ).full_clean()
-        self.assertIn('dropoff_time', cm.exception.message_dict)
+        except ValidationError:
+            self.fail("ValidationError raised unexpectedly for nullable dropoff_date.")
 
-        # Test all required fields present (should pass)
+        # Test missing dropoff_time (should NOT raise ValidationError now, as it's nullable)
+        try:
+            TempServiceBookingFactory.build(
+                service_type=self.service_type, # Still required
+                service_profile=self.service_profile,
+                service_date=date.today(), # Still required
+                dropoff_date=date.today(), # Now nullable
+                dropoff_time=None # Now nullable
+            ).full_clean()
+        except ValidationError:
+            self.fail("ValidationError raised unexpectedly for nullable dropoff_time.")
+
+
+        # Test all required fields present (should pass, including nullable ones set to None)
         try:
             TempServiceBookingFactory.build(
                 service_type=self.service_type,
-                service_profile=self.service_profile,
+                service_profile=None, # Testing with null service_profile
                 service_date=date.today(),
-                dropoff_date=date.today(),
-                dropoff_time=time(9,0)
+                dropoff_date=None, # Testing with null dropoff_date
+                dropoff_time=None # Testing with null dropoff_time
             ).full_clean()
         except ValidationError as e:
             self.fail(f"full_clean raised ValidationError unexpectedly: {e.message_dict}")
@@ -233,7 +244,7 @@ class TempServiceBookingModelTest(TestCase):
         # Create a booking with a specific UUID
         first_booking = TempServiceBookingFactory(
             service_type=self.service_type,
-            service_profile=self.service_profile
+            service_profile=self.service_profile # Provide required FK for context
         )
         
         # Attempt to create another booking with the same UUID
@@ -242,7 +253,7 @@ class TempServiceBookingModelTest(TestCase):
             TempServiceBookingFactory.create(
                 session_uuid=first_booking.session_uuid,
                 service_type=self.service_type,
-                service_profile=self.service_profile
+                service_profile=self.service_profile # Provide required FK for context
             )
 
     def test_payment_option_choices(self):
@@ -453,3 +464,4 @@ class TempServiceBookingModelTest(TestCase):
         self.assertIsNone(booking_with_motorcycle.customer_motorcycle)
         # Ensure the booking itself still exists
         self.assertTrue(TempServiceBooking.objects.filter(pk=booking_with_motorcycle.pk).exists())
+

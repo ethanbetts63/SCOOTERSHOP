@@ -117,6 +117,8 @@ class Step1ServiceDetailsView(View):
                     # dropoff_date and dropoff_time will be set in a later step
                     if service_profile_for_temp_booking:
                         temp_booking.service_profile = service_profile_for_temp_booking
+                    else:
+                        temp_booking.service_profile = None # Explicitly set to None if no profile
                     temp_booking.save()
                     messages.success(request, "Service details updated. Please choose your motorcycle.")
                 else:
@@ -125,7 +127,7 @@ class Step1ServiceDetailsView(View):
                         session_uuid=uuid.uuid4(),
                         service_type=service_type,
                         service_date=service_date, # Save service_date
-                        # dropoff_date and dropoff_time will be set in a later step
+                        # dropoff_date and dropoff_time are now nullable in the model
                         service_profile=service_profile_for_temp_booking
                     )
                     request.session['temp_booking_uuid'] = str(temp_booking.session_uuid)

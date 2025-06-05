@@ -24,11 +24,13 @@ class TempServiceBooking(models.Model):
         'service.ServiceProfile', # Changed to string literal
         on_delete=models.CASCADE,
         related_name='temp_service_bookings',
+        null=True, # Allows the field to be NULL in the database
+        blank=True, # Allows the field to be blank in forms/admin
         help_text="The customer profile associated with this temporary booking."
     )
     customer_motorcycle = models.ForeignKey(
         'service.CustomerMotorcycle', # Changed to string literal
-        on_delete=models.SET_NULL,           
+        on_delete=models.SET_NULL,           # Corrected from on_on_delete to on_delete
         null=True, blank=True, 
         related_name='temp_service_bookings',
         help_text="Chosen motorcycle for this service (set in a later step)."
@@ -42,8 +44,8 @@ class TempServiceBooking(models.Model):
     )
     
     service_date = models.DateField(help_text="Requested date for the service.")
-    dropoff_date = models.DateField(help_text="Requested date for the drop off.")
-    dropoff_time = models.TimeField(help_text="Requested drop-off time for the service.")
+    dropoff_date = models.DateField(null=True, blank=True, help_text="Requested date for the drop off.") # Made nullable
+    dropoff_time = models.TimeField(null=True, blank=True, help_text="Requested drop-off time for the service.") # Made nullable
     estimated_pickup_date = models.DateField(null=True, blank=True, help_text="Estimated pickup date set by admin.")
    
     customer_notes = models.TextField(blank=True, null=True, help_text="Any additional notes from the customer.")
@@ -59,9 +61,12 @@ class TempServiceBooking(models.Model):
     def __str__(self):
         # Corrected __str__ to use actual fields from TempServiceBooking
         # Assuming appointment_date is meant to be dropoff_date
-        return f"Temp Booking {self.session_uuid} for {self.service_profile.name} on {self.dropoff_date}"
+        # Added a check for service_profile being None
+        profile_name = self.service_profile.name if self.service_profile else "Anonymous"
+        return f"Temp Booking {self.session_uuid} for {profile_name} on {self.dropoff_date}"
 
     class Meta:
         verbose_name = "Temporary Service Booking"
         verbose_name_plural = "Temporary Service Bookings"
         ordering = ['-created_at']
+
