@@ -1,17 +1,15 @@
 from django.test import TestCase, RequestFactory
 from django.urls import reverse
-from django.contrib.messages import get_messages
-from django.contrib.messages.storage.fallback import FallbackStorage
 import datetime
 import uuid
-from unittest.mock import patch, Mock, PropertyMock # Import PropertyMock
+from unittest.mock import patch
 
 # Import the view to be tested
 from service.views.v2_views.user_views.step2_motorcycle_selection_view import Step2MotorcycleSelectionView
 from service.forms import MotorcycleSelectionForm, ADD_NEW_MOTORCYCLE_OPTION
 
 # Import models and factories
-from service.models import TempServiceBooking, ServiceProfile, CustomerMotorcycle, ServiceType
+from service.models import TempServiceBooking, CustomerMotorcycle
 from ..test_helpers.model_factories import (
     UserFactory,
     ServiceProfileFactory,
