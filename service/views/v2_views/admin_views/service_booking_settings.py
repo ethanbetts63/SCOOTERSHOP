@@ -4,8 +4,8 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.forms import ValidationError
 
-from service.models import ServiceSettings, BlockedServiceDate
-from service.forms import ServiceBookingSettingsForm, BlockedServiceDateForm
+from service.models import ServiceSettings # Removed BlockedServiceDate
+from service.forms import ServiceBookingSettingsForm # Removed BlockedServiceDateForm
 
 class ServiceBookingSettingsView(UpdateView):
     """
@@ -30,13 +30,11 @@ class ServiceBookingSettingsView(UpdateView):
 
     def get_context_data(self, **kwargs):
         """
-        Adds the form for BlockedServiceDate and existing blocked dates to the context.
+        No longer adds context for BlockedServiceDate forms or existing dates.
         """
         context = super().get_context_data(**kwargs)
-        # Initialize the BlockedServiceDateForm for adding new blocked dates
-        context['blocked_service_date_form'] = BlockedServiceDateForm()
-        # Retrieve all existing blocked service dates to display
-        context['blocked_service_dates'] = BlockedServiceDate.objects.all().order_by('start_date')
+        # Removed: context['blocked_service_date_form'] = BlockedServiceDateForm()
+        # Removed: context['blocked_service_dates'] = BlockedServiceDate.objects.all().order_by('start_date')
         return context
 
     def form_valid(self, form):
@@ -64,8 +62,8 @@ class ServiceBookingSettingsView(UpdateView):
 
     def post(self, request, *args, **kwargs):
         """
-        Overrides the post method to handle submissions from both forms on the page:
-        ServiceSettingsUpdateView's form and the BlockedServiceDateForm.
+        Overrides the post method to only handle submissions from the main ServiceSettings form.
+        Removed logic for BlockedServiceDate forms.
         """
         # Handle the ServiceSettings form submission
         if 'service_settings_submit' in request.POST:
@@ -76,29 +74,8 @@ class ServiceBookingSettingsView(UpdateView):
             else:
                 return self.form_invalid(form)
 
-        # Handle BlockedServiceDate form submission
-        elif 'add_blocked_service_date_submit' in request.POST:
-            blocked_form = BlockedServiceDateForm(request.POST)
-            if blocked_form.is_valid():
-                blocked_form.save()
-                messages.success(request, "Blocked date added successfully!")
-                return redirect(self.get_success_url())
-            else:
-                # If blocked date form is invalid, re-render the page with errors
-                # We need to re-initialize the main form and all context data
-                self.object = self.get_object() # Get the ServiceSettings instance
-                form = self.get_form() # Get the ServiceSettings form
-                context = self.get_context_data(form=form) # Get context with main form
-                context['blocked_service_date_form'] = blocked_form # Add the invalid blocked form
-                messages.error(request, "There was an error adding the blocked date. Please correct the errors below.")
-                return self.render_to_response(context)
-
-        # Handle deletion of a blocked service date
-        elif 'delete_blocked_service_date' in request.POST:
-            blocked_date_id = request.POST.get('delete_blocked_service_date')
-            blocked_date = get_object_or_404(BlockedServiceDate, pk=blocked_date_id)
-            blocked_date.delete()
-            messages.success(request, "Blocked date deleted successfully!")
-            return redirect(self.get_success_url())
+        # Removed: Handling for 'add_blocked_service_date_submit' and 'delete_blocked_service_date'
+        # These actions are now assumed to be handled on a separate page.
 
         return super().post(request, *args, **kwargs) # Fallback for other POST requests
+

@@ -16,6 +16,8 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             'booking_open_days',
             'drop_off_start_time', 
             'drop_off_end_time', 
+            'drop_off_spacing_mins', # New field
+            'max_advance_dropoff_days', # New field
             'enable_service_brands',
             'other_brand_policy_text',
             'enable_deposit',
@@ -39,11 +41,11 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             'cancel_deposit_partial_refund_percentage',
             'cancel_deposit_min_refund_days',
             'cancel_deposit_min_refund_percentage',
-            'refund_deducts_stripe_fee_policy',
-            'stripe_fee_percentage_domestic',
-            'stripe_fee_fixed_domestic',
-            'stripe_fee_percentage_international',
-            'stripe_fee_fixed_international',
+            'refund_deducts_stripe_fee_policy', # New field
+            'stripe_fee_percentage_domestic', # New field
+            'stripe_fee_fixed_domestic', # New field
+            'stripe_fee_percentage_international', # New field
+            'stripe_fee_fixed_international', # New field
         ]
         widgets = {
             'enable_service_booking': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
@@ -54,6 +56,8 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             'booking_open_days': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Mon,Tue,Wed,Thu,Fri'}),
             'drop_off_start_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}), # Re-added
             'drop_off_end_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}), # Re-added
+            'drop_off_spacing_mins': forms.NumberInput(attrs={'class': 'form-control', 'min': '1', 'max': '60'}), # New widget
+            'max_advance_dropoff_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}), # New widget
             'enable_service_brands': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'other_brand_policy_text': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'enable_deposit': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
@@ -77,11 +81,11 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             'cancel_deposit_partial_refund_percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'max': '1'}),
             'cancel_deposit_min_refund_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
             'cancel_deposit_min_refund_percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'max': '1'}),
-            'refund_deducts_stripe_fee_policy': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'stripe_fee_percentage_domestic': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.0001', 'min': '0', 'max': '0.1'}),
-            'stripe_fee_fixed_domestic': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}),
-            'stripe_fee_percentage_international': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.0001', 'min': '0', 'max': '0.1'}),
-            'stripe_fee_fixed_international': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}),
+            'refund_deducts_stripe_fee_policy': forms.CheckboxInput(attrs={'class': 'form-check-input'}), # New widget
+            'stripe_fee_percentage_domestic': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.0001', 'min': '0', 'max': '0.1'}), # New widget
+            'stripe_fee_fixed_domestic': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}), # New widget
+            'stripe_fee_percentage_international': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.0001', 'min': '0', 'max': '0.1'}), # New widget
+            'stripe_fee_fixed_international': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}), # New widget
         }
 
     def clean(self):
@@ -93,6 +97,16 @@ class ServiceBookingSettingsForm(forms.ModelForm):
         if start_time and end_time and start_time >= end_time:
             self.add_error('drop_off_start_time', _("Booking start time must be earlier than end time."))
             self.add_error('drop_off_end_time', _("Booking end time must be earlier than start time."))
+        
+        # Validate drop_off_spacing_mins
+        drop_off_spacing_mins = cleaned_data.get('drop_off_spacing_mins')
+        if drop_off_spacing_mins is not None and (drop_off_spacing_mins <= 0 or drop_off_spacing_mins > 60):
+            self.add_error('drop_off_spacing_mins', _("Drop-off spacing must be a positive integer, typically between 1 and 60 minutes."))
+
+        # Validate max_advance_dropoff_days
+        max_advance_dropoff_days = cleaned_data.get('max_advance_dropoff_days')
+        if max_advance_dropoff_days is not None and max_advance_dropoff_days < 0:
+            self.add_error('max_advance_dropoff_days', _("Maximum advance drop-off days cannot be negative."))
 
         # Validate refund percentages
         refund_percentage_fields = [

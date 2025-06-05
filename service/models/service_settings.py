@@ -26,6 +26,7 @@ class ServiceSettings(models.Model):
     drop_off_start_time = models.TimeField(default=time(9, 0), help_text="The earliest time customers can drop off their motorcycle.")
     drop_off_end_time = models.TimeField(default=time(17, 0), help_text="The latest time customers can drop off their motorcycle.")
     
+    # New field: Minimum interval in minutes between two booking drop offs on the same day.
     drop_off_spacing_mins = models.IntegerField(default=30, help_text="The minimum interval in minutes between two booking drop offs on the same day.")
 
     # New field: Maximum days in advance a customer can drop off their bike before the service date.
