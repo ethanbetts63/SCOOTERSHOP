@@ -199,6 +199,10 @@ class ServiceSettingsFactory(factory.django.DjangoModelFactory):
     allow_anonymous_bookings = True
     allow_account_bookings = True
     booking_open_days = "Mon,Tue,Wed,Thu,Fri"
+    drop_off_start_time = datetime.time(9, 0)
+    drop_off_end_time = datetime.time(17, 0)
+    drop_off_spacing_mins = 30
+    max_advance_dropoff_days = 7 # Added new field with a default for factory
     enable_service_brands = True
     other_brand_policy_text = factory.Faker('paragraph')
     enable_deposit = False
@@ -256,9 +260,18 @@ class TempServiceBookingFactory(factory.django.DjangoModelFactory):
     service_profile = factory.SubFactory(ServiceProfileFactory)
     customer_motorcycle = factory.SubFactory(CustomerMotorcycleFactory, service_profile=factory.SelfAttribute('..service_profile'))
     payment_option = factory.Faker('random_element', elements=[choice[0] for choice in TempServiceBooking.PAYMENT_METHOD_CHOICES])
+    
+    # Generate dropoff_date first
     dropoff_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+30d'))
     dropoff_time = factory.Faker('time_object')
+    
+    # service_date can be on or after dropoff_date
+    service_date = factory.LazyAttribute(
+        lambda o: o.dropoff_date + datetime.timedelta(days=fake.random_int(min=0, max=7))
+    ) # Use a max of 7 days for factory, reflecting potential advance dropoff
+    
     estimated_pickup_date = None # Set to None by default, can be overridden
+    # Removed estimated_pickup_time as per user instruction
     customer_notes = factory.Faker('paragraph')
     # FIX: Directly call fake.pydecimal() which returns a Decimal object
     calculated_deposit_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
@@ -287,9 +300,18 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
     payment_method = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.PAYMENT_METHOD_CHOICES])
     currency = 'AUD'
     stripe_payment_intent_id = factory.Sequence(lambda n: f"pi_{uuid.uuid4().hex[:24]}")
+    
+    # Generate dropoff_date first
     dropoff_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+30d'))
     dropoff_time = factory.Faker('time_object')
-    estimated_pickup_date = factory.LazyAttribute(lambda o: o.dropoff_date + datetime.timedelta(days=fake.random_int(min=1, max=5)))
+    
+    # service_date can be on or after dropoff_date
+    service_date = factory.LazyAttribute(
+        lambda o: o.dropoff_date + datetime.timedelta(days=fake.random_int(min=0, max=7))
+    ) # Use a max of 7 days for factory, reflecting potential advance dropoff
+    
+    estimated_pickup_date = factory.LazyAttribute(lambda o: o.service_date + datetime.timedelta(days=fake.random_int(min=1, max=5)))
+    # Removed estimated_pickup_time as per user instruction
+    
     booking_status = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.BOOKING_STATUS_CHOICES])
     customer_notes = factory.Faker('paragraph')
-

@@ -45,8 +45,7 @@ class TempServiceBooking(models.Model):
     dropoff_date = models.DateField(help_text="Requested date for the drop off.")
     dropoff_time = models.TimeField(help_text="Requested drop-off time for the service.")
     estimated_pickup_date = models.DateField(null=True, blank=True, help_text="Estimated pickup date set by admin.")
-    estimated_pickup_time = models.TimeField(null=True, blank=True, help_text="Estimated pickup time set by admin.") # Added this field
-
+   
     customer_notes = models.TextField(blank=True, null=True, help_text="Any additional notes from the customer.")
     calculated_deposit_amount = models.DecimalField(
         max_digits=10, decimal_places=2,
