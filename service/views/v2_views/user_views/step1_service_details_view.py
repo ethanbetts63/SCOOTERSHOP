@@ -56,14 +56,23 @@ class Step1ServiceDetailsView(View):
             # Rule: Selected service date must fall on an open day (Mon, Tue, etc.) in Perth.
             if service_settings and service_settings.booking_open_days:
                 day_names = {
+                    0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday',
+                    4: 'Friday', 5: 'Saturday', 6: 'Sunday'
+                }
+                # Use the full day name for the error message
+                selected_day_of_week_full = day_names.get(service_date.weekday())
+                open_days_list = [d.strip() for d in service_settings.booking_open_days.split(',')]
+
+                # To be consistent with the test, and assuming `booking_open_days` stores abbreviations
+                abbreviated_day_names = {
                     0: 'Mon', 1: 'Tue', 2: 'Wed', 3: 'Thu',
                     4: 'Fri', 5: 'Sat', 6: 'Sun'
                 }
-                selected_day_of_week_abbr = day_names.get(service_date.weekday())
-                open_days_list = [d.strip() for d in service_settings.booking_open_days.split(',')]
+                selected_day_of_week_abbr = abbreviated_day_names.get(service_date.weekday())
 
                 if selected_day_of_week_abbr not in open_days_list:
-                    messages.error(request, f"Services are not available on {selected_day_of_week_abbr}s.")
+                    # Use the full name for the user-facing error message
+                    messages.error(request, f"Services are not available on {selected_day_of_week_full}s.")
                     errors_exist = True
             
             # Rule: Selected service date must not overlap with any blocked service period.
@@ -125,10 +134,12 @@ class Step1ServiceDetailsView(View):
                 # Conditional redirection logic based on user authentication and existing motorcycles
                 if request.user.is_authenticated and customer_motorcycles_exist:
                     # Redirect to step 2 if authenticated and has motorcycles
-                    redirect_url = reverse('service:step2_choose_motorcycle') + f'?temp_booking_uuid={temp_booking.session_uuid}'
+                    # Corrected URL name: service_book_step2
+                    redirect_url = reverse('service:service_book_step2') + f'?temp_booking_uuid={temp_booking.session_uuid}'
                 else:
                     # Redirect to step 3 if not authenticated or no motorcycles
-                    redirect_url = reverse('service:step3_customer_motorcycle_details') + f'?temp_booking_uuid={temp_booking.session_uuid}'
+                    # Corrected URL name: service_book_step3
+                    redirect_url = reverse('service:service_book_step3') + f'?temp_booking_uuid={temp_booking.session_uuid}'
                 
                 return redirect(redirect_url)
 
