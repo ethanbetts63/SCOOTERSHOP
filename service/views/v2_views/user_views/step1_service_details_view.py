@@ -4,11 +4,12 @@ from django.shortcuts import redirect
 from django.views import View
 from django.contrib import messages
 from django.urls import reverse
-from django.utils import timezone
+from django.utils import timezone # For making datetime objects timezone-aware
+from django.conf import settings # To access TIME_ZONE from settings
 
 from service.forms import ServiceDetailsForm
 from service.models import TempServiceBooking, ServiceProfile, ServiceType, ServiceSettings, BlockedServiceDate
-from service.models import CustomerMotorcycle # Import CustomerMotorcycle for the new logic
+from service.models import CustomerMotorcycle
 
 class Step1ServiceDetailsView(View):
     def post(self, request, *args, **kwargs):
@@ -25,11 +26,15 @@ class Step1ServiceDetailsView(View):
             dropoff_date = form.cleaned_data['dropoff_date']
             dropoff_time = form.cleaned_data['dropoff_time']
 
-            dropoff_datetime_local = timezone.make_aware(datetime.datetime.combine(dropoff_date, dropoff_time))
-            now_local = timezone.now()
-
-            dropoff_datetime_utc = dropoff_datetime_local.astimezone(datetime.timezone.utc)
-            now_utc = now_local.astimezone(datetime.timezone.utc)
+            # Get the current time in the project's default timezone (Australia/Perth)
+            now_in_perth = timezone.localtime(timezone.now())
+            
+            # Combine the user's selected date and time, and make it aware of the Perth timezone
+            # This creates a timezone-aware datetime object for the drop-off in Perth time.
+            dropoff_datetime_in_perth = timezone.make_aware(
+                datetime.datetime.combine(dropoff_date, dropoff_time),
+                timezone=timezone.pytz.timezone(settings.TIME_ZONE)
+            )
 
             # --- View-Level Validation Checks ---
 
@@ -43,31 +48,35 @@ class Step1ServiceDetailsView(View):
                 messages.error(request, "Anonymous bookings are not allowed. Please log in to book a service.")
                 errors_exist = True
             
-            # Rule: Drop-off must be at least 'booking_advance_notice' days from now.
+            # Rule: Drop-off must be at least 'booking_advance_notice' days from now (Perth time).
             if service_settings and service_settings.booking_advance_notice is not None:
-                min_dropoff_date = now_local.date() + datetime.timedelta(days=service_settings.booking_advance_notice)
-                if dropoff_date < min_dropoff_date:
-                    messages.error(request, f"Drop-off date must be at least {service_settings.booking_advance_notice} days from today.")
+                # Calculate the minimum allowed drop-off datetime based on Perth's current time and advance notice
+                min_allowed_dropoff_datetime_in_perth = now_in_perth + datetime.timedelta(days=service_settings.booking_advance_notice)
+                
+                # Compare the user's selected drop-off datetime against this minimum
+                if dropoff_datetime_in_perth < min_allowed_dropoff_datetime_in_perth:
+                    messages.error(request, f"Drop-off must be at least {service_settings.booking_advance_notice} days from now. Please choose a later date/time.")
                     errors_exist = True
 
-            # Rule: Selected drop-off date must fall on an open day (Mon, Tue, etc.).
+            # Rule: Selected drop-off date must fall on an open day (Mon, Tue, etc.) in Perth.
             if service_settings and service_settings.booking_open_days:
                 day_names = {
                     0: 'Mon', 1: 'Tue', 2: 'Wed', 3: 'Thu',
                     4: 'Fri', 5: 'Sat', 6: 'Sun'
                 }
-                selected_day_of_week = day_names.get(dropoff_date.weekday())
+                selected_day_of_week_abbr = day_names.get(dropoff_date.weekday())
                 open_days_list = [d.strip() for d in service_settings.booking_open_days.split(',')]
 
-                if selected_day_of_week not in open_days_list:
-                    messages.error(request, f"Bookings are not open on {selected_day_of_week}s.")
+                if selected_day_of_week_abbr not in open_days_list:
+                    messages.error(request, f"Bookings are not open on {selected_day_of_week_abbr}s.")
                     errors_exist = True
             
-            # Rule: Selected drop-off time must be within operational start and end times.
+            # Rule: Selected drop-off time must be within operational start and end times (Perth time).
             if service_settings:
-                dropoff_time_obj = dropoff_time 
-                
-                if not (service_settings.drop_off_start_time <= dropoff_time_obj <= service_settings.drop_off_end_time):
+                # dropoff_time is a datetime.time object, which is timezone-naive.
+                # It's compared directly against ServiceSettings.drop_off_start_time and _end_time,
+                # which are also naive time objects representing Perth's operational hours.
+                if not (service_settings.drop_off_start_time <= dropoff_time <= service_settings.drop_off_end_time):
                     messages.error(request, f"Drop-off time must be between {service_settings.drop_off_start_time.strftime('%H:%M')} and {service_settings.drop_off_end_time.strftime('%H:%M')}.")
                     errors_exist = True
 
@@ -93,11 +102,10 @@ class Step1ServiceDetailsView(View):
                     temp_booking = None
 
             service_profile_for_temp_booking = None
-            customer_motorcycles_exist = False # Flag to check for existing motorcycles
+            customer_motorcycles_exist = False
             if request.user.is_authenticated:
                 try:
                     service_profile_for_temp_booking = request.user.service_profile
-                    # Rule: Check if the authenticated user has any customer motorcycles
                     if service_profile_for_temp_booking.customer_motorcycles.exists():
                         customer_motorcycles_exist = True
                 except ServiceProfile.DoesNotExist:
@@ -124,12 +132,9 @@ class Step1ServiceDetailsView(View):
                     messages.success(request, "Service details selected. Please choose your motorcycle.")
 
                 # Conditional redirection logic
-                # Rule: If logged in AND has at least one customer motorcycle, go to Step 2.
-                # Otherwise (anonymous OR logged in with no bikes), go to Step 3.
                 if request.user.is_authenticated and customer_motorcycles_exist:
                     redirect_url = reverse('service:step2_choose_motorcycle') + f'?temp_booking_uuid={temp_booking.session_uuid}'
                 else:
-                    # Assuming 'service:step3_customer_motorcycle_details' is the URL name for Step 3
                     redirect_url = reverse('service:step3_customer_motorcycle_details') + f'?temp_booking_uuid={temp_booking.session_uuid}'
                 
                 return redirect(redirect_url)

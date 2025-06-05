@@ -32,7 +32,7 @@ class CustomerMotorcycleAdmin(admin.ModelAdmin):
 @admin.register(ServiceBooking)
 class ServiceBookingAdmin(admin.ModelAdmin):
     list_display = (
-        'booking_reference',
+        'service_booking_reference',
         'service_type',
         'booking_status', # Corrected field name
         'dropoff_date',   # Corrected field name

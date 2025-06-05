@@ -4,10 +4,12 @@ from django.shortcuts import render
 from django.conf import settings
 import requests
 import sys
+import json # Import json for serializing blocked dates
 
 # Import models from other apps as needed
 from dashboard.models import SiteSettings, HireSettings
-# Assuming you have a model for ServiceType in dashboard.models or another app
+from service.models import ServiceSettings, BlockedServiceDate, TempServiceBooking, ServiceProfile # Import Service related models
+from service.forms import ServiceDetailsForm # Import the ServiceDetailsForm
 
 # Import the utility function for featured motorcycles if still needed
 from inventory.views.utils import get_featured_motorcycles
@@ -20,6 +22,7 @@ from hire.models import TempHireBooking
 def index(request):
     site_settings = SiteSettings.get_settings()
     hire_settings = HireSettings.objects.first() # Get HireSettings for step1_date_time_include
+    service_settings = ServiceSettings.objects.first() # Get ServiceSettings for step1_service_details_include
 
     place_id = site_settings.google_places_place_id
     api_key = settings.GOOGLE_API_KEY
@@ -30,7 +33,7 @@ def index(request):
     five_star_reviews = []
 
     # Check if Google Places API is enabled in SiteSettings
-    if site_settings.enable_google_places_reviews and place_id and api_key: # Assuming this setting exists
+    if site_settings.enable_google_places_reviews and place_id and api_key:
         try:
             response = requests.get(places_api_url)
             response.raise_for_status()
@@ -38,29 +41,17 @@ def index(request):
 
             if data.get('status') == 'OK' and 'result' in data and 'reviews' in data['result']:
                 all_reviews = data['result']['reviews']
-
-                # Filter for 5-star reviews
                 five_star_reviews = [review for review in all_reviews if review.get('rating') == 5]
-
-                # Sort reviews by time (most recent first)
-                # Google Places API provides 'time' as a Unix timestamp
                 five_star_reviews.sort(key=lambda x: x.get('time', 0), reverse=True)
-
             else:
-                # Only print the error if not in a test environment
                 if not is_testing:
                     print(f"Google Places API Error: Status is not OK or no reviews found in response. Status: {data.get('status')}")
-
         except requests.exceptions.RequestException as e:
-            # Only print the error if not in a test environment
             if not is_testing:
                 print(f"Error fetching reviews from Google Places API: {e}")
         except Exception as e:
-            # Only print the error if not in a test environment
             if not is_testing:
-                 print(f"An unexpected error occurred fetching reviews: {e}")
-
-
+                print(f"An unexpected error occurred fetching reviews: {e}")
 
     featured_new_motorcycles = []
     featured_used_motorcycles = []
@@ -74,20 +65,50 @@ def index(request):
             print(f"Error fetching featured motorcycles: {e}")
 
     # Try to get TempHireBooking from session for pre-populating Step 1 form
-    temp_booking = None
-    temp_booking_id = request.session.get('temp_booking_id')
-    temp_booking_uuid = request.session.get('temp_booking_uuid')
+    temp_hire_booking = None
+    temp_hire_booking_id = request.session.get('temp_booking_id')
+    temp_hire_booking_uuid = request.session.get('temp_booking_uuid')
 
-    if temp_booking_id and temp_booking_uuid:
+    if temp_hire_booking_id and temp_hire_booking_uuid:
         try:
-            temp_booking = TempHireBooking.objects.get(id=temp_booking_id, session_uuid=temp_booking_uuid)
+            temp_hire_booking = TempHireBooking.objects.get(id=temp_hire_booking_id, session_uuid=temp_hire_booking_uuid)
         except TempHireBooking.DoesNotExist:
-            # If temp booking doesn't exist, clear session keys
             if 'temp_booking_id' in request.session:
                 del request.session['temp_booking_id']
             if 'temp_booking_uuid' in request.session:
                 del request.session['temp_booking_uuid']
-            temp_booking = None
+            temp_hire_booking = None
+
+    # --- New: Context for Service Booking Step 1 Form ---
+    # Instantiate the ServiceDetailsForm
+    service_form = ServiceDetailsForm()
+
+    # Get TempServiceBooking from session for pre-populating service Step 1 form
+    temp_service_booking = None
+    temp_service_booking_uuid = request.session.get('temp_booking_uuid')
+
+    if temp_service_booking_uuid:
+        try:
+            temp_service_booking = TempServiceBooking.objects.get(session_uuid=temp_service_booking_uuid)
+            # If found, pre-populate the form with its data
+            service_form = ServiceDetailsForm(initial={
+                'service_type': temp_service_booking.service_type,
+                'dropoff_date': temp_service_booking.dropoff_date,
+                'dropoff_time': temp_service_booking.dropoff_time,
+            })
+        except TempServiceBooking.DoesNotExist:
+            # If temp booking doesn't exist, clear session key
+            if 'temp_booking_uuid' in request.session:
+                del request.session['temp_booking_uuid']
+            temp_service_booking = None
+
+    # Serialize blocked service dates to JSON for JavaScript
+    blocked_service_dates_queryset = BlockedServiceDate.objects.all()
+    blocked_service_dates_list = [
+        {'start': str(b.start_date), 'end': str(b.end_date)}
+        for b in blocked_service_dates_queryset
+    ]
+    blocked_service_dates_json = json.dumps(blocked_service_dates_list)
 
 
     # Pass the filtered 5-star reviews and featured bikes to the template
@@ -96,10 +117,15 @@ def index(request):
         'featured_new_motorcycles': featured_new_motorcycles,
         'featured_used_motorcycles': featured_used_motorcycles,
         'google_api_key': settings.GOOGLE_API_KEY,
-        'hire_settings': hire_settings, # Pass hire settings for the include
-        'temp_booking': temp_booking, # Pass temp_booking for pre-populating the form
+        'hire_settings': hire_settings, # Pass hire settings for the hire include
+        'temp_booking': temp_hire_booking, # Pass temp_booking for pre-populating the hire form
+
+        # New context for service booking Step 1
+        'form': service_form, # The ServiceDetailsForm instance
+        'service_settings': service_settings, # Pass service settings for the service include
+        'blocked_service_dates_json': blocked_service_dates_json, # Blocked dates for service
+        'temp_service_booking': temp_service_booking, # Pass temp_service_booking for pre-populating service form
     }
 
     # Updated template path
     return render(request, 'core/index.html', context)
-
