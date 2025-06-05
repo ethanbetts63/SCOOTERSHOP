@@ -95,7 +95,7 @@ class SiteSettings(models.Model):
         return settings
 
     @classmethod
-    def get_service_booking_settings(cls):
+    def get_service_settings(cls):
         """
         Returns the service booking related settings
         """

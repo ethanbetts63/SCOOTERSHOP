@@ -1,13 +1,12 @@
 from django.urls import reverse_lazy
 from django.views.generic import UpdateView
 from django.contrib import messages
-from django.shortcuts import get_object_or_404, redirect
 from django.forms import ValidationError
 
 from service.models import ServiceSettings # Removed BlockedServiceDate
 from service.forms import ServiceBookingSettingsForm # Removed BlockedServiceDateForm
 
-class ServiceBookingSettingsView(UpdateView):
+class ServiceSettingsView(UpdateView):
     """
     Class-based view for updating the singleton ServiceSettings model.
     This view handles displaying the current settings, processing form submissions,
@@ -15,8 +14,8 @@ class ServiceBookingSettingsView(UpdateView):
     """
     model = ServiceSettings
     form_class = ServiceBookingSettingsForm
-    template_name = 'service/service_booking_settings.html'
-    success_url = reverse_lazy('service_settings') # Redirects to the same page on success
+    template_name = 'service/service_settings.html'
+    success_url = reverse_lazy('service:service_settings') # Redirects to the same page on success
 
     def get_object(self, queryset=None):
         """

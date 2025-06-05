@@ -62,7 +62,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
                 'enable_security_page', 'enable_terms_page', 'enable_google_places_reviews',
             )
         }),
-        ('Service Booking Settings', {
+        ('Service Settings', {
             'fields': (
                 'allow_anonymous_bookings', 'allow_account_bookings', 'booking_open_days',
                 'drop_off_start_time', 'drop_off_end_time', 'booking_advance_notice',

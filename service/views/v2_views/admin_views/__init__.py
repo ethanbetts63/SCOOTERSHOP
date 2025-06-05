@@ -8,7 +8,7 @@ from .service_booking_details_view import *
 from .service_booking_json_feed import *
 from .service_booking_management import *
 from .service_booking_search_view import *
-from .service_booking_settings import *
+from .service_settings_view import *
 from .service_brands_management import *
 from .service_type_mangement import *
 from .service_type_create_update import *

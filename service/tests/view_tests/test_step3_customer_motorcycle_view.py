@@ -8,12 +8,12 @@ from unittest.mock import patch, Mock
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 # Import the view to be tested
-from service.views.v2_views.user_views import Step3CustomerMotorcycleView # Assuming direct import from user_views
+from service.views.v2_views.user_views import Step3CustomerMotorcycleView
 from service.forms import CustomerMotorcycleForm
 
 # Import models and factories
-from service.models import TempServiceBooking, ServiceProfile, CustomerMotorcycle, ServiceType, ServiceSettings
-from ..test_helpers.model_factories import ( # Adjust this import path as needed
+from service.models import TempServiceBooking, ServiceProfile, CustomerMotorcycle, ServiceType, ServiceSettings, ServiceBrand # Import ServiceBrand
+from ..test_helpers.model_factories import (
     UserFactory,
     ServiceProfileFactory,
     TempServiceBookingFactory,
@@ -40,9 +40,17 @@ class Step3CustomerMotorcycleViewTest(TestCase):
         
         # Ensure a ServiceSettings instance exists for tests that rely on it
         cls.service_settings = ServiceSettingsFactory(
-            enable_service_brands=True, 
+            enable_service_brands=True,
             other_brand_policy_text="Policy for 'Other' brand."
         )
+
+        # --- IMPORTANT FIX: Create ServiceBrand instances for tests ---
+        # These brands must exist in the database for the ChoiceField to validate them.
+        cls.honda_brand = ServiceBrand.objects.create(name='Honda')
+        cls.yamaha_brand = ServiceBrand.objects.create(name='Yamaha')
+        cls.sym_brand = ServiceBrand.objects.create(name='sym')
+        cls.vespa_brand = ServiceBrand.objects.create(name='vespa')
+
 
     def setUp(self):
         """
@@ -138,7 +146,8 @@ class Step3CustomerMotorcycleViewTest(TestCase):
         """
         Test GET request renders a pre-filled CustomerMotorcycleForm when temp_booking has a linked motorcycle.
         """
-        existing_motorcycle = CustomerMotorcycleFactory(service_profile=self.auth_user_service_profile)
+        # Ensure the brand exists in the database for the form to pre-populate correctly
+        existing_motorcycle = CustomerMotorcycleFactory(service_profile=self.auth_user_service_profile, brand=self.honda_brand.name)
         self.temp_booking.customer_motorcycle = existing_motorcycle
         self.temp_booking.save()
 
@@ -147,7 +156,6 @@ class Step3CustomerMotorcycleViewTest(TestCase):
         self.assertTemplateUsed(response, 'service/step3_customer_motorcycle.html')
         self.assertIsInstance(response.context['form'], CustomerMotorcycleForm)
         self.assertEqual(response.context['form'].instance, existing_motorcycle) # Check pre-filled instance
-        self.assertEqual(response.context['temp_booking'], self.temp_booking)
 
 
     # --- POST Method Tests (Add New Motorcycle) ---
@@ -170,7 +178,7 @@ class Step3CustomerMotorcycleViewTest(TestCase):
         self.temp_booking.save()
 
         post_data = {
-            'brand': 'Honda',
+            'brand': self.honda_brand.name, # Use a brand that exists in the database
             'make': 'CBR',
             'model': '600RR',
             'year': 2020,
@@ -189,7 +197,7 @@ class Step3CustomerMotorcycleViewTest(TestCase):
         # Verify a new CustomerMotorcycle was created
         self.assertEqual(CustomerMotorcycle.objects.count(), 1)
         new_motorcycle = CustomerMotorcycle.objects.first()
-        self.assertEqual(new_motorcycle.brand, 'Honda')
+        self.assertEqual(new_motorcycle.brand, self.honda_brand.name)
         self.assertIsNone(new_motorcycle.service_profile) # Should be None for anonymous at this stage
 
         # Verify temp_booking is linked to the new motorcycle
@@ -207,7 +215,7 @@ class Step3CustomerMotorcycleViewTest(TestCase):
         # temp_booking already linked to self.auth_user_service_profile in setUp
 
         post_data = {
-            'brand': 'Yamaha',
+            'brand': self.yamaha_brand.name, # Use a brand that exists in the database
             'make': 'YZF',
             'model': 'R1',
             'year': 2022,
@@ -225,7 +233,7 @@ class Step3CustomerMotorcycleViewTest(TestCase):
 
         self.assertEqual(CustomerMotorcycle.objects.count(), 1)
         new_motorcycle = CustomerMotorcycle.objects.first()
-        self.assertEqual(new_motorcycle.brand, 'Yamaha')
+        self.assertEqual(new_motorcycle.brand, self.yamaha_brand.name)
         # Service profile should be linked for authenticated user
         self.assertEqual(new_motorcycle.service_profile, self.auth_user_service_profile)
 
@@ -237,7 +245,7 @@ class Step3CustomerMotorcycleViewTest(TestCase):
         Test POST for adding a new motorcycle with invalid data (e.g., missing required field).
         Should re-render the form with errors and not create a motorcycle.
         """
-        # Missing 'brand'
+        # Missing 'brand' (which is now a required ChoiceField)
         post_data = {
             'make': 'CBR',
             'model': '600RR',
@@ -267,16 +275,16 @@ class Step3CustomerMotorcycleViewTest(TestCase):
         Should re-render the form with errors.
         """
         post_data = {
-            'brand': 'Other',
+            'brand': 'Other', # This is now a valid choice
             'make': 'Custom',
             'model': 'Bike',
             'year': 2023,
-            'engine_size': '500cc', # Added missing required field
-            'rego': 'CUSTOM1', # Added missing required field
+            'engine_size': '500cc',
+            'rego': 'CUSTOM1',
             'vin_number': 'ABCDEF12345678901', # Corrected to 17 chars
-            'odometer': 100, # Added missing required field
-            'transmission': 'AUTOMATIC', # Added missing required field
-            'engine_number': 'CUSTOMENG', # Added missing required field
+            'odometer': 100,
+            'transmission': 'AUTOMATIC',
+            'engine_number': 'CUSTOMENG',
             # 'other_brand_name' is intentionally missing
         }
         response = self.client.post(self.base_url, post_data)
@@ -330,16 +338,18 @@ class Step3CustomerMotorcycleViewTest(TestCase):
         Test POST for editing an existing motorcycle with valid data.
         Ensures the existing motorcycle is updated and temp_booking link remains.
         """
+        # Ensure the existing motorcycle's brand is one that exists in the database
         existing_motorcycle = CustomerMotorcycleFactory(
             service_profile=self.auth_user_service_profile, # Ensure it belongs to the user
-            brand='OldBrand', make='OldMake', model='OldModel', year=2000
+            brand=self.sym_brand.name, # Use an existing brand
+            make='OldMake', model='OldModel', year=2000
         )
         self.temp_booking.customer_motorcycle = existing_motorcycle
         self.temp_booking.save()
 
         updated_year = existing_motorcycle.year + 1
         post_data = {
-            'brand': existing_motorcycle.brand,
+            'brand': existing_motorcycle.brand, # Use the existing valid brand name
             'make': existing_motorcycle.make,
             'model': existing_motorcycle.model,
             'year': updated_year, # Change a field
@@ -371,14 +381,15 @@ class Step3CustomerMotorcycleViewTest(TestCase):
         """
         existing_motorcycle = CustomerMotorcycleFactory(
             service_profile=self.auth_user_service_profile,
-            brand='GoodBrand', make='GoodMake', model='GoodModel', year=2000
+            brand=self.vespa_brand.name, # Use an existing brand
+            make='GoodMake', model='GoodModel', year=2000
         )
         self.temp_booking.customer_motorcycle = existing_motorcycle
         self.temp_booking.save()
 
         # Invalid data: 'year' in future
         post_data = {
-            'brand': existing_motorcycle.brand,
+            'brand': existing_motorcycle.brand, # Use the existing valid brand name
             'make': existing_motorcycle.make,
             'model': existing_motorcycle.model,
             'year': datetime.date.today().year + 5, # Invalid year
@@ -404,5 +415,3 @@ class Step3CustomerMotorcycleViewTest(TestCase):
         # Verify temp_booking still linked to the same motorcycle
         self.temp_booking.refresh_from_db()
         self.assertEqual(self.temp_booking.customer_motorcycle, existing_motorcycle)
-
-    

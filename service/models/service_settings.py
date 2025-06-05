@@ -135,7 +135,7 @@ class ServiceSettings(models.Model):
 
 
     def __str__(self):
-        return "Service Booking Settings"
+        return "Service Settings"
 
     def clean(self):
         errors = {}
