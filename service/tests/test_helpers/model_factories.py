@@ -201,6 +201,7 @@ class ServiceSettingsFactory(factory.django.DjangoModelFactory):
     drop_off_end_time = datetime.time(17, 0)
     drop_off_spacing_mins = 30
     max_advance_dropoff_days = 7 # Added new field with a default for factory
+    latest_same_day_dropoff_time = datetime.time(12, 0) # Added new field with a default for factory
     enable_service_brands = True
     other_brand_policy_text = factory.Faker('paragraph')
     enable_deposit = False

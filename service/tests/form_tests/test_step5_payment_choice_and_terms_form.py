@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from decimal import Decimal
+import datetime # Import datetime
 
 # Import the form and its constants
 from service.forms import (
@@ -160,11 +161,15 @@ class PaymentOptionFormTest(TestCase):
         Test a valid submission when all options are available.
         """
         data = {
+            'dropoff_date': datetime.date.today(), # Added dropoff_date
+            'dropoff_time': datetime.time(9, 0),    # Added dropoff_time
             'payment_option': PAYMENT_OPTION_FULL_ONLINE,
             'service_terms_accepted': True,
         }
         form = PaymentOptionForm(service_settings=self.default_settings, data=data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
+        self.assertEqual(form.cleaned_data['dropoff_date'], datetime.date.today())
+        self.assertEqual(form.cleaned_data['dropoff_time'], datetime.time(9, 0))
         self.assertEqual(form.cleaned_data['payment_option'], PAYMENT_OPTION_FULL_ONLINE)
         self.assertTrue(form.cleaned_data['service_terms_accepted'])
 
@@ -173,11 +178,15 @@ class PaymentOptionFormTest(TestCase):
         Test a valid submission when only deposit option is available.
         """
         data = {
+            'dropoff_date': datetime.date.today(), # Added dropoff_date
+            'dropoff_time': datetime.time(9, 0),    # Added dropoff_time
             'payment_option': PAYMENT_OPTION_DEPOSIT,
             'service_terms_accepted': True,
         }
         form = PaymentOptionForm(service_settings=self.deposit_only_settings, data=data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
+        self.assertEqual(form.cleaned_data['dropoff_date'], datetime.date.today())
+        self.assertEqual(form.cleaned_data['dropoff_time'], datetime.time(9, 0))
         self.assertEqual(form.cleaned_data['payment_option'], PAYMENT_OPTION_DEPOSIT)
         self.assertTrue(form.cleaned_data['service_terms_accepted'])
 
@@ -186,6 +195,8 @@ class PaymentOptionFormTest(TestCase):
         Test that the form is invalid if no payment option is selected.
         """
         data = {
+            'dropoff_date': datetime.date.today(), # Added dropoff_date
+            'dropoff_time': datetime.time(9, 0),    # Added dropoff_time
             'payment_option': '', # No option selected
             'service_terms_accepted': True,
         }
@@ -199,6 +210,8 @@ class PaymentOptionFormTest(TestCase):
         Test that the form is invalid if terms are not accepted.
         """
         data = {
+            'dropoff_date': datetime.date.today(), # Added dropoff_date
+            'dropoff_time': datetime.time(9, 0),    # Added dropoff_time
             'payment_option': PAYMENT_OPTION_FULL_ONLINE,
             'service_terms_accepted': False, # Terms not accepted
         }
@@ -213,6 +226,8 @@ class PaymentOptionFormTest(TestCase):
         (i.e., one not available based on settings).
         """
         data = {
+            'dropoff_date': datetime.date.today(), # Added dropoff_date
+            'dropoff_time': datetime.time(9, 0),    # Added dropoff_time
             'payment_option': PAYMENT_OPTION_FULL_ONLINE, # This option is NOT enabled in deposit_only_settings
             'service_terms_accepted': True,
         }
@@ -226,6 +241,8 @@ class PaymentOptionFormTest(TestCase):
         Test that the form is invalid if no choices are available and a selection is attempted.
         """
         data = {
+            'dropoff_date': datetime.date.today(), # Added dropoff_date
+            'dropoff_time': datetime.time(9, 0),    # Added dropoff_time
             'payment_option': PAYMENT_OPTION_DEPOSIT,
             'service_terms_accepted': True,
         }
@@ -233,4 +250,3 @@ class PaymentOptionFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('payment_option', form.errors)
         self.assertIn(f"Select a valid choice. {PAYMENT_OPTION_DEPOSIT} is not one of the available choices.", form.errors['payment_option'])
-

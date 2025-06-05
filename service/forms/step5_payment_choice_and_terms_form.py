@@ -12,6 +12,17 @@ class PaymentOptionForm(forms.Form):
     Form for users to select their preferred payment option and accept terms and conditions.
     Payment options are dynamically populated based on ServiceSettings.
     """
+    dropoff_date = forms.DateField(
+        label="Preferred Drop-off Date",
+        widget=forms.DateInput(attrs={'class': 'form-control datepicker', 'placeholder': 'Select drop-off date'}),
+        required=True
+    )
+    dropoff_time = forms.TimeField(
+        label="Preferred Drop-off Time",
+        widget=forms.TimeInput(attrs={'class': 'form-control timepicker', 'placeholder': 'Select drop-off time'}),
+        required=True
+    )
+
     payment_option = forms.ChoiceField(
         label="How would you like to pay?",
         choices=[], # This will be populated dynamically in the __init__ method
@@ -20,7 +31,7 @@ class PaymentOptionForm(forms.Form):
     )
 
     service_terms_accepted = forms.BooleanField(
-        label="I agree to the service terms and conditions.",
+        label="I agree to the <a href='#' target='_blank'>service terms and conditions</a>.", # Placeholder link
         required=True, # This checkbox must be checked to proceed
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
     )
@@ -56,4 +67,3 @@ class PaymentOptionForm(forms.Form):
         # Optional: If only one payment option is enabled, pre-select it for convenience
         if len(payment_choices) == 1:
             self.fields['payment_option'].initial = payment_choices[0][0]
-

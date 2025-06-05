@@ -35,6 +35,12 @@ class ServiceSettings(models.Model):
         help_text="Maximum number of days in advance a customer can drop off their motorcycle before the service date."
     )
 
+    # New field: Latest time a customer can drop off their bike on the same day as the service.
+    latest_same_day_dropoff_time = models.TimeField(
+        default=time(12, 0), # Default to 12:00 PM (noon)
+        help_text="The latest time a customer can drop off their motorcycle if the drop-off date is the same as the service date."
+    )
+
     enable_service_brands = models.BooleanField(default=True, help_text="Enable filtering or special handling by motorcycle brand.")
     other_brand_policy_text = models.TextField(
         blank=True,
@@ -142,6 +148,7 @@ class ServiceSettings(models.Model):
 
         start_time = self.drop_off_start_time
         end_time = self.drop_off_end_time
+        latest_same_day_dropoff = self.latest_same_day_dropoff_time
 
         if start_time and end_time and start_time >= end_time:
             errors['drop_off_start_time'] = ["Booking start time must be earlier than end time."]
@@ -154,6 +161,11 @@ class ServiceSettings(models.Model):
         # Validate max_advance_dropoff_days
         if self.max_advance_dropoff_days is not None and self.max_advance_dropoff_days < 0:
             errors['max_advance_dropoff_days'] = ["Maximum advance drop-off days cannot be negative."]
+        
+        # Validate latest_same_day_dropoff_time is within drop_off_start_time and drop_off_end_time
+        if latest_same_day_dropoff and (latest_same_day_dropoff < start_time or latest_same_day_dropoff > end_time):
+            errors['latest_same_day_dropoff_time'] = [f"Latest same-day drop-off time must be between {start_time.strftime('%H:%M')} and {end_time.strftime('%H:%M')}, inclusive."]
+
 
         general_percentage_fields = [
             'deposit_percentage',
@@ -205,4 +217,3 @@ class ServiceSettings(models.Model):
     class Meta:
         verbose_name = "Service Settings"
         verbose_name_plural = "Service Settings"
-
