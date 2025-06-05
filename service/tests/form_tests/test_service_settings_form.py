@@ -31,6 +31,8 @@ class ServiceBookingSettingsFormTest(TestCase):
             'booking_open_days': 'Mon,Tue,Wed,Thu,Fri',
             'drop_off_start_time': time(9, 0),
             'drop_off_end_time': time(17, 0),
+            'drop_off_spacing_mins': 30,  # Added new required field
+            'max_advance_dropoff_days': 7, # Added new required field
             'enable_service_brands': True,
             'other_brand_policy_text': 'Policy for other brands.',
             'enable_deposit': True,
@@ -54,11 +56,11 @@ class ServiceBookingSettingsFormTest(TestCase):
             'cancel_deposit_partial_refund_percentage': Decimal('0.50'),
             'cancel_deposit_min_refund_days': 1,
             'cancel_deposit_min_refund_percentage': Decimal('0.00'),
-            'refund_deducts_stripe_fee_policy': True,
-            'stripe_fee_percentage_domestic': Decimal('0.0170'),
-            'stripe_fee_fixed_domestic': Decimal('0.30'),
-            'stripe_fee_percentage_international': Decimal('0.0350'),
-            'stripe_fee_fixed_international': Decimal('0.30'),
+            'refund_deducts_stripe_fee_policy': True, # Added new required field
+            'stripe_fee_percentage_domestic': Decimal('0.0170'), # Added new required field
+            'stripe_fee_fixed_domestic': Decimal('0.30'), # Added new required field
+            'stripe_fee_percentage_international': Decimal('0.0350'), # Added new required field
+            'stripe_fee_fixed_international': Decimal('0.30'), # Added new required field
         }
 
     def test_form_valid_data(self):
@@ -86,6 +88,16 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.service_settings.deposit_flat_fee_amount = Decimal('100.00')
         self.service_settings.drop_off_start_time = time(8, 0)
         self.service_settings.drop_off_end_time = time(18, 0)
+        # Set new fields for the instance to match the updated model
+        self.service_settings.drop_off_spacing_mins = 60
+        self.service_settings.max_advance_dropoff_days = 10
+        self.service_settings.refund_deducts_stripe_fee_policy = False
+        self.service_settings.stripe_fee_percentage_domestic = Decimal('0.02')
+        self.service_settings.stripe_fee_fixed_domestic = Decimal('0.50')
+        self.service_settings.stripe_fee_percentage_international = Decimal('0.04')
+        self.service_settings.stripe_fee_fixed_international = Decimal('0.75')
+
+
         self.service_settings.save() # Save changes to the instance
 
         form = ServiceBookingSettingsForm(instance=self.service_settings)
@@ -94,6 +106,14 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertEqual(form.initial['deposit_flat_fee_amount'], Decimal('100.00'))
         self.assertEqual(form.initial['drop_off_start_time'], time(8, 0))
         self.assertEqual(form.initial['drop_off_end_time'], time(18, 0))
+        # Assert new fields are loaded correctly
+        self.assertEqual(form.initial['drop_off_spacing_mins'], 60)
+        self.assertEqual(form.initial['max_advance_dropoff_days'], 10)
+        self.assertEqual(form.initial['refund_deducts_stripe_fee_policy'], False)
+        self.assertEqual(form.initial['stripe_fee_percentage_domestic'], Decimal('0.02'))
+        self.assertEqual(form.initial['stripe_fee_fixed_domestic'], Decimal('0.50'))
+        self.assertEqual(form.initial['stripe_fee_percentage_international'], Decimal('0.04'))
+        self.assertEqual(form.initial['stripe_fee_fixed_international'], Decimal('0.75'))
 
     def test_form_save_updates_instance(self):
         """
@@ -105,6 +125,14 @@ class ServiceBookingSettingsFormTest(TestCase):
         data['deposit_flat_fee_amount'] = Decimal('75.00')
         data['drop_off_start_time'] = time(7, 30)
         data['drop_off_end_time'] = time(19, 0)
+        # Update new fields for saving
+        data['drop_off_spacing_mins'] = 45
+        data['max_advance_dropoff_days'] = 15
+        data['refund_deducts_stripe_fee_policy'] = False
+        data['stripe_fee_percentage_domestic'] = Decimal('0.01')
+        data['stripe_fee_fixed_domestic'] = Decimal('0.25')
+        data['stripe_fee_percentage_international'] = Decimal('0.03')
+        data['stripe_fee_fixed_international'] = Decimal('0.40')
 
 
         form = ServiceBookingSettingsForm(data=data, instance=self.service_settings)
@@ -116,6 +144,15 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertEqual(saved_settings.deposit_flat_fee_amount, Decimal('75.00'))
         self.assertEqual(saved_settings.drop_off_start_time, time(7, 30))
         self.assertEqual(saved_settings.drop_off_end_time, time(19, 0))
+        # Assert new fields are updated correctly
+        self.assertEqual(saved_settings.drop_off_spacing_mins, 45)
+        self.assertEqual(saved_settings.max_advance_dropoff_days, 15)
+        self.assertEqual(saved_settings.refund_deducts_stripe_fee_policy, False)
+        self.assertEqual(saved_settings.stripe_fee_percentage_domestic, Decimal('0.01'))
+        self.assertEqual(saved_settings.stripe_fee_fixed_domestic, Decimal('0.25'))
+        self.assertEqual(saved_settings.stripe_fee_percentage_international, Decimal('0.03'))
+        self.assertEqual(saved_settings.stripe_fee_fixed_international, Decimal('0.40'))
+
         # Ensure it's the same singleton instance
         self.assertEqual(saved_settings.pk, self.service_settings.pk)
 
@@ -165,7 +202,9 @@ class ServiceBookingSettingsFormTest(TestCase):
                 form = ServiceBookingSettingsForm(data=data)
                 self.assertFalse(form.is_valid())
                 self.assertIn(field_name, form.errors)
-                self.assertIn("Ensure domestic stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)." if 'domestic' in field_name else "Ensure international stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%).", form.errors[field_name])
+                # Corrected error message to match the one defined in the form's clean method
+                expected_error = "Ensure domestic stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)." if 'domestic' in field_name else "Ensure international stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."
+                self.assertIn(expected_error, form.errors[field_name])
 
             with self.subTest(f"Invalid {field_name} (too low)"):
                 data = self.valid_data.copy()
@@ -173,7 +212,9 @@ class ServiceBookingSettingsFormTest(TestCase):
                 form = ServiceBookingSettingsForm(data=data)
                 self.assertFalse(form.is_valid())
                 self.assertIn(field_name, form.errors)
-                self.assertIn("Ensure domestic stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)." if 'domestic' in field_name else "Ensure international stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%).", form.errors[field_name])
+                # Corrected error message
+                expected_error = "Ensure domestic stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)." if 'domestic' in field_name else "Ensure international stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."
+                self.assertIn(expected_error, form.errors[field_name])
 
     # --- Validation Tests for Refund Days Order ---
     def test_form_invalid_full_payment_refund_days_order(self):
@@ -326,4 +367,49 @@ class ServiceBookingSettingsFormTest(TestCase):
         data['booking_open_days'] = 'invalid-format'
         form = ServiceBookingSettingsForm(data=data)
         self.assertTrue(form.is_valid(), f"Form is not valid with invalid format: {form.errors}")
+
+    # New tests for drop_off_spacing_mins
+    def test_drop_off_spacing_mins_valid(self):
+        """Test valid values for drop_off_spacing_mins."""
+        data = self.valid_data.copy()
+        data['drop_off_spacing_mins'] = 15
+        form = ServiceBookingSettingsForm(data=data)
+        self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
+        self.assertEqual(form.cleaned_data['drop_off_spacing_mins'], 15)
+
+    def test_drop_off_spacing_mins_invalid_zero(self):
+        """Test invalid value (zero) for drop_off_spacing_mins."""
+        data = self.valid_data.copy()
+        data['drop_off_spacing_mins'] = 0
+        form = ServiceBookingSettingsForm(data=data)
+        self.assertFalse(form.is_valid())
+        self.assertIn('drop_off_spacing_mins', form.errors)
+        self.assertIn("Drop-off spacing must be a positive integer, typically between 1 and 60 minutes.", form.errors['drop_off_spacing_mins'])
+
+    def test_drop_off_spacing_mins_invalid_too_high(self):
+        """Test invalid value (greater than 60) for drop_off_spacing_mins."""
+        data = self.valid_data.copy()
+        data['drop_off_spacing_mins'] = 61
+        form = ServiceBookingSettingsForm(data=data)
+        self.assertFalse(form.is_valid())
+        self.assertIn('drop_off_spacing_mins', form.errors)
+        self.assertIn("Drop-off spacing must be a positive integer, typically between 1 and 60 minutes.", form.errors['drop_off_spacing_mins'])
+
+    # New tests for max_advance_dropoff_days
+    def test_max_advance_dropoff_days_valid(self):
+        """Test valid values for max_advance_dropoff_days."""
+        data = self.valid_data.copy()
+        data['max_advance_dropoff_days'] = 30
+        form = ServiceBookingSettingsForm(data=data)
+        self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
+        self.assertEqual(form.cleaned_data['max_advance_dropoff_days'], 30)
+
+    def test_max_advance_dropoff_days_invalid_negative(self):
+        """Test invalid value (negative) for max_advance_dropoff_days."""
+        data = self.valid_data.copy()
+        data['max_advance_dropoff_days'] = -1
+        form = ServiceBookingSettingsForm(data=data)
+        self.assertFalse(form.is_valid())
+        self.assertIn('max_advance_dropoff_days', form.errors)
+        self.assertIn("Maximum advance drop-off days cannot be negative.", form.errors['max_advance_dropoff_days'])
 
