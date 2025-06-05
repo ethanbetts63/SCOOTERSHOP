@@ -27,7 +27,7 @@ class CustomerMotorcycle(models.Model):
         ('SEMI_AUTO', 'Semi-Automatic'),
     ]
     transmission = models.CharField(max_length=20, choices=transmission_choices)
-    engine_size = models.CharField(max_length=50, help_text="Engine displacement (e.g., 250cc, 1000cc).") # Removed blank=True, null=True
+    engine_size = models.CharField(max_length=50, help_text="Engine displacement (e.g., 250cc, 1000cc).")
     vin_number = models.CharField(max_length=17, blank=True, null=True, unique=True, help_text="(optional) Vehicle Identification Number.")
     engine_number = models.CharField(max_length=50, blank=True, null=True, help_text="(optional) Engine serial number.")
     image = models.ImageField(upload_to='motorcycle_images/', blank=True, null=True, help_text="(optional) Image of the motorcycle.")
@@ -38,7 +38,6 @@ class CustomerMotorcycle(models.Model):
 
     def __str__(self):
         owner_info = self.service_profile.name if self.service_profile else "N/A"
-        # Updated string representation since 'make' is removed
         return f"{self.year} {self.brand} {self.model} (Owner: {owner_info})"
 
     def clean(self):
@@ -53,8 +52,9 @@ class CustomerMotorcycle(models.Model):
             raise ValidationError({'year': "Motorcycle year is required."})
         if not self.rego:
             raise ValidationError({'rego': "Motorcycle registration is required."})
-        if not self.odometer:
-            raise ValidationError({'odometer': "Motorcycle odometer is required."}) # Corrected key
+        # Corrected condition for odometer: 0 is a valid value, only None should trigger 'required' error
+        if self.odometer is None:
+            raise ValidationError({'odometer': "Motorcycle odometer is required."})
         if not self.transmission:
             raise ValidationError({'transmission': "Motorcycle transmission type is required."})
         if not self.engine_size:
@@ -79,4 +79,3 @@ class CustomerMotorcycle(models.Model):
     class Meta:
         verbose_name = "Customer Motorcycle"
         verbose_name_plural = "Customer Motorcycles"
-
