@@ -30,7 +30,7 @@ class ServiceBooking(models.Model):
         ('DECLINED_REFUNDED', 'Declined and Refunded'), # Added for clarity in refund process
     ]
 
-    booking_reference = models.CharField(max_length=20, unique=True, blank=True, null=True)
+    service_booking_reference = models.CharField(max_length=20, unique=True, blank=True, null=True)
     service_type = models.ForeignKey(
         'service.ServiceType', # Changed to string literal
         on_delete=models.PROTECT,

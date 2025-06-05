@@ -21,7 +21,7 @@ class ServiceSettings(models.Model):
     booking_open_days = models.CharField(
         max_length=255, default="Mon,Tue,Wed,Thu,Fri",
         help_text="Comma-separated list of days when bookings are open (e.g., Mon,Tue,Wed,Thu,Fri,Sat,Sun)."
-    ) # Consider a more structured way if complex rules are needed (e.g., JSONField or separate model)
+    )
     
     # Added drop_off_start_time and drop_off_end_time
     drop_off_start_time = models.TimeField(default=time(9, 0), help_text="The earliest time customers can drop off their motorcycle.")
