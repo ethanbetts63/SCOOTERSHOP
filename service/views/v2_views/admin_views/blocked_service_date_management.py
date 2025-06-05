@@ -12,7 +12,7 @@ class BlockedServiceDateManagementView(View):
     Class-based view for managing (listing and adding) blocked service dates.
     Handles both GET (display form and list) and POST (add new blocked date).
     """
-    template_name = 'dashboard/blocked_service_dates.html'
+    template_name = 'service/blocked_service_dates_management.html'
     form_class = BlockedServiceDateForm
 
     # Temporarily skipping UserPassesTestMixin as per instructions

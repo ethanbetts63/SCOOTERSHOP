@@ -7,7 +7,6 @@ from django.db import transaction
 
 from service.models import ServiceBrand # Assuming ServiceBrand model exists
 from service.forms import ServiceBrandForm # Assuming ServiceBrandForm exists
-# Removed ServiceSettings import as max_primary_brands is no longer used
 
 class ServiceBrandManagementView(View):
     """
@@ -16,10 +15,6 @@ class ServiceBrandManagementView(View):
     """
     template_name = 'service/service_brands_management.html'
     form_class = ServiceBrandForm
-
-    # Temporarily skipping UserPassesTestMixin as per instructions
-    # def test_func(self):
-    #     return self.request.user.is_staff
 
     def get_context_data(self, form=None, edit_brand=None):
         """Helper method to get context data for rendering the template."""
