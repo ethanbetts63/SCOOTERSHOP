@@ -10,6 +10,8 @@ def get_available_dropoff_times(selected_date):
     2. The drop_off_spacing_mins from ServiceSettings to create intervals.
     3. Existing bookings on the selected_date and disables slots around them
        based on the drop_off_spacing_mins.
+    4. If the selected_date is today, it restricts available times to be
+       on or before latest_same_day_dropoff_time from ServiceSettings.
 
     Args:
         selected_date (datetime.date): The date for which to find available times.
@@ -27,35 +29,33 @@ def get_available_dropoff_times(selected_date):
     end_time = service_settings.drop_off_end_time
     spacing_minutes = service_settings.drop_off_spacing_mins
 
+    # If the selected date is today, adjust the end_time to latest_same_day_dropoff_time
+    # This also applies if selected_date is in the past, though ideally UI prevents this.
+    today = timezone.localdate(timezone.now())
+    if selected_date <= today:
+        if service_settings.latest_same_day_dropoff_time < end_time:
+            end_time = service_settings.latest_same_day_dropoff_time
+
     # Initialize a list to hold all potential time slots
     potential_slots = []
     current_slot_datetime = datetime.datetime.combine(selected_date, start_time)
     end_slot_datetime = datetime.datetime.combine(selected_date, end_time)
 
-    # Generate all potential slots within the operational hours
     while current_slot_datetime <= end_slot_datetime:
-        potential_slots.append(current_slot_datetime.time())
-        current_slot_datetime += datetime.timedelta(minutes=1) # Check every minute for precise blocking
+        potential_slots.append(current_slot_datetime.strftime('%H:%M'))
+        current_slot_datetime += datetime.timedelta(minutes=spacing_minutes)
 
-    # Convert potential slots to a set for faster lookup and removal
-    available_slots_set = {slot.strftime('%H:%M') for slot in potential_slots}
+    available_slots_set = set(potential_slots) # Use a set for efficient lookup and removal
 
-    # Get existing bookings for the selected date
-    # Filter by 'booked' and 'in_progress' as these occupy slots
-    existing_bookings = ServiceBooking.objects.filter(
-        dropoff_date=selected_date,
-        booking_status__in=['booked', 'in_progress', 'confirmed']
-    )
+    # Retrieve existing bookings for the selected date
+    bookings = ServiceBooking.objects.filter(dropoff_date=selected_date)
 
-    # Block times around existing bookings
-    for booking in existing_bookings:
-        booked_time = booking.dropoff_time
-        booked_datetime = datetime.datetime.combine(selected_date, booked_time)
-
-        # Calculate the start and end of the blocked window
-        # The window extends 'spacing_minutes' before and after the booked time
-        block_start_datetime = booked_datetime - datetime.timedelta(minutes=spacing_minutes)
-        block_end_datetime = booked_datetime + datetime.timedelta(minutes=spacing_minutes)
+    # For each booking, identify and remove slots within the blocked window
+    for booking in bookings:
+        # Calculate the blocked window around the booking's dropoff_time
+        booked_time_dt = datetime.datetime.combine(selected_date, booking.dropoff_time)
+        block_start_datetime = booked_time_dt - datetime.timedelta(minutes=spacing_minutes)
+        block_end_datetime = booked_time_dt + datetime.timedelta(minutes=spacing_minutes)
 
         # Iterate through the potential slots and remove those within the blocked window
         # We need to iterate over a copy of the set or build a new one to avoid modifying during iteration
@@ -71,15 +71,10 @@ def get_available_dropoff_times(selected_date):
         available_slots_set -= slots_to_remove # Remove all identified blocked slots
         
     final_available_slots = []
-    if service_settings: # Ensure settings exist before using them
-        start_time_dt = datetime.datetime.combine(selected_date, service_settings.drop_off_start_time)
-        end_time_dt = datetime.datetime.combine(selected_date, service_settings.drop_off_end_time)
-        
-        current_candidate_time = start_time_dt
-        while current_candidate_time <= end_time_dt:
-            time_str = current_candidate_time.strftime('%H:%M')
-            if time_str in available_slots_set:
-                final_available_slots.append(time_str)
-            current_candidate_time += datetime.timedelta(minutes=service_settings.drop_off_spacing_mins)
+    # Re-iterate through the original potential slots (in order) and add only the available ones
+    # This ensures the final list is sorted chronologically
+    for slot_str in potential_slots:
+        if slot_str in available_slots_set:
+            final_available_slots.append(slot_str)
 
-    return sorted(list(final_available_slots)) # Return sorted list
+    return final_available_slots
