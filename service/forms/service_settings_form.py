@@ -18,6 +18,9 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             'drop_off_end_time', 
             'drop_off_spacing_mins', # New field
             'max_advance_dropoff_days', # New field
+            'latest_same_day_dropoff_time', # Added this field
+            'allow_after_hours_dropoff', # NEW FIELD
+            'after_hours_dropoff_disclaimer', # NEW FIELD
             'enable_service_brands',
             'other_brand_policy_text',
             'enable_deposit',
@@ -58,6 +61,9 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             'drop_off_end_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}), # Re-added
             'drop_off_spacing_mins': forms.NumberInput(attrs={'class': 'form-control', 'min': '1', 'max': '60'}), # New widget
             'max_advance_dropoff_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}), # New widget
+            'latest_same_day_dropoff_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}), # Added widget
+            'allow_after_hours_dropoff': forms.CheckboxInput(attrs={'class': 'form-check-input'}), # NEW WIDGET
+            'after_hours_dropoff_disclaimer': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}), # NEW WIDGET
             'enable_service_brands': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'other_brand_policy_text': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'enable_deposit': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
@@ -93,6 +99,7 @@ class ServiceBookingSettingsForm(forms.ModelForm):
 
         start_time = cleaned_data.get('drop_off_start_time')
         end_time = cleaned_data.get('drop_off_end_time')
+        latest_same_day_dropoff = cleaned_data.get('latest_same_day_dropoff_time') # Get this from cleaned_data
 
         if start_time and end_time and start_time >= end_time:
             self.add_error('drop_off_start_time', _("Booking start time must be earlier than end time."))
@@ -107,6 +114,11 @@ class ServiceBookingSettingsForm(forms.ModelForm):
         max_advance_dropoff_days = cleaned_data.get('max_advance_dropoff_days')
         if max_advance_dropoff_days is not None and max_advance_dropoff_days < 0:
             self.add_error('max_advance_dropoff_days', _("Maximum advance drop-off days cannot be negative."))
+
+        # Validate latest_same_day_dropoff_time is within drop_off_start_time and drop_off_end_time
+        # This check is only relevant if after-hours drop-off is NOT allowed, or if it's the standard drop-off window.
+        if latest_same_day_dropoff and start_time and end_time and (latest_same_day_dropoff < start_time or latest_same_day_dropoff > end_time):
+            self.add_error('latest_same_day_dropoff_time', _(f"Latest same-day drop-off time must be between {start_time.strftime('%H:%M')} and {end_time.strftime('%H:%M')}, inclusive."))
 
         # Validate refund percentages
         refund_percentage_fields = [

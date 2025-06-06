@@ -41,6 +41,17 @@ class ServiceSettings(models.Model):
         help_text="The latest time a customer can drop off their motorcycle if the drop-off date is the same as the service date."
     )
 
+    # --- NEW FIELDS FOR AFTER-HOURS DROP-OFF ---
+    allow_after_hours_dropoff = models.BooleanField(
+        default=False,
+        help_text="Allow customers to drop off their motorcycle outside of standard opening hours (e.g., using a secure drop box)."
+    )
+    after_hours_dropoff_disclaimer = models.TextField(
+        blank=True,
+        help_text="Important disclaimer text displayed to users when after-hours drop-off is selected, outlining risks/conditions."
+    )
+    # --- END NEW FIELDS ---
+
     enable_service_brands = models.BooleanField(default=True, help_text="Enable filtering or special handling by motorcycle brand.")
     other_brand_policy_text = models.TextField(
         blank=True,
@@ -163,6 +174,8 @@ class ServiceSettings(models.Model):
             errors['max_advance_dropoff_days'] = ["Maximum advance drop-off days cannot be negative."]
         
         # Validate latest_same_day_dropoff_time is within drop_off_start_time and drop_off_end_time
+        # This check is only relevant if after-hours drop-off is NOT allowed, or if it's the standard drop-off window.
+        # For now, it's a general validation.
         if latest_same_day_dropoff and (latest_same_day_dropoff < start_time or latest_same_day_dropoff > end_time):
             errors['latest_same_day_dropoff_time'] = [f"Latest same-day drop-off time must be between {start_time.strftime('%H:%M')} and {end_time.strftime('%H:%M')}, inclusive."]
 
@@ -217,3 +230,4 @@ class ServiceSettings(models.Model):
     class Meta:
         verbose_name = "Service Settings"
         verbose_name_plural = "Service Settings"
+

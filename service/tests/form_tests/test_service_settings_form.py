@@ -33,6 +33,9 @@ class ServiceBookingSettingsFormTest(TestCase):
             'drop_off_end_time': time(17, 0),
             'drop_off_spacing_mins': 30,  # Added new required field
             'max_advance_dropoff_days': 7, # Added new required field
+            'latest_same_day_dropoff_time': time(12, 0), # ADDED NEW REQUIRED FIELD
+            'allow_after_hours_dropoff': False, # ADDED NEW REQUIRED FIELD
+            'after_hours_dropoff_disclaimer': 'Motorcycle drop-off outside of opening hours is at your own risk.', # ADDED NEW REQUIRED FIELD
             'enable_service_brands': True,
             'other_brand_policy_text': 'Policy for other brands.',
             'enable_deposit': True,
@@ -76,7 +79,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         # Verify cleaned data types for Time fields
         self.assertIsInstance(form.cleaned_data['drop_off_start_time'], time)
         self.assertIsInstance(form.cleaned_data['drop_off_end_time'], time)
-
+        self.assertIsInstance(form.cleaned_data['latest_same_day_dropoff_time'], time) # ADDED
 
     def test_form_initialization_with_instance(self):
         """
@@ -91,6 +94,9 @@ class ServiceBookingSettingsFormTest(TestCase):
         # Set new fields for the instance to match the updated model
         self.service_settings.drop_off_spacing_mins = 60
         self.service_settings.max_advance_dropoff_days = 10
+        self.service_settings.latest_same_day_dropoff_time = time(13, 0) # ADDED
+        self.service_settings.allow_after_hours_dropoff = True # ADDED
+        self.service_settings.after_hours_dropoff_disclaimer = 'Test disclaimer.' # ADDED
         self.service_settings.refund_deducts_stripe_fee_policy = False
         self.service_settings.stripe_fee_percentage_domestic = Decimal('0.02')
         self.service_settings.stripe_fee_fixed_domestic = Decimal('0.50')
@@ -109,6 +115,9 @@ class ServiceBookingSettingsFormTest(TestCase):
         # Assert new fields are loaded correctly
         self.assertEqual(form.initial['drop_off_spacing_mins'], 60)
         self.assertEqual(form.initial['max_advance_dropoff_days'], 10)
+        self.assertEqual(form.initial['latest_same_day_dropoff_time'], time(13, 0)) # ADDED
+        self.assertEqual(form.initial['allow_after_hours_dropoff'], True) # ADDED
+        self.assertEqual(form.initial['after_hours_dropoff_disclaimer'], 'Test disclaimer.') # ADDED
         self.assertEqual(form.initial['refund_deducts_stripe_fee_policy'], False)
         self.assertEqual(form.initial['stripe_fee_percentage_domestic'], Decimal('0.02'))
         self.assertEqual(form.initial['stripe_fee_fixed_domestic'], Decimal('0.50'))
@@ -128,6 +137,9 @@ class ServiceBookingSettingsFormTest(TestCase):
         # Update new fields for saving
         data['drop_off_spacing_mins'] = 45
         data['max_advance_dropoff_days'] = 15
+        data['latest_same_day_dropoff_time'] = time(14, 0) # ADDED
+        data['allow_after_hours_dropoff'] = True # ADDED
+        data['after_hours_dropoff_disclaimer'] = 'Updated disclaimer text.' # ADDED
         data['refund_deducts_stripe_fee_policy'] = False
         data['stripe_fee_percentage_domestic'] = Decimal('0.01')
         data['stripe_fee_fixed_domestic'] = Decimal('0.25')
@@ -147,6 +159,9 @@ class ServiceBookingSettingsFormTest(TestCase):
         # Assert new fields are updated correctly
         self.assertEqual(saved_settings.drop_off_spacing_mins, 45)
         self.assertEqual(saved_settings.max_advance_dropoff_days, 15)
+        self.assertEqual(saved_settings.latest_same_day_dropoff_time, time(14, 0)) # ADDED
+        self.assertEqual(saved_settings.allow_after_hours_dropoff, True) # ADDED
+        self.assertEqual(saved_settings.after_hours_dropoff_disclaimer, 'Updated disclaimer text.') # ADDED
         self.assertEqual(saved_settings.refund_deducts_stripe_fee_policy, False)
         self.assertEqual(saved_settings.stripe_fee_percentage_domestic, Decimal('0.01'))
         self.assertEqual(saved_settings.stripe_fee_fixed_domestic, Decimal('0.25'))
@@ -203,7 +218,7 @@ class ServiceBookingSettingsFormTest(TestCase):
                 self.assertFalse(form.is_valid())
                 self.assertIn(field_name, form.errors)
                 # Corrected error message to match the one defined in the form's clean method
-                expected_error = "Ensure domestic stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)." if 'domestic' in field_name else "Ensure international stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."
+                expected_error = _("Ensure domestic stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%).") if 'domestic' in field_name else _("Ensure international stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%).")
                 self.assertIn(expected_error, form.errors[field_name])
 
             with self.subTest(f"Invalid {field_name} (too low)"):
@@ -213,7 +228,7 @@ class ServiceBookingSettingsFormTest(TestCase):
                 self.assertFalse(form.is_valid())
                 self.assertIn(field_name, form.errors)
                 # Corrected error message
-                expected_error = "Ensure domestic stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)." if 'domestic' in field_name else "Ensure international stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."
+                expected_error = _("Ensure domestic stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%).") if 'domestic' in field_name else _("Ensure international stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%).")
                 self.assertIn(expected_error, form.errors[field_name])
 
     # --- Validation Tests for Refund Days Order ---
@@ -412,4 +427,42 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('max_advance_dropoff_days', form.errors)
         self.assertIn("Maximum advance drop-off days cannot be negative.", form.errors['max_advance_dropoff_days'])
+
+    # New test for latest_same_day_dropoff_time validation
+    def test_latest_same_day_dropoff_time_valid(self):
+        """
+        Test that latest_same_day_dropoff_time is valid when within the drop-off time range.
+        """
+        data = self.valid_data.copy()
+        data['drop_off_start_time'] = time(9, 0)
+        data['drop_off_end_time'] = time(17, 0)
+        data['latest_same_day_dropoff_time'] = time(12, 0) # Within range
+        form = ServiceBookingSettingsForm(data=data)
+        self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
+
+    def test_latest_same_day_dropoff_time_invalid_before_start(self):
+        """
+        Test that latest_same_day_dropoff_time is invalid when before drop_off_start_time.
+        """
+        data = self.valid_data.copy()
+        data['drop_off_start_time'] = time(9, 0)
+        data['drop_off_end_time'] = time(17, 0)
+        data['latest_same_day_dropoff_time'] = time(8, 0) # Before start time
+        form = ServiceBookingSettingsForm(data=data)
+        self.assertFalse(form.is_valid())
+        self.assertIn('latest_same_day_dropoff_time', form.errors)
+        self.assertIn(f"Latest same-day drop-off time must be between {data['drop_off_start_time'].strftime('%H:%M')} and {data['drop_off_end_time'].strftime('%H:%M')}, inclusive.", form.errors['latest_same_day_dropoff_time'])
+
+    def test_latest_same_day_dropoff_time_invalid_after_end(self):
+        """
+        Test that latest_same_day_dropoff_time is invalid when after drop_off_end_time.
+        """
+        data = self.valid_data.copy()
+        data['drop_off_start_time'] = time(9, 0)
+        data['drop_off_end_time'] = time(17, 0)
+        data['latest_same_day_dropoff_time'] = time(18, 0) # After end time
+        form = ServiceBookingSettingsForm(data=data)
+        self.assertFalse(form.is_valid())
+        self.assertIn('latest_same_day_dropoff_time', form.errors)
+        self.assertIn(f"Latest same-day drop-off time must be between {data['drop_off_start_time'].strftime('%H:%M')} and {data['drop_off_end_time'].strftime('%H:%M')}, inclusive.", form.errors['latest_same_day_dropoff_time'])
 

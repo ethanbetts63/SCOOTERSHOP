@@ -202,6 +202,12 @@ class ServiceSettingsFactory(factory.django.DjangoModelFactory):
     drop_off_spacing_mins = 30
     max_advance_dropoff_days = 7 # Added new field with a default for factory
     latest_same_day_dropoff_time = datetime.time(12, 0) # Added new field with a default for factory
+    
+    # --- NEW FIELDS FOR AFTER-HOURS DROP-OFF ---
+    allow_after_hours_dropoff = False # Default to False
+    after_hours_dropoff_disclaimer = factory.Faker('paragraph', nb_sentences=3) # Example disclaimer text
+    # --- END NEW FIELDS ---
+
     enable_service_brands = True
     other_brand_policy_text = factory.Faker('paragraph')
     enable_deposit = False
@@ -315,3 +321,4 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
     
     booking_status = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.BOOKING_STATUS_CHOICES])
     customer_notes = factory.Faker('paragraph')
+
