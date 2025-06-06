@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 from decimal import Decimal
 from datetime import time # Import time for test data
+from django.utils.translation import gettext_lazy as _ # ADDED: Import for internationalization
 
 from service.forms import ServiceBookingSettingsForm
 from service.models import ServiceSettings
@@ -465,4 +466,3 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('latest_same_day_dropoff_time', form.errors)
         self.assertIn(f"Latest same-day drop-off time must be between {data['drop_off_start_time'].strftime('%H:%M')} and {data['drop_off_end_time'].strftime('%H:%M')}, inclusive.", form.errors['latest_same_day_dropoff_time'])
-
