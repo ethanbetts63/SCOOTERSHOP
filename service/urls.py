@@ -16,7 +16,7 @@ urlpatterns = [
     path('service-book/step2/', user_views.Step2MotorcycleSelectionView.as_view(), name='service_book_step2'),
     path('service-book/step3/', user_views.Step3CustomerMotorcycleView.as_view(), name='service_book_step3'),
     path('service-book/step4/', user_views.Step4ServiceProfileView.as_view(), name='service_book_step4'),
-    path('service-book/step5/', user_views.Step5PaymentChoiceAndTermsView.as_view(), name='service_book_step5'),
+    path('service-book/step5/', user_views.Step5PaymentDropoffAndTermsView.as_view(), name='service_book_step5'),
     path('service-book/step6/', user_views.Step6PaymentView.as_view(), name='service_book_step6'),
     path('service-book/step7/', user_views.Step7ConfirmationView.as_view(), name='service_book_step7'),
 

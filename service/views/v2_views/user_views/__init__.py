@@ -6,6 +6,6 @@ from .step2_motorcycle_selection_view import *
 from .step3_customer_motorcycle_view import *
 from .step4_service_profile_view import *
 from .step4_service_profile_view import *
-from .step5_payment_choice_and_terms_view import *
+from .step5_payment_dropoff_and_terms_view import *
 from .step6_payment_view import *
 from .step7_confirmation_view import *
