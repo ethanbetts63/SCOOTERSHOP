@@ -47,6 +47,7 @@ class Step2MotorcycleSelectionView(LoginRequiredMixin, View):
             return redirect(reverse('service:service_book_step3'))
 
         # If all checks pass and the user has motorcycles, proceed with the view
+        
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):

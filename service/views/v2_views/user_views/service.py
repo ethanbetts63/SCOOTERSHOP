@@ -30,7 +30,7 @@ def service(request):
 
     # Get TempServiceBooking from session for pre-populating service Step 1 form
     temp_service_booking = None
-    temp_service_booking_uuid = request.session.get('temp_booking_uuid')
+    temp_service_booking_uuid = request.session.get('temp_service_booking_uuid')
 
     if temp_service_booking_uuid:
         try:
@@ -42,8 +42,8 @@ def service(request):
             })
         except TempServiceBooking.DoesNotExist:
             # If temp booking doesn't exist, clear session key
-            if 'temp_booking_uuid' in request.session:
-                del request.session['temp_booking_uuid']
+            if 'temp_service_booking_uuid' in request.session:
+                del request.session['temp_service_booking_uuid']
             temp_service_booking = None
 
     # Call the new utility function to get min_date and disabled_dates_json

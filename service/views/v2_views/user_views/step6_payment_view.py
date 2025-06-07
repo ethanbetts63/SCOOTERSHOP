@@ -20,12 +20,15 @@ class Step6PaymentView(View):
         temp_booking_uuid = request.session.get('temp_service_booking_uuid')
 
         if not temp_booking_uuid:
+            print("DEBUG: temp_booking_uuid is None or empty. Redirecting to service:service.")
             messages.error(request, "Your booking session has expired or is invalid.")
             return redirect('service:service')
 
         try:
             temp_booking = get_object_or_404(TempServiceBooking, session_uuid=temp_booking_uuid)
             request.temp_booking = temp_booking
+            # Added a success print statement here
+            print(f"DEBUG: Successfully retrieved TempServiceBooking for UUID: {temp_booking_uuid}. Booking session is valid.")
         except Http404:
             messages.error(request, "Your booking session could not be found.")
             return redirect('service:service')
@@ -230,4 +233,3 @@ class Step6PaymentView(View):
             return JsonResponse({'error': str(e)}, status=500)
         except Exception as e:
             return JsonResponse({'error': 'An internal server error occurred during payment processing.'}, status=500)
-

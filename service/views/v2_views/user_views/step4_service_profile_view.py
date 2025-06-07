@@ -63,7 +63,7 @@ class Step4ServiceProfileView(View):
         if not self.temp_booking.customer_motorcycle:
             messages.warning(request, "Please select or add your motorcycle details first (Step 3).")
             return redirect(reverse('service:service_book_step3'))
-
+        
         # self.service_settings = ServiceSettings.objects.first() # Uncomment if needed
         return super().dispatch(request, *args, **kwargs)
 

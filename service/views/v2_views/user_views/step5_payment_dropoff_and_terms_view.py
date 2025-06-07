@@ -58,7 +58,7 @@ class Step5PaymentDropoffAndTermsView(View):
         if not self.service_settings:
             messages.error(request, "Service settings are not configured. Please contact an administrator.")
             return redirect(reverse('service:service'))
-
+        
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):

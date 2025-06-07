@@ -24,7 +24,7 @@ class Step3CustomerMotorcycleView(View):
             return redirect(reverse('service:service'))
 
         self.service_settings = ServiceSettings.objects.first() 
-
+        
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
