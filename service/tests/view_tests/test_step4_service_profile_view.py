@@ -8,9 +8,9 @@ import datetime
 import uuid
 
 # Import the view to be tested
-# Assuming your view is in service.views.v2_views.user_views.Step4ServiceProfileView
+# Assuming your view is in service.views.user_views.Step4ServiceProfileView
 # Adjust the import path if necessary.
-from service.views.v2_views.user_views import Step4ServiceProfileView
+from service.views.user_views import Step4ServiceProfileView
 from service.forms.step4_service_profile_form import ServiceBookingUserForm
 
 # Import models and factories

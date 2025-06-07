@@ -8,7 +8,7 @@ import uuid # Import uuid for generating valid UUIDs
 from unittest.mock import patch, Mock
 
 # Import the view to be tested
-from service.views.v2_views.user_views.step1_service_details_view import Step1ServiceDetailsView
+from service.views.user_views.step1_service_details_view import Step1ServiceDetailsView
 
 # Import models and factories
 from service.models import TempServiceBooking, ServiceSettings, BlockedServiceDate, ServiceProfile, CustomerMotorcycle, ServiceType
@@ -88,7 +88,7 @@ class Step1ServiceDetailsViewTest(TestCase):
 
         self.request.user = Mock(is_authenticated=False) # Default to anonymous user, can be overridden
 
-    @patch('service.views.v2_views.user_views.step1_service_details_view.ServiceDetailsForm')
+    @patch('service.views.user_views.step1_service_details_view.ServiceDetailsForm')
     def test_invalid_form_submission(self, MockServiceDetailsForm):
         """
         Test that invalid form submission leads to error messages and redirection to index.
@@ -109,7 +109,7 @@ class Step1ServiceDetailsViewTest(TestCase):
         MockServiceDetailsForm.assert_called_once_with(self.request.POST)
         self.assertEqual(TempServiceBooking.objects.count(), 0) # No booking created
 
-    @patch('service.views.v2_views.user_views.step1_service_details_view.ServiceDetailsForm')
+    @patch('service.views.user_views.step1_service_details_view.ServiceDetailsForm')
     def test_service_booking_disabled(self, MockServiceDetailsForm):
         """
         Test that if service booking is disabled in settings, an error is shown.
@@ -135,7 +135,7 @@ class Step1ServiceDetailsViewTest(TestCase):
         self.assertEqual(str(messages[0]), "Service bookings are currently disabled.")
         self.assertEqual(TempServiceBooking.objects.count(), 0)
 
-    @patch('service.views.v2_views.user_views.step1_service_details_view.ServiceDetailsForm')
+    @patch('service.views.user_views.step1_service_details_view.ServiceDetailsForm')
     def test_anonymous_bookings_not_allowed(self, MockServiceDetailsForm):
         """
         Test that if anonymous bookings are not allowed, unauthenticated users get an error.
@@ -162,7 +162,7 @@ class Step1ServiceDetailsViewTest(TestCase):
         self.assertEqual(str(messages[0]), "Anonymous bookings are not allowed. Please log in to book a service.")
         self.assertEqual(TempServiceBooking.objects.count(), 0)
 
-    @patch('service.views.v2_views.user_views.step1_service_details_view.ServiceDetailsForm')
+    @patch('service.views.user_views.step1_service_details_view.ServiceDetailsForm')
     def test_service_date_too_early(self, MockServiceDetailsForm):
         """
         Test that if the service date is earlier than booking_advance_notice, an error is shown.
@@ -190,7 +190,7 @@ class Step1ServiceDetailsViewTest(TestCase):
         self.assertEqual(str(messages[0]), "Service date must be at least 1 days from now. Please choose a later date.")
         self.assertEqual(TempServiceBooking.objects.count(), 0)
 
-    @patch('service.views.v2_views.user_views.step1_service_details_view.ServiceDetailsForm')
+    @patch('service.views.user_views.step1_service_details_view.ServiceDetailsForm')
     def test_service_date_on_closed_day(self, MockServiceDetailsForm):
         """
         Test that if the service date falls on a non-open day, an error is shown.
@@ -218,7 +218,7 @@ class Step1ServiceDetailsViewTest(TestCase):
         self.assertEqual(str(messages[0]), "Services are not available on Sundays.")
         self.assertEqual(TempServiceBooking.objects.count(), 0)
 
-    @patch('service.views.v2_views.user_views.step1_service_details_view.ServiceDetailsForm')
+    @patch('service.views.user_views.step1_service_details_view.ServiceDetailsForm')
     def test_service_date_blocked(self, MockServiceDetailsForm):
         """
         Test that if the service date is within a blocked period, an error is shown.
@@ -244,9 +244,9 @@ class Step1ServiceDetailsViewTest(TestCase):
         self.assertEqual(str(messages[0]), "Selected service date overlaps with a blocked service period.")
         self.assertEqual(TempServiceBooking.objects.count(), 0)
 
-    @patch('service.views.v2_views.user_views.step1_service_details_view.ServiceDetailsForm')
+    @patch('service.views.user_views.step1_service_details_view.ServiceDetailsForm')
     # Patch reverse for service_book_step2 and service_book_step3
-    @patch('service.views.v2_views.user_views.step1_service_details_view.reverse', side_effect=lambda *args, **kwargs: {
+    @patch('service.views.user_views.step1_service_details_view.reverse', side_effect=lambda *args, **kwargs: {
         'service:service_book_step2': '/service-book/step2/',
         'service:service_book_step3': '/service-book/step3/',
         'core:index': '/index/' # Ensure core:index is still handled
@@ -287,9 +287,9 @@ class Step1ServiceDetailsViewTest(TestCase):
         self.assertEqual(str(temp_booking.session_uuid), self.request.session['temp_service_booking_uuid'])
 
 
-    @patch('service.views.v2_views.user_views.step1_service_details_view.ServiceDetailsForm')
+    @patch('service.views.user_views.step1_service_details_view.ServiceDetailsForm')
     # Patch reverse for service_book_step2 and service_book_step3
-    @patch('service.views.v2_views.user_views.step1_service_details_view.reverse', side_effect=lambda *args, **kwargs: {
+    @patch('service.views.user_views.step1_service_details_view.reverse', side_effect=lambda *args, **kwargs: {
         'service:service_book_step2': '/service-book/step2/',
         'service:service_book_step3': '/service-book/step3/',
         'core:index': '/index/'
@@ -329,9 +329,9 @@ class Step1ServiceDetailsViewTest(TestCase):
         self.assertIn('temp_service_booking_uuid', self.request.session)
         self.assertEqual(str(temp_booking.session_uuid), self.request.session['temp_service_booking_uuid'])
 
-    @patch('service.views.v2_views.user_views.step1_service_details_view.ServiceDetailsForm')
+    @patch('service.views.user_views.step1_service_details_view.ServiceDetailsForm')
     # Patch reverse for service_book_step2 and service_book_step3
-    @patch('service.views.v2_views.user_views.step1_service_details_view.reverse', side_effect=lambda *args, **kwargs: {
+    @patch('service.views.user_views.step1_service_details_view.reverse', side_effect=lambda *args, **kwargs: {
         'service:service_book_step2': '/service-book/step2/',
         'service:service_book_step3': '/service-book/step3/',
         'core:index': '/index/'
@@ -373,9 +373,9 @@ class Step1ServiceDetailsViewTest(TestCase):
         self.assertIn('temp_service_booking_uuid', self.request.session)
         self.assertEqual(str(temp_booking.session_uuid), self.request.session['temp_service_booking_uuid'])
 
-    @patch('service.views.v2_views.user_views.step1_service_details_view.ServiceDetailsForm')
+    @patch('service.views.user_views.step1_service_details_view.ServiceDetailsForm')
     # Patch reverse for service_book_step2 and service_book_step3
-    @patch('service.views.v2_views.user_views.step1_service_details_view.reverse', side_effect=lambda *args, **kwargs: {
+    @patch('service.views.user_views.step1_service_details_view.reverse', side_effect=lambda *args, **kwargs: {
         'service:service_book_step2': '/service-book/step2/',
         'service:service_book_step3': '/service-book/step3/',
         'core:index': '/index/'
@@ -421,7 +421,7 @@ class Step1ServiceDetailsViewTest(TestCase):
         self.assertEqual(updated_temp_booking.service_date, mock_form_instance.cleaned_data['service_date']) # Should be updated
         self.assertEqual(updated_temp_booking.service_profile, self.service_profile) # Should remain linked
 
-    @patch('service.views.v2_views.user_views.step1_service_details_view.ServiceDetailsForm')
+    @patch('service.views.user_views.step1_service_details_view.ServiceDetailsForm')
     def test_exception_during_save(self, MockServiceDetailsForm):
         """
         Test handling of unexpected exceptions during TempServiceBooking save.
@@ -434,7 +434,7 @@ class Step1ServiceDetailsViewTest(TestCase):
         }
 
         # Patch TempServiceBooking.objects.create to raise an exception
-        with patch('service.views.v2_views.user_views.step1_service_details_view.TempServiceBooking.objects.create',
+        with patch('service.views.user_views.step1_service_details_view.TempServiceBooking.objects.create',
                    side_effect=Exception("Database error!")):
             
             # Use the pre-initialized self.request
@@ -451,7 +451,7 @@ class Step1ServiceDetailsViewTest(TestCase):
             self.assertTrue("An unexpected error occurred while saving your selection" in str(messages[0]))
             self.assertEqual(TempServiceBooking.objects.count(), 0) # No booking created
 
-    @patch('service.views.v2_views.user_views.step1_service_details_view.ServiceDetailsForm')
+    @patch('service.views.user_views.step1_service_details_view.ServiceDetailsForm')
     def test_session_reference_cleared(self, MockServiceDetailsForm):
         """
         Test that 'service_booking_reference' is cleared from session on POST.

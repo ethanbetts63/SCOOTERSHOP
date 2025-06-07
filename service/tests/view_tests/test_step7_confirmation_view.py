@@ -15,7 +15,7 @@ from ..test_helpers.model_factories import (
 )
 
 # Views to be tested
-from service.views.v2_views.user_views.step7_confirmation_view import Step7ConfirmationView
+from service.views.user_views.step7_confirmation_view import Step7ConfirmationView
 
 class ServiceBookingConfirmationViewTest(TestCase):
     """

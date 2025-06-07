@@ -12,7 +12,7 @@ from decimal import Decimal
 import stripe
 
 # Import the view to be tested
-from service.views.v2_views.user_views import Step6PaymentView # Adjust path if different
+from service.views.user_views import Step6PaymentView # Adjust path if different
 
 # Import models and factories
 from payments.models import Payment

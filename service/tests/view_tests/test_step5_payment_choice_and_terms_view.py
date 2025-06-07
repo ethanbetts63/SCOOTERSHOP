@@ -12,8 +12,8 @@ from unittest.mock import patch, MagicMock
 from django.http import HttpResponse # Import HttpResponse
 
 # Import the view to be tested
-from service.views.v2_views.user_views import Step5PaymentDropoffAndTermsView # Adjust path if different
-from service.views.v2_views.user_views import Step6PaymentView # Import Step6PaymentView for mocking its behavior
+from service.views.user_views import Step5PaymentDropoffAndTermsView # Adjust path if different
+from service.views.user_views import Step6PaymentView # Import Step6PaymentView for mocking its behavior
 
 # Import models and factories
 from service.models import TempServiceBooking, ServiceProfile, CustomerMotorcycle, ServiceType, ServiceSettings
@@ -379,7 +379,7 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         self.assertEqual(list(form.fields['payment_option'].choices), expected_choices)
 
 
-    @patch('service.views.v2_views.user_views.Step6PaymentView.dispatch')
+    @patch('service.views.user_views.Step6PaymentView.dispatch')
     def test_post_payment_option_deposit_online(self, mock_step6_dispatch):
         """
         Tests that submitting with deposit_online option works and correctly triggers redirect to Step 6.

@@ -6,7 +6,7 @@ import json
 from unittest.mock import patch, Mock
 
 # Corrected import path for the view function
-from service.views.v2_views.user_views.ajax_get_available_times_for_date import get_available_times_for_date
+from service.views.user_views.ajax_get_available_times_for_date import get_available_times_for_date
 
 class AjaxGetAvailableTimesForDateTest(TestCase):
     """
@@ -23,7 +23,7 @@ class AjaxGetAvailableTimesForDateTest(TestCase):
         self.factory = RequestFactory()
 
     # Corrected patch path: specify the module where get_available_dropoff_times is imported
-    @patch('service.views.v2_views.user_views.ajax_get_available_times_for_date.get_available_dropoff_times')
+    @patch('service.views.user_views.ajax_get_available_times_for_date.get_available_dropoff_times')
     def test_missing_date_parameter(self, mock_get_available_dropoff_times):
         """
         Test that the view returns a 400 error if the 'date' parameter is missing.
@@ -39,7 +39,7 @@ class AjaxGetAvailableTimesForDateTest(TestCase):
         mock_get_available_dropoff_times.assert_not_called()
 
     # Corrected patch path
-    @patch('service.views.v2_views.user_views.ajax_get_available_times_for_date.get_available_dropoff_times')
+    @patch('service.views.user_views.ajax_get_available_times_for_date.get_available_dropoff_times')
     def test_invalid_date_format(self, mock_get_available_dropoff_times):
         """
         Test that the view returns a 400 error for an invalid date format.
@@ -55,7 +55,7 @@ class AjaxGetAvailableTimesForDateTest(TestCase):
         mock_get_available_dropoff_times.assert_not_called()
 
     # Corrected patch path
-    @patch('service.views.v2_views.user_views.ajax_get_available_times_for_date.get_available_dropoff_times')
+    @patch('service.views.user_views.ajax_get_available_times_for_date.get_available_dropoff_times')
     def test_valid_date_no_available_times(self, mock_get_available_dropoff_times):
         """
         Test that the view returns an empty list if get_available_dropoff_times
@@ -77,7 +77,7 @@ class AjaxGetAvailableTimesForDateTest(TestCase):
         mock_get_available_dropoff_times.assert_called_once_with(test_date)
 
     # Corrected patch path
-    @patch('service.views.v2_views.user_views.ajax_get_available_times_for_date.get_available_dropoff_times')
+    @patch('service.views.user_views.ajax_get_available_times_for_date.get_available_dropoff_times')
     def test_valid_date_with_available_times(self, mock_get_available_dropoff_times):
         """
         Test that the view correctly returns formatted available times.
@@ -104,7 +104,7 @@ class AjaxGetAvailableTimesForDateTest(TestCase):
         mock_get_available_dropoff_times.assert_called_once_with(test_date)
 
     # Corrected patch path
-    @patch('service.views.v2_views.user_views.ajax_get_available_times_for_date.get_available_dropoff_times')
+    @patch('service.views.user_views.ajax_get_available_times_for_date.get_available_dropoff_times')
     def test_only_get_requests_allowed(self, mock_get_available_dropoff_times):
         """
         Test that only GET requests are allowed for this view.

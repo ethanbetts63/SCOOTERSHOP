@@ -14,7 +14,7 @@ from ..test_helpers.model_factories import (
 )
 
 # View to be tested
-from service.views.v2_views.user_views.step7_status_check_view import Step7StatusCheckView
+from service.views.user_views.step7_status_check_view import Step7StatusCheckView
 
 class Step7StatusCheckViewTest(TestCase):
     """
@@ -98,8 +98,8 @@ class Step7StatusCheckViewTest(TestCase):
         self.assertEqual(data['message'], 'Payment Intent ID is required.')
 
     # Correct the patch target to service.models as ServiceBooking is imported from there,
-    # and adjust the original patch error to correctly reference the view within its v2_views.user_views submodule.
-    @patch('service.views.v2_views.user_views.step7_status_check_view.ServiceBooking.objects.get')
+    # and adjust the original patch error to correctly reference the view within its user_views submodule.
+    @patch('service.views.user_views.step7_status_check_view.ServiceBooking.objects.get')
     def test_get_generic_exception_returns_500(self, mock_get):
         """
         Tests that any other exception during processing returns a generic 500 error.

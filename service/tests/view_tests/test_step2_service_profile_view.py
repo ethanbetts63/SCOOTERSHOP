@@ -5,7 +5,7 @@ import uuid
 from unittest.mock import patch
 
 # Import the view to be tested
-from service.views.v2_views.user_views.step2_motorcycle_selection_view import Step2MotorcycleSelectionView
+from service.views.user_views.step2_motorcycle_selection_view import Step2MotorcycleSelectionView
 from service.forms import MotorcycleSelectionForm, ADD_NEW_MOTORCYCLE_OPTION
 
 # Import models and factories
@@ -148,7 +148,7 @@ class Step2MotorcycleSelectionViewTest(TestCase):
 
     # --- POST Method Tests (using self.client) ---
 
-    @patch('service.views.v2_views.user_views.step2_motorcycle_selection_view.MotorcycleSelectionForm')
+    @patch('service.views.user_views.step2_motorcycle_selection_view.MotorcycleSelectionForm')
     def test_post_select_new_motorcycle_redirects_to_step3(self, MockMotorcycleSelectionForm):
         """
         Test POST request redirects to Step 3 when 'Add New Motorcycle' is selected.
@@ -168,7 +168,7 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         MockMotorcycleSelectionForm.assert_called_once()
 
 
-    @patch('service.views.v2_views.user_views.step2_motorcycle_selection_view.MotorcycleSelectionForm')
+    @patch('service.views.user_views.step2_motorcycle_selection_view.MotorcycleSelectionForm')
     def test_post_select_existing_motorcycle_redirects_to_step4(self, MockMotorcycleSelectionForm):
         """
         Test POST request updates temp_booking with selected motorcycle and redirects to Step 4.
@@ -187,7 +187,7 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         MockMotorcycleSelectionForm.assert_called_once()
 
 
-    @patch('service.views.v2_views.user_views.step2_motorcycle_selection_view.MotorcycleSelectionForm')
+    @patch('service.views.user_views.step2_motorcycle_selection_view.MotorcycleSelectionForm')
     def test_post_invalid_motorcycle_selection_renders_form_with_error(self, MockMotorcycleSelectionForm):
         """
         Test POST with an invalid motorcycle ID (e.g., non-existent or not belonging to user).
@@ -200,7 +200,7 @@ class Step2MotorcycleSelectionViewTest(TestCase):
 
 
         # Patch get_object_or_404 to raise DoesNotExist when called by the view
-        with patch('service.views.v2_views.user_views.step2_motorcycle_selection_view.get_object_or_404', side_effect=CustomerMotorcycle.DoesNotExist):
+        with patch('service.views.user_views.step2_motorcycle_selection_view.get_object_or_404', side_effect=CustomerMotorcycle.DoesNotExist):
             response = self.client.post(self.base_url, {'selected_motorcycle': '9999'})
             self.assertEqual(response.status_code, 200) # Should re-render the form
             self.assertTemplateUsed(response, 'service/step2_motorcycle_selection.html')
@@ -215,7 +215,7 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         MockMotorcycleSelectionForm.assert_called_once()
 
 
-    @patch('service.views.v2_views.user_views.step2_motorcycle_selection_view.MotorcycleSelectionForm')
+    @patch('service.views.user_views.step2_motorcycle_selection_view.MotorcycleSelectionForm')
     def test_post_form_not_valid_renders_form_with_errors(self, MockMotorcycleSelectionForm):
         """
         Test POST request with invalid form data (e.g., no selection).
