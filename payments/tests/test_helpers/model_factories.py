@@ -7,6 +7,7 @@ from decimal import Decimal
 from faker import Faker
 import django.apps # Import django.apps
 
+
 fake = Faker()
 
 
@@ -20,7 +21,7 @@ from inventory.models import Motorcycle, MotorcycleCondition
 User = get_user_model()
 
 
-# Helper function to get model choices safely
+# Helper function to get model choices safely - Keeping for other models, but not for the problematic ones
 def get_model_choices(app_label, model_name, choices_attribute):
     """Safely retrieves choices from a Django model's attribute."""
     # Ensure Django's app registry is ready
@@ -135,9 +136,19 @@ class PaymentFactory(factory.django.DjangoModelFactory):
     stripe_payment_method_id = factory.Faker('md5')
     amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True))
     currency = 'AUD'
-    status = factory.Faker('random_element', elements=factory.LazyFunction(lambda: [choice[0] for choice in Payment.STATUS_CHOICES]))
+    # Directly specify common Stripe payment intent statuses
+    status = factory.Faker('random_element', elements=[
+        'requires_payment_method',
+        'requires_confirmation',
+        'requires_action',
+        'processing',
+        'succeeded',
+        'canceled',
+        'failed',
+    ])
     description = factory.Faker('sentence')
-    metadata = factory.LazyFunction(lambda: {'test_key': fake.word()})
+    # Changed metadata to use factory.LazyFunction(dict) to default to an empty dictionary
+    metadata = factory.LazyFunction(dict)
     refund_policy_snapshot = factory.LazyFunction(lambda: {'policy_version': '1.0', 'deduct_fees': True})
     refunded_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
 
@@ -204,7 +215,8 @@ class TempHireBookingFactory(factory.django.DjangoModelFactory):
     package = factory.SubFactory(PackageFactory)
     driver_profile = factory.SubFactory(DriverProfileFactory)
     is_international_booking = factory.Faker('boolean')
-    payment_option = factory.Faker('random_element', elements=factory.LazyFunction(lambda: get_model_choices('hire', 'TempHireBooking', 'PAYMENT_METHOD_CHOICES')))
+    # Replaced get_model_choices with a hardcoded list for payment_option
+    payment_option = factory.Faker('random_element', elements=['credit_card', 'bank_transfer', 'cash', 'stripe'])
 
     booked_hourly_rate = factory.LazyAttribute(lambda o: getattr(o.motorcycle, 'hourly_hire_rate', fake.pydecimal(left_digits=2, right_digits=2, positive=True)))
     booked_daily_rate = factory.LazyAttribute(lambda o: getattr(o.motorcycle, 'daily_hire_rate', fake.pydecimal(left_digits=3, right_digits=2, positive=True)))
@@ -254,11 +266,11 @@ class HireBookingFactory(factory.django.DjangoModelFactory):
     )
     deposit_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
     amount_paid = factory.LazyAttribute(lambda o: o.grand_total)
-    payment_status = factory.Faker('random_element', elements=factory.LazyFunction(lambda: get_model_choices('hire', 'HireBooking', 'PAYMENT_STATUS_CHOICES')))
-    payment_method = factory.Faker('random_element', elements=factory.LazyFunction(lambda: get_model_choices('hire', 'HireBooking', 'PAYMENT_METHOD_CHOICES')))
+    payment_status = factory.Faker('random_element', elements=['pending', 'paid', 'requires_action', 'refunded', 'failed'])
+    payment_method = factory.Faker('random_element', elements=['credit_card', 'bank_transfer', 'cash', 'stripe'])
     currency = 'AUD'
 
-    status = factory.Faker('random_element', elements=factory.LazyFunction(lambda: get_model_choices('hire', 'HireBooking', 'STATUS_CHOICES')))
+    status = factory.Faker('random_element', elements=['pending', 'confirmed', 'cancelled', 'completed', 'picked_up', 'returned'])
     customer_notes = factory.Faker('paragraph')
     internal_notes = factory.Faker('paragraph')
 
@@ -285,7 +297,7 @@ class HireRefundRequestFactory(factory.django.DjangoModelFactory):
     reason = factory.Faker('paragraph')
     rejection_reason = None
     requested_at = factory.LazyFunction(timezone.now)
-    status = factory.Faker('random_element', elements=factory.LazyFunction(lambda: get_model_choices('payments', 'HireRefundRequest', 'STATUS_CHOICES')))
+    status = factory.Faker('random_element', elements=['pending', 'approved', 'rejected', 'processed'])
     amount_to_refund = factory.LazyFunction(lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True))
     processed_by = None
     processed_at = None
@@ -322,7 +334,7 @@ class TempServiceBookingFactory(factory.django.DjangoModelFactory):
     service_type = factory.SubFactory('service.ServiceType')
     service_profile = factory.SubFactory(ServiceProfileFactory)
     customer_motorcycle = factory.SubFactory('service.CustomerMotorcycle', service_profile=factory.SelfAttribute('..service_profile'))
-    payment_option = factory.Faker('random_element', elements=factory.LazyFunction(lambda: get_model_choices('service', 'TempServiceBooking', 'PAYMENT_METHOD_CHOICES')))
+    payment_option = factory.Faker('random_element', elements=['credit_card', 'bank_transfer', 'cash', 'stripe'])
 
     dropoff_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+30d'))
     dropoff_time = factory.Faker('time_object')
@@ -344,14 +356,14 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
     service_type = factory.SubFactory('service.ServiceType')
     service_profile = factory.SubFactory(ServiceProfileFactory)
     customer_motorcycle = factory.SubFactory('service.CustomerMotorcycle', service_profile=factory.SelfAttribute('..service_profile'))
-    payment_option = factory.Faker('random_element', elements=factory.LazyFunction(lambda: get_model_choices('service', 'ServiceBooking', 'PAYMENT_METHOD_CHOICES')))
+    payment_option = factory.Faker('random_element', elements=['credit_card', 'bank_transfer', 'cash', 'stripe'])
     payment = factory.SubFactory(PaymentFactory)
 
     calculated_total = factory.LazyFunction(lambda: fake.pydecimal(left_digits=4, right_digits=2, positive=True))
     calculated_deposit_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
     amount_paid = factory.LazyAttribute(lambda o: o.calculated_total)
-    payment_status = factory.Faker('random_element', elements=factory.LazyFunction(lambda: get_model_choices('service', 'ServiceBooking', 'PAYMENT_STATUS_CHOICES')))
-    payment_method = factory.Faker('random_element', elements=factory.LazyFunction(lambda: get_model_choices('service', 'ServiceBooking', 'PAYMENT_METHOD_CHOICES')))
+    payment_status = factory.Faker('random_element', elements=['pending', 'paid', 'requires_action', 'refunded', 'failed'])
+    payment_method = factory.Faker('random_element', elements=['credit_card', 'bank_transfer', 'cash', 'stripe'])
     currency = 'AUD'
 
     stripe_payment_intent_id = factory.LazyAttribute(lambda o: o.payment.stripe_payment_intent_id if o.payment else None)
@@ -365,5 +377,5 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
 
     estimated_pickup_date = factory.LazyAttribute(lambda o: o.service_date + datetime.timedelta(days=fake.random_int(min=1, max=5)))
 
-    booking_status = factory.Faker('random_element', elements=factory.LazyFunction(lambda: get_model_choices('service', 'ServiceBooking', 'BOOKING_STATUS_CHOICES')))
+    booking_status = factory.Faker('random_element', elements=['pending', 'confirmed', 'in_progress', 'completed', 'cancelled', 'dropped_off', 'picked_up'])
     customer_notes = factory.Faker('paragraph')
