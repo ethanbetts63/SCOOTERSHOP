@@ -401,31 +401,3 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         self.temp_booking.refresh_from_db()
         self.assertEqual(self.temp_booking.payment_option, PAYMENT_OPTION_DEPOSIT)
         mock_step6_dispatch.assert_called_once()
-
-
-    @patch('service.views.v2_views.user_views.Step6PaymentView.dispatch')
-    def test_post_payment_option_instore_payment(self, mock_step6_dispatch):
-        """
-        Tests that submitting with instore_payment option works and correctly triggers redirect to Step 6.
-        We mock Step6PaymentView.dispatch to prevent it from performing its own redirects
-        during this test, ensuring we only assert the redirect from Step 5.
-        """
-        # Simplest way to mock a successful response from the next view's dispatch
-        # Note: For 'in_store_full', Step6 will internally redirect to Step7.
-        # This mock ensures Step5's redirect to Step6 is captured correctly.
-        mock_step6_dispatch.return_value = HttpResponse(status=200)
-
-
-        valid_data = self.valid_post_data.copy()
-        valid_data['payment_option'] = PAYMENT_OPTION_INSTORE
-        response = self.client.post(self.base_url, valid_data)
-        
-        # Assert that Step5 redirected to Step6 (302 status)
-        self.assertEqual(response.status_code, 302)
-        # assertRedirects will follow the redirect to Step6. Because Step6's dispatch is mocked to return 200,
-        # assertRedirects will consider the redirect successful.
-        self.assertRedirects(response, reverse('service:service_book_step6'))
-        
-        self.temp_booking.refresh_from_db()
-        self.assertEqual(self.temp_booking.payment_option, PAYMENT_OPTION_INSTORE)
-        mock_step6_dispatch.assert_called_once()

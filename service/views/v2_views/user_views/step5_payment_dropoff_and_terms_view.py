@@ -95,7 +95,6 @@ class Step5PaymentDropoffAndTermsView(View):
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
-        print(f"DEBUG: Step5 - POST request received.")
         form = self.form_class(request.POST, **self.get_form_kwargs())
 
         if form.is_valid():
@@ -103,17 +102,14 @@ class Step5PaymentDropoffAndTermsView(View):
             self.temp_booking.dropoff_time = form.cleaned_data['dropoff_time']
             self.temp_booking.payment_option = form.cleaned_data['payment_option']
             
-            print(f"DEBUG: Step5 - Form is valid. Cleaned payment_option: {form.cleaned_data['payment_option']}")
             
             # Save TempBooking first to ensure dropoff_date, dropoff_time, and payment_option are persisted
             self.temp_booking.save(update_fields=['dropoff_date', 'dropoff_time', 'payment_option'])
-            print(f"DEBUG: Step5 - TempBooking saved. Stored payment_option: {self.temp_booking.payment_option}")
 
             messages.success(request, "Drop-off and payment details have been saved successfully.")
             
             # Conditional redirect based on payment option
             if self.temp_booking.payment_option == 'in_store_full':
-                print("DEBUG: Step5 - 'in_store_full' payment selected. Finalizing booking directly.")
                 try:
                     # Call convert_temp_service_booking to create the final ServiceBooking
                     # For in-store payment, amount_paid is 0 and status is 'unpaid'
@@ -127,20 +123,16 @@ class Step5PaymentDropoffAndTermsView(View):
                         payment_obj=None, # No Payment object associated initially
                     )
                     request.session['final_service_booking_reference'] = final_service_booking.service_booking_reference
-                    print(f"DEBUG: Step5 - Booking finalized. Redirecting to Step 7 with booking reference: {final_service_booking.service_booking_reference}")
                     return redirect(reverse('service:service_book_step7'))
 
                 except Exception as e:
-                    print(f"DEBUG: Step5 - ERROR finalizing in-store booking: {e}")
                     messages.error(request, f"An error occurred while finalizing your booking: {e}. Please try again.")
                     # If an error occurs, you might want to redirect back to step 5 or a general error page
                     return redirect(reverse('service:service_book_step5'))
             else:
-                print("DEBUG: Step5 - Redirecting to service_book_step6 (Online payment selected).")
                 return redirect(reverse('service:service_book_step6'))
 
         else:
-            print(f"DEBUG: Step5 - Form is NOT valid. Errors: {form.errors}")
             messages.error(request, "Please correct the errors highlighted below.")
             context = self.get_context_data(form=form)
             return render(request, self.template_name, context)
