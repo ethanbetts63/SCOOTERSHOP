@@ -97,7 +97,9 @@ class Step7StatusCheckViewTest(TestCase):
         self.assertEqual(data['status'], 'error')
         self.assertEqual(data['message'], 'Payment Intent ID is required.')
 
-    @patch('service.views.step7_confirmation_view.ServiceBooking.objects.get')
+    # Correct the patch target to service.models as ServiceBooking is imported from there,
+    # and adjust the original patch error to correctly reference the view within its v2_views.user_views submodule.
+    @patch('service.views.v2_views.user_views.step7_status_check_view.ServiceBooking.objects.get')
     def test_get_generic_exception_returns_500(self, mock_get):
         """
         Tests that any other exception during processing returns a generic 500 error.
@@ -113,3 +115,4 @@ class Step7StatusCheckViewTest(TestCase):
         
         self.assertEqual(data['status'], 'error')
         self.assertIn('An internal server error occurred', data['message'])
+
