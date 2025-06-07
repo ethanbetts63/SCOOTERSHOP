@@ -23,8 +23,8 @@ class Step5PaymentDropoffAndTermsView(View):
         Retrieves the TempServiceBooking instance from the session. If not found,
         it redirects the user to the starting page with an error message.
         """
-        temp_booking_uuid = request.session.get('temp_booking_uuid')
-        if not temp_booking_uuid:
+        temp_service_booking_uuid = request.session.get('temp_service_booking_uuid')
+        if not temp_service_booking_uuid:
             messages.error(request, "Your booking session has expired. Please start over.")
             return None, redirect(reverse('service:service')) # Adjust 'service:service' to your initial booking page URL
         
@@ -32,10 +32,10 @@ class Step5PaymentDropoffAndTermsView(View):
             # Eagerly load related objects to prevent extra database queries
             temp_booking = TempServiceBooking.objects.select_related(
                 'service_type', 'customer_motorcycle', 'service_profile'
-            ).get(session_uuid=temp_booking_uuid)
+            ).get(session_uuid=temp_service_booking_uuid)
             return temp_booking, None
         except TempServiceBooking.DoesNotExist:
-            request.session.pop('temp_booking_uuid', None) # Clean up invalid session data
+            request.session.pop('temp_service_booking_uuid', None) # Clean up invalid session data
             messages.error(request, "Your booking session could not be found. Please start over.")
             return None, redirect(reverse('service:service'))
 
@@ -58,7 +58,7 @@ class Step5PaymentDropoffAndTermsView(View):
         if not self.service_settings:
             messages.error(request, "Service settings are not configured. Please contact an administrator.")
             return redirect(reverse('service:service'))
-        
+        print(f"DEBUG: Entering {self.__class__.__name__}. Session UUID: {request.session.get('temp_service_booking_uuid')}")
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
@@ -138,15 +138,20 @@ class Step5PaymentDropoffAndTermsView(View):
         If invalid, re-renders the form with error messages.
         """
         form = self.form_class(request.POST, **self.get_form_kwargs())
+        print(f"DEBUG: Entering {self.__class__.__name__} POST method. Session UUID: {request.session.get('temp_service_booking_uuid')}")
 
         if form.is_valid():
+            print(f"DEBUG: Step5 form is valid. Cleaned data: {form.cleaned_data}")
             self.temp_booking.dropoff_date = form.cleaned_data['dropoff_date']
             self.temp_booking.dropoff_time = form.cleaned_data['dropoff_time']
             self.temp_booking.payment_option = form.cleaned_data['payment_option']
             
+            print(f"DEBUG: temp_booking.payment_option BEFORE save: {self.temp_booking.payment_option}")
+            
             # The 'service_terms_accepted' field is for validation only and is not saved.
             
             self.temp_booking.save(update_fields=['dropoff_date', 'dropoff_time', 'payment_option'])
+            print(f"DEBUG: temp_booking.payment_option AFTER save: {self.temp_booking.payment_option}")
 
             messages.success(request, "Drop-off and payment details have been saved successfully.")
             # Redirect to the next step (e.g., a summary page)
@@ -154,7 +159,7 @@ class Step5PaymentDropoffAndTermsView(View):
 
         else:
             # Form is invalid, display errors to the user
+            print(f"DEBUG: Step5 form is NOT valid. Errors: {form.errors}")
             messages.error(request, "Please correct the errors highlighted below.")
             context = self.get_context_data(form=form)
             return render(request, self.template_name, context)
-
