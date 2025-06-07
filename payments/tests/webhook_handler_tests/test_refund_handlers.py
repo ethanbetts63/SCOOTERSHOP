@@ -55,6 +55,7 @@ class RefundWebhookHandlerTest(TestCase):
         # 1. Setup
         refund_request = HireRefundRequestFactory(
             hire_booking=self.hire_booking,
+            payment=self.payment,  # Explicitly link to the correct payment
             status='approved',
             refund_calculation_details={},
             amount_to_refund=self.payment.amount # Explicitly set amount_to_refund for full refund test
@@ -90,6 +91,7 @@ class RefundWebhookHandlerTest(TestCase):
         partial_refund_amount = Decimal('100.00')
         refund_request = HireRefundRequestFactory(
             hire_booking=self.hire_booking,
+            payment=self.payment, # Explicitly link to the correct payment
             amount_to_refund=partial_refund_amount,
             status='approved',
             refund_calculation_details={}
@@ -106,10 +108,13 @@ class RefundWebhookHandlerTest(TestCase):
 
         self.payment.refresh_from_db()
         self.hire_booking.refresh_from_db()
+        refund_request.refresh_from_db()
+
         self.assertEqual(self.payment.status, 'partially_refunded')
         self.assertEqual(self.payment.refunded_amount, partial_refund_amount)
         self.assertEqual(self.hire_booking.payment_status, 'partially_refunded')
         self.assertEqual(self.hire_booking.status, 'confirmed') # Not cancelled
+        self.assertEqual(refund_request.status, 'refunded') # The request is considered refunded once processed.
         self.assertEqual(mock_send_email.call_count, 2)
 
     @mock.patch('payments.webhook_handlers.refund_handlers.send_templated_email')
@@ -118,6 +123,13 @@ class RefundWebhookHandlerTest(TestCase):
         """
         Tests 'charge.refund.updated' event for a successful refund.
         """
+        # Create a refund request for the handler to find
+        HireRefundRequestFactory(
+            hire_booking=self.hire_booking,
+            payment=self.payment,
+            status='approved',
+            amount_to_refund=self.payment.amount
+        )
         mock_stripe_charge_retrieve.return_value = {
             'amount_refunded': int(self.payment.amount * 100)
         }
@@ -142,6 +154,13 @@ class RefundWebhookHandlerTest(TestCase):
         Tests 'charge.refund.updated' falls back to event data if stripe.Charge.retrieve fails.
         """
         fallback_amount = Decimal('50.00')
+        # Create a refund request for the handler to find
+        HireRefundRequestFactory(
+            hire_booking=self.hire_booking,
+            payment=self.payment,
+            status='approved',
+            amount_to_refund=fallback_amount
+        )
         event_refund_object_data = {
             'object': 'refund',
             'id': 're_updated_fail_123',
@@ -156,4 +175,3 @@ class RefundWebhookHandlerTest(TestCase):
         self.assertEqual(self.payment.status, 'partially_refunded')
         self.assertEqual(self.payment.refunded_amount, fallback_amount)
         self.assertEqual(mock_send_email.call_count, 2)
-

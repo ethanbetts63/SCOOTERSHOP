@@ -300,7 +300,12 @@ class HireRefundRequestFactory(factory.django.DjangoModelFactory):
     staff_notes = factory.Faker('paragraph')
     stripe_refund_id = factory.Sequence(lambda n: f"re_{uuid.uuid4().hex[:24]}_{n}")
     is_admin_initiated = factory.Faker('boolean')
-    refund_calculation_details = factory.LazyFunction(lambda: {'policy_version': '1.0', 'refunded_amount': fake.pydecimal(left_digits=2, right_digits=2)})
+    refund_calculation_details = factory.LazyFunction(
+        lambda: {
+            'policy_version': '1.0',
+            'refunded_amount': str(fake.pydecimal(left_digits=2, right_digits=2, positive=True))
+        }
+    )
     request_email = factory.Faker('email')
     verification_token = factory.LazyFunction(uuid.uuid4)
     token_created_at = factory.LazyFunction(timezone.now)
