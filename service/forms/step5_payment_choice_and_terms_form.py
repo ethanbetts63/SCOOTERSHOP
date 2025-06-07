@@ -3,9 +3,9 @@ from django.utils import timezone
 from datetime import timedelta, datetime
 
 # Define constants for payment options to avoid magic strings
-PAYMENT_OPTION_DEPOSIT = 'deposit_online'
-PAYMENT_OPTION_FULL_ONLINE = 'full_online'
-PAYMENT_OPTION_INSTORE = 'instore_payment'
+PAYMENT_OPTION_DEPOSIT = 'online_deposit'
+PAYMENT_OPTION_FULL_ONLINE = 'online_full'
+PAYMENT_OPTION_INSTORE = 'in_store_full'
 
 class PaymentOptionForm(forms.Form):
     """

@@ -12,7 +12,7 @@ class TempServiceBooking(models.Model):
         ('online_deposit', 'Deposit Payment Online'),
         ('in_store_full', 'Full Payment Store'),
     ]
-
+    
     session_uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, help_text="Unique identifier for retrieving the temporary booking.")
     service_type = models.ForeignKey(
         'service.ServiceType', # Changed to string literal
