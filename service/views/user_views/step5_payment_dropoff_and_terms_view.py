@@ -103,12 +103,14 @@ class Step5PaymentDropoffAndTermsView(View):
         form = self.form_class(request.POST, **self.get_form_kwargs())
 
         if form.is_valid():
+            print(f"DEBUG: Step 5 - form.cleaned_data['payment_option']: {form.cleaned_data['payment_option']}")
             self.temp_booking.dropoff_date = form.cleaned_data['dropoff_date']
             self.temp_booking.dropoff_time = form.cleaned_data['dropoff_time']
             self.temp_booking.payment_option = form.cleaned_data['payment_option']
             
             # Save TempBooking first to ensure dropoff_date, dropoff_time, and payment_option are persisted
             self.temp_booking.save(update_fields=['dropoff_date', 'dropoff_time', 'payment_option'])
+            print(f"DEBUG: Step 5 - temp_booking.payment_option after save: {self.temp_booking.payment_option}")
 
             messages.success(request, "Drop-off and payment details have been saved successfully.")
             
@@ -182,4 +184,3 @@ class Step5PaymentDropoffAndTermsView(View):
             messages.error(request, "Please correct the errors highlighted below.")
             context = self.get_context_data(form=form)
             return render(request, self.template_name, context)
-

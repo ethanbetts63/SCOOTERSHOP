@@ -79,9 +79,6 @@ class Step1ServiceDetailsViewTest(TestCase):
         # This is crucial as Django's RequestFactory doesn't automatically add a session.
         self.request = self.factory.post(reverse('core:index'), {}) # Use core:index as the base URL
         self.request.session = {} # Manually attach a session dictionary
-
-        # Manually attach Django's message storage to the request for testing messages
-        # This resolves the 'AttributeError: 'WSGIRequest' object has no attribute '_messages''
         setattr(self.request, '_messages', FallbackStorage(self.request))
         setattr(self.request, '_get_messages', lambda: FallbackStorage(self.request))
 
