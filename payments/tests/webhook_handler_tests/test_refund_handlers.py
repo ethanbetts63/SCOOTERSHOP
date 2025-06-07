@@ -55,7 +55,9 @@ class RefundWebhookHandlerTest(TestCase):
         # 1. Setup
         refund_request = HireRefundRequestFactory(
             hire_booking=self.hire_booking,
-            status='approved'
+            status='approved',
+            refund_calculation_details={},
+            amount_to_refund=self.payment.amount # Explicitly set amount_to_refund for full refund test
         )
         event_charge_object_data = {
             'object': 'charge',
@@ -89,7 +91,8 @@ class RefundWebhookHandlerTest(TestCase):
         refund_request = HireRefundRequestFactory(
             hire_booking=self.hire_booking,
             amount_to_refund=partial_refund_amount,
-            status='approved'
+            status='approved',
+            refund_calculation_details={}
         )
         event_charge_object_data = {
             'object': 'charge',

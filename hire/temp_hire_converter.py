@@ -50,7 +50,6 @@ def convert_temp_to_hire_booking(
         Exception: If any error occurs during the conversion process.
     """
     logger.info(f"Attempting to convert TempHireBooking {temp_booking.id} to HireBooking.")
-    print(f"DEBUG: Converting TempHireBooking {temp_booking.id}...")
 
     try:
         with transaction.atomic():
@@ -76,7 +75,6 @@ def convert_temp_to_hire_booking(
                     'deposit_amount': float(hire_settings.deposit_amount),
                     # Add any other relevant settings that affect refund calculation
                 }
-                print(f"DEBUG: Captured current refund settings: {current_refund_settings}")
             else:
                 print("WARNING: HireSettings instance not found. Refund policy snapshot will be empty.")
 
