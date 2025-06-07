@@ -72,7 +72,7 @@ class ServiceWebhookHandlerTest(TestCase):
             self.assertIsNotNone(service_booking)
             self.assertEqual(service_booking.payment_status, 'paid')
             self.assertEqual(service_booking.booking_status, 'confirmed')
-            self.assertEqual(service_booking.amount_paid_on_booking, temp_booking.calculated_total)
+            self.assertEqual(service_booking.amount_paid, temp_booking.calculated_total)
 
             # Assert Payment object is updated
             payment_obj.refresh_from_db()

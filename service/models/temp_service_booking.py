@@ -54,7 +54,7 @@ class TempServiceBooking(models.Model):
         null=True, blank=True, # Deposit might not be applicable or calculated yet.
         help_text="Calculated deposit amount, if applicable."
     )
-    # Timestamps
+    calculated_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=True, null=True,)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -63,7 +63,7 @@ class TempServiceBooking(models.Model):
         # Assuming appointment_date is meant to be dropoff_date
         # Added a check for service_profile being None
         profile_name = self.service_profile.name if self.service_profile else "Anonymous"
-        return f"Temp Booking {self.session_uuid} for {profile_name} on {self.dropoff_date}"
+        return f"Temp Booking {{self.session_uuid}} for {profile_name} on {self.dropoff_date}"
 
     class Meta:
         verbose_name = "Temporary Service Booking"
