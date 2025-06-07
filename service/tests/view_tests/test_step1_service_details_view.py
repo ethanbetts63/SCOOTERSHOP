@@ -282,8 +282,9 @@ class Step1ServiceDetailsViewTest(TestCase):
         self.assertEqual(temp_booking.service_type, self.service_type)
         self.assertEqual(temp_booking.service_date, mock_form_instance.cleaned_data['service_date'])
         self.assertIsNone(temp_booking.service_profile) # Should be None for anonymous
-        self.assertIn('temp_booking_uuid', self.request.session)
-        self.assertEqual(str(temp_booking.session_uuid), self.request.session['temp_booking_uuid'])
+        # Assert the correct session key
+        self.assertIn('temp_service_booking_uuid', self.request.session)
+        self.assertEqual(str(temp_booking.session_uuid), self.request.session['temp_service_booking_uuid'])
 
 
     @patch('service.views.v2_views.user_views.step1_service_details_view.ServiceDetailsForm')
@@ -324,8 +325,9 @@ class Step1ServiceDetailsViewTest(TestCase):
         self.assertEqual(temp_booking.service_type, self.service_type)
         self.assertEqual(temp_booking.service_date, mock_form_instance.cleaned_data['service_date'])
         self.assertEqual(temp_booking.service_profile, self.service_profile) # Should be linked
-        self.assertIn('temp_booking_uuid', self.request.session)
-        self.assertEqual(str(temp_booking.session_uuid), self.request.session['temp_booking_uuid'])
+        # Assert the correct session key
+        self.assertIn('temp_service_booking_uuid', self.request.session)
+        self.assertEqual(str(temp_booking.session_uuid), self.request.session['temp_service_booking_uuid'])
 
     @patch('service.views.v2_views.user_views.step1_service_details_view.ServiceDetailsForm')
     # Patch reverse for service_book_step2 and service_book_step3
@@ -367,8 +369,9 @@ class Step1ServiceDetailsViewTest(TestCase):
         self.assertEqual(temp_booking.service_type, self.service_type)
         self.assertEqual(temp_booking.service_date, mock_form_instance.cleaned_data['service_date'])
         self.assertEqual(temp_booking.service_profile, self.service_profile)
-        self.assertIn('temp_booking_uuid', self.request.session)
-        self.assertEqual(str(temp_booking.session_uuid), self.request.session['temp_booking_uuid'])
+        # Assert the correct session key
+        self.assertIn('temp_service_booking_uuid', self.request.session)
+        self.assertEqual(str(temp_booking.session_uuid), self.request.session['temp_service_booking_uuid'])
 
     @patch('service.views.v2_views.user_views.step1_service_details_view.ServiceDetailsForm')
     # Patch reverse for service_book_step2 and service_book_step3
@@ -395,7 +398,8 @@ class Step1ServiceDetailsViewTest(TestCase):
         }
 
         # Use the pre-initialized self.request and set its session
-        self.request.session = {'temp_booking_uuid': str(existing_temp_booking.session_uuid)}
+        # Use the correct session key
+        self.request.session = {'temp_service_booking_uuid': str(existing_temp_booking.session_uuid)}
         self.request.user = self.user # Authenticated user with motorcycles (to ensure redirect path)
         CustomerMotorcycleFactory(service_profile=self.service_profile) # Ensure motorcycles exist
 
@@ -407,6 +411,7 @@ class Step1ServiceDetailsViewTest(TestCase):
 
         messages = list(get_messages(self.request))
         self.assertEqual(len(messages), 1)
+        # Correct the expected message
         self.assertEqual(str(messages[0]), "Service details updated. Please choose your motorcycle.")
 
         # Verify the existing TempServiceBooking was updated, not a new one created
@@ -467,9 +472,10 @@ class Step1ServiceDetailsViewTest(TestCase):
         )
 
         # Use the pre-initialized self.request and set its session and user
+        # Use the correct session key
         self.request.session = {
             'service_booking_reference': 'OLDREF123',
-            'temp_booking_uuid': str(existing_temp_booking_for_test.session_uuid) # Use a valid UUID
+            'temp_service_booking_uuid': str(existing_temp_booking_for_test.session_uuid) # Use a valid UUID
         }
         self.request.user = self.user # Use the authenticated user
         CustomerMotorcycleFactory(service_profile=self.service_profile) # Ensure motorcycles exist for this user
@@ -477,6 +483,7 @@ class Step1ServiceDetailsViewTest(TestCase):
         response = Step1ServiceDetailsView().post(self.request)
 
         self.assertNotIn('service_booking_reference', self.request.session)
-        # The 'temp_booking_uuid' should remain in the session or be updated.
-        self.assertIn('temp_booking_uuid', self.request.session)
-        self.assertEqual(str(existing_temp_booking_for_test.session_uuid), self.request.session['temp_booking_uuid'])
+        # The 'temp_service_booking_uuid' should remain in the session or be updated.
+        self.assertIn('temp_service_booking_uuid', self.request.session)
+        self.assertEqual(str(existing_temp_booking_for_test.session_uuid), self.request.session['temp_service_booking_uuid'])
+

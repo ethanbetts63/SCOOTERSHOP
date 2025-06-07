@@ -54,9 +54,9 @@ class Step2MotorcycleSelectionViewTest(TestCase):
             service_date=datetime.date.today() + datetime.timedelta(days=7), # A valid date
             customer_motorcycle=None # Ensure it starts as None for tests that expect it
         )
-        # Set the UUID in the client's session
+        # Set the UUID in the client's session using the correct key
         session = self.client.session
-        session['temp_booking_uuid'] = str(self.temp_booking.session_uuid)
+        session['temp_service_booking_uuid'] = str(self.temp_booking.session_uuid)
         session.save()
 
         # Ensure there's at least one motorcycle for the user by default, for tests that use it.
@@ -67,7 +67,7 @@ class Step2MotorcycleSelectionViewTest(TestCase):
 
     def test_dispatch_no_temp_booking_uuid_in_session(self):
         """
-        Test dispatch redirects to core:index if 'temp_booking_uuid' is missing from session.
+        Test dispatch redirects to service:service if 'temp_service_booking_uuid' is missing from session.
         Uses RequestFactory because we are testing the dispatch logic before template rendering.
         """
         request = self.factory.get(self.base_url)
@@ -75,31 +75,35 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         request.user = self.user # Ensure user is logged in for this dispatch
         response = Step2MotorcycleSelectionView().dispatch(request)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('service:service'))
+        self.assertEqual(response.url, reverse('service:service')) # Expecting redirect to base service page
 
     def test_dispatch_invalid_temp_booking_uuid_in_session(self):
         """
-        Test dispatch redirects to core:index if 'temp_booking_uuid' in session is invalid.
+        Test dispatch redirects to service:service if 'temp_service_booking_uuid' in session is invalid (not in DB).
         """
         request = self.factory.get(self.base_url)
-        request.session = {'temp_booking_uuid': str(uuid.uuid4())} # A valid UUID format, but not in DB
+        # Use the correct session key
+        request.session = {'temp_service_booking_uuid': str(uuid.uuid4())} # A valid UUID format, but not in DB
         request.user = self.user
         response = Step2MotorcycleSelectionView().dispatch(request)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('service:service'))
-        self.assertNotIn('temp_booking_uuid', request.session)
+        self.assertEqual(response.url, reverse('service:service')) # Expecting redirect to base service page
+        # Assert the correct session key is removed
+        self.assertNotIn('temp_service_booking_uuid', request.session)
 
     def test_dispatch_temp_booking_missing_service_profile(self):
         """
-        Test dispatch redirects to core:index if temp_booking.service_profile is None.
+        Test dispatch redirects to step3 if temp_booking.service_profile is None.
         """
         self.temp_booking.service_profile = None
         self.temp_booking.save()
         request = self.factory.get(self.base_url)
-        request.session = {'temp_booking_uuid': str(self.temp_booking.session_uuid)}
+        # Use the correct session key
+        request.session = {'temp_service_booking_uuid': str(self.temp_booking.session_uuid)}
         request.user = self.user
         response = Step2MotorcycleSelectionView().dispatch(request)
         self.assertEqual(response.status_code, 302)
+        # Expecting redirect to step3
         self.assertEqual(response.url, reverse('service:service_book_step3'))
 
     def test_dispatch_no_motorcycles_redirects_to_step3(self):
@@ -108,10 +112,12 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         """
         CustomerMotorcycle.objects.all().delete()  # Ensure no motorcycles exist for the user
         request = self.factory.get(self.base_url)
-        request.session = {'temp_booking_uuid': str(self.temp_booking.session_uuid)}
+        # Use the correct session key
+        request.session = {'temp_service_booking_uuid': str(self.temp_booking.session_uuid)}
         request.user = self.user
         response = Step2MotorcycleSelectionView().dispatch(request)
         self.assertEqual(response.status_code, 302)
+        # Expecting redirect to step3
         self.assertEqual(response.url, reverse('service:service_book_step3'))
 
 
@@ -123,8 +129,13 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         Uses self.client to get a response that includes context and template info.
         """
         # Ensure there is a motorcycle for this user before GETting the page
-        CustomerMotorcycleFactory(service_profile=self.service_profile)
+        # (Already done in setUp, but explicit for clarity if setUp changes)
+        CustomerMotorcycleFactory(service_profile=self.service_profile) 
+        
+        # Ensure temp_booking's service_profile is correctly set and exists, and it has motorcycles.
+        # This implicitly uses the self.temp_booking and self.customer_motorcycle from setUp.
         response = self.client.get(self.base_url)
+        
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'service/step2_motorcycle_selection.html')
         self.assertIsInstance(response.context['form'], MotorcycleSelectionForm)
@@ -242,3 +253,4 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         self.assertEqual(response.url, reverse('service:service_book_step3'))
         self.temp_booking.refresh_from_db()
         self.assertIsNone(self.temp_booking.customer_motorcycle) # Still no motorcycle linked
+

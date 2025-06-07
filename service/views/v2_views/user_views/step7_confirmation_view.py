@@ -5,7 +5,7 @@ from django.contrib import messages
 from service.models import ServiceBooking, TempServiceBooking
 from service.utils import convert_temp_service_booking
 
-class ServiceBookingConfirmationView(View):
+class Step7ConfirmationView(View):
     """
     Handles the final step (Step 7) of the service booking process, displaying the confirmation page.
     """

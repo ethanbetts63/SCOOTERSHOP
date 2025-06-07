@@ -21,10 +21,10 @@ urlpatterns = [
     path('service-book/step6/', user_views.Step6PaymentView.as_view(), name='service_book_step6'),
     
     # Step 7: Confirmation page
-    path('service-book/step7/', user_views.ServiceBookingConfirmationView.as_view(), name='service_book_step7'),
+    path('service-book/step7/', user_views.Step7ConfirmationView.as_view(), name='service_book_step7'),
     
     # NEW: AJAX endpoint for checking booking status
-    path('service-book/status-check/', user_views.ServiceBookingStatusCheckView.as_view(), name='service_booking_status_check'),
+    path('service-book/status-check/', user_views.Step7StatusCheckView.as_view(), name='service_booking_status_check'),
 
 
     # Admin-facing management

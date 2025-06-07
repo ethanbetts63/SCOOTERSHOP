@@ -4,7 +4,7 @@ from service.models import ServiceBooking
 from payments.models import Payment
 
 
-class ServiceBookingStatusCheckView(View):
+class Step7StatusCheckView(View):
     """
     AJAX endpoint for the confirmation page to poll for the booking status
     when an online payment is being processed asynchronously by the Stripe webhook.
