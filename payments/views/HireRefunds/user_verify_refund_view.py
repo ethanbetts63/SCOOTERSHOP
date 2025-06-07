@@ -1,5 +1,3 @@
-# payments/views/HireRefunds/user_verify_refund.py
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.urls import reverse
@@ -8,12 +6,12 @@ from django.utils import timezone
 from datetime import timedelta
 import uuid
 
-from django.conf import settings # To get ADMIN_EMAIL and other settings
-from django.http import Http404 # Import Http404
+from django.conf import settings
+from django.http import Http404
 
 from payments.models.HireRefundRequest import HireRefundRequest
-from payments.hire_refund_calc import calculate_refund_amount # Import the calculation utility
-from mailer.utils import send_templated_email # Import your email utility
+from payments.hire_refund_calc import calculate_refund_amount
+from mailer.utils import send_templated_email
 
 
 class UserVerifyRefundView(View):
@@ -27,7 +25,7 @@ class UserVerifyRefundView(View):
 
         if not token_str:
             messages.error(request, "Verification link is missing a token.")
-            return redirect(reverse('core:index')) # Redirect to homepage or an error page
+            return redirect(reverse('core:index'))
 
         try:
             verification_token = uuid.UUID(token_str)
@@ -36,43 +34,31 @@ class UserVerifyRefundView(View):
             return redirect(reverse('core:index'))
 
         try:
-            # Use get_object_or_404 to raise Http404 if not found
             refund_request = get_object_or_404(HireRefundRequest, verification_token=verification_token)
 
-            # Check if the request is already verified or processed
             if refund_request.status != 'unverified':
                 messages.info(request, "This refund request has already been verified or processed.")
-                return redirect(reverse('payments:user_verified_refund')) # Redirect to the 'already verified' page
+                return redirect(reverse('payments:user_verified_refund'))
 
-            # Check if the token has expired (e.g., 24 hours validity)
-            token_validity_hours = 24 # Define token validity period
+            token_validity_hours = 24
             if (timezone.now() - refund_request.token_created_at) > timedelta(hours=token_validity_hours):
                 messages.error(request, "The verification link has expired. Please submit a new refund request.")
-                # Optionally, you might want to mark this request as 'expired' or similar
-                # refund_request.status = 'expired'
-                # refund_request.save()
-                return redirect(reverse('payments:user_refund_request_hire')) # Redirect to the request form
+                return redirect(reverse('payments:user_refund_request_hire'))
 
-            # If all checks pass, update the status to 'pending'
             refund_request.status = 'pending'
             refund_request.save()
 
-            # --- Send notification email to admin after successful user verification ---
-            # Calculate the entitled refund amount for the admin notification
-            # Use the refund_policy_snapshot from the payment model
-            # Ensure payment is not None before accessing its attributes
             refund_policy_snapshot = {}
             if refund_request.payment and refund_request.payment.refund_policy_snapshot:
                 refund_policy_snapshot = refund_request.payment.refund_policy_snapshot
             else:
-                # Log or handle case where payment or snapshot is missing, though it should ideally exist
-                print(f"WARNING: Payment or refund_policy_snapshot missing for refund request {refund_request.pk}")
+                pass
 
 
             calculated_refund_amount = calculate_refund_amount(
                 booking=refund_request.hire_booking,
                 refund_policy_snapshot=refund_policy_snapshot,
-                cancellation_datetime=refund_request.requested_at # Use the request timestamp as cancellation time
+                cancellation_datetime=refund_request.requested_at
             )
 
             admin_refund_link = request.build_absolute_uri(
@@ -85,10 +71,8 @@ class UserVerifyRefundView(View):
                 'admin_refund_link': admin_refund_link,
             }
 
-            # Assuming you have a list of admin emails in settings or a specific one
             admin_recipient_list = [getattr(settings, 'ADMIN_EMAIL', settings.DEFAULT_FROM_EMAIL)]
             if not admin_recipient_list or admin_recipient_list[0] == settings.DEFAULT_FROM_EMAIL:
-                 # Fallback if ADMIN_EMAIL is not set or is default
                 admin_recipient_list = [settings.DEFAULT_FROM_EMAIL]
 
             send_templated_email(
@@ -101,11 +85,11 @@ class UserVerifyRefundView(View):
             )
 
             messages.success(request, "Your refund request has been successfully verified!")
-            return redirect(reverse('payments:user_verified_refund')) # Redirect to the verified confirmation page
+            return redirect(reverse('payments:user_verified_refund'))
 
-        except Http404: # Catch Http404 specifically
+        except Http404:
             messages.error(request, "The refund request associated with this token does not exist.")
-            return redirect(reverse('core:index')) # Redirect to homepage or an error page
-        except Exception as e: # This must come AFTER more specific exceptions like Http404
+            return redirect(reverse('core:index'))
+        except Exception as e:
             messages.error(request, f"An unexpected error occurred during verification: {e}")
-            return redirect(reverse('core:index')) # Redirect to homepage on unexpected error
+            return redirect(reverse('core:index'))

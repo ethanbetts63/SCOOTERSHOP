@@ -1,16 +1,14 @@
-# payments/views/HireRefunds/user_refund_request_view.py
-
 from django.shortcuts import render, redirect
 from django.views import View
 from django.urls import reverse
 from django.contrib import messages
-from django.conf import settings # To get ADMIN_EMAIL and other settings
+from django.conf import settings
 from django.utils import timezone
-import uuid # For generating UUID tokens
+import uuid
 
 from payments.forms.user_hire_refund_request_form import UserHireRefundRequestForm
 from payments.models.HireRefundRequest import HireRefundRequest
-from mailer.utils import send_templated_email # Import your email utility
+from mailer.utils import send_templated_email
 
 
 class UserRefundRequestView(View):
@@ -43,25 +41,19 @@ class UserRefundRequestView(View):
         form = UserHireRefundRequestForm(request.POST)
 
         if form.is_valid():
-            # Save the HireRefundRequest instance.
-            # The form's clean method has already linked hire_booking, driver_profile, and payment.
-            # It also set the status to 'unverified' and is_admin_initiated to False.
-            refund_request = form.save(commit=False) # Don't commit yet, we need to add token
+            refund_request = form.save(commit=False)
 
-            # Generate a unique verification token and timestamp
             refund_request.verification_token = uuid.uuid4()
             refund_request.token_created_at = timezone.now()
 
-            refund_request.save() # Now save the instance with the token
+            refund_request.save()
 
-            # --- Send verification email to the user ---
             verification_link = request.build_absolute_uri(
                 reverse('payments:user_verify_refund') + f'?token={str(refund_request.verification_token)}'
             )
 
-            # Assuming you have a refund policy URL in your settings or core app
-            refund_policy_link = request.build_absolute_uri(reverse('core:returns')) # Adjust 'core:returns' as per your actual URL name
-            admin_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'admin@example.com') # Or a specific admin email
+            refund_policy_link = request.build_absolute_uri(reverse('core:returns'))
+            admin_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'admin@example.com')
 
             user_email_context = {
                 'refund_request': refund_request,
@@ -83,7 +75,6 @@ class UserRefundRequestView(View):
             return redirect(reverse('payments:user_confirmation_refund_request'))
 
         else:
-            # If the form is not valid, re-render the template with errors
             context = {
                 'form': form,
                 'page_title': 'Request a Refund',

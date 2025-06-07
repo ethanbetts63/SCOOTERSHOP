@@ -1,5 +1,3 @@
-# payments/views/HireRefunds/user_confirmation_refund_request_view.py
-
 from django.shortcuts import render
 from django.views import View
 
@@ -20,4 +18,3 @@ class UserConfirmationRefundRequestView(View):
             'additional_info': 'If you do not receive an email within a few minutes, please check your spam folder.',
         }
         return render(request, self.template_name, context)
-

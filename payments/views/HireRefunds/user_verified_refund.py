@@ -1,5 +1,3 @@
-# payments/views/HireRefunds/user_verified_refund_view.py
-
 from django.shortcuts import render
 from django.views import View
 
@@ -20,4 +18,3 @@ class UserVerifiedRefundView(View):
             'additional_info': 'It will now be reviewed by our administration team as soon as possible. You will receive another email once your request has been processed.',
         }
         return render(request, self.template_name, context)
-

@@ -1,5 +1,3 @@
-# payments/views/HireRefunds/utils.py
-
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from hire.models import HireBooking
@@ -9,8 +7,8 @@ from django.views.decorators.http import require_GET
 import json
 from datetime import datetime
 from django.utils import timezone
-from payments.hire_refund_calc import calculate_refund_amount # Import the correct calculator
-from payments.models import HireRefundRequest # NEW: Import HireRefundRequest model
+from payments.hire_refund_calc import calculate_refund_amount
+from payments.models import HireRefundRequest
 
 @require_GET
 @login_required
@@ -20,62 +18,41 @@ def get_hire_booking_details_json(request, pk):
     Requires staff login. This endpoint now also includes the latest
     refund request status associated with the booking.
     """
-    print(f"DEBUG: Entering get_hire_booking_details_json for PK: {pk}")
     try:
         hire_booking = get_object_or_404(HireBooking, pk=pk)
-        print(f"DEBUG: Successfully retrieved HireBooking with ID: {hire_booking.id}")
 
-        # Debugging driver profile and user details
-        print(f"DEBUG: hire_booking.driver_profile: {hire_booking.driver_profile}")
-        customer_name = 'N/A' # Default to N/A
+        customer_name = 'N/A'
 
         if hire_booking.driver_profile:
-            print(f"DEBUG: driver_profile.name: {hire_booking.driver_profile.name}")
-            print(f"DEBUG: driver_profile.user: {hire_booking.driver_profile.user}")
-
             if hire_booking.driver_profile.user:
                 user_full_name = hire_booking.driver_profile.user.get_full_name()
-                print(f"DEBUG: driver_profile.user.get_full_name(): '{user_full_name}'")
-                if user_full_name: # If get_full_name() returns a non-empty string
+                if user_full_name:
                     customer_name = user_full_name
-                elif hire_booking.driver_profile.name: # Fallback to driver_profile.name if user full name is empty
+                elif hire_booking.driver_profile.name:
                     customer_name = hire_booking.driver_profile.name
-            elif hire_booking.driver_profile.name: # If no user linked, use driver_profile.name
+            elif hire_booking.driver_profile.name:
                 customer_name = hire_booking.driver_profile.name
-        print(f"DEBUG: Final customer_name determined: '{customer_name}'")
 
-        # Debugging payment details
-        print(f"DEBUG: Checking hire_booking.payment: {hire_booking.payment}")
         payment_date = 'N/A'
         payment_amount = 'N/A'
-        refund_policy_snapshot = {} # Initialize empty snapshot
+        refund_policy_snapshot = {}
         if hire_booking.payment:
-            print(f"DEBUG: Payment object exists. Created at: {hire_booking.payment.created_at}, Amount: {hire_booking.payment.amount}")
             payment_date = hire_booking.payment.created_at.strftime('%Y-%m-%d %H:%M') if hire_booking.payment.created_at else 'N/A'
             payment_amount = float(hire_booking.payment.amount) if hire_booking.payment.amount else 'N/A'
             refund_policy_snapshot = hire_booking.payment.refund_policy_snapshot
-            print(f"DEBUG: Retrieved refund_policy_snapshot: {refund_policy_snapshot}")
         else:
-            print("DEBUG: hire_booking.payment is None. No refund policy snapshot available for calculation.")
+            pass
 
-        # NEW: Get the latest refund request status for this booking
-        # We order by 'requested_at' in descending order to get the most recent request.
-        # If no refund requests exist for this booking, we set a default message.
         latest_refund_request = HireRefundRequest.objects.filter(hire_booking=hire_booking).order_by('-requested_at').first()
         refund_status_for_booking = latest_refund_request.get_status_display() if latest_refund_request else 'No Refund Request Yet'
-        print(f"DEBUG: Latest refund request status for booking {hire_booking.booking_reference}: {refund_status_for_booking}")
 
 
-        # Calculate entitled refund amount using the new utility
-        # Pass the retrieved refund_policy_snapshot
         refund_calculation_results = calculate_refund_amount(
             booking=hire_booking,
-            refund_policy_snapshot=refund_policy_snapshot, # Pass the snapshot here
-            cancellation_datetime=timezone.now() # Or you could pass a specific cancellation date from request if available
+            refund_policy_snapshot=refund_policy_snapshot,
+            cancellation_datetime=timezone.now()
         )
-        print(f"DEBUG: Refund calculation results: {refund_calculation_results}")
 
-        # Basic details of the chosen hire booking
         booking_details = {
             'id': hire_booking.id,
             'booking_reference': hire_booking.booking_reference,
@@ -92,19 +69,14 @@ def get_hire_booking_details_json(request, pk):
             'payment_amount': payment_amount,
             'booking_status': hire_booking.get_status_display(),
             'payment_status': hire_booking.get_payment_status_display(),
-            'entitled_refund_amount': float(refund_calculation_results['entitled_amount']), # Add calculated refund
-            'refund_calculation_details': refund_calculation_results['details'], # Add calculation details
+            'entitled_refund_amount': float(refund_calculation_results['entitled_amount']),
+            'refund_calculation_details': refund_calculation_results['details'],
             'refund_policy_applied': refund_calculation_results['policy_applied'],
             'refund_days_before_pickup': refund_calculation_results['days_before_pickup'],
-            'refund_request_status_for_booking': refund_status_for_booking, # NEW: Add the latest refund request status
-            # Add any other details you might need
+            'refund_request_status_for_booking': refund_status_for_booking,
         }
-        print(f"DEBUG: Constructed booking_details: {booking_details}")
         return JsonResponse(booking_details)
     except HireBooking.DoesNotExist:
-        print(f"DEBUG: HireBooking with PK {pk} not found.")
         return JsonResponse({'error': 'Hire Booking not found'}, status=404)
     except Exception as e:
-        print(f"DEBUG: An unexpected error occurred while fetching booking details for PK {pk}: {str(e)}")
         return JsonResponse({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
-
