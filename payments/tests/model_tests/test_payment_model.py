@@ -2,21 +2,24 @@
 
 from decimal import Decimal
 from django.test import TestCase
-from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 import uuid
+import time
 
-# Import model factories
-from hire.tests.test_helpers.model_factories import (
-    create_payment,
-    create_temp_hire_booking,
-    create_hire_booking,
-    create_driver_profile,
-    create_motorcycle # Needed for creating bookings
+# Import model factories from the new file
+from ..test_helpers.model_factories import (
+    PaymentFactory,
+    TempHireBookingFactory,
+    HireBookingFactory,
+    DriverProfileFactory,
+    MotorcycleFactory, # Now importing the real MotorcycleFactory
+    MotorcycleConditionFactory # Also import MotorcycleConditionFactory if you plan to use it
 )
+
 # Import the Payment model directly for specific tests if needed
 from payments.models import Payment
 from hire.models import TempHireBooking, HireBooking, DriverProfile
+# Removed the mock Motorcycle and MockMotorcycleFactory
 
 
 class PaymentModelTest(TestCase):
@@ -30,15 +33,18 @@ class PaymentModelTest(TestCase):
         Set up non-modified objects used by all test methods.
         We'll create some related objects that payments can link to.
         """
-        cls.motorcycle = create_motorcycle()
-        cls.driver_profile = create_driver_profile(name="Test Driver")
-        cls.temp_booking = create_temp_hire_booking(
+        # Ensure 'hire' condition exists for motorcycle creation
+        MotorcycleConditionFactory.create(name='hire', display_name='Hire')
+        # Use the new factories
+        cls.motorcycle = MotorcycleFactory.create()
+        cls.driver_profile = DriverProfileFactory.create(name="Test Driver")
+        cls.temp_booking = TempHireBookingFactory.create(
             motorcycle=cls.motorcycle,
             driver_profile=cls.driver_profile,
             total_hire_price=Decimal('200.00'),
             grand_total=Decimal('250.00')
         )
-        cls.hire_booking = create_hire_booking(
+        cls.hire_booking = HireBookingFactory.create(
             motorcycle=cls.motorcycle,
             driver_profile=cls.driver_profile,
             total_hire_price=Decimal('300.00'),
@@ -51,7 +57,7 @@ class PaymentModelTest(TestCase):
         """
         Test that a basic Payment instance can be created with required fields.
         """
-        payment = create_payment(
+        payment = PaymentFactory.create(
             amount=Decimal('150.00'),
             currency='USD',
             status='succeeded',
@@ -74,7 +80,7 @@ class PaymentModelTest(TestCase):
         Test the __str__ method of Payment.
         """
         # This payment uses the class-level self.temp_booking
-        payment = create_payment(
+        payment = PaymentFactory.create(
             amount=Decimal('250.00'),
             currency='AUD',
             status='requires_action',
@@ -90,13 +96,13 @@ class PaymentModelTest(TestCase):
 
         # Test with only temp_hire_booking
         # Create a NEW temp_booking instance for this specific payment
-        new_temp_booking_for_str_test = create_temp_hire_booking(
+        new_temp_booking_for_str_test = TempHireBookingFactory.create(
             motorcycle=self.motorcycle, # Re-use existing motorcycle
             driver_profile=self.driver_profile, # Re-use existing driver profile
             total_hire_price=Decimal('100.00'),
             grand_total=Decimal('120.00')
         )
-        payment_temp_only = create_payment(
+        payment_temp_only = PaymentFactory.create(
             amount=Decimal('50.00'),
             temp_hire_booking=new_temp_booking_for_str_test, # Use the NEW temp_booking
             status='pending'
@@ -108,7 +114,7 @@ class PaymentModelTest(TestCase):
         self.assertEqual(str(payment_temp_only), expected_str_temp_only)
 
         # Test with only hire_booking
-        payment_hire_only = create_payment(
+        payment_hire_only = PaymentFactory.create(
             amount=Decimal('75.00'),
             hire_booking=self.hire_booking,
             status='succeeded'
@@ -120,7 +126,7 @@ class PaymentModelTest(TestCase):
         self.assertEqual(str(payment_hire_only), expected_str_hire_only)
 
         # Test with no bookings
-        payment_no_booking = create_payment(amount=Decimal('10.00'))
+        payment_no_booking = PaymentFactory.create(amount=Decimal('10.00'))
         expected_str_no_booking = (
             f"Payment {payment_no_booking.id} (Temp: N/A, Hire: N/A) "
             f"- Amount: {payment_no_booking.amount} {payment_no_booking.currency} - Status: {payment_no_booking.status}"
@@ -132,7 +138,7 @@ class PaymentModelTest(TestCase):
         """
         Test the OneToOneField relationship with TempHireBooking.
         """
-        payment = create_payment(
+        payment = PaymentFactory.create(
             amount=Decimal('100.00'),
             temp_hire_booking=self.temp_booking
         )
@@ -141,7 +147,7 @@ class PaymentModelTest(TestCase):
 
         # Ensure only one payment can be linked to a temp booking
         with self.assertRaises(IntegrityError):
-            create_payment(
+            PaymentFactory.create(
                 amount=Decimal('50.00'),
                 temp_hire_booking=self.temp_booking # This should fail as temp_booking already has a payment
             )
@@ -150,14 +156,14 @@ class PaymentModelTest(TestCase):
         """
         Test the ForeignKey relationship with HireBooking.
         """
-        payment1 = create_payment(
+        payment1 = PaymentFactory.create(
             amount=Decimal('200.00'),
             hire_booking=self.hire_booking
         )
-        payment2 = create_payment(
+        payment2 = PaymentFactory.create(
             amount=Decimal('50.00'),
             hire_booking=self.hire_booking,
-            stripe_payment_intent_id="pi_another_id" # Needs unique PI ID
+            # stripe_payment_intent_id is automatically generated by factory now
         )
         self.assertEqual(payment1.hire_booking, self.hire_booking)
         self.assertEqual(payment2.hire_booking, self.hire_booking)
@@ -169,14 +175,14 @@ class PaymentModelTest(TestCase):
         """
         Test the ForeignKey relationship with DriverProfile.
         """
-        payment1 = create_payment(
+        payment1 = PaymentFactory.create(
             amount=Decimal('120.00'),
             driver_profile=self.driver_profile
         )
-        payment2 = create_payment(
+        payment2 = PaymentFactory.create(
             amount=Decimal('80.00'),
             driver_profile=self.driver_profile,
-            stripe_payment_intent_id="pi_yet_another_id" # Needs unique PI ID
+            # stripe_payment_intent_id is automatically generated by factory now
         )
         self.assertEqual(payment1.driver_profile, self.driver_profile)
         self.assertEqual(payment2.driver_profile, self.driver_profile)
@@ -188,45 +194,49 @@ class PaymentModelTest(TestCase):
         """
         Test that stripe_payment_intent_id is unique.
         """
-        create_payment(
-            amount=Decimal('10.00'),
-            stripe_payment_intent_id="pi_unique_id_1"
+        # The factory automatically generates unique IDs, so this should pass
+        PaymentFactory.create(
+            amount=Decimal('10.00')
         )
         with self.assertRaises(IntegrityError):
-            create_payment(
-                amount=Decimal('20.00'),
-                stripe_payment_intent_id="pi_unique_id_1" # Duplicate ID
-            )
+            # To test uniqueness, we need to explicitly pass a duplicate
+            # as the factory ensures uniqueness by default.
+            duplicate_pi_id = "pi_manual_duplicate_id"
+            PaymentFactory.create(amount=Decimal('10.00'), stripe_payment_intent_id=duplicate_pi_id)
+            PaymentFactory.create(amount=Decimal('20.00'), stripe_payment_intent_id=duplicate_pi_id)
+
 
     def test_default_values(self):
         """
         Test that default values for currency and status are applied.
         """
-        payment = create_payment(amount=Decimal('50.00'))
+        payment = PaymentFactory.create(amount=Decimal('50.00'))
         self.assertEqual(payment.currency, 'AUD')
-        self.assertEqual(payment.status, 'pending') # Factory default is 'pending'
+        # The factory's default for status is random, so we need to test the model's actual default
+        # or explicitly set it in the factory to match a specific expected default.
+        # Given the factory's random element for status, we test the model's default directly.
 
         # Check model's default for status if not set by factory
-        # To do this, we need to bypass the factory's default 'pending'
-        payment_model_default = Payment.objects.create(amount=Decimal('75.00'))
+        payment_model_default = Payment.objects.create(amount=Decimal('75.00'), stripe_payment_intent_id=f"pi_{uuid.uuid4().hex[:24]}")
         self.assertEqual(payment_model_default.status, 'requires_payment_method')
         self.assertEqual(payment_model_default.currency, 'AUD')
+
 
     def test_amount_decimal_field(self):
         """
         Test DecimalField properties for amount.
         """
-        payment = create_payment(amount=Decimal('1234567.89'))
+        payment = PaymentFactory.create(amount=Decimal('1234567.89'))
         self.assertEqual(payment.amount, Decimal('1234567.89'))
 
         # Test with more than 2 decimal places (should be rounded)
-        payment_rounded = create_payment(amount=Decimal('100.123'))
+        payment_rounded = PaymentFactory.create(amount=Decimal('100.123'))
         payment_rounded.refresh_from_db() # Added to refresh from DB and ensure rounding
         self.assertEqual(payment_rounded.amount, Decimal('100.12'))
 
         # Test max_digits (99,999,999.99 should pass)
         large_amount = Decimal('99999999.99')
-        payment_large = create_payment(amount=large_amount)
+        payment_large = PaymentFactory.create(amount=large_amount)
         self.assertEqual(payment_large.amount, large_amount)
 
         # Test exceeding max_digits (this would typically raise a validation error
@@ -238,7 +248,7 @@ class PaymentModelTest(TestCase):
         """
         Test that temp_hire_booking is set to NULL when TempHireBooking is deleted.
         """
-        payment = create_payment(
+        payment = PaymentFactory.create(
             amount=Decimal('100.00'),
             temp_hire_booking=self.temp_booking
         )
@@ -253,10 +263,10 @@ class PaymentModelTest(TestCase):
         """
         Test that hire_booking is set to NULL when HireBooking is deleted.
         """
-        payment = create_payment(
+        payment = PaymentFactory.create(
             amount=Decimal('200.00'),
             hire_booking=self.hire_booking,
-            stripe_payment_intent_id="pi_delete_test_hire"
+            # stripe_payment_intent_id is automatically generated by factory now
         )
         hire_booking_ref = self.hire_booking.booking_reference
         self.hire_booking.delete()
@@ -269,10 +279,10 @@ class PaymentModelTest(TestCase):
         """
         Test that driver_profile is set to NULL when DriverProfile is deleted.
         """
-        payment = create_payment(
+        payment = PaymentFactory.create(
             amount=Decimal('50.00'),
             driver_profile=self.driver_profile,
-            stripe_payment_intent_id="pi_delete_test_driver"
+            # stripe_payment_intent_id is automatically generated by factory now
         )
         driver_profile_id = self.driver_profile.id
         self.driver_profile.delete()
@@ -285,12 +295,13 @@ class PaymentModelTest(TestCase):
         """
         Test that payments are ordered by created_at in descending order.
         """
-        import time
-        payment1 = create_payment(amount=Decimal('10.00'), stripe_payment_intent_id="pi_order_1")
+        # The factory now auto-generates unique stripe_payment_intent_id,
+        # so we don't need to pass it explicitly unless testing specific IDs.
+        payment1 = PaymentFactory.create(amount=Decimal('10.00'))
         time.sleep(0.01) # Ensure different creation times
-        payment2 = create_payment(amount=Decimal('20.00'), stripe_payment_intent_id="pi_order_2")
+        payment2 = PaymentFactory.create(amount=Decimal('20.00'))
         time.sleep(0.01)
-        payment3 = create_payment(amount=Decimal('30.00'), stripe_payment_intent_id="pi_order_3")
+        payment3 = PaymentFactory.create(amount=Decimal('30.00'))
 
         # Fetch all payments and check their order
         all_payments = Payment.objects.all()
@@ -305,10 +316,9 @@ class PaymentModelTest(TestCase):
             "booking_type": "rental",
             "items": ["motorcycle", "helmet"]
         }
-        payment = create_payment(
+        payment = PaymentFactory.create(
             amount=Decimal('300.00'),
             metadata=metadata_data,
-            stripe_payment_intent_id="pi_metadata_test"
         )
         self.assertEqual(payment.metadata, metadata_data)
 
@@ -319,9 +329,10 @@ class PaymentModelTest(TestCase):
         self.assertEqual(payment.metadata['new_key'], 'new_value')
 
         # Test with empty metadata (default case)
-        payment_empty_meta = create_payment(
+        # Factory's default for metadata is a dictionary, so we need to override it to test empty
+        payment_empty_meta = PaymentFactory.create(
             amount=Decimal('50.00'),
-            stripe_payment_intent_id="pi_empty_meta"
+            metadata={},
         )
         self.assertEqual(payment_empty_meta.metadata, {})
 
@@ -329,37 +340,41 @@ class PaymentModelTest(TestCase):
         """
         Test that stripe_payment_method_id can be set.
         """
-        payment = create_payment(
+        payment = PaymentFactory.create(
             amount=Decimal('75.00'),
             stripe_payment_method_id="pm_card_visa",
-            stripe_payment_intent_id="pi_method_id_test"
         )
         self.assertEqual(payment.stripe_payment_method_id, "pm_card_visa")
-        self.assertIsNone(payment.description) # Check default null
+        # Factory's default for description is a sentence, so we test the model's actual default
+        payment_model_default = Payment.objects.create(
+            amount=Decimal('75.00'),
+            stripe_payment_intent_id=f"pi_{uuid.uuid4().hex[:24]}",
+            stripe_payment_method_id="pm_card_visa"
+        )
+        self.assertIsNone(payment_model_default.description) # Check default null
 
     def test_description_field(self):
         """
         Test the description TextField.
         """
         description_text = "Payment for 3-day motorcycle rental for customer John Doe."
-        payment = create_payment(
+        payment = PaymentFactory.create(
             amount=Decimal('400.00'),
             description=description_text,
-            stripe_payment_intent_id="pi_description_test"
         )
         self.assertEqual(payment.description, description_text)
 
         # Test with blank description
-        payment_blank_desc = create_payment(
+        payment_blank_desc = PaymentFactory.create(
             amount=Decimal('10.00'),
             description="",
-            stripe_payment_intent_id="pi_blank_desc"
         )
         self.assertEqual(payment_blank_desc.description, "")
 
         # Test with null description (default)
-        payment_null_desc = create_payment(
+        # Factory's default for description is a sentence, so we test the model's actual default
+        payment_null_desc = Payment.objects.create(
             amount=Decimal('20.00'),
-            stripe_payment_intent_id="pi_null_desc"
+            stripe_payment_intent_id=f"pi_{uuid.uuid4().hex[:24]}"
         )
         self.assertIsNone(payment_null_desc.description)
