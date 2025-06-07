@@ -321,7 +321,6 @@ class ServiceProfileFactory(factory.django.DjangoModelFactory):
     post_code = factory.Faker('postcode')
     country = factory.Faker('country_code')
 
-
 class TempServiceBookingFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = TempServiceBooking
@@ -411,24 +410,6 @@ class UserFactory(factory.django.DjangoModelFactory):
     post_code = factory.Faker('postcode')
     country = factory.Faker('country_code')
 
-class PaymentFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Payment
-
-    temp_hire_booking = None
-    hire_booking = None
-    driver_profile = None
-
-    stripe_payment_intent_id = factory.Sequence(lambda n: f"pi_{uuid.uuid4().hex[:24]}_{n}")
-    stripe_payment_method_id = factory.Faker('md5')
-    amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True))
-    currency = 'AUD'
-    status = factory.Faker('random_element', elements=['succeeded', 'requires_payment_method', 'requires_action', 'canceled'])
-    description = factory.Faker('sentence')
-    metadata = factory.LazyFunction(lambda: {'test_key': fake.word()})
-    refund_policy_snapshot = factory.LazyFunction(lambda: {'policy_version': '1.0', 'deduct_fees': True})
-    refunded_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
-
 class ServiceBrandFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ServiceBrand
@@ -450,22 +431,6 @@ class ServiceTypeFactory(factory.django.DjangoModelFactory):
         lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True)
     )
     is_active = True
-
-
-class ServiceProfileFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = ServiceProfile
-
-    user = factory.SubFactory(UserFactory)
-    name = factory.Faker('name')
-    email = factory.LazyAttribute(lambda o: o.user.email if o.user else factory.Faker('email'))
-    phone_number = factory.LazyFunction(lambda: fake.numerify('##########'))
-    address_line_1 = factory.Faker('street_address')
-    address_line_2 = factory.Faker('secondary_address')
-    city = factory.Faker('city')
-    state = factory.Faker('state_abbr')
-    post_code = factory.Faker('postcode')
-    country = factory.Faker('country_code')
 
 class CustomerMotorcycleFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -547,56 +512,3 @@ class ServiceSettingsFactory(factory.django.DjangoModelFactory):
                 setattr(obj, k, v)
             obj.save()
         return obj
-
-
-class TempServiceBookingFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = TempServiceBooking
-
-    session_uuid = factory.LazyFunction(uuid.uuid4)
-    service_type = factory.SubFactory(ServiceTypeFactory)
-    service_profile = factory.SubFactory(ServiceProfileFactory)
-    customer_motorcycle = factory.SubFactory(CustomerMotorcycleFactory, service_profile=factory.SelfAttribute('..service_profile'))
-    payment_option = factory.Faker('random_element', elements=[choice[0] for choice in TempServiceBooking.PAYMENT_METHOD_CHOICES])
-    
-    dropoff_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+30d'))
-    dropoff_time = factory.Faker('time_object')
-    
-    service_date = factory.LazyAttribute(
-        lambda o: o.dropoff_date + datetime.timedelta(days=fake.random_int(min=0, max=7))
-    )
-    
-    estimated_pickup_date = None
-    customer_notes = factory.Faker('paragraph')
-    calculated_deposit_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
-
-
-class ServiceBookingFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = ServiceBooking
-
-    service_booking_reference = factory.Sequence(lambda n: f"SERVICE-{n:08d}")
-    service_type = factory.SubFactory(ServiceTypeFactory)
-    service_profile = factory.SubFactory(ServiceProfileFactory)
-    customer_motorcycle = factory.SubFactory(CustomerMotorcycleFactory, service_profile=factory.SelfAttribute('..service_profile'))
-    payment_option = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.PAYMENT_METHOD_CHOICES])
-    payment = factory.SubFactory(PaymentFactory)
-    calculated_total = factory.LazyFunction(lambda: fake.pydecimal(left_digits=4, right_digits=2, positive=True))
-    calculated_deposit_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
-    amount_paid = factory.LazyAttribute(lambda o: o.calculated_total)
-    payment_status = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.PAYMENT_STATUS_CHOICES])
-    payment_method = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.PAYMENT_METHOD_CHOICES])
-    currency = 'AUD'
-    stripe_payment_intent_id = factory.Sequence(lambda n: f"pi_{uuid.uuid4().hex[:24]}")
-    
-    dropoff_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+30d'))
-    dropoff_time = factory.Faker('time_object')
-    
-    service_date = factory.LazyAttribute(
-        lambda o: o.dropoff_date + datetime.timedelta(days=fake.random_int(min=0, max=7))
-    )
-    
-    estimated_pickup_date = factory.LazyAttribute(lambda o: o.service_date + datetime.timedelta(days=fake.random_int(min=1, max=5)))
-    
-    booking_status = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.BOOKING_STATUS_CHOICES])
-    customer_notes = factory.Faker('paragraph')
