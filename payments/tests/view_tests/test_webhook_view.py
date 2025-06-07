@@ -3,7 +3,6 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.conf import settings
-from django.db import IntegrityError, transaction
 from django.utils import timezone
 from decimal import Decimal
 import json
@@ -496,7 +495,6 @@ class StripeWebhookViewTest(TestCase):
         Mock handler for payment_intent.succeeded for hire bookings.
         In a real scenario, this would create/update a HireBooking.
         """
-        print(f"MOCK HANDLER: hire_booking_succeeded_handler called for PI: {stripe_payment_intent_data['id']}")
 
         try:
             temp_booking_id = stripe_payment_intent_data['metadata'].get('temp_booking_id')
@@ -514,37 +512,7 @@ class StripeWebhookViewTest(TestCase):
                 grand_total = temp_booking.grand_total
                 deposit_amount = temp_booking.deposit_amount
             else:
-                print(f"MOCK HANDLER: No TempBooking found. This should NOT happen in this test.")
                 raise Exception("TempBooking not found") # Fail if this happens in this test
-
-            #  -- Defensive checks --
-            if not all([motorcycle, driver_profile, pickup_date, pickup_time, return_date, return_time, grand_total, payment_obj]): # Added payment_obj
-                print("MOCK HANDLER: Missing required data for HireBooking creation.")
-                if not motorcycle: print("   motorcycle is missing")
-                if not driver_profile: print("   driver_profile is missing")
-                if not pickup_date: print("   pickup_date is missing")
-                if not pickup_time: print("   pickup_time is missing")
-                if not return_date: print("   return_date is missing")
-                if not return_time: print("   return_time is missing")
-                if not grand_total: print("   grand_total is missing")
-                if not payment_obj: print("   payment_obj is missing")  # Added check for payment_obj
-                raise Exception("Missing data for HireBooking")
-
-            #  --- LOGGING ALL VARIABLES ---
-            print("MOCK HANDLER: --- Logging variables before create_hire_booking ---")
-            print(f"MOCK HANDLER: motorcycle: {motorcycle}, type: {type(motorcycle)}")
-            print(f"MOCK HANDLER: driver_profile: {driver_profile}, type: {type(driver_profile)}")
-            print(f"MOCK HANDLER: pickup_date: {pickup_date}, type: {type(pickup_date)}")
-            print(f"MOCK HANDLER: pickup_time: {pickup_time}, type: {type(pickup_time)}")
-            print(f"MOCK HANDLER: return_date: {return_date}, type: {type(return_date)}")
-            print(f"MOCK HANDLER: return_time: {return_time}, type: {type(return_time)}")
-            print(f"MOCK HANDLER: total_hire_price: {total_hire_price}, type: {type(total_hire_price)}")
-            print(f"MOCK HANDLER: total_addons_price: {total_addons_price}, type: {type(total_addons_price)}")
-            print(f"MOCK HANDLER: total_package_price: {total_package_price}, type: {type(total_package_price)}")
-            print(f"MOCK HANDLER: grand_total: {grand_total}, type: {type(grand_total)}")
-            print(f"MOCK HANDLER: deposit_amount: {deposit_amount}, type: {type(deposit_amount)}")
-            print(f"MOCK HANDLER: payment_obj: {payment_obj}, type: {type(payment_obj)}")
-            print(f"MOCK HANDLER: stripe_payment_intent_id: {stripe_payment_intent_data['id']}, type: {type(stripe_payment_intent_data['id'])}")
 
             # Simulate HireBooking creation
             if not HireBooking.objects.filter(payment=payment_obj).exists():
@@ -565,12 +533,8 @@ class StripeWebhookViewTest(TestCase):
                     payment_status='paid',
                     status='confirmed',
                 )
-                print(f"MOCK HANDLER: HireBooking created for Payment {payment_obj.id}.")
-            else:
-                print(f"MOCK HANDLER: HireBooking already exists for Payment {payment_obj.id}.")
-
         except TempHireBooking.DoesNotExist:
             print(f"MOCK HANDLER: TempHireBooking {temp_booking_id} not found.")
         except Exception as e:
             print(f"MOCK HANDLER: Error in handler: {e}")
-            raise  # Re-raise to simulate handler failure
+
