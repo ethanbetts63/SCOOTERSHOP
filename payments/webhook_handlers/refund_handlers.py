@@ -90,11 +90,11 @@ def handle_hire_booking_refunded(payment_obj: Payment, event_object_data: dict):
                 hire_refund_request = None
 
             if hire_refund_request:
-                if refund_status == 'succeeded' and hire_refund_request.status not in ['refunded', 'partially_refunded']:
-                    if refunded_amount_decimal >= hire_refund_request.amount_to_refund:
-                        hire_refund_request.status = 'refunded'
-                    else:
-                        hire_refund_request.status = 'partially_refunded'
+                # Simplified status update logic
+                if refund_status == 'succeeded' and hire_refund_request.status != 'refunded':
+                    # If Stripe says the refund succeeded, we mark our request as refunded.
+                    # The distinction between partial/full is handled on the Payment model itself.
+                    hire_refund_request.status = 'refunded'
                 elif refund_status == 'failed' and hire_refund_request.status != 'failed':
                     hire_refund_request.status = 'failed'
                 elif refund_status == 'pending' and hire_refund_request.status not in ['pending', 'approved', 'reviewed_pending_approval']:

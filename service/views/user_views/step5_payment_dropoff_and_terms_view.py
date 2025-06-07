@@ -5,10 +5,15 @@ from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal # Import Decimal for monetary values
+from django.conf import settings # Import settings to get admin email
 
 from service.forms.step5_payment_choice_and_terms_form import PaymentOptionForm
 from service.models import TempServiceBooking, ServiceSettings
 from service.utils.convert_temp_service_booking import convert_temp_service_booking # Import the utility function
+from mailer.utils import send_templated_email # Import the email utility function
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Step5PaymentDropoffAndTermsView(View):
     template_name = 'service/step5_payment_dropoff_and_terms.html'
@@ -102,7 +107,6 @@ class Step5PaymentDropoffAndTermsView(View):
             self.temp_booking.dropoff_time = form.cleaned_data['dropoff_time']
             self.temp_booking.payment_option = form.cleaned_data['payment_option']
             
-            
             # Save TempBooking first to ensure dropoff_date, dropoff_time, and payment_option are persisted
             self.temp_booking.save(update_fields=['dropoff_date', 'dropoff_time', 'payment_option'])
 
@@ -123,6 +127,48 @@ class Step5PaymentDropoffAndTermsView(View):
                         payment_obj=None, # No Payment object associated initially
                     )
                     request.session['final_service_booking_reference'] = final_service_booking.service_booking_reference
+
+                    # --- Email Sending Logic for In-Store Full Payment ---
+                    # 1. Send confirmation email to the user
+                    user_email = final_service_booking.service_profile.email
+                    if user_email:
+                        try:
+                            send_templated_email(
+                                recipient_list=[user_email],
+                                subject=f"Your Service Booking Confirmed! Ref: {final_service_booking.service_booking_reference}",
+                                template_name='emails/service_booking_confirmation_user.html',
+                                context={'booking': final_service_booking},
+                                user=request.user if request.user.is_authenticated else None,
+                                booking=final_service_booking
+                            )
+                            messages.info(request, "A confirmation email has been sent to your registered email address.")
+                        except Exception as email_e:
+                            logger.error(f"Failed to send user confirmation email for service booking {final_service_booking.service_booking_reference}: {email_e}")
+                            messages.warning(request, "Booking confirmed, but failed to send confirmation email. Please check your email later or contact us.")
+                    else:
+                        logger.warning(f"No email address found for service profile {final_service_booking.service_profile.id}. Skipping user email for booking {final_service_booking.service_booking_reference}.")
+                        messages.warning(request, "Booking confirmed, but no email address found to send confirmation.")
+
+
+                    # 2. Send notification email to admin
+                    admin_email = getattr(settings, 'ADMIN_EMAIL', 'admin@example.com') # Get admin email from settings
+                    if admin_email:
+                        try:
+                            send_templated_email(
+                                recipient_list=[admin_email],
+                                subject=f"NEW SERVICE BOOKING: {final_service_booking.service_booking_reference} (In-Store Payment)",
+                                template_name='emails/service_booking_confirmation_admin.html',
+                                context={'booking': final_service_booking},
+                                user=request.user if request.user.is_authenticated else None,
+                                booking=final_service_booking
+                            )
+                            logger.info(f"Admin notification email sent for service booking {final_service_booking.service_booking_reference}.")
+                        except Exception as email_e:
+                            logger.error(f"Failed to send admin notification email for service booking {final_service_booking.service_booking_reference}: {email_e}")
+                            # Admin email failure should not stop the user flow, but should be logged
+                    else:
+                        logger.warning("ADMIN_EMAIL is not set in settings. Skipping admin notification email for service booking.")
+
                     return redirect(reverse('service:service_book_step7'))
 
                 except Exception as e:
@@ -136,3 +182,4 @@ class Step5PaymentDropoffAndTermsView(View):
             messages.error(request, "Please correct the errors highlighted below.")
             context = self.get_context_data(form=form)
             return render(request, self.template_name, context)
+

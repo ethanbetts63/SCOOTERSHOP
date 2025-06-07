@@ -1,0 +1,250 @@
+{# mailer/templates/emails/service_booking_confirmation_admin.html #}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEW SERVICE BOOKING: {{ booking.service_booking_reference }}</title>
+    <style type="text/css">
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #dc3545; /* A distinct color for admin alerts */
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #777777;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+        .section-title {
+            background-color: #e9ecef;
+            padding: 10px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-left: 5px solid #007bff;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+            vertical-align: top;
+        }
+        th {
+            background-color: #f2f2f2;
+            width: 30%; /* Adjust as needed */
+        }
+        td ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .admin-link {
+            display: inline-block;
+            background-color: #007bff;
+            color: #ffffff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+            <td style="padding: 20px 0; text-align: center;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="container">
+                    <tr>
+                        <td class="header">
+                            <h1>New Service Booking Received!</h1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="content">
+                            <p>Dear Administrator,</p>
+                            <p>A new motorcycle service booking has been confirmed. Please find the full details below:</p>
+
+                            <div class="section-title">Booking Overview</div>
+                            <table>
+                                <tr>
+                                    <th>Booking Reference:</th>
+                                    <td><strong>{{ booking.service_booking_reference|default:"N/A" }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <th>Status:</th>
+                                    <td>{{ booking.get_booking_status_display|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Created At:</th>
+                                    <td>{{ booking.created_at|date:"D, M d, Y H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Last Updated:</th>
+                                    <td>{{ booking.updated_at|date:"D, M d, Y H:i" }}</td>
+                                </tr>
+                            </table>
+
+                            <div class="section-title">Service Details</div>
+                            <table>
+                                <tr>
+                                    <th>Service Type:</th>
+                                    <td>{{ booking.service_type.name|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Service Date:</th>
+                                    <td>{{ booking.service_date|date:"D, M d, Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Drop-off Date/Time:</th>
+                                    <td>{{ booking.dropoff_date|date:"D, M d, Y" }} at {{ booking.dropoff_time|time:"P" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Estimated Pick-up Date:</th>
+                                    <td>{{ booking.estimated_pickup_date|date:"D, M d, Y"|default:"Not set" }}</td>
+                                </tr>
+                            </table>
+
+                            <div class="section-title">Customer Profile Details</div>
+                            {% if booking.service_profile %}
+                            <table>
+                                <tr>
+                                    <th>Name:</th>
+                                    <td>{{ booking.service_profile.name|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Email:</th>
+                                    <td>{{ booking.service_profile.email|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Phone Number:</th>
+                                    <td>{{ booking.service_profile.phone_number|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Address:</th>
+                                    <td>
+                                        {{ booking.service_profile.address_line_1|default:"" }}<br>
+                                        {% if booking.service_profile.address_line_2 %}{{ booking.service_profile.address_line_2 }}<br>{% endif %}
+                                        {{ booking.service_profile.city|default:"" }}, {{ booking.service_profile.state|default:"" }} {{ booking.service_profile.post_code|default:"" }}<br>
+                                        {{ booking.service_profile.country|default:"N/A" }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Linked User:</th>
+                                    <td>{% if booking.service_profile.user %}{{ booking.service_profile.user.email }} (ID: {{ booking.service_profile.user.id }}){% else %}N/A{% endif %}</td>
+                                </tr>
+                            </table>
+                            {% else %}
+                            <p>No customer profile details available.</p>
+                            {% endif %}
+
+                            <div class="section-title">Customer Motorcycle Details</div>
+                            {% if booking.customer_motorcycle %}
+                            <table>
+                                <tr>
+                                    <th>Make:</th>
+                                    <td>{{ booking.customer_motorcycle.make|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Model:</th>
+                                    <td>{{ booking.customer_motorcycle.model|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Year:</th>
+                                    <td>{{ booking.customer_motorcycle.year|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>License Plate:</th>
+                                    <td>{{ booking.customer_motorcycle.license_plate|default:"N/A" }}</td>
+                                </tr>
+                            </table>
+                            {% else %}
+                            <p>No customer motorcycle details available.</p>
+                            {% endif %}
+
+                            <div class="section-title">Financial Details</div>
+                            <table>
+                                <tr>
+                                    <th>Calculated Total:</th>
+                                    <td><strong>{{ booking.calculated_total|floatformat:2|default:"0.00" }} {{ booking.currency }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <th>Amount Paid:</th>
+                                    <td>{{ booking.amount_paid|floatformat:2|default:"0.00" }} {{ booking.currency }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Payment Status:</th>
+                                    <td>{{ booking.get_payment_status_display|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Payment Method:</th>
+                                    <td>{{ booking.get_payment_method_display|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Currency:</th>
+                                    <td>{{ booking.currency|default:"N/A" }}</td>
+                                </tr>
+                                {% if booking.stripe_payment_intent_id %}
+                                <tr>
+                                    <th>Stripe Payment Intent ID:</th>
+                                    <td>{{ booking.stripe_payment_intent_id|default:"N/A" }}</td>
+                                </tr>
+                                {% endif %}
+                            </table>
+
+                            <div class="section-title">Customer Notes</div>
+                            <p>{{ booking.customer_notes|default:"No customer notes." }}</p>
+
+                            <p>Please log in to the admin panel for further management:</p>
+                            <p style="text-align: center;">
+                                <a href="{% url 'admin:index' %}" class="admin-link">Go to Admin Panel</a>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="footer">
+                            <p>&copy; {{ "now"|date:"Y" }} SCOOTER_SHOP. This is an automated notification.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

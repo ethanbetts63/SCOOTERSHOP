@@ -306,90 +306,6 @@ class HireRefundRequestFactory(factory.django.DjangoModelFactory):
     token_created_at = factory.LazyFunction(timezone.now)
 
 
-class ServiceProfileFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = ServiceProfile
-
-    user = None
-    name = factory.Faker('name')
-    email = factory.Faker('email')
-    phone_number = factory.LazyFunction(lambda: fake.numerify('##########'))
-    address_line_1 = factory.Faker('street_address')
-    address_line_2 = factory.Faker('secondary_address')
-    city = factory.Faker('city')
-    state = factory.Faker('state_abbr')
-    post_code = factory.Faker('postcode')
-    country = factory.Faker('country_code')
-
-class TempServiceBookingFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = TempServiceBooking
-
-    session_uuid = factory.LazyFunction(uuid.uuid4)
-    service_type = factory.SubFactory('service.ServiceType')
-    service_profile = factory.SubFactory(ServiceProfileFactory)
-    customer_motorcycle = factory.SubFactory('service.CustomerMotorcycle', service_profile=factory.SelfAttribute('..service_profile'))
-    payment_option = factory.Faker('random_element', elements=['credit_card', 'bank_transfer', 'cash', 'stripe'])
-
-    dropoff_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+30d'))
-    dropoff_time = factory.Faker('time_object')
-
-    service_date = factory.LazyAttribute(
-        lambda o: o.dropoff_date + datetime.timedelta(days=fake.random_int(min=0, max=7))
-    )
-
-    estimated_pickup_date = None
-    customer_notes = factory.Faker('paragraph')
-    calculated_deposit_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
-
-class ServiceBookingFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = ServiceBooking
-
-    service_booking_reference = factory.Sequence(lambda n: f"SERVICE-{n:08d}")
-    service_type = factory.SubFactory('service.ServiceType')
-    service_profile = factory.SubFactory(ServiceProfileFactory)
-    customer_motorcycle = factory.SubFactory('service.CustomerMotorcycle', service_profile=factory.SelfAttribute('..service_profile'))
-    payment_option = factory.Faker('random_element', elements=['credit_card', 'bank_transfer', 'cash', 'stripe'])
-    payment = factory.SubFactory(PaymentFactory)
-
-    calculated_total = factory.LazyFunction(lambda: fake.pydecimal(left_digits=4, right_digits=2, positive=True))
-    calculated_deposit_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
-    amount_paid = factory.LazyAttribute(lambda o: o.calculated_total)
-    payment_status = factory.Faker('random_element', elements=['pending', 'paid', 'requires_action', 'refunded', 'failed'])
-    payment_method = factory.Faker('random_element', elements=['credit_card', 'bank_transfer', 'cash', 'stripe'])
-    currency = 'AUD'
-
-    stripe_payment_intent_id = factory.LazyAttribute(lambda o: o.payment.stripe_payment_intent_id if o.payment else None)
-
-    dropoff_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+30d'))
-    dropoff_time = factory.Faker('time_object')
-
-    service_date = factory.LazyAttribute(
-        lambda o: o.dropoff_date + datetime.timedelta(days=fake.random_int(min=0, max=7))
-    )
-
-    estimated_pickup_date = factory.LazyAttribute(lambda o: o.service_date + datetime.timedelta(days=fake.random_int(min=1, max=5)))
-
-    booking_status = factory.Faker('random_element', elements=['pending', 'confirmed', 'in_progress', 'completed', 'cancelled', 'dropped_off', 'picked_up'])
-    customer_notes = factory.Faker('paragraph')
-
-class TempBookingAddOnFactory(factory.django.DjangoModelFactory):
-    """
-    Factory for the TempBookingAddOn model.
-    """
-    class Meta:
-        model = TempBookingAddOn
-
-    temp_booking = factory.SubFactory(TempHireBookingFactory)
-    addon = factory.SubFactory(AddOnFactory)
-    quantity = factory.Faker('random_int', min=1, max=3)
-    
-    # Calculate the price based on the addon's cost and quantity
-    booked_addon_price = factory.LazyAttribute(
-        lambda o: (o.addon.daily_cost * o.quantity) if o.addon else Decimal('0.00')
-    )
-
 class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = User
@@ -431,6 +347,22 @@ class ServiceTypeFactory(factory.django.DjangoModelFactory):
         lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True)
     )
     is_active = True
+
+
+class ServiceProfileFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ServiceProfile
+
+    user = factory.SubFactory(UserFactory)
+    name = factory.Faker('name')
+    email = factory.LazyAttribute(lambda o: o.user.email if o.user else factory.Faker('email'))
+    phone_number = factory.LazyFunction(lambda: fake.numerify('##########'))
+    address_line_1 = factory.Faker('street_address')
+    address_line_2 = factory.Faker('secondary_address')
+    city = factory.Faker('city')
+    state = factory.Faker('state_abbr')
+    post_code = factory.Faker('postcode')
+    country = factory.Faker('country_code')
 
 class CustomerMotorcycleFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -512,3 +444,72 @@ class ServiceSettingsFactory(factory.django.DjangoModelFactory):
                 setattr(obj, k, v)
             obj.save()
         return obj
+
+
+class TempServiceBookingFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = TempServiceBooking
+
+    session_uuid = factory.LazyFunction(uuid.uuid4)
+    service_type = factory.SubFactory(ServiceTypeFactory)
+    service_profile = factory.SubFactory(ServiceProfileFactory)
+    customer_motorcycle = factory.SubFactory(CustomerMotorcycleFactory, service_profile=factory.SelfAttribute('..service_profile'))
+    payment_option = factory.Faker('random_element', elements=[choice[0] for choice in TempServiceBooking.PAYMENT_METHOD_CHOICES])
+    
+    dropoff_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+30d'))
+    dropoff_time = factory.Faker('time_object')
+    
+    service_date = factory.LazyAttribute(
+        lambda o: o.dropoff_date + datetime.timedelta(days=fake.random_int(min=0, max=7))
+    )
+    
+    estimated_pickup_date = None
+    customer_notes = factory.Faker('paragraph')
+    calculated_deposit_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
+
+
+class ServiceBookingFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ServiceBooking
+
+    service_booking_reference = factory.Sequence(lambda n: f"SERVICE-{n:08d}")
+    service_type = factory.SubFactory(ServiceTypeFactory)
+    service_profile = factory.SubFactory(ServiceProfileFactory)
+    customer_motorcycle = factory.SubFactory(CustomerMotorcycleFactory, service_profile=factory.SelfAttribute('..service_profile'))
+    payment_option = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.PAYMENT_METHOD_CHOICES])
+    payment = factory.SubFactory(PaymentFactory)
+    calculated_total = factory.LazyFunction(lambda: fake.pydecimal(left_digits=4, right_digits=2, positive=True))
+    calculated_deposit_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
+    amount_paid = factory.LazyAttribute(lambda o: o.calculated_total)
+    payment_status = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.PAYMENT_STATUS_CHOICES])
+    payment_method = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.PAYMENT_METHOD_CHOICES])
+    currency = 'AUD'
+    stripe_payment_intent_id = factory.Sequence(lambda n: f"pi_{uuid.uuid4().hex[:24]}")
+    
+    dropoff_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+30d'))
+    dropoff_time = factory.Faker('time_object')
+    
+    service_date = factory.LazyAttribute(
+        lambda o: o.dropoff_date + datetime.timedelta(days=fake.random_int(min=0, max=7))
+    )
+    
+    estimated_pickup_date = factory.LazyAttribute(lambda o: o.service_date + datetime.timedelta(days=fake.random_int(min=1, max=5)))
+    
+    booking_status = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.BOOKING_STATUS_CHOICES])
+    customer_notes = factory.Faker('paragraph')
+
+class TempBookingAddOnFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for the TempBookingAddOn model.
+    """
+    class Meta:
+        model = TempBookingAddOn
+
+    temp_booking = factory.SubFactory(TempHireBookingFactory)
+    addon = factory.SubFactory(AddOnFactory)
+    quantity = factory.Faker('random_int', min=1, max=3)
+    
+    # Calculate the price based on the addon's cost and quantity
+    booked_addon_price = factory.LazyAttribute(
+        lambda o: (o.addon.daily_cost * o.quantity) if o.addon else Decimal('0.00')
+    )
