@@ -113,7 +113,7 @@ class Step6PaymentView(View):
                             currency=currency,
                             description=payment_description,
                             metadata={
-                                'temp_booking_uuid': str(temp_booking.session_uuid),
+                                'temp_service_booking_uuid': str(temp_booking.session_uuid),
                                 'service_profile_id': str(service_customer_profile.id) if service_customer_profile else 'guest',
                                 'booking_type': 'service_booking',
                             }
@@ -149,7 +149,7 @@ class Step6PaymentView(View):
                     amount=int(amount_to_pay * 100),
                     currency=currency,
                     metadata={
-                        'temp_booking_uuid': str(temp_booking.session_uuid),
+                        'temp_service_booking_uuid': str(temp_booking.session_uuid),
                         'service_profile_id': str(service_customer_profile.id) if service_customer_profile else 'guest',
                         'booking_type': 'service_booking',
                     },

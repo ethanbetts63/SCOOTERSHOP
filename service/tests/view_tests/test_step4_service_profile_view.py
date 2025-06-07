@@ -8,7 +8,7 @@ import datetime
 import uuid
 
 # Import the view to be tested
-# Assuming your view is in service.views.user_views.step4_service_profile_view
+# Assuming your view is in service.views.v2_views.user_views.Step4ServiceProfileView
 # Adjust the import path if necessary.
 from service.views.v2_views.user_views import Step4ServiceProfileView
 from service.forms.step4_service_profile_form import ServiceBookingUserForm
@@ -71,7 +71,8 @@ class Step4ServiceProfileViewTest(TestCase):
 
         # Set the UUID in the client's session
         session = self.client.session
-        session['temp_booking_uuid'] = str(self.temp_booking.session_uuid)
+        # FIX: Change 'temp_booking_uuid' to 'temp_service_booking_uuid'
+        session['temp_service_booking_uuid'] = str(self.temp_booking.session_uuid)
         session.save()
         
         # Default valid data for POST requests (can be overridden in specific tests)
@@ -92,8 +93,9 @@ class Step4ServiceProfileViewTest(TestCase):
     def test_dispatch_no_temp_booking_uuid_in_session_redirects(self):
         self.client.logout() # Ensure clean session
         session = self.client.session
-        if 'temp_booking_uuid' in session:
-            del session['temp_booking_uuid']
+        # FIX: Change 'temp_booking_uuid' to 'temp_service_booking_uuid'
+        if 'temp_service_booking_uuid' in session:
+            del session['temp_service_booking_uuid']
         session.save()
 
         response = self.client.get(self.base_url)
@@ -106,13 +108,15 @@ class Step4ServiceProfileViewTest(TestCase):
 
     def test_dispatch_invalid_temp_booking_uuid_redirects(self):
         session = self.client.session
-        session['temp_booking_uuid'] = str(uuid.uuid4()) # Non-existent UUID
+        # FIX: Change 'temp_booking_uuid' to 'temp_service_booking_uuid'
+        session['temp_service_booking_uuid'] = str(uuid.uuid4()) # Non-existent UUID
         session.save()
 
         response = self.client.get(self.base_url)
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('service:service'))
         messages = list(get_messages(response.wsgi_request))
+        # FIX: Update expected message to match what the view sends
         self.assertTrue(any("Your booking session could not be found." in str(m) for m in messages))
 
 
@@ -121,7 +125,8 @@ class Step4ServiceProfileViewTest(TestCase):
         self.temp_booking.save()
         # Re-set session as temp_booking was modified
         session = self.client.session
-        session['temp_booking_uuid'] = str(self.temp_booking.session_uuid)
+        # FIX: Change 'temp_booking_uuid' to 'temp_service_booking_uuid'
+        session['temp_service_booking_uuid'] = str(self.temp_booking.session_uuid)
         session.save()
 
         response = self.client.get(self.base_url)
@@ -143,7 +148,8 @@ class Step4ServiceProfileViewTest(TestCase):
         self.client.logout() # Ensure anonymous
         # Re-set session after logout
         session = self.client.session
-        session['temp_booking_uuid'] = str(self.temp_booking.session_uuid)
+        # FIX: Change 'temp_booking_uuid' to 'temp_service_booking_uuid'
+        session['temp_service_booking_uuid'] = str(self.temp_booking.session_uuid)
         session.save()
 
         response = self.client.get(self.base_url)
@@ -182,7 +188,8 @@ class Step4ServiceProfileViewTest(TestCase):
 
         # Re-set session as temp_booking was modified
         session = self.client.session
-        session['temp_booking_uuid'] = str(self.temp_booking.session_uuid)
+        # FIX: Change 'temp_booking_uuid' to 'temp_service_booking_uuid'
+        session['temp_service_booking_uuid'] = str(self.temp_booking.session_uuid)
         session.save()
 
         response = self.client.get(self.base_url)
@@ -198,7 +205,8 @@ class Step4ServiceProfileViewTest(TestCase):
     def test_post_anonymous_user_create_profile_valid_data(self):
         self.client.logout()
         session = self.client.session
-        session['temp_booking_uuid'] = str(self.temp_booking.session_uuid)
+        # FIX: Change 'temp_booking_uuid' to 'temp_service_booking_uuid'
+        session['temp_service_booking_uuid'] = str(self.temp_booking.session_uuid)
         session.save()
 
         initial_profile_count = ServiceProfile.objects.count()
@@ -246,7 +254,8 @@ class Step4ServiceProfileViewTest(TestCase):
         self.temp_booking.save()
         
         session = self.client.session # Re-save session
-        session['temp_booking_uuid'] = str(self.temp_booking.session_uuid)
+        # FIX: Change 'temp_booking_uuid' to 'temp_service_booking_uuid'
+        session['temp_service_booking_uuid'] = str(self.temp_booking.session_uuid)
         session.save()
 
         updated_data = self.valid_post_data.copy()
@@ -327,4 +336,3 @@ class Step4ServiceProfileViewTest(TestCase):
         # Motorcycle's profile should now be the one from the form, not the `old_motorcycle_profile`
         self.assertEqual(self.motorcycle_for_temp_booking.service_profile, form_submitted_profile)
         self.assertNotEqual(self.motorcycle_for_temp_booking.service_profile, old_motorcycle_profile)
-

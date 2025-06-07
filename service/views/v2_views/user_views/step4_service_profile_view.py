@@ -13,7 +13,7 @@ class Step4ServiceProfileView(View):
         """
         Retrieves the TempServiceBooking instance from the session or redirects.
         """
-        temp_booking_uuid = request.session.get('temp_booking_uuid')
+        temp_booking_uuid = request.session.get('temp_service_booking_uuid')
         if not temp_booking_uuid:
             messages.error(request, "Your booking session has expired or is invalid. Please start over.")
             return None, redirect(reverse('service:service'))
@@ -25,7 +25,7 @@ class Step4ServiceProfileView(View):
             ).get(session_uuid=temp_booking_uuid)
             return temp_booking, None
         except TempServiceBooking.DoesNotExist:
-            request.session.pop('temp_booking_uuid', None) # Clean up invalid session data
+            request.session.pop('temp_service_booking_uuid', None) # Clean up invalid session data
             messages.error(request, "Your booking session could not be found. Please start over.")
             return None, redirect(reverse('service:service')) # Or 'service:service'
 

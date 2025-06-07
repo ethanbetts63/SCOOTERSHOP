@@ -84,7 +84,7 @@ class Step6PaymentViewTest(TestCase):
             dropoff_time=datetime.time(10, 0),
             customer_motorcycle=self.customer_motorcycle,
             service_profile=self.service_profile,
-            payment_option='online_full', # Default to full payment for most tests
+            payment_option='full_online', # Default to full payment for most tests
             calculated_deposit_amount=Decimal('50.00') # Example deposit
         )
 
@@ -175,7 +175,7 @@ class Step6PaymentViewTest(TestCase):
         """
         Tests GET request for online full payment, creating a new Stripe PaymentIntent and local Payment.
         """
-        self.temp_booking.payment_option = 'online_full'
+        self.temp_booking.payment_option = 'full_online'
         self.temp_booking.save()
 
         mock_create.return_value = MagicMock(
@@ -198,7 +198,8 @@ class Step6PaymentViewTest(TestCase):
             amount=int(self.service_type.base_price * 100),
             currency='AUD',
             metadata={
-                'temp_booking_uuid': str(self.temp_booking.session_uuid),
+                # FIX: Change 'temp_booking_uuid' to 'temp_service_booking_uuid'
+                'temp_service_booking_uuid': str(self.temp_booking.session_uuid),
                 'service_profile_id': str(self.service_profile.id),
                 'booking_type': 'service_booking',
             },
@@ -241,7 +242,8 @@ class Step6PaymentViewTest(TestCase):
             amount=int(self.temp_booking.calculated_deposit_amount * 100),
             currency='AUD',
             metadata={
-                'temp_booking_uuid': str(self.temp_booking.session_uuid),
+                # FIX: Change 'temp_booking_uuid' to 'temp_service_booking_uuid'
+                'temp_service_booking_uuid': str(self.temp_booking.session_uuid),
                 'service_profile_id': str(self.service_profile.id),
                 'booking_type': 'service_booking',
             },
@@ -262,7 +264,7 @@ class Step6PaymentViewTest(TestCase):
         """
         existing_amount = Decimal('100.00')
         new_amount = Decimal('150.00')
-        self.temp_booking.payment_option = 'online_full'
+        self.temp_booking.payment_option = 'full_online'
         self.temp_booking.service_type.base_price = new_amount # Update base price for new amount
         self.temp_booking.service_type.save()
         self.temp_booking.save()
@@ -298,7 +300,18 @@ class Step6PaymentViewTest(TestCase):
         self.assertEqual(response.context['amount'], new_amount)
 
         mock_retrieve.assert_called_once_with('pi_existing_123')
-        mock_modify.assert_called_once()
+        # FIX: Change 'temp_booking_uuid' to 'temp_service_booking_uuid' in mock_modify metadata expectation
+        mock_modify.assert_called_once_with(
+            'pi_existing_123',
+            amount=int(new_amount * 100),
+            currency='AUD',
+            description=f"Motorcycle service booking for {self.customer_motorcycle.year} {self.customer_motorcycle.brand} {self.customer_motorcycle.model} ({self.service_type.name})",
+            metadata={
+                'temp_service_booking_uuid': str(self.temp_booking.session_uuid),
+                'service_profile_id': str(self.service_profile.id),
+                'booking_type': 'service_booking',
+            }
+        )
         mock_create.assert_not_called()
 
         initial_payment.refresh_from_db()
@@ -354,6 +367,7 @@ class Step6PaymentViewTest(TestCase):
         response = self.client.get(self.base_url)
 
         self.assertEqual(response.status_code, 302)
+        # No change needed here, this test already uses fetch_redirect_response=False and the URL is correct
         self.assertRedirects(response, reverse('service:service_book_step7') + f'?temp_booking_uuid={self.temp_booking.session_uuid}', fetch_redirect_response=False)
         
         mock_create.assert_not_called()
@@ -386,7 +400,7 @@ class Step6PaymentViewTest(TestCase):
         """
         Tests that if the amount to pay is zero or None, the view redirects to step 5.
         """
-        self.temp_booking.payment_option = 'online_full'
+        self.temp_booking.payment_option = 'full_online'
         self.temp_booking.service_type.base_price = Decimal('0.00') # Zero amount
         self.temp_booking.service_type.save()
         self.temp_booking.save()
