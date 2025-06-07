@@ -1,3 +1,4 @@
+import sys 
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
@@ -5,13 +6,14 @@ from django.db import transaction
 from django.utils import timezone
 import stripe
 import json
+from decimal import Decimal # <--- THIS IS THE MISSING IMPORT!
 
 from payments.models import Payment, WebhookEvent
 from payments.webhook_handlers import WEBHOOK_HANDLERS
 
 @csrf_exempt
 def stripe_webhook(request):
-    print("DEBUG: ===== STRIPE WEBHOOK HIT AT VERY BEGINNING =====") # ULTRA DEBUG PRINT
+    print("DEBUG: ===== STRIPE WEBHOOK VIEW ENTRY POINT ===== START") 
 
     payload = request.body
     sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
@@ -70,6 +72,7 @@ def stripe_webhook(request):
                 payment_obj = Payment.objects.select_for_update().get(**{lookup_field: lookup_id})
                 print(f"DEBUG: stripe_webhook - Payment object found: {payment_obj.id}")
 
+                # This is the line where Decimal was used without import
                 if event_type.startswith('payment_intent.') and payment_obj.status != event_data['status']:
                     print(f"DEBUG: stripe_webhook - Updating Payment status from {payment_obj.status} to {event_data['status']}")
                     payment_obj.status = event_data['status']
@@ -130,5 +133,5 @@ def stripe_webhook(request):
         print(f"DEBUG: stripe_webhook - Event type {event_type} not handled in the main processing block.")
         pass # This block might be for other event types not requiring payment object lookup
 
-    print("DEBUG: stripe_webhook - Webhook view exited successfully.")
+    print("DEBUG: ===== STRIPE WEBHOOK VIEW EXIT POINT ===== END")
     return HttpResponse(status=200)

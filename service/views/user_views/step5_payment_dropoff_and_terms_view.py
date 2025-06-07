@@ -128,7 +128,7 @@ class Step5PaymentDropoffAndTermsView(View):
                         stripe_payment_intent_id=None, # No Stripe intent for in-store
                         payment_obj=None, # No Payment object associated initially
                     )
-                    request.session['final_service_booking_reference'] = final_service_booking.service_booking_reference
+                    request.session['service_booking_reference'] = final_service_booking.service_booking_reference
 
                     # --- Email Sending Logic for In-Store Full Payment ---
                     # 1. Send confirmation email to the user

@@ -16,8 +16,8 @@ class Step1ServiceDetailsView(View):
 
     def post(self, request, *args, **kwargs):
         # Remove any existing service booking reference from the session to start clean
-        if 'final_service_booking_reference' in request.session:
-            del request.session['final_service_booking_reference']
+        if 'service_booking_reference' in request.session:
+            del request.session['service_booking_reference']
         
         form = ServiceDetailsForm(request.POST)
         service_settings = ServiceSettings.objects.first()

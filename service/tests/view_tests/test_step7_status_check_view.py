@@ -50,7 +50,7 @@ class Step7StatusCheckViewTest(TestCase):
         self.assertEqual(data['booking_reference'], booking.service_booking_reference)
         self.assertEqual(data['booking_status'], booking.get_booking_status_display())
         # Check that the session is updated with the final reference
-        self.assertEqual(self.client.session.get('final_service_booking_reference'), booking.service_booking_reference)
+        self.assertEqual(self.client.session.get('service_booking_reference'), booking.service_booking_reference)
 
     def test_get_status_processing(self):
         """

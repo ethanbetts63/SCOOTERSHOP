@@ -67,9 +67,6 @@ def send_templated_email(
     # The 'context' parameter is already a dictionary, so we update it.
     if booking:
         context['booking'] = booking
-        logger.debug(f"Added booking object to email context: {booking.booking_reference}")
-    else:
-        logger.warning("No booking object provided to send_templated_email. Template may be empty.")
 
     # Log the full context being passed to the template (for debugging)
     logger.debug(f"Email template context for '{template_name}': {context}")

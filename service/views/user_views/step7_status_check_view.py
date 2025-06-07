@@ -32,7 +32,7 @@ class Step7StatusCheckView(View):
                 'motorcycle_details': f"{service_booking.customer_motorcycle.year} {service_booking.customer_motorcycle.brand} {service_booking.customer_motorcycle.model}",
                 'customer_name': service_booking.service_profile.name,
             }
-            request.session['final_service_booking_reference'] = service_booking.service_booking_reference
+            request.session['service_booking_reference'] = service_booking.service_booking_reference
             print("DEBUG: Step7StatusCheckView - Returning 'ready' status JSON.")
             return JsonResponse(response_data)
 

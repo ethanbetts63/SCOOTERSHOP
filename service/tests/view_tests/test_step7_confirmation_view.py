@@ -50,7 +50,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
         """
         final_booking = ServiceBookingFactory()
         session = self.client.session
-        session['final_service_booking_reference'] = final_booking.service_booking_reference
+        session['service_booking_reference'] = final_booking.service_booking_reference
         session.save()
 
         response = self.client.get(self.base_url)
@@ -76,7 +76,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
         self.assertTemplateUsed(response, 'service/step7_confirmation.html')
         self.assertEqual(response.context['service_booking'].id, final_booking.id)
         self.assertFalse(response.context['is_processing'])
-        self.assertEqual(self.client.session.get('final_service_booking_reference'), final_booking.service_booking_reference)
+        self.assertEqual(self.client.session.get('service_booking_reference'), final_booking.service_booking_reference)
         # Ensure temp_service_booking_uuid is cleared if it was somehow present
         self.assertNotIn('temp_service_booking_uuid', self.client.session)
 
@@ -121,7 +121,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
         """
         invalid_booking_reference = "NONEXISTENTREF123"
         session = self.client.session
-        session['final_service_booking_reference'] = invalid_booking_reference
+        session['service_booking_reference'] = invalid_booking_reference
         session.save()
 
         response = self.client.get(self.base_url)
@@ -129,7 +129,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
         self.assertRedirects(response, reverse('service:service'))
         messages = list(get_messages(response.wsgi_request))
         self.assertTrue(any("Could not find a booking confirmation" in str(m) for m in messages))
-        self.assertNotIn('final_service_booking_reference', self.client.session) # Should be cleared
+        self.assertNotIn('service_booking_reference', self.client.session) # Should be cleared
 
     def test_get_payment_intent_id_invalid_no_payment_or_booking_redirects_to_home(self):
         """

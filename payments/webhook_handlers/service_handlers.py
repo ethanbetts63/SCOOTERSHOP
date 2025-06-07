@@ -84,6 +84,7 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
         user_email = service_booking.service_profile.user.email if service_booking.service_profile.user else service_booking.service_profile.email
         if user_email:
             print(f"DEBUG: handle_service_booking_succeeded - Attempting to send user confirmation email to: {user_email}")
+            # Corrected attribute from 'booking_reference' to 'service_booking_reference'
             send_templated_email(
                 recipient_list=[user_email],
                 subject=f"Your Service Booking Confirmation - {service_booking.service_booking_reference}",
@@ -95,6 +96,7 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
 
         if settings.ADMIN_EMAIL:
             print(f"DEBUG: handle_service_booking_succeeded - Attempting to send admin notification email to: {settings.ADMIN_EMAIL}")
+            # Corrected attribute from 'booking_reference' to 'service_booking_reference'
             send_templated_email(
                 recipient_list=[settings.ADMIN_EMAIL],
                 subject=f"New Service Booking (Online) - {service_booking.service_booking_reference}",

@@ -11,7 +11,7 @@ class Step7ConfirmationView(View):
         service_booking = None
         is_processing = False
 
-        booking_reference = request.session.get('final_service_booking_reference')
+        booking_reference = request.session.get('service_booking_reference')
         print(f"DEBUG: Step7ConfirmationView - Session booking_reference: {booking_reference}")
 
         if booking_reference:
@@ -20,7 +20,7 @@ class Step7ConfirmationView(View):
                 print(f"DEBUG: Step7ConfirmationView - ServiceBooking found by session reference: {service_booking.service_booking_reference}")
             except ServiceBooking.DoesNotExist:
                 print(f"DEBUG: Step7ConfirmationView - ServiceBooking not found by session reference: {booking_reference}. Removing from session.")
-                del request.session['final_service_booking_reference']
+                del request.session['service_booking_reference']
                 pass # Continue to check payment_intent_id
 
         payment_intent_id = request.GET.get('payment_intent_id')
@@ -29,7 +29,7 @@ class Step7ConfirmationView(View):
         if not service_booking and payment_intent_id:
             try:
                 service_booking = ServiceBooking.objects.get(stripe_payment_intent_id=payment_intent_id)
-                request.session['final_service_booking_reference'] = service_booking.service_booking_reference
+                request.session['service_booking_reference'] = service_booking.service_booking_reference
                 is_processing = False
                 print(f"DEBUG: Step7ConfirmationView - ServiceBooking found by payment_intent_id: {service_booking.service_booking_reference}")
 
