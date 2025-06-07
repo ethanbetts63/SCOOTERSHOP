@@ -9,3 +9,4 @@ from .step4_service_profile_view import *
 from .step5_payment_dropoff_and_terms_view import *
 from .step6_payment_view import *
 from .step7_confirmation_view import *
+from .step7_status_check_view import *

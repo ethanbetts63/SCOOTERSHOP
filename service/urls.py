@@ -1,10 +1,11 @@
-
 # service/urls.py
+from django.urls import path
+from service.views import (
+    user_views, 
+    admin_views,
+)
 
 app_name = 'service'
-
-from django.urls import path
-from service.views import user_views, admin_views
 
 urlpatterns = [
     # User-facing service main page
@@ -18,7 +19,13 @@ urlpatterns = [
     path('service-book/step4/', user_views.Step4ServiceProfileView.as_view(), name='service_book_step4'),
     path('service-book/step5/', user_views.Step5PaymentDropoffAndTermsView.as_view(), name='service_book_step5'),
     path('service-book/step6/', user_views.Step6PaymentView.as_view(), name='service_book_step6'),
-    path('service-book/step7/', user_views.Step7ConfirmationView.as_view(), name='service_book_step7'),
+    
+    # Step 7: Confirmation page
+    path('service-book/step7/', user_views.ServiceBookingConfirmationView.as_view(), name='service_book_step7'),
+    
+    # NEW: AJAX endpoint for checking booking status
+    path('service-book/status-check/', user_views.ServiceBookingStatusCheckView.as_view(), name='service_booking_status_check'),
+
 
     # Admin-facing management
     path('service-booking-management/', admin_views.ServiceBookingManagementView.as_view(), name='service_booking_management'),

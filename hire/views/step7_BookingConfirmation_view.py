@@ -57,19 +57,9 @@ class BookingConfirmationView(View):
         elif not hire_booking: # This case should ideally not be reached if previous checks are robust
             return redirect('hire:step2_choose_bike')
 
-
-        # --- REMOVED: Clearing 'final_booking_reference' here. ---
-        # It should persist in the session after a successful display,
-        # especially if the user refreshes the page.
-        # It can be cleared when the user moves to a different part of the site
-        # or when the session expires.
-        # if 'final_booking_reference' in request.session:
-        #     del request.session['final_booking_reference']
-
         # Also clear the temp_booking_id if it somehow still exists here
         if 'temp_booking_id' in request.session:
             del request.session['temp_booking_id']
-
 
         context = {
             'hire_booking': hire_booking,
