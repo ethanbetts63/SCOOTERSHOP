@@ -10,7 +10,6 @@ import json
 from payments.models import Payment, WebhookEvent
 from payments.webhook_handlers import WEBHOOK_HANDLERS # Import the handlers dictionary
 
-
 @csrf_exempt
 def stripe_webhook(request):
     """
@@ -76,8 +75,6 @@ def stripe_webhook(request):
         return HttpResponse(status=200)
 
     # Handle PaymentIntent-related and Charge-related events
-    # The original condition was `if event_type.startswith('payment_intent.')`
-    # We now extend it to include 'charge.' events.
     if event_type.startswith('payment_intent.') or event_type.startswith('charge.'):
         print(f"DEBUG: Event type starts with 'payment_intent.' or 'charge.'. Attempting to find Payment object.")
         try:
@@ -100,11 +97,20 @@ def stripe_webhook(request):
                     print(f"DEBUG: Payment {payment_obj.id} updated.")
 
                 # 4. Dispatch to specific business logic handler
-                # Determine booking_type, prioritizing from linked HireBooking if available
+                # Determine booking_type, prioritizing from linked HireBooking or ServiceBooking if available
                 booking_type = None
                 if payment_obj.hire_booking:
                     booking_type = 'hire_booking'
                     print(f"DEBUG: Determined booking_type from linked HireBooking: {booking_type}")
+                elif payment_obj.temp_hire_booking: # Check temp_hire_booking as a fallback for hire
+                    booking_type = 'hire_booking'
+                    print(f"DEBUG: Determined booking_type from linked TempHireBooking: {booking_type}")
+                elif payment_obj.service_booking:
+                    booking_type = 'service_booking'
+                    print(f"DEBUG: Determined booking_type from linked ServiceBooking: {booking_type}")
+                elif payment_obj.temp_service_booking: # Check temp_service_booking as a fallback for service
+                    booking_type = 'service_booking'
+                    print(f"DEBUG: Determined booking_type from linked TempServiceBooking: {booking_type}")
                 elif 'metadata' in event_data and 'booking_type' in event_data['metadata']:
                     booking_type = event_data['metadata']['booking_type']
                     print(f"DEBUG: Determined booking_type from event metadata: {booking_type}")
@@ -140,3 +146,4 @@ def stripe_webhook(request):
     # Always return a 200 OK to Stripe to acknowledge receipt
     print(f"DEBUG: Webhook processing complete for event ID: {event['id']}. Returning 200.")
     return HttpResponse(status=200)
+
