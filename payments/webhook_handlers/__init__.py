@@ -4,13 +4,13 @@
 from .hire_handlers import (
     handle_hire_booking_succeeded,
 )
-from .refund_handlers import ( # Corrected import path for refund handlers
+from .refund_handlers import (
     handle_hire_booking_refunded,
     handle_hire_booking_refund_updated,
 )
-# from .service_handlers import (
-#     handle_service_booking_succeeded,
-# )
+from .service_handlers import (
+    handle_service_booking_succeeded,
+)
 
 # Define the WEBHOOK_HANDLERS dictionary
 # This dictionary maps booking types to a further dictionary of event types and their respective handlers.
@@ -20,10 +20,8 @@ WEBHOOK_HANDLERS = {
         'charge.refunded': handle_hire_booking_refunded, # Handlers are now imported from refund_handlers.py
         'charge.refund.updated': handle_hire_booking_refund_updated, # Handlers are now imported from refund_handlers.py
     },
-    # 'service_booking': {
-    #     'payment_intent.succeeded': handle_service_booking_succeeded,
-    #     # TODO: Add service refund handlers here when ready (e.g., 'charge.refunded': handle_service_booking_refunded)
-    # },
-    # Add more booking types and their handlers here as your application expands
+    'service_booking': {
+        'payment_intent.succeeded': handle_service_booking_succeeded,
+    },
 }
 
