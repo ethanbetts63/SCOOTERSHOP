@@ -20,14 +20,12 @@ class Step6PaymentView(View):
         temp_booking_uuid = request.session.get('temp_service_booking_uuid')
 
         if not temp_booking_uuid:
-            print("DEBUG: temp_booking_uuid is None or empty. Redirecting to service:service.")
             messages.error(request, "Your booking session has expired or is invalid.")
             return redirect('service:service')
 
         try:
             temp_booking = get_object_or_404(TempServiceBooking, session_uuid=temp_booking_uuid)
             request.temp_booking = temp_booking
-            print(f"DEBUG: Successfully retrieved TempServiceBooking for UUID: {temp_booking_uuid}. Booking session is valid.")
         except Http404:
             messages.error(request, "Your booking session could not be found.")
             return redirect('service:service')
@@ -50,34 +48,24 @@ class Step6PaymentView(View):
 
 
     def get(self, request, *args, **kwargs):
-        print("DEBUG: Entering Step6PaymentView GET method.")
         temp_booking = request.temp_booking
         service_settings = request.service_settings
-
-        # CRUCIAL DEBUG PRINT: Check the payment_option right at the start of get()
-        print(f"DEBUG: Step6 GET: temp_booking.payment_option is '{temp_booking.payment_option}'")
 
         payment_option = temp_booking.payment_option
         currency = service_settings.currency_code
 
         amount_to_pay = None
-        # FIX: Changed 'online_full' to 'full_online' to match the constant from PaymentOptionForm
         if payment_option == 'full_online':
             amount_to_pay = temp_booking.service_type.base_price
-            print(f"DEBUG: Step6 GET: Payment option 'full_online' recognized. Amount: {amount_to_pay}")
         elif payment_option == 'online_deposit':
             amount_to_pay = temp_booking.calculated_deposit_amount
-            print(f"DEBUG: Step6 GET: Payment option 'online_deposit' recognized. Amount: {amount_to_pay}")
         elif payment_option == 'in_store_full':
-            print("DEBUG: Step6 GET: Payment option 'in_store_full' recognized. Redirecting to step 7.")
             return redirect(reverse('service:service_book_step7') + f'?temp_booking_uuid={temp_booking.session_uuid}')
         else:
-            print(f"DEBUG: Step6 GET: Payment option '{payment_option}' not recognized. Redirecting to step 5.")
             messages.error(request, "No valid payment option selected. Please choose a payment method.")
             return redirect('service:service_book_step5')
 
         if amount_to_pay is None or amount_to_pay <= 0:
-            print(f"DEBUG: Step6 GET: Amount to pay is invalid ({amount_to_pay}). Redirecting to step 5.")
             messages.error(request, "The amount to pay is invalid. Please review your booking details.")
             return redirect('service:service_book_step5')
 
@@ -242,3 +230,4 @@ class Step6PaymentView(View):
             return JsonResponse({'error': str(e)}, status=500)
         except Exception as e:
             return JsonResponse({'error': 'An internal server error occurred during payment processing.'}, status=500)
+
