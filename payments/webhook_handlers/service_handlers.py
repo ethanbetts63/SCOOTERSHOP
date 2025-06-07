@@ -6,7 +6,6 @@ from service.models import TempServiceBooking, ServiceBooking, ServiceProfile
 from payments.models import Payment
 
 from service.utils.convert_temp_service_booking import convert_temp_service_booking
-
 from mailer.utils import send_templated_email
 
 def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: dict):
@@ -65,7 +64,9 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
         )
         print(f"DEBUG: handle_service_booking_succeeded - service_booking created: {service_booking}")
         print(f"DEBUG: handle_service_booking_succeeded - service_booking payment_status: {service_booking.payment_status}")
-
+        
+        
+        
 
         if payment_obj.status != payment_intent_data['status']:
             print(f"DEBUG: handle_service_booking_succeeded - Updating payment_obj status from {payment_obj.status} to {payment_intent_data['status']}")

@@ -34,6 +34,11 @@ class Step7StatusCheckView(View):
             }
             request.session['service_booking_reference'] = service_booking.service_booking_reference
             print("DEBUG: Step7StatusCheckView - Returning 'ready' status JSON.")
+
+            if 'temp_service_booking_uuid' in request.session:
+                del request.session['temp_service_booking_uuid']
+                
+            print("deleting sessino temp uuid")
             return JsonResponse(response_data)
 
         except ServiceBooking.DoesNotExist:
