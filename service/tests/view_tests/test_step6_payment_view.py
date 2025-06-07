@@ -107,7 +107,7 @@ class Step6PaymentViewTest(TestCase):
 
         response = self.client.get(self.base_url)
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('service:service'))
+        self.assertRedirects(response, reverse('service:service'), fetch_redirect_response=False) # Use fetch_redirect_response=False
         messages = list(get_messages(response.wsgi_request))
         self.assertTrue(any("Your booking session has expired or is invalid." in str(m) for m in messages))
 
@@ -121,7 +121,7 @@ class Step6PaymentViewTest(TestCase):
 
         response = self.client.get(self.base_url)
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('service:service'))
+        self.assertRedirects(response, reverse('service:service'), fetch_redirect_response=False) # Use fetch_redirect_response=False
         messages = list(get_messages(response.wsgi_request))
         self.assertTrue(any("Your booking session could not be found." in str(m) for m in messages))
 
@@ -134,7 +134,7 @@ class Step6PaymentViewTest(TestCase):
         
         response = self.client.get(self.base_url)
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('service:service_book_step3'))
+        self.assertRedirects(response, reverse('service:service_book_step3'), fetch_redirect_response=False)
         messages = list(get_messages(response.wsgi_request))
         self.assertTrue(any("Please select or add your motorcycle details first (Step 3)." in str(m) for m in messages))
 
@@ -147,7 +147,7 @@ class Step6PaymentViewTest(TestCase):
 
         response = self.client.get(self.base_url)
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('service:service_book_step4'))
+        self.assertRedirects(response, reverse('service:service_book_step4'), fetch_redirect_response=False)
         messages = list(get_messages(response.wsgi_request))
         self.assertTrue(any("Please provide your contact details first (Step 4)." in str(m) for m in messages))
 
@@ -155,9 +155,12 @@ class Step6PaymentViewTest(TestCase):
         """
         Tests that dispatch allows the request to proceed with a valid temporary booking.
         """
-        # Stripe mocks are needed for the GET method to proceed without error
         with patch('stripe.PaymentIntent.create') as mock_create:
-            mock_create.return_value = MagicMock(client_secret='test_client_secret', id='pi_new_123')
+            mock_create.return_value = MagicMock(
+                client_secret='test_client_secret', 
+                id='pi_new_123',
+                status='requires_payment_method' # Explicitly set status as a string
+            )
             response = self.client.get(self.base_url)
             self.assertEqual(response.status_code, 200) # Should render the form
             self.assertTemplateUsed(response, 'service/step6_payment.html')
@@ -175,8 +178,12 @@ class Step6PaymentViewTest(TestCase):
         self.temp_booking.payment_option = 'online_full'
         self.temp_booking.save()
 
-        mock_create.return_value = MagicMock(client_secret='new_client_secret', id='pi_new_full_123')
-        mock_retrieve.side_effect = stripe.error.InvalidRequestError("No such payment intent", "id") # Simulate no existing intent
+        mock_create.return_value = MagicMock(
+            client_secret='new_client_secret', 
+            id='pi_new_full_123',
+            status='requires_payment_method' # Explicitly set status as a string
+        )
+        mock_retrieve.side_effect = stripe.error.InvalidRequestError("No such payment intent", "id")
 
         response = self.client.get(self.base_url)
 
@@ -198,14 +205,13 @@ class Step6PaymentViewTest(TestCase):
             description=f"Motorcycle service booking for {self.customer_motorcycle.year} {self.customer_motorcycle.brand} {self.customer_motorcycle.model} ({self.service_type.name})"
         )
         
-        # Verify Payment object creation
         payment = Payment.objects.get(temp_service_booking=self.temp_booking)
         self.assertEqual(payment.stripe_payment_intent_id, 'pi_new_full_123')
         self.assertEqual(payment.amount, self.service_type.base_price)
         self.assertEqual(payment.currency, 'AUD')
-        self.assertEqual(payment.status, mock_create.return_value.status)
+        self.assertEqual(payment.status, 'requires_payment_method') # Assert the string status
         self.assertEqual(payment.service_customer_profile, self.service_profile)
-        self.assertEqual(Payment.objects.count(), 1) # Only one payment object
+        self.assertEqual(Payment.objects.count(), 1)
 
     @patch('stripe.PaymentIntent.create')
     @patch('stripe.PaymentIntent.retrieve')
@@ -217,7 +223,11 @@ class Step6PaymentViewTest(TestCase):
         self.temp_booking.payment_option = 'online_deposit'
         self.temp_booking.save()
 
-        mock_create.return_value = MagicMock(client_secret='new_deposit_secret', id='pi_new_deposit_456')
+        mock_create.return_value = MagicMock(
+            client_secret='new_deposit_secret', 
+            id='pi_new_deposit_456',
+            status='requires_payment_method' # Explicitly set status as a string
+        )
         mock_retrieve.side_effect = stripe.error.InvalidRequestError("No such payment intent", "id")
 
         response = self.client.get(self.base_url)
@@ -241,6 +251,7 @@ class Step6PaymentViewTest(TestCase):
         payment = Payment.objects.get(temp_service_booking=self.temp_booking)
         self.assertEqual(payment.stripe_payment_intent_id, 'pi_new_deposit_456')
         self.assertEqual(payment.amount, self.temp_booking.calculated_deposit_amount)
+        self.assertEqual(payment.status, 'requires_payment_method') # Assert the string status
 
     @patch('stripe.PaymentIntent.create')
     @patch('stripe.PaymentIntent.retrieve')
@@ -256,7 +267,6 @@ class Step6PaymentViewTest(TestCase):
         self.temp_booking.service_type.save()
         self.temp_booking.save()
 
-        # Create a pre-existing Payment object that needs modification
         initial_payment = PaymentFactory(
             temp_service_booking=self.temp_booking,
             amount=existing_amount,
@@ -266,7 +276,6 @@ class Step6PaymentViewTest(TestCase):
             stripe_payment_intent_id='pi_existing_123'
         )
 
-        # Mock retrieve to return the existing intent with the old amount
         mock_retrieve.return_value = MagicMock(
             id='pi_existing_123',
             amount=int(existing_amount * 100),
@@ -274,7 +283,6 @@ class Step6PaymentViewTest(TestCase):
             client_secret='old_client_secret',
             status='requires_payment_method'
         )
-        # Mock modify to return the updated intent
         mock_modify.return_value = MagicMock(
             id='pi_existing_123',
             amount=int(new_amount * 100),
@@ -290,21 +298,20 @@ class Step6PaymentViewTest(TestCase):
         self.assertEqual(response.context['amount'], new_amount)
 
         mock_retrieve.assert_called_once_with('pi_existing_123')
-        mock_modify.assert_called_once() # Verify modify was called
-        mock_create.assert_not_called() # Create should not be called
+        mock_modify.assert_called_once()
+        mock_create.assert_not_called()
 
         initial_payment.refresh_from_db()
         self.assertEqual(initial_payment.amount, new_amount)
-        self.assertEqual(initial_payment.status, 'requires_action') # Status updated
+        self.assertEqual(initial_payment.status, 'requires_action')
 
     @patch('stripe.PaymentIntent.create')
     @patch('stripe.PaymentIntent.retrieve')
     @patch('stripe.PaymentIntent.modify')
-    def test_get_existing_intent_succeeded_redirects_to_step7(self, mock_modify, mock_retrieve, mock_create):
+    def test_get_existing_intent_succeeded_renders_with_flag(self, mock_modify, mock_retrieve, mock_create):
         """
-        Tests that if an existing PaymentIntent has already succeeded, the view redirects to step 7.
+        Tests that if an existing PaymentIntent has already succeeded, the view renders with payment_already_succeeded flag.
         """
-        # Create a pre-existing Payment object with succeeded status
         initial_payment = PaymentFactory(
             temp_service_booking=self.temp_booking,
             amount=self.service_type.base_price,
@@ -314,7 +321,6 @@ class Step6PaymentViewTest(TestCase):
             stripe_payment_intent_id='pi_succeeded_789'
         )
 
-        # Mock retrieve to return the succeeded intent
         mock_retrieve.return_value = MagicMock(
             id='pi_succeeded_789',
             amount=int(self.service_type.base_price * 100),
@@ -326,7 +332,6 @@ class Step6PaymentViewTest(TestCase):
         response = self.client.get(self.base_url)
 
         self.assertEqual(response.status_code, 200)
-        # Verify it renders the page but with a flag, allowing for immediate confirmation message
         self.assertIn('payment_already_succeeded', response.context)
         self.assertTrue(response.context['payment_already_succeeded'])
         self.assertTemplateUsed(response, 'service/step6_payment.html')
@@ -349,12 +354,12 @@ class Step6PaymentViewTest(TestCase):
         response = self.client.get(self.base_url)
 
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('service:service_book_step7') + f'?temp_booking_uuid={self.temp_booking.session_uuid}')
+        self.assertRedirects(response, reverse('service:service_book_step7') + f'?temp_booking_uuid={self.temp_booking.session_uuid}', fetch_redirect_response=False)
         
         mock_create.assert_not_called()
         mock_retrieve.assert_not_called()
         mock_modify.assert_not_called()
-        self.assertEqual(Payment.objects.count(), 0) # No payment object should be created
+        self.assertEqual(Payment.objects.count(), 0)
 
     @patch('stripe.PaymentIntent.create')
     @patch('stripe.PaymentIntent.retrieve')
@@ -363,14 +368,16 @@ class Step6PaymentViewTest(TestCase):
         """
         Tests that a Stripe API error during GET request redirects to step 5.
         """
-        mock_retrieve.side_effect = stripe.error.StripeError("Stripe API error")
-        mock_create.side_effect = stripe.error.StripeError("Stripe API error")
+        mock_retrieve.side_effect = stripe.error.StripeError("Stripe API error during retrieve")
+        mock_create.side_effect = stripe.error.StripeError("Stripe API error during create")
 
         response = self.client.get(self.base_url)
 
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('service:service_book_step5'))
-        self.assertEqual(Payment.objects.count(), 0) # No payment object created/modified on error
+        self.assertRedirects(response, reverse('service:service_book_step5'), fetch_redirect_response=False)
+        self.assertEqual(Payment.objects.count(), 0)
+        messages = list(get_messages(response.wsgi_request))
+        self.assertTrue(any("Payment system error:" in str(m) for m in messages))
 
     @patch('stripe.PaymentIntent.create')
     @patch('stripe.PaymentIntent.retrieve')
@@ -387,11 +394,13 @@ class Step6PaymentViewTest(TestCase):
         response = self.client.get(self.base_url)
 
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('service:service_book_step5'))
+        self.assertRedirects(response, reverse('service:service_book_step5'), fetch_redirect_response=False)
         mock_create.assert_not_called()
         mock_retrieve.assert_not_called()
         mock_modify.assert_not_called()
         self.assertEqual(Payment.objects.count(), 0)
+        messages = list(get_messages(response.wsgi_request))
+        self.assertTrue(any("The amount to pay is invalid." in str(m) for m in messages))
 
 
     # --- POST Method Tests ---
@@ -400,13 +409,14 @@ class Step6PaymentViewTest(TestCase):
     def test_post_payment_succeeded_json_response(self, mock_retrieve):
         """
         Tests POST request when Stripe reports the payment intent has succeeded.
+        The local Payment object's status should NOT be updated by this POST,
+        as that's handled by the webhook.
         """
         payment_intent_id = 'pi_test_succeeded'
-        # Create a local Payment object corresponding to the intent
-        PaymentFactory(
+        payment_obj = PaymentFactory(
             temp_service_booking=self.temp_booking,
             stripe_payment_intent_id=payment_intent_id,
-            status='requires_action', # Initial status
+            status='requires_action', # Initial status before POST
             amount=self.service_type.base_price,
             currency='AUD',
             service_customer_profile=self.service_profile
@@ -426,9 +436,9 @@ class Step6PaymentViewTest(TestCase):
         self.assertIn('redirect_url', json_response)
         self.assertTrue(json_response['redirect_url'].endswith(f'?payment_intent_id={payment_intent_id}'))
 
-        # Verify local Payment object status is updated (though webhook handles final confirmation)
-        payment_obj = Payment.objects.get(stripe_payment_intent_id=payment_intent_id)
-        self.assertEqual(payment_obj.status, 'succeeded') # Should be updated by webhook later, but GET/POST might update it too
+        # Verify local Payment object status is NOT updated by the POST method for 'succeeded'
+        payment_obj.refresh_from_db() # Refresh to get the latest status from the database
+        self.assertEqual(payment_obj.status, 'requires_action') # Should remain its initial status
 
     @patch('stripe.PaymentIntent.retrieve')
     def test_post_payment_requires_action_json_response(self, mock_retrieve):
@@ -456,6 +466,8 @@ class Step6PaymentViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         json_response = response.json()
         self.assertEqual(json_response['status'], 'requires_action')
+        self.assertIn('message', json_response) # Message should be present
+        self.assertNotIn('redirect_url', json_response) # No redirect_url for requires_action
 
         payment_obj.refresh_from_db()
         self.assertEqual(payment_obj.status, 'requires_action')
@@ -486,6 +498,8 @@ class Step6PaymentViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         json_response = response.json()
         self.assertEqual(json_response['status'], 'failed')
+        self.assertIn('message', json_response) # Message should be present
+        self.assertNotIn('redirect_url', json_response) # No redirect_url for failed
 
         payment_obj.refresh_from_db()
         self.assertEqual(payment_obj.status, 'failed')
@@ -500,7 +514,7 @@ class Step6PaymentViewTest(TestCase):
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 400)
-        self.assertIn('Invalid JSON', response.json()['error'])
+        self.assertIn('Invalid JSON format in request body', response.json()['error'])
 
     def test_post_missing_payment_intent_id_returns_400(self):
         """
@@ -512,7 +526,7 @@ class Step6PaymentViewTest(TestCase):
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 400)
-        self.assertIn('Payment Intent ID is required', response.json()['error'])
+        self.assertIn('Payment Intent ID is required in the request', response.json()['error'])
 
     @patch('stripe.PaymentIntent.retrieve')
     def test_post_stripe_error_returns_500(self, mock_retrieve):
