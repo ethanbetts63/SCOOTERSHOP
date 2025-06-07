@@ -82,6 +82,9 @@ class Step5PaymentDropoffAndTermsView(View):
         service_date = self.temp_booking.service_date
         max_advance_days = self.service_settings.max_advance_dropoff_days
         
+        # Determine if drop-off must be on the same day as the service date
+        is_same_day_dropoff_only = (max_advance_days == 0)
+
         # Drop-off date cannot be after the scheduled service date
         max_dropoff_date = service_date
         
@@ -97,9 +100,10 @@ class Step5PaymentDropoffAndTermsView(View):
             'service_settings': self.service_settings,
             'min_dropoff_date': min_dropoff_date.strftime('%Y-%m-%d'),
             'max_dropoff_date': max_dropoff_date.strftime('%Y-%m-%d'),
-            'get_times_url': reverse('service:get_available_times_for_date'), # CORRECTED URL name
+            'get_times_url': reverse('service:get_available_times_for_date'),
             'step': 5,
             'total_steps': 7,
+            'is_same_day_dropoff_only': is_same_day_dropoff_only, # New context variable
         }
         context.update(kwargs)
         return context
@@ -114,6 +118,14 @@ class Step5PaymentDropoffAndTermsView(View):
             'dropoff_time': self.temp_booking.dropoff_time,
             'payment_option': self.temp_booking.payment_option,
         }
+        
+        # If max_advance_dropoff_days is 0, force dropoff_date to be service_date
+        # This ensures the form's initial data aligns with the business rule.
+        if self.service_settings.max_advance_dropoff_days == 0:
+            initial_data['dropoff_date'] = self.temp_booking.service_date
+            # Forcing the initial date also ensures the JS can immediately fetch times
+            # if the hidden field value is set.
+
         form = self.form_class(initial=initial_data, **self.get_form_kwargs())
         
         context = self.get_context_data(form=form)
@@ -145,3 +157,4 @@ class Step5PaymentDropoffAndTermsView(View):
             messages.error(request, "Please correct the errors highlighted below.")
             context = self.get_context_data(form=form)
             return render(request, self.template_name, context)
+

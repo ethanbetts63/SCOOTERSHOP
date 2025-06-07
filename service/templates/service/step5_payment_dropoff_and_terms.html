@@ -87,24 +87,42 @@
             </div>
         {% endif %}
 
-        <!-- Drop-off Date and Time Fields -->
+        <!-- Drop-off Details Section -->
         <fieldset class="mb-6">
             <legend class="text-xl font-semibold text-gray-800 mb-4">Drop-off Details</legend>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label for="{{ form.dropoff_date.id_for_label }}" class="block text-sm font-medium text-gray-700 required-label">{{ form.dropoff_date.label }}</label>
-                    <input type="text"
-                           name="{{ form.dropoff_date.name }}"
-                           id="{{ form.dropoff_date.id_for_label }}"
-                           class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm {% if form.dropoff_date.errors %}border-red-500{% endif %}"
-                           placeholder="Click to select a date"
-                           value="{{ form.dropoff_date.value|default_if_none:''|date:'Y-m-d' }}"
-                           data-min-date-flatpickr="{{ min_dropoff_date }}" {# Use data-min-date-flatpickr for consistency with step1 #}
-                           data-max-date-flatpickr="{{ max_dropoff_date }}"> {# Use data-max-date-flatpickr for consistency with step1 #}
-                    {% for error in form.dropoff_date.errors %}
-                        <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
-                    {% endfor %}
-                </div>
+                {% if is_same_day_dropoff_only %}
+                    <!-- Display fixed date information and a hidden input -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Drop-off Date</label> {# Changed label here #}
+                        <p class="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm sm:text-sm text-gray-800 font-semibold">
+                            {{ temp_booking.service_date|date:"F j, Y" }}
+                        </p>
+                        <!-- Hidden input to ensure the date is submitted with the form -->
+                        <input type="hidden"
+                               name="{{ form.dropoff_date.name }}"
+                               value="{{ temp_booking.service_date|date:'Y-m-d' }}"
+                               id="{{ form.dropoff_date.id_for_label }}"> {# Keep the ID for JS reference if needed, though Flatpickr won't use it #}
+                    </div>
+                {% else %}
+                    <!-- Display Flatpickr input for date selection -->
+                    <div>
+                        <label for="{{ form.dropoff_date.id_for_label }}" class="block text-sm font-medium text-gray-700 required-label">{{ form.dropoff_date.label }}</label>
+                        <input type="text"
+                               name="{{ form.dropoff_date.name }}"
+                               id="{{ form.dropoff_date.id_for_label }}"
+                               class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm {% if form.dropoff_date.errors %}border-red-500{% endif %}"
+                               placeholder="Click to select a date"
+                               value="{{ form.dropoff_date.value|default_if_none:''|date:'Y-m-d' }}"
+                               data-min-date-flatpickr="{{ min_dropoff_date }}"
+                               data-max-date-flatpickr="{{ max_dropoff_date }}">
+                        {% for error in form.dropoff_date.errors %}
+                            <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <!-- Drop-off Time Field (always visible, but dependent on date) -->
                 <div>
                     <label for="{{ form.dropoff_time.id_for_label }}" class="block text-sm font-medium text-gray-700 required-label">{{ form.dropoff_time.label }}</label>
                     <select name="{{ form.dropoff_time.name }}"
@@ -171,26 +189,31 @@ document.addEventListener('DOMContentLoaded', function() {
     const dateInput = document.getElementById('{{ form.dropoff_date.id_for_label }}');
     const timeSelect = document.getElementById('{{ form.dropoff_time.id_for_label }}');
     const getTimesUrl = '{{ get_times_url }}';
+    const isSameDayDropoffOnly = '{{ is_same_day_dropoff_only|yesno:"true,false" }}'; // Convert Django boolean to JS boolean
 
-    // Get min and max dates from data attributes, ensuring they are strings or null
-    const minDateFlatpickr = dateInput.getAttribute('data-min-date-flatpickr');
-    const maxDateFlatpickr = dateInput.getAttribute('data-max-date-flatpickr');
+    let fp = null; // Declare fp outside, initialized conditionally
 
-    // Initialize Flatpickr date picker
-    const fp = flatpickr(dateInput, {
-        altInput: true,
-        altFormat: "F j, Y",
-        dateFormat: "Y-m-d",
-        minDate: minDateFlatpickr, // Use the data attribute value directly
-        maxDate: maxDateFlatpickr, // Use the data attribute value directly
-        onChange: function(selectedDates, dateStr, instance) {
-            if (dateStr) {
-                fetchAvailableTimes(dateStr);
-            } else {
-                resetTimeSelect();
-            }
-        },
-    });
+    if (!isSameDayDropoffOnly) {
+        // Only initialize Flatpickr if not same-day dropoff only
+        // dateInput will exist if isSameDayDropoffOnly is false
+        const minDateFlatpickr = dateInput.getAttribute('data-min-date-flatpickr');
+        const maxDateFlatpickr = dateInput.getAttribute('data-max-date-flatpickr');
+
+        fp = flatpickr(dateInput, {
+            altInput: true,
+            altFormat: "F j, Y",
+            dateFormat: "Y-m-d",
+            minDate: minDateFlatpickr,
+            maxDate: maxDateFlatpickr,
+            onChange: function(selectedDates, dateStr, instance) {
+                if (dateStr) {
+                    fetchAvailableTimes(dateStr);
+                } else {
+                    resetTimeSelect();
+                }
+            },
+        });
+    }
 
     function resetTimeSelect(message = 'Select a date first') {
         timeSelect.innerHTML = `<option value="">${message}</option>`;
@@ -232,9 +255,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // If a date is already in the input (e.g., from form error reload), fetch times.
-    // This runs on initial page load if the form had errors or pre-filled data.
-    if (dateInput.value) {
+    // This block handles initial fetching of times
+    // It will run on page load:
+    // 1. If not same-day dropoff only, and a date is pre-filled (e.g., from a form error).
+    // 2. If same-day dropoff only, it will automatically use the service_date.
+    if (isSameDayDropoffOnly) {
+        // If same-day dropoff, the date is fixed to service_date. Fetch times for it immediately.
+        // We use temp_booking.service_date directly from the template context.
+        fetchAvailableTimes('{{ temp_booking.service_date|date:"Y-m-d" }}');
+    } else if (dateInput.value) {
+        // If a date is already in the input (e.g., from form error reload), fetch times.
         fetchAvailableTimes(dateInput.value);
     }
 });
