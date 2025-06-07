@@ -1,13 +1,8 @@
 from django.db import models
 import uuid
-from payments.models import Payment # Keep this import as it's from a different app
-# from service.models import ServiceProfile, ServiceType, CustomerMotorcycle # Remove this direct import
+from payments.models import Payment
 
 class ServiceBooking(models.Model):
-    """
-    Full model to incrementally store booking data during the multi-step user flow.
-    """
-    # Choices for payment method
     PAYMENT_METHOD_CHOICES = [
         ('online_full', 'Full Payment Online'),
         ('online_deposit', 'Deposit Payment Online'),
@@ -27,27 +22,27 @@ class ServiceBooking(models.Model):
         ('in_progress', 'In Progress'),
         ('completed', 'Completed'),
         ('no_show', 'No Show'),
-        ('DECLINED_REFUNDED', 'Declined and Refunded'), # Added for clarity in refund process
+        ('DECLINED_REFUNDED', 'Declined and Refunded'),
     ]
 
     service_booking_reference = models.CharField(max_length=20, unique=True, blank=True, null=True)
     service_type = models.ForeignKey(
-        'service.ServiceType', # Changed to string literal
+        'service.ServiceType',
         on_delete=models.PROTECT,
-        related_name='service_bookings', # Changed related_name for clarity
+        related_name='service_bookings',
         help_text="Selected service type."
     )
     service_profile = models.ForeignKey(
-        'service.ServiceProfile', # Changed to string literal
+        'service.ServiceProfile',
         on_delete=models.CASCADE,
-        related_name='service_bookings', # Changed related_name for clarity
+        related_name='service_bookings',
         help_text="The customer profile associated with this temporary booking."
     )
     customer_motorcycle = models.ForeignKey(
-        'service.CustomerMotorcycle', # Changed to string literal
+        'service.CustomerMotorcycle',
         on_delete=models.SET_NULL,           
         null=True, blank=True, 
-        related_name='service_bookings', # Changed related_name for clarity
+        related_name='service_bookings',
         help_text="Chosen motorcycle for this service (set in a later step)."
     )
     payment_option = models.CharField(
@@ -70,13 +65,11 @@ class ServiceBooking(models.Model):
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='unpaid')
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, null=True, blank=True, help_text="Method by which the payment was made.")
 
-    # Currency of the booking (NEW FIELD)
     currency = models.CharField(
         max_length=3,
         default='AUD',
         help_text="The three-letter ISO currency code for the booking."
     )
-    # Add a field to store the Stripe Payment Intent ID directly
     stripe_payment_intent_id = models.CharField(
         max_length=100,
         unique=True, 
@@ -93,23 +86,19 @@ class ServiceBooking(models.Model):
     booking_status = models.CharField(max_length=30, choices=BOOKING_STATUS_CHOICES, default='PENDING_CONFIRMATION')
     customer_notes = models.TextField(blank=True, null=True, help_text="Any additional notes from the customer.")
     
-    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        # Generate booking reference if not provided
         if not self.service_booking_reference:
-            self.booking_reference = f"SERVICE-{uuid.uuid4().hex[:8].upper()}"
+            # CORRECTED LINE: Set the correct field 'service_booking_reference'
+            self.service_booking_reference = f"SERVICE-{uuid.uuid4().hex[:8].upper()}"
         super().save(*args, **kwargs)
 
     def __str__(self):
-        # Corrected __str__ to use actual fields from ServiceBooking
-        # Assuming appointment_date is meant to be dropoff_date
         return f"Booking {self.service_booking_reference} for {self.service_profile.name} on {self.dropoff_date}"
 
     class Meta:
         verbose_name = "Service Booking"
         verbose_name_plural = "Service Bookings"
         ordering = ['-created_at']
-
