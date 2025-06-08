@@ -59,15 +59,14 @@ class AdminRefundRequestForm(forms.ModelForm):
         self.fields['amount_to_refund'].required = True
 
         # When editing an existing RefundRequest, set the initial value for the correct booking type
+        # The frontend JS will handle showing/hiding based on which radio button is checked.
         if self.instance.pk:
             if self.instance.hire_booking:
                 self.initial['hire_booking'] = self.instance.hire_booking
-                # Ensure the other booking type field is disabled if one is set
-                self.fields['service_booking'].widget.attrs['disabled'] = 'disabled'
+                # Removed direct disabling here; JS handles it based on radio selection
             elif self.instance.service_booking:
                 self.initial['service_booking'] = self.instance.service_booking
-                # Ensure the other booking type field is disabled if one is set
-                self.fields['hire_booking'].widget.attrs['disabled'] = 'disabled'
+                # Removed direct disabling here; JS handles it based on radio selection
 
     def clean(self):
         """
