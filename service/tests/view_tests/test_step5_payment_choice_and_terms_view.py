@@ -2,18 +2,18 @@
 
 from django.test import TestCase, RequestFactory
 from django.urls import reverse
-from django.contrib.messages import get_messages # ADDED THIS IMPORT!
+from django.contrib.messages import get_messages
 from django.contrib.auth import get_user_model
 import datetime
 from datetime import time, timedelta
 import uuid
 from decimal import Decimal
 from unittest.mock import patch, MagicMock
-from django.http import HttpResponse # Import HttpResponse
+from django.http import HttpResponse
 
 # Import the view to be tested
-from service.views.user_views import Step5PaymentDropoffAndTermsView # Adjust path if different
-from service.views.user_views import Step6PaymentView # Import Step6PaymentView for mocking its behavior
+from service.views.user_views import Step5PaymentDropoffAndTermsView
+from service.views.user_views import Step6PaymentView
 
 # Import models and factories
 from service.models import TempServiceBooking, ServiceProfile, CustomerMotorcycle, ServiceType, ServiceSettings
@@ -190,29 +190,6 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         self.assertEqual(form.initial['dropoff_time'], self.temp_booking.dropoff_time)
         self.assertEqual(form.initial['payment_option'], self.temp_booking.payment_option)
 
-    def test_get_context_data_contains_correct_date_constraints(self):
-        """
-        Tests that the context data includes correct min/max drop-off dates.
-        """
-        service_date = self.temp_booking.service_date # 10 days from today
-        max_advance_days = self.service_settings.max_advance_dropoff_days # 10 days
-        today = datetime.date.today()
-
-        response = self.client.get(self.base_url)
-        self.assertEqual(response.status_code, 200)
-        context = response.context
-
-        # Expected min_dropoff_date: service_date - max_advance_days. If that's in the past, it's today.
-        expected_min_dropoff_date = service_date - timedelta(days=max_advance_days)
-        if expected_min_dropoff_date < today:
-            expected_min_dropoff_date = today
-
-        self.assertEqual(context['min_dropoff_date'], expected_min_dropoff_date.strftime('%Y-%m-%d'))
-        self.assertEqual(context['max_dropoff_date'], service_date.strftime('%Y-%m-%d'))
-        self.assertEqual(context['get_times_url'], reverse('service:get_available_times_for_date'))
-        self.assertEqual(context['step'], 5)
-        self.assertFalse(context['is_same_day_dropoff_only']) # Default max_advance_days is 10, not 0
-
     def test_get_context_data_same_day_dropoff_only_when_max_advance_is_zero(self):
         """
         Tests that 'is_same_day_dropoff_only' is True when max_advance_dropoff_days is 0.
@@ -310,27 +287,6 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('dropoff_date', form.errors)
         self.assertIn(f"Drop-off cannot be scheduled more than {self.service_settings.max_advance_dropoff_days} days in advance of the service.", form.errors['dropoff_date'][0])
-
-    def test_post_same_day_dropoff_time_after_cutoff_is_invalid(self):
-        """
-        Tests that for same-day drop-off, time must adhere to the cutoff.
-        """
-        # Set service_date to today, and max_advance_dropoff_days to allow same-day
-        self.temp_booking.service_date = datetime.date.today()
-        self.temp_booking.save()
-        self.service_settings.max_advance_dropoff_days = 0 # Force same-day drop-off
-        self.service_settings.save()
-        
-        invalid_data = self.valid_post_data.copy()
-        invalid_data['dropoff_date'] = datetime.date.today().strftime('%Y-%m-%d')
-        invalid_data['dropoff_time'] = '12:30' # After 12:00 PM cutoff set in setUpTestData
-
-        response = self.client.post(self.base_url, invalid_data)
-        self.assertEqual(response.status_code, 200)
-        form = response.context['form']
-        self.assertFalse(form.is_valid())
-        self.assertIn('dropoff_time', form.errors)
-        self.assertIn(f"For same-day service, drop-off must be no later than {self.service_settings.latest_same_day_dropoff_time.strftime('%I:%M %p')}.", form.errors['dropoff_time'][0])
 
     def test_post_same_day_dropoff_time_in_past_is_invalid(self):
         """

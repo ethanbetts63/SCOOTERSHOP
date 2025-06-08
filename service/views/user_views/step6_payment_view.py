@@ -50,9 +50,6 @@ class Step6PaymentView(View):
     def get(self, request, *args, **kwargs):
         temp_booking = request.temp_booking
         service_settings = request.service_settings
-
-        print(f"DEBUG: Step 6 - Retrieved temp_booking.payment_option: {temp_booking.payment_option}")
-
         payment_option = temp_booking.payment_option
         currency = service_settings.currency_code
 
@@ -64,11 +61,9 @@ class Step6PaymentView(View):
         elif payment_option == 'in_store_full':
             return redirect(reverse('service:service_book_step7') + f'?temp_booking_uuid={temp_booking.session_uuid}')
         else:
-            print(f"DEBUG: Step 6 - No valid payment option recognized. payment_option: {payment_option}")
             messages.error(request, "No valid payment option selected. Please choose a payment method.")
             return redirect('service:service_book_step5')
         
-        print(f"DEBUG: Step 6 - Payment option: {payment_option}, Amount to pay: {amount_to_pay}")
 
         if amount_to_pay is None or amount_to_pay <= 0:
             messages.error(request, "The amount to pay is invalid. Please review your booking details.")

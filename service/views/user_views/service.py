@@ -23,7 +23,6 @@ def service(request):
     try:
         service_types = ServiceType.objects.filter(is_active=True)
     except Exception as e:
-        print(f"Error fetching service types for service info page: {e}")
         service_types = [] # Ensure service_types is a list even if fetching fails
         messages.warning(request, "Could not load service types.")
     service_form = ServiceDetailsForm()

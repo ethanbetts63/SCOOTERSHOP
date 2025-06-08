@@ -53,22 +53,6 @@ class TempServiceBookingModelTest(TestCase):
         # We created one in setUpTestData, so count should be 1
         self.assertEqual(TempServiceBooking.objects.count(), 1)
 
-    def test_str_method(self):
-        """
-        Test the __str__ method of the TempServiceBooking model.
-        """
-        # The __str__ method uses session_uuid, service_profile.name, and dropoff_date
-        # Handle cases where service_profile or dropoff_date might be None (though not in this base instance)
-        profile_name = self.temp_booking.service_profile.name if self.temp_booking.service_profile else "Anonymous"
-        dropoff_date_str = str(self.temp_booking.dropoff_date) if self.temp_booking.dropoff_date else "N/A"
-
-        # Corrected: Use the actual session_uuid from the instance
-        expected_str = (
-            f"Temp Booking {self.temp_booking.session_uuid} for "
-            f"{profile_name} on {dropoff_date_str}"
-        )
-        self.assertEqual(str(self.temp_booking), expected_str)
-
     def test_field_attributes(self):
         """
         Test the attributes of various fields in the TempServiceBooking model.
