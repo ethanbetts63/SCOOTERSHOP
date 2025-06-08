@@ -54,7 +54,8 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             'enable_deposit': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'deposit_calc_method': forms.Select(attrs={'class': 'form-control'}),
             'deposit_flat_fee_amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'deposit_percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'max': '1'}),
+            # Corrected max value for deposit_percentage to 100 to match model validation
+            'deposit_percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'max': '100'}),
             'enable_online_full_payment': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'enable_online_deposit': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'enable_instore_full_payment': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
@@ -89,8 +90,7 @@ class ServiceBookingSettingsForm(forms.ModelForm):
 
         # Only validate deposit_percentage here, as other refund percentages are now in RefundPolicySettings
         deposit_percentage = cleaned_data.get('deposit_percentage')
-        if deposit_percentage is not None and not (Decimal('0.00') <= deposit_percentage <= Decimal('100.00')): # Note: ServiceSettings has this as a percentage up to 100.00
+        if deposit_percentage is not None and not (Decimal('0.00') <= deposit_percentage <= Decimal('100.00')):
             self.add_error('deposit_percentage', _(f"Ensure deposit percentage is between 0.00% and 100.00%."))
 
         return cleaned_data
-
