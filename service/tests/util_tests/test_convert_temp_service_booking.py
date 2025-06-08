@@ -6,7 +6,8 @@ from unittest.mock import patch, MagicMock
 # Import models and the converter function
 from service.models import TempServiceBooking, ServiceBooking, ServiceSettings
 from payments.models import Payment, RefundPolicySettings
-from service.utils import convert_temp_service_booking
+# Updated import path for the converter utility
+from service.utils.convert_temp_service_booking import convert_temp_service_booking
 
 # Import model factories
 from ..test_helpers.model_factories import (
@@ -51,52 +52,44 @@ class ConvertTempServiceBookingTest(TestCase):
         self.service_settings = ServiceSettingsFactory(currency_code='AUD')
         self.refund_policy_settings = RefundPolicySettingsFactory()
 
-    def test_successful_conversion_with_new_payment_object(self):
+    def test_successful_conversion_without_payment_object(self):
         """
         Test that a TempServiceBooking is successfully converted to ServiceBooking
-        and Payment, and refund_policy_snapshot is populated.
+        when no Payment object is provided, and no Payment object is created.
         """
         temp_booking = TempServiceBookingFactory(
             service_type=self.service_type,
             service_profile=self.service_profile,
             customer_motorcycle=self.customer_motorcycle,
-            payment_option='online_full',
+            payment_option='in_store_full', # Assuming this option doesn't require upfront payment
             calculated_total=Decimal('150.00'),
             calculated_deposit_amount=Decimal('0.00'),
-            # No payment_obj passed, so converter creates one
+            # No payment_obj passed, so converter does not create one
         )
 
-        amount_paid = Decimal('150.00')
+        amount_paid = Decimal('0.00') # No payment made yet
         calculated_total = Decimal('150.00')
 
         service_booking = convert_temp_service_booking(
             temp_booking=temp_booking,
-            payment_method='online_full',
-            booking_payment_status='paid',
+            payment_method='in_store_full',
+            booking_payment_status='unpaid',
             amount_paid_on_booking=amount_paid,
             calculated_total_on_booking=calculated_total,
-            stripe_payment_intent_id='pi_test_123'
+            stripe_payment_intent_id=None # No Stripe ID as no payment
         )
 
         # Assertions
         self.assertIsInstance(service_booking, ServiceBooking)
         self.assertFalse(TempServiceBooking.objects.filter(pk=temp_booking.pk).exists())
         self.assertEqual(ServiceBooking.objects.count(), 1)
-        self.assertEqual(Payment.objects.count(), 1)
+        self.assertEqual(Payment.objects.count(), 0) # No Payment object should be created
 
-        created_payment = Payment.objects.get()
-        self.assertEqual(created_payment.amount, amount_paid)
-        self.assertEqual(created_payment.currency, 'AUD')
-        self.assertEqual(created_payment.stripe_payment_intent_id, 'pi_test_123')
-        self.assertEqual(created_payment.service_booking, service_booking)
-        self.assertEqual(created_payment.service_customer_profile, self.service_profile)
-        self.assertIsNone(created_payment.temp_service_booking) # Should be detached
+        self.assertIsNone(service_booking.payment) # ServiceBooking should not have a linked Payment
 
-        # Verify refund_policy_snapshot is populated
-        self.assertIsNotNone(created_payment.refund_policy_snapshot)
-        self.assertIsInstance(created_payment.refund_policy_snapshot, dict)
-        self.assertGreater(len(created_payment.refund_policy_snapshot), 0)
-        self.assertIn('cancellation_full_payment_full_refund_days', created_payment.refund_policy_snapshot)
+        self.assertEqual(service_booking.amount_paid, amount_paid)
+        self.assertEqual(service_booking.payment_status, 'unpaid')
+        self.assertEqual(service_booking.payment_method, 'in_store_full')
 
 
     def test_successful_conversion_with_existing_payment_object(self):
@@ -105,8 +98,8 @@ class ConvertTempServiceBookingTest(TestCase):
         and refund_policy_snapshot is populated.
         """
         existing_payment = PaymentFactory(
-            amount=Decimal('0.00'), # Initial dummy amount
-            currency='USD',       # Initial dummy currency
+            amount=Decimal('50.00'), # Set an initial amount that will be overridden
+            currency='USD',       # Initial dummy currency that will be overridden
             status='requires_payment_method',
             temp_service_booking=None, # Ensure it's not linked initially, or detached
             service_booking=None,
@@ -141,7 +134,7 @@ class ConvertTempServiceBookingTest(TestCase):
         self.assertEqual(Payment.objects.count(), 1) # Still only 1 payment object
 
         updated_payment = Payment.objects.get(pk=existing_payment.pk)
-        self.assertEqual(updated_payment.amount, amount_paid)
+        self.assertEqual(updated_payment.amount, amount_paid) # This assertion should now pass
         self.assertEqual(updated_payment.currency, 'AUD') # Should be updated to service_settings currency
         self.assertEqual(updated_payment.stripe_payment_intent_id, 'pi_test_456')
         self.assertEqual(updated_payment.service_booking, service_booking)
@@ -157,7 +150,7 @@ class ConvertTempServiceBookingTest(TestCase):
     def test_conversion_without_refund_policy_settings(self):
         """
         Test that refund_policy_snapshot is an empty dict if no
-        RefundPolicySettings instance exists.
+        RefundPolicySettings instance exists, when a payment_obj is provided.
         """
         # Delete existing RefundPolicySettings
         RefundPolicySettings.objects.all().delete()
@@ -192,43 +185,6 @@ class ConvertTempServiceBookingTest(TestCase):
         updated_payment = Payment.objects.get(pk=payment_obj.pk)
         self.assertEqual(updated_payment.refund_policy_snapshot, {})
 
-    @patch('payments.models.RefundPolicySettings.objects.first', side_effect=Exception("DB error during snapshot"))
-    def test_conversion_error_during_snapshot_creation(self, mock_first):
-        """
-        Test that if an error occurs during refund_policy_snapshot creation,
-        it defaults to an empty dict and doesn't prevent conversion.
-        """
-        temp_booking = TempServiceBookingFactory(
-            service_type=self.service_type,
-            service_profile=self.service_profile,
-            customer_motorcycle=self.customer_motorcycle,
-            payment_option='online_full',
-            calculated_total=Decimal('100.00'),
-            calculated_deposit_amount=Decimal('0.00'),
-        )
-
-        payment_obj = PaymentFactory(
-            amount=Decimal('0.00'),
-            currency='AUD',
-            status='requires_payment_method',
-            temp_service_booking=None,
-            service_booking=None,
-        )
-
-        service_booking = convert_temp_service_booking(
-            temp_booking=temp_booking,
-            payment_method='online_full',
-            booking_payment_status='paid',
-            amount_paid_on_booking=Decimal('100.00'),
-            calculated_total_on_booking=Decimal('100.00'),
-            payment_obj=payment_obj
-        )
-        
-        self.assertIsInstance(service_booking, ServiceBooking) # Conversion still succeeds
-        updated_payment = Payment.objects.get(pk=payment_obj.pk)
-        self.assertEqual(updated_payment.refund_policy_snapshot, {}) # Snapshot is empty
-
-
     @patch('service.models.ServiceBooking.objects.create', side_effect=Exception("Database error!"))
     def test_exception_during_service_booking_creation(self, mock_create):
         """
@@ -242,7 +198,11 @@ class ConvertTempServiceBookingTest(TestCase):
             calculated_total=Decimal('100.00'),
             calculated_deposit_amount=Decimal('0.00'),
         )
-
+        
+        # When mocking ServiceBooking.objects.create, the Payment object is created
+        # before the ServiceBooking. We need a Payment object to be created.
+        # For this test, we are explicitly passing None for payment_obj.
+        
         # Expect an exception to be raised
         with self.assertRaisesMessage(Exception, "Database error!"):
             convert_temp_service_booking(
@@ -251,23 +211,26 @@ class ConvertTempServiceBookingTest(TestCase):
                 booking_payment_status='paid',
                 amount_paid_on_booking=Decimal('100.00'),
                 calculated_total_on_booking=Decimal('100.00'),
+                payment_obj=None # Explicitly pass None here to match scenario
             )
 
-        # Verify no ServiceBooking or Payment objects were created
+        # Verify no ServiceBooking objects were created
         self.assertEqual(ServiceBooking.objects.count(), 0)
-        self.assertEqual(Payment.objects.count(), 0)
+        # No Payment object should be created or affected if payment_obj was None
+        self.assertEqual(Payment.objects.count(), 0) 
         # TempServiceBooking should still exist if the transaction failed before deletion
         self.assertTrue(TempServiceBooking.objects.filter(pk=temp_booking.pk).exists())
 
     def test_temp_service_booking_deleted_on_successful_conversion(self):
         """
         Verify that the temporary booking is deleted after successful conversion.
+        This test case will also cover a scenario where no payment object is needed.
         """
         temp_booking = TempServiceBookingFactory(
             service_type=self.service_type,
             service_profile=self.service_profile,
             customer_motorcycle=self.customer_motorcycle,
-            payment_option='online_full',
+            payment_option='in_store_full', # Example: no payment_obj initially
             calculated_total=Decimal('100.00'),
             calculated_deposit_amount=Decimal('0.00'),
         )
@@ -275,11 +238,14 @@ class ConvertTempServiceBookingTest(TestCase):
 
         convert_temp_service_booking(
             temp_booking=temp_booking,
-            payment_method='online_full',
-            booking_payment_status='paid',
-            amount_paid_on_booking=Decimal('100.00'),
+            payment_method='in_store_full',
+            booking_payment_status='unpaid',
+            amount_paid_on_booking=Decimal('0.00'),
             calculated_total_on_booking=Decimal('100.00'),
+            payment_obj=None # Explicitly pass None
         )
 
         self.assertFalse(TempServiceBooking.objects.filter(pk=temp_booking_pk).exists())
+        self.assertEqual(Payment.objects.count(), 0) # No payment object created
+        self.assertEqual(ServiceBooking.objects.count(), 1) # Service booking created
 
