@@ -6,7 +6,7 @@ from django.conf import settings
 from django.utils import timezone
 import uuid
 
-from payments.forms.user_hire_refund_request_form import UserRefundRequestForm
+from payments.forms.user_refund_request_form import UserRefundRequestForm
 from payments.models.RefundRequest import RefundRequest
 from mailer.utils import send_templated_email
 
