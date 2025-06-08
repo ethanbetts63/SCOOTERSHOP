@@ -1,6 +1,7 @@
 from django import forms
 from django.utils import timezone
 from datetime import timedelta, datetime
+from decimal import Decimal # Import Decimal for calculations
 
 # Define constants for payment options to avoid magic strings
 PAYMENT_OPTION_DEPOSIT = 'online_deposit'
@@ -54,7 +55,12 @@ class PaymentOptionForm(forms.Form):
         if self.service_settings.enable_online_deposit and self.service_settings.enable_deposit:
             deposit_display = "Pay Deposit Online"
             if self.service_settings.deposit_calc_method == 'FLAT_FEE' and self.service_settings.deposit_flat_fee_amount is not None:
+                # Format flat fee with currency symbol
                 deposit_display += f" ({self.service_settings.currency_symbol}{self.service_settings.deposit_flat_fee_amount:.2f})"
+            elif self.service_settings.deposit_calc_method == 'PERCENTAGE' and self.service_settings.deposit_percentage is not None:
+                # Format percentage
+                deposit_percentage = self.service_settings.deposit_percentage * 100
+                deposit_display += f" ({deposit_percentage:.0f}%)"
             payment_choices.append((PAYMENT_OPTION_DEPOSIT, deposit_display))
 
         if self.service_settings.enable_online_full_payment:
@@ -103,6 +109,6 @@ class PaymentOptionForm(forms.Form):
         if dropoff_date == today:
             now_time = timezone.localtime(timezone.now()).time()
             if dropoff_time < now_time:
-                 self.add_error('dropoff_time', "You cannot select a drop-off time that has already passed today.")
+                self.add_error('dropoff_time', "You cannot select a drop-off time that has already passed today.")
 
         return cleaned_data
