@@ -26,11 +26,12 @@
         </div>
 
         <div class="content">
-            <p>Dear {{refund_request.driver_profile.name}},</p>
-            <p>We regret to inform you that your refund request for booking <strong>{{ refund_request.hire_booking.booking_reference }}</strong> has been rejected.</p>
+            {# Generalize greeting #}
+            <p>Dear {% if refund_request.driver_profile and refund_request.driver_profile.name %}{{ refund_request.driver_profile.name }}{% elif refund_request.service_profile and refund_request.service_profile.name %}{{ refund_request.service_profile.name }}{% else %}customer{% endif %},</p>
+            <p>We regret to inform you that your refund request for booking <strong>{{ booking_reference }}</strong> has been rejected.</p>
 
             <div class="highlight">
-                <strong>Booking Reference:</strong> {{ refund_request.hire_booking.booking_reference }}<br>
+                <strong>Booking Reference:</strong> {{ booking_reference }}<br>
                 {% if refund_request.rejection_reason %}
                     <strong>Reason for Rejection:</strong> {{ refund_request.rejection_reason }}
                 {% else %}

@@ -25,9 +25,10 @@
         </div>
 
         <div class="content">
-            <p>Hi {% if refund_request.driver_profile.user.first_name %}{{ refund_request.driver_profile.user.first_name }}{% elif refund_request.driver_profile.full_name %}{{ refund_request.driver_profile.full_name }}{% else %}there{% endif %},</p>
+            {# Generalize greeting #}
+            <p>Hi {% if refund_request.driver_profile and refund_request.driver_profile.name %}{{ refund_request.driver_profile.name }}{% elif refund_request.service_profile and refund_request.service_profile.name %}{{ refund_request.service_profile.name }}{% else %}there{% endif %},</p>
 
-            <p>This is an automated notification regarding your recent refund request for booking <strong>{{ refund_request.hire_booking.booking_reference }}</strong>.</p>
+            <p>This is an automated notification regarding your recent refund request for booking <strong>{{ booking_reference }}</strong>.</p>
 
             <div class="highlight">
                 <p>We regret to inform you that your refund request was not verified within the required 24-hour time window. As a result, this request will not be processed further and has been automatically removed from our system.</p>

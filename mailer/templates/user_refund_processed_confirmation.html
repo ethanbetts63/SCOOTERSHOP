@@ -27,7 +27,8 @@
         </div>
 
         <div class="content">
-            <p>Hi {% if driver_profile.user.first_name %}{{ driver_profile.user.first_name }}{% elif driver_profile.full_name %}{{ driver_profile.full_name }}{% else %}there{% endif %},</p>
+            {# Generalize greeting #}
+            <p>Hi {% if driver_profile and driver_profile.name %}{{ driver_profile.name }}{% elif service_profile and service_profile.name %}{{ service_profile.name }}{% else %}there{% endif %},</p>
 
             <p>This email confirms that your refund request for booking <strong>{{ booking_reference }}</strong> has been processed.</p>
 

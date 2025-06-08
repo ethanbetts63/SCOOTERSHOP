@@ -13,7 +13,7 @@ from django.http import Http404
 from payments.models.RefundRequest import RefundRequest
 # Import both refund calculation utilities
 from payments.utils.hire_refund_calc import calculate_hire_refund_amount
-from payments.utils.service_refund_calc import calculate_service_refund_amount 
+from payments.utils.service_refund_calc import calculate_service_refund_amount
 from mailer.utils import send_templated_email
 
 # Import booking models to check instance type for email sending
@@ -64,14 +64,14 @@ class UserVerifyRefundView(View):
 
 
             # Determine which refund calculation utility to use based on booking type
-            calculated_refund_amount = Decimal('0.00')
+            calculated_refund_result = {'entitled_amount': Decimal('0.00'), 'details': 'No calculation performed.'}
             booking_reference_for_email = "N/A"
             booking_object = None
             customer_profile_object = None
             admin_link_name = None # To store the name of the admin URL pattern
 
             if refund_request.hire_booking:
-                calculated_refund_amount = calculate_hire_refund_amount(
+                calculated_refund_result = calculate_hire_refund_amount(
                     booking=refund_request.hire_booking,
                     refund_policy_snapshot=refund_policy_snapshot,
                     cancellation_datetime=refund_request.requested_at
@@ -79,10 +79,11 @@ class UserVerifyRefundView(View):
                 booking_reference_for_email = refund_request.hire_booking.booking_reference
                 booking_object = refund_request.hire_booking
                 customer_profile_object = refund_request.driver_profile
+
                 admin_link_name = 'dashboard:edit_hire_refund_request' # Specific admin URL for hire
 
             elif refund_request.service_booking:
-                calculated_refund_amount = calculate_service_refund_amount(
+                calculated_refund_result = calculate_service_refund_amount(
                     booking=refund_request.service_booking,
                     refund_policy_snapshot=refund_policy_snapshot,
                     cancellation_datetime=refund_request.requested_at
@@ -92,12 +93,15 @@ class UserVerifyRefundView(View):
                 customer_profile_object = refund_request.service_profile
                 admin_link_name = 'dashboard:edit_service_refund_request' # Assuming new admin URL for service
 
-            # Store the calculated amount and details in refund_calculation_details
+            # Extract the actual amount and store the full result in JSONField
+            calculated_refund_amount = calculated_refund_result.get('entitled_amount', Decimal('0.00'))
+
             refund_request.refund_calculation_details = {
-                'calculated_amount': float(calculated_refund_amount),
+                'calculated_amount': float(calculated_refund_amount), # Convert Decimal to float for JSONField
                 'policy_snapshot_used': refund_policy_snapshot,
                 'cancellation_datetime': refund_request.requested_at.isoformat(),
                 'booking_type': 'hire' if refund_request.hire_booking else 'service' if refund_request.service_booking else 'unknown',
+                'full_calculation_details': calculated_refund_result # Store the entire dictionary
             }
             refund_request.amount_to_refund = calculated_refund_amount # Pre-fill for admin review
             refund_request.save()
@@ -139,4 +143,3 @@ class UserVerifyRefundView(View):
         except Exception as e:
             messages.error(request, f"An unexpected error occurred during verification: {e}")
             return redirect(reverse('core:index'))
-
