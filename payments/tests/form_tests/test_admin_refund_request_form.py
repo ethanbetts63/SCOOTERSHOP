@@ -142,7 +142,10 @@ class AdminRefundRequestFormTests(TestCase):
         }
         form = AdminRefundRequestForm(data=form_data)
         self.assertFalse(form.is_valid())
-        self.assertIn('hire_booking', form.errors)
+        # Updated assertion to check for '__all__' errors
+        self.assertIn('__all__', form.errors)
+        self.assertEqual(form.errors['__all__'], ['Please select either a Hire Booking or a Service Booking.'])
+
 
     def test_form_invalid_amount_exceeds_paid(self):
         """
