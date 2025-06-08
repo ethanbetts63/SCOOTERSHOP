@@ -1,3 +1,5 @@
+# service/forms/service_settings_form.py
+
 from django import forms
 from django.utils.translation import gettext_lazy as _
 from ..models import ServiceSettings
@@ -14,13 +16,13 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             'allow_anonymous_bookings',
             'allow_account_bookings',
             'booking_open_days',
-            'drop_off_start_time', 
-            'drop_off_end_time', 
-            'drop_off_spacing_mins', # New field
-            'max_advance_dropoff_days', # New field
-            'latest_same_day_dropoff_time', # Added this field
-            'allow_after_hours_dropoff', # NEW FIELD
-            'after_hours_dropoff_disclaimer', # NEW FIELD
+            'drop_off_start_time',
+            'drop_off_end_time',
+            'drop_off_spacing_mins',
+            'max_advance_dropoff_days',
+            'latest_same_day_dropoff_time',
+            'allow_after_hours_dropoff',
+            'after_hours_dropoff_disclaimer',
             'enable_service_brands',
             'other_brand_policy_text',
             'enable_deposit',
@@ -32,23 +34,6 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             'enable_instore_full_payment',
             'currency_code',
             'currency_symbol',
-            'cancel_full_payment_max_refund_days',
-            'cancel_full_payment_max_refund_percentage',
-            'cancel_full_payment_partial_refund_days',
-            'cancel_full_payment_partial_refund_percentage',
-            'cancel_full_payment_min_refund_days',
-            'cancel_full_payment_min_refund_percentage',
-            'cancellation_deposit_full_refund_days',
-            'cancel_deposit_max_refund_percentage',
-            'cancellation_deposit_partial_refund_days',
-            'cancellation_deposit_partial_refund_percentage',
-            'cancellation_deposit_minimal_refund_days',
-            'cancellation_deposit_minimal_refund_percentage',
-            'refund_deducts_stripe_fee_policy', # New field
-            'stripe_fee_percentage_domestic', # New field
-            'stripe_fee_fixed_domestic', # New field
-            'stripe_fee_percentage_international', # New field
-            'stripe_fee_fixed_international', # New field
         ]
         widgets = {
             'enable_service_booking': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
@@ -57,13 +42,13 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             'allow_anonymous_bookings': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'allow_account_bookings': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'booking_open_days': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Mon,Tue,Wed,Thu,Fri'}),
-            'drop_off_start_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}), # Re-added
-            'drop_off_end_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}), # Re-added
-            'drop_off_spacing_mins': forms.NumberInput(attrs={'class': 'form-control', 'min': '1', 'max': '60'}), # New widget
-            'max_advance_dropoff_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}), # New widget
-            'latest_same_day_dropoff_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}), # Added widget
-            'allow_after_hours_dropoff': forms.CheckboxInput(attrs={'class': 'form-check-input'}), # NEW WIDGET
-            'after_hours_dropoff_disclaimer': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}), # NEW WIDGET
+            'drop_off_start_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'drop_off_end_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'drop_off_spacing_mins': forms.NumberInput(attrs={'class': 'form-control', 'min': '1', 'max': '60'}),
+            'max_advance_dropoff_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
+            'latest_same_day_dropoff_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'allow_after_hours_dropoff': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'after_hours_dropoff_disclaimer': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'enable_service_brands': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'other_brand_policy_text': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'enable_deposit': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
@@ -75,23 +60,6 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             'enable_instore_full_payment': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'currency_code': forms.TextInput(attrs={'class': 'form-control'}),
             'currency_symbol': forms.TextInput(attrs={'class': 'form-control'}),
-            'cancel_full_payment_max_refund_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
-            'cancel_full_payment_max_refund_percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'max': '1'}),
-            'cancel_full_payment_partial_refund_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
-            'cancel_full_payment_partial_refund_percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'max': '1'}),
-            'cancel_full_payment_min_refund_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
-            'cancel_full_payment_min_refund_percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'max': '1'}),
-            'cancellation_deposit_full_refund_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
-            'cancel_deposit_max_refund_percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'max': '1'}),
-            'cancellation_deposit_partial_refund_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
-            'cancellation_deposit_partial_refund_percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'max': '1'}),
-            'cancellation_deposit_minimal_refund_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
-            'cancellation_deposit_minimal_refund_percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'max': '1'}),
-            'refund_deducts_stripe_fee_policy': forms.CheckboxInput(attrs={'class': 'form-check-input'}), # New widget
-            'stripe_fee_percentage_domestic': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.0001', 'min': '0', 'max': '0.1'}), # New widget
-            'stripe_fee_fixed_domestic': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}), # New widget
-            'stripe_fee_percentage_international': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.0001', 'min': '0', 'max': '0.1'}), # New widget
-            'stripe_fee_fixed_international': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}), # New widget
         }
 
     def clean(self):
@@ -99,12 +67,12 @@ class ServiceBookingSettingsForm(forms.ModelForm):
 
         start_time = cleaned_data.get('drop_off_start_time')
         end_time = cleaned_data.get('drop_off_end_time')
-        latest_same_day_dropoff = cleaned_data.get('latest_same_day_dropoff_time') # Get this from cleaned_data
+        latest_same_day_dropoff = cleaned_data.get('latest_same_day_dropoff_time')
 
         if start_time and end_time and start_time >= end_time:
             self.add_error('drop_off_start_time', _("Booking start time must be earlier than end time."))
             self.add_error('drop_off_end_time', _("Booking end time must be earlier than start time."))
-        
+
         # Validate drop_off_spacing_mins
         drop_off_spacing_mins = cleaned_data.get('drop_off_spacing_mins')
         if drop_off_spacing_mins is not None and (drop_off_spacing_mins <= 0 or drop_off_spacing_mins > 60):
@@ -116,51 +84,13 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             self.add_error('max_advance_dropoff_days', _("Maximum advance drop-off days cannot be negative."))
 
         # Validate latest_same_day_dropoff_time is within drop_off_start_time and drop_off_end_time
-        # This check is only relevant if after-hours drop-off is NOT allowed, or if it's the standard drop-off window.
         if latest_same_day_dropoff and start_time and end_time and (latest_same_day_dropoff < start_time or latest_same_day_dropoff > end_time):
             self.add_error('latest_same_day_dropoff_time', _(f"Latest same-day drop-off time must be between {start_time.strftime('%H:%M')} and {end_time.strftime('%H:%M')}, inclusive."))
 
-        # Validate refund percentages
-        refund_percentage_fields = [
-            'deposit_percentage',
-            'cancel_full_payment_max_refund_percentage', 'cancel_full_payment_partial_refund_percentage', 'cancel_full_payment_min_refund_percentage',
-            'cancel_deposit_max_refund_percentage', 'cancellation_deposit_partial_refund_percentage', 'cancellation_deposit_minimal_refund_percentage',
-        ]
-        for field_name in refund_percentage_fields:
-            value = cleaned_data.get(field_name)
-            if value is not None and not (Decimal('0.00') <= value <= Decimal('1.00')):
-                self.add_error(field_name, _(f"Ensure {field_name.replace('_', ' ')} is between 0.00 (0%) and 1.00 (100%)."))
-
-        # Validate Stripe fee percentages
-        stripe_fee_percentage_domestic = cleaned_data.get('stripe_fee_percentage_domestic')
-        if stripe_fee_percentage_domestic is not None and not (Decimal('0.00') <= stripe_fee_percentage_domestic <= Decimal('0.10')):
-            self.add_error('stripe_fee_percentage_domestic', _("Ensure domestic stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."))
-
-        stripe_fee_percentage_international = cleaned_data.get('stripe_fee_percentage_international')
-        if stripe_fee_percentage_international is not None and not (Decimal('0.00') <= stripe_fee_percentage_international <= Decimal('0.10')):
-            self.add_error('stripe_fee_percentage_international', _("Ensure international stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."))
-
-        # Add cross-field validation for refund days (max > partial > min)
-        # Full payment refund days
-        max_full_days = cleaned_data.get('cancel_full_payment_max_refund_days')
-        partial_full_days = cleaned_data.get('cancel_full_payment_partial_refund_days')
-        min_full_days = cleaned_data.get('cancel_full_payment_min_refund_days')
-
-        if max_full_days is not None and partial_full_days is not None and max_full_days < partial_full_days:
-            self.add_error('cancel_full_payment_max_refund_days', _("Max refund days must be greater than or equal to partial refund days."))
-        if partial_full_days is not None and min_full_days is not None and partial_full_days < min_full_days:
-            self.add_error('cancel_full_payment_partial_refund_days', _("Partial refund days must be greater than or equal to min refund days."))
-
-        # Deposit refund days
-        max_deposit_days = cleaned_data.get('cancellation_deposit_full_refund_days')
-        partial_deposit_days = cleaned_data.get('cancellation_deposit_partial_refund_days')
-        min_deposit_days = cleaned_data.get('cancellation_deposit_minimal_refund_days')
-
-        if max_deposit_days is not None and partial_deposit_days is not None and max_deposit_days < partial_deposit_days:
-            self.add_error('cancellation_deposit_full_refund_days', _("Max deposit refund days must be greater than or equal to partial deposit refund days."))
-        if partial_deposit_days is not None and min_deposit_days is not None and partial_deposit_days < min_deposit_days:
-            self.add_error('cancellation_deposit_partial_refund_days', _("Partial deposit refund days must be greater than or equal to min deposit refund days."))
-
+        # Only validate deposit_percentage here, as other refund percentages are now in RefundPolicySettings
+        deposit_percentage = cleaned_data.get('deposit_percentage')
+        if deposit_percentage is not None and not (Decimal('0.00') <= deposit_percentage <= Decimal('100.00')): # Note: ServiceSettings has this as a percentage up to 100.00
+            self.add_error('deposit_percentage', _(f"Ensure deposit percentage is between 0.00% and 100.00%."))
 
         return cleaned_data
 

@@ -3,7 +3,7 @@ from django.db import models
 from django.conf import settings
 import uuid
 # Import the new RefundPolicySettings model
-from payments.models.refund_policy_settings import RefundPolicySettings
+from payments.models import RefundPolicySettings
 
 
 class Payment(models.Model):
