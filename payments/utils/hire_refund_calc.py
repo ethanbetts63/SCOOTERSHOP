@@ -1,8 +1,8 @@
 from decimal import Decimal
-from datetime import datetime, date, timedelta
+from datetime import datetime
 from django.utils import timezone
 
-def calculate_refund_amount(booking, refund_policy_snapshot: dict, cancellation_datetime: datetime = None) -> dict:
+def calculate_hire_refund_amount(booking, refund_policy_snapshot: dict, cancellation_datetime: datetime = None) -> dict:
     """
     Calculates the eligible refund amount for a given HireBooking based on
     the cancellation policy *snapshot* stored at the time of booking.

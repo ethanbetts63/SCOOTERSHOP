@@ -10,7 +10,7 @@ from django.conf import settings
 from django.http import Http404
 
 from payments.models.RefundRequest import RefundRequest
-from payments.hire_refund_calc import calculate_refund_amount
+from payments.utils.hire_refund_calc import calculate_hire_refund_amount
 from mailer.utils import send_templated_email
 
 
@@ -55,7 +55,7 @@ class UserVerifyRefundView(View):
                 pass
 
 
-            calculated_refund_amount = calculate_refund_amount(
+            calculated_refund_amount = calculate_hire_refund_amount(
                 booking=refund_request.hire_booking,
                 refund_policy_snapshot=refund_policy_snapshot,
                 cancellation_datetime=refund_request.requested_at

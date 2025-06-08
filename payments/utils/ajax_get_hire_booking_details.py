@@ -2,10 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from hire.models import HireBooking
 from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_GET
-import json
-from datetime import datetime
 from django.utils import timezone
 from payments.utils.hire_refund_calc import calculate_hire_refund_amount
 from payments.models import RefundRequest

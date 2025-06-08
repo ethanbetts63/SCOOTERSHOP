@@ -6,7 +6,7 @@ from django.utils import timezone
 import datetime
 
 # Import the function to be tested
-from payments.hire_refund_calc import calculate_refund_amount
+from payments.utils.hire_refund_calc import calculate_hire_refund_amount
 
 # Import model factories for creating test data
 from hire.tests.test_helpers.model_factories import (
@@ -19,7 +19,7 @@ from dashboard.models import HireSettings # Import HireSettings directly for del
 
 class HireRefundCalcTests(TestCase):
     """
-    Tests for the calculate_refund_amount function in payments/hire_refund_calc.py.
+    Tests for the calculate_hire_refund_amount function in payments/hire_refund_calc.py.
     """
 
     def setUp(self):
@@ -108,7 +108,7 @@ class HireRefundCalcTests(TestCase):
         # Cancel 8 days before pickup (full refund threshold is 7 days)
         cancellation_datetime = self.base_pickup_datetime - datetime.timedelta(days=8, hours=1)
         # Pass the refund_policy_snapshot from the payment object
-        results = calculate_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
+        results = calculate_hire_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
 
         self.assertEqual(results['entitled_amount'], Decimal('500.00'))
         self.assertIn("Upfront Payment Policy: Full Refund Policy", results['details'])
@@ -138,7 +138,7 @@ class HireRefundCalcTests(TestCase):
 
         # Cancel 4 days before pickup (partial refund threshold is 3 days, full is 7 days)
         cancellation_datetime = self.base_pickup_datetime - datetime.timedelta(days=4, hours=1)
-        results = calculate_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
+        results = calculate_hire_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
 
         expected_refund = (Decimal('500.00') * Decimal('50.00')) / Decimal('100.00')
         self.assertEqual(results['entitled_amount'], expected_refund)
@@ -169,7 +169,7 @@ class HireRefundCalcTests(TestCase):
 
         # Cancel 2 days before pickup (minimal refund threshold is 1 day, partial is 3 days)
         cancellation_datetime = self.base_pickup_datetime - datetime.timedelta(days=2, hours=1)
-        results = calculate_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
+        results = calculate_hire_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
 
         expected_refund = (Decimal('500.00') * Decimal('0.00')) / Decimal('100.00') # 0% minimal refund
         self.assertEqual(results['entitled_amount'], expected_refund)
@@ -200,7 +200,7 @@ class HireRefundCalcTests(TestCase):
 
         # Cancel 0 days before pickup (minimal refund threshold is 1 day)
         cancellation_datetime = self.base_pickup_datetime - datetime.timedelta(hours=12)
-        results = calculate_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
+        results = calculate_hire_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
 
         self.assertEqual(results['entitled_amount'], Decimal('0.00'))
         self.assertIn("Upfront Payment Policy: No Refund Policy (Too close to pickup or after pickup)", results['details'])
@@ -230,7 +230,7 @@ class HireRefundCalcTests(TestCase):
 
         # Cancel 1 hour after pickup
         cancellation_datetime = self.base_pickup_datetime + datetime.timedelta(hours=1)
-        results = calculate_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
+        results = calculate_hire_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
 
         self.assertEqual(results['entitled_amount'], Decimal('0.00'))
         self.assertIn("Upfront Payment Policy: No Refund Policy (Too close to pickup or after pickup)", results['details'])
@@ -272,7 +272,7 @@ class HireRefundCalcTests(TestCase):
 
         # Cancel 15 days before pickup (full refund threshold for deposit is 14 days)
         cancellation_datetime = self.base_pickup_datetime - datetime.timedelta(days=15, hours=1)
-        results = calculate_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
+        results = calculate_hire_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
 
         self.assertEqual(results['entitled_amount'], deposit_amount)
         self.assertIn("Deposit Payment Policy: Full Refund Policy", results['details'])
@@ -309,7 +309,7 @@ class HireRefundCalcTests(TestCase):
 
         # Cancel 10 days before pickup (partial threshold is 7 days, full is 14 days)
         cancellation_datetime = self.base_pickup_datetime - datetime.timedelta(days=10, hours=1)
-        results = calculate_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
+        results = calculate_hire_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
 
         expected_refund = (deposit_amount * Decimal('75.00')) / Decimal('100.00')
         self.assertEqual(results['entitled_amount'], expected_refund)
@@ -347,7 +347,7 @@ class HireRefundCalcTests(TestCase):
 
         # Cancel 5 days before pickup (minimal threshold is 3 days, partial is 7 days)
         cancellation_datetime = self.base_pickup_datetime - datetime.timedelta(days=5, hours=1)
-        results = calculate_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
+        results = calculate_hire_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
 
         expected_refund = (deposit_amount * Decimal('25.00')) / Decimal('100.00')
         self.assertEqual(results['entitled_amount'], expected_refund)
@@ -385,7 +385,7 @@ class HireRefundCalcTests(TestCase):
 
         # Cancel 2 days before pickup (minimal threshold is 3 days)
         cancellation_datetime = self.base_pickup_datetime - datetime.timedelta(days=2, hours=1)
-        results = calculate_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
+        results = calculate_hire_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
 
         self.assertEqual(results['entitled_amount'], Decimal('0.00'))
         self.assertIn("Deposit Payment Policy: No Refund Policy (Too close to pickup or after pickup)", results['details'])
@@ -417,7 +417,7 @@ class HireRefundCalcTests(TestCase):
 
         # Cancel well in advance, should still be no refund
         cancellation_datetime = self.base_pickup_datetime - datetime.timedelta(days=10)
-        results = calculate_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
+        results = calculate_hire_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
 
         self.assertEqual(results['entitled_amount'], Decimal('0.00'))
         # Updated expected message to match the logic in hire_refund_calc.py
@@ -449,7 +449,7 @@ class HireRefundCalcTests(TestCase):
         )
 
         cancellation_datetime = self.base_pickup_datetime - datetime.timedelta(days=10)
-        results = calculate_refund_amount(hire_booking_1, hire_booking_1.payment.refund_policy_snapshot, cancellation_datetime)
+        results = calculate_hire_refund_amount(hire_booking_1, hire_booking_1.payment.refund_policy_snapshot, cancellation_datetime)
 
         self.assertEqual(results['entitled_amount'], Decimal('0.00'))
         # Updated expected message to match the logic in hire_refund_calc.py
@@ -476,7 +476,7 @@ class HireRefundCalcTests(TestCase):
             payment_method=None,
         )
 
-        results_none = calculate_refund_amount(hire_booking_none_method, hire_booking_none_method.payment.refund_policy_snapshot, cancellation_datetime)
+        results_none = calculate_hire_refund_amount(hire_booking_none_method, hire_booking_none_method.payment.refund_policy_snapshot, cancellation_datetime)
         self.assertEqual(results_none['entitled_amount'], Decimal('0.00'))
         # Updated expected message to match the logic in hire_refund_calc.py
         self.assertIn("No Refund Policy: Refund for 'None' payment method is handled manually.", results_none['details'])
@@ -507,14 +507,14 @@ class HireRefundCalcTests(TestCase):
 
         # Exactly 7 days before (full refund)
         cancellation_datetime_full = self.base_pickup_datetime - datetime.timedelta(days=7)
-        results_full = calculate_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime_full)
+        results_full = calculate_hire_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime_full)
         self.assertEqual(results_full['entitled_amount'], Decimal('500.00'))
         self.assertIn("Upfront Payment Policy: Full Refund Policy", results_full['details'])
         self.assertEqual(results_full['days_before_pickup'], 7)
 
         # Exactly 3 days before (partial refund)
         cancellation_datetime_partial = self.base_pickup_datetime - datetime.timedelta(days=3)
-        results_partial = calculate_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime_partial)
+        results_partial = calculate_hire_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime_partial)
         expected_partial = (Decimal('500.00') * Decimal('50.00')) / Decimal('100.00')
         self.assertEqual(results_partial['entitled_amount'], expected_partial)
         # Expected string now includes "50.00%" due to str() conversion in snapshot
@@ -523,7 +523,7 @@ class HireRefundCalcTests(TestCase):
 
         # Exactly 1 day before (minimal refund)
         cancellation_datetime_minimal = self.base_pickup_datetime - datetime.timedelta(days=1)
-        results_minimal = calculate_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime_minimal)
+        results_minimal = calculate_hire_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime_minimal)
         expected_minimal = (Decimal('500.00') * Decimal('0.00')) / Decimal('100.00')
         self.assertEqual(results_minimal['entitled_amount'], expected_minimal)
         self.assertIn("Upfront Payment Policy: Minimal Refund Policy (0.00%)", results_minimal['details'])
@@ -531,7 +531,7 @@ class HireRefundCalcTests(TestCase):
 
         # Just under 1 day before (no refund)
         cancellation_datetime_no_refund = self.base_pickup_datetime - datetime.timedelta(hours=23)
-        results_no_refund = calculate_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime_no_refund)
+        results_no_refund = calculate_hire_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime_no_refund)
         self.assertEqual(results_no_refund['entitled_amount'], Decimal('0.00'))
         self.assertIn("Upfront Payment Policy: No Refund Policy (Too close to pickup or after pickup)", results_no_refund['details'])
         self.assertEqual(results_no_refund['days_before_pickup'], 0)
@@ -564,7 +564,7 @@ class HireRefundCalcTests(TestCase):
         )
 
         cancellation_datetime = self.base_pickup_datetime - datetime.timedelta(days=8)
-        results_full = calculate_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
+        results_full = calculate_hire_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
 
         self.assertEqual(results_full['entitled_amount'], Decimal('0.00'))
         self.assertEqual(results_full['details'], "No refund policy snapshot available for this booking.")
@@ -605,10 +605,10 @@ class HireRefundCalcTests(TestCase):
         calculated_value_that_might_exceed = Decimal('100.0000000000000000000000000001') # Simulate a slight overshoot
         
         # Manually override the calculation in the test to check the capping logic
-        original_calculate_refund_amount = calculate_refund_amount
+        original_calculate_hire_refund_amount = calculate_hire_refund_amount
 
-        def mock_calculate_refund_amount_with_overshoot(booking, refund_policy_snapshot, cancellation_datetime):
-            results = original_calculate_refund_amount(booking, refund_policy_snapshot, cancellation_datetime)
+        def mock_calculate_hire_refund_amount_with_overshoot(booking, refund_policy_snapshot, cancellation_datetime):
+            results = original_calculate_hire_refund_amount(booking, refund_policy_snapshot, cancellation_datetime)
             # Introduce an artificial overshoot for testing the max() function
             if "Full Refund Policy" in results['details']:
                 results['entitled_amount'] = calculated_value_that_might_exceed
@@ -616,13 +616,13 @@ class HireRefundCalcTests(TestCase):
 
         # Temporarily replace the function in the module's global scope
         import sys
-        sys.modules['payments.hire_refund_calc'].calculate_refund_amount = mock_calculate_refund_amount_with_overshoot
+        sys.modules['payments.hire_refund_calc'].calculate_hire_refund_amount = mock_calculate_hire_refund_amount_with_overshoot
 
         cancellation_datetime = self.base_pickup_datetime - datetime.timedelta(days=10)
-        results = calculate_refund_amount(hire_booking, temp_snapshot, cancellation_datetime) # Use temp_snapshot here
+        results = calculate_hire_refund_amount(hire_booking, temp_snapshot, cancellation_datetime) # Use temp_snapshot here
 
         # Restore original function
-        sys.modules['payments.hire_refund_calc'].calculate_refund_amount = original_calculate_refund_amount
+        sys.modules['payments.hire_refund_calc'].calculate_hire_refund_amount = original_calculate_hire_refund_amount
 
         self.assertEqual(results['entitled_amount'], Decimal('100.00')) # Should be capped at the original amount
         self.assertLessEqual(results['entitled_amount'], hire_booking.amount_paid)
@@ -652,7 +652,7 @@ class HireRefundCalcTests(TestCase):
 
         # Cancel after pickup, should result in 0.00, not negative
         cancellation_datetime = self.base_pickup_datetime + datetime.timedelta(days=5)
-        results = calculate_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
+        results = calculate_hire_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
 
         self.assertEqual(results['entitled_amount'], Decimal('0.00'))
         self.assertGreaterEqual(results['entitled_amount'], Decimal('0.00'))
@@ -680,7 +680,7 @@ class HireRefundCalcTests(TestCase):
         )
 
         cancellation_datetime = self.base_pickup_datetime - datetime.timedelta(days=5)
-        results = calculate_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
+        results = calculate_hire_refund_amount(hire_booking, hire_booking.payment.refund_policy_snapshot, cancellation_datetime)
 
         # Assert that the main keys are present in the returned dictionary
         self.assertIn('entitled_amount', results)

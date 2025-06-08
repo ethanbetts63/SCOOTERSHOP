@@ -92,7 +92,7 @@ class UserVerifyRefundViewTests(TestCase):
 
 
     @mock.patch('payments.views.HireRefunds.user_verify_refund_view.send_templated_email')
-    @mock.patch('payments.views.HireRefunds.user_verify_refund_view.calculate_refund_amount')
+    @mock.patch('payments.views.HireRefunds.user_verify_refund_view.calculate_hire_refund_amount')
     def test_successful_verification(self, mock_calculate_refund, mock_send_email):
         """
         Test that a valid, unexpired token successfully verifies the refund request.
@@ -174,7 +174,7 @@ class UserVerifyRefundViewTests(TestCase):
         self.assertEqual(messages[0].tags, 'error')
 
     @mock.patch('payments.views.HireRefunds.user_verify_refund_view.send_templated_email')
-    @mock.patch('payments.views.HireRefunds.user_verify_refund_view.calculate_refund_amount')
+    @mock.patch('payments.views.HireRefunds.user_verify_refund_view.calculate_hire_refund_amount')
     def test_already_verified_request(self, mock_calculate_refund, mock_send_email):
         """
         Test that a request with a token for an already 'pending' or 'approved'
@@ -210,7 +210,7 @@ class UserVerifyRefundViewTests(TestCase):
         mock_send_email.assert_not_called()
 
     @mock.patch('payments.views.HireRefunds.user_verify_refund_view.send_templated_email')
-    @mock.patch('payments.views.HireRefunds.user_verify_refund_view.calculate_refund_amount')
+    @mock.patch('payments.views.HireRefunds.user_verify_refund_view.calculate_hire_refund_amount')
     def test_expired_token(self, mock_calculate_refund, mock_send_email):
         """
         Test that a GET request with an expired token results in an error
@@ -246,7 +246,7 @@ class UserVerifyRefundViewTests(TestCase):
         mock_send_email.assert_not_called()
 
     @mock.patch('payments.views.HireRefunds.user_verify_refund_view.send_templated_email')
-    @mock.patch('payments.views.HireRefunds.user_verify_refund_view.calculate_refund_amount')
+    @mock.patch('payments.views.HireRefunds.user_verify_refund_view.calculate_hire_refund_amount')
     def test_non_existent_refund_request(self, mock_calculate_refund, mock_send_email):
         """
         Test that a GET request with a valid UUID token that does not correspond
@@ -271,7 +271,7 @@ class UserVerifyRefundViewTests(TestCase):
         mock_send_email.assert_not_called()
 
     @mock.patch('payments.views.HireRefunds.user_verify_refund_view.send_templated_email')
-    @mock.patch('payments.views.HireRefunds.user_verify_refund_view.calculate_refund_amount')
+    @mock.patch('payments.views.HireRefunds.user_verify_refund_view.calculate_hire_refund_amount')
     def test_unexpected_error(self, mock_calculate_refund, mock_send_email):
         """
         Test that an unexpected exception during verification results in an error
