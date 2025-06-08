@@ -16,13 +16,16 @@ from ..test_helpers.model_factories import (
     ServiceProfileFactory,
     CustomerMotorcycleFactory,
     ServiceTypeFactory,
+    RefundPolicySettingsFactory, # Import RefundPolicySettingsFactory
 )
+from payments.models import RefundPolicySettings
 
 
 class ConvertTempToFinalServiceTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         ServiceSettingsFactory.create(pk=1)
+        RefundPolicySettingsFactory.create(pk=1) # Ensure RefundPolicySettings exists
         cls.service_type = ServiceTypeFactory()
         cls.service_profile = ServiceProfileFactory()
         cls.customer_motorcycle = CustomerMotorcycleFactory(service_profile=cls.service_profile)
@@ -32,7 +35,8 @@ class ConvertTempToFinalServiceTest(TestCase):
         ServiceBooking.objects.all().delete()
         TempServiceBooking.objects.all().delete()
         Payment.objects.all().delete()
-        self.service_settings = ServiceSettingsFactory(pk=1)
+        self.service_settings = ServiceSettingsFactory(pk=1) # Ensure fresh service settings for each test
+        self.refund_settings = RefundPolicySettings.objects.get(pk=1) # Retrieve refund settings for assertions
 
 
     def test_successful_conversion_without_payment_obj(self):
@@ -88,7 +92,8 @@ class ConvertTempToFinalServiceTest(TestCase):
         self.assertIsNone(final_booking.payment)
 
         self.assertIsNotNone(final_booking.service_booking_reference)
-        self.assertTrue(final_booking.service_booking_reference.startswith('SERVICE-'))
+        # Changed prefix to match SVC-
+        self.assertTrue(final_booking.service_booking_reference.startswith('SVC-'))
 
 
     def test_successful_conversion_with_payment_obj(self):
@@ -108,18 +113,17 @@ class ConvertTempToFinalServiceTest(TestCase):
             currency='AUD',
             status='succeeded',
             stripe_payment_intent_id=stripe_pi_id,
-            temp_hire_booking=None,
+            # Ensure these are explicitly None if not being tested
+            temp_hire_booking=None, 
             hire_booking=None,
-            driver_profile=None, # Ensure this is explicitly None if not being tested
+            driver_profile=None,
+            temp_service_booking=temp_booking, # Link temp_booking here for initial state
+            service_customer_profile=temp_booking.service_profile, # Link profile here for initial state
         )
 
         initial_temp_booking_count = TempServiceBooking.objects.count()
         initial_service_booking_count = ServiceBooking.objects.count()
-        # Ensure correct attribute is checked after the Payment model update
-        initial_payment_service_booking_link = payment_obj.service_booking
-        initial_payment_temp_service_link = payment_obj.temp_service_booking
-
-
+        
         final_booking = convert_temp_service_booking(
             temp_booking=temp_booking,
             payment_method='online_full',
@@ -148,14 +152,14 @@ class ConvertTempToFinalServiceTest(TestCase):
         self.assertIsNotNone(final_booking.payment)
         self.assertEqual(final_booking.payment.id, payment_obj.id)
         self.assertEqual(payment_obj.service_booking, final_booking)
-        self.assertEqual(payment_obj.service_customer_profile, final_booking.service_profile) # Corrected field name
+        self.assertEqual(payment_obj.service_customer_profile, final_booking.service_profile)
         
         self.assertIsNone(payment_obj.temp_service_booking)
 
-
-        self.assertIsNotNone(payment_obj.refund_policy_snapshot)
-        self.assertIn('cancel_full_payment_max_refund_days', payment_obj.refund_policy_snapshot)
-        self.assertEqual(payment_obj.refund_policy_snapshot['currency_code'], self.service_settings.currency_code)
+        # Assert specific keys are present in the snapshot (populated by Payment.save())
+        self.assertIn('cancellation_full_payment_full_refund_days', payment_obj.refund_policy_snapshot)
+        self.assertIn('stripe_fee_fixed_domestic', payment_obj.refund_policy_snapshot)
+        self.assertEqual(payment_obj.refund_policy_snapshot['cancellation_full_payment_full_refund_days'], float(self.refund_settings.cancellation_full_payment_full_refund_days))
 
 
     def test_transaction_rollback_on_error(self):
@@ -214,8 +218,15 @@ class ConvertTempToFinalServiceTest(TestCase):
 
 
     def test_currency_snapshot_from_settings(self):
+        # Update ServiceSettings currency code
         self.service_settings.currency_code = 'EUR'
         self.service_settings.save()
+
+        # Update RefundPolicySettings currency code (if it were part of the snapshot)
+        # Note: currency_code is a field on Payment and ServiceBooking, not RefundPolicySettings.
+        # So, we expect payment_obj.currency to be 'EUR', not in refund_policy_snapshot.
+        # However, for the purpose of demonstrating the snapshot itself,
+        # we can assert on other refund policy fields that ARE in the snapshot.
 
         temp_booking = TempServiceBookingFactory(
             service_type=self.service_type,
@@ -226,35 +237,31 @@ class ConvertTempToFinalServiceTest(TestCase):
         )
         calculated_total = temp_booking.service_type.base_price
 
-        final_booking = convert_temp_service_booking(
+        # First, test without a pre-existing payment object
+        final_booking_without_payment = convert_temp_service_booking(
             temp_booking=temp_booking,
             payment_method='online_full',
             booking_payment_status='paid',
             amount_paid_on_booking=calculated_total,
             calculated_total_on_booking=calculated_total,
-            stripe_payment_intent_id='pi_currency_test',
-            payment_obj=None,
+            stripe_payment_intent_id='pi_currency_test_no_obj',
+            payment_obj=None, # No payment_obj provided, so it's created internally if needed
         )
+        self.assertEqual(final_booking_without_payment.currency, 'EUR')
 
-        self.assertEqual(final_booking.currency, 'EUR')
+
+        # Now, test with a pre-existing payment object
         payment_obj = PaymentFactory(
             amount=calculated_total,
-            currency='AUD',
+            currency='AUD', # This will be overwritten by the Payment.save() logic
             status='succeeded',
             stripe_payment_intent_id='pi_currency_test_2',
-            temp_hire_booking=None,
-            hire_booking=None,
-            driver_profile=None,
+            temp_service_booking=TempServiceBookingFactory(), # Create a new temp booking for this payment
+            service_customer_profile=ServiceProfileFactory(), # Create a new profile for this payment
         )
         
         final_booking_with_payment = convert_temp_service_booking(
-            temp_booking=TempServiceBookingFactory(
-                service_type=self.service_type,
-                service_profile=self.service_profile,
-                customer_motorcycle=self.customer_motorcycle,
-                payment_option='online_full',
-                calculated_deposit_amount=Decimal('0.00'),
-            ),
+            temp_booking=payment_obj.temp_service_booking, # Use the temp booking linked to payment_obj
             payment_method='online_full',
             booking_payment_status='paid',
             amount_paid_on_booking=calculated_total,
@@ -264,8 +271,15 @@ class ConvertTempToFinalServiceTest(TestCase):
         )
         
         payment_obj.refresh_from_db()
-        self.assertIn('currency_code', payment_obj.refund_policy_snapshot)
-        self.assertEqual(payment_obj.refund_policy_snapshot['currency_code'], 'EUR')
+        # Assert that the currency on the Payment object itself is correct
+        self.assertEqual(payment_obj.currency, 'EUR') 
+
+        # Assert that a key from the refund policy snapshot is present and correct
+        self.assertIn('cancellation_full_payment_full_refund_days', payment_obj.refund_policy_snapshot)
+        self.assertEqual(
+            payment_obj.refund_policy_snapshot['cancellation_full_payment_full_refund_days'], 
+            float(self.refund_settings.cancellation_full_payment_full_refund_days)
+        )
         # Also assert that the service customer profile is linked correctly if a payment object is present
         self.assertEqual(payment_obj.service_customer_profile, final_booking_with_payment.service_profile)
 

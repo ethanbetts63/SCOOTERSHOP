@@ -19,7 +19,7 @@ from service.models import (
     ServiceBrand,
 )
 
-from payments.models import Payment
+from payments.models import Payment, RefundPolicySettings
 
 User = get_user_model()
 
@@ -215,3 +215,39 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
     
     booking_status = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.BOOKING_STATUS_CHOICES])
     customer_notes = factory.Faker('paragraph')
+
+class RefundPolicySettingsFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RefundPolicySettings
+        # Do NOT use django_get_or_create = ('pk',) here, it conflicts with custom _create
+        # instead, handle the get_or_create logic directly in _create method.
+
+    # Full Payment Cancellation Policy
+    cancellation_full_payment_full_refund_days = factory.Faker('random_int', min=5, max=10)
+    cancellation_full_payment_partial_refund_days = factory.Faker('random_int', min=2, max=4)
+    cancellation_full_payment_partial_refund_percentage = factory.LazyFunction(lambda: Decimal(fake.random_element([25.00, 50.00, 75.00])))
+    cancellation_full_payment_minimal_refund_days = factory.Faker('random_int', min=0, max=1)
+    cancellation_full_payment_minimal_refund_percentage = factory.LazyFunction(lambda: Decimal(fake.random_element([0.00, 10.00, 20.00])))
+
+    # Deposit Cancellation Policy
+    cancellation_deposit_full_refund_days = factory.Faker('random_int', min=5, max=10)
+    cancellation_deposit_partial_refund_days = factory.Faker('random_int', min=2, max=4)
+    cancellation_deposit_partial_refund_percentage = factory.LazyFunction(lambda: Decimal(fake.random_element([25.00, 50.00, 75.00])))
+    cancellation_deposit_minimal_refund_days = factory.Faker('random_int', min=0, max=1)
+    cancellation_deposit_minimal_refund_percentage = factory.LazyFunction(lambda: Decimal(fake.random_element([0.00, 10.00, 20.00])))
+
+    # Stripe Fee Settings
+    refund_deducts_stripe_fee_policy = factory.Faker('boolean')
+    stripe_fee_percentage_domestic = factory.LazyFunction(lambda: Decimal(fake.random_element(['0.0170', '0.0180'])))
+    stripe_fee_fixed_domestic = factory.LazyFunction(lambda: Decimal(fake.random_element(['0.30', '0.40'])))
+    stripe_fee_percentage_international = factory.LazyFunction(lambda: Decimal(fake.random_element(['0.0350', '0.0390'])))
+    stripe_fee_fixed_international = factory.LazyFunction(lambda: Decimal(fake.random_element(['0.30', '0.40'])))
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        obj, created = model_class.objects.get_or_create(pk=1, defaults=kwargs)
+        if not created:
+            for k, v in kwargs.items():
+                setattr(obj, k, v)
+            obj.save() # Use obj.save() to trigger model's clean/save.
+        return obj
