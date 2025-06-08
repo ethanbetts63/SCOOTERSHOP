@@ -76,7 +76,8 @@ class UserVerifyRefundView(View):
                 print("ERROR: Verification link has expired.")
                 messages.error(request, "The verification link has expired. Please submit a new refund request.")
                 # Redirect to the main refund request form (generalized)
-                return redirect(reverse('payments:user_refund_request_form')) # Assuming a generic URL name for the form
+                # Ensure 'user_refund_request' is the correct name for the form URL
+                return redirect(reverse('payments:user_refund_request')) 
 
             print(f"Updating refund request status from '{refund_request.status}' to 'pending'.")
             refund_request.status = 'pending'
@@ -94,7 +95,9 @@ class UserVerifyRefundView(View):
             booking_reference_for_email = "N/A"
             booking_object = None
             customer_profile_object = None
-            admin_link_name = None # To store the name of the admin URL pattern
+            
+            # Use the unified admin link name from payments.urls
+            admin_link_name = 'payments:edit_refund_request' 
 
             if refund_request.hire_booking:
                 print("Booking type: Hire Booking")
@@ -106,7 +109,6 @@ class UserVerifyRefundView(View):
                 booking_reference_for_email = refund_request.hire_booking.booking_reference
                 booking_object = refund_request.hire_booking
                 customer_profile_object = refund_request.driver_profile
-                admin_link_name = 'service:edit_refund_request' # Specific admin URL for hire
             elif refund_request.service_booking:
                 print("Booking type: Service Booking")
                 calculated_refund_result = calculate_service_refund_amount(
@@ -117,7 +119,6 @@ class UserVerifyRefundView(View):
                 booking_reference_for_email = refund_request.service_booking.service_booking_reference
                 booking_object = refund_request.service_booking
                 customer_profile_object = refund_request.service_profile
-                admin_link_name = 'dashboard:edit_service_refund_request' # Assuming new admin URL for service
 
             print(f"Calculated refund result (before Decimal conversion): {calculated_refund_result}")
             # Extract the actual amount and store the full result in JSONField
@@ -140,10 +141,10 @@ class UserVerifyRefundView(View):
 
 
             admin_refund_link = "#" # Default if no specific link found
-            if admin_link_name:
-                admin_refund_link = request.build_absolute_uri(
-                    reverse(admin_link_name, args=[refund_request.pk])
-                )
+            # Now use the unified admin_link_name which should resolve correctly
+            admin_refund_link = request.build_absolute_uri(
+                reverse(admin_link_name, args=[refund_request.pk])
+            )
             print(f"Admin refund link: {admin_refund_link}")
 
             admin_email_context = {

@@ -71,13 +71,13 @@ class AdminRejectRefundView(View):
             booking_object = refund_request_instance.hire_booking
             customer_profile_object = refund_request_instance.driver_profile
             admin_management_redirect_url = 'payments:admin_refund_management'
-            admin_edit_link_name = 'service:edit_refund_request'
+            admin_edit_link_name = 'payments:edit_refund_request'
         elif refund_request_instance.service_booking:
             booking_reference_for_email = refund_request_instance.service_booking.service_booking_reference
             booking_object = refund_request_instance.service_booking
             customer_profile_object = refund_request_instance.service_profile
-            admin_management_redirect_url = 'dashboard:admin_service_refund_management' # Assuming this exists
-            admin_edit_link_name = 'dashboard:edit_service_refund_request' # Assuming this exists
+            admin_management_redirect_url = 'payments:admin_refund_management' # Assuming this exists
+            admin_edit_link_name = 'payments:edit_refund_request' # Assuming this exists
 
 
         if form.is_valid():

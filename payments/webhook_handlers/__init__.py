@@ -25,5 +25,10 @@ WEBHOOK_HANDLERS = {
         # Add handlers for charge-related events for service bookings
         'charge.refunded': handle_booking_refunded, # Reusing hire_booking's refund handler, assuming it's generic enough
         'charge.refund.updated': handle_booking_refund_updated, # Reusing hire_booking's refund update handler, assuming it's generic enough
+        # NEW: Add a handler for charge.succeeded if you expect it for service bookings
+        # It's typical for a charge.succeeded to be handled, even if payment_intent.succeeded is the primary.
+        # This will prevent the "No handler found" log for charge.succeeded
+        'charge.succeeded': handle_service_booking_succeeded, # Re-using the success handler for service bookings
     },
 }
+
