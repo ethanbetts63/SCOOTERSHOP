@@ -32,7 +32,8 @@ class CustomerMotorcycleForm(forms.ModelForm):
         brand_names = [brand.name for brand in ServiceBrand.objects.all().order_by('name')]
         
         # Prepare choices for the 'brand' field
-        brand_choices = [(name, name) for name in brand_names]
+        # Add the '-- Select Brand --' option at the beginning
+        brand_choices = [('', _('-- Select Brand --'))] + [(name, name) for name in brand_names]
         brand_choices.append(('Other', _('Other (please specify)')))
 
         self.fields['brand'].choices = brand_choices
@@ -80,7 +81,7 @@ class CustomerMotorcycleForm(forms.ModelForm):
             # Removed 'make' label
             'model': _('Model'),
             'year': _('Year'),
-            'engine_size': _('Engine Size (e.g., 600cc, 1000cc)'),
+            'engine_size': _('Engine Size'),
             'rego': _('Registration Number'),
             'vin_number': _('VIN Number'),
             'odometer': _('Odometer Reading (km)'),
@@ -94,11 +95,17 @@ class CustomerMotorcycleForm(forms.ModelForm):
         brand = cleaned_data.get('brand')
         other_brand_name = cleaned_data.get('other_brand_name')
 
+        # If 'Other' is selected, other_brand_name must be provided
         if brand == 'Other' and not other_brand_name:
             self.add_error('other_brand_name', _("Please specify the brand name when 'Other' is selected."))
+        # If a specific brand is chosen, ensure other_brand_name is cleared
         elif brand != 'Other' and other_brand_name:
-            # If a specific brand is chosen, clear other_brand_name
             cleaned_data['other_brand_name'] = ''
+        # If '-- Select Brand --' is chosen and it's a required field, add an error
+        # Assuming 'brand' is required, Django's default validation will handle it if the field is empty.
+        # However, if it's not required, or for explicit validation, you might add:
+        # if not brand:
+        #     self.add_error('brand', _("Please select a motorcycle brand."))
 
         return cleaned_data
 
@@ -110,9 +117,6 @@ class CustomerMotorcycleForm(forms.ModelForm):
 
         if brand_from_form == 'Other' and other_brand_name_from_form:
             instance.brand = other_brand_name_from_form
-        # If a specific brand was chosen, instance.brand is already correctly set
-        # from the 'brand' field in Meta.fields (via the ChoiceField's value).
-        # No else needed, as instance.brand holds the selected value if not 'Other'.
 
         if commit:
             instance.save()
