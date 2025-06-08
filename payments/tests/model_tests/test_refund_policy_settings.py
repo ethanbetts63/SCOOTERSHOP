@@ -1,4 +1,4 @@
-# payments/tests/model_tests/test_refund_policy_settings_model.py
+# payments/tests/model_tests/test_refund_policy_settings.py
 
 from django.test import TestCase
 from decimal import Decimal
@@ -14,35 +14,50 @@ class RefundPolicySettingsModelTests(TestCase):
         """
         Set up test data by ensuring the RefundPolicySettings instance is
         deleted before each test to guarantee a clean slate for singleton tests.
-        Then, create a default instance for tests that require it.
         """
         RefundPolicySettings.objects.all().delete()
         # Create a default instance for most tests
         self.settings = RefundPolicySettings.objects.create()
 
-    def test_singleton_creation(self):
+    def test_singleton_creation_raises_error(self):
         """
-        Test that only one instance of RefundPolicySettings can be created.
-        Further attempts should retrieve or update the existing one.
+        Test that attempting to create a second instance of RefundPolicySettings
+        raises a ValidationError.
         """
         # Ensure only one instance exists initially from setUp
         self.assertEqual(RefundPolicySettings.objects.count(), 1)
-        initial_instance = RefundPolicySettings.objects.get()
 
-        # Attempt to create another instance
-        new_settings = RefundPolicySettings.objects.create(
-            cancellation_full_payment_full_refund_days=10,
-            cancellation_full_payment_partial_refund_days=5
+        # Expect a ValidationError when trying to create a second instance
+        with self.assertRaises(ValidationError) as context:
+            RefundPolicySettings.objects.create(
+                cancellation_full_payment_full_refund_days=10
+            )
+
+        # Verify the error message is what we expect
+        self.assertIn(
+            "Only one instance of RefundPolicySettings can be created.",
+            str(context.exception)
         )
 
-        # Check that no new instance was created, and it's still the original
+        # Ensure no new instance was created
         self.assertEqual(RefundPolicySettings.objects.count(), 1)
-        retrieved_instance = RefundPolicySettings.objects.get()
-        self.assertEqual(retrieved_instance.pk, initial_instance.pk)
 
-        # Verify that the existing instance was updated
-        self.assertEqual(retrieved_instance.cancellation_full_payment_full_refund_days, 10)
-        self.assertEqual(retrieved_instance.cancellation_full_payment_partial_refund_days, 5)
+    def test_singleton_get_or_create(self):
+        """
+        Test that get_or_create retrieves the existing singleton instance
+        instead of creating a new one.
+        """
+        self.assertEqual(RefundPolicySettings.objects.count(), 1)
+        initial_instance = RefundPolicySettings.objects.get()
+
+        # get_or_create should not create a new object
+        new_settings, created = RefundPolicySettings.objects.get_or_create(pk=1)
+
+        # Check that no new instance was created
+        self.assertFalse(created)
+        self.assertEqual(RefundPolicySettings.objects.count(), 1)
+        self.assertEqual(new_settings.pk, initial_instance.pk)
+
 
     def test_default_values(self):
         """
@@ -181,4 +196,3 @@ class RefundPolicySettingsModelTests(TestCase):
         with self.assertRaises(ValidationError) as cm:
             settings.full_clean()
         self.assertIn('cancellation_deposit_partial_refund_days', cm.exception.message_dict)
-

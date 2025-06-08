@@ -88,8 +88,8 @@ class RefundPolicySettings(models.Model):
 
         # Validate percentage fields (0.00 to 100.00)
         percentage_fields = [
-            'cancellation_full_payment_partial_refund_percentage', # Updated
-            'cancellation_full_payment_minimal_refund_percentage',   # Updated
+            'cancellation_full_payment_partial_refund_percentage',
+            'cancellation_full_payment_minimal_refund_percentage',
             'cancellation_deposit_partial_refund_percentage',
             'cancellation_deposit_minimal_refund_percentage',
         ]
@@ -106,9 +106,9 @@ class RefundPolicySettings(models.Model):
             errors['stripe_fee_percentage_international'] = ["Ensure international Stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."]
 
         # Validate 'days' thresholds for full payments
-        full_days_full_payment = self.cancellation_full_payment_full_refund_days # Updated
-        partial_days_full_payment = self.cancellation_full_payment_partial_refund_days # Updated
-        minimal_days_full_payment = self.cancellation_full_payment_minimal_refund_days # Updated
+        full_days_full_payment = self.cancellation_full_payment_full_refund_days
+        partial_days_full_payment = self.cancellation_full_payment_partial_refund_days
+        minimal_days_full_payment = self.cancellation_full_payment_minimal_refund_days
 
         if full_days_full_payment is not None and partial_days_full_payment is not None and full_days_full_payment < partial_days_full_payment:
             errors['cancellation_full_payment_full_refund_days'] = ["Full refund days must be greater than or equal to partial refund days."]
@@ -130,11 +130,11 @@ class RefundPolicySettings(models.Model):
 
 
     def save(self, *args, **kwargs):
-        # Enforce singleton pattern: only one instance allowed
         if not self.pk and RefundPolicySettings.objects.exists():
-            existing = RefundPolicySettings.objects.first()
-            self.pk = existing.pk
-        self.full_clean() # Run full validation before saving
+            raise ValidationError("Only one instance of RefundPolicySettings can be created. Please edit the existing one.")
+    
+        self.full_clean()
+
         super().save(*args, **kwargs)
 
     class Meta:
