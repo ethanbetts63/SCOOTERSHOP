@@ -150,9 +150,11 @@ class RefundRequest(models.Model):
     def __str__(self):
         booking_ref = "N/A"
         if self.hire_booking:
-            booking_ref = f"Hire Booking {self.hire_booking.booking_reference}"
+            # Changed to be more generic "Booking"
+            booking_ref = f"Booking {self.hire_booking.booking_reference}"
         elif self.service_booking:
-            booking_ref = f"Service Booking {self.service_booking.service_booking_reference}"
+            # Changed to be more generic "Booking"
+            booking_ref = f"Booking {self.service_booking.service_booking_reference}"
         return f"Refund Request for {booking_ref} - Status: {self.status}"
 
     def save(self, *args, **kwargs):
@@ -160,3 +162,4 @@ class RefundRequest(models.Model):
         if not self.verification_token:
             self.verification_token = uuid.uuid4()
         super().save(*args, **kwargs)
+

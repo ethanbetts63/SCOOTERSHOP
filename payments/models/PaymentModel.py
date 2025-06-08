@@ -2,7 +2,7 @@
 from django.db import models
 from django.conf import settings
 import uuid
-# Import the new RefundPolicySettings model
+# Corrected import for RefundPolicySettings
 from payments.models import RefundPolicySettings
 
 
@@ -154,8 +154,10 @@ class Payment(models.Model):
         # This ensures the policy at the time of payment is captured.
         if not self.pk or not self.refund_policy_snapshot:
             try:
-                # Get the single instance of RefundPolicySettings
-                refund_settings = RefundPolicySettings.objects.get()
+                # Use get_or_create to ensure an instance always exists
+                # The pk=1 is used because RefundPolicySettings is a singleton.
+                refund_settings, created = RefundPolicySettings.objects.get_or_create(pk=1)
+                
                 # Create a snapshot of all relevant refund and Stripe fee fields
                 self.refund_policy_snapshot = {
                     'cancellation_full_payment_full_refund_days': float(refund_settings.cancellation_full_payment_full_refund_days),
@@ -176,14 +178,8 @@ class Payment(models.Model):
                     'stripe_fee_percentage_international': float(refund_settings.stripe_fee_percentage_international),
                     'stripe_fee_fixed_international': float(refund_settings.stripe_fee_fixed_international),
                 }
-            except RefundPolicySettings.DoesNotExist:
-                # Handle the case where RefundPolicySettings instance doesn't exist
-                # You might want to log an error, raise an exception, or use default values
-                print("WARNING: RefundPolicySettings instance not found. Refund policy snapshot will be empty.")
-                self.refund_policy_snapshot = {} # Ensure it's still a dict
             except Exception as e:
-                print(f"ERROR: Could not create refund policy snapshot: {e}")
-                self.refund_policy_snapshot = {} # Ensure it's still a dict
+                self.refund_policy_snapshot = {} 
 
         super().save(*args, **kwargs)
 

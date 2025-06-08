@@ -549,9 +549,10 @@ class RefundPolicySettingsFactory(factory.django.DjangoModelFactory):
     def _create(cls, model_class, *args, **kwargs):
         # Enforce singleton pattern: always get or create the instance with pk=1
         obj, created = model_class.objects.get_or_create(pk=1, defaults=kwargs)
-        if not created:
+        if not created: # If instance already existed
             # If it already exists, update its fields with the new kwargs
             for k, v in kwargs.items():
                 setattr(obj, k, v)
-            obj.save()
+            fields_to_update = [k for k in kwargs.keys() if k not in ['id', 'pk']]
+            obj.save(update_fields=fields_to_update)
         return obj
