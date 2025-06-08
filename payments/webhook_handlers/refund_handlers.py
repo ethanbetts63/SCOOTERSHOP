@@ -6,7 +6,7 @@ import json
 import stripe
 
 from hire.models import HireBooking, DriverProfile
-from payments.models import Payment, HireRefundRequest
+from payments.models import Payment, RefundRequest
 
 from mailer.utils import send_templated_email
 
@@ -73,12 +73,12 @@ def handle_hire_booking_refunded(payment_obj: Payment, event_object_data: dict):
             hire_refund_request = None
             try:
                 if stripe_refund_id:
-                    hire_refund_request = HireRefundRequest.objects.filter(
+                    hire_refund_request = RefundRequest.objects.filter(
                         stripe_refund_id=stripe_refund_id
                     ).first()
 
                 if not hire_refund_request:
-                    hire_refund_request = HireRefundRequest.objects.filter(
+                    hire_refund_request = RefundRequest.objects.filter(
                         payment=payment_obj,
                         status__in=['approved', 'reviewed_pending_approval', 'pending', 'partially_refunded']
                     ).order_by('-requested_at').first()

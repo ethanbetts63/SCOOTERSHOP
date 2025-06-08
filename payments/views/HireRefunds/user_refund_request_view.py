@@ -6,8 +6,8 @@ from django.conf import settings
 from django.utils import timezone
 import uuid
 
-from payments.forms.user_hire_refund_request_form import UserHireRefundRequestForm
-from payments.models.RefundRequest import HireRefundRequest
+from payments.forms.user_hire_refund_request_form import UserRefundRequestForm
+from payments.models.RefundRequest import RefundRequest
 from mailer.utils import send_templated_email
 
 
@@ -15,7 +15,7 @@ class UserRefundRequestView(View):
     """
     Handles the user-facing refund request form.
     Allows users to submit a refund request by providing their booking reference and email.
-    Upon successful submission, a HireRefundRequest instance is created with 'unverified' status.
+    Upon successful submission, a RefundRequest instance is created with 'unverified' status.
     An email is then sent to the user for confirmation.
     """
     template_name = 'payments/user_refund_request_hire.html'
@@ -24,7 +24,7 @@ class UserRefundRequestView(View):
         """
         Displays the empty refund request form.
         """
-        form = UserHireRefundRequestForm()
+        form = UserRefundRequestForm()
         context = {
             'form': form,
             'page_title': 'Request a Refund',
@@ -38,7 +38,7 @@ class UserRefundRequestView(View):
         Validates the booking reference and email, creates the refund request,
         and triggers email notifications.
         """
-        form = UserHireRefundRequestForm(request.POST)
+        form = UserRefundRequestForm(request.POST)
 
         if form.is_valid():
             refund_request = form.save(commit=False)

@@ -11,7 +11,7 @@ from inventory.models import Motorcycle, MotorcycleCondition
 from payments.models import Payment
 from dashboard.models import HireSettings # Corrected import for HireSettings
 from mailer.models import EmailLog
-from payments.models.RefundRequest import HireRefundRequest
+from payments.models.RefundRequest import RefundRequest
 
 
 # Import models from the current 'hire' app
@@ -580,7 +580,7 @@ def create_refund_request(
     token_created_at=None,
 ):
     """
-    Creates a HireRefundRequest instance.
+    Creates a RefundRequest instance.
     If request_email is explicitly None, it will remain None.
     Otherwise, it will default to driver_profile.email if driver_profile exists.
     """
@@ -636,7 +636,7 @@ def create_refund_request(
     if token_created_at is None:
         token_created_at = timezone.now()
 
-    return HireRefundRequest.objects.create(
+    return RefundRequest.objects.create(
         hire_booking=hire_booking,
         payment=payment,
         driver_profile=driver_profile,

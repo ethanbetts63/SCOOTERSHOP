@@ -11,7 +11,7 @@ import uuid
 from django.conf import settings # Import settings
 
 # Import models
-from payments.models import HireRefundRequest, Payment
+from payments.models import RefundRequest, Payment
 from hire.models import HireBooking, DriverProfile
 from inventory.models import Motorcycle
 from dashboard.models import HireSettings
@@ -123,7 +123,7 @@ class UserVerifyRefundViewTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, self.verified_refund_confirm_url)
 
-        # Assertions for HireRefundRequest status update
+        # Assertions for RefundRequest status update
         refund_request.refresh_from_db()
         self.assertEqual(refund_request.status, 'pending')
 
@@ -250,7 +250,7 @@ class UserVerifyRefundViewTests(TestCase):
     def test_non_existent_refund_request(self, mock_calculate_refund, mock_send_email):
         """
         Test that a GET request with a valid UUID token that does not correspond
-        to an existing HireRefundRequest results in an error and redirection.
+        to an existing RefundRequest results in an error and redirection.
         """
         non_existent_token = uuid.uuid4()
         verify_url = reverse(self.verify_url_name) + f'?token={str(non_existent_token)}'

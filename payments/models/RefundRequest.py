@@ -1,4 +1,4 @@
-# In payments/HireRefundRequest.py
+# In payments/RefundRequest.py
 
 from django.db import models
 from django.conf import settings # To link to Django's User model

@@ -1,7 +1,7 @@
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.generic import ListView
 from django.utils.decorators import method_decorator
-from payments.models import HireRefundRequest
+from payments.models import RefundRequest
 from django.utils import timezone
 from datetime import timedelta
 from mailer.utils import send_templated_email
@@ -10,20 +10,20 @@ from django.conf import settings
 
 @method_decorator(staff_member_required, name='dispatch')
 class AdminHireRefundManagement(ListView):
-    model = HireRefundRequest
+    model = RefundRequest
     template_name = 'payments/admin_hire_refund_management.html'
     context_object_name = 'refund_requests'
     paginate_by = 20
 
     def clean_expired_unverified_refund_requests(self):
         """
-        Deletes 'unverified' HireRefundRequest objects older than 24 hours
+        Deletes 'unverified' RefundRequest objects older than 24 hours
         and sends an email notification to the user.
         Replaced logging statements with print debugs as requested.
         """
         cutoff_time = timezone.now() - timedelta(hours=24)
 
-        expired_requests = HireRefundRequest.objects.filter(
+        expired_requests = RefundRequest.objects.filter(
             status='unverified',
             token_created_at__lt=cutoff_time
         )
@@ -73,6 +73,6 @@ class AdminHireRefundManagement(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['status_choices'] = HireRefundRequest.STATUS_CHOICES
+        context['status_choices'] = RefundRequest.STATUS_CHOICES
         context['current_status'] = self.request.GET.get('status', 'all')
         return context

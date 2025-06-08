@@ -17,9 +17,9 @@ from hire.tests.test_helpers.model_factories import (
     create_refund_request,
     create_hire_settings, # Needed for refund_policy_snapshot in payment
 )
-from payments.models.RefundRequest import HireRefundRequest
+from payments.models.RefundRequest import RefundRequest
 from payments.models import Payment # Import Payment model directly
-# No longer mocking AdminHireRefundRequestForm, so no explicit import needed here for tests.
+# No longer mocking AdminRefundRequestForm, so no explicit import needed here for tests.
 
 
 User = get_user_model()
@@ -168,7 +168,7 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         It should set status to 'reviewed_pending_approval' and is_admin_initiated to True.
         """
         self._login_staff_user()
-        initial_count = HireRefundRequest.objects.count()
+        initial_count = RefundRequest.objects.count()
 
         form_data = {
             'hire_booking': self.hire_booking.pk,
@@ -181,9 +181,9 @@ class AdminAddEditRefundRequestViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200) # Should redirect and then render
         self.assertRedirects(response, self.management_url)
-        self.assertEqual(HireRefundRequest.objects.count(), initial_count + 1)
+        self.assertEqual(RefundRequest.objects.count(), initial_count + 1)
 
-        new_refund_request = HireRefundRequest.objects.latest('id') # Get the newly created one
+        new_refund_request = RefundRequest.objects.latest('id') # Get the newly created one
         self.assertEqual(new_refund_request.hire_booking, self.hire_booking)
         self.assertEqual(new_refund_request.payment, self.payment)
         self.assertEqual(new_refund_request.driver_profile, self.driver_profile)
@@ -207,7 +207,7 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         (e.g., amount_to_refund <= 0)
         """
         self._login_staff_user()
-        initial_count = HireRefundRequest.objects.count()
+        initial_count = RefundRequest.objects.count()
 
         # Invalid data: amount_to_refund is negative (violates clean method validation)
         form_data = {
@@ -220,7 +220,7 @@ class AdminAddEditRefundRequestViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200) # Should re-render the form with errors
         self.assertTemplateUsed(response, 'payments/admin_hire_refund_form.html')
-        self.assertEqual(HireRefundRequest.objects.count(), initial_count) # No new object created
+        self.assertEqual(RefundRequest.objects.count(), initial_count) # No new object created
 
         self.assertIn('form', response.context)
         form = response.context['form']
@@ -248,7 +248,7 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         response = self.client.post(self.add_url, form_data, follow=True)
 
         self.assertEqual(response.status_code, 200)
-        new_refund_request = HireRefundRequest.objects.latest('id')
+        new_refund_request = RefundRequest.objects.latest('id')
         self.assertEqual(new_refund_request.status, 'reviewed_pending_approval') # Expect new status
         self.assertTrue(new_refund_request.is_admin_initiated) # Should be True
         self.assertIsNone(new_refund_request.processed_by) # Should be None at this stage
@@ -278,7 +278,7 @@ class AdminAddEditRefundRequestViewTests(TestCase):
             is_admin_initiated=True, # Assume it was admin initiated
         )
         self._login_staff_user()
-        initial_count = HireRefundRequest.objects.count()
+        initial_count = RefundRequest.objects.count()
 
         form_data = {
             'hire_booking': self.hire_booking.pk,
@@ -291,7 +291,7 @@ class AdminAddEditRefundRequestViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, self.management_url)
-        self.assertEqual(HireRefundRequest.objects.count(), initial_count) # No new object created
+        self.assertEqual(RefundRequest.objects.count(), initial_count) # No new object created
 
         existing_refund_request.refresh_from_db() # Reload from DB
         self.assertEqual(existing_refund_request.reason, 'Updated reason for refund')
@@ -324,7 +324,7 @@ class AdminAddEditRefundRequestViewTests(TestCase):
             is_admin_initiated=True,
         )
         self._login_staff_user()
-        initial_count = HireRefundRequest.objects.count()
+        initial_count = RefundRequest.objects.count()
 
         # Invalid data: amount_to_refund exceeds payment.amount (500.00)
         form_data = {
@@ -336,7 +336,7 @@ class AdminAddEditRefundRequestViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200) # Should re-render the form with errors
         self.assertTemplateUsed(response, 'payments/admin_hire_refund_form.html')
-        self.assertEqual(HireRefundRequest.objects.count(), initial_count) # No new object created
+        self.assertEqual(RefundRequest.objects.count(), initial_count) # No new object created
 
         # We don't refresh_from_db() as the form was invalid and no save happened.
         # Instead, we check the form errors in the context.

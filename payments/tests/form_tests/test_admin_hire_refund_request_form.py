@@ -2,22 +2,22 @@
 
 from django.test import TestCase
 from decimal import Decimal
-from payments.forms.admin_hire_refund_request_form import AdminHireRefundRequestForm
+from payments.forms.admin_hire_refund_request_form import AdminRefundRequestForm
 from hire.tests.test_helpers.model_factories import (
     create_hire_booking,
     create_driver_profile,
     create_payment,
     create_user,
 )
-from payments.models.RefundRequest import HireRefundRequest # Corrected model import
+from payments.models.RefundRequest import RefundRequest # Corrected model import
 from payments.models.PaymentModel import Payment
 from hire.models import HireBooking
 from django.utils import timezone
 
 
-class AdminHireRefundRequestFormTests(TestCase):
+class AdminRefundRequestFormTests(TestCase):
     """
-    Tests for the AdminHireRefundRequestForm.
+    Tests for the AdminRefundRequestForm.
     """
 
     def setUp(self):
@@ -90,11 +90,11 @@ class AdminHireRefundRequestFormTests(TestCase):
             # 'is_admin_initiated': True, # Removed from form_data
             # 'status': 'pending', # Removed from form_data
         }
-        form = AdminHireRefundRequestForm(data=form_data)
+        form = AdminRefundRequestForm(data=form_data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
 
         refund_request = form.save()
-        self.assertIsInstance(refund_request, HireRefundRequest) # Corrected model reference
+        self.assertIsInstance(refund_request, RefundRequest) # Corrected model reference
         self.assertEqual(refund_request.hire_booking, self.hire_booking_paid)
         self.assertEqual(refund_request.payment, self.payment_succeeded)
         self.assertEqual(refund_request.driver_profile, self.driver_profile)
@@ -103,7 +103,7 @@ class AdminHireRefundRequestFormTests(TestCase):
         self.assertEqual(refund_request.amount_to_refund, Decimal('500.00'))
         # Assertions for is_admin_initiated and status are now in view tests
         self.assertIsNotNone(refund_request.requested_at)
-        self.assertEqual(HireRefundRequest.objects.count(), 1) # Corrected model reference
+        self.assertEqual(RefundRequest.objects.count(), 1) # Corrected model reference
 
     def test_form_valid_data_deposit_paid(self):
         """
@@ -118,11 +118,11 @@ class AdminHireRefundRequestFormTests(TestCase):
             # 'is_admin_initiated': True, # Removed from form_data
             # 'status': 'approved', # Removed from form_data
         }
-        form = AdminHireRefundRequestForm(data=form_data)
+        form = AdminRefundRequestForm(data=form_data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
 
         refund_request = form.save()
-        self.assertIsInstance(refund_request, HireRefundRequest) # Corrected model reference
+        self.assertIsInstance(refund_request, RefundRequest) # Corrected model reference
         self.assertEqual(refund_request.hire_booking, self.hire_booking_deposit)
         self.assertEqual(refund_request.payment, self.payment_deposit_paid)
         self.assertEqual(refund_request.driver_profile, self.driver_profile)
@@ -140,7 +140,7 @@ class AdminHireRefundRequestFormTests(TestCase):
             # 'is_admin_initiated': True, # Removed from form_data
             # 'status': 'pending', # Removed from form_data
         }
-        form = AdminHireRefundRequestForm(data=form_data)
+        form = AdminRefundRequestForm(data=form_data)
         self.assertFalse(form.is_valid())
         self.assertIn('hire_booking', form.errors)
 
@@ -156,7 +156,7 @@ class AdminHireRefundRequestFormTests(TestCase):
             # 'is_admin_initiated': True, # Removed from form_data
             # 'status': 'pending', # Removed from form_data
         }
-        form = AdminHireRefundRequestForm(data=form_data)
+        form = AdminRefundRequestForm(data=form_data)
         self.assertFalse(form.is_valid())
         self.assertIn('amount_to_refund', form.errors)
         self.assertIn("cannot exceed the amount paid", form.errors['amount_to_refund'][0])
@@ -174,7 +174,7 @@ class AdminHireRefundRequestFormTests(TestCase):
             # 'is_admin_initiated': True, # Removed from form_data
             # 'status': 'pending', # Removed from form_data
         }
-        form = AdminHireRefundRequestForm(data=form_data)
+        form = AdminRefundRequestForm(data=form_data)
         self.assertFalse(form.is_valid())
         self.assertIn('hire_booking', form.errors)
         # Assert the specific error message from ModelChoiceField
@@ -186,7 +186,7 @@ class AdminHireRefundRequestFormTests(TestCase):
         Test that initial values like is_admin_initiated and status are NOT set by the form itself.
         These are now handled by the view.
         """
-        form = AdminHireRefundRequestForm()
+        form = AdminRefundRequestForm()
         self.assertIsNone(form.initial.get('is_admin_initiated')) # Should be None now
         self.assertIsNone(form.initial.get('status')) # Should be None now
 
@@ -196,7 +196,7 @@ class AdminHireRefundRequestFormTests(TestCase):
         Note: is_admin_initiated and status are now handled by the view,
         so assertions for these are removed from the form test.
         """
-        existing_refund_request = HireRefundRequest.objects.create( # Corrected model reference
+        existing_refund_request = RefundRequest.objects.create( # Corrected model reference
             hire_booking=self.hire_booking_paid,
             payment=self.payment_succeeded,
             driver_profile=self.driver_profile,
@@ -215,7 +215,7 @@ class AdminHireRefundRequestFormTests(TestCase):
             # 'is_admin_initiated': True, # Removed from form_data
             # 'status': 'approved', # Removed from form_data
         }
-        form = AdminHireRefundRequestForm(data=form_data, instance=existing_refund_request)
+        form = AdminRefundRequestForm(data=form_data, instance=existing_refund_request)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
 
         updated_refund_request = form.save()
@@ -228,7 +228,7 @@ class AdminHireRefundRequestFormTests(TestCase):
         # if not explicitly changed by the form (which they aren't anymore).
         self.assertEqual(updated_refund_request.status, 'pending') # Should remain 'pending' as form doesn't change it
         self.assertTrue(updated_refund_request.is_admin_initiated) # Should remain True
-        self.assertEqual(HireRefundRequest.objects.count(), 1) # Corrected model reference
+        self.assertEqual(RefundRequest.objects.count(), 1) # Corrected model reference
 
     def test_form_optional_fields_blank(self):
         """
@@ -243,7 +243,7 @@ class AdminHireRefundRequestFormTests(TestCase):
             # 'is_admin_initiated': True, # Removed from form_data
             # 'status': 'pending', # Removed from form_data
         }
-        form = AdminHireRefundRequestForm(data=form_data)
+        form = AdminRefundRequestForm(data=form_data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
         refund_request = form.save()
         self.assertEqual(refund_request.reason, '')

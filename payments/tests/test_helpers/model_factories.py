@@ -9,7 +9,7 @@ import django.apps
 
 fake = Faker()
 
-from payments.models import Payment, WebhookEvent, HireRefundRequest
+from payments.models import Payment, WebhookEvent, RefundRequest
 from hire.models import TempHireBooking, HireBooking, DriverProfile, BookingAddOn, Package, AddOn, TempBookingAddOn
 from service.models import ServiceBooking, ServiceProfile, TempServiceBooking, CustomerMotorcycle, ServiceBrand, ServiceType, BlockedServiceDate, ServiceSettings
 from inventory.models import Motorcycle, MotorcycleCondition
@@ -282,9 +282,9 @@ class BookingAddOnFactory(factory.django.DjangoModelFactory):
     booked_addon_price = factory.LazyAttribute(lambda o: o.addon.daily_cost * o.quantity)
 
 
-class HireRefundRequestFactory(factory.django.DjangoModelFactory):
+class RefundRequestFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = HireRefundRequest
+        model = RefundRequest
 
     hire_booking = factory.SubFactory(HireBookingFactory)
     payment = factory.SubFactory(PaymentFactory)

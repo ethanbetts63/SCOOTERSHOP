@@ -13,7 +13,7 @@ from django.contrib.messages.storage.base import Message # Import Message for ch
 from payments.views.HireRefunds.process_refund import ProcessHireRefundView
 
 # Import models
-from payments.models import HireRefundRequest, Payment
+from payments.models import RefundRequest, Payment
 from hire.models import HireBooking, DriverProfile
 
 # Import actual StripeError for mocking
@@ -99,7 +99,7 @@ class ProcessHireRefundViewTests(TestCase):
     def test_successful_refund_initiation(self, mock_stripe_refund_create):
         """
         Test that a refund is successfully initiated via Stripe API
-        and the HireRefundRequest status is updated.
+        and the RefundRequest status is updated.
         """
         # Mock Stripe's response for a successful refund creation
         mock_stripe_refund_create.return_value = mock.Mock(id='re_mock_123', status='succeeded')

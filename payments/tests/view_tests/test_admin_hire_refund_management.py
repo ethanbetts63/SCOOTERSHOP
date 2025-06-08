@@ -11,7 +11,7 @@ from decimal import Decimal
 from payments.views.HireRefunds.admin_hire_refund_management import AdminHireRefundManagement
 
 # Import models
-from payments.models.RefundRequest import HireRefundRequest
+from payments.models.RefundRequest import RefundRequest
 from mailer.models import EmailLog
 
 # Import model factories for creating test data
@@ -107,7 +107,7 @@ class AdminHireRefundManagementTests(TestCase):
             request_email='pending_user@example.com'
         )
 
-        initial_count = HireRefundRequest.objects.count()
+        initial_count = RefundRequest.objects.count()
         self._login_staff_user()
 
         # Access the page, which triggers the cleaning mechanism in get_queryset
@@ -116,10 +116,10 @@ class AdminHireRefundManagementTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Assert that only the expired request was deleted
-        self.assertEqual(HireRefundRequest.objects.count(), initial_count - 1)
-        self.assertFalse(HireRefundRequest.objects.filter(pk=expired_request.pk).exists())
-        self.assertTrue(HireRefundRequest.objects.filter(pk=non_expired_request.pk).exists())
-        self.assertTrue(HireRefundRequest.objects.filter(pk=pending_request.pk).exists())
+        self.assertEqual(RefundRequest.objects.count(), initial_count - 1)
+        self.assertFalse(RefundRequest.objects.filter(pk=expired_request.pk).exists())
+        self.assertTrue(RefundRequest.objects.filter(pk=non_expired_request.pk).exists())
+        self.assertTrue(RefundRequest.objects.filter(pk=pending_request.pk).exists())
 
         # Assert that send_templated_email was called exactly once for the expired request
         mock_send_templated_email.assert_called_once()
@@ -159,7 +159,7 @@ class AdminHireRefundManagementTests(TestCase):
             request_email='pending_user@example.com'
         )
 
-        initial_count = HireRefundRequest.objects.count()
+        initial_count = RefundRequest.objects.count()
         self._login_staff_user()
 
         # Access the page
@@ -168,9 +168,9 @@ class AdminHireRefundManagementTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Assert no requests were deleted
-        self.assertEqual(HireRefundRequest.objects.count(), initial_count)
-        self.assertTrue(HireRefundRequest.objects.filter(pk=non_expired_request.pk).exists())
-        self.assertTrue(HireRefundRequest.objects.filter(pk=pending_request.pk).exists())
+        self.assertEqual(RefundRequest.objects.count(), initial_count)
+        self.assertTrue(RefundRequest.objects.filter(pk=non_expired_request.pk).exists())
+        self.assertTrue(RefundRequest.objects.filter(pk=pending_request.pk).exists())
 
         # Assert that send_templated_email was NOT called
         mock_send_templated_email.assert_not_called()
@@ -195,7 +195,7 @@ class AdminHireRefundManagementTests(TestCase):
             request_email=None # Explicitly set request_email to None
         )
 
-        initial_count = HireRefundRequest.objects.count()
+        initial_count = RefundRequest.objects.count()
         self._login_staff_user()
 
         response = self.client.get(self.management_url)
@@ -203,8 +203,8 @@ class AdminHireRefundManagementTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Assert the request was still deleted
-        self.assertEqual(HireRefundRequest.objects.count(), initial_count - 1)
-        self.assertFalse(HireRefundRequest.objects.filter(pk=expired_request_no_email.pk).exists())
+        self.assertEqual(RefundRequest.objects.count(), initial_count - 1)
+        self.assertFalse(RefundRequest.objects.filter(pk=expired_request_no_email.pk).exists())
 
         # Assert that send_templated_email was NOT called for this specific case
         mock_send_templated_email.assert_not_called() # It should not be called if no recipient_email is found

@@ -7,7 +7,7 @@ import stripe
 
 # Import models
 from hire.models import HireBooking
-from payments.models import Payment, HireRefundRequest
+from payments.models import Payment, RefundRequest
 
 # Import handlers
 from payments.webhook_handlers.refund_handlers import handle_hire_booking_refunded, handle_hire_booking_refund_updated
@@ -18,7 +18,7 @@ from ..test_helpers.model_factories import  (
     DriverProfileFactory,
     HireBookingFactory,
     PaymentFactory,
-    HireRefundRequestFactory,
+    RefundRequestFactory,
 )
 
 @override_settings(ADMIN_EMAIL='admin-refund@example.com', SITE_BASE_URL='http://example.com')
@@ -53,7 +53,7 @@ class RefundWebhookHandlerTest(TestCase):
         Tests 'charge.refunded' event for a full refund.
         """
         # 1. Setup
-        refund_request = HireRefundRequestFactory(
+        refund_request = RefundRequestFactory(
             hire_booking=self.hire_booking,
             payment=self.payment,  # Explicitly link to the correct payment
             status='approved',
@@ -89,7 +89,7 @@ class RefundWebhookHandlerTest(TestCase):
         Tests 'charge.refunded' event for a partial refund.
         """
         partial_refund_amount = Decimal('100.00')
-        refund_request = HireRefundRequestFactory(
+        refund_request = RefundRequestFactory(
             hire_booking=self.hire_booking,
             payment=self.payment, # Explicitly link to the correct payment
             amount_to_refund=partial_refund_amount,
@@ -124,7 +124,7 @@ class RefundWebhookHandlerTest(TestCase):
         Tests 'charge.refund.updated' event for a successful refund.
         """
         # Create a refund request for the handler to find
-        HireRefundRequestFactory(
+        RefundRequestFactory(
             hire_booking=self.hire_booking,
             payment=self.payment,
             status='approved',
@@ -155,7 +155,7 @@ class RefundWebhookHandlerTest(TestCase):
         """
         fallback_amount = Decimal('50.00')
         # Create a refund request for the handler to find
-        HireRefundRequestFactory(
+        RefundRequestFactory(
             hire_booking=self.hire_booking,
             payment=self.payment,
             status='approved',

@@ -9,7 +9,7 @@ import uuid
 from django.conf import settings
 from django.http import Http404
 
-from payments.models.RefundRequest import HireRefundRequest
+from payments.models.RefundRequest import RefundRequest
 from payments.hire_refund_calc import calculate_refund_amount
 from mailer.utils import send_templated_email
 
@@ -17,7 +17,7 @@ from mailer.utils import send_templated_email
 class UserVerifyRefundView(View):
     """
     Handles the verification of a user's refund request via a unique token sent in email.
-    Updates the HireRefundRequest status from 'unverified' to 'pending' upon successful verification.
+    Updates the RefundRequest status from 'unverified' to 'pending' upon successful verification.
     Also sends an admin notification email after successful verification.
     """
     def get(self, request, *args, **kwargs):
@@ -34,7 +34,7 @@ class UserVerifyRefundView(View):
             return redirect(reverse('core:index'))
 
         try:
-            refund_request = get_object_or_404(HireRefundRequest, verification_token=verification_token)
+            refund_request = get_object_or_404(RefundRequest, verification_token=verification_token)
 
             if refund_request.status != 'unverified':
                 messages.info(request, "This refund request has already been verified or processed.")

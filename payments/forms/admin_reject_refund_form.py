@@ -1,11 +1,11 @@
 # payments/forms/admin_reject_refund_form.py
 
 from django import forms
-from payments.models import HireRefundRequest
+from payments.models import RefundRequest
 
 class AdminRejectRefundForm(forms.ModelForm):
     """
-    Form for administrators to reject a HireRefundRequest,
+    Form for administrators to reject a RefundRequest,
     allowing them to provide a rejection reason and choose
     whether to send an automated email to the user.
     """
@@ -18,7 +18,7 @@ class AdminRejectRefundForm(forms.ModelForm):
     )
 
     class Meta:
-        model = HireRefundRequest
+        model = RefundRequest
         # Only include the rejection_reason field from the model
         fields = ['rejection_reason']
         widgets = {

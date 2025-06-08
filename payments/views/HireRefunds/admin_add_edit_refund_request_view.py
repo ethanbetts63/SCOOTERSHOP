@@ -5,14 +5,14 @@ from django.views import View
 from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.decorators import user_passes_test
-from payments.forms.admin_hire_refund_request_form import AdminHireRefundRequestForm
-from payments.models.RefundRequest import HireRefundRequest
+from payments.forms.admin_hire_refund_request_form import AdminRefundRequestForm
+from payments.models.RefundRequest import RefundRequest
 from users.views.auth import is_admin
 
 @method_decorator(user_passes_test(is_admin), name='dispatch')
 class AdminAddEditRefundRequestView(View):
     """
-    View for administrators to create or edit HireRefundRequest instances.
+    View for administrators to create or edit RefundRequest instances.
     This view handles both GET (displaying the form) and POST (processing form submission) requests.
     """
     template_name = 'payments/admin_hire_refund_form.html'
@@ -20,16 +20,16 @@ class AdminAddEditRefundRequestView(View):
     def get(self, request, pk=None, *args, **kwargs):
         """
         Handles GET requests to display the refund request form.
-        If a primary key (pk) is provided, it fetches an existing HireRefundRequest
+        If a primary key (pk) is provided, it fetches an existing RefundRequest
         for editing; otherwise, it prepares a form for a new request.
         """
         hire_refund_request = None
         if pk:
-            hire_refund_request = get_object_or_404(HireRefundRequest, pk=pk)
-            form = AdminHireRefundRequestForm(instance=hire_refund_request)
+            hire_refund_request = get_object_or_404(RefundRequest, pk=pk)
+            form = AdminRefundRequestForm(instance=hire_refund_request)
             title = "Edit Hire Refund Request"
         else:
-            form = AdminHireRefundRequestForm()
+            form = AdminRefundRequestForm()
             title = "Create New Hire Refund Request"
 
         context = {
@@ -42,14 +42,14 @@ class AdminAddEditRefundRequestView(View):
     def post(self, request, pk=None, *args, **kwargs):
         """
         Handles POST requests to process the submitted refund request form.
-        Validates the form data and saves/updates the HireRefundRequest instance.
+        Validates the form data and saves/updates the RefundRequest instance.
         """
         hire_refund_request = None
         if pk:
-            hire_refund_request = get_object_or_404(HireRefundRequest, pk=pk)
-            form = AdminHireRefundRequestForm(request.POST, instance=hire_refund_request)
+            hire_refund_request = get_object_or_404(RefundRequest, pk=pk)
+            form = AdminRefundRequestForm(request.POST, instance=hire_refund_request)
         else:
-            form = AdminHireRefundRequestForm(request.POST)
+            form = AdminRefundRequestForm(request.POST)
 
         if form.is_valid():
             refund_request_instance = form.save(commit=False)

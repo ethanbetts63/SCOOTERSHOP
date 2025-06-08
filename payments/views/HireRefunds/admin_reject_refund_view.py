@@ -7,14 +7,14 @@ from django.contrib.auth.decorators import user_passes_test
 from django.conf import settings
 
 from payments.forms.admin_reject_refund_form import AdminRejectRefundForm
-from payments.models.RefundRequest import HireRefundRequest
+from payments.models.RefundRequest import RefundRequest
 from users.views.auth import is_admin
 from mailer.utils import send_templated_email
 
 @method_decorator(user_passes_test(is_admin), name='dispatch')
 class AdminRejectRefundView(View):
     """
-    View for administrators to reject a HireRefundRequest.
+    View for administrators to reject a RefundRequest.
     It allows the admin to provide a reason for rejection and
     optionally send an automated email to the user.
     """
@@ -23,9 +23,9 @@ class AdminRejectRefundView(View):
     def get(self, request, pk, *args, **kwargs):
         """
         Handles GET requests to display the rejection form for a specific
-        HireRefundRequest.
+        RefundRequest.
         """
-        hire_refund_request = get_object_or_404(HireRefundRequest, pk=pk)
+        hire_refund_request = get_object_or_404(RefundRequest, pk=pk)
 
         form = AdminRejectRefundForm(instance=hire_refund_request)
 
@@ -42,7 +42,7 @@ class AdminRejectRefundView(View):
         Updates the refund request status, saves the rejection reason,
         and conditionally sends an email.
         """
-        hire_refund_request = get_object_or_404(HireRefundRequest, pk=pk)
+        hire_refund_request = get_object_or_404(RefundRequest, pk=pk)
         form = AdminRejectRefundForm(request.POST, instance=hire_refund_request)
 
         if form.is_valid():

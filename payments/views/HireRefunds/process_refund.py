@@ -10,14 +10,14 @@ from decimal import Decimal
 from django.utils import timezone
 from django.contrib.auth.decorators import user_passes_test
 from users.views.auth import is_admin
-from payments.models import HireRefundRequest, Payment
+from payments.models import RefundRequest, Payment
 
 
 
 @method_decorator(user_passes_test(is_admin), name='dispatch')
 class ProcessHireRefundView(View):
     def post(self, request, pk, *args, **kwargs):
-        hire_refund_request = get_object_or_404(HireRefundRequest, pk=pk)
+        hire_refund_request = get_object_or_404(RefundRequest, pk=pk)
 
         if hire_refund_request.status not in ['approved', 'reviewed_pending_approval']:
             messages.error(request, f"Refund request is not in an approvable state. Current status: {hire_refund_request.get_status_display()}.")

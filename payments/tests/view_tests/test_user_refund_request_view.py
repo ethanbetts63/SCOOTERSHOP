@@ -9,7 +9,7 @@ import datetime
 from decimal import Decimal
 
 # Import models
-from payments.models import HireRefundRequest, Payment
+from payments.models import RefundRequest, Payment
 from hire.models import HireBooking, DriverProfile
 from inventory.models import Motorcycle
 from dashboard.models import HireSettings
@@ -105,10 +105,10 @@ class UserRefundRequestViewTests(TestCase):
     @mock.patch('payments.views.HireRefunds.user_refund_request_view.send_templated_email')
     def test_post_request_valid_data_creates_refund_request_and_sends_email(self, mock_send_email):
         """
-        Test that a POST request with valid data creates a HireRefundRequest
+        Test that a POST request with valid data creates a RefundRequest
         and sends a verification email.
         """
-        initial_refund_request_count = HireRefundRequest.objects.count()
+        initial_refund_request_count = RefundRequest.objects.count()
 
         post_data = {
             'booking_reference': self.hire_booking.booking_reference,
@@ -122,9 +122,9 @@ class UserRefundRequestViewTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('payments:user_confirmation_refund_request'))
 
-        # Assertions for HireRefundRequest creation
-        self.assertEqual(HireRefundRequest.objects.count(), initial_refund_request_count + 1)
-        refund_request = HireRefundRequest.objects.first() # Assuming it's the only one created
+        # Assertions for RefundRequest creation
+        self.assertEqual(RefundRequest.objects.count(), initial_refund_request_count + 1)
+        refund_request = RefundRequest.objects.first() # Assuming it's the only one created
         self.assertEqual(refund_request.hire_booking, self.hire_booking)
         self.assertEqual(refund_request.payment, self.payment)
         self.assertEqual(refund_request.driver_profile, self.driver_profile)
@@ -152,9 +152,9 @@ class UserRefundRequestViewTests(TestCase):
     def test_post_request_invalid_data_shows_errors(self, mock_send_email):
         """
         Test that a POST request with invalid data (e.g., non-existent booking reference)
-        does not create a HireRefundRequest and re-renders the form with errors.
+        does not create a RefundRequest and re-renders the form with errors.
         """
-        initial_refund_request_count = HireRefundRequest.objects.count()
+        initial_refund_request_count = RefundRequest.objects.count()
 
         # Invalid booking reference and email combination
         post_data = {
@@ -170,8 +170,8 @@ class UserRefundRequestViewTests(TestCase):
         self.assertTemplateUsed(response, 'payments/user_refund_request_hire.html')
         self.assertIn('form', response.context)
 
-        # Assertions for HireRefundRequest creation (should not be created)
-        self.assertEqual(HireRefundRequest.objects.count(), initial_refund_request_count)
+        # Assertions for RefundRequest creation (should not be created)
+        self.assertEqual(RefundRequest.objects.count(), initial_refund_request_count)
 
         # Assertions for email sending (should not be called)
         mock_send_email.assert_not_called()
@@ -193,7 +193,7 @@ class UserRefundRequestViewTests(TestCase):
         Test that a POST request with a valid booking reference but wrong email
         shows errors. (This is handled by the form's clean method).
         """
-        initial_refund_request_count = HireRefundRequest.objects.count()
+        initial_refund_request_count = RefundRequest.objects.count()
 
         post_data = {
             'booking_reference': self.hire_booking.booking_reference,
@@ -206,7 +206,7 @@ class UserRefundRequestViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'payments/user_refund_request_hire.html')
         self.assertIn('form', response.context)
-        self.assertEqual(HireRefundRequest.objects.count(), initial_refund_request_count)
+        self.assertEqual(RefundRequest.objects.count(), initial_refund_request_count)
         mock_send_email.assert_not_called()
 
         form = response.context['form']

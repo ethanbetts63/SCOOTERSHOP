@@ -5,7 +5,7 @@ from decimal import Decimal
 from django.utils import timezone
 import datetime # Import datetime for more precise time manipulation in tests
 
-from payments.models.RefundRequest import HireRefundRequest
+from payments.models.RefundRequest import RefundRequest
 from payments.models.PaymentModel import Payment # Ensure PaymentModel is correctly imported
 from hire.models import HireBooking, DriverProfile # Ensure HireBooking and DriverProfile are correctly imported
 from hire.tests.test_helpers.model_factories import (
@@ -15,9 +15,9 @@ from hire.tests.test_helpers.model_factories import (
     create_user,
 )
 
-class HireRefundRequestModelTests(TestCase):
+class RefundRequestModelTests(TestCase):
     """
-    Tests for the HireRefundRequest model.
+    Tests for the RefundRequest model.
     """
 
     def setUp(self):
@@ -49,9 +49,9 @@ class HireRefundRequestModelTests(TestCase):
 
     def test_hire_refund_request_creation(self):
         """
-        Test that a HireRefundRequest instance can be created successfully with minimal valid data.
+        Test that a RefundRequest instance can be created successfully with minimal valid data.
         """
-        refund_request = HireRefundRequest.objects.create(
+        refund_request = RefundRequest.objects.create(
             hire_booking=self.hire_booking_paid,
             payment=self.payment_succeeded,
             driver_profile=self.driver_profile,
@@ -62,7 +62,7 @@ class HireRefundRequestModelTests(TestCase):
             is_admin_initiated=False,
         )
 
-        self.assertIsInstance(refund_request, HireRefundRequest)
+        self.assertIsInstance(refund_request, RefundRequest)
         self.assertEqual(refund_request.hire_booking, self.hire_booking_paid)
         self.assertEqual(refund_request.payment, self.payment_succeeded)
         self.assertEqual(refund_request.driver_profile, self.driver_profile)
@@ -77,13 +77,13 @@ class HireRefundRequestModelTests(TestCase):
         self.assertEqual(refund_request.staff_notes, '')
         self.assertEqual(refund_request.stripe_refund_id, '')
         self.assertEqual(refund_request.refund_calculation_details, {})
-        self.assertEqual(HireRefundRequest.objects.count(), 1)
+        self.assertEqual(RefundRequest.objects.count(), 1)
 
     def test_hire_refund_request_default_values(self):
         """
         Test that default values are correctly applied when not provided.
         """
-        refund_request = HireRefundRequest.objects.create(
+        refund_request = RefundRequest.objects.create(
             hire_booking=self.hire_booking_paid,
             payment=self.payment_succeeded,
             driver_profile=self.driver_profile,
@@ -102,7 +102,7 @@ class HireRefundRequestModelTests(TestCase):
         """
         Test that the foreign key relationships are correctly established.
         """
-        refund_request = HireRefundRequest.objects.create(
+        refund_request = RefundRequest.objects.create(
             hire_booking=self.hire_booking_paid,
             payment=self.payment_succeeded,
             driver_profile=self.driver_profile,
@@ -117,7 +117,7 @@ class HireRefundRequestModelTests(TestCase):
         """
         Test that optional fields can be left blank or null.
         """
-        refund_request = HireRefundRequest.objects.create(
+        refund_request = RefundRequest.objects.create(
             hire_booking=self.hire_booking_paid,
             payment=self.payment_succeeded,
             driver_profile=self.driver_profile,
@@ -145,9 +145,9 @@ class HireRefundRequestModelTests(TestCase):
         Test that the status field correctly uses the defined choices.
         """
         # Test setting to various valid statuses
-        for status_value, _ in HireRefundRequest.STATUS_CHOICES:
+        for status_value, _ in RefundRequest.STATUS_CHOICES:
             with self.subTest(status=status_value):
-                refund_request = HireRefundRequest.objects.create(
+                refund_request = RefundRequest.objects.create(
                     hire_booking=self.hire_booking_paid,
                     payment=self.payment_succeeded,
                     driver_profile=self.driver_profile,
@@ -161,7 +161,7 @@ class HireRefundRequestModelTests(TestCase):
         """
         Test the __str__ method of the model.
         """
-        refund_request = HireRefundRequest.objects.create(
+        refund_request = RefundRequest.objects.create(
             hire_booking=self.hire_booking_paid,
             payment=self.payment_succeeded,
             driver_profile=self.driver_profile,
@@ -177,7 +177,7 @@ class HireRefundRequestModelTests(TestCase):
         """
         Test the is_admin_initiated flag.
         """
-        user_initiated_refund = HireRefundRequest.objects.create(
+        user_initiated_refund = RefundRequest.objects.create(
             hire_booking=self.hire_booking_paid,
             payment=self.payment_succeeded,
             driver_profile=self.driver_profile,
@@ -186,7 +186,7 @@ class HireRefundRequestModelTests(TestCase):
         )
         self.assertFalse(user_initiated_refund.is_admin_initiated)
 
-        admin_initiated_refund = HireRefundRequest.objects.create(
+        admin_initiated_refund = RefundRequest.objects.create(
             hire_booking=self.hire_booking_paid,
             payment=self.payment_succeeded,
             driver_profile=self.driver_profile,

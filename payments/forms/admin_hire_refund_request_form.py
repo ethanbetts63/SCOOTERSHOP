@@ -1,11 +1,11 @@
 # payments/forms/admin_hire_refund_request_form.py
 
 from django import forms
-from payments.models.RefundRequest import HireRefundRequest
+from payments.models.RefundRequest import RefundRequest
 from hire.models import HireBooking # Assuming HireBooking is in hire.models
 from payments.models.PaymentModel import Payment # Assuming Payment is in payments.models.PaymentModel
 
-class AdminHireRefundRequestForm(forms.ModelForm):
+class AdminRefundRequestForm(forms.ModelForm):
     """
     Form for administrators to create or edit a RefundRequest.
     Allows selection of a HireBooking, and input of reason, staff notes, and amount to refund.
@@ -19,7 +19,7 @@ class AdminHireRefundRequestForm(forms.ModelForm):
     )
 
     class Meta:
-        model = HireRefundRequest
+        model = RefundRequest
         fields = [
             'hire_booking',
             'reason',

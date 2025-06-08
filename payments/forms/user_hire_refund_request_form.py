@@ -3,10 +3,10 @@
 from django import forms
 from hire.models import HireBooking # Assuming HireBooking is in hire.models
 from hire.models import DriverProfile # Assuming DriverProfile is in hire.models
-from payments.models.RefundRequest import HireRefundRequest
+from payments.models.RefundRequest import RefundRequest
 from payments.models.PaymentModel import Payment # Assuming Payment is in payments.models.PaymentModel
 
-class UserHireRefundRequestForm(forms.ModelForm):
+class UserRefundRequestForm(forms.ModelForm):
     """
     Form for users to request a refund for a booking.
     Requires booking reference, email, and an optional reason.
@@ -28,7 +28,7 @@ class UserHireRefundRequestForm(forms.ModelForm):
     )
 
     class Meta:
-        model = HireRefundRequest
+        model = RefundRequest
         fields = ['booking_reference', 'email', 'reason'] # These are the only fields the user inputs directly
 
     def __init__(self, *args, **kwargs):
@@ -78,7 +78,7 @@ class UserHireRefundRequestForm(forms.ModelForm):
 
                 # Check if a refund request for this booking/payment is already in 'pending' or 'approved' status
                 # This prevents duplicate active refund requests
-                existing_refund_requests = HireRefundRequest.objects.filter(
+                existing_refund_requests = RefundRequest.objects.filter(
                     hire_booking=hire_booking,
                     payment=payment,
                     status__in=['unverified', 'pending', 'approved']

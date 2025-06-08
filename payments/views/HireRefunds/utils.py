@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 from django.utils import timezone
 from payments.hire_refund_calc import calculate_refund_amount
-from payments.models import HireRefundRequest
+from payments.models import RefundRequest
 
 @require_GET
 @login_required
@@ -43,7 +43,7 @@ def get_hire_booking_details_json(request, pk):
         else:
             pass
 
-        latest_refund_request = HireRefundRequest.objects.filter(hire_booking=hire_booking).order_by('-requested_at').first()
+        latest_refund_request = RefundRequest.objects.filter(hire_booking=hire_booking).order_by('-requested_at').first()
         refund_status_for_booking = latest_refund_request.get_status_display() if latest_refund_request else 'No Refund Request Yet'
 
 
