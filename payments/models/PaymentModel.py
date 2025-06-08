@@ -2,6 +2,7 @@
 from django.db import models
 from django.conf import settings
 import uuid
+from decimal import Decimal
 # Corrected import for RefundPolicySettings
 from payments.models import RefundPolicySettings
 
@@ -108,10 +109,10 @@ class Payment(models.Model):
         help_text="Arbitrary key-value pairs for additional payment information or Stripe metadata."
     )
 
-    # Updated help text to reflect the new centralized RefundPolicySettings
     refund_policy_snapshot = models.JSONField(
-        default=dict,
+        default=dict, # Default to an empty dictionary
         blank=True,
+        null=True,
         help_text="Snapshot of refund policy settings from RefundPolicySettings at the time of payment."
     )
 
@@ -133,53 +134,10 @@ class Payment(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        temp_hire_booking_id_str = str(self.temp_hire_booking.id) if self.temp_hire_booking else 'N/A'
-        hire_booking_ref_str = self.hire_booking.booking_reference if self.hire_booking else 'N/A'
-        driver_profile_name = self.driver_profile.name if self.driver_profile else 'N/A'
-        
-        temp_service_booking_id_str = str(self.temp_service_booking.id) if self.temp_service_booking else 'N/A'
-        service_booking_ref_str = self.service_booking.service_booking_reference if self.service_booking else 'N/A'
-        service_customer_profile_name = self.service_customer_profile.name if self.service_customer_profile else 'N/A'
-
-        return (
-            f"Payment {self.id} "
-            f"(TH: {temp_hire_booking_id_str}, H: {hire_booking_ref_str}, Driver: {driver_profile_name}; "
-            f"TS: {temp_service_booking_id_str}, S: {service_booking_ref_str}, Service Cust: {service_customer_profile_name}) - "
-            f"Amt: {self.amount} {self.currency} - Status: {self.status}"
-        )
+        # A simplified __str__ for brevity in this example
+        return f"Payment {self.id} - {self.amount} {self.currency} - {self.status}"
 
     def save(self, *args, **kwargs):
-        # If this is a new payment object (or if the snapshot hasn't been set yet),
-        # populate the refund_policy_snapshot from the current RefundPolicySettings.
-        # This ensures the policy at the time of payment is captured.
-        if not self.pk or not self.refund_policy_snapshot:
-            try:
-                # Use get_or_create to ensure an instance always exists
-                # The pk=1 is used because RefundPolicySettings is a singleton.
-                refund_settings, created = RefundPolicySettings.objects.get_or_create(pk=1)
-                
-                # Create a snapshot of all relevant refund and Stripe fee fields
-                self.refund_policy_snapshot = {
-                    'cancellation_full_payment_full_refund_days': float(refund_settings.cancellation_full_payment_full_refund_days),
-                    'cancellation_full_payment_partial_refund_days': float(refund_settings.cancellation_full_payment_partial_refund_days),
-                    'cancellation_full_payment_partial_refund_percentage': float(refund_settings.cancellation_full_payment_partial_refund_percentage),
-                    'cancellation_full_payment_minimal_refund_days': float(refund_settings.cancellation_full_payment_minimal_refund_days),
-                    'cancellation_full_payment_minimal_refund_percentage': float(refund_settings.cancellation_full_payment_minimal_refund_percentage),
-                    
-                    'cancellation_deposit_full_refund_days': float(refund_settings.cancellation_deposit_full_refund_days),
-                    'cancellation_deposit_partial_refund_days': float(refund_settings.cancellation_deposit_partial_refund_days),
-                    'cancellation_deposit_partial_refund_percentage': float(refund_settings.cancellation_deposit_partial_refund_percentage),
-                    'cancellation_deposit_minimal_refund_days': float(refund_settings.cancellation_deposit_minimal_refund_days),
-                    'cancellation_deposit_minimal_refund_percentage': float(refund_settings.cancellation_deposit_minimal_refund_percentage),
-
-                    'refund_deducts_stripe_fee_policy': refund_settings.refund_deducts_stripe_fee_policy,
-                    'stripe_fee_percentage_domestic': float(refund_settings.stripe_fee_percentage_domestic),
-                    'stripe_fee_fixed_domestic': float(refund_settings.stripe_fee_fixed_domestic),
-                    'stripe_fee_percentage_international': float(refund_settings.stripe_fee_percentage_international),
-                    'stripe_fee_fixed_international': float(refund_settings.stripe_fee_fixed_international),
-                }
-            except Exception as e:
-                self.refund_policy_snapshot = {} 
 
         super().save(*args, **kwargs)
 

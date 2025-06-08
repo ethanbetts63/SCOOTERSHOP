@@ -3,7 +3,7 @@ from decimal import Decimal
 import uuid
 
 from service.models import TempServiceBooking, ServiceBooking, ServiceSettings
-from payments.models import Payment, RefundPolicySettings
+from payments.models import Payment, RefundPolicySettings # Ensure RefundPolicySettings is imported
 
 def convert_temp_service_booking(
     temp_booking,
@@ -18,9 +18,7 @@ def convert_temp_service_booking(
         with transaction.atomic():
             service_settings = ServiceSettings.objects.first()
 
-            current_refund_settings = {}
-            currency_code = 'AUD'
-
+            currency_code = 'AUD' # Default currency if service_settings is not found
             if service_settings:
                 currency_code = service_settings.currency_code
                 
@@ -49,11 +47,46 @@ def convert_temp_service_booking(
             )
 
             if payment_obj:
+                payment_obj.currency = currency_code
                 payment_obj.service_booking = service_booking
                 payment_obj.service_customer_profile = service_booking.service_profile
+                
+                # Logic to create refund policy snapshot
+                try:
+                    refund_settings = RefundPolicySettings.objects.first()
+                    if refund_settings:
+                        # Create a snapshot, converting Decimal fields to float for JSON serialization.
+                        payment_obj.refund_policy_snapshot = {
+                            'cancellation_full_payment_full_refund_days': refund_settings.cancellation_full_payment_full_refund_days,
+                            'cancellation_full_payment_partial_refund_days': refund_settings.cancellation_full_payment_partial_refund_days,
+                            'cancellation_full_payment_partial_refund_percentage': float(refund_settings.cancellation_full_payment_partial_refund_percentage),
+                            'cancellation_full_payment_minimal_refund_days': refund_settings.cancellation_full_payment_minimal_refund_days,
+                            'cancellation_full_payment_minimal_refund_percentage': float(refund_settings.cancellation_full_payment_minimal_refund_percentage),
+                            
+                            'cancellation_deposit_full_refund_days': refund_settings.cancellation_deposit_full_refund_days,
+                            'cancellation_deposit_partial_refund_days': refund_settings.cancellation_deposit_partial_refund_days,
+                            'cancellation_deposit_partial_refund_percentage': float(refund_settings.cancellation_deposit_partial_refund_percentage),
+                            'cancellation_deposit_minimal_refund_days': refund_settings.cancellation_deposit_minimal_refund_days,
+                            'cancellation_deposit_minimal_refund_percentage': float(refund_settings.cancellation_deposit_minimal_refund_percentage),
+
+                            'refund_deducts_stripe_fee_policy': refund_settings.refund_deducts_stripe_fee_policy,
+                            'stripe_fee_percentage_domestic': float(refund_settings.stripe_fee_percentage_domestic),
+                            'stripe_fee_fixed_domestic': float(refund_settings.stripe_fee_fixed_domestic),
+                            'stripe_fee_percentage_international': float(refund_settings.stripe_fee_percentage_international),
+                            'stripe_fee_fixed_international': float(refund_settings.stripe_fee_fixed_international),
+                        }
+                    else:
+                        # If no RefundPolicySettings exist, ensure the snapshot is an empty dict
+                        payment_obj.refund_policy_snapshot = {}
+                except Exception as e:
+                    # Log the error, but proceed without a snapshot if an error occurs
+                    print(f"Error creating refund policy snapshot: {e}")
+                    payment_obj.refund_policy_snapshot = {} # Ensure it's still an empty dict on error
+
+                # Detach temp_service_booking if it exists on payment_obj
                 if hasattr(payment_obj, 'temp_service_booking') and payment_obj.temp_service_booking:
                     payment_obj.temp_service_booking = None
-                
+
                 payment_obj.save()
 
             temp_booking.delete()
@@ -61,4 +94,6 @@ def convert_temp_service_booking(
             return service_booking
 
     except Exception as e:
-        raise
+        # It's generally better to log the exception and re-raise it
+        # or handle it specifically, rather than just 'pass'.
+        raise # Re-raise the exception after logging if needed

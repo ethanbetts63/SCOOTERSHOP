@@ -43,23 +43,6 @@ class UserFactory(factory.django.DjangoModelFactory):
     post_code = factory.Faker('postcode')
     country = factory.Faker('country_code')
 
-class PaymentFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Payment
-
-    temp_hire_booking = None
-    hire_booking = None
-    driver_profile = None
-
-    stripe_payment_intent_id = factory.Sequence(lambda n: f"pi_{uuid.uuid4().hex[:24]}_{n}")
-    stripe_payment_method_id = factory.Faker('md5')
-    amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True))
-    currency = 'AUD'
-    status = factory.Faker('random_element', elements=['succeeded', 'requires_payment_method', 'requires_action', 'canceled'])
-    description = factory.Faker('sentence')
-    metadata = factory.LazyFunction(lambda: {'test_key': fake.word()})
-    refund_policy_snapshot = factory.LazyFunction(lambda: {'policy_version': '1.0', 'deduct_fees': True})
-    refunded_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
 
 class ServiceBrandFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -184,6 +167,27 @@ class TempServiceBookingFactory(factory.django.DjangoModelFactory):
     estimated_pickup_date = None
     customer_notes = factory.Faker('paragraph')
     calculated_deposit_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
+
+
+class PaymentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Payment
+
+    # Default fields
+    amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=4, right_digits=2, positive=True))
+    currency = 'AUD'
+    status = factory.Faker('random_element', elements=['succeeded', 'requires_action', 'requires_payment_method'])
+    description = factory.Faker('sentence')
+    stripe_payment_intent_id = factory.Sequence(lambda n: f"pi_{uuid.uuid4().hex[:24]}")
+    stripe_payment_method_id = factory.Sequence(lambda n: f"pm_{uuid.uuid4().hex[:24]}")
+    refunded_amount = Decimal('0.00') # Default to 0.00
+    refund_policy_snapshot = {} # Ensure it defaults to an empty dictionary
+    temp_hire_booking = None
+    hire_booking = None
+    driver_profile = None
+    temp_service_booking = None
+    service_booking = None
+    service_customer_profile = None
 
 
 class ServiceBookingFactory(factory.django.DjangoModelFactory):

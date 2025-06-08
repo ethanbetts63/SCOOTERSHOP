@@ -104,9 +104,6 @@ def convert_temp_to_hire_booking(
                 stripe_payment_intent_id=stripe_payment_intent_id,
                 payment=payment_obj, # Link HireBooking to the Payment object
             )
-            logger.info(f"Created new HireBooking: {hire_booking.booking_reference} from TempHireBooking {temp_booking.id}")
-            print(f"DEBUG: Successfully created HireBooking: {hire_booking.booking_reference}")
-
             # If a payment object exists, update it to link to the new HireBooking
             if payment_obj:
                 payment_obj.hire_booking = hire_booking
@@ -114,8 +111,6 @@ def convert_temp_to_hire_booking(
                 payment_obj.temp_hire_booking = None # Clear FK before temp_booking deletion
                 payment_obj.refund_policy_snapshot = current_refund_settings # Assign the snapshot
                 payment_obj.save()
-                logger.info(f"Updated Payment {payment_obj.id} with HireBooking link and refund policy snapshot.")
-                print(f"DEBUG: Updated Payment object with HireBooking link and refund policy snapshot.")
 
             # Copy add-ons from TempBookingAddOn to BookingAddOn
             temp_booking_addons = TempBookingAddOn.objects.filter(temp_booking=temp_booking)
