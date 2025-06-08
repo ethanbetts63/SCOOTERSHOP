@@ -1,7 +1,7 @@
 import decimal
 from service.models import ServiceSettings
 
-def calculate_deposit_amount(temp_booking):
+def calculate_service_deposit(temp_booking):
     service_settings = ServiceSettings.objects.first()
 
     if not service_settings or not service_settings.enable_deposit:
