@@ -5,14 +5,17 @@ from django.conf import settings # To access AUTH_USER_MODEL
 from django.utils import timezone # To use timezone.now()
 from hire.models import HireBooking
 from hire.models.driver_profile import DriverProfile # Assuming driver_profile is in hire app
+from service.models import ServiceBooking # NEW: Import ServiceBooking
+from service.models import ServiceProfile # NEW: Import ServiceProfile
 
 
 class EmailLog(models.Model):
     """
     Model to log all outgoing emails sent by the application.
     This provides a record of communication for auditing and debugging.
-    The relationships to User, DriverProfile, and HireBooking are optional
-    to allow for reuse across different application contexts.
+    The relationships to User, DriverProfile, HireBooking, ServiceBooking,
+    and ServiceProfile are optional to allow for reuse across different
+    application contexts.
     """
 
     # Choices for email status
@@ -69,8 +72,18 @@ class EmailLog(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='sent_emails', # Different related_name to avoid clash with User
+        related_name='sent_emails_for_driver', # Changed related_name to be specific
         help_text="The driver profile associated with this email, if applicable."
+    )
+
+    # NEW: Optional Foreign key to the ServiceProfile model
+    service_profile = models.ForeignKey(
+        ServiceProfile, # Use the imported ServiceProfile model
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='sent_emails_for_service_profile', # Added explicit related_name
+        help_text="The service profile associated with this email, if applicable."
     )
 
     # Optional Foreign key to the HireBooking model
@@ -79,9 +92,20 @@ class EmailLog(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='related_emails',
-        help_text="The booking associated with this email, if applicable."
+        related_name='related_emails_for_hire', # Changed related_name to be explicit
+        help_text="The hire booking associated with this email, if applicable."
     )
+
+    # NEW: Optional Foreign key to the ServiceBooking model
+    service_booking = models.ForeignKey(
+        ServiceBooking,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='related_emails_for_service', # Added explicit related_name
+        help_text="The service booking associated with this email, if applicable."
+    )
+
 
     class Meta:
         verbose_name = "Email Log"
