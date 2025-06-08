@@ -1,7 +1,7 @@
 # payments/forms/admin_hire_refund_request_form.py
 
 from django import forms
-from payments.models.HireRefundRequest import HireRefundRequest
+from payments.models.RefundRequest import HireRefundRequest
 from hire.models import HireBooking # Assuming HireBooking is in hire.models
 from payments.models.PaymentModel import Payment # Assuming Payment is in payments.models.PaymentModel
 

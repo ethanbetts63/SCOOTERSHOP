@@ -17,7 +17,7 @@ from hire.tests.test_helpers.model_factories import (
     create_refund_request,
     create_hire_settings, # Needed for refund_policy_snapshot in payment
 )
-from payments.models.HireRefundRequest import HireRefundRequest
+from payments.models.RefundRequest import HireRefundRequest
 from payments.models import Payment # Import Payment model directly
 # No longer mocking AdminHireRefundRequestForm, so no explicit import needed here for tests.
 

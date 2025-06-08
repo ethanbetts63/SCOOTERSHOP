@@ -5,7 +5,7 @@ from decimal import Decimal
 from django.utils import timezone
 import datetime # Import datetime for more precise time manipulation in tests
 
-from payments.models.HireRefundRequest import HireRefundRequest
+from payments.models.RefundRequest import HireRefundRequest
 from payments.models.PaymentModel import Payment # Ensure PaymentModel is correctly imported
 from hire.models import HireBooking, DriverProfile # Ensure HireBooking and DriverProfile are correctly imported
 from hire.tests.test_helpers.model_factories import (

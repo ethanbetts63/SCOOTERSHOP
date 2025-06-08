@@ -9,7 +9,7 @@ import uuid
 from django.conf import settings
 from django.http import Http404
 
-from payments.models.HireRefundRequest import HireRefundRequest
+from payments.models.RefundRequest import HireRefundRequest
 from payments.hire_refund_calc import calculate_refund_amount
 from mailer.utils import send_templated_email
 

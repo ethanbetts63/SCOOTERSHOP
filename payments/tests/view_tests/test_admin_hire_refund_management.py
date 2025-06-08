@@ -11,7 +11,7 @@ from decimal import Decimal
 from payments.views.HireRefunds.admin_hire_refund_management import AdminHireRefundManagement
 
 # Import models
-from payments.models.HireRefundRequest import HireRefundRequest
+from payments.models.RefundRequest import HireRefundRequest
 from mailer.models import EmailLog
 
 # Import model factories for creating test data

@@ -11,7 +11,7 @@ from inventory.models import Motorcycle, MotorcycleCondition
 from payments.models import Payment
 from dashboard.models import HireSettings # Corrected import for HireSettings
 from mailer.models import EmailLog
-from payments.models.HireRefundRequest import HireRefundRequest
+from payments.models.RefundRequest import HireRefundRequest
 
 
 # Import models from the current 'hire' app

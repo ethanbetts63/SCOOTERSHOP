@@ -7,7 +7,7 @@ from django.utils import timezone
 import uuid
 
 from payments.forms.user_hire_refund_request_form import UserHireRefundRequestForm
-from payments.models.HireRefundRequest import HireRefundRequest
+from payments.models.RefundRequest import HireRefundRequest
 from mailer.utils import send_templated_email
 
 

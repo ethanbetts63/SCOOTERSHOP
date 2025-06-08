@@ -9,7 +9,7 @@ from hire.tests.test_helpers.model_factories import (
     create_payment,
     create_user,
 )
-from payments.models.HireRefundRequest import HireRefundRequest # Corrected model import
+from payments.models.RefundRequest import HireRefundRequest # Corrected model import
 from payments.models.PaymentModel import Payment
 from hire.models import HireBooking
 from django.utils import timezone

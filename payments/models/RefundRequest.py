@@ -6,7 +6,8 @@ from payments.models.PaymentModel import Payment # Import the Payment model
 import uuid # Import uuid for the token
 from django.utils import timezone # Import timezone for token_created_at
 
-class HireRefundRequest(models.Model): # Renamed the model class
+# The model class is renamed to be more generic for all refund types
+class RefundRequest(models.Model):
     STATUS_CHOICES = [
         ('unverified', 'Unverified - Awaiting Email Confirmation'),
         ('pending', 'Pending Review'),
@@ -18,13 +19,45 @@ class HireRefundRequest(models.Model): # Renamed the model class
         ('failed', 'Refund Failed'),
     ]
 
+    # Optional link to a HireBooking
     hire_booking = models.ForeignKey(
         'hire.HireBooking', # Use string reference to avoid circular import
         on_delete=models.CASCADE,
         related_name='refund_requests',
-        help_text="The booking for which the refund is requested."
+        null=True, # Make it optional
+        blank=True, # Make it optional
+        help_text="The hire booking for which the refund is requested (if applicable)."
     )
 
+    # Optional link to a ServiceBooking
+    service_booking = models.ForeignKey(
+        'service.ServiceBooking', # Use string reference to avoid circular import
+        on_delete=models.CASCADE,
+        related_name='refund_requests',
+        null=True, # Make it optional
+        blank=True, # Make it optional
+        help_text="The service booking for which the refund is requested (if applicable)."
+    )
+
+    # Optional link to a ServiceProfile (e.g., if no specific booking is linked but a customer profile is relevant)
+    service_profile = models.ForeignKey(
+        'service.ServiceProfile', # Use string reference to avoid circular import
+        on_delete=models.SET_NULL,
+        related_name='refund_requests_related_service_profile',
+        null=True, # Make it optional
+        blank=True, # Make it optional
+        help_text="The service profile associated with this refund request (if applicable)."
+    )
+
+    driver_profile = models.ForeignKey(
+        'hire.DriverProfile',
+        on_delete=models.SET_NULL,
+        related_name='refund_requests_related_driver',
+        null=True,
+        blank=True,
+        help_text="The driver profile associated with this refund (if applicable)."
+    )
+    
     payment = models.ForeignKey(
         Payment,
         on_delete=models.SET_NULL,
@@ -34,14 +67,6 @@ class HireRefundRequest(models.Model): # Renamed the model class
         help_text="The specific payment record associated with this refund request."
     )
 
-    driver_profile = models.ForeignKey(
-        'hire.DriverProfile',
-        on_delete=models.SET_NULL,
-        related_name='refund_requests_related_driver',
-        null=True,
-        blank=True,
-        help_text="The driver profile associated with this refund."
-    )
     reason = models.TextField(
         blank=True,
         help_text="Customer's reason for requesting the refund."
@@ -118,16 +143,20 @@ class HireRefundRequest(models.Model): # Renamed the model class
 
 
     class Meta:
-        verbose_name = "Hire Refund Request" # Updated verbose name
-        verbose_name_plural = "Hire Refund Requests" # Updated verbose name plural
+        verbose_name = "Refund Request" # Generalised verbose name
+        verbose_name_plural = "Refund Requests" # Generalised verbose name plural
         ordering = ['-requested_at', 'pk'] # Added 'pk' as a secondary sort
         
     def __str__(self):
-        return f"Refund Request for Booking {self.hire_booking.booking_reference if self.hire_booking else 'N/A'} - Status: {self.status}"
+        booking_ref = "N/A"
+        if self.hire_booking:
+            booking_ref = f"Hire Booking {self.hire_booking.booking_reference}"
+        elif self.service_booking:
+            booking_ref = f"Service Booking {self.service_booking.service_booking_reference}"
+        return f"Refund Request for {booking_ref} - Status: {self.status}"
 
     def save(self, *args, **kwargs):
         # Generate a UUID for verification_token if it's not already set
         if not self.verification_token:
             self.verification_token = uuid.uuid4()
         super().save(*args, **kwargs)
-

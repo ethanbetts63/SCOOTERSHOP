@@ -3,7 +3,7 @@
 from django import forms
 from hire.models import HireBooking # Assuming HireBooking is in hire.models
 from hire.models import DriverProfile # Assuming DriverProfile is in hire.models
-from payments.models.HireRefundRequest import HireRefundRequest
+from payments.models.RefundRequest import HireRefundRequest
 from payments.models.PaymentModel import Payment # Assuming Payment is in payments.models.PaymentModel
 
 class UserHireRefundRequestForm(forms.ModelForm):

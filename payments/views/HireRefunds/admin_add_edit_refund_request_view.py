@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.decorators import user_passes_test
 from payments.forms.admin_hire_refund_request_form import AdminHireRefundRequestForm
-from payments.models.HireRefundRequest import HireRefundRequest
+from payments.models.RefundRequest import HireRefundRequest
 from users.views.auth import is_admin
 
 @method_decorator(user_passes_test(is_admin), name='dispatch')

@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.conf import settings
 
 from payments.forms.admin_reject_refund_form import AdminRejectRefundForm
-from payments.models.HireRefundRequest import HireRefundRequest
+from payments.models.RefundRequest import HireRefundRequest
 from users.views.auth import is_admin
 from mailer.utils import send_templated_email
 
