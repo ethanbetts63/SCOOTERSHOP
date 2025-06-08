@@ -102,20 +102,13 @@
                         <input type="hidden"
                                name="{{ form.dropoff_date.name }}"
                                value="{{ temp_booking.service_date|date:'Y-m-d' }}"
-                               id="{{ form.dropoff_date.id_for_label }}"> {# Keep the ID for JS reference if needed, though Flatpickr won't use it #}
+                               id="{{ form.dropoff_date.id_for_label }}">
                     </div>
                 {% else %}
                     <!-- Display Flatpickr input for date selection -->
                     <div>
                         <label for="{{ form.dropoff_date.id_for_label }}" class="block text-sm font-medium text-gray-700 required-label">{{ form.dropoff_date.label }}</label>
-                        <input type="text"
-                               name="{{ form.dropoff_date.name }}"
-                               id="{{ form.dropoff_date.id_for_label }}"
-                               class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm {% if form.dropoff_date.errors %}border-red-500{% endif %}"
-                               placeholder="Click to select a date"
-                               value="{{ form.dropoff_date.value|default_if_none:''|date:'Y-m-d' }}"
-                               data-min-date-flatpickr="{{ min_dropoff_date }}"
-                               data-max-date-flatpickr="{{ max_dropoff_date }}">
+                        {{ form.dropoff_date }}
                         {% for error in form.dropoff_date.errors %}
                             <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
                         {% endfor %}
@@ -186,25 +179,22 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const dateInput = document.getElementById('{{ form.dropoff_date.id_for_label }}');
+    // Note the selector is now '.flatpickr-date-input'
+    const dateInput = document.querySelector('.flatpickr-date-input');
     const timeSelect = document.getElementById('{{ form.dropoff_time.id_for_label }}');
     const getTimesUrl = '{{ get_times_url }}';
     const isSameDayDropoffOnly = '{{ is_same_day_dropoff_only|yesno:"true,false" }}'; // Convert Django boolean to JS boolean
 
-    let fp = null; // Declare fp outside, initialized conditionally
+    if (dateInput) { // Only initialize if the date input exists on the page
+        // Safely parse the JSON data from the template
+        const availableDates = JSON.parse('{{ available_dropoff_dates_json|escapejs }}');
 
-    if (!isSameDayDropoffOnly) {
-        // Only initialize Flatpickr if not same-day dropoff only
-        // dateInput will exist if isSameDayDropoffOnly is false
-        const minDateFlatpickr = dateInput.getAttribute('data-min-date-flatpickr');
-        const maxDateFlatpickr = dateInput.getAttribute('data-max-date-flatpickr');
-
-        fp = flatpickr(dateInput, {
+        flatpickr(dateInput, {
             altInput: true,
             altFormat: "F j, Y",
             dateFormat: "Y-m-d",
-            minDate: minDateFlatpickr,
-            maxDate: maxDateFlatpickr,
+            // Use the 'enable' option to only allow selection of specific dates
+            enable: availableDates,
             onChange: function(selectedDates, dateStr, instance) {
                 if (dateStr) {
                     fetchAvailableTimes(dateStr);
@@ -263,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // If same-day dropoff, the date is fixed to service_date. Fetch times for it immediately.
         // We use temp_booking.service_date directly from the template context.
         fetchAvailableTimes('{{ temp_booking.service_date|date:"Y-m-d" }}');
-    } else if (dateInput.value) {
+    } else if (dateInput && dateInput.value) {
         // If a date is already in the input (e.g., from form error reload), fetch times.
         fetchAvailableTimes(dateInput.value);
     }

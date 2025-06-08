@@ -6,10 +6,12 @@ from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal # Import Decimal for monetary values
 from django.conf import settings # Import settings to get admin email
+import json # Import json to pass the list to the template
 
 from service.forms.step5_payment_choice_and_terms_form import PaymentOptionForm
 from service.models import TempServiceBooking, ServiceSettings
 from service.utils.convert_temp_service_booking import convert_temp_service_booking # Import the utility function
+from service.utils.get_drop_off_date_availability import get_drop_off_date_availability # Import the availability utility
 from mailer.utils import send_templated_email # Import the email utility function
 import logging
 
@@ -58,24 +60,17 @@ class Step5PaymentDropoffAndTermsView(View):
         return kwargs
 
     def get_context_data(self, **kwargs):
-        today = timezone.localdate(timezone.now())
-        service_date = self.temp_booking.service_date
         max_advance_days = self.service_settings.max_advance_dropoff_days
-        
         is_same_day_dropoff_only = (max_advance_days == 0)
 
-        max_dropoff_date = service_date
-        
-        min_dropoff_date = service_date - timedelta(days=max_advance_days)
-
-        if min_dropoff_date < today:
-            min_dropoff_date = today
+        # Get the precise list of available drop-off dates
+        available_dropoff_dates = get_drop_off_date_availability(self.temp_booking, self.service_settings)
 
         context = {
             'temp_booking': self.temp_booking,
             'service_settings': self.service_settings,
-            'min_dropoff_date': min_dropoff_date.strftime('%Y-%m-%d'),
-            'max_dropoff_date': max_dropoff_date.strftime('%Y-%m-%d'),
+            # Pass the list of available dates to the template, serialized as JSON
+            'available_dropoff_dates_json': json.dumps(available_dropoff_dates),
             'get_times_url': reverse('service:get_available_times_for_date'),
             'step': 5,
             'total_steps': 7,

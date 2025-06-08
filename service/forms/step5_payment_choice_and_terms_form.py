@@ -14,7 +14,8 @@ class PaymentOptionForm(forms.Form):
     """
     dropoff_date = forms.DateField(
         label="Preferred Drop-off Date",
-        widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Select drop-off date'}),
+        # Added 'flatpickr-date-input' class for easy JS targeting
+        widget=forms.DateInput(attrs={'class': 'form-control flatpickr-date-input', 'placeholder': 'Select drop-off date'}),
         required=True
     )
     # Note: The time widget is changed to a select, which will be populated via JavaScript.
