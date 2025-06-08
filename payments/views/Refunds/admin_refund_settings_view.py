@@ -21,7 +21,7 @@ class AdminRefundSettingsView(UpdateView):
     """
     model = RefundPolicySettings
     form_class = RefundSettingsForm
-    template_name = 'payments/admin_refund_policy_settings.html'
+    template_name = 'payments/admin_refund_settings.html'
     success_url = reverse_lazy('dashboard:admin_refund_policy_settings') # Redirects to the same page on success
 
     def get_object(self, queryset=None):

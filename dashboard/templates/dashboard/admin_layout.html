@@ -18,7 +18,6 @@
             <li><a href="{% url 'dashboard:dashboard_index' %}">Dashboard Home</a></li>
             <li><a href="{% url 'inventory:motorcycle-list' %}">All Motorcycles</a></li>
             <li><a href="{% url 'inventory:motorcycle-create' %}">Add Motorcycle</a></li>
-            <li><a href="{% url 'payments:admin_refund_management' %}">Refund Requests</a></li>
 
             {# Service Management Section #}
             <li class="nav-section">
@@ -54,6 +53,14 @@
                     <li><a href="{% url 'dashboard:settings_business_info' %}">Business Information</a></li>
                     <li><a href="{% url 'dashboard:settings_visibility' %}">Visibility Settings</a></li>
                     <li><a href="{% url 'dashboard:edit_about_page' %}">Edit About Page</a></li> {# Moved About Page here as it's general content #}
+                </ul>
+            </li>
+            {# Refund Management Section #}
+            <li class="nav-section">
+                <h3>Refund Management</h3>
+                <ul class="reset-list">
+                    <li><a href="{% url 'payments:admin_refund_management' %}">Refund Requests</a></li>
+                    <li><a href="{% url 'payments:admin_refund_settings' %}">Refund Settings</a></li>
                 </ul>
             </li>
         </ul>
