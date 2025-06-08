@@ -22,6 +22,8 @@ WEBHOOK_HANDLERS = {
     },
     'service_booking': {
         'payment_intent.succeeded': handle_service_booking_succeeded,
+        # Add handlers for charge-related events for service bookings
+        'charge.refunded': handle_hire_booking_refunded, # Reusing hire_booking's refund handler, assuming it's generic enough
+        'charge.refund.updated': handle_hire_booking_refund_updated, # Reusing hire_booking's refund update handler, assuming it's generic enough
     },
 }
-
