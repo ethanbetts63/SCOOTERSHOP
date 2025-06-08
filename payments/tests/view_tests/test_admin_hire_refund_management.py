@@ -8,7 +8,7 @@ from unittest import mock
 from decimal import Decimal
 
 # Import the view to be tested
-from payments.views.Refunds.admin_hire_refund_management import AdminHireRefundManagement
+from payments.views.Refunds.admin_refund_management import AdminRefundManagement
 
 # Import models
 from payments.models.RefundRequest import RefundRequest
@@ -26,9 +26,9 @@ from hire.tests.test_helpers.model_factories import (
 )
 
 @override_settings(DEFAULT_FROM_EMAIL='test@scootershop.com') # Apply settings override at class level
-class AdminHireRefundManagementTests(TestCase):
+class AdminRefundManagementTests(TestCase):
     """
-    Tests for the AdminHireRefundManagement ListView, including the cleaning mechanism.
+    Tests for the AdminRefundManagement ListView, including the cleaning mechanism.
     """
 
     def setUp(self):

@@ -22,7 +22,7 @@ urlpatterns = [
     path('refund/verify/', Refunds.UserVerifyRefundView.as_view(), name='user_verify_refund'),
 
     
-    path('settings/refunds/', Refunds.AdminHireRefundManagement.as_view(), name='admin_hire_refund_management'),
+    path('settings/refunds/', Refunds.AdminRefundManagement.as_view(), name='admin_hire_refund_management'),
     path('settings/refunds/add/', Refunds.AdminAddEditRefundRequestView.as_view(), name='add_hire_refund_request'),
     path('settings/refunds/edit/<int:pk>/', Refunds.AdminAddEditRefundRequestView.as_view(), name='edit_hire_refund_request'),
     path('settings/refunds/process/<int:pk>/', Refunds.ProcessRefundView.as_view(), name='process_refund'),
