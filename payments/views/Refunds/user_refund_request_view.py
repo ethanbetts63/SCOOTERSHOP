@@ -42,31 +42,22 @@ class UserRefundRequestView(View):
         Validates the booking reference and email, creates the refund request,
         and triggers email notifications.
         """
-        print("DEBUG: Inside UserRefundRequestView post method.")
         form = RefundRequestForm(request.POST) # Use the generalized form
-        print(f"DEBUG: Form initialized with data: {request.POST}")
 
         if form.is_valid():
-            print("DEBUG: Form is valid. Proceeding to save refund request.")
             refund_request = form.save(commit=False)
 
             # Ensure verification token and creation time are set
-            # This is already handled in RefundRequest.save() if not self.verification_token
-            # However, explicitly setting here before save ensures it's available for email context immediately
             if not refund_request.verification_token:
                 refund_request.verification_token = uuid.uuid4()
-                print(f"DEBUG: Generated new verification token: {refund_request.verification_token}")
             if not refund_request.token_created_at:
                 refund_request.token_created_at = timezone.now()
-                print(f"DEBUG: Set token_created_at: {refund_request.token_created_at}")
 
             refund_request.save()
-            print(f"DEBUG: Refund request saved with ID: {refund_request.id}")
 
             verification_link = request.build_absolute_uri(
                 reverse('payments:user_verify_refund') + f'?token={str(refund_request.verification_token)}'
             )
-            print(f"DEBUG: Verification link generated: {verification_link}")
 
             refund_policy_link = request.build_absolute_uri(reverse('core:returns'))
             admin_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'admin@example.com')
@@ -80,12 +71,10 @@ class UserRefundRequestView(View):
                 booking_reference_for_email = refund_request.hire_booking.booking_reference
                 booking_object = refund_request.hire_booking
                 customer_profile_object = refund_request.driver_profile
-                print(f"DEBUG: Identified HireBooking: {booking_reference_for_email}")
             elif refund_request.service_booking:
                 booking_reference_for_email = refund_request.service_booking.service_booking_reference
                 booking_object = refund_request.service_booking
                 customer_profile_object = refund_request.service_profile
-                print(f"DEBUG: Identified ServiceBooking: {booking_reference_for_email}")
 
             user_email_context = {
                 'refund_request': refund_request,
@@ -94,7 +83,6 @@ class UserRefundRequestView(View):
                 'admin_email': admin_email,
                 'booking_reference': booking_reference_for_email, # Pass the dynamic reference
             }
-            print(f"DEBUG: Email context prepared: {user_email_context}")
 
             # Dynamically pass booking and profile to send_templated_email
             send_templated_email(
@@ -107,20 +95,14 @@ class UserRefundRequestView(View):
                 driver_profile=customer_profile_object if isinstance(customer_profile_object, DriverProfile) else None,
                 service_profile=customer_profile_object if isinstance(customer_profile_object, ServiceProfile) else None,
             )
-            print(f"DEBUG: Verification email sent to {refund_request.request_email}")
 
             messages.success(request, 'Your refund request has been submitted. Please check your email to confirm your request.')
-            print("DEBUG: Redirecting to user_confirmation_refund_request.")
             return redirect(reverse('payments:user_confirmation_refund_request'))
 
         else:
-            print("DEBUG: Form is NOT valid. Rendering with errors.")
-            print(f"DEBUG: Form errors: {form.errors.as_json()}")
             context = {
                 'form': form,
                 'page_title': 'Request a Refund',
                 'intro_text': 'Please correct the errors below and try again.',
             }
-            print("DEBUG: Rendering user_refund_request.html with form errors.")
             return render(request, self.template_name, context)
-
