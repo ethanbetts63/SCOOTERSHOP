@@ -158,7 +158,7 @@
                 <a href="{% url 'dashboard:admin_service_refund_management' %}" class="btn btn-secondary">Cancel</a>
             {% else %}
                 {# Fallback if no booking type is selected yet or on new creation #}
-                <a href="{% url 'dashboard:admin_refund_management_list' %}" class="btn btn-secondary">Cancel</a>
+                <a href="{% url 'payments:admin_refund_management' %}" class="btn btn-secondary">Cancel</a>
             {% endif %}
         </form>
     </div>

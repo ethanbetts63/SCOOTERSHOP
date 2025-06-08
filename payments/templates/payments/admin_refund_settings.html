@@ -1,0 +1,191 @@
+{% extends "dashboard/admin_layout.html" %}
+{% load static %}
+
+{% block extra_css %}
+{{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}"> {# Assuming a general booking_styles.css or similar for form layout #}
+    <style>
+        /* Specific styles for refund policy settings if needed */
+        .form-section-title {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 600; /* semi-bold */
+            color: #374151; /* gray-700 */
+            margin-top: 2.5rem; /* mt-10 */
+            margin-bottom: 1.5rem; /* mb-6 */
+            border-bottom: 1px solid #e5e7eb; /* border-gray-200 */
+            padding-bottom: 0.5rem; /* pb-2 */
+        }
+    </style>
+{% endblock %}
+
+{% block admin_main_content %}
+<div class="service-booking-container"> {# Re-using this container class for consistent styling #}
+    <div class="booking-progress">
+        <h2>Refund Policy Settings</h2>
+    </div>
+
+    <hr>
+
+    {% if messages %}
+    <div class="messages-container">
+        <ul>
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="post" name="refund_policy_settings_form">
+        {% csrf_token %}
+
+        <div class="form-field" style="flex-direction: row; justify-content: flex-end; margin-bottom: 20px;">
+            <button type="button" class="btn-secondary" id="editButton" style="margin-right: 10px;">Edit</button>
+            <button type="submit" id="saveButton" name="refund_policy_settings_submit">Save Changes</button>
+            <button type="button" class="btn-secondary" id="resetButton" style="margin-left: 10px;">Reset</button>
+        </div>
+
+        {# Display non-field errors (e.g., from clean method in form or model) #}
+        {% if form.non_field_errors %}
+            <div class="form-field">
+                {% for error in form.non_field_errors %}
+                    <small style="color: red;">{{ error }}</small>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <h3 class="form-section-title">Full Payment Cancellation Policy</h3>
+        {% for field in form %}
+            {% if field.name|startswith:'cancellation_full_payment' %}
+                <div class="form-field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small>{{ field.help_text }}</small>
+                    {% endif %}
+                    {% if field.errors %}
+                        {% for error in field.errors %}
+                            <small style="color: red;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        <h3 class="form-section-title">Deposit Cancellation Policy</h3>
+        {% for field in form %}
+            {% if field.name|startswith:'cancellation_deposit' %}
+                <div class="form-field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small>{{ field.help_text }}</small>
+                    {% endif %}
+                    {% if field.errors %}
+                        {% for error in field.errors %}
+                            <small style="color: red;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        <h3 class="form-section-title">Stripe Fee Settings</h3>
+        {% for field in form %}
+            {% if field.name|startswith:'stripe_fee' or field.name == 'refund_deducts_stripe_fee_policy' %}
+                {% if field.field.widget.input_type == 'checkbox' %}
+                    <div class="form-field checkbox-field">
+                        {{ field }}
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {% if field.help_text %}
+                            <small>{{ field.help_text }}</small>
+                        {% endif %}
+                        {% if field.errors %}
+                            {% for error in field.errors %}
+                                <small style="color: red;">{{ error }}</small>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="form-field">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small>{{ field.help_text }}</small>
+                        {% endif %}
+                        {% if field.errors %}
+                            {% for error in field.errors %}
+                                <small style="color: red;">{{ error }}</small>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+
+    </form>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const editButton = document.getElementById('editButton');
+        const saveButton = document.getElementById('saveButton');
+        const resetButton = document.getElementById('resetButton');
+        const mainForm = document.querySelector('form[name="refund_policy_settings_form"]');
+        const formFields = mainForm.querySelectorAll('input, select, textarea');
+
+        function setFormReadonly(readonly) {
+            formFields.forEach(field => {
+                if (field.name !== 'csrfmiddlewaretoken' && field.type !== 'submit' && field.type !== 'button') {
+                    if (readonly) {
+                        field.setAttribute('readonly', true);
+                        if (field.type === 'checkbox' || field.tagName === 'SELECT') {
+                            field.setAttribute('disabled', true);
+                        }
+                    } else {
+                        field.removeAttribute('readonly');
+                        if (field.type === 'checkbox' || field.tagName === 'SELECT') {
+                            field.removeAttribute('disabled');
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initial state
+        saveButton.style.display = 'none';
+        resetButton.style.display = 'none';
+        setFormReadonly(true);
+
+        editButton.addEventListener('click', function() {
+            editButton.style.display = 'none';
+            saveButton.style.display = 'inline-block';
+            resetButton.style.display = 'inline-block';
+            setFormReadonly(false);
+        });
+
+        // The form submission itself will handle the save action.
+        // The read-only state will be reset after the page reloads from submission.
+        resetButton.addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent default form submission
+            mainForm.reset(); // Reset form to initial values
+            // After resetting, ensure it goes back to read-only mode and button visibility
+            saveButton.style.display = 'none';
+            resetButton.style.display = 'none';
+            editButton.style.display = 'inline-block';
+            setFormReadonly(true);
+        });
+
+        // Re-apply read-only after potential form submission (page load)
+        window.addEventListener('load', function() {
+            setFormReadonly(true);
+        });
+        // Handle the case where the Save button was clicked and the page reloaded without a full navigation
+        if (window.performance && window.performance.getEntriesByType('navigation')[0].type === 'reload') {
+            setFormReadonly(true);
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

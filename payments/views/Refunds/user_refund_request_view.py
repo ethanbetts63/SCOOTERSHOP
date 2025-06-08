@@ -22,7 +22,7 @@ class UserRefundRequestView(View):
     An email is then sent to the user for confirmation.
     This view is generalized to handle both HireBookings and ServiceBookings.
     """
-    template_name = 'payments/user_refund_request_form.html' # Renamed template for generality
+    template_name = 'payments/user_refund_request.html' # Renamed template for generality
 
     def get(self, request, *args, **kwargs):
         """

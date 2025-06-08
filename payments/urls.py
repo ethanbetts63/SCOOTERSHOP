@@ -26,7 +26,7 @@ urlpatterns = [
     path('settings/refunds/add/', Refunds.AdminAddEditRefundRequestView.as_view(), name='add_refund_request'),
     path('settings/refunds/edit/<int:pk>/', Refunds.AdminAddEditRefundRequestView.as_view(), name='edit_refund_request'),
     path('settings/refunds/process/<int:pk>/', Refunds.ProcessRefundView.as_view(), name='process_refund'),
-    # NEW: URL for rejecting a refund request
     path('settings/refunds/reject/<int:pk>/', Refunds.AdminRejectRefundView.as_view(), name='reject_refund_request'),
+    path('admin/refund-policy-settings/', Refunds.admin_refund_settings_view.AdminRefundSettingsView.as_view(), name='admin_refund_policy_settings'),
 
 ]

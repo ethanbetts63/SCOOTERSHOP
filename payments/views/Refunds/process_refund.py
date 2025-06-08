@@ -22,7 +22,7 @@ class ProcessRefundView(View): # Renamed class to be generic
 
         # Determine the redirect URL for admin management based on booking type
         # This assumes separate admin views for hire and service refund management
-        admin_management_redirect_url = 'dashboard:admin_refund_management_list' # Generic fallback
+        admin_management_redirect_url = 'payments:admin_refund_management' # Generic fallback
         if refund_request.hire_booking:
             admin_management_redirect_url = 'payments:admin_refund_management'
         elif refund_request.service_booking:

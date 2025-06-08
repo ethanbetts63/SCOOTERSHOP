@@ -63,7 +63,7 @@ class AdminRejectRefundView(View):
         booking_reference_for_email = "N/A"
         booking_object = None
         customer_profile_object = None
-        admin_management_redirect_url = 'dashboard:admin_refund_management_list' # Generic fallback
+        admin_management_redirect_url = 'payments:admin_refund_management' # Generic fallback
         admin_edit_link_name = None # To store the name of the admin URL pattern
 
         if refund_request_instance.hire_booking:

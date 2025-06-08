@@ -22,7 +22,7 @@ class AdminAddEditRefundRequestView(View):
     both HireBookings and ServiceBookings.
     This view handles both GET (displaying the form) and POST (processing form submission) requests.
     """
-    template_name = 'payments/admin_refund_request_form.html' # Changed to a generic template name
+    template_name = 'payments/admin_refund_form.html' # Changed to a generic template name
 
     def get(self, request, pk=None, *args, **kwargs):
         """
@@ -70,7 +70,7 @@ class AdminAddEditRefundRequestView(View):
 
         # Determine the redirect URL for admin management based on booking type
         # This assumes separate admin views for hire and service refund management
-        admin_management_redirect_url = 'dashboard:admin_refund_management_list' # Generic fallback
+        admin_management_redirect_url = 'payments:admin_refund_management' # Generic fallback
 
         if form.is_valid():
             refund_request_instance = form.save(commit=False)

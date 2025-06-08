@@ -6,3 +6,4 @@ from .user_confirmation_refund_request_view import *
 from .user_verify_refund_view import *
 from .process_refund import *
 from .admin_reject_refund_view import *
+from .admin_refund_settings_view import *
