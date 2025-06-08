@@ -70,7 +70,7 @@ class AdminRejectRefundView(View):
             booking_reference_for_email = refund_request_instance.hire_booking.booking_reference
             booking_object = refund_request_instance.hire_booking
             customer_profile_object = refund_request_instance.driver_profile
-            admin_management_redirect_url = 'dashboard:admin_hire_refund_management'
+            admin_management_redirect_url = 'payments:admin_refund_management'
             admin_edit_link_name = 'dashboard:edit_hire_refund_request'
         elif refund_request_instance.service_booking:
             booking_reference_for_email = refund_request_instance.service_booking.service_booking_reference

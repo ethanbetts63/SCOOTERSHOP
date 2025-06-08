@@ -85,7 +85,7 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         # URLs for the view
         self.add_url = reverse('dashboard:add_hire_refund_request')
         self.edit_url = lambda pk: reverse('dashboard:edit_hire_refund_request', kwargs={'pk': pk})
-        self.management_url = reverse('dashboard:admin_hire_refund_management')
+        self.management_url = reverse('payments:admin_refund_management')
 
     def _login_staff_user(self):
         """Helper to log in the staff user."""

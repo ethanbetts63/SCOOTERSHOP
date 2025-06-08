@@ -63,7 +63,7 @@ class AdminRefundManagementTests(TestCase):
         self.payment.hire_booking = self.hire_booking
         self.payment.save()
 
-        self.management_url = reverse('dashboard:admin_hire_refund_management')
+        self.management_url = reverse('payments:admin_refund_management')
 
     # No tearDown needed for settings override when using @override_settings decorator
 

@@ -18,6 +18,7 @@
             <li><a href="{% url 'dashboard:dashboard_index' %}">Dashboard Home</a></li>
             <li><a href="{% url 'inventory:motorcycle-list' %}">All Motorcycles</a></li>
             <li><a href="{% url 'inventory:motorcycle-create' %}">Add Motorcycle</a></li>
+            <li><a href="{% url 'payments:admin_refund_management' %}">Refund Requests</a></li>
 
             {# Service Management Section #}
             <li class="nav-section">
@@ -42,7 +43,7 @@
                     <li><a href="{% url 'dashboard:settings_hire_packages' %}">Hire Packages</a></li>
                     <li><a href="{% url 'dashboard:blocked_hire_dates_management' %}">Blocked Hire Dates</a></li>
                     <li><a href="{% url 'dashboard:settings_driver_profiles' %}">Driver Profiles</a></li>
-                    <li><a href="{% url 'dashboard:admin_hire_refund_management' %}">Hire Refund Requests</a></li>
+                    <li><a href="{% url 'payments:admin_refund_management' %}">Hire Refund Requests</a></li>
                 </ul>
             </li>
 

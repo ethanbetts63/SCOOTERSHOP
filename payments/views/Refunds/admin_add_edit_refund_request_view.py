@@ -98,7 +98,7 @@ class AdminAddEditRefundRequestView(View):
             booking_reference_for_msg = "N/A"
             if refund_request_instance.hire_booking:
                 booking_reference_for_msg = refund_request_instance.hire_booking.booking_reference
-                admin_management_redirect_url = 'dashboard:admin_hire_refund_management'
+                admin_management_redirect_url = 'payments:admin_refund_management'
             elif refund_request_instance.service_booking:
                 booking_reference_for_msg = refund_request_instance.service_booking.service_booking_reference
                 admin_management_redirect_url = 'dashboard:admin_service_refund_management'

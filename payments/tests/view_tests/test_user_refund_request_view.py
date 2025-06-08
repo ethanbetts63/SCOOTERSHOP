@@ -31,7 +31,7 @@ class UserRefundRequestViewTests(TestCase):
         Set up test data for UserRefundRequestView tests.
         """
         self.client = Client()
-        self.url = reverse('payments:user_refund_request_hire')
+        self.url = reverse('payments:user_refund_request')
 
         # Ensure HireSettings exist for age validation and other defaults
         self.hire_settings = create_hire_settings()
@@ -97,7 +97,7 @@ class UserRefundRequestViewTests(TestCase):
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'payments/user_refund_request_hire.html')
+        self.assertTemplateUsed(response, 'payments/user_refund_request.html')
         self.assertIn('form', response.context)
         self.assertContains(response, 'Request a Refund')
         self.assertContains(response, 'Please enter your booking details to request a refund.')
@@ -167,7 +167,7 @@ class UserRefundRequestViewTests(TestCase):
 
         # Assertions for re-rendering
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'payments/user_refund_request_hire.html')
+        self.assertTemplateUsed(response, 'payments/user_refund_request.html')
         self.assertIn('form', response.context)
 
         # Assertions for RefundRequest creation (should not be created)
@@ -204,7 +204,7 @@ class UserRefundRequestViewTests(TestCase):
         response = self.client.post(self.url, post_data)
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'payments/user_refund_request_hire.html')
+        self.assertTemplateUsed(response, 'payments/user_refund_request.html')
         self.assertIn('form', response.context)
         self.assertEqual(RefundRequest.objects.count(), initial_refund_request_count)
         mock_send_email.assert_not_called()

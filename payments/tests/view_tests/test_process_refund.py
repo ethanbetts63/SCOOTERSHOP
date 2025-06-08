@@ -89,7 +89,7 @@ class ProcessRefundViewTests(TestCase):
         self.client = Client()
         # URL for processing refunds
         self.process_url = lambda pk: reverse('dashboard:process_hire_refund', kwargs={'pk': pk})
-        self.management_url = reverse('dashboard:admin_hire_refund_management')
+        self.management_url = reverse('payments:admin_refund_management')
 
     def _login_staff_user(self):
         """Helper to log in the staff user."""

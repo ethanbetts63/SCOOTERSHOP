@@ -35,7 +35,7 @@ class UserVerifyRefundViewTests(TestCase):
         self.client = Client()
         self.verify_url_name = 'payments:user_verify_refund'
         self.home_url = reverse('core:index')
-        self.request_refund_url = reverse('payments:user_refund_request_hire')
+        self.request_refund_url = reverse('payments:user_refund_request')
         self.verified_refund_confirm_url = reverse('payments:user_verified_refund')
 
         # Ensure HireSettings exist
