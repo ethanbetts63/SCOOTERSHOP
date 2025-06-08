@@ -54,12 +54,12 @@ class ServiceBookingSettingsFormTest(TestCase):
             'cancel_full_payment_partial_refund_percentage': Decimal('0.50'),
             'cancel_full_payment_min_refund_days': 1,
             'cancel_full_payment_min_refund_percentage': Decimal('0.00'),
-            'cancel_deposit_max_refund_days': 7,
+            'cancellation_deposit_full_refund_days': 7,
             'cancel_deposit_max_refund_percentage': Decimal('1.00'),
-            'cancel_deposit_partial_refund_days': 3,
-            'cancel_deposit_partial_refund_percentage': Decimal('0.50'),
-            'cancel_deposit_min_refund_days': 1,
-            'cancel_deposit_min_refund_percentage': Decimal('0.00'),
+            'cancellation_deposit_partial_refund_days': 3,
+            'cancellation_deposit_partial_refund_percentage': Decimal('0.50'),
+            'cancellation_deposit_minimal_refund_days': 1,
+            'cancellation_deposit_minimal_refund_percentage': Decimal('0.00'),
             'refund_deducts_stripe_fee_policy': True, # Added new required field
             'stripe_fee_percentage_domestic': Decimal('0.0170'), # Added new required field
             'stripe_fee_fixed_domestic': Decimal('0.30'), # Added new required field
@@ -183,8 +183,8 @@ class ServiceBookingSettingsFormTest(TestCase):
             'cancel_full_payment_partial_refund_percentage',
             'cancel_full_payment_min_refund_percentage',
             'cancel_deposit_max_refund_percentage',
-            'cancel_deposit_partial_refund_percentage',
-            'cancel_deposit_min_refund_percentage',
+            'cancellation_deposit_partial_refund_percentage',
+            'cancellation_deposit_minimal_refund_percentage',
         ]
         for field_name in percentage_fields:
             with self.subTest(f"Invalid {field_name} (too high)"):
@@ -261,21 +261,21 @@ class ServiceBookingSettingsFormTest(TestCase):
         """
         # max < partial
         data = self.valid_data.copy()
-        data['cancel_deposit_max_refund_days'] = 2
-        data['cancel_deposit_partial_refund_days'] = 3
+        data['cancellation_deposit_full_refund_days'] = 2
+        data['cancellation_deposit_partial_refund_days'] = 3
         form = ServiceBookingSettingsForm(data=data)
         self.assertFalse(form.is_valid())
-        self.assertIn('cancel_deposit_max_refund_days', form.errors)
-        self.assertIn("Max deposit refund days must be greater than or equal to partial deposit refund days.", form.errors['cancel_deposit_max_refund_days'])
+        self.assertIn('cancellation_deposit_full_refund_days', form.errors)
+        self.assertIn("Max deposit refund days must be greater than or equal to partial deposit refund days.", form.errors['cancellation_deposit_full_refund_days'])
 
         # partial < min
         data = self.valid_data.copy()
-        data['cancel_deposit_partial_refund_days'] = 0
-        data['cancel_deposit_min_refund_days'] = 1
+        data['cancellation_deposit_partial_refund_days'] = 0
+        data['cancellation_deposit_minimal_refund_days'] = 1
         form = ServiceBookingSettingsForm(data=data)
         self.assertFalse(form.is_valid())
-        self.assertIn('cancel_deposit_partial_refund_days', form.errors)
-        self.assertIn("Partial deposit refund days must be greater than or equal to min deposit refund days.", form.errors['cancel_deposit_partial_refund_days'])
+        self.assertIn('cancellation_deposit_partial_refund_days', form.errors)
+        self.assertIn("Partial deposit refund days must be greater than or equal to min deposit refund days.", form.errors['cancellation_deposit_partial_refund_days'])
 
     def test_form_valid_refund_days_order(self):
         """
@@ -287,9 +287,9 @@ class ServiceBookingSettingsFormTest(TestCase):
         data['cancel_full_payment_partial_refund_days'] = 5
         data['cancel_full_payment_min_refund_days'] = 5
         # Decreasing
-        data['cancel_deposit_max_refund_days'] = 10
-        data['cancel_deposit_partial_refund_days'] = 5
-        data['cancel_deposit_min_refund_days'] = 0
+        data['cancellation_deposit_full_refund_days'] = 10
+        data['cancellation_deposit_partial_refund_days'] = 5
+        data['cancellation_deposit_minimal_refund_days'] = 0
         form = ServiceBookingSettingsForm(data=data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
 

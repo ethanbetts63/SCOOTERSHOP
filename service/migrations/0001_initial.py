@@ -505,7 +505,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "cancel_deposit_max_refund_days",
+                    "cancellation_deposit_full_refund_days",
                     models.IntegerField(
                         blank=True,
                         default=7,
@@ -525,7 +525,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "cancel_deposit_partial_refund_days",
+                    "cancellation_deposit_partial_refund_days",
                     models.IntegerField(
                         blank=True,
                         default=3,
@@ -534,7 +534,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "cancel_deposit_partial_refund_percentage",
+                    "cancellation_deposit_partial_refund_percentage",
                     models.DecimalField(
                         blank=True,
                         decimal_places=2,
@@ -545,7 +545,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "cancel_deposit_min_refund_days",
+                    "cancellation_deposit_minimal_refund_days",
                     models.IntegerField(
                         blank=True,
                         default=1,
@@ -554,7 +554,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "cancel_deposit_min_refund_percentage",
+                    "cancellation_deposit_minimal_refund_percentage",
                     models.DecimalField(
                         blank=True,
                         decimal_places=2,

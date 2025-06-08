@@ -86,70 +86,9 @@ class ServiceSettings(models.Model):
     currency_code = models.CharField(max_length=3, default='AUD', help_text="Currency code (e.g., AUD, USD).")
     currency_symbol = models.CharField(max_length=5, default='$', help_text="Currency symbol (e.g., $).")
 
-    # Refund & Cancellation Policy (Full Payment)
-    cancel_full_payment_max_refund_days = models.IntegerField(
-        default=7, null=True, blank=True, help_text="Days before booking for maximum refund (e.g., 7 days for 100%)."
-    )
-    cancel_full_payment_max_refund_percentage = models.DecimalField(
-        max_digits=5, decimal_places=2, default=Decimal('1.00'), null=True, blank=True, help_text="Max refund percentage (e.g., 1.00 for 100%)."
-    )
-    cancel_full_payment_partial_refund_days = models.IntegerField(
-        default=3, null=True, blank=True, help_text="Days before booking for partial refund (e.g., 3 days for 50%)."
-    )
-    cancel_full_payment_partial_refund_percentage = models.DecimalField(
-        max_digits=5, decimal_places=2, default=Decimal('0.50'), null=True, blank=True, help_text="Partial refund percentage (e.g., 0.50 for 50%)."
-    )
-    cancel_full_payment_min_refund_days = models.IntegerField(
-        default=1, null=True, blank=True, help_text="Days before booking for minimum or no refund (e.g., 1 day for 0%)."
-    )
-    cancel_full_payment_min_refund_percentage = models.DecimalField(
-        max_digits=5, decimal_places=2, default=Decimal('0.00'), null=True, blank=True, help_text="Min refund percentage (e.g., 0.00 for 0%)."
-    )
-    
-    # Refund & Cancellation Policy (Deposit)
-    cancel_deposit_max_refund_days = models.IntegerField(
-        default=7, null=True, blank=True, help_text="Days before booking for maximum deposit refund."
-    )
-    cancel_deposit_max_refund_percentage = models.DecimalField(
-        max_digits=5, decimal_places=2, default=Decimal('1.00'), null=True, blank=True, help_text="Max deposit refund percentage."
-    )
-    cancel_deposit_partial_refund_days = models.IntegerField(
-        default=3, null=True, blank=True, help_text="Days before booking for partial deposit refund."
-    )
-    cancel_deposit_partial_refund_percentage = models.DecimalField(
-        max_digits=5, decimal_places=2, default=Decimal('0.50'), null=True, blank=True, help_text="Partial deposit refund percentage."
-    )
-    cancel_deposit_min_refund_days = models.IntegerField(
-        default=1, null=True, blank=True, help_text="Days before booking for minimum or no deposit refund."
-    )
-    cancel_deposit_min_refund_percentage = models.DecimalField(
-        max_digits=5, decimal_places=2, default=Decimal('0.00'), null=True, blank=True, help_text="Min deposit refund percentage."
-    )
-    
-    # Stripe Fee consideration on refund
-    refund_deducts_stripe_fee_policy = models.BooleanField(
-        default=True, 
-        help_text="Policy: If true, refunds (especially for admin declined 'Other' brand bookings) may have Stripe transaction fees deducted."
-    )
-
-    # New fields for domestic and international Stripe fees
-    stripe_fee_percentage_domestic = models.DecimalField(
-        max_digits=5, decimal_places=4, default=Decimal('0.0170'),
-        help_text="Stripe's percentage fee for domestic cards (e.g., 0.0170 for 1.70%)."
-    )
-    stripe_fee_fixed_domestic = models.DecimalField(
-        max_digits=5, decimal_places=2, default=Decimal('0.30'),
-        help_text="Stripe's fixed fee per transaction for domestic cards (e.g., 0.30 for A$0.30)."
-    )
-    stripe_fee_percentage_international = models.DecimalField(
-        max_digits=5, decimal_places=4, default=Decimal('0.0350'),
-        help_text="Stripe's percentage fee for international cards (e.g., 0.0350 for 3.5%)."
-    )
-    stripe_fee_fixed_international = models.DecimalField(
-        max_digits=5, decimal_places=2, default=Decimal('0.30'),
-        help_text="Stripe's fixed fee per transaction for international cards (e.30 for A$0.30)."
-    )
-
+    # --- REMOVED: Refund & Cancellation Policy (Full Payment) fields ---
+    # --- REMOVED: Refund & Cancellation Policy (Deposit) fields ---
+    # --- REMOVED: Stripe Fee Settings fields ---
 
     def __str__(self):
         return "Service Settings"
@@ -174,45 +113,13 @@ class ServiceSettings(models.Model):
             errors['max_advance_dropoff_days'] = ["Maximum advance drop-off days cannot be negative."]
         
         # Validate latest_same_day_dropoff_time is within drop_off_start_time and drop_off_end_time
-        # This check is only relevant if after-hours drop-off is NOT allowed, or if it's the standard drop-off window.
-        # For now, it's a general validation.
         if latest_same_day_dropoff and (latest_same_day_dropoff < start_time or latest_same_day_dropoff > end_time):
             errors['latest_same_day_dropoff_time'] = [f"Latest same-day drop-off time must be between {start_time.strftime('%H:%M')} and {end_time.strftime('%H:%M')}, inclusive."]
 
-
-        general_percentage_fields = [
-            'deposit_percentage',
-            'cancel_full_payment_max_refund_percentage', 'cancel_full_payment_partial_refund_percentage', 'cancel_full_payment_min_refund_percentage',
-            'cancel_deposit_max_refund_percentage', 'cancel_deposit_partial_refund_percentage', 'cancel_deposit_min_refund_percentage',
-        ]
-        for field_name in general_percentage_fields:
-            value = getattr(self, field_name)
-            if value is not None and not (Decimal('0.00') <= value <= Decimal('1.00')):
-                errors[field_name] = [f"Ensure {field_name.replace('_', ' ')} is between 0.00 (0%) and 1.00 (100%)."]
-
-        if self.stripe_fee_percentage_domestic is not None and not (Decimal('0.00') <= self.stripe_fee_percentage_domestic <= Decimal('0.10')):
-            errors['stripe_fee_percentage_domestic'] = ["Ensure domestic stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."]
-        
-        if self.stripe_fee_percentage_international is not None and not (Decimal('0.00') <= self.stripe_fee_percentage_international <= Decimal('0.10')):
-            errors['stripe_fee_percentage_international'] = ["Ensure international stripe fee percentage is a sensible rate (e.00 to 0.10 for 0-10%)."]
-
-        max_full_days = self.cancel_full_payment_max_refund_days
-        partial_full_days = self.cancel_full_payment_partial_refund_days
-        min_full_days = self.cancel_full_payment_min_refund_days
-
-        if max_full_days is not None and partial_full_days is not None and max_full_days < partial_full_days:
-            errors['cancel_full_payment_max_refund_days'] = ["Max refund days must be greater than or equal to partial refund days."]
-        if partial_full_days is not None and min_full_days is not None and partial_full_days < min_full_days:
-            errors['cancel_full_payment_partial_refund_days'] = ["Partial refund days must be greater than or equal to min refund days."]
-
-        max_deposit_days = self.cancel_deposit_max_refund_days
-        partial_deposit_days = self.cancel_deposit_partial_refund_days
-        min_deposit_days = self.cancel_deposit_min_refund_days
-
-        if max_deposit_days is not None and partial_deposit_days is not None and max_deposit_days < partial_deposit_days:
-            errors['cancel_deposit_max_refund_days'] = ["Max deposit refund days must be greater than or equal to partial deposit refund days."]
-        if partial_deposit_days is not None and min_deposit_days is not None and partial_deposit_days < min_deposit_days:
-            errors['cancel_deposit_partial_refund_days'] = ["Partial deposit refund days must be greater than or equal to min deposit refund days."]
+        # No longer validating refund percentage fields here, as they are moved to RefundPolicySettings
+        # deposit_percentage is still relevant here for calculation, not refund policy.
+        if self.deposit_percentage is not None and not (Decimal('0.00') <= self.deposit_percentage <= Decimal('100.00')):
+            errors['deposit_percentage'] = ["Ensure deposit percentage is between 0.00% and 100.00%."]
 
 
         if errors:
@@ -230,4 +137,3 @@ class ServiceSettings(models.Model):
     class Meta:
         verbose_name = "Service Settings"
         verbose_name_plural = "Service Settings"
-

@@ -2,6 +2,9 @@
 from django.db import models
 from django.conf import settings
 import uuid
+# Import the new RefundPolicySettings model
+from payments.models.refund_policy_settings import RefundPolicySettings
+
 
 class Payment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -105,10 +108,11 @@ class Payment(models.Model):
         help_text="Arbitrary key-value pairs for additional payment information or Stripe metadata."
     )
 
+    # Updated help text to reflect the new centralized RefundPolicySettings
     refund_policy_snapshot = models.JSONField(
         default=dict,
         blank=True,
-        help_text="Snapshot of refund policy settings from HireSettings at the time of booking."
+        help_text="Snapshot of refund policy settings from RefundPolicySettings at the time of payment."
     )
 
     refunded_amount = models.DecimalField(
@@ -143,3 +147,43 @@ class Payment(models.Model):
             f"TS: {temp_service_booking_id_str}, S: {service_booking_ref_str}, Service Cust: {service_customer_profile_name}) - "
             f"Amt: {self.amount} {self.currency} - Status: {self.status}"
         )
+
+    def save(self, *args, **kwargs):
+        # If this is a new payment object (or if the snapshot hasn't been set yet),
+        # populate the refund_policy_snapshot from the current RefundPolicySettings.
+        # This ensures the policy at the time of payment is captured.
+        if not self.pk or not self.refund_policy_snapshot:
+            try:
+                # Get the single instance of RefundPolicySettings
+                refund_settings = RefundPolicySettings.objects.get()
+                # Create a snapshot of all relevant refund and Stripe fee fields
+                self.refund_policy_snapshot = {
+                    'cancellation_full_payment_full_refund_days': float(refund_settings.cancellation_full_payment_full_refund_days),
+                    'cancellation_full_payment_partial_refund_days': float(refund_settings.cancellation_full_payment_partial_refund_days),
+                    'cancellation_full_payment_partial_refund_percentage': float(refund_settings.cancellation_full_payment_partial_refund_percentage),
+                    'cancellation_full_payment_minimal_refund_days': float(refund_settings.cancellation_full_payment_minimal_refund_days),
+                    'cancellation_full_payment_minimal_refund_percentage': float(refund_settings.cancellation_full_payment_minimal_refund_percentage),
+                    
+                    'cancellation_deposit_full_refund_days': float(refund_settings.cancellation_deposit_full_refund_days),
+                    'cancellation_deposit_partial_refund_days': float(refund_settings.cancellation_deposit_partial_refund_days),
+                    'cancellation_deposit_partial_refund_percentage': float(refund_settings.cancellation_deposit_partial_refund_percentage),
+                    'cancellation_deposit_minimal_refund_days': float(refund_settings.cancellation_deposit_minimal_refund_days),
+                    'cancellation_deposit_minimal_refund_percentage': float(refund_settings.cancellation_deposit_minimal_refund_percentage),
+
+                    'refund_deducts_stripe_fee_policy': refund_settings.refund_deducts_stripe_fee_policy,
+                    'stripe_fee_percentage_domestic': float(refund_settings.stripe_fee_percentage_domestic),
+                    'stripe_fee_fixed_domestic': float(refund_settings.stripe_fee_fixed_domestic),
+                    'stripe_fee_percentage_international': float(refund_settings.stripe_fee_percentage_international),
+                    'stripe_fee_fixed_international': float(refund_settings.stripe_fee_fixed_international),
+                }
+            except RefundPolicySettings.DoesNotExist:
+                # Handle the case where RefundPolicySettings instance doesn't exist
+                # You might want to log an error, raise an exception, or use default values
+                print("WARNING: RefundPolicySettings instance not found. Refund policy snapshot will be empty.")
+                self.refund_policy_snapshot = {} # Ensure it's still a dict
+            except Exception as e:
+                print(f"ERROR: Could not create refund policy snapshot: {e}")
+                self.refund_policy_snapshot = {} # Ensure it's still a dict
+
+        super().save(*args, **kwargs)
+

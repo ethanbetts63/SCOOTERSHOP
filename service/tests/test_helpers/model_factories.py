@@ -159,12 +159,12 @@ class ServiceSettingsFactory(factory.django.DjangoModelFactory):
     cancel_full_payment_partial_refund_percentage = Decimal('0.50')
     cancel_full_payment_min_refund_days = 1
     cancel_full_payment_min_refund_percentage = Decimal('0.00')
-    cancel_deposit_max_refund_days = 7
+    cancellation_deposit_full_refund_days = 7
     cancel_deposit_max_refund_percentage = Decimal('1.00')
-    cancel_deposit_partial_refund_days = 3
-    cancel_deposit_partial_refund_percentage = Decimal('0.50')
-    cancel_deposit_min_refund_days = 1
-    cancel_deposit_min_refund_percentage = Decimal('0.00')
+    cancellation_deposit_partial_refund_days = 3
+    cancellation_deposit_partial_refund_percentage = Decimal('0.50')
+    cancellation_deposit_minimal_refund_days = 1
+    cancellation_deposit_minimal_refund_percentage = Decimal('0.00')
     refund_deducts_stripe_fee_policy = True
     stripe_fee_percentage_domestic = Decimal('0.0170')
     stripe_fee_fixed_domestic = Decimal('0.30')

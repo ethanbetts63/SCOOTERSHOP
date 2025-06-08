@@ -38,12 +38,12 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             'cancel_full_payment_partial_refund_percentage',
             'cancel_full_payment_min_refund_days',
             'cancel_full_payment_min_refund_percentage',
-            'cancel_deposit_max_refund_days',
+            'cancellation_deposit_full_refund_days',
             'cancel_deposit_max_refund_percentage',
-            'cancel_deposit_partial_refund_days',
-            'cancel_deposit_partial_refund_percentage',
-            'cancel_deposit_min_refund_days',
-            'cancel_deposit_min_refund_percentage',
+            'cancellation_deposit_partial_refund_days',
+            'cancellation_deposit_partial_refund_percentage',
+            'cancellation_deposit_minimal_refund_days',
+            'cancellation_deposit_minimal_refund_percentage',
             'refund_deducts_stripe_fee_policy', # New field
             'stripe_fee_percentage_domestic', # New field
             'stripe_fee_fixed_domestic', # New field
@@ -81,12 +81,12 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             'cancel_full_payment_partial_refund_percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'max': '1'}),
             'cancel_full_payment_min_refund_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
             'cancel_full_payment_min_refund_percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'max': '1'}),
-            'cancel_deposit_max_refund_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
+            'cancellation_deposit_full_refund_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
             'cancel_deposit_max_refund_percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'max': '1'}),
-            'cancel_deposit_partial_refund_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
-            'cancel_deposit_partial_refund_percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'max': '1'}),
-            'cancel_deposit_min_refund_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
-            'cancel_deposit_min_refund_percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'max': '1'}),
+            'cancellation_deposit_partial_refund_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
+            'cancellation_deposit_partial_refund_percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'max': '1'}),
+            'cancellation_deposit_minimal_refund_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
+            'cancellation_deposit_minimal_refund_percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'max': '1'}),
             'refund_deducts_stripe_fee_policy': forms.CheckboxInput(attrs={'class': 'form-check-input'}), # New widget
             'stripe_fee_percentage_domestic': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.0001', 'min': '0', 'max': '0.1'}), # New widget
             'stripe_fee_fixed_domestic': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}), # New widget
@@ -124,7 +124,7 @@ class ServiceBookingSettingsForm(forms.ModelForm):
         refund_percentage_fields = [
             'deposit_percentage',
             'cancel_full_payment_max_refund_percentage', 'cancel_full_payment_partial_refund_percentage', 'cancel_full_payment_min_refund_percentage',
-            'cancel_deposit_max_refund_percentage', 'cancel_deposit_partial_refund_percentage', 'cancel_deposit_min_refund_percentage',
+            'cancel_deposit_max_refund_percentage', 'cancellation_deposit_partial_refund_percentage', 'cancellation_deposit_minimal_refund_percentage',
         ]
         for field_name in refund_percentage_fields:
             value = cleaned_data.get(field_name)
@@ -152,14 +152,14 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             self.add_error('cancel_full_payment_partial_refund_days', _("Partial refund days must be greater than or equal to min refund days."))
 
         # Deposit refund days
-        max_deposit_days = cleaned_data.get('cancel_deposit_max_refund_days')
-        partial_deposit_days = cleaned_data.get('cancel_deposit_partial_refund_days')
-        min_deposit_days = cleaned_data.get('cancel_deposit_min_refund_days')
+        max_deposit_days = cleaned_data.get('cancellation_deposit_full_refund_days')
+        partial_deposit_days = cleaned_data.get('cancellation_deposit_partial_refund_days')
+        min_deposit_days = cleaned_data.get('cancellation_deposit_minimal_refund_days')
 
         if max_deposit_days is not None and partial_deposit_days is not None and max_deposit_days < partial_deposit_days:
-            self.add_error('cancel_deposit_max_refund_days', _("Max deposit refund days must be greater than or equal to partial deposit refund days."))
+            self.add_error('cancellation_deposit_full_refund_days', _("Max deposit refund days must be greater than or equal to partial deposit refund days."))
         if partial_deposit_days is not None and min_deposit_days is not None and partial_deposit_days < min_deposit_days:
-            self.add_error('cancel_deposit_partial_refund_days', _("Partial deposit refund days must be greater than or equal to min deposit refund days."))
+            self.add_error('cancellation_deposit_partial_refund_days', _("Partial deposit refund days must be greater than or equal to min deposit refund days."))
 
 
         return cleaned_data
