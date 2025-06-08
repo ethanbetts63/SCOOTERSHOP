@@ -15,6 +15,29 @@
             border-bottom: 1px solid #e5e7eb; /* border-gray-200 */
             padding-bottom: 0.5rem; /* pb-2 */
         }
+        /* Style for checkbox fields to align them properly */
+        .checkbox-field {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .checkbox-field input[type="checkbox"] {
+            margin-right: 0.5rem;
+            transform: scale(1.2); /* Slightly larger checkbox */
+        }
+        .checkbox-field label {
+            margin-bottom: 0; /* Remove default bottom margin for labels in checkbox fields */
+            font-weight: normal; /* Checkbox labels typically not bold */
+        }
+        .form-field small {
+            display: block; /* Ensure help text and errors appear on a new line */
+            color: #6b7280; /* gray-500 for help text */
+            margin-top: 0.25rem;
+            font-size: 0.875rem; /* text-sm */
+        }
+        .form-field small[style="color: red;"] {
+            color: #ef4444 !important; /* Red-500 for errors, important to override */
+        }
     </style>
 {% endblock %}
 
@@ -55,8 +78,9 @@
         {% endif %}
 
         <h3 class="form-section-title">Full Payment Cancellation Policy</h3>
+        {# Use 'in' operator to check for field name substrings #}
         {% for field in form %}
-            {% if field.name|startswith:'cancellation_full_payment' %}
+            {% if 'cancellation_full_payment' in field.name %}
                 <div class="form-field">
                     <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
@@ -74,7 +98,7 @@
 
         <h3 class="form-section-title">Deposit Cancellation Policy</h3>
         {% for field in form %}
-            {% if field.name|startswith:'cancellation_deposit' %}
+            {% if 'cancellation_deposit' in field.name %}
                 <div class="form-field">
                     <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
@@ -92,7 +116,8 @@
 
         <h3 class="form-section-title">Stripe Fee Settings</h3>
         {% for field in form %}
-            {% if field.name|startswith:'stripe_fee' or field.name == 'refund_deducts_stripe_fee_policy' %}
+            {# Check if the field name contains 'stripe_fee' or is exactly 'refund_deducts_stripe_fee_policy' #}
+            {% if 'stripe_fee' in field.name or field.name == 'refund_deducts_stripe_fee_policy' %}
                 {% if field.field.widget.input_type == 'checkbox' %}
                     <div class="form-field checkbox-field">
                         {{ field }}
@@ -153,7 +178,7 @@
             });
         }
 
-        // Initial state
+        // Initial state: Hide save/reset, show edit, make form readonly
         saveButton.style.display = 'none';
         resetButton.style.display = 'none';
         setFormReadonly(true);
@@ -165,8 +190,6 @@
             setFormReadonly(false);
         });
 
-        // The form submission itself will handle the save action.
-        // The read-only state will be reset after the page reloads from submission.
         resetButton.addEventListener('click', function(event) {
             event.preventDefault(); // Prevent default form submission
             mainForm.reset(); // Reset form to initial values
@@ -181,8 +204,11 @@
         window.addEventListener('load', function() {
             setFormReadonly(true);
         });
+
         // Handle the case where the Save button was clicked and the page reloaded without a full navigation
-        if (window.performance && window.performance.getEntriesByType('navigation')[0].type === 'reload') {
+        // This is a subtle case to ensure the form remains readonly if the page reloaded due to a successful save.
+        if (window.performance && window.performance.getEntriesByType('navigation').length > 0 && 
+            window.performance.getEntriesByType('navigation')[0].type === 'reload') {
             setFormReadonly(true);
         }
     });
