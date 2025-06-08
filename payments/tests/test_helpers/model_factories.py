@@ -9,7 +9,7 @@ import django.apps
 
 fake = Faker()
 
-from payments.models import Payment, WebhookEvent, RefundRequest
+from payments.models import Payment, WebhookEvent, RefundRequest, RefundPolicySettings
 from hire.models import TempHireBooking, HireBooking, DriverProfile, BookingAddOn, Package, AddOn, TempBookingAddOn
 from service.models import ServiceBooking, ServiceProfile, TempServiceBooking, CustomerMotorcycle, ServiceBrand, ServiceType, BlockedServiceDate, ServiceSettings
 from inventory.models import Motorcycle, MotorcycleCondition
@@ -518,3 +518,40 @@ class TempBookingAddOnFactory(factory.django.DjangoModelFactory):
     booked_addon_price = factory.LazyAttribute(
         lambda o: (o.addon.daily_cost * o.quantity) if o.addon else Decimal('0.00')
     )
+
+class RefundPolicySettingsFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RefundPolicySettings
+        django_get_or_create = ('pk',) # Ensure only one instance is created/updated
+
+    # Full Payment Cancellation Policy
+    cancellation_full_payment_full_refund_days = factory.Faker('random_int', min=5, max=10)
+    cancellation_full_payment_partial_refund_days = factory.Faker('random_int', min=2, max=4)
+    cancellation_full_payment_partial_refund_percentage = factory.LazyFunction(lambda: Decimal(fake.random_element([25.00, 50.00, 75.00])))
+    cancellation_full_payment_minimal_refund_days = factory.Faker('random_int', min=0, max=1)
+    cancellation_full_payment_minimal_refund_percentage = factory.LazyFunction(lambda: Decimal(fake.random_element([0.00, 10.00, 20.00])))
+
+    # Deposit Cancellation Policy
+    cancellation_deposit_full_refund_days = factory.Faker('random_int', min=5, max=10)
+    cancellation_deposit_partial_refund_days = factory.Faker('random_int', min=2, max=4)
+    cancellation_deposit_partial_refund_percentage = factory.LazyFunction(lambda: Decimal(fake.random_element([25.00, 50.00, 75.00])))
+    cancellation_deposit_minimal_refund_days = factory.Faker('random_int', min=0, max=1)
+    cancellation_deposit_minimal_refund_percentage = factory.LazyFunction(lambda: Decimal(fake.random_element([0.00, 10.00, 20.00])))
+
+    # Stripe Fee Settings
+    refund_deducts_stripe_fee_policy = factory.Faker('boolean')
+    stripe_fee_percentage_domestic = factory.LazyFunction(lambda: Decimal(fake.random_element(['0.0170', '0.0180'])))
+    stripe_fee_fixed_domestic = factory.LazyFunction(lambda: Decimal(fake.random_element(['0.30', '0.40'])))
+    stripe_fee_percentage_international = factory.LazyFunction(lambda: Decimal(fake.random_element(['0.0350', '0.0390'])))
+    stripe_fee_fixed_international = factory.LazyFunction(lambda: Decimal(fake.random_element(['0.30', '0.40'])))
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        # Enforce singleton pattern: always get or create the instance with pk=1
+        obj, created = model_class.objects.get_or_create(pk=1, defaults=kwargs)
+        if not created:
+            # If it already exists, update its fields with the new kwargs
+            for k, v in kwargs.items():
+                setattr(obj, k, v)
+            obj.save()
+        return obj

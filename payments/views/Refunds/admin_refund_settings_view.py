@@ -30,6 +30,7 @@ class AdminRefundSettingsView(UpdateView):
         Retrieves the single instance of RefundPolicySettings (pk=1).
         If no instance exists, it creates one.
         """
+        # This line ensures the instance is created if it doesn't exist.
         obj, created = RefundPolicySettings.objects.get_or_create(pk=1)
         return obj
 
