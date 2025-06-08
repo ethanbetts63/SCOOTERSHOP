@@ -2,7 +2,7 @@
 
 from django.test import TestCase
 from decimal import Decimal
-from payments.forms.admin_hire_refund_request_form import AdminRefundRequestForm
+from payments.forms.admin_refund_request_form import AdminRefundRequestForm
 from hire.tests.test_helpers.model_factories import (
     create_hire_booking,
     create_driver_profile,

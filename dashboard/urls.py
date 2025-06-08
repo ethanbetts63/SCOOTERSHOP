@@ -1,21 +1,13 @@
 # SCOOTER_SHOP/dashboard/urls.py
 
 from django.urls import path
-from . import views # This imports all views exposed in __init__.py
-from hire.views import Admin_Hire_Booking_view # Ensure this is imported if used elsewhere
-from payments.views import Refunds # Import the HireRefunds package, which should contain AdminRejectRefundView
+from . import views 
 from service.views import *
 app_name = 'dashboard'
 
 urlpatterns = [
     # --- Dashboard Index ---
     path('', views.dashboard_index, name='dashboard_index'),
-
-    # # --- Service Booking Management Views ---
-    # path('service-bookings/', views.service_bookings_view, name='service_bookings'),
-    # path('service-bookings/<int:pk>/', views.service_booking_details_view, name='service_booking_details'),
-    # path('service-bookings/search/', views.service_booking_search_view, name='service_booking_search'),
-    # path('service-bookings/json/', views.get_service_bookings_json, name='get_service_bookings_json'),
 
     # --- Hire Booking Management Views ---
 
@@ -26,7 +18,7 @@ urlpatterns = [
     path('hire-bookings/json/', views.get_hire_bookings_json, name='get_hire_bookings_json'), # Hire bookings JSON feed
     path('hire-bookings/delete/<int:pk>/', views.delete_hire_booking_view, name='delete_hire_booking'),
 
-
+    path('settings/hire-booking/', views.settings_hire_booking, name='settings_hire_booking'),
     # --- Other Views (e.g., About Page) ---
     path('edit-about/', views.edit_about_page, name='edit_about_page'),
 
@@ -34,29 +26,6 @@ urlpatterns = [
     path('settings/business-info/', views.settings_business_info, name='settings_business_info'),
     path('settings/visibility/', views.settings_visibility, name='settings_visibility'),
 
-    path('settings/hire-booking/', views.settings_hire_booking, name='settings_hire_booking'),
-    path('settings/hire-refunds/', Refunds.AdminHireRefundManagement.as_view(), name='admin_hire_refund_management'),
-    path('settings/hire-refunds/add/', Refunds.AdminAddEditRefundRequestView.as_view(), name='add_hire_refund_request'),
-    path('settings/hire-refunds/edit/<int:pk>/', Refunds.AdminAddEditRefundRequestView.as_view(), name='edit_hire_refund_request'),
-    path('settings/hire-refunds/process/<int:pk>/', Refunds.ProcessHireRefundView.as_view(), name='process_hire_refund'),
-    # NEW: URL for rejecting a refund request
-    path('settings/hire-refunds/reject/<int:pk>/', Refunds.AdminRejectRefundView.as_view(), name='reject_hire_refund_request'),
-
-
-    # --- Dashboard Service Brand Management Views ---
-    # path('settings/service-brands/', views.service_brands_management, name='service_brands_management'),
-    # path('settings/service-brands/delete/<int:pk>/', views.delete_service_brand, name='delete_service_brand'),
-
-    # --- Dashboard Service Type Management Views ---
-    # path('settings/service-types/', views.settings_service_types, name='settings_service_types'),
-    # path('settings/service-types/add/', views.add_service_type, name='add_service_type'),
-    # path('settings/service-types/edit/<int:pk>/', views.edit_service_type, name='edit_service_type'),
-    # path('settings/service-types/delete/<int:pk>/', views.delete_service_type, name='delete_service_type'),
-    # path('settings/service-types/toggle-active/<int:pk>/', views.toggle_service_type_active_status, name='toggle_service_type_active_status'),
-
-    # # --- Blocked Dates Management Views ---
-    # path('settings/blocked-service-dates/', views.blocked_service_dates_management, name='blocked_service_dates_management'),
-    # path('settings/blocked-service-dates/delete/<int:pk>/', views.delete_blocked_service_date, name='delete_blocked_service_date'),
     path('settings/blocked-hire-dates/', views.blocked_hire_dates_management, name='blocked_hire_dates_management'),
     path('settings/blocked-hire-dates/delete/<int:pk>/', views.delete_blocked_hire_date, name='delete_blocked_hire_date'),
 

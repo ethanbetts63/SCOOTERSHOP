@@ -9,8 +9,7 @@ from django.utils import timezone
 # Import ServiceBooking and RefundRequest models
 from service.models import ServiceBooking
 from payments.models import RefundRequest
-# Import the new service refund calculator
-from payments.utils.service_refund_calc import calculate_refund_amount
+from payments.utils.service_refund_calc import calculate_service_refund_amount
 
 @require_GET
 @login_required # Assuming staff login is required for this internal API
@@ -51,7 +50,7 @@ def get_service_booking_details_json(request, pk):
         refund_status_for_booking = latest_refund_request.get_status_display() if latest_refund_request else 'No Refund Request Yet'
 
         # Calculate potential refund amount using the service-specific calculator
-        refund_calculation_results = calculate_refund_amount(
+        refund_calculation_results = calculate_service_refund_amount(
             booking=service_booking,
             refund_policy_snapshot=refund_policy_snapshot,
             cancellation_datetime=timezone.now()

@@ -10,7 +10,7 @@ from django.contrib import messages
 from django.contrib.messages.storage.base import Message # Import Message for checking messages
 
 # Import the view to be tested
-from payments.views.Refunds.process_refund import ProcessHireRefundView
+from payments.views.Refunds.process_refund import ProcessRefundView
 
 # Import models
 from payments.models import RefundRequest, Payment
@@ -33,9 +33,9 @@ from hire.tests.test_helpers.model_factories import (
 STRIPE_REFUND_CREATE_PATH = 'payments.views.HireRefunds.process_refund.stripe.Refund.create'
 
 @override_settings(STRIPE_SECRET_KEY='sk_test_mock_key', LOGIN_URL='/accounts/login/') # Mock Stripe secret key and set LOGIN_URL
-class ProcessHireRefundViewTests(TestCase):
+class ProcessRefundViewTests(TestCase):
     """
-    Tests for the ProcessHireRefundView, which handles initiating Stripe refunds.
+    Tests for the ProcessRefundView, which handles initiating Stripe refunds.
     """
 
     @classmethod
