@@ -5,8 +5,8 @@ from .hire_handlers import (
     handle_hire_booking_succeeded,
 )
 from .refund_handlers import (
-    handle_hire_booking_refunded,
-    handle_hire_booking_refund_updated,
+    handle_booking_refunded,
+    handle_booking_refund_updated,
 )
 from .service_handlers import (
     handle_service_booking_succeeded,
@@ -17,13 +17,13 @@ from .service_handlers import (
 WEBHOOK_HANDLERS = {
     'hire_booking': {
         'payment_intent.succeeded': handle_hire_booking_succeeded,
-        'charge.refunded': handle_hire_booking_refunded, # Handlers are now imported from refund_handlers.py
-        'charge.refund.updated': handle_hire_booking_refund_updated, # Handlers are now imported from refund_handlers.py
+        'charge.refunded': handle_booking_refunded, # Handlers are now imported from refund_handlers.py
+        'charge.refund.updated': handle_booking_refund_updated, # Handlers are now imported from refund_handlers.py
     },
     'service_booking': {
         'payment_intent.succeeded': handle_service_booking_succeeded,
         # Add handlers for charge-related events for service bookings
-        'charge.refunded': handle_hire_booking_refunded, # Reusing hire_booking's refund handler, assuming it's generic enough
-        'charge.refund.updated': handle_hire_booking_refund_updated, # Reusing hire_booking's refund update handler, assuming it's generic enough
+        'charge.refunded': handle_booking_refunded, # Reusing hire_booking's refund handler, assuming it's generic enough
+        'charge.refund.updated': handle_booking_refund_updated, # Reusing hire_booking's refund update handler, assuming it's generic enough
     },
 }

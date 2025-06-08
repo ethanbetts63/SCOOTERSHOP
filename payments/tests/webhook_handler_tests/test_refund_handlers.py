@@ -10,7 +10,7 @@ from hire.models import HireBooking
 from payments.models import Payment, RefundRequest
 
 # Import handlers
-from payments.webhook_handlers.refund_handlers import handle_hire_booking_refunded, handle_hire_booking_refund_updated
+from payments.webhook_handlers.refund_handlers import handle_booking_refunded, handle_booking_refund_updated
 
 # Import factories
 from ..test_helpers.model_factories import  (
@@ -69,7 +69,7 @@ class RefundWebhookHandlerTest(TestCase):
         }
 
         # 2. Action
-        handle_hire_booking_refunded(self.payment, event_charge_object_data)
+        handle_booking_refunded(self.payment, event_charge_object_data)
 
         # 3. Assertions
         self.payment.refresh_from_db()
@@ -104,7 +104,7 @@ class RefundWebhookHandlerTest(TestCase):
             }
         }
 
-        handle_hire_booking_refunded(self.payment, event_charge_object_data)
+        handle_booking_refunded(self.payment, event_charge_object_data)
 
         self.payment.refresh_from_db()
         self.hire_booking.refresh_from_db()
@@ -140,7 +140,7 @@ class RefundWebhookHandlerTest(TestCase):
             'status': 'succeeded',
         }
 
-        handle_hire_booking_refund_updated(self.payment, event_refund_object_data)
+        handle_booking_refund_updated(self.payment, event_refund_object_data)
 
         self.payment.refresh_from_db()
         self.assertEqual(self.payment.status, 'refunded')
@@ -169,7 +169,7 @@ class RefundWebhookHandlerTest(TestCase):
             'status': 'succeeded',
         }
 
-        handle_hire_booking_refund_updated(self.payment, event_refund_object_data)
+        handle_booking_refund_updated(self.payment, event_refund_object_data)
 
         self.payment.refresh_from_db()
         self.assertEqual(self.payment.status, 'partially_refunded')
