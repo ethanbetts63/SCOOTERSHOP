@@ -62,6 +62,7 @@ class TempServiceBookingModelTest(TestCase):
         profile_name = self.temp_booking.service_profile.name if self.temp_booking.service_profile else "Anonymous"
         dropoff_date_str = str(self.temp_booking.dropoff_date) if self.temp_booking.dropoff_date else "N/A"
 
+        # Corrected: Use the actual session_uuid from the instance
         expected_str = (
             f"Temp Booking {self.temp_booking.session_uuid} for "
             f"{profile_name} on {dropoff_date_str}"
@@ -464,4 +465,3 @@ class TempServiceBookingModelTest(TestCase):
         self.assertIsNone(booking_with_motorcycle.customer_motorcycle)
         # Ensure the booking itself still exists
         self.assertTrue(TempServiceBooking.objects.filter(pk=booking_with_motorcycle.pk).exists())
-

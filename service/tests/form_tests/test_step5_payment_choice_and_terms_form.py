@@ -154,11 +154,16 @@ class PaymentOptionFormTest(TestCase):
 
     def test_form_initialization_deposit_percentage_display(self):
         """
-        Test that the deposit option displays 'calculated' when method is percentage.
+        Test that the deposit option displays the percentage when method is percentage.
         """
         form = PaymentOptionForm(service_settings=self.deposit_percentage_settings, temp_booking=self.temp_booking) # Pass temp_booking
+        
+        # Calculate the expected percentage string
+        expected_percentage = self.deposit_percentage_settings.deposit_percentage * 100
+        expected_display = f"Pay Deposit Online ({expected_percentage:.0f}%)"
+        
         expected_choices = [
-            (PAYMENT_OPTION_DEPOSIT, "Pay Deposit Online"),
+            (PAYMENT_OPTION_DEPOSIT, expected_display),
         ]
         self.assertEqual(form.fields['payment_option'].choices, expected_choices)
 
@@ -257,3 +262,4 @@ class PaymentOptionFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('payment_option', form.errors)
         self.assertIn(f"Select a valid choice. {PAYMENT_OPTION_DEPOSIT} is not one of the available choices.", form.errors['payment_option'])
+
