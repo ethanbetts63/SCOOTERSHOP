@@ -3,7 +3,7 @@
 from django.urls import path
 from . import views # This imports all views exposed in __init__.py
 from hire.views import Admin_Hire_Booking_view # Ensure this is imported if used elsewhere
-from payments.views import HireRefunds # Import the HireRefunds package, which should contain AdminRejectRefundView
+from payments.views import Refunds # Import the HireRefunds package, which should contain AdminRejectRefundView
 from service.views import *
 app_name = 'dashboard'
 
@@ -35,12 +35,12 @@ urlpatterns = [
     path('settings/visibility/', views.settings_visibility, name='settings_visibility'),
 
     path('settings/hire-booking/', views.settings_hire_booking, name='settings_hire_booking'),
-    path('settings/hire-refunds/', HireRefunds.AdminHireRefundManagement.as_view(), name='admin_hire_refund_management'),
-    path('settings/hire-refunds/add/', HireRefunds.AdminAddEditRefundRequestView.as_view(), name='add_hire_refund_request'),
-    path('settings/hire-refunds/edit/<int:pk>/', HireRefunds.AdminAddEditRefundRequestView.as_view(), name='edit_hire_refund_request'),
-    path('settings/hire-refunds/process/<int:pk>/', HireRefunds.ProcessHireRefundView.as_view(), name='process_hire_refund'),
+    path('settings/hire-refunds/', Refunds.AdminHireRefundManagement.as_view(), name='admin_hire_refund_management'),
+    path('settings/hire-refunds/add/', Refunds.AdminAddEditRefundRequestView.as_view(), name='add_hire_refund_request'),
+    path('settings/hire-refunds/edit/<int:pk>/', Refunds.AdminAddEditRefundRequestView.as_view(), name='edit_hire_refund_request'),
+    path('settings/hire-refunds/process/<int:pk>/', Refunds.ProcessHireRefundView.as_view(), name='process_hire_refund'),
     # NEW: URL for rejecting a refund request
-    path('settings/hire-refunds/reject/<int:pk>/', HireRefunds.AdminRejectRefundView.as_view(), name='reject_hire_refund_request'),
+    path('settings/hire-refunds/reject/<int:pk>/', Refunds.AdminRejectRefundView.as_view(), name='reject_hire_refund_request'),
 
 
     # --- Dashboard Service Brand Management Views ---

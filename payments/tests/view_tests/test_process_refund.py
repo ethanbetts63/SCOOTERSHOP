@@ -10,7 +10,7 @@ from django.contrib import messages
 from django.contrib.messages.storage.base import Message # Import Message for checking messages
 
 # Import the view to be tested
-from payments.views.HireRefunds.process_refund import ProcessHireRefundView
+from payments.views.Refunds.process_refund import ProcessHireRefundView
 
 # Import models
 from payments.models import RefundRequest, Payment

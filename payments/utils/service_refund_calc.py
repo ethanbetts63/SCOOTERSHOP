@@ -1,12 +1,10 @@
 # payments/utils/service_refund_calc.py
 
 from decimal import Decimal
-from datetime import datetime, date, timedelta
+from datetime import datetime
 from django.utils import timezone
-# Import the ServiceBooking model instead of HireBooking
-from service.models import ServiceBooking
 
-def calculate_refund_amount(booking, refund_policy_snapshot, cancellation_datetime=None):
+def calculate_service_refund_amount(booking, refund_policy_snapshot, cancellation_datetime=None):
     """
     Calculates the eligible refund amount for a given ServiceBooking based on
     the cancellation policy *snapshot* stored at the time of booking's payment.

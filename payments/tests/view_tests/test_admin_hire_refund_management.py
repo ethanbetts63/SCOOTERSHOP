@@ -8,7 +8,7 @@ from unittest import mock
 from decimal import Decimal
 
 # Import the view to be tested
-from payments.views.HireRefunds.admin_hire_refund_management import AdminHireRefundManagement
+from payments.views.Refunds.admin_hire_refund_management import AdminHireRefundManagement
 
 # Import models
 from payments.models.RefundRequest import RefundRequest
