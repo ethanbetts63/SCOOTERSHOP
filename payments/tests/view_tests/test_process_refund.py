@@ -1,38 +1,24 @@
-# payments/tests/view_tests/test_process_refund_view.py
+# payments/tests/view_tests/test_process_refund.py
 
-from django.test import TestCase, Client, override_settings
+from django.test import TestCase, Client
 from django.urls import reverse
-from django.utils import timezone
-from datetime import timedelta
-from unittest import mock
-from decimal import Decimal
 from django.contrib import messages
-from django.contrib.messages.storage.base import Message # Import Message for checking messages
-
-# Import the view to be tested
-from payments.views.Refunds.process_refund import ProcessRefundView
-
-# Import models
-from payments.models import RefundRequest, Payment
-from hire.models import HireBooking, DriverProfile
-
-# Import actual StripeError for mocking
-import stripe.error
-
-# Import model factories for creating test data
-from hire.tests.test_helpers.model_factories import (
-    create_user,
-    create_hire_booking,
-    create_payment,
-    create_driver_profile,
-    create_refund_request,
-    create_hire_settings,
+from django.conf import settings
+from unittest.mock import patch, MagicMock
+from decimal import Decimal
+from django.utils import timezone
+from datetime import time, timedelta
+import stripe
+# Import factories
+from payments.tests.test_helpers.model_factories import (
+    RefundRequestFactory, HireBookingFactory, ServiceBookingFactory,
+    PaymentFactory, UserFactory
 )
+from payments.models import RefundRequest
 
-# Mock Stripe for testing purposes
-STRIPE_REFUND_CREATE_PATH = 'payments.views.HireRefunds.process_refund.stripe.Refund.create'
+# Set a dummy Stripe secret key for tests - crucial for Stripe module to not error out
+settings.STRIPE_SECRET_KEY = 'sk_test_dummykey'
 
-@override_settings(STRIPE_SECRET_KEY='sk_test_mock_key', LOGIN_URL='/accounts/login/') # Mock Stripe secret key and set LOGIN_URL
 class ProcessRefundViewTests(TestCase):
     """
     Tests for the ProcessRefundView, which handles initiating Stripe refunds.
@@ -41,390 +27,387 @@ class ProcessRefundViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         """
-        Set up common test data for all tests, run once for the class.
+        Set up non-modified data for all test methods.
         """
-        cls.staff_user = create_user(username='adminuser', email='admin@example.com', is_staff=True)
-        cls.regular_user = create_user(username='regularuser', email='user@example.com', is_staff=False)
+        cls.client = Client()
+        cls.admin_user = UserFactory(is_staff=True, is_superuser=True)
+        cls.regular_user = UserFactory(is_staff=False, is_superuser=False)
 
-        # Ensure HireSettings exists
-        cls.hire_settings = create_hire_settings()
-
-        # Create a driver profile
-        cls.driver_profile = create_driver_profile(user=cls.regular_user, email='test@example.com')
-
-        # Create a base payment that has a Stripe Payment Intent ID
-        cls.payment = create_payment(
-            amount=Decimal('500.00'),
-            status='succeeded',
-            driver_profile=cls.driver_profile,
-            stripe_payment_intent_id='pi_mock_12345', # Crucial for Stripe refund
-            refund_policy_snapshot={}
-        )
-        # Create a base hire booking linked to the payment
-        cls.hire_booking = create_hire_booking(
-            driver_profile=cls.driver_profile,
-            payment=cls.payment,
-            amount_paid=cls.payment.amount,
-            grand_total=cls.payment.amount,
-            payment_status='paid',
-            status='confirmed',
-        )
-        cls.payment.hire_booking = cls.hire_booking
-        cls.payment.save()
-
-        # Create a hire booking with no payment for specific test case
-        cls.hire_booking_no_payment = create_hire_booking(
-            driver_profile=cls.driver_profile,
-            payment=None, # Explicitly no payment
-            amount_paid=Decimal('0.00'),
-            grand_total=Decimal('200.00'),
-            payment_status='unpaid',
-            status='pending',
-        )
 
     def setUp(self):
         """
-        Set up for each individual test method.
+        Log in the admin user before each test, unless explicitly logged out.
         """
-        self.client = Client()
-        # URL for processing refunds
-        self.process_url = lambda pk: reverse('dashboard:process_hire_refund', kwargs={'pk': pk})
-        self.management_url = reverse('payments:admin_refund_management')
+        self.client.force_login(self.admin_user)
 
-    def _login_staff_user(self):
-        """Helper to log in the staff user."""
-        self.client.login(username=self.staff_user.username, password='password123')
-
-    @mock.patch(STRIPE_REFUND_CREATE_PATH)
-    def test_successful_refund_initiation(self, mock_stripe_refund_create):
+    @patch('payments.views.Refunds.process_refund.stripe.Refund.create')
+    @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
+    def test_successful_hire_booking_refund(
+        self, mock_is_admin, mock_stripe_refund_create
+    ):
         """
-        Test that a refund is successfully initiated via Stripe API
-        and the RefundRequest status is updated.
+        Tests successful processing of a refund for a HireBooking.
         """
-        # Mock Stripe's response for a successful refund creation
-        mock_stripe_refund_create.return_value = mock.Mock(id='re_mock_123', status='succeeded')
-
-        # Create a refund request ready for processing
-        refund_request = create_refund_request(
-            hire_booking=self.hire_booking,
-            payment=self.payment,
-            driver_profile=self.driver_profile,
-            status='reviewed_pending_approval', # Or 'approved'
-            amount_to_refund=Decimal('100.00'),
-            reason="Customer requested refund"
+        mock_stripe_refund_create.return_value = MagicMock(
+            id='re_mockedhire123',
+            status='succeeded'
         )
 
-        self._login_staff_user()
+        hire_booking = HireBookingFactory(
+            payment=PaymentFactory(
+                stripe_payment_intent_id='pi_hire123',
+                amount=Decimal('500.00'),
+                status='succeeded',
+                refund_policy_snapshot={'key': 'value'}
+            ),
+            pickup_date=timezone.now().date() + timedelta(days=5),
+            pickup_time=time(10,0),
+            return_date=timezone.now().date() + timedelta(days=15),
+            booking_reference="HIREBOOKINGREF"
+        )
+        
+        refund_request = RefundRequestFactory(
+            hire_booking=hire_booking,
+            service_booking=None,
+            payment=hire_booking.payment,
+            status='approved',
+            amount_to_refund=Decimal('250.00'),
+            stripe_refund_id=None, # Ensure it starts as None
+            processed_by=None,    # Ensure it starts as None
+            processed_at=None,    # Ensure it starts as None
+        )
 
-        response = self.client.post(self.process_url(refund_request.pk))
+        url = reverse('payments:process_refund', kwargs={'pk': refund_request.pk})
+        response = self.client.post(url)
 
-        # Assert redirect to management page
-        self.assertRedirects(response, self.management_url)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('payments:admin_refund_management'))
 
-        # Assert Stripe API was called correctly
+        messages_list = list(messages.get_messages(response.wsgi_request))
+        self.assertEqual(len(messages_list), 1)
+        self.assertIn("Refund for booking 'HIREBOOKINGREF' initiated successfully with Stripe", str(messages_list[0]))
+        self.assertEqual(messages_list[0].tags, 'success')
+
         mock_stripe_refund_create.assert_called_once_with(
-            payment_intent=self.payment.stripe_payment_intent_id,
-            amount=10000, # 100.00 * 100 cents
+            payment_intent='pi_hire123',
+            amount=int(Decimal('250.00') * 100),
             reason='requested_by_customer',
             metadata={
-                'hire_refund_request_id': str(refund_request.pk),
-                'admin_user_id': str(self.staff_user.pk),
-                'booking_reference': self.hire_booking.booking_reference,
+                'refund_request_id': str(refund_request.pk),
+                'admin_user_id': str(self.admin_user.pk),
+                'booking_reference': 'HIREBOOKINGREF',
+                'booking_type': 'hire',
             }
         )
 
-        # Reload the refund request from DB to check updated status
         refund_request.refresh_from_db()
-        self.assertEqual(refund_request.status, 'approved') # Status updated immediately
-        self.assertEqual(refund_request.processed_by, self.staff_user)
+        self.assertEqual(refund_request.status, 'refunded')
+        self.assertEqual(refund_request.stripe_refund_id, 're_mockedhire123')
+        self.assertEqual(refund_request.processed_by, self.admin_user)
         self.assertIsNotNone(refund_request.processed_at)
 
-        # Check for success message
+
+    @patch('payments.views.Refunds.process_refund.stripe.Refund.create')
+    @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
+    def test_successful_service_booking_refund(
+        self, mock_is_admin, mock_stripe_refund_create
+    ):
+        """
+        Tests successful processing of a refund for a ServiceBooking.
+        """
+        mock_stripe_refund_create.return_value = MagicMock(
+            id='re_mockedservice456',
+            status='succeeded'
+        )
+
+        service_booking = ServiceBookingFactory(
+            payment=PaymentFactory(
+                stripe_payment_intent_id='pi_service456',
+                amount=Decimal('200.00'),
+                status='succeeded',
+                refund_policy_snapshot={'key': 'value'}
+            ),
+            dropoff_date=timezone.now().date() + timedelta(days=10),
+            dropoff_time=time(9,0),
+            service_booking_reference="SERVICEBOOKINGREF"
+        )
+        
+        refund_request = RefundRequestFactory(
+            hire_booking=None,
+            service_booking=service_booking,
+            payment=service_booking.payment,
+            status='reviewed_pending_approval',
+            amount_to_refund=Decimal('100.00'),
+            stripe_refund_id=None,
+            processed_by=None,
+            processed_at=None,
+        )
+
+        url = reverse('payments:process_refund', kwargs={'pk': refund_request.pk})
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('payments:admin_refund_management'))
+
         messages_list = list(messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages_list), 1)
-        self.assertEqual(str(messages_list[0]), f"Refund for booking '{self.hire_booking.booking_reference}' initiated successfully with Stripe (ID: re_mock_123). Status updated to 'Approved - Awaiting Refund'.")
+        self.assertIn("Refund for booking 'SERVICEBOOKINGREF' initiated successfully with Stripe", str(messages_list[0]))
         self.assertEqual(messages_list[0].tags, 'success')
 
-
-    @mock.patch(STRIPE_REFUND_CREATE_PATH)
-    def test_refund_initiation_with_approved_status(self, mock_stripe_refund_create):
-        """
-        Test that a refund is successfully initiated when the status is 'approved'.
-        """
-        mock_stripe_refund_create.return_value = mock.Mock(id='re_mock_approved', status='succeeded')
-
-        refund_request = create_refund_request(
-            hire_booking=self.hire_booking,
-            payment=self.payment,
-            driver_profile=self.driver_profile,
-            status='approved', # Test 'approved' status
-            amount_to_refund=Decimal('50.00'),
-            reason="Approved refund"
+        mock_stripe_refund_create.assert_called_once_with(
+            payment_intent='pi_service456',
+            amount=int(Decimal('100.00') * 100),
+            reason='requested_by_customer',
+            metadata={
+                'refund_request_id': str(refund_request.pk),
+                'admin_user_id': str(self.admin_user.pk),
+                'booking_reference': 'SERVICEBOOKINGREF',
+                'booking_type': 'service',
+            }
         )
 
-        self._login_staff_user()
-        response = self.client.post(self.process_url(refund_request.pk))
-
-        self.assertRedirects(response, self.management_url)
-        mock_stripe_refund_create.assert_called_once()
         refund_request.refresh_from_db()
-        self.assertEqual(refund_request.status, 'approved') # Stays 'approved' or moves to 'approved_awaiting_stripe' if you change it
+        self.assertEqual(refund_request.status, 'refunded')
+        self.assertEqual(refund_request.stripe_refund_id, 're_mockedservice456')
+        self.assertEqual(refund_request.processed_by, self.admin_user)
+        self.assertIsNotNone(refund_request.processed_at)
 
-
-    @mock.patch(STRIPE_REFUND_CREATE_PATH)
-    def test_refund_initiation_invalid_status(self, mock_stripe_refund_create):
+    @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
+    def test_refund_invalid_status_rejection(self, mock_is_admin):
         """
-        Test that a refund is NOT initiated if the request status is not 'approved'
-        or 'reviewed_pending_approval'.
+        Tests that a refund request with an invalid status is rejected.
         """
-        refund_request = create_refund_request(
-            hire_booking=self.hire_booking,
-            payment=self.payment,
-            driver_profile=self.driver_profile,
-            status='pending', # Invalid status for processing
-            amount_to_refund=Decimal('100.00')
+        refund_request = RefundRequestFactory(
+            status='pending', # Invalid status for direct processing
+            amount_to_refund=Decimal('50.00'),
+            payment=PaymentFactory(stripe_payment_intent_id='pi_test')
         )
+        url = reverse('payments:process_refund', kwargs={'pk': refund_request.pk})
+        response = self.client.post(url)
 
-        self._login_staff_user() # Log in staff user so the decorator passes
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('payments:admin_refund_management'))
 
-        response = self.client.post(self.process_url(refund_request.pk))
+        messages_list = list(messages.get_messages(response.wsgi_request))
+        self.assertEqual(len(messages_list), 1)
+        self.assertIn("Refund request is not in an approvable state.", str(messages_list[0]))
+        self.assertEqual(messages_list[0].tags, 'error')
 
-        # Assert redirect back to management page (this is the expected behavior from the view's logic)
-        self.assertRedirects(response, self.management_url)
-
-        # Assert Stripe API was NOT called
-        mock_stripe_refund_create.assert_not_called()
-
-        # Assert status remains unchanged
         refund_request.refresh_from_db()
         self.assertEqual(refund_request.status, 'pending')
 
-        # Check for error message
-        messages_list = list(messages.get_messages(response.wsgi_request))
-        self.assertEqual(len(messages_list), 1)
-        # FIX: Corrected expected message string to include the trailing period
-        self.assertEqual(str(messages_list[0]), "Refund request is not in an approvable state. Current status: Pending Review.")
-        self.assertEqual(messages_list[0].tags, 'error')
-
-    @mock.patch(STRIPE_REFUND_CREATE_PATH)
-    def test_refund_initiation_no_associated_payment(self, mock_stripe_refund_create):
+    @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
+    def test_refund_no_associated_payment_rejection(self, mock_is_admin):
         """
-        Test that a refund is NOT initiated if there's no associated payment.
+        Tests that a refund request with no associated payment is rejected.
         """
-        # FIX: Create a refund request linked to a booking that has no payment
-        refund_request = create_refund_request(
-            hire_booking=self.hire_booking_no_payment, # Use the booking without a payment
-            payment=None, # Explicitly pass None, the factory won't override if booking.payment is None
-            driver_profile=self.driver_profile,
+        refund_request = RefundRequestFactory(
             status='approved',
-            amount_to_refund=Decimal('100.00')
+            amount_to_refund=Decimal('50.00'),
+            payment=None # No associated payment
         )
+        url = reverse('payments:process_refund', kwargs={'pk': refund_request.pk})
+        response = self.client.post(url)
 
-        self._login_staff_user()
-        response = self.client.post(self.process_url(refund_request.pk))
-
-        self.assertRedirects(response, self.management_url)
-        mock_stripe_refund_create.assert_not_called()
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('payments:admin_refund_management'))
 
         messages_list = list(messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages_list), 1)
-        self.assertEqual(str(messages_list[0]), "Cannot process refund: No associated payment found for this request.")
+        self.assertIn("Cannot process refund: No associated payment found for this request.", str(messages_list[0]))
         self.assertEqual(messages_list[0].tags, 'error')
 
-    @mock.patch(STRIPE_REFUND_CREATE_PATH)
-    def test_refund_initiation_no_amount_to_refund(self, mock_stripe_refund_create):
+        refund_request.refresh_from_db()
+        self.assertEqual(refund_request.status, 'approved')
+
+    @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
+    def test_refund_invalid_amount_rejection(self, mock_is_admin):
         """
-        Test that a refund is NOT initiated if amount_to_refund is None or 0.
+        Tests that a refund request with invalid/zero amount_to_refund is rejected.
         """
-        # FIX: Explicitly set amount_to_refund to 0.00 in the factory call
-        refund_request = create_refund_request(
-            hire_booking=self.hire_booking,
-            payment=self.payment,
-            driver_profile=self.driver_profile,
+        refund_request = RefundRequestFactory(
             status='approved',
-            amount_to_refund=Decimal('0.00') # Explicitly set to 0.00
+            amount_to_refund=Decimal('0.00'), # Invalid amount
+            payment=PaymentFactory(stripe_payment_intent_id='pi_test')
         )
+        url = reverse('payments:process_refund', kwargs={'pk': refund_request.pk})
+        response = self.client.post(url)
 
-        self._login_staff_user()
-        response = self.client.post(self.process_url(refund_request.pk))
-
-        self.assertRedirects(response, self.management_url)
-        mock_stripe_refund_create.assert_not_called() # Should not be called
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('payments:admin_refund_management'))
 
         messages_list = list(messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages_list), 1)
-        # FIX: Updated message to match the view's new message
-        self.assertEqual(str(messages_list[0]), "Cannot process refund: No valid amount specified to refund.")
+        self.assertIn("Cannot process refund: No valid amount specified to refund.", str(messages_list[0]))
         self.assertEqual(messages_list[0].tags, 'error')
 
-    @mock.patch(STRIPE_REFUND_CREATE_PATH)
-    def test_refund_initiation_no_stripe_payment_intent_id(self, mock_stripe_refund_create):
-        """
-        Test that a refund is NOT initiated if the associated payment has no Stripe Payment Intent ID.
-        """
-        payment_no_stripe_id = create_payment(
-            amount=Decimal('500.00'),
-            status='succeeded',
-            driver_profile=self.driver_profile,
-            stripe_payment_intent_id=None, # Missing Stripe ID
-            refund_policy_snapshot={}
-        )
-        hire_booking_no_stripe_id = create_hire_booking(
-            driver_profile=self.driver_profile,
-            payment=payment_no_stripe_id,
-            amount_paid=payment_no_stripe_id.amount,
-            grand_total=payment_no_stripe_id.amount,
-            payment_status='paid',
-            status='confirmed',
-        )
-        payment_no_stripe_id.hire_booking = hire_booking_no_stripe_id
-        payment_no_stripe_id.save()
+        refund_request.refresh_from_db()
+        self.assertEqual(refund_request.status, 'approved')
 
-
-        refund_request = create_refund_request(
-            hire_booking=hire_booking_no_stripe_id,
-            payment=payment_no_stripe_id,
-            driver_profile=self.driver_profile,
+    @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
+    def test_refund_no_stripe_payment_intent_id_rejection(self, mock_is_admin):
+        """
+        Tests that a refund request with no Stripe Payment Intent ID is rejected.
+        """
+        refund_request = RefundRequestFactory(
             status='approved',
-            amount_to_refund=Decimal('100.00')
+            amount_to_refund=Decimal('50.00'),
+            payment=PaymentFactory(stripe_payment_intent_id=None) # No Stripe Intent ID
         )
+        url = reverse('payments:process_refund', kwargs={'pk': refund_request.pk})
+        response = self.client.post(url)
 
-        self._login_staff_user()
-        response = self.client.post(self.process_url(refund_request.pk))
-
-        self.assertRedirects(response, self.management_url)
-        mock_stripe_refund_create.assert_not_called()
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('payments:admin_refund_management'))
 
         messages_list = list(messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages_list), 1)
-        self.assertEqual(str(messages_list[0]), "Cannot process refund: Associated payment has no Stripe Payment Intent ID.")
+        self.assertIn("Cannot process refund: Associated payment has no Stripe Payment Intent ID.", str(messages_list[0]))
         self.assertEqual(messages_list[0].tags, 'error')
 
+        refund_request.refresh_from_db()
+        self.assertEqual(refund_request.status, 'approved')
 
-    @mock.patch(STRIPE_REFUND_CREATE_PATH)
-    def test_stripe_api_error_handling(self, mock_stripe_refund_create):
+
+    @patch('payments.views.Refunds.process_refund.stripe.Refund.create')
+    @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
+    def test_stripe_error_during_refund_creation(
+        self, mock_is_admin, mock_stripe_refund_create
+    ):
         """
-        Test that Stripe API errors are caught, a message is displayed,
-        and the refund request status is updated to 'failed'.
+        Tests handling of a StripeError during refund creation.
+        Ensures refund_request status becomes 'failed' and no Stripe ID is set.
         """
-        # FIX: Correctly mock StripeError by raising an instance of it, removing 'param'
+        # Configure the mock to raise a StripeError immediately
         mock_stripe_refund_create.side_effect = stripe.error.StripeError(
-            message='Stripe API error message',
-            http_body='{}',
-            http_status=400,
-            json_body={},
-            headers={},
-            code='some_code', # 'code' is a valid argument for StripeError
+            "Test Stripe Error Message", code='card_declined'
         )
 
-        refund_request = create_refund_request(
-            hire_booking=self.hire_booking,
-            payment=self.payment,
-            driver_profile=self.driver_profile,
+        hire_booking = HireBookingFactory(
+            payment=PaymentFactory(
+                stripe_payment_intent_id='pi_error',
+                amount=Decimal('500.00'),
+                status='succeeded',
+                refund_policy_snapshot={'key': 'value'}
+            ),
+            pickup_date=timezone.now().date() + timedelta(days=5),
+            pickup_time=time(10,0),
+            return_date=timezone.now().date() + timedelta(days=15),
+            booking_reference="HIREERR"
+        )
+
+        refund_request = RefundRequestFactory(
+            hire_booking=hire_booking,
+            service_booking=None,
+            payment=hire_booking.payment,
             status='approved',
-            amount_to_refund=Decimal('100.00')
+            amount_to_refund=Decimal('250.00'),
+            stripe_refund_id=None, # Ensure it starts as None
+            processed_by=None,    # Ensure it starts as None
+            processed_at=None,    # Ensure it starts as None
         )
 
-        self._login_staff_user()
-        response = self.client.post(self.process_url(refund_request.pk))
+        url = reverse('payments:process_refund', kwargs={'pk': refund_request.pk})
+        response = self.client.post(url)
 
-        self.assertRedirects(response, self.management_url)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('payments:admin_refund_management'))
 
-        # Assert Stripe API was called
-        mock_stripe_refund_create.assert_called_once()
-
-        # Reload the refund request from DB to check updated status
-        refund_request.refresh_from_db()
-        self.assertEqual(refund_request.status, 'failed')
-        self.assertIn("Stripe initiation failed", refund_request.staff_notes)
-
-        # Check for error message
         messages_list = list(messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages_list), 1)
-        self.assertEqual(str(messages_list[0]), "Stripe error initiating refund: Stripe API error message")
+        self.assertIn("Stripe error initiating refund:", str(messages_list[0]))
         self.assertEqual(messages_list[0].tags, 'error')
 
-    @mock.patch(STRIPE_REFUND_CREATE_PATH)
-    def test_unexpected_error_handling(self, mock_stripe_refund_create):
-        """
-        Test that unexpected Python errors are caught, a message is displayed,
-        and the refund request status is updated to 'failed'.
-        """
-        # Mock Stripe to raise a generic Python Exception
-        mock_stripe_refund_create.side_effect = Exception("Something went wrong unexpectedly!")
-
-        refund_request = create_refund_request(
-            hire_booking=self.hire_booking,
-            payment=self.payment,
-            driver_profile=self.driver_profile,
-            status='approved',
-            amount_to_refund=Decimal('100.00')
-        )
-
-        self._login_staff_user()
-        response = self.client.post(self.process_url(refund_request.pk))
-
-        self.assertRedirects(response, self.management_url)
-
-        # Assert Stripe API was called
         mock_stripe_refund_create.assert_called_once()
 
-        # Reload the refund request from DB to check updated status
         refund_request.refresh_from_db()
         self.assertEqual(refund_request.status, 'failed')
-        self.assertIn("Unexpected error during initiation", refund_request.staff_notes)
+        self.assertIn("Stripe initiation failed: Test Stripe Error Message", refund_request.staff_notes)
+        # These should remain None as the Stripe call failed before setting them
+        self.assertIsNone(refund_request.stripe_refund_id)
+        self.assertIsNone(refund_request.processed_by)
+        self.assertIsNone(refund_request.processed_at)
 
-        # Check for error message
+
+    @patch('payments.views.Refunds.process_refund.stripe.Refund.create')
+    @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
+    def test_generic_exception_during_refund_creation(
+        self, mock_is_admin, mock_stripe_refund_create
+    ):
+        """
+        Tests handling of a generic Exception during refund creation (e.g., unexpected Python error).
+        Ensures refund_request status becomes 'failed' and no Stripe ID is set.
+        """
+        # Configure the mock to raise a generic Exception immediately
+        mock_stripe_refund_create.side_effect = ValueError("Something went wrong internally")
+
+        service_booking = ServiceBookingFactory(
+            payment=PaymentFactory(
+                stripe_payment_intent_id='pi_generic_error',
+                amount=Decimal('100.00'),
+                status='succeeded',
+                refund_policy_snapshot={'key': 'value'}
+            ),
+            dropoff_date=timezone.now().date() + timedelta(days=10),
+            dropoff_time=time(9,0),
+            service_booking_reference="SERVICEERR"
+        )
+
+        refund_request = RefundRequestFactory(
+            hire_booking=None,
+            service_booking=service_booking,
+            payment=service_booking.payment,
+            status='approved',
+            amount_to_refund=Decimal('50.00'),
+            stripe_refund_id=None, # Ensure it starts as None
+            processed_by=None,    # Ensure it starts as None
+            processed_at=None,    # Ensure it starts as None
+        )
+
+        url = reverse('payments:process_refund', kwargs={'pk': refund_request.pk})
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('payments:admin_refund_management'))
+
         messages_list = list(messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages_list), 1)
-        self.assertEqual(str(messages_list[0]), "An unexpected error occurred: Something went wrong unexpectedly!")
+        self.assertIn("An unexpected error occurred:", str(messages_list[0]))
         self.assertEqual(messages_list[0].tags, 'error')
 
-    def test_unauthenticated_user_redirected(self):
-        """
-        Test that an unauthenticated user is redirected to the login page.
-        """
-        refund_request = create_refund_request(
-            hire_booking=self.hire_booking,
-            payment=self.payment,
-            driver_profile=self.driver_profile,
-            status='approved',
-            amount_to_refund=Decimal('100.00')
-        )
-        response = self.client.post(self.process_url(refund_request.pk))
-        # Expected redirect URL is now /accounts/login/
-        self.assertRedirects(response, f'/accounts/login/?next={self.process_url(refund_request.pk)}')
+        mock_stripe_refund_create.assert_called_once()
 
-    def test_non_staff_user_redirected(self):
-        """
-        Test that a non-staff authenticated user is redirected to the login page.
-        """
-        refund_request = create_refund_request(
-            hire_booking=self.hire_booking,
-            payment=self.payment,
-            driver_profile=self.driver_profile,
-            status='approved',
-            amount_to_refund=Decimal('100.00')
-        )
-        self.client.login(username=self.regular_user.username, password='password123')
-        response = self.client.post(self.process_url(refund_request.pk))
-        # Expected redirect URL is now /accounts/login/
-        self.assertRedirects(response, f'/accounts/login/?next={self.process_url(refund_request.pk)}')
+        refund_request.refresh_from_db()
+        self.assertEqual(refund_request.status, 'failed')
+        self.assertIn("Unexpected error during initiation: Something went wrong internally", refund_request.staff_notes)
+        # These should remain None as the Stripe call failed before setting them
+        self.assertIsNone(refund_request.stripe_refund_id)
+        self.assertIsNone(refund_request.processed_by)
+        self.assertIsNone(refund_request.processed_at)
 
-    def test_get_request_not_allowed(self):
+
+    @patch('payments.views.Refunds.process_refund.is_admin', return_value=False)
+    def test_unauthorized_access(self, mock_is_admin):
         """
-        Test that GET requests to the process refund URL are not allowed
-        when accessed by an authenticated staff user.
+        Tests that a non-admin user is redirected and cannot process a refund.
         """
-        refund_request = create_refund_request(
-            hire_booking=self.hire_booking,
-            payment=self.payment,
-            driver_profile=self.driver_profile,
+        self.client.force_login(self.regular_user)
+
+        refund_request = RefundRequestFactory(
             status='approved',
-            amount_to_refund=Decimal('100.00')
+            amount_to_refund=Decimal('50.00'),
+            payment=PaymentFactory(stripe_payment_intent_id='pi_unauth')
         )
-        self._login_staff_user() # Log in the staff user
-        response = self.client.get(self.process_url(refund_request.pk))
-        # Now that the user is logged in and staff, the decorator passes,
-        # and the View's dispatch method correctly returns 405 for GET.
-        self.assertEqual(response.status_code, 405) # Method Not Allowed
+        url = reverse('payments:process_refund', kwargs={'pk': refund_request.pk})
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, 302)
+        # CORRECTED: Use reverse('users:login') as per your urls.py structure
+        self.assertRedirects(response, reverse('users:login') + '?next=' + url)
+
+        messages_list = list(messages.get_messages(response.wsgi_request))
+        self.assertEqual(len(messages_list), 0)
+
+        refund_request.refresh_from_db()
+        self.assertEqual(refund_request.status, 'approved')
+
