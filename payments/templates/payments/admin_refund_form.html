@@ -10,13 +10,33 @@
     .hidden {
         display: none;
     }
-    /* Add some styling for radio buttons */
     .form-check-inline {
         margin-right: 1.5rem;
     }
     .form-check-label {
         font-weight: 600;
         cursor: pointer;
+    }
+    .loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+    }
+    .error-message {
+        color: #dc3545;
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        padding: 10px 15px;
+        border-radius: 5px;
+        margin-top: 15px;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
 </style>
 {% endblock %}
@@ -31,7 +51,6 @@
         </div>
         <p class="mb-4">Use this form to {% if refund_request %}edit{% else %}create{% endif %} a refund request.</p>
 
-        {# Display Django messages (e.g., success, error) #}
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
@@ -44,9 +63,8 @@
         {% endif %}
 
         <form method="post" class="needs-validation" novalidate>
-            {% csrf_token %} {# Django's CSRF protection token #}
+            {% csrf_token %}
 
-            {# NEW: Display non-field errors #}
             {% if form.non_field_errors %}
                 <div class="alert alert-danger" role="alert">
                     <strong>Form Errors:</strong>
@@ -58,11 +76,9 @@
                 </div>
             {% endif %}
 
-            {# General Refund Request Information Fieldset #}
             <fieldset class="form-group border p-3 mb-4 rounded">
                 <legend class="w-auto px-2">Refund Request Details</legend>
 
-                {# NEW: Radio buttons for booking type selection #}
                 <div class="form-group mb-4">
                     <label class="form-label mb-2">Select Booking Type<span class="required-indicator">*</span></label>
                     <div class="d-flex">
@@ -77,66 +93,39 @@
                     </div>
                 </div>
 
-                {# hire_booking field - Dropdown for selecting a Hire booking #}
                 <div id="hireBookingSection" class="form-group mb-3 {% if not refund_request.hire_booking %}hidden{% endif %}">
                     <label for="{{ form.hire_booking.id_for_label }}">
                         {{ form.hire_booking.label }}
                         {% if form.hire_booking.field.required %}<span class="required-indicator">*</span>{% endif %}
                     </label>
-                    {{ form.hire_booking }} {# Renders the select dropdown #}
-                    {# Display any errors for this field #}
+                    {{ form.hire_booking }}
                     {% if form.hire_booking.errors %}<div class="invalid-feedback d-block">{% for error in form.hire_booking.errors %}{{ error }}{% endfor %}</div>{% endif %}
                     <small class="form-text text-muted">{{ form.hire_booking.help_text }}</small>
                 </div>
 
-                {# service_booking field - Dropdown for selecting a Service booking #}
                 <div id="serviceBookingSection" class="form-group mb-3 {% if not refund_request.service_booking %}hidden{% endif %}">
                     <label for="{{ form.service_booking.id_for_label }}">
                         {{ form.service_booking.label }}
                         {% if form.service_booking.field.required %}<span class="required-indicator">*</span>{% endif %}
                     </label>
-                    {{ form.service_booking }} {# Renders the select dropdown #}
-                    {# Display any errors for this field #}
+                    {{ form.service_booking }}
                     {% if form.service_booking.errors %}<div class="invalid-feedback d-block">{% for error in form.service_booking.errors %}{{ error }}{% endfor %}</div>{% endif %}
                     <small class="form-text text-muted">{{ form.service_booking.help_text }}</small>
                 </div>
+                
+                <!-- AJAX Loader -->
+                <div id="loader" class="loader hidden"></div>
 
-                {# Section for dynamically displaying selected booking details #}
-                <div id="bookingDetailsDisplay" class="hidden mt-4 p-3 border rounded bg-gray-50">
-                    <h4 class="text-lg font-semibold mb-2">Selected Booking Details</h4>
-                    <p><strong>Booking Type:</strong> <span id="detailBookingType"></span></p>
-                    <p><strong>Booking Reference:</strong> <span id="detailBookingRef"></span></p>
-                    <p><strong>Customer Name:</strong> <span id="detailCustomerName"></span></p>
+                <!-- Error Message Container -->
+                <div id="ajaxError" class="error-message hidden"></div>
 
-                    {# Conditional display for Hire specific details #}
-                    <div id="hireSpecificDetails" class="hidden">
-                        <p><strong>Pickup:</strong> <span id="detailHirePickupDate"></span> at <span id="detailHirePickupTime"></span></p>
-                        <p><strong>Return:</strong> <span id="detailHireReturnDate"></span> at <span id="detailHireReturnTime"></span></p>
-                        <p><strong>Motorcycle:</strong> <span id="detailHireMotorcycle"></span></p>
-                    </div>
+                <!-- Hire Booking Details Container -->
+                <div id="hireBookingDetails" class="booking-details-box hidden"></div>
+                
+                <!-- Service Booking Details Container -->
+                <div id="serviceBookingDetails" class="booking-details-box hidden"></div>
 
-                    {# Conditional display for Service specific details #}
-                    <div id="serviceSpecificDetails" class="hidden">
-                        <p><strong>Service Date:</strong> <span id="detailServiceDate"></span></p>
-                        <p><strong>Service Time:</strong> <span id="detailServiceTime"></span></p>
-                        <p><strong>Service Type:</strong> <span id="detailServiceType"></span></p>
-                    </div>
 
-                    <p><strong>Booking Status:</strong> <span id="detailBookingStatus"></span></p>
-                    <p><strong>Payment Method:</strong> <span id="detailPaymentMethod"></span></p>
-                    <p><strong>Payment Date:</strong> <span id="detailPaymentDate"></span></p>
-                    <p><strong>Payment Amount:</strong> <span id="detailPaymentAmount"></span></p>
-                    {# NEW: Display the latest refund request status for this booking #}
-                    <p><strong>Latest Refund Request Status:</strong> <span id="detailRefundRequestStatus"></span></p>
-                </div>
-
-                {# Section for displaying calculated entitled refund information #}
-                <div id="entitledRefundInfo" class="mb-3 hidden mt-4 p-3 border rounded bg-blue-50 text-blue-800">
-                    <p class="font-semibold"><strong>Calculated Entitled Refund:</strong> <span id="entitledRefundAmount"></span></p>
-                    <p class="text-sm"><strong>Calculation Details:</strong> <span id="refundCalculationDetails"></span></p>
-                </div>
-
-                {# reason field #}
                 <div class="form-group mb-3">
                     <label for="{{ form.reason.id_for_label }}">
                         {{ form.reason.label }}
@@ -147,7 +136,6 @@
                     <small class="form-text text-muted">{{ form.reason.help_text }}</small>
                 </div>
 
-                {# staff_notes field #}
                 <div class="form-group mb-3">
                     <label for="{{ form.staff_notes.id_for_label }}">
                         {{ form.staff_notes.label }}
@@ -158,7 +146,6 @@
                     <small class="form-text text-muted">{{ form.staff_notes.help_text }}</small>
                 </div>
 
-                {# amount_to_refund field #}
                 <div class="form-group mb-3">
                     <label for="{{ form.amount_to_refund.id_for_label }}">
                         {{ form.amount_to_refund.label }}
@@ -171,17 +158,8 @@
 
             </fieldset>
 
-            {# Form submission buttons #}
             <button type="submit" class="btn btn-success">Save Refund Request</button>
-            {# Changed cancel URL to dynamically point to the correct management page #}
-            {% if refund_request and refund_request.hire_booking %}
-                <a href="{% url 'payments:admin_refund_management' %}" class="btn btn-secondary">Cancel</a>
-            {% elif refund_request and refund_request.service_booking %}
-                <a href="{% url 'payments:admin_refund_management' %}" class="btn btn-secondary">Cancel</a>
-            {% else %}
-                {# Fallback if no booking type is selected yet or on new creation #}
-                <a href="{% url 'payments:admin_refund_management' %}" class="btn btn-secondary">Cancel</a>
-            {% endif %}
+            <a href="{% url 'payments:admin_refund_management' %}" class="btn btn-secondary">Cancel</a>
         </form>
     </div>
 {% endblock %}
@@ -189,213 +167,147 @@
 {% block extra_js %}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Function to add Bootstrap's 'is-invalid' class for form errors dynamically
-            document.querySelectorAll('.invalid-feedback').forEach(function(feedback) {
-                const formControl = feedback.previousElementSibling;
-                if (formControl && (formControl.classList.contains('form-control') || formControl.classList.contains('form-check-input') || formControl.classList.contains('form-control-file'))) {
-                    formControl.classList.add('is-invalid');
-                }
-            });
-            document.querySelectorAll('input, select, textarea').forEach(function(input) {
-                if (input.nextElementSibling && input.nextElementSibling.classList.contains('invalid-feedback')) {
-                    input.classList.add('is-invalid');
-                }
-                if (input.type === 'checkbox' && input.closest('.form-check') && input.closest('.form-check').querySelector('.invalid-feedback')) {
-                    input.classList.add('is-invalid');
-                }
-            });
-
             const hireBookingRadio = document.getElementById('hireBookingRadio');
             const serviceBookingRadio = document.getElementById('serviceBookingRadio');
             const hireBookingSection = document.getElementById('hireBookingSection');
             const serviceBookingSection = document.getElementById('serviceBookingSection');
             const hireBookingSelect = document.getElementById('id_hire_booking');
             const serviceBookingSelect = document.getElementById('id_service_booking');
-            const bookingDetailsDisplay = document.getElementById('bookingDetailsDisplay');
-            const hireSpecificDetailsDiv = document.getElementById('hireSpecificDetails');
-            const serviceSpecificDetailsDiv = document.getElementById('serviceSpecificDetails');
-            const entitledRefundInfoDiv = document.getElementById('entitledRefundInfo');
-            const entitledRefundAmountSpan = document.getElementById('entitledRefundAmount');
-            const refundCalculationDetailsSpan = document.getElementById('refundCalculationDetails');
             const amountToRefundInput = document.getElementById('id_amount_to_refund');
+            
+            const hireDetailsContainer = document.getElementById('hireBookingDetails');
+            const serviceDetailsContainer = document.getElementById('serviceBookingDetails');
+            const loader = document.getElementById('loader');
+            const ajaxErrorContainer = document.getElementById('ajaxError');
 
-            // Function to reset all booking details fields
-            function clearBookingDetails() {
-                document.getElementById('detailBookingType').textContent = 'N/A';
-                document.getElementById('detailBookingRef').textContent = 'N/A';
-                document.getElementById('detailCustomerName').textContent = 'N/A';
-
-                document.getElementById('detailHirePickupDate').textContent = 'N/A';
-                document.getElementById('detailHirePickupTime').textContent = 'N/A';
-                document.getElementById('detailHireReturnDate').textContent = 'N/A';
-                document.getElementById('detailHireReturnTime').textContent = 'N/A';
-                document.getElementById('detailHireMotorcycle').textContent = 'N/A';
-
-                document.getElementById('detailServiceDate').textContent = 'N/A';
-                document.getElementById('detailServiceTime').textContent = 'N/A';
-                document.getElementById('detailServiceType').textContent = 'N/A';
-
-                document.getElementById('detailBookingStatus').textContent = 'N/A';
-                document.getElementById('detailPaymentMethod').textContent = 'N/A';
-                document.getElementById('detailPaymentDate').textContent = 'N/A';
-                document.getElementById('detailPaymentAmount').textContent = 'N/A';
-                document.getElementById('detailRefundRequestStatus').textContent = 'N/A';
-
-                bookingDetailsDisplay.classList.add('hidden');
-                hireSpecificDetailsDiv.classList.add('hidden');
-                serviceSpecificDetailsDiv.classList.add('hidden');
-                entitledRefundInfoDiv.classList.add('hidden');
+            function hideAllDetails() {
+                hireDetailsContainer.classList.add('hidden');
+                serviceDetailsContainer.classList.add('hidden');
+                ajaxErrorContainer.classList.add('hidden');
             }
 
-            // Function to update booking details display with fetched data
-            function updateBookingDetails(details, bookingType) {
-                clearBookingDetails(); // Always clear first
-
-                if (details) {
-                    document.getElementById('detailBookingType').textContent = bookingType === 'hire' ? 'Hire' : 'Service';
-                    document.getElementById('detailBookingRef').textContent = details.booking_reference || 'N/A';
-                    document.getElementById('detailCustomerName').textContent = details.customer_name || 'N/A';
-
-                    if (bookingType === 'hire') {
-                        document.getElementById('detailHirePickupDate').textContent = details.pickup_date || 'N/A';
-                        document.getElementById('detailHirePickupTime').textContent = details.pickup_time || 'N/A';
-                        document.getElementById('detailHireReturnDate').textContent = details.return_date || 'N/A';
-                        document.getElementById('detailHireReturnTime').textContent = details.return_time || 'N/A';
-                        document.getElementById('detailHireMotorcycle').textContent = `${details.motorcycle_year || ''} ${details.motorcycle_brand || ''} ${details.motorcycle_model || ''}`.trim() || 'N/A';
-                        hireSpecificDetailsDiv.classList.remove('hidden');
-                    } else if (bookingType === 'service') {
-                        document.getElementById('detailServiceDate').textContent = details.service_date || 'N/A';
-                        document.getElementById('detailServiceTime').textContent = details.service_time || 'N/A';
-                        document.getElementById('detailServiceType').textContent = details.service_type || 'N/A';
-                        serviceSpecificDetailsDiv.classList.remove('hidden');
-                    }
-                    
-                    document.getElementById('detailBookingStatus').textContent = details.booking_status || 'N/A';
-                    document.getElementById('detailPaymentMethod').textContent = details.payment_method || 'N/A';
-                    document.getElementById('detailPaymentDate').textContent = details.payment_date || 'N/A';
-                    document.getElementById('detailPaymentAmount').textContent = details.payment_amount ? `$${details.payment_amount.toFixed(2)}` : 'N/A';
-                    document.getElementById('detailRefundRequestStatus').textContent = details.refund_request_status_for_booking || 'N/A';
-                    
-                    bookingDetailsDisplay.classList.remove('hidden');
-
-                    // Update and show entitled refund info
-                    if (details.entitled_refund_amount !== undefined && details.entitled_refund_amount !== null) {
-                        entitledRefundAmountSpan.textContent = `$${details.entitled_refund_amount.toFixed(2)}`;
-                        refundCalculationDetailsSpan.textContent = details.refund_calculation_details || 'N/A';
-                        entitledRefundInfoDiv.classList.remove('hidden');
-                    } else {
-                        entitledRefundInfoDiv.classList.add('hidden');
-                    }
-
-                    // Set default amount to refund to 0.00 if it's a new request and no value is set
-                    if (!amountToRefundInput.value) {
-                         amountToRefundInput.value = '0.00';
-                    }
-
-                } else {
-                    // Hide sections if no booking is selected or details are null (already handled by clearBookingDetails)
-                }
-            }
-
-            // Function to fetch booking details from the API endpoint
-            async function fetchBookingDetails(bookingId, bookingType) {
-                if (!bookingId) {
-                    updateBookingDetails(null); // Clear details if no booking selected
-                    return;
-                }
-
-                let url = '';
-                if (bookingType === 'hire') {
-                    url = `{% url 'payments:api_hire_booking_details' pk=0 %}`.replace('0', bookingId);
-                } else if (bookingType === 'service') {
-                    url = `{% url 'payments:api_service_booking_details' pk=0 %}`.replace('0', bookingId);
-                } else {
-                    console.error("Unknown booking type:", bookingType);
-                    updateBookingDetails(null);
-                    return;
-                }
-
-                try {
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    updateBookingDetails(data, bookingType); // Pass bookingType to updateDetails
-                } catch (error) {
-                    console.error('Error fetching booking details:', error);
-                    updateBookingDetails(null); // Clear details on error
-                }
-            }
-
-            // Function to handle radio button change
             function handleBookingTypeChange() {
-                clearBookingDetails();
-                amountToRefundInput.value = '0.00'; // Reset amount to refund
+                amountToRefundInput.value = '0.00';
+                hideAllDetails();
 
                 if (hireBookingRadio.checked) {
                     hireBookingSection.classList.remove('hidden');
                     serviceBookingSection.classList.add('hidden');
-                    serviceBookingSelect.value = ''; // Clear service booking selection
-                    serviceBookingSelect.setAttribute('disabled', 'disabled'); // Disable service booking select
-                    hireBookingSelect.removeAttribute('disabled'); // Enable hire booking select
+                    serviceBookingSelect.value = '';
+                    serviceBookingSelect.setAttribute('disabled', 'disabled');
+                    hireBookingSelect.removeAttribute('disabled');
                 } else if (serviceBookingRadio.checked) {
                     serviceBookingSection.classList.remove('hidden');
                     hireBookingSection.classList.add('hidden');
-                    hireBookingSelect.value = ''; // Clear hire booking selection
-                    hireBookingSelect.setAttribute('disabled', 'disabled'); // Disable hire booking select
-                    serviceBookingSelect.removeAttribute('disabled'); // Enable service booking select
+                    hireBookingSelect.value = '';
+                    hireBookingSelect.setAttribute('disabled', 'disabled');
+                    serviceBookingSelect.removeAttribute('disabled');
                 } else {
-                    // Neither is selected, hide both dropdowns
                     hireBookingSection.classList.add('hidden');
                     serviceBookingSection.classList.add('hidden');
-                    hireBookingSelect.value = '';
-                    serviceBookingSelect.value = '';
-                    hireBookingSelect.removeAttribute('disabled'); // Ensure both are enabled if no radio is selected
+                    hireBookingSelect.removeAttribute('disabled');
                     serviceBookingSelect.removeAttribute('disabled');
                 }
             }
 
-            // Event listeners for radio buttons
+            function displayBookingDetails(data, bookingType) {
+                let detailsHtml = '';
+                let container;
+
+                // *** FIX: Display refund_calculation_details as a single string ***
+                if (bookingType === 'hire') {
+                    container = hireDetailsContainer;
+                    detailsHtml = `
+                        <h5>Hire Booking Refund Details</h5>
+                        <p><strong>Customer:</strong> ${data.customer_name}</p>
+                        <p><strong>Booking Ref:</strong> ${data.booking_reference}</p>
+                        <p><strong>Payment Amount:</strong> $${data.payment_amount}</p>
+                        <p><strong>Booking Status:</strong> ${data.booking_status}</p>
+                        <p><strong>Payment Status:</strong> ${data.payment_status}</p>
+                        <p><strong>Entitled Refund:</strong> $${data.entitled_refund_amount}</p>
+                        <p><strong>Calculation Details:</strong> ${data.refund_calculation_details}</p>
+                    `;
+                } else if (bookingType === 'service') {
+                    container = serviceDetailsContainer;
+                    detailsHtml = `
+                        <h5>Service Booking Refund Details</h5>
+                        <p><strong>Customer:</strong> ${data.customer_name}</p>
+                        <p><strong>Booking Ref:</strong> ${data.service_booking_reference}</p>
+                        <p><strong>Payment Amount:</strong> $${data.payment_amount}</p>
+                        <p><strong>Booking Status:</strong> ${data.booking_status}</p>
+                        <p><strong>Payment Status:</strong> ${data.payment_status}</p>
+                        <p><strong>Entitled Refund:</strong> $${data.entitled_refund_amount}</p>
+                        <p><strong>Calculation Details:</strong> ${data.refund_calculation_details}</p>
+                    `;
+                }
+
+                if (container) {
+                    container.innerHTML = detailsHtml;
+                    container.classList.remove('hidden');
+                }
+                amountToRefundInput.value = data.entitled_refund_amount.toFixed(2);
+            }
+
+            function fetchBookingDetails(bookingType, bookingId) {
+                hideAllDetails();
+                if (!bookingId) {
+                    return;
+                }
+
+                const url = bookingType === 'hire' 
+                    ? `/payments/api/hire-booking-details/${bookingId}/`
+                    : `/payments/api/service-booking-details/${bookingId}/`;
+
+                loader.classList.remove('hidden');
+
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Network response was not ok. Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        loader.classList.add('hidden');
+                        if (data.error) {
+                            console.error('API Error:', data.error);
+                            ajaxErrorContainer.textContent = `Error from server: ${data.error}`;
+                            ajaxErrorContainer.classList.remove('hidden');
+                        } else {
+                            displayBookingDetails(data, bookingType);
+                        }
+                    })
+                    .catch(error => {
+                        loader.classList.add('hidden');
+                        console.error('Fetch Error:', error);
+                        ajaxErrorContainer.textContent = `Failed to fetch details. Check the console (F12) for more information.`;
+                        ajaxErrorContainer.classList.remove('hidden');
+                    });
+            }
+
             hireBookingRadio.addEventListener('change', handleBookingTypeChange);
             serviceBookingRadio.addEventListener('change', handleBookingTypeChange);
 
-            // Event listener for when the hire_booking dropdown changes
             hireBookingSelect.addEventListener('change', function() {
-                if (this.value) {
-                    fetchBookingDetails(this.value, 'hire');
-                } else {
-                    clearBookingDetails(); // Clear details if hire booking is unselected
-                }
+                fetchBookingDetails('hire', this.value);
             });
 
-            // Event listener for when the service_booking dropdown changes
             serviceBookingSelect.addEventListener('change', function() {
-                if (this.value) {
-                    fetchBookingDetails(this.value, 'service');
-                } else {
-                    clearBookingDetails(); // Clear details if service booking is unselected
-                }
+                fetchBookingDetails('service', this.value);
             });
-
-            // Initial load logic
-            if (hireBookingRadio.checked) {
-                handleBookingTypeChange(); // Show hire section
-                if (hireBookingSelect.value) {
-                    fetchBookingDetails(hireBookingSelect.value, 'hire');
-                }
-            } else if (serviceBookingRadio.checked) {
-                handleBookingTypeChange(); // Show service section
-                if (serviceBookingSelect.value) {
-                    fetchBookingDetails(serviceBookingSelect.value, 'service');
+            
+            const refundRequestExists = "{{ refund_request.pk|default:'' }}" ? true : false;
+            
+            if (refundRequestExists) {
+                if (hireBookingRadio.checked) {
+                    handleBookingTypeChange();
+                    fetchBookingDetails('hire', hireBookingSelect.value);
+                } else if (serviceBookingRadio.checked) {
+                    handleBookingTypeChange();
+                    fetchBookingDetails('service', serviceBookingSelect.value);
                 }
             } else {
-                // If no radio is checked (e.g., new form, no existing refund_request),
-                // ensure both dropdowns are hidden initially.
-                hireBookingSection.classList.add('hidden');
-                serviceBookingSection.classList.add('hidden');
-                clearBookingDetails();
-                amountToRefundInput.value = '0.00';
+                handleBookingTypeChange();
             }
         });
     </script>

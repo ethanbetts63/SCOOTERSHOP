@@ -36,14 +36,17 @@ def get_service_booking_details_json(request, pk):
 
         payment_date = 'N/A'
         payment_amount = 'N/A'
-        refund_policy_snapshot = {}
+        
+        # *** FIX: Ensure refund_policy_snapshot is always a dictionary. ***
+        # If payment exists, use its snapshot, otherwise default to an empty dictionary.
+        # This prevents an error if payment.refund_policy_snapshot is None.
+        refund_policy_snapshot = (service_booking.payment.refund_policy_snapshot or {}) if service_booking.payment else {}
 
-        # Fetch payment details and refund policy snapshot from the linked Payment object
+
+        # Fetch payment details from the linked Payment object
         if service_booking.payment:
             payment_date = service_booking.payment.created_at.strftime('%Y-%m-%d %H:%M') if service_booking.payment.created_at else 'N/A'
             payment_amount = float(service_booking.payment.amount) if service_booking.payment.amount else 'N/A'
-            # Access the refund_policy_snapshot from the linked Payment model
-            refund_policy_snapshot = service_booking.payment.refund_policy_snapshot
         
         # Get the latest refund request for this service booking
         latest_refund_request = RefundRequest.objects.filter(service_booking=service_booking).order_by('-requested_at').first()
@@ -59,7 +62,7 @@ def get_service_booking_details_json(request, pk):
         # Prepare details about the customer's motorcycle for service
         motorcycle_details = {
             'year': service_booking.customer_motorcycle.year if service_booking.customer_motorcycle else 'N/A',
-            'make': service_booking.customer_motorcycle.make if service_booking.customer_motorcycle else 'N/A',
+            'brand': service_booking.customer_motorcycle.brand if service_booking.customer_motorcycle else 'N/A',
             'model': service_booking.customer_motorcycle.model if service_booking.customer_motorcycle else 'N/A',
         }
         
@@ -96,5 +99,6 @@ def get_service_booking_details_json(request, pk):
     except ServiceBooking.DoesNotExist:
         return JsonResponse({'error': 'Service Booking not found'}, status=404)
     except Exception as e:
+        # It's helpful to log the actual exception for debugging
+        print(f"Error in get_service_booking_details_json: {e}")
         return JsonResponse({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
-
