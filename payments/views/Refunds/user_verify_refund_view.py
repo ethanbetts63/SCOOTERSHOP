@@ -1,4 +1,4 @@
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.urls import reverse
 from django.contrib import messages
@@ -15,8 +15,8 @@ from payments.utils.hire_refund_calc import calculate_hire_refund_amount
 from payments.utils.service_refund_calc import calculate_service_refund_amount
 from mailer.utils import send_templated_email
 
-from hire.models import DriverProfile
-from service.models import ServiceProfile
+from hire.models import HireBooking, DriverProfile
+from service.models import ServiceBooking, ServiceProfile
 
 def _convert_decimals_to_float(obj):
     if isinstance(obj, Decimal):
@@ -31,6 +31,7 @@ def _convert_decimals_to_float(obj):
 
 class UserVerifyRefundView(View):
     def get(self, request, *args, **kwargs):
+        print("--- UserVerifyRefundView: Entering GET method ---") # Added print
         token_str = request.GET.get('token')
 
         if not token_str:
@@ -44,7 +45,9 @@ class UserVerifyRefundView(View):
             return redirect(reverse('core:index'))
 
         try:
+            print(f"Attempting to fetch RefundRequest for token: {verification_token}") # Added print
             refund_request = get_object_or_404(RefundRequest, verification_token=verification_token)
+            print(f"RefundRequest found. Status: {refund_request.status}") # Added print
 
             if refund_request.status != 'unverified':
                 messages.info(request, "This refund request has already been verified or processed.")
@@ -57,6 +60,8 @@ class UserVerifyRefundView(View):
 
             refund_request.status = 'pending'
             refund_request.save()
+            print(f"RefundRequest status updated to 'pending' and saved.") # Added print
+
 
             refund_policy_snapshot = {}
             if refund_request.payment and refund_request.payment.refund_policy_snapshot:
@@ -71,20 +76,24 @@ class UserVerifyRefundView(View):
             admin_link_name = 'payments:edit_refund_request' 
 
             if refund_request.hire_booking:
+                print("Calling calculate_hire_refund_amount...") # Added print
                 calculated_refund_result = calculate_hire_refund_amount(
                     booking=refund_request.hire_booking,
                     refund_policy_snapshot=refund_policy_snapshot,
                     cancellation_datetime=refund_request.requested_at
                 )
+                print("calculate_hire_refund_amount call completed.") # Added print (won't show if exception occurs)
                 booking_reference_for_email = refund_request.hire_booking.booking_reference
                 booking_object = refund_request.hire_booking
                 customer_profile_object = refund_request.driver_profile
             elif refund_request.service_booking:
+                print("Calling calculate_service_refund_amount...") # Added print
                 calculated_refund_result = calculate_service_refund_amount(
                     booking=refund_request.service_booking,
                     refund_policy_snapshot=refund_policy_snapshot,
                     cancellation_datetime=refund_request.requested_at
                 )
+                print("calculate_service_refund_amount call completed.") # Added print (won't show if exception occurs)
                 booking_reference_for_email = refund_request.service_booking.service_booking_reference
                 booking_object = refund_request.service_booking
                 customer_profile_object = refund_request.service_profile
@@ -134,9 +143,11 @@ class UserVerifyRefundView(View):
             return redirect(reverse('payments:user_verified_refund'))
 
         except Http404:
+            print("--- EXCEPTION CAUGHT: Http404 ---") # Added print
             messages.error(request, "The refund request associated with this token does not exist.")
             return redirect(reverse('core:index'))
         except Exception as e:
+            print(f"--- GENERIC EXCEPTION CAUGHT: {e} ---") # Added print
             messages.error(request, f"An unexpected error occurred during verification: {e}")
             return redirect(reverse('core:index'))
 
