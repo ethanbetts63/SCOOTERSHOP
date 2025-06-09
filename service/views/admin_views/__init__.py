@@ -1,6 +1,7 @@
 from .admin_service_booking_form import *
 from .admin_service_profile_management import *
 from .admin_create_update_service_profile import *
+from .admin_create_update_service_profile import *
 from .blocked_service_date_management import *
 from .delete_blocked_service_date import *
 from .delete_service_brand import *

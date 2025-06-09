@@ -1,47 +1,13 @@
 {% extends "dashboard/admin_layout.html" %}
 {% load static %}
-{% load crispy_forms_tags %} {# Load crispy forms tags if you are using django-crispy-forms #}
 
 {% block extra_css %}
-{{ block.super }}
+{{ block.super }} {# Include CSS from the parent template #}
 <style>
-    /* Basic styling for form elements and table cells */
-    .form-group {
-        margin-bottom: 1rem;
-    }
-    .form-control {
-        display: block;
-        width: 100%;
-        padding: 0.5rem 0.75rem;
-        font-size: 1rem;
-        line-height: 1.5;
-        color: #495057;
-        background-color: #fff;
-        background-clip: padding-box;
-        border: 1px solid #ced4da;
-        border-radius: 0.25rem;
-        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    }
-    .form-control:focus {
-        border-color: #80bdff;
-        outline: 0;
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-    }
-    .helptext {
-        font-size: 0.875rem;
-        color: #6c757d;
-        margin-top: 0.25rem;
-    }
-    .errorlist {
-        color: #dc3545;
-        list-style-type: none;
-        padding: 0;
-        margin-top: 0.25rem;
-    }
+    /* Basic styling for table cells and actions */
     .table-cell-padding {
         padding: 12px 24px;
     }
-    /* Action buttons styling from refund management */
     .action-button {
         display: inline-flex;
         align-items: center;
@@ -53,14 +19,12 @@
         line-height: 1.25rem; /* leading-5 */
         box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
         transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, color 0.15s ease-in-out;
-        text-decoration: none; /* Remove underline from links */
+        text-decoration: none;
         cursor: pointer;
     }
-
     .action-button:hover {
         opacity: 0.9;
     }
-
     .btn-edit {
         color: #ffffff;
         background-color: #3b82f6; /* blue-500 */
@@ -69,7 +33,6 @@
     .btn-edit:hover {
         background-color: #2563eb; /* blue-600 */
     }
-
     .btn-delete {
         color: #ffffff;
         background-color: #ef4444; /* red-500 */
@@ -78,7 +41,6 @@
     .btn-delete:hover {
         background-color: #dc2626; /* red-600 */
     }
-
     .btn-create {
         color: #ffffff;
         background-color: #22c55e; /* green-500 */
@@ -94,9 +56,9 @@
 <div class="p-4">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Service Profile Management</h1>
-        <a href="{% url 'service:admin_service_profiles' %}"
+        <a href="{% url 'service:admin_create_service_profile' %}"
            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 btn-create">
-            {% if is_edit_mode %}Create New Profile{% else %}Add New Profile{% endif %}
+            Add New Service Profile
         </a>
     </div>
 
@@ -109,28 +71,6 @@
             {% endfor %}
         </div>
     {% endif %}
-
-    {# Form for creating/editing a Service Profile #}
-    <div class="mb-6 bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-xl font-semibold text-gray-700 mb-4">
-            {% if is_edit_mode %}Edit Service Profile: {{ current_profile.name }}{% else %}Create New Service Profile{% endif %}
-        </h2>
-        <form method="post" action="{% if is_edit_mode %}{% url 'service:admin_edit_service_profile' pk=current_profile.pk %}{% else %}{% url 'service:admin_service_profiles' %}{% endif %}">
-            {% csrf_token %}
-            {{ form|crispy }} {# Render form using crispy forms #}
-            <button type="submit"
-                    class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white
-                    {% if is_edit_mode %}bg-blue-600 hover:bg-blue-700 focus:ring-blue-500{% else %}bg-green-600 hover:bg-green-700 focus:ring-green-500{% endif %}
-                    focus:outline-none focus:ring-2 focus:ring-offset-2">
-                {% if is_edit_mode %}Update Profile{% else %}Create Profile{% endif %}
-            </button>
-            {% if is_edit_mode %}
-                <a href="{% url 'service:admin_service_profiles' %}" class="ml-2 mt-4 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Cancel Edit
-                </a>
-            {% endif %}
-        </form>
-    </div>
 
     {# Search bar #}
     <div class="mb-6 bg-white p-4 rounded-lg shadow-md">
@@ -163,9 +103,7 @@
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             ID
                         </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Linked User
-                        </th>
+                        {# Removed 'Linked User' column #}
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Full Name
                         </th>
@@ -178,9 +116,7 @@
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             City
                         </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Country
-                        </th>
+                        {# Removed 'Country' column #}
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Created
                         </th>
@@ -195,13 +131,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 table-cell-padding">
                                 {{ profile.id }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
-                                {% if profile.user %}
-                                    {{ profile.user.username }} ({{ profile.user.email }})
-                                {% else %}
-                                    <span class="text-gray-400">Not Linked</span>
-                                {% endif %}
-                            </td>
+                            {# Removed 'Linked User' data cell #}
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
                                 {{ profile.name }}
                             </td>
@@ -214,9 +144,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
                                 {{ profile.city }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
-                                {{ profile.country }}
-                            </td>
+                            {# Removed 'Country' data cell #}
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
                                 {{ profile.created_at|date:"Y-m-d H:i" }}
                             </td>
@@ -237,31 +165,28 @@
             </table>
         </div>
 
-        {# Pagination (you might want to add this if you anticipate many profiles) #}
-        {# This pagination block assumes 'profiles' is a paginated QuerySet, e.g., from ListView #}
-        {% comment %}
-        {% if profiles.has_other_pages %}
+        {# Pagination using ListView's built-in pagination #}
+        {% if is_paginated %}
             <div class="pagination mt-6 flex justify-center items-center space-x-2">
                 <span class="step-links">
-                    {% if profiles.has_previous %}
+                    {% if page_obj.has_previous %}
                         <a href="?page=1&q={{ search_term }}"
                            class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">&laquo; first</a>
-                        <a href="?page={{ profiles.previous_page_number }}&q={{ search_term }}"
+                        <a href="?page={{ page_obj.previous_page_number }}&q={{ search_term }}"
                            class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">previous</a>
                     {% endif %}
                     <span class="current px-3 py-1 text-sm font-medium text-gray-700">
-                        Page {{ profiles.number }} of {{ profiles.paginator.num_pages }}.
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
                     </span>
-                    {% if profiles.has_next %}
-                        <a href="?page={{ profiles.next_page_number }}&q={{ search_term }}"
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}&q={{ search_term }}"
                            class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">next</a>
-                        <a href="?page={{ profiles.paginator.num_pages }}&q={{ search_term }}"
+                        <a href="?page={{ page_obj.paginator.num_pages }}&q={{ search_term }}"
                            class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">last &raquo;</a>
                     {% endif %}
                 </span>
             </div>
         {% endif %}
-        {% endcomment %}
 
     {% else %}
         <p class="text-gray-600">No service profiles found.</p>

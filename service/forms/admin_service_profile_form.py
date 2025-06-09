@@ -1,8 +1,7 @@
 from django import forms
 from service.models import ServiceProfile
-from django.contrib.auth import get_user_model # Import get_user_model to dynamically get the User model
+from django.contrib.auth import get_user_model
 
-# Get the User model
 User = get_user_model()
 
 class AdminServiceProfileForm(forms.ModelForm):
@@ -11,17 +10,17 @@ class AdminServiceProfileForm(forms.ModelForm):
     Includes an optional field to link an existing Django User account.
     """
     user = forms.ModelChoiceField(
-        queryset=User.objects.all().order_by('username'), # Query all User instances, ordered by username
-        required=False, # Make this field optional
-        empty_label="-- No User Account --", # Option to select no user
-        help_text="Optionally link this Service Profile to an existing user account.",
-        widget=forms.Select(attrs={'class': 'form-control'}) # Apply basic Bootstrap styling
+        queryset=User.objects.all().order_by('username'),
+        required=False,
+        empty_label="-- No User Account --",
+        help_text="Optionally link this Service Profile to an existing user account. A user can only be linked to one profile.",
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
 
     class Meta:
         model = ServiceProfile
         fields = [
-            'user', # Add the user field here
+            'user',
             'name',
             'email',
             'phone_number',
@@ -59,21 +58,24 @@ class AdminServiceProfileForm(forms.ModelForm):
     def clean_user(self):
         """
         Custom clean method for the 'user' field to ensure that if a user is
-        selected, they don't already have a service profile linked.
+        selected, they don't already have a service profile linked to a *different* profile.
         """
         user = self.cleaned_data.get('user')
-        # If we are updating an existing instance and the user hasn't changed,
-        # or no user is selected, skip this validation.
-        if user and user != self.instance.user:
-            # Check if this user already has a service profile
-            if ServiceProfile.objects.filter(user=user).exists():
-                # If an instance is being updated and the user is the same,
-                # or if the current instance is the one being edited,
-                # then it's valid. This prevents false positives when editing
-                # an existing profile.
-                if self.instance and self.instance.user == user:
-                    pass
+
+        # If a user is selected:
+        if user:
+            # Check if this user is already linked to *any* ServiceProfile
+            existing_profile_for_user = ServiceProfile.objects.filter(user=user).first()
+
+            # If a profile is found for this user:
+            if existing_profile_for_user:
+                # If we are UPDATING an instance (self.instance exists)
+                # AND the existing profile found is the *same* instance we are currently editing,
+                # then this is a valid re-submission of the existing link.
+                if self.instance and existing_profile_for_user.pk == self.instance.pk:
+                    pass # It's the same profile being edited, so allow.
                 else:
+                    # Otherwise, the user is linked to a *different* profile, which is an error.
                     raise forms.ValidationError(
                         f"This user ({user.username}) is already linked to another Service Profile."
                     )
@@ -82,7 +84,6 @@ class AdminServiceProfileForm(forms.ModelForm):
     def clean(self):
         """
         Custom validation to ensure either 'user' is provided OR 'name', 'email', and 'phone_number' are provided.
-        Also, prevents linking a user that already has a profile, unless it's the current profile being edited.
         """
         cleaned_data = super().clean()
         user = cleaned_data.get('user')

@@ -1,4 +1,4 @@
-# service/views/admin_views.py (updated)
+# service/views/admin_views.py (corrected)
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
@@ -17,7 +17,7 @@ class ServiceProfileManagementView(LoginRequiredMixin, UserPassesTestMixin, View
     Includes search functionality.
     Requires the user to be logged in and a staff member or superuser.
     """
-    template_name = 'service/admin/service_profile_management.html'
+    template_name = 'service/admin_service_profile_management.html'
     form_class = AdminServiceProfileForm
 
     def test_func(self):
@@ -38,16 +38,24 @@ class ServiceProfileManagementView(LoginRequiredMixin, UserPassesTestMixin, View
             queryset = queryset.filter(
                 Q(name__icontains=search_term) |
                 Q(email__icontains=search_term) |
-                Q(phone_number__icontains=search_term) | # Search by linked user's username
+                Q(phone_number__icontains=search_term) |
+                Q(address_line_1__icontains=search_term) | # Added address line 1
+                Q(address_line_2__icontains=search_term) | # Added address line 2
+                Q(city__icontains=search_term) |
+                Q(state__icontains=search_term) | # Added state
+                Q(post_code__icontains=search_term) | # Added post code
+                Q(country__icontains=search_term) | # Added country
+                Q(user__username__icontains=search_term) | # Search by linked user's username
                 Q(user__email__icontains=search_term)      # Search by linked user's email
-            )
+            ).distinct() # Use distinct to avoid duplicate profiles if a search term matches multiple fields
         return queryset
 
     def get_context_data(self, **kwargs):
         """
         Adds context data, including the search term and the form.
         """
-        context = super().get_context_data(**kwargs)
+        # Initialize context directly, as View does not have get_context_data
+        context = {}
         
         # Populate the form based on whether we are editing an instance
         pk = kwargs.get('pk')
@@ -99,7 +107,7 @@ class ServiceProfileManagementView(LoginRequiredMixin, UserPassesTestMixin, View
         else:
             messages.error(request, "Please correct the errors below.")
             # If form is invalid, we need to re-render the page with the errors,
-            # so we prepare the context similar to a GET request.
+            # so we prepare the context using get_context_data and then update the form.
             context = self.get_context_data(pk=pk) # Re-use get_context_data to get profiles and search term
             context['form'] = form # Make sure the form with errors is passed back
             return render(request, self.template_name, context)
