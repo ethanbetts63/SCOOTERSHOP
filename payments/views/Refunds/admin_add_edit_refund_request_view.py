@@ -101,7 +101,7 @@ class AdminAddEditRefundRequestView(View):
                 admin_management_redirect_url = 'payments:admin_refund_management'
             elif refund_request_instance.service_booking:
                 booking_reference_for_msg = refund_request_instance.service_booking.service_booking_reference
-                admin_management_redirect_url = 'dashboard:admin_service_refund_management'
+                admin_management_redirect_url = 'payments:admin_refund_management'
 
 
             messages.success(request, f"Refund Request for booking '{booking_reference_for_msg}' saved successfully! Current Status: {refund_request_instance.get_status_display()}")

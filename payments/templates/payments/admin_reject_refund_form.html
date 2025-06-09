@@ -124,7 +124,7 @@
                         Cancel
                     </a>
                 {% elif refund_request and refund_request.service_booking %}
-                    <a href="{% url 'dashboard:admin_service_refund_management' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <a href="{% url 'payments:admin_refund_management' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         Cancel
                     </a>
                 {% else %}

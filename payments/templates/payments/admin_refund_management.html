@@ -180,12 +180,12 @@
                                 <div class="flex space-x-2">
                                     {# Link to the edit page for the specific refund request #}
                                     {% if request.status not in 'partially_refunded,refunded,rejected' %}
-                                        <a href="{% url 'dashboard:edit_refund_request' pk=request.pk %}" class="action-button btn-review">Review/Edit</a>
+                                        <a href="{% url 'payments:edit_refund_request' pk=request.pk %}" class="action-button btn-review">Review/Edit</a>
                                     {% endif %}
 
                                     {# Approve button, only shown if status is 'reviewed_pending_approval' #}
                                     {% if request.status == 'reviewed_pending_approval' %}
-                                        <form action="{% url 'dashboard:process_refund' pk=request.pk %}" method="post" style="display:inline;">
+                                        <form action="{% url 'payments:process_refund' pk=request.pk %}" method="post" style="display:inline;">
                                             {% csrf_token %}
                                             <button type="submit" class="action-button btn-approve"
                                                     onclick="return confirm('Are you sure you want to approve this refund and initiate it via Stripe? This action cannot be undone.');">
@@ -197,7 +197,7 @@
                                     {# Reject button, always appears unless status is approved, rejected, partially_refunded, refunded, or failed #}
                                     {% if request.status not in 'approved,rejected,partially_refunded,refunded,failed' %}
                                         {# Link to the reject refund form #}
-                                        <a href="{% url 'dashboard:reject_refund_request' pk=request.pk %}" class="action-button btn-reject">
+                                        <a href="{% url 'payments:reject_refund_request' pk=request.pk %}" class="action-button btn-reject">
                                             Reject
                                         </a>
                                     {% endif %}
