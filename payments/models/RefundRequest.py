@@ -113,6 +113,7 @@ class RefundRequest(models.Model):
     stripe_refund_id = models.CharField(
         max_length=255,
         blank=True,
+        null=True,
         help_text="Stripe Refund ID if the refund was processed via Stripe."
     )
     is_admin_initiated = models.BooleanField(
