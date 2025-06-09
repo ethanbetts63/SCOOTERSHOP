@@ -1,0 +1,363 @@
+from decimal import Decimal
+
+from django.test import TestCase
+
+# Import the utility function to be tested
+from payments.utils.update_associated_bookings_and_payments import update_associated_bookings_and_payments
+
+# Import the model factories
+from payments.tests.test_helpers.model_factories import (
+    PaymentFactory,
+    HireBookingFactory,
+    ServiceBookingFactory,
+)
+
+
+class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
+    """
+    Tests for the update_associated_bookings_and_payments utility function.
+    This suite covers updates to booking and payment statuses and amounts
+    based on refund activity.
+    """
+
+    def test_full_refund_hire_booking(self):
+        """
+        Tests full refund scenario for a HireBooking.
+        - Booking amount_paid should be 0.
+        - Booking payment_status should be 'refunded'.
+        - Booking status should be 'cancelled'.
+        - Payment refunded_amount should match total_refunded_amount.
+        - Payment status should be 'refunded'.
+        """
+        initial_amount = Decimal('100.00')
+        hire_booking = HireBookingFactory(amount_paid=initial_amount, payment_status='paid', status='confirmed')
+        payment = PaymentFactory(
+            hire_booking=hire_booking,
+            service_booking=None,
+            amount=initial_amount,
+            status='succeeded',
+            refunded_amount=Decimal('0.00')
+        )
+        total_refunded_amount = initial_amount # Full refund
+
+        update_associated_bookings_and_payments(payment, hire_booking, 'hire_booking', total_refunded_amount)
+
+        # Refresh objects from DB to get updated values
+        hire_booking.refresh_from_db()
+        payment.refresh_from_db()
+
+        # Assertions for HireBooking
+        self.assertEqual(hire_booking.amount_paid, Decimal('0.00'))
+        self.assertEqual(hire_booking.payment_status, 'refunded')
+        self.assertEqual(hire_booking.status, 'cancelled') # Specific to hire booking full refund
+
+        # Assertions for Payment
+        self.assertEqual(payment.refunded_amount, total_refunded_amount)
+        self.assertEqual(payment.status, 'refunded')
+
+    def test_partial_refund_hire_booking(self):
+        """
+        Tests partial refund scenario for a HireBooking.
+        - Booking amount_paid should be reduced.
+        - Booking payment_status should be 'partially_refunded'.
+        - Booking status should remain 'confirmed'.
+        - Payment refunded_amount should match total_refunded_amount.
+        - Payment status should be 'partially_refunded'.
+        """
+        initial_amount = Decimal('100.00')
+        refund_amount = Decimal('40.00')
+        hire_booking = HireBookingFactory(amount_paid=initial_amount, payment_status='paid', status='confirmed')
+        payment = PaymentFactory(
+            hire_booking=hire_booking,
+            service_booking=None,
+            amount=initial_amount,
+            status='succeeded',
+            refunded_amount=Decimal('0.00')
+        )
+        total_refunded_amount = refund_amount
+
+        update_associated_bookings_and_payments(payment, hire_booking, 'hire_booking', total_refunded_amount)
+
+        hire_booking.refresh_from_db()
+        payment.refresh_from_db()
+
+        # Assertions for HireBooking
+        self.assertEqual(hire_booking.amount_paid, initial_amount - refund_amount)
+        self.assertEqual(hire_booking.payment_status, 'partially_refunded')
+        self.assertEqual(hire_booking.status, 'confirmed') # Should not be cancelled for partial refund
+
+        # Assertions for Payment
+        self.assertEqual(payment.refunded_amount, total_refunded_amount)
+        self.assertEqual(payment.status, 'partially_refunded')
+
+    def test_no_refund_hire_booking(self):
+        """
+        Tests no refund scenario for a HireBooking (ensure statuses remain 'paid').
+        """
+        initial_amount = Decimal('100.00')
+        hire_booking = HireBookingFactory(amount_paid=initial_amount, payment_status='paid', status='confirmed')
+        payment = PaymentFactory(
+            hire_booking=hire_booking,
+            service_booking=None,
+            amount=initial_amount,
+            status='succeeded',
+            refunded_amount=Decimal('0.00')
+        )
+        total_refunded_amount = Decimal('0.00')
+
+        update_associated_bookings_and_payments(payment, hire_booking, 'hire_booking', total_refunded_amount)
+
+        hire_booking.refresh_from_db()
+        payment.refresh_from_db()
+
+        # Assertions for HireBooking
+        self.assertEqual(hire_booking.amount_paid, initial_amount)
+        self.assertEqual(hire_booking.payment_status, 'paid')
+        self.assertEqual(hire_booking.status, 'confirmed')
+
+        # Assertions for Payment
+        self.assertEqual(payment.refunded_amount, total_refunded_amount)
+        self.assertEqual(payment.status, 'succeeded')
+
+
+    def test_full_refund_service_booking(self):
+        """
+        Tests full refund scenario for a ServiceBooking.
+        - Booking amount_paid should be 0.
+        - Booking payment_status should be 'refunded'.
+        - Booking status should remain as is, unless 'declined'.
+        - Payment refunded_amount should match total_refunded_amount.
+        - Payment status should be 'refunded'.
+        """
+        initial_amount = Decimal('150.00')
+        service_booking = ServiceBookingFactory(amount_paid=initial_amount, payment_status='paid', booking_status='pending')
+        payment = PaymentFactory(
+            hire_booking=None,
+            service_booking=service_booking,
+            amount=initial_amount,
+            status='succeeded',
+            refunded_amount=Decimal('0.00')
+        )
+        total_refunded_amount = initial_amount
+
+        update_associated_bookings_and_payments(payment, service_booking, 'service_booking', total_refunded_amount)
+
+        service_booking.refresh_from_db()
+        payment.refresh_from_db()
+
+        # Assertions for ServiceBooking
+        self.assertEqual(service_booking.amount_paid, Decimal('0.00'))
+        self.assertEqual(service_booking.payment_status, 'refunded')
+        self.assertEqual(service_booking.booking_status, 'pending') # Should not change unless declined
+
+        # Assertions for Payment
+        self.assertEqual(payment.refunded_amount, total_refunded_amount)
+        self.assertEqual(payment.status, 'refunded')
+
+    def test_partial_refund_service_booking(self):
+        """
+        Tests partial refund scenario for a ServiceBooking.
+        - Booking amount_paid should be reduced.
+        - Booking payment_status should be 'partially_refunded'.
+        - Booking status should remain unchanged.
+        - Payment refunded_amount should match total_refunded_amount.
+        - Payment status should be 'partially_refunded'.
+        """
+        initial_amount = Decimal('150.00')
+        refund_amount = Decimal('70.00')
+        service_booking = ServiceBookingFactory(amount_paid=initial_amount, payment_status='paid', booking_status='accepted')
+        payment = PaymentFactory(
+            hire_booking=None,
+            service_booking=service_booking,
+            amount=initial_amount,
+            status='succeeded',
+            refunded_amount=Decimal('0.00')
+        )
+        total_refunded_amount = refund_amount
+
+        update_associated_bookings_and_payments(payment, service_booking, 'service_booking', total_refunded_amount)
+
+        service_booking.refresh_from_db()
+        payment.refresh_from_db()
+
+        # Assertions for ServiceBooking
+        self.assertEqual(service_booking.amount_paid, initial_amount - refund_amount)
+        self.assertEqual(service_booking.payment_status, 'partially_refunded')
+        self.assertEqual(service_booking.booking_status, 'accepted')
+
+        # Assertions for Payment
+        self.assertEqual(payment.refunded_amount, total_refunded_amount)
+        self.assertEqual(payment.status, 'partially_refunded')
+
+    def test_service_booking_declined_and_fully_refunded(self):
+        """
+        Tests specific scenario for ServiceBooking:
+        If booking_status is 'declined' and payment_status becomes 'refunded',
+        booking_status should change to 'DECLINED_REFUNDED'.
+        """
+        initial_amount = Decimal('200.00')
+        service_booking = ServiceBookingFactory(amount_paid=initial_amount, payment_status='paid', booking_status='declined')
+        payment = PaymentFactory(
+            hire_booking=None,
+            service_booking=service_booking,
+            amount=initial_amount,
+            status='succeeded',
+            refunded_amount=Decimal('0.00')
+        )
+        total_refunded_amount = initial_amount # Full refund
+
+        update_associated_bookings_and_payments(payment, service_booking, 'service_booking', total_refunded_amount)
+
+        service_booking.refresh_from_db()
+        payment.refresh_from_db()
+
+        # Assertions for ServiceBooking
+        self.assertEqual(service_booking.amount_paid, Decimal('0.00'))
+        self.assertEqual(service_booking.payment_status, 'refunded')
+        self.assertEqual(service_booking.booking_status, 'DECLINED_REFUNDED') # Specific expected change
+
+        # Assertions for Payment
+        self.assertEqual(payment.refunded_amount, total_refunded_amount)
+        self.assertEqual(payment.status, 'refunded')
+
+    def test_payment_updates_only_when_no_booking_obj(self):
+        """
+        Tests that if no booking_obj is provided, only the payment object is updated.
+        """
+        initial_amount = Decimal('50.00')
+        payment = PaymentFactory(
+            hire_booking=None,
+            service_booking=None,
+            amount=initial_amount,
+            status='succeeded',
+            refunded_amount=Decimal('0.00')
+        )
+        total_refunded_amount = Decimal('25.00')
+
+        # Pass None for booking_obj and 'unknown' for booking_type_str
+        update_associated_bookings_and_payments(payment, None, 'unknown', total_refunded_amount)
+
+        payment.refresh_from_db()
+
+        # Assertions for Payment
+        self.assertEqual(payment.refunded_amount, total_refunded_amount)
+        self.assertEqual(payment.status, 'partially_refunded')
+        
+        # Ensure no errors occur and function completes gracefully without booking_obj
+
+
+    def test_payment_status_updates_from_partially_refunded_to_refunded(self):
+        """
+        Tests that if payment was partially refunded and then fully refunded.
+        """
+        initial_amount = Decimal('100.00')
+        payment = PaymentFactory(
+            amount=initial_amount,
+            status='partially_refunded',
+            refunded_amount=Decimal('20.00')
+        )
+        total_refunded_amount = initial_amount
+
+        update_associated_bookings_and_payments(payment, None, 'unknown', total_refunded_amount)
+        payment.refresh_from_db()
+        self.assertEqual(payment.status, 'refunded')
+        self.assertEqual(payment.refunded_amount, initial_amount)
+
+    def test_payment_status_updates_from_succeeded_to_partially_refunded(self):
+        """
+        Tests that if payment was succeeded and then partially refunded.
+        """
+        initial_amount = Decimal('100.00')
+        payment = PaymentFactory(
+            amount=initial_amount,
+            status='succeeded',
+            refunded_amount=Decimal('0.00')
+        )
+        total_refunded_amount = Decimal('50.00')
+
+        update_associated_bookings_and_payments(payment, None, 'unknown', total_refunded_amount)
+        payment.refresh_from_db()
+        self.assertEqual(payment.status, 'partially_refunded')
+        self.assertEqual(payment.refunded_amount, total_refunded_amount)
+
+    def test_booking_amount_paid_goes_to_zero_exactly(self):
+        """
+        Tests that if total refunded amount equals payment amount, amount_paid is 0.
+        """
+        initial_amount = Decimal('75.00')
+        hire_booking = HireBookingFactory(amount_paid=initial_amount, payment_status='paid')
+        payment = PaymentFactory(hire_booking=hire_booking, amount=initial_amount, status='succeeded')
+        total_refunded_amount = Decimal('75.00')
+
+        update_associated_bookings_and_payments(payment, hire_booking, 'hire_booking', total_refunded_amount)
+        hire_booking.refresh_from_db()
+        payment.refresh_from_db()
+
+        self.assertEqual(hire_booking.amount_paid, Decimal('0.00'))
+        self.assertEqual(hire_booking.payment_status, 'refunded')
+        self.assertEqual(payment.refunded_amount, total_refunded_amount)
+        self.assertEqual(payment.status, 'refunded')
+
+    def test_booking_amount_paid_negative_due_to_over_refund(self):
+        """
+        Tests scenario where total refunded amount is greater than original payment.
+        Amount paid should still be 0, payment status refunded.
+        """
+        initial_amount = Decimal('50.00')
+        hire_booking = HireBookingFactory(amount_paid=initial_amount, payment_status='paid')
+        payment = PaymentFactory(hire_booking=hire_booking, amount=initial_amount, status='succeeded')
+        total_refunded_amount = Decimal('60.00') # Over-refund
+
+        update_associated_bookings_and_payments(payment, hire_booking, 'hire_booking', total_refunded_amount)
+        hire_booking.refresh_from_db()
+        payment.refresh_from_db()
+
+        self.assertEqual(hire_booking.amount_paid, Decimal('0.00')) # Should not be negative
+        self.assertEqual(hire_booking.payment_status, 'refunded')
+        self.assertEqual(payment.refunded_amount, total_refunded_amount) # Refunded amount reflects actual
+        self.assertEqual(payment.status, 'refunded')
+
+
+    def test_booking_status_not_declined_remains_unchanged_on_full_refund_service_booking(self):
+        """
+        Tests that a ServiceBooking's booking_status does NOT change to 'DECLINED_REFUNDED'
+        if its initial status is not 'declined', even on full refund.
+        """
+        initial_amount = Decimal('100.00')
+        service_booking = ServiceBookingFactory(amount_paid=initial_amount, payment_status='paid', booking_status='confirmed') # Not 'declined'
+        payment = PaymentFactory(
+            hire_booking=None,
+            service_booking=service_booking,
+            amount=initial_amount,
+            status='succeeded',
+            refunded_amount=Decimal('0.00')
+        )
+        total_refunded_amount = initial_amount # Full refund
+
+        update_associated_bookings_and_payments(payment, service_booking, 'service_booking', total_refunded_amount)
+
+        service_booking.refresh_from_db()
+        self.assertEqual(service_booking.booking_status, 'confirmed') # Should remain 'confirmed'
+        self.assertEqual(service_booking.payment_status, 'refunded')
+
+
+    def test_booking_status_not_paid_remains_unchanged_on_full_refund_hire_booking(self):
+        """
+        Tests that a HireBooking's status changes to 'cancelled' only if payment_status becomes 'refunded'.
+        If it was already cancelled, it should remain cancelled.
+        """
+        initial_amount = Decimal('100.00')
+        hire_booking = HireBookingFactory(amount_paid=initial_amount, payment_status='paid', status='pending_approval') # Not 'confirmed'
+        payment = PaymentFactory(
+            hire_booking=hire_booking,
+            amount=initial_amount,
+            status='succeeded',
+            refunded_amount=Decimal('0.00')
+        )
+        total_refunded_amount = initial_amount # Full refund
+
+        update_associated_bookings_and_payments(payment, hire_booking, 'hire_booking', total_refunded_amount)
+
+        hire_booking.refresh_from_db()
+        self.assertEqual(hire_booking.status, 'cancelled') # Should still go to cancelled
+        self.assertEqual(hire_booking.payment_status, 'refunded')

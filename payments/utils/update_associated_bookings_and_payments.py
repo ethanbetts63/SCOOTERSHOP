@@ -8,7 +8,8 @@ from service.models import ServiceBooking
 
 def update_associated_bookings_and_payments(payment_obj: Payment, booking_obj, booking_type_str: str, total_refunded_amount: Decimal):
     if booking_obj:
-        booking_obj.amount_paid = payment_obj.amount - total_refunded_amount
+        # Ensure amount_paid does not go below zero, even if over-refunded
+        booking_obj.amount_paid = max(Decimal('0.00'), payment_obj.amount - total_refunded_amount)
 
         if booking_obj.amount_paid <= 0:
             booking_obj.payment_status = 'refunded'
@@ -21,6 +22,8 @@ def update_associated_bookings_and_payments(payment_obj: Payment, booking_obj, b
             if booking_obj.booking_status == 'declined' and booking_obj.payment_status == 'refunded':
                 booking_obj.booking_status = 'DECLINED_REFUNDED'
         elif booking_type_str == 'hire_booking':
+            # This logic means if a payment is fully refunded for a hire booking,
+            # the booking status is set to 'cancelled'.
             if booking_obj.payment_status == 'refunded':
                 booking_obj.status = 'cancelled'
 
@@ -35,3 +38,4 @@ def update_associated_bookings_and_payments(payment_obj: Payment, booking_obj, b
         payment_obj.status = 'succeeded'
 
     payment_obj.save()
+
