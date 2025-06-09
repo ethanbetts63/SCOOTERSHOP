@@ -22,7 +22,7 @@ class RefundRequest(models.Model):
     # Optional link to a HireBooking
     hire_booking = models.ForeignKey(
         'hire.HireBooking', # Use string reference to avoid circular import
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL, # Changed to SET_NULL
         related_name='refund_requests',
         null=True, # Make it optional
         blank=True, # Make it optional
@@ -32,7 +32,7 @@ class RefundRequest(models.Model):
     # Optional link to a ServiceBooking
     service_booking = models.ForeignKey(
         'service.ServiceBooking', # Use string reference to avoid circular import
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL, # Changed to SET_NULL
         related_name='refund_requests',
         null=True, # Make it optional
         blank=True, # Make it optional

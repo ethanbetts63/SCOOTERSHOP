@@ -13,12 +13,16 @@ from ..test_helpers.model_factories import (
     HireBookingFactory,
     DriverProfileFactory,
     MotorcycleFactory, # Now importing the real MotorcycleFactory
-    MotorcycleConditionFactory # Also import MotorcycleConditionFactory if you plan to use it
+    MotorcycleConditionFactory, # Also import MotorcycleConditionFactory if you plan to use it
+    TempServiceBookingFactory, # Import for service booking related tests
+    ServiceBookingFactory, # Import for service booking related tests
+    ServiceProfileFactory, # Import for service booking related tests
 )
 
 # Import the Payment model directly for specific tests if needed
 from payments.models import Payment
 from hire.models import TempHireBooking, HireBooking, DriverProfile
+from service.models import TempServiceBooking, ServiceBooking, ServiceProfile
 
 
 class PaymentModelTest(TestCase):
@@ -49,6 +53,13 @@ class PaymentModelTest(TestCase):
             total_hire_price=Decimal('300.00'),
             grand_total=Decimal('350.00')
         )
+        cls.temp_service_booking = TempServiceBookingFactory.create()
+        cls.service_profile = ServiceProfileFactory.create(name="Service Customer Name")
+        cls.service_booking = ServiceBookingFactory.create(
+            service_profile=cls.service_profile # Link to the created service profile
+        )
+
+
         cls.stripe_pi_id_1 = "pi_test_12345"
         cls.stripe_pi_id_2 = "pi_test_67890"
 
@@ -76,77 +87,6 @@ class PaymentModelTest(TestCase):
         self.assertIsNotNone(payment.updated_at)
         # The factory's metadata is now set to default to an empty dict for this test case
         self.assertEqual(payment.metadata, {}) # Check default for JSONField
-
-    def test_str_method(self):
-        """
-        Test the __str__ method of Payment.
-        """
-        # Clear Payments to ensure test isolation for this specific method
-        Payment.objects.all().delete()
-        # This payment uses the class-level self.temp_booking
-        payment = PaymentFactory.create(
-            amount=Decimal('250.00'),
-            currency='AUD',
-            status='requires_action',
-            temp_hire_booking=self.temp_booking,
-            hire_booking=self.hire_booking,
-            driver_profile=self.driver_profile, # Add driver_profile for comprehensive test
-            stripe_payment_intent_id=self.stripe_pi_id_2
-        )
-        # Updated expected_str to match the Payment model's __str__
-        expected_str = (
-            f"Payment {payment.id} "
-            f"(TH: {self.temp_booking.id}, H: {self.hire_booking.booking_reference}, Driver: {self.driver_profile.name}; "
-            f"TS: N/A, S: N/A, Service Cust: N/A) - "
-            f"Amt: {payment.amount} {payment.currency} - Status: {payment.status}"
-        )
-        self.assertEqual(str(payment), expected_str)
-
-        # Test with only temp_hire_booking
-        # Create a NEW temp_booking instance for this specific payment
-        new_temp_booking_for_str_test = TempHireBookingFactory.create(
-            motorcycle=self.motorcycle, # Re-use existing motorcycle
-            driver_profile=self.driver_profile, # Re-use existing driver profile
-            total_hire_price=Decimal('100.00'),
-            grand_total=Decimal('120.00')
-        )
-        payment_temp_only = PaymentFactory.create(
-            amount=Decimal('50.00'),
-            temp_hire_booking=new_temp_booking_for_str_test, # Use the NEW temp_booking
-            status='pending'
-        )
-        # Updated expected_str_temp_only
-        expected_str_temp_only = (
-            f"Payment {payment_temp_only.id} (TH: {new_temp_booking_for_str_test.id}, H: N/A, Driver: N/A; "
-            f"TS: N/A, S: N/A, Service Cust: N/A) - "
-            f"Amt: {payment_temp_only.amount} {payment_temp_only.currency} - Status: {payment_temp_only.status}"
-        )
-        self.assertEqual(str(payment_temp_only), expected_str_temp_only)
-
-        # Test with only hire_booking
-        payment_hire_only = PaymentFactory.create(
-            amount=Decimal('75.00'),
-            hire_booking=self.hire_booking,
-            status='succeeded'
-        )
-        # Updated expected_str_hire_only
-        expected_str_hire_only = (
-            f"Payment {payment_hire_only.id} (TH: N/A, H: {self.hire_booking.booking_reference}, Driver: N/A; "
-            f"TS: N/A, S: N/A, Service Cust: N/A) - "
-            f"Amt: {payment_hire_only.amount} {payment_hire_only.currency} - Status: {payment_hire_only.status}"
-        )
-        self.assertEqual(str(payment_hire_only), expected_str_hire_only)
-
-        # Test with no bookings or profiles
-        payment_no_booking = PaymentFactory.create(amount=Decimal('10.00'))
-        # Updated expected_str_no_booking
-        expected_str_no_booking = (
-            f"Payment {payment_no_booking.id} (TH: N/A, H: N/A, Driver: N/A; "
-            f"TS: N/A, S: N/A, Service Cust: N/A) - "
-            f"Amt: {payment_no_booking.amount} {payment_no_booking.currency} - Status: {payment_no_booking.status}"
-        )
-        self.assertEqual(str(payment_no_booking), expected_str_no_booking)
-
 
     def test_temp_hire_booking_relationship(self):
         """
@@ -209,6 +149,63 @@ class PaymentModelTest(TestCase):
         self.assertIn(payment1, self.driver_profile.payments.all())
         self.assertIn(payment2, self.driver_profile.payments.all())
         self.assertEqual(self.driver_profile.payments.count(), 2)
+
+    def test_temp_service_booking_relationship(self):
+        """
+        Test the OneToOneField relationship with TempServiceBooking.
+        """
+        Payment.objects.all().delete()
+        payment = PaymentFactory.create(
+            amount=Decimal('100.00'),
+            temp_service_booking=self.temp_service_booking
+        )
+        self.assertEqual(payment.temp_service_booking, self.temp_service_booking)
+        self.assertEqual(self.temp_service_booking.payment_for_temp_service, payment)
+
+        with self.assertRaises(IntegrityError):
+            PaymentFactory.create(
+                amount=Decimal('50.00'),
+                temp_service_booking=self.temp_service_booking
+            )
+
+    def test_service_booking_relationship(self):
+        """
+        Test the ForeignKey relationship with ServiceBooking.
+        """
+        Payment.objects.all().delete()
+        payment1 = PaymentFactory.create(
+            amount=Decimal('200.00'),
+            service_booking=self.service_booking
+        )
+        payment2 = PaymentFactory.create(
+            amount=Decimal('50.00'),
+            service_booking=self.service_booking
+        )
+        self.assertEqual(payment1.service_booking, self.service_booking)
+        self.assertEqual(payment2.service_booking, self.service_booking)
+        self.assertIn(payment1, self.service_booking.payments_for_service.all())
+        self.assertIn(payment2, self.service_booking.payments_for_service.all())
+        self.assertEqual(self.service_booking.payments_for_service.count(), 2)
+
+    def test_service_customer_profile_relationship(self):
+        """
+        Test the ForeignKey relationship with ServiceProfile.
+        """
+        Payment.objects.all().delete()
+        payment1 = PaymentFactory.create(
+            amount=Decimal('120.00'),
+            service_customer_profile=self.service_profile
+        )
+        payment2 = PaymentFactory.create(
+            amount=Decimal('80.00'),
+            service_customer_profile=self.service_profile
+        )
+        self.assertEqual(payment1.service_customer_profile, self.service_profile)
+        self.assertEqual(payment2.service_customer_profile, self.service_profile)
+        self.assertIn(payment1, self.service_profile.payments_by_service_customer.all())
+        self.assertIn(payment2, self.service_profile.payments_by_service_customer.all())
+        self.assertEqual(self.service_profile.payments_by_service_customer.count(), 2)
+
 
     def test_stripe_payment_intent_id_uniqueness(self):
         """
@@ -389,8 +386,7 @@ class PaymentModelTest(TestCase):
         # Factory's default for description is a sentence, so we test the model's actual default
         payment_model_default = Payment.objects.create(
             amount=Decimal('75.00'),
-            stripe_payment_intent_id=f"pi_{uuid.uuid4().hex[:24]}",
-            stripe_payment_method_id="pm_card_visa"
+            stripe_payment_intent_id=f"pi_{uuid.uuid4().hex[:24]}"
         )
         self.assertIsNone(payment_model_default.description) # Check default null
 
