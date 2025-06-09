@@ -24,6 +24,7 @@
                 <h3>Service Management</h3>
                 <ul class="reset-list">
                     <li><a href="{% url 'service:service_booking_management' %}">Service Bookings</a></li>
+                    <li><a href="{% url 'service:admin_service_profiles' %}">Service Profiles</a></li> {# ADDED THIS LINE #}
                     <li><a href="{% url 'service:service_settings' %}">Service Settings</a></li>
                     <li><a href="{% url 'service:service_types_management' %}">Service Types</a></li>
                     <li><a href="{% url 'service:service_brands_management' %}">Service Brands</a></li>
@@ -36,7 +37,7 @@
                 <h3>Hire Management</h3>
                 <ul class="reset-list">
                     <li><a href="{% url 'dashboard:hire_bookings' %}">Hire Bookings</a></li>
-                    <li><a href="{% url 'hire:admin_hire_booking_create' %}">Create New Hire Booking</a></li> 
+                    <li><a href="{% url 'hire:admin_hire_booking_create' %}">Create New Hire Booking</a></li>
                     <li><a href="{% url 'dashboard:settings_hire_booking' %}">Hire Booking Settings</a></li>
                     <li><a href="{% url 'dashboard:settings_hire_addons' %}">Hire Add-Ons</a></li>
                     <li><a href="{% url 'dashboard:settings_hire_packages' %}">Hire Packages</a></li>
