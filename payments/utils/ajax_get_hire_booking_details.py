@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404 # Import Http404
 from django.shortcuts import get_object_or_404
 from hire.models import HireBooking
 from django.contrib.auth.decorators import login_required
@@ -6,6 +6,7 @@ from django.views.decorators.http import require_GET
 from django.utils import timezone
 from payments.utils.hire_refund_calc import calculate_hire_refund_amount
 from payments.models import RefundRequest
+from datetime import datetime # Import datetime for combine
 
 @require_GET
 @login_required
@@ -15,6 +16,10 @@ def get_hire_booking_details_json(request, pk):
     Requires staff login. This endpoint now also includes the latest
     refund request status associated with the booking.
     """
+    # Manual check for staff status
+    if not request.user.is_staff:
+        return JsonResponse({'error': 'Permission denied'}, status=403)
+
     try:
         hire_booking = get_object_or_404(HireBooking, pk=pk)
 
@@ -35,19 +40,24 @@ def get_hire_booking_details_json(request, pk):
         refund_policy_snapshot = {}
         if hire_booking.payment:
             payment_date = hire_booking.payment.created_at.strftime('%Y-%m-%d %H:%M') if hire_booking.payment.created_at else 'N/A'
-            payment_amount = float(hire_booking.payment.amount) if hire_booking.payment.amount else 'N/A'
-            refund_policy_snapshot = hire_booking.payment.refund_policy_snapshot
+            payment_amount = float(hire_booking.payment.amount) if hire_booking.payment.amount is not None else 'N/A'
+            refund_policy_snapshot = hire_booking.payment.refund_policy_snapshot if hire_booking.payment.refund_policy_snapshot else {}
         else:
-            pass
+            pass # Keep payment_date and payment_amount as 'N/A'
 
         latest_refund_request = RefundRequest.objects.filter(hire_booking=hire_booking).order_by('-requested_at').first()
         refund_status_for_booking = latest_refund_request.get_status_display() if latest_refund_request else 'No Refund Request Yet'
+
+        # Construct cancellation_datetime from pickup_date and pickup_time
+        cancellation_datetime = datetime.combine(hire_booking.pickup_date, hire_booking.pickup_time)
+        if timezone.is_aware(timezone.now()): # Check if current timezone is aware
+            cancellation_datetime = timezone.make_aware(cancellation_datetime) # Make it aware if timezone is active
 
 
         refund_calculation_results = calculate_hire_refund_amount(
             booking=hire_booking,
             refund_policy_snapshot=refund_policy_snapshot,
-            cancellation_datetime=timezone.now()
+            cancellation_datetime=cancellation_datetime # Use the constructed cancellation_datetime
         )
 
         booking_details = {
@@ -73,7 +83,8 @@ def get_hire_booking_details_json(request, pk):
             'refund_request_status_for_booking': refund_status_for_booking,
         }
         return JsonResponse(booking_details)
-    except HireBooking.DoesNotExist:
+    except Http404: # Catch Http404 specifically for 404 response
         return JsonResponse({'error': 'Hire Booking not found'}, status=404)
     except Exception as e:
+        print(f"Error in get_hire_booking_details_json: {e}") # Log the actual exception
         return JsonResponse({'error': f'An unexpected error occurred: {str(e)}'}, status=500)

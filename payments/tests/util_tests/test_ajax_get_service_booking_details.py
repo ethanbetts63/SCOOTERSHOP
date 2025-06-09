@@ -3,17 +3,9 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from decimal import Decimal
-from datetime import datetime, date, time, timedelta
-from unittest.mock import patch, MagicMock
+from datetime import time, timedelta
+from unittest.mock import patch
 from django.utils import timezone
-import json
-import uuid # Import uuid, though no longer used for pk in these tests
-
-# Import the view function to be tested
-from payments.utils.ajax_get_service_booking_details import get_service_booking_details_json
-from django.contrib.admin.views.decorators import staff_member_required # Added import for staff_member_required
-
-# Import factories
 from payments.tests.test_helpers.model_factories import (
     ServiceBookingFactory, PaymentFactory, RefundPolicySettingsFactory,
     ServiceProfileFactory, UserFactory, RefundRequestFactory, 

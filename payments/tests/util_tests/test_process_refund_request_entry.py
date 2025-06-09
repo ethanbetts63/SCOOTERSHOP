@@ -3,7 +3,6 @@ from decimal import Decimal
 from unittest import mock
 
 from django.test import TestCase
-from django.utils import timezone # Keep this for timezone.now()
 from datetime import timezone as dt_timezone # Use standard library timezone for utc
 
 # Import the utility function to be tested
