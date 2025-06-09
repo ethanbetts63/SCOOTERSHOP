@@ -15,7 +15,7 @@ class CustomerMotorcycleCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin
     Handles GET for displaying the form and POST for processing submissions.
     Requires the user to be logged in and a staff member or superuser.
     """
-    template_name = 'service/admin/customer_motorcycle_form.html' # New template
+    template_name = 'service/admin_customer_motorcycle_create_update.html' # New template
     form_class = AdminCustomerMotorcycleForm
 
     def test_func(self):

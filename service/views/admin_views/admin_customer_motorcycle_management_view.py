@@ -1,9 +1,4 @@
 # service/views/admin_views.py (updated with CustomerMotorcycleListView)
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views import View
-from django.urls import reverse
-from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Q # Import Q object for complex lookups
 from django.views.generic import ListView # Import ListView for cleaner list management
@@ -15,7 +10,7 @@ class CustomerMotorcycleManagementView(LoginRequiredMixin, UserPassesTestMixin, 
     Requires the user to be logged in and a staff member or superuser.
     """
     model = CustomerMotorcycle
-    template_name = 'service/admin/customer_motorcycle_list.html' # New template
+    template_name = 'service/admin_customer_motorcycle_management.html' # New template
     context_object_name = 'motorcycles' # Variable name for the list in the template
     paginate_by = 10 # Optional: Add pagination for many motorcycles
 
