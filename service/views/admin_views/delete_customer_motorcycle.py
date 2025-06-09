@@ -27,4 +27,4 @@ class CustomerMotorcycleDeleteView(LoginRequiredMixin, UserPassesTestMixin, View
         motorcycle_display_name = f"{motorcycle.year} {motorcycle.brand} {motorcycle.model}" # For success message
         motorcycle.delete()
         messages.success(request, f"Motorcycle '{motorcycle_display_name}' deleted successfully.")
-        return redirect(reverse('service:admin_customer_motorcycles')) # Redirect back to the list view
+        return redirect(reverse('service:admin_customer_motorcycle_management')) # Redirect back to the list view
