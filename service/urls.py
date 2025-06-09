@@ -48,6 +48,11 @@ urlpatterns = [
     path('admin/service-profiles/', admin_views.ServiceProfileManagementView.as_view(), name='admin_service_profiles'),
     path('admin/service-profiles/create/', admin_views.ServiceProfileCreateUpdateView.as_view(), name='admin_create_service_profile'),
     path('admin/service-profiles/edit/<int:pk>/', admin_views.ServiceProfileCreateUpdateView.as_view(), name='admin_edit_service_profile'),
-
     path('admin/service-profiles/delete/<int:pk>/', admin_views.ServiceProfileDeleteView.as_view(), name='admin_delete_service_profile'),
+
+        # NEW ADMIN CUSTOMER MOTORCYCLE MANAGEMENT
+    path('admin/customer-motorcycles/', admin_views.CustomerMotorcycleManagementView.as_view(), name='admin_customer_motorcycle_management'),
+    path('admin/customer-motorcycles/create/', admin_views.CustomerMotorcycleCreateUpdateView.as_view(), name='admin_create_customer_motorcycle'),
+    path('admin/customer-motorcycles/edit/<int:pk>/', admin_views.CustomerMotorcycleCreateUpdateView.as_view(), name='admin_edit_customer_motorcycle'),
+    path('admin/customer-motorcycles/delete/<int:pk>/', admin_views.CustomerMotorcycleDeleteView.as_view(), name='admin_delete_customer_motorcycle'),
 ]
