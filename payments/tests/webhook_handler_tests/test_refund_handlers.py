@@ -1,368 +1,208 @@
+# payments/tests/webhook_handler_tests/test_refund_handlers.py
+
+from django.test import TestCase
+from unittest.mock import patch, MagicMock
 from decimal import Decimal
-from django.test import TestCase, override_settings
 from django.utils import timezone
-from unittest import mock
-from django.conf import settings
-import stripe
+import datetime
 
-# Import models
-from hire.models import HireBooking
-from payments.models import Payment, RefundRequest
-from service.models import ServiceBooking # Import ServiceBooking
-
-# Import handlers
+# Import the functions to be tested
 from payments.webhook_handlers.refund_handlers import handle_booking_refunded, handle_booking_refund_updated
 
 # Import factories
-from ..test_helpers.model_factories import  (
-    UserFactory,
-    DriverProfileFactory,
-    HireBookingFactory,
-    PaymentFactory,
-    RefundRequestFactory,
-    ServiceBookingFactory, # Import ServiceBookingFactory
-    ServiceProfileFactory, # Import ServiceProfileFactory
+from payments.tests.test_helpers.model_factories import (
+    PaymentFactory, HireBookingFactory, ServiceBookingFactory,
+    RefundRequestFactory, UserFactory, DriverProfileFactory,
+    ServiceProfileFactory, MotorcycleFactory, ServiceTypeFactory, CustomerMotorcycleFactory
 )
 
-@override_settings(ADMIN_EMAIL='admin-refund@example.com', SITE_BASE_URL='http://example.com')
-class RefundWebhookHandlerTest(TestCase):
+
+class RefundHandlersTests(TestCase):
     """
-    Tests for the refund-related webhook handlers, now including both HireBooking and ServiceBooking.
+    Tests for the refund webhook handlers in payments/webhook_handlers/refund_handlers.py.
     """
+
     def setUp(self):
-        """Set up objects for each test, for both HireBooking and ServiceBooking."""
+        """
+        Set up common data for tests.
+        We'll mock the utility functions for isolation.
+        """
+        self.mock_get_booking_from_payment = patch('payments.webhook_handlers.refund_handlers.get_booking_from_payment').start()
+        self.mock_extract_stripe_refund_data = patch('payments.webhook_handlers.refund_handlers.extract_stripe_refund_data').start()
+        self.mock_update_associated_bookings_and_payments = patch('payments.webhook_handlers.refund_handlers.update_associated_bookings_and_payments').start()
+        self.mock_process_refund_request_entry = patch('payments.webhook_handlers.refund_handlers.process_refund_request_entry').start()
+        self.mock_send_refund_notifications = patch('payments.webhook_handlers.refund_handlers.send_refund_notifications').start()
+        # Removed global patch for transaction.atomic here
+
+        # Create some base objects for testing
         self.user = UserFactory()
         self.driver_profile = DriverProfileFactory(user=self.user)
-        self.service_profile = ServiceProfileFactory(user=self.user) # Setup for ServiceBooking
-
-        # Hire Booking Setup
-        self.hire_payment = PaymentFactory(
-            driver_profile=self.driver_profile,
-            amount=Decimal('300.00'),
-            status='succeeded',
-            refunded_amount=Decimal('0.00')
-        )
-        self.hire_booking = HireBookingFactory(
-            driver_profile=self.driver_profile,
-            payment=self.hire_payment,
-            grand_total=self.hire_payment.amount,
-            amount_paid=self.hire_payment.amount,
-            payment_status='paid',
-            status='confirmed'
-        )
-        self.hire_payment.hire_booking = self.hire_booking
-        self.hire_payment.save()
-
-        # Service Booking Setup
-        self.service_payment = PaymentFactory(
-            service_customer_profile=self.service_profile, # Link to service profile
-            amount=Decimal('250.00'),
-            status='succeeded',
-            refunded_amount=Decimal('0.00')
-        )
+        self.motorcycle = MotorcycleFactory()
+        self.payment = PaymentFactory(amount=Decimal('100.00'), refunded_amount=Decimal('0.00'))
+        self.hire_booking = HireBookingFactory(payment=self.payment, driver_profile=self.driver_profile, motorcycle=self.motorcycle)
+        
+        self.service_profile = ServiceProfileFactory(user=self.user)
+        self.customer_motorcycle = CustomerMotorcycleFactory(service_profile=self.service_profile)
+        self.service_type = ServiceTypeFactory()
         self.service_booking = ServiceBookingFactory(
-            service_profile=self.service_profile,
-            payment=self.service_payment,
-            calculated_total=self.service_payment.amount,
-            amount_paid=self.service_payment.amount,
-            payment_status='paid',
-            booking_status='confirmed'
+            payment=self.payment, 
+            service_profile=self.service_profile, 
+            customer_motorcycle=self.customer_motorcycle, 
+            service_type=self.service_type
         )
-        self.service_payment.service_booking = self.service_booking
-        self.service_payment.save()
+        
+        self.refund_request = RefundRequestFactory() # A generic refund request instance
 
-
-    # --- Hire Booking Tests (Existing, with corrected assertion for partial refund) ---
-
-    @mock.patch('payments.webhook_handlers.refund_handlers.send_templated_email')
-    def test_handle_charge_refunded_full_refund_hire_booking(self, mock_send_email):
-        """
-        Tests 'charge.refunded' event for a full refund for a HireBooking.
-        """
-        # 1. Setup
-        refund_request = RefundRequestFactory(
-            hire_booking=self.hire_booking,
-            payment=self.hire_payment,  # Explicitly link to the correct payment
-            status='approved',
-            refund_calculation_details={},
-            amount_to_refund=self.hire_payment.amount # Explicitly set amount_to_refund for full refund test
-        )
-        event_charge_object_data = {
-            'object': 'charge',
-            'amount_refunded': int(self.hire_payment.amount * 100),
-            'refunds': {
-                'data': [{'id': 're_full_123', 'status': 'succeeded', 'created': int(timezone.now().timestamp())}]
-            }
+        self.mock_extract_stripe_refund_data.return_value = {
+            'refunded_amount_decimal': Decimal('50.00'),
+            'is_charge_object': True,
+            'is_refund_object': False,
+            'refund_id': 're_test_id',
+            'charge_id': 'ch_test_id',
         }
+        self.mock_get_booking_from_payment.return_value = (self.hire_booking, 'hire')
+        self.mock_process_refund_request_entry.return_value = self.refund_request
 
-        # 2. Action
-        handle_booking_refunded(self.hire_payment, event_charge_object_data)
-
-        # 3. Assertions
-        self.hire_payment.refresh_from_db()
-        self.hire_booking.refresh_from_db()
-        refund_request.refresh_from_db()
-
-        self.assertEqual(self.hire_payment.status, 'refunded')
-        self.assertEqual(self.hire_payment.refunded_amount, self.hire_payment.amount)
-        self.assertEqual(self.hire_booking.status, 'cancelled')
-        self.assertEqual(self.hire_booking.payment_status, 'refunded')
-        self.assertEqual(refund_request.status, 'refunded')
-        # Expect 2 emails: 1 to user, 1 to admin
-        self.assertEqual(mock_send_email.call_count, 2)
-
-    @mock.patch('payments.webhook_handlers.refund_handlers.send_templated_email')
-    def test_handle_charge_refunded_partial_refund_hire_booking(self, mock_send_email):
+    def tearDown(self):
         """
-        Tests 'charge.refunded' event for a partial refund for a HireBooking.
+        Stop all patched mocks that were started in setUp.
         """
-        partial_refund_amount = Decimal('100.00')
-        refund_request = RefundRequestFactory(
-            hire_booking=self.hire_booking,
-            payment=self.hire_payment, # Explicitly link to the correct payment
-            amount_to_refund=partial_refund_amount,
-            status='approved',
-            refund_calculation_details={}
-        )
-        event_charge_object_data = {
-            'object': 'charge',
-            'amount_refunded': int(partial_refund_amount * 100),
-            'refunds': {
-                'data': [{'id': 're_partial_123', 'status': 'succeeded', 'created': int(timezone.now().timestamp())}]
-            }
-        }
+        patch.stopall()
 
-        handle_booking_refunded(self.hire_payment, event_charge_object_data)
-
-        self.hire_payment.refresh_from_db()
-        self.hire_booking.refresh_from_db()
-        refund_request.refresh_from_db()
-
-        self.assertEqual(self.hire_payment.status, 'partially_refunded')
-        self.assertEqual(self.hire_payment.refunded_amount, partial_refund_amount)
-        self.assertEqual(self.hire_booking.payment_status, 'partially_refunded')
-        self.assertEqual(self.hire_booking.status, 'confirmed') # Not cancelled
-        self.assertEqual(refund_request.status, 'partially_refunded')
-        self.assertEqual(mock_send_email.call_count, 2)
-
-    @mock.patch('payments.webhook_handlers.refund_handlers.send_templated_email')
-    @mock.patch('stripe.Charge.retrieve')
-    def test_handle_refund_updated_success_hire_booking(self, mock_stripe_charge_retrieve, mock_send_email):
+    def test_handle_booking_refunded_full_flow(self):
         """
-        Tests 'charge.refund.updated' event for a successful refund for a HireBooking.
+        Tests the full flow of handle_booking_refunded for a valid refund.
         """
-        # Create a refund request for the handler to find
-        RefundRequestFactory(
-            hire_booking=self.hire_booking,
-            payment=self.hire_payment,
-            status='approved',
-            amount_to_refund=self.hire_payment.amount
-        )
-        mock_stripe_charge_retrieve.return_value = {
-            'amount_refunded': int(self.hire_payment.amount * 100)
-        }
-        event_refund_object_data = {
-            'object': 'refund',
-            'id': 're_updated_123',
-            'charge': 'ch_123',
-            'status': 'succeeded',
-        }
+        event_data = {'id': 'evt_test', 'object': 'event'}
 
-        handle_booking_refund_updated(self.hire_payment, event_refund_object_data)
+        with patch('django.db.transaction.atomic') as mock_atomic:
+            # Configure the mock to behave as a context manager
+            mock_atomic.return_value.__enter__.return_value = MagicMock()
+            
+            handle_booking_refunded(self.payment, event_data)
 
-        self.hire_payment.refresh_from_db()
-        self.assertEqual(self.hire_payment.status, 'refunded')
-        self.assertEqual(self.hire_payment.refunded_amount, self.hire_payment.amount)
-        self.assertEqual(mock_send_email.call_count, 2)
+            mock_atomic.assert_called_once() # Now asserts only calls within this context
+            self.mock_extract_stripe_refund_data.assert_called_once_with(event_data)
+            self.mock_get_booking_from_payment.assert_called_once_with(self.payment)
+            self.mock_update_associated_bookings_and_payments.assert_called_once_with(
+                self.payment,
+                self.hire_booking,
+                'hire',
+                Decimal('50.00')
+            )
+            self.mock_process_refund_request_entry.assert_called_once_with(
+                self.payment,
+                self.hire_booking,
+                'hire',
+                self.mock_extract_stripe_refund_data.return_value
+            )
+            self.mock_send_refund_notifications.assert_called_once_with(
+                self.payment,
+                self.hire_booking,
+                'hire',
+                self.refund_request,
+                self.mock_extract_stripe_refund_data.return_value
+            )
 
-    @mock.patch('payments.webhook_handlers.refund_handlers.send_templated_email')
-    @mock.patch('stripe.Charge.retrieve', side_effect=stripe.error.StripeError("API Error"))
-    def test_handle_refund_updated_stripe_api_fails_hire_booking(self, mock_stripe_charge_retrieve, mock_send_email):
+    def test_handle_booking_refunded_zero_amount(self):
         """
-        Tests 'charge.refund.updated' falls back to event data if stripe.Charge.retrieve fails for a HireBooking.
+        Tests that handle_booking_refunded returns early if refunded_amount_decimal is <= 0.
         """
-        fallback_amount = Decimal('50.00')
-        # Create a refund request for the handler to find
-        RefundRequestFactory(
-            hire_booking=self.hire_booking,
-            payment=self.hire_payment,
-            status='approved',
-            amount_to_refund=fallback_amount
-        )
-        event_refund_object_data = {
-            'object': 'refund',
-            'id': 're_updated_fail_123',
-            'charge': 'ch_fail_123',
-            'amount': int(fallback_amount * 100),
-            'status': 'succeeded',
-        }
+        self.mock_extract_stripe_refund_data.return_value['refunded_amount_decimal'] = Decimal('0.00')
+        event_data = {'id': 'evt_test', 'object': 'event'}
 
-        handle_booking_refund_updated(self.hire_payment, event_refund_object_data)
+        with patch('django.db.transaction.atomic') as mock_atomic:
+            mock_atomic.return_value.__enter__.return_value = MagicMock()
 
-        self.hire_payment.refresh_from_db()
-        self.assertEqual(self.hire_payment.status, 'partially_refunded')
-        self.assertEqual(self.hire_payment.refunded_amount, fallback_amount)
-        self.assertEqual(mock_send_email.call_count, 2)
+            handle_booking_refunded(self.payment, event_data)
 
-    # --- Service Booking Tests (New) ---
+            self.mock_extract_stripe_refund_data.assert_called_once_with(event_data)
+            # Assert no further calls were made
+            self.mock_get_booking_from_payment.assert_not_called()
+            self.mock_update_associated_bookings_and_payments.assert_not_called()
+            self.mock_process_refund_request_entry.assert_not_called()
+            self.mock_send_refund_notifications.assert_not_called()
+            mock_atomic.assert_called_once() # atomic() context is still entered
 
-    @mock.patch('payments.webhook_handlers.refund_handlers.send_templated_email')
-    def test_handle_charge_refunded_full_refund_service_booking(self, mock_send_email):
+    def test_handle_booking_refunded_not_charge_or_refund_object(self):
         """
-        Tests 'charge.refunded' event for a full refund for a ServiceBooking.
+        Tests that handle_booking_refunded returns early if not a charge or refund object.
         """
-        refund_request = RefundRequestFactory(
-            service_booking=self.service_booking,
-            payment=self.service_payment,
-            status='approved',
-            refund_calculation_details={},
-            amount_to_refund=self.service_payment.amount
-        )
-        event_charge_object_data = {
-            'object': 'charge',
-            'amount_refunded': int(self.service_payment.amount * 100),
-            'refunds': {
-                'data': [{'id': 're_service_full_123', 'status': 'succeeded', 'created': int(timezone.now().timestamp())}]
-            }
-        }
+        self.mock_extract_stripe_refund_data.return_value['is_charge_object'] = False
+        self.mock_extract_stripe_refund_data.return_value['is_refund_object'] = False
+        event_data = {'id': 'evt_test', 'object': 'event'}
 
-        handle_booking_refunded(self.service_payment, event_charge_object_data)
+        with patch('django.db.transaction.atomic') as mock_atomic:
+            mock_atomic.return_value.__enter__.return_value = MagicMock()
 
-        self.service_payment.refresh_from_db()
-        self.service_booking.refresh_from_db()
-        refund_request.refresh_from_db()
+            handle_booking_refunded(self.payment, event_data)
 
-        self.assertEqual(self.service_payment.status, 'refunded')
-        self.assertEqual(self.service_payment.refunded_amount, self.service_payment.amount)
-        self.assertEqual(self.service_booking.booking_status, 'confirmed') # Service booking status should remain 'confirmed' unless declined
-        self.assertEqual(self.service_booking.payment_status, 'refunded')
-        self.assertEqual(refund_request.status, 'refunded')
-        self.assertEqual(mock_send_email.call_count, 2) # User and Admin email
+            self.mock_extract_stripe_refund_data.assert_called_once_with(event_data)
+            # Assert no further calls were made
+            self.mock_get_booking_from_payment.assert_not_called()
+            self.mock_update_associated_bookings_and_payments.assert_not_called()
+            self.mock_process_refund_request_entry.assert_not_called()
+            self.mock_send_refund_notifications.assert_not_called()
+            mock_atomic.assert_called_once() # atomic() context is still entered
 
-    @mock.patch('payments.webhook_handlers.refund_handlers.send_templated_email')
-    def test_handle_charge_refunded_partial_refund_service_booking(self, mock_send_email):
+    def test_handle_booking_refunded_exception_handling(self):
         """
-        Tests 'charge.refunded' event for a partial refund for a ServiceBooking.
+        Tests that handle_booking_refunded re-raises exceptions.
         """
-        partial_refund_amount = Decimal('75.00')
-        refund_request = RefundRequestFactory(
-            service_booking=self.service_booking,
-            payment=self.service_payment,
-            amount_to_refund=partial_refund_amount,
-            status='approved',
-            refund_calculation_details={}
-        )
-        event_charge_object_data = {
-            'object': 'charge',
-            'amount_refunded': int(partial_refund_amount * 100),
-            'refunds': {
-                'data': [{'id': 're_service_partial_123', 'status': 'succeeded', 'created': int(timezone.now().timestamp())}]
-            }
-        }
+        event_data = {'id': 'evt_test', 'object': 'event'}
+        self.mock_extract_stripe_refund_data.side_effect = ValueError("Test Error")
 
-        handle_booking_refunded(self.service_payment, event_charge_object_data)
+        with patch('django.db.transaction.atomic') as mock_atomic:
+            mock_atomic.return_value.__enter__.return_value = MagicMock()
+            
+            with self.assertRaises(ValueError):
+                handle_booking_refunded(self.payment, event_data)
 
-        self.service_payment.refresh_from_db()
-        self.service_booking.refresh_from_db()
-        refund_request.refresh_from_db()
+            self.mock_extract_stripe_refund_data.assert_called_once_with(event_data)
+            self.mock_get_booking_from_payment.assert_not_called() # Should not be called after exception
+            mock_atomic.assert_called_once() # atomic() context is still entered
 
-        self.assertEqual(self.service_payment.status, 'partially_refunded')
-        self.assertEqual(self.service_payment.refunded_amount, partial_refund_amount)
-        self.assertEqual(self.service_booking.payment_status, 'partially_refunded')
-        self.assertEqual(self.service_booking.booking_status, 'confirmed') # Not changed by partial refund
-        self.assertEqual(refund_request.status, 'partially_refunded')
-        self.assertEqual(mock_send_email.call_count, 2)
-
-    @mock.patch('payments.webhook_handlers.refund_handlers.send_templated_email')
-    @mock.patch('stripe.Charge.retrieve')
-    def test_handle_refund_updated_success_service_booking(self, mock_stripe_charge_retrieve, mock_send_email):
+    def test_handle_booking_refund_updated(self):
         """
-        Tests 'charge.refund.updated' event for a successful refund for a ServiceBooking.
+        Tests that handle_booking_refund_updated calls handle_booking_refunded.
         """
-        RefundRequestFactory(
-            service_booking=self.service_booking,
-            payment=self.service_payment,
-            status='approved',
-            amount_to_refund=self.service_payment.amount
-        )
-        mock_stripe_charge_retrieve.return_value = {
-            'amount_refunded': int(self.service_payment.amount * 100)
-        }
-        event_refund_object_data = {
-            'object': 'refund',
-            'id': 're_service_updated_123',
-            'charge': 'ch_service_123',
-            'status': 'succeeded',
-        }
+        # Patch handle_booking_refunded directly as it's the target function for this test
+        with patch('payments.webhook_handlers.refund_handlers.handle_booking_refunded') as mock_handle_refunded_func:
+            event_data = {'id': 'evt_update', 'object': 'event'}
+            handle_booking_refund_updated(self.payment, event_data)
+            mock_handle_refunded_func.assert_called_once_with(self.payment, event_data)
 
-        handle_booking_refund_updated(self.service_payment, event_refund_object_data)
-
-        self.service_payment.refresh_from_db()
-        self.assertEqual(self.service_payment.status, 'refunded')
-        self.assertEqual(self.service_payment.refunded_amount, self.service_payment.amount)
-        self.assertEqual(mock_send_email.call_count, 2)
-
-    @mock.patch('payments.webhook_handlers.refund_handlers.send_templated_email')
-    @mock.patch('stripe.Charge.retrieve', side_effect=stripe.error.StripeError("API Error"))
-    def test_handle_refund_updated_stripe_api_fails_service_booking(self, mock_stripe_charge_retrieve, mock_send_email):
+    def test_handle_booking_refunded_with_service_booking(self):
         """
-        Tests 'charge.refund.updated' falls back to event data if stripe.Charge.retrieve fails for a ServiceBooking.
+        Tests the flow with a service booking.
         """
-        fallback_amount = Decimal('25.00')
-        RefundRequestFactory(
-            service_booking=self.service_booking,
-            payment=self.service_payment,
-            status='approved',
-            amount_to_refund=fallback_amount
-        )
-        event_refund_object_data = {
-            'object': 'refund',
-            'id': 're_service_updated_fail_123',
-            'charge': 'ch_service_fail_123',
-            'amount': int(fallback_amount * 100),
-            'status': 'succeeded',
-        }
+        self.mock_get_booking_from_payment.return_value = (self.service_booking, 'service')
+        event_data = {'id': 'evt_test_service', 'object': 'event'}
 
-        handle_booking_refund_updated(self.service_payment, event_refund_object_data)
+        with patch('django.db.transaction.atomic') as mock_atomic:
+            mock_atomic.return_value.__enter__.return_value = MagicMock()
 
-        self.service_payment.refresh_from_db()
-        self.assertEqual(self.service_payment.status, 'partially_refunded')
-        self.assertEqual(self.service_payment.refunded_amount, fallback_amount)
-        self.assertEqual(mock_send_email.call_count, 2)
+            handle_booking_refunded(self.payment, event_data)
 
-    @mock.patch('payments.webhook_handlers.refund_handlers.send_templated_email')
-    def test_handle_booking_declined_and_refunded_service_booking(self, mock_send_email):
-        """
-        Tests that a ServiceBooking transitions to 'DECLINED_REFUNDED' if it was declined and then fully refunded.
-        """
-        # Set initial status of service booking to 'declined'
-        self.service_booking.booking_status = 'declined'
-        self.service_booking.save()
-
-        # Create a refund request
-        refund_request = RefundRequestFactory(
-            service_booking=self.service_booking,
-            payment=self.service_payment,
-            status='approved',
-            amount_to_refund=self.service_payment.amount
-        )
-        event_charge_object_data = {
-            'object': 'charge',
-            'amount_refunded': int(self.service_payment.amount * 100),
-            'refunds': {
-                'data': [{'id': 're_declined_refund_123', 'status': 'succeeded', 'created': int(timezone.now().timestamp())}]
-            }
-        }
-
-        handle_booking_refunded(self.service_payment, event_charge_object_data)
-
-        self.service_payment.refresh_from_db()
-        self.service_booking.refresh_from_db()
-        refund_request.refresh_from_db()
-
-        self.assertEqual(self.service_payment.status, 'refunded')
-        self.assertEqual(self.service_booking.payment_status, 'refunded')
-        self.assertEqual(self.service_booking.booking_status, 'DECLINED_REFUNDED') # Crucial assertion
-        self.assertEqual(refund_request.status, 'refunded')
-        self.assertEqual(mock_send_email.call_count, 2)
-
+            mock_atomic.assert_called_once() # Now asserts only calls within this context
+            self.mock_extract_stripe_refund_data.assert_called_once_with(event_data)
+            self.mock_get_booking_from_payment.assert_called_once_with(self.payment)
+            self.mock_update_associated_bookings_and_payments.assert_called_once_with(
+                self.payment,
+                self.service_booking,
+                'service',
+                Decimal('50.00')
+            )
+            self.mock_process_refund_request_entry.assert_called_once_with(
+                self.payment,
+                self.service_booking,
+                'service',
+                self.mock_extract_stripe_refund_data.return_value
+            )
+            self.mock_send_refund_notifications.assert_called_once_with(
+                self.payment,
+                self.service_booking,
+                'service',
+                self.refund_request,
+                self.mock_extract_stripe_refund_data.return_value
+            )

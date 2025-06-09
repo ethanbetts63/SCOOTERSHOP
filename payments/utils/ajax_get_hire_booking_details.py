@@ -86,5 +86,4 @@ def get_hire_booking_details_json(request, pk):
     except Http404: # Catch Http404 specifically for 404 response
         return JsonResponse({'error': 'Hire Booking not found'}, status=404)
     except Exception as e:
-        print(f"Error in get_hire_booking_details_json: {e}") # Log the actual exception
         return JsonResponse({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
