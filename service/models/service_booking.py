@@ -91,7 +91,6 @@ class ServiceBooking(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.service_booking_reference:
-            # CORRECTED LINE: Set the correct field 'service_booking_reference'
             self.service_booking_reference = f"SERVICE-{uuid.uuid4().hex[:8].upper()}"
         super().save(*args, **kwargs)
 

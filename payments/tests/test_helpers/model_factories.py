@@ -294,6 +294,7 @@ class RefundRequestFactory(factory.django.DjangoModelFactory):
     rejection_reason = None
     requested_at = factory.LazyFunction(timezone.now)
     status = factory.Faker('random_element', elements=['pending', 'approved', 'rejected', 'processed'])
+    # Corrected field name: 'requested_amount' changed to 'amount_to_refund'
     amount_to_refund = factory.LazyFunction(lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True))
     processed_by = None
     processed_at = None
