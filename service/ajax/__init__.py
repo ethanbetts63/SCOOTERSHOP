@@ -1,4 +1,4 @@
-from .ajax_search_customer_profiles import *
+from .ajax_search_service_profiles import *
 from .ajax_get_available_dropoff_times_for_date import *
 from .ajax_get_available_service_dates import *
 from .ajax_get_customer_motorcycles import *

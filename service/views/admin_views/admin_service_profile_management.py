@@ -5,7 +5,10 @@ from django.views import View
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.db.models import Q # Import Q object for complex lookups
+# from django.db.models import Q # Removed as search logic is now handled by AJAX in frontend
+
+# Pagination imports
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 # Assuming AdminServiceProfileForm is in service.forms
 from service.forms import AdminServiceProfileForm
@@ -14,11 +17,12 @@ from service.models import ServiceProfile
 class ServiceProfileManagementView(LoginRequiredMixin, UserPassesTestMixin, View):
     """
     Admin view for managing (listing, creating, editing, and deleting) ServiceProfile instances.
-    Includes search functionality.
+    Now uses AJAX for search functionality on the frontend, so its own queryset filtering is simplified.
     Requires the user to be logged in and a staff member or superuser.
     """
     template_name = 'service/admin_service_profile_management.html'
     form_class = AdminServiceProfileForm
+    paginate_by = 10 # Define items per page for server-side pagination of the initial list
 
     def test_func(self):
         """
@@ -26,38 +30,21 @@ class ServiceProfileManagementView(LoginRequiredMixin, UserPassesTestMixin, View
         """
         return self.request.user.is_staff or self.request.user.is_superuser
 
-    def get_queryset(self):
+    def get_profiles_for_display(self):
         """
-        Builds the queryset for ServiceProfile instances, applying search filters.
+        Builds the queryset for ServiceProfile instances for initial display and pagination.
+        Filtering based on search term is now handled by the AJAX endpoint, so this
+        method simply returns all profiles ordered by creation date.
         """
-        queryset = ServiceProfile.objects.all().order_by('-created_at')
-        search_term = self.request.GET.get('q', '').strip()
-
-        if search_term:
-            # Filter by name, email, phone_number, city, or linked user's username/email
-            queryset = queryset.filter(
-                Q(name__icontains=search_term) |
-                Q(email__icontains=search_term) |
-                Q(phone_number__icontains=search_term) |
-                Q(address_line_1__icontains=search_term) | # Added address line 1
-                Q(address_line_2__icontains=search_term) | # Added address line 2
-                Q(city__icontains=search_term) |
-                Q(state__icontains=search_term) | # Added state
-                Q(post_code__icontains=search_term) | # Added post code
-                Q(country__icontains=search_term) | # Added country
-                Q(user__username__icontains=search_term) | # Search by linked user's username
-                Q(user__email__icontains=search_term)      # Search by linked user's email
-            ).distinct() # Use distinct to avoid duplicate profiles if a search term matches multiple fields
-        return queryset
+        return ServiceProfile.objects.all().order_by('-created_at')
 
     def get_context_data(self, **kwargs):
         """
-        Adds context data, including the search term and the form.
+        Adds context data, including the search term, form, and paginated profiles.
         """
-        # Initialize context directly, as View does not have get_context_data
         context = {}
         
-        # Populate the form based on whether we are editing an instance
+        # Determine if we are in edit mode
         pk = kwargs.get('pk')
         instance = None
         is_edit_mode = False
@@ -69,12 +56,28 @@ class ServiceProfileManagementView(LoginRequiredMixin, UserPassesTestMixin, View
         else:
             form = self.form_class()
 
+        # Handle server-side pagination for the initial full list of profiles
+        profile_list = self.get_profiles_for_display()
+        paginator = Paginator(profile_list, self.paginate_by)
+        page = self.request.GET.get('page')
+
+        try:
+            profiles_page = paginator.page(page)
+        except PageNotAnInteger:
+            # If page is not an integer, deliver first page.
+            profiles_page = paginator.page(1)
+        except EmptyPage:
+            # If page is out of range (e.g. 9999), deliver last page of results.
+            profiles_page = paginator.page(paginator.num_pages)
+
         context.update({
-            'profiles': self.get_queryset(), # Use the filtered queryset for display
+            'profiles': profiles_page, # Pass the paginated object for iterating
+            'page_obj': profiles_page, # Also pass as page_obj for compatibility with pagination template
+            'is_paginated': profiles_page.has_other_pages(), # Check if pagination is needed
             'form': form,
             'is_edit_mode': is_edit_mode,
             'current_profile': instance,
-            'search_term': self.request.GET.get('q', '') # Pass the current search term to the template
+            'search_term': self.request.GET.get('q', '') # Keep for initial search box value in template
         })
         return context
 
@@ -103,27 +106,13 @@ class ServiceProfileManagementView(LoginRequiredMixin, UserPassesTestMixin, View
                 messages.success(request, f"Service Profile for '{service_profile.name}' updated successfully.")
             else:
                 messages.success(request, f"Service Profile for '{service_profile.name}' created successfully.")
+            # Redirect to the main management page after successful form submission
             return redirect(reverse('service:admin_service_profiles'))
         else:
             messages.error(request, "Please correct the errors below.")
-            # If form is invalid, we need to re-render the page with the errors,
-            # so we prepare the context using get_context_data and then update the form.
-            context = self.get_context_data(pk=pk) # Re-use get_context_data to get profiles and search term
+            # If form is invalid, re-render the page with errors.
+            # Re-use get_context_data to get profiles and search term, then update the form.
+            context = self.get_context_data(pk=pk)
             context['form'] = form # Make sure the form with errors is passed back
             return render(request, self.template_name, context)
-
-class ServiceProfileDeleteView(LoginRequiredMixin, UserPassesTestMixin, View):
-    """
-    Admin view for deleting a ServiceProfile instance.
-    Requires staff status to access.
-    """
-    def test_func(self):
-        return self.request.user.is_staff or self.request.user.is_superuser
-
-    def post(self, request, pk, *args, **kwargs):
-        profile = get_object_or_404(ServiceProfile, pk=pk)
-        profile_name = profile.name # Store name before deletion for message
-        profile.delete()
-        messages.success(request, f"Service Profile for '{profile_name}' deleted successfully.")
-        return redirect(reverse('service:admin_service_profiles'))
 

@@ -10,7 +10,7 @@ from service.ajax import (
     ajax_get_customer_motorcycle_details,
     ajax_get_customer_motorcycles,
     ajax_get_service_profile_details,
-    ajax_search_customer_profiles
+    ajax_search_service_profiles
 )
 
 app_name = 'service'
@@ -68,7 +68,7 @@ urlpatterns = [
     # Customer Profile Search & Details
     path(
         'admin/api/search-customer/',
-        ajax_search_customer_profiles.search_customer_profiles_ajax,
+        ajax_search_service_profiles.search_customer_profiles_ajax,
         name='admin_api_search_customer'
     ),
     path(

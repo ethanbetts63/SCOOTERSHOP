@@ -15,7 +15,9 @@ from ..test_helpers.model_factories import UserFactory, ServiceProfileFactory
 class ServiceProfileManagementViewTest(TestCase):
     """
     Tests for the ServiceProfileManagementView.
-    Covers access control, listing, search, and form submission (create via management view).
+    Covers access control, listing (initial paginated display), and form submission (create via management view).
+    Search functionality tests are removed as they are now handled by AJAX in the frontend
+    and the dedicated `ajax_search_service_profiles` view.
     """
 
     @classmethod
@@ -28,17 +30,17 @@ class ServiceProfileManagementViewTest(TestCase):
         cls.superuser = UserFactory(username='superuser', is_staff=True, is_superuser=True)
         cls.regular_user = UserFactory(username='regular_user', is_staff=False, is_superuser=False)
 
-        # Create multiple service profiles with varying data for search tests
+        # Create multiple service profiles with varying data for testing
         # Ensure distinct creation times for consistent ordering in tests
         cls.profile1 = ServiceProfileFactory(
             name="Alpha Profile", email="alpha@example.com", phone_number="1112223333",
-            city="Springville", # Explicitly set city to ensure it contains 'ville'
+            city="Springville",
             created_at=timezone.now() - timezone.timedelta(days=30),
             user=UserFactory(username='alpha_user')
         )
         cls.profile2 = ServiceProfileFactory(
             name="Beta Profile", email="beta@test.com", phone_number="4445556666",
-            city="Shelbyville", # Explicitly set city to ensure it contains 'ville'
+            city="Shelbyville",
             created_at=timezone.now() - timezone.timedelta(days=20),
             user=UserFactory(username='beta_user')
         )
@@ -62,7 +64,7 @@ class ServiceProfileManagementViewTest(TestCase):
         cls.list_url = reverse('service:admin_service_profiles')
         # The edit URL is handled by ServiceProfileCreateUpdateView, but we need its name here
         # for constructing the URL in tests that specifically open the edit form from the list page.
-        cls.edit_url_name = 'service:admin_edit_service_profile' 
+        cls.edit_url_name = 'service:admin_edit_service_profile'
         cls.delete_url_name = 'service:admin_delete_service_profile'
 
 
@@ -111,108 +113,62 @@ class ServiceProfileManagementViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
-    # --- GET Request Tests (Listing & Search) ---
+    # --- GET Request Tests (Listing & Pagination) ---
 
-    def test_get_request_list_all_profiles(self):
+    def test_get_request_list_all_profiles_with_pagination(self):
         """
-        Test GET request to list all service profiles without search term.
+        Test GET request to list all service profiles, verifying pagination.
+        The view should now always return paginated results for the full list.
         """
         self.client.force_login(self.staff_user)
+        # Create more profiles to ensure pagination kicks in
+        for i in range(15): # Assuming paginate_by is 10, this will create 2 pages
+            ServiceProfileFactory(
+                name=f"Paginated Profile {i}",
+                created_at=timezone.now() - timezone.timedelta(minutes=i)
+            )
+
         response = self.client.get(self.list_url)
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'service/admin_service_profile_management.html')
-        self.assertIn('profiles', response.context)
-        self.assertIn('form', response.context)
-        self.assertFalse(response.context['is_edit_mode'])
-        self.assertIsNone(response.context['current_profile'])
-        self.assertEqual(response.context['search_term'], '')
-
-        # Check if all profiles are present and ordered correctly (by created_at descending)
-        profiles_in_context = list(response.context['profiles'])
-        expected_profiles = list(ServiceProfile.objects.all().order_by('-created_at'))
-        self.assertListEqual(profiles_in_context, expected_profiles)
-        self.assertEqual(len(profiles_in_context), ServiceProfile.objects.count())
-
-
-    def test_get_request_search_by_name(self):
-        """
-        Test search functionality by profile name.
-        """
-        self.client.force_login(self.staff_user)
-        search_term = "Alpha"
-        response = self.client.get(f"{self.list_url}?q={search_term}")
-
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('profiles', response.context)
-        self.assertEqual(response.context['search_term'], search_term)
-
-        profiles_in_context = list(response.context['profiles'])
-        self.assertEqual(len(profiles_in_context), 1)
-        self.assertEqual(profiles_in_context[0], self.profile1)
-
-
-    def test_get_request_search_by_email(self):
-        """
-        Test search functionality by email.
-        """
-        self.client.force_login(self.staff_user)
-        search_term = "beta@test.com"
-        response = self.client.get(f"{self.list_url}?q={search_term}")
-        profiles_in_context = list(response.context['profiles'])
-        self.assertEqual(len(profiles_in_context), 1)
-        self.assertEqual(profiles_in_context[0], self.profile2)
-
-    def test_get_request_search_by_phone_number(self):
-        """
-        Test search functionality by phone number.
-        """
-        self.client.force_login(self.staff_user)
-        search_term = "777888" # Partial match for profile3
-        response = self.client.get(f"{self.list_url}?q={search_term}")
-        profiles_in_context = list(response.context['profiles'])
-        self.assertEqual(len(profiles_in_context), 1)
-        self.assertEqual(profiles_in_context[0], self.profile3)
-
-    def test_get_request_search_by_city(self):
-        """
-        Test search functionality by city.
-        """
-        self.client.force_login(self.staff_user)
-        search_term = "ville" # Matches Springville and Shelbyville
-        response = self.client.get(f"{self.list_url}?q={search_term}")
-        profiles_in_context = list(response.context['profiles'])
         
-        # Check that both matching profiles are present, regardless of exact order beyond the count
-        self.assertEqual(len(profiles_in_context), 2)
-        self.assertIn(self.profile1, profiles_in_context)
-        self.assertIn(self.profile2, profiles_in_context)
+        self.assertIn('profiles', response.context)
+        self.assertIn('page_obj', response.context)
+        self.assertTrue(response.context['is_paginated']) # Should be paginated now
+        self.assertEqual(response.context['page_obj'].number, 1) # First page by default
+        self.assertEqual(len(response.context['page_obj'].object_list), 10) # 10 items per page
 
+        # Verify the profiles are the first 10 when ordered by created_at descending
+        expected_profiles = list(ServiceProfile.objects.all().order_by('-created_at'))
+        self.assertListEqual(list(response.context['profiles']), expected_profiles[:10])
 
-    def test_get_request_search_by_linked_username(self):
+        self.assertEqual(response.context['search_term'], '') # No search term expected from GET
+
+    def test_get_request_list_profiles_specific_page(self):
         """
-        Test search functionality by linked user's username.
-        """
-        self.client.force_login(self.staff_user)
-        search_term = "alpha_user"
-        response = self.client.get(f"{self.list_url}?q={search_term}")
-        profiles_in_context = list(response.context['profiles'])
-        self.assertEqual(len(profiles_in_context), 1)
-        self.assertEqual(profiles_in_context[0], self.profile1)
-
-
-    def test_get_request_no_search_results(self):
-        """
-        Test search functionality with a term that yields no results.
+        Test GET request to list service profiles on a specific page.
         """
         self.client.force_login(self.staff_user)
-        search_term = "nonexistentprofile"
-        response = self.client.get(f"{self.list_url}?q={search_term}")
+        # Create enough profiles for multiple pages
+        total_profiles = 25
+        for i in range(total_profiles):
+            ServiceProfileFactory(
+                name=f"Paginated Profile {i}",
+                created_at=timezone.now() - timezone.timedelta(minutes=i)
+            )
+
+        # Request the second page
+        response = self.client.get(f"{self.list_url}?page=2")
 
         self.assertEqual(response.status_code, 200)
         self.assertIn('profiles', response.context)
-        self.assertEqual(len(list(response.context['profiles'])), 0)
-        self.assertEqual(response.context['search_term'], search_term)
+        self.assertEqual(response.context['page_obj'].number, 2)
+        # If paginate_by is 10, there should be 10 items on the second page
+        self.assertEqual(len(response.context['page_obj'].object_list), 10)
+
+        expected_profiles = list(ServiceProfile.objects.all().order_by('-created_at'))
+        self.assertListEqual(list(response.context['profiles']), expected_profiles[10:20])
 
 
     def test_get_request_edit_mode(self):
@@ -402,4 +358,3 @@ class ServiceProfileDeleteViewTest(TestCase):
         delete_url = reverse(self.delete_url_name, kwargs={'pk': non_existent_pk})
         response = self.client.post(delete_url)
         self.assertEqual(response.status_code, 404)
-

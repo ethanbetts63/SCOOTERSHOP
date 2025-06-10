@@ -7,7 +7,7 @@ import json
 from ..test_helpers.model_factories import ServiceProfileFactory, UserFactory
 
 # Import the view function to be tested
-from service.ajax.ajax_search_customer_profiles import search_customer_profiles_ajax
+from service.ajax.ajax_search_service_profiles import search_customer_profiles_ajax
 
 class AjaxSearchCustomerProfilesTest(TestCase):
     """
