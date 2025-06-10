@@ -10,7 +10,8 @@ from service.ajax import (
     ajax_get_customer_motorcycle_details,
     ajax_get_customer_motorcycles,
     ajax_get_service_profile_details,
-    ajax_search_service_profiles
+    ajax_search_service_profiles,
+    ajax_admin_booking_precheck
 )
 
 app_name = 'service'
@@ -52,14 +53,13 @@ urlpatterns = [
     path('service-types/edit/<int:pk>/', admin_views.ServiceTypeCreateUpdateView.as_view(), name='edit_service_type'),
     path('service-types/delete/<int:pk>/', admin_views.ServiceTypeDeleteView.as_view(), name='delete_service_type'),
 
-    # NEW ADMIN SERVICE PROFILE MANAGEMENT
-    # Path for listing all service profiles and creating a new one
+    # ADMIN SERVICE PROFILE MANAGEMENT
     path('admin/service-profiles/', admin_views.ServiceProfileManagementView.as_view(), name='admin_service_profiles'),
     path('admin/service-profiles/create/', admin_views.ServiceProfileCreateUpdateView.as_view(), name='admin_create_service_profile'),
     path('admin/service-profiles/edit/<int:pk>/', admin_views.ServiceProfileCreateUpdateView.as_view(), name='admin_edit_service_profile'),
     path('admin/service-profiles/delete/<int:pk>/', admin_views.ServiceProfileDeleteView.as_view(), name='admin_delete_service_profile'),
 
-        # NEW ADMIN CUSTOMER MOTORCYCLE MANAGEMENT
+    # ADMIN CUSTOMER MOTORCYCLE MANAGEMENT
     path('admin/customer-motorcycles/', admin_views.CustomerMotorcycleManagementView.as_view(), name='admin_customer_motorcycle_management'),
     path('admin/customer-motorcycles/create/', admin_views.CustomerMotorcycleCreateUpdateView.as_view(), name='admin_create_customer_motorcycle'),
     path('admin/customer-motorcycles/edit/<int:pk>/', admin_views.CustomerMotorcycleCreateUpdateView.as_view(), name='admin_edit_customer_motorcycle'),
@@ -103,4 +103,8 @@ urlpatterns = [
         ajax_get_available_dropoff_times_for_date.get_available_dropoff_times_for_date,
         name='admin_api_dropoff_time_availability'
     ),
+
+    # NEW: Admin Booking Pre-check AJAX endpoint
+    path('admin/api/booking-precheck/', ajax_admin_booking_precheck.admin_booking_precheck_ajax, name='admin_api_booking_precheck'),
+
 ]
