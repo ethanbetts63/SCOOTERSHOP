@@ -10,13 +10,8 @@ import json
 from unittest.mock import patch, MagicMock
 from decimal import Decimal
 import stripe
-
-# Import the view to be tested
-from service.views.user_views import Step6PaymentView # Adjust path if different
-
-# Import models and factories
 from payments.models import Payment
-from service.models import TempServiceBooking, ServiceProfile, CustomerMotorcycle, ServiceType, ServiceSettings
+from service.models import TempServiceBooking, ServiceProfile, CustomerMotorcycle
 from ..test_helpers.model_factories import (
     UserFactory,
     ServiceProfileFactory,

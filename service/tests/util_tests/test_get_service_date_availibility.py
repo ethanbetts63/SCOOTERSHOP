@@ -1,5 +1,4 @@
 from django.test import TestCase
-from django.utils import timezone
 from django.conf import settings
 import datetime
 import json
@@ -17,11 +16,8 @@ from ..test_helpers.model_factories import (
     ServiceProfileFactory,
     ServiceTypeFactory,
     CustomerMotorcycleFactory,
-    PaymentFactory, # Keep PaymentFactory import
 )
 
-# Initialize Faker for consistent date/time generation if needed, though
-# for this test, we'll mostly set specific dates.
 from faker import Faker
 fake = Faker()
 

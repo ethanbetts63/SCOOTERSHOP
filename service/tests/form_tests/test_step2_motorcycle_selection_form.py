@@ -1,5 +1,4 @@
 from django.test import TestCase
-from django.core.exceptions import ValidationError
 
 # Import the form and the sentinel value
 from service.forms import MotorcycleSelectionForm, ADD_NEW_MOTORCYCLE_OPTION

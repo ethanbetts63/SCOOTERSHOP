@@ -1,12 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib import messages
-from django.contrib.messages.storage.fallback import FallbackStorage
-# Removed SimpleUploadedFile import as image tests are removed
-# Removed settings import as temporary MEDIA_ROOT is not needed
-
-# Import models and forms
-from service.models import CustomerMotorcycle, ServiceProfile
+from service.models import CustomerMotorcycle
 from service.forms import AdminCustomerMotorcycleForm
 
 # Import factories for setting up test data

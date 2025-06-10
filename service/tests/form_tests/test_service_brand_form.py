@@ -1,10 +1,5 @@
 from django.test import TestCase
-# Removed: from django.core.files.uploadedfile import SimpleUploadedFile (no longer needed for image testing)
-from django.forms import ValidationError # Import ValidationError from forms
-# Removed: import io, Image (no longer needed for dummy images)
-
 from service.forms import ServiceBrandForm
-from service.models import ServiceBrand
 from ..test_helpers.model_factories import ServiceBrandFactory
 
 # Removed: create_dummy_image helper function

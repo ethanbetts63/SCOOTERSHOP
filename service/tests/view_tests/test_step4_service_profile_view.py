@@ -6,16 +6,8 @@ from django.contrib.messages import get_messages
 from django.contrib.auth import get_user_model
 import datetime
 import uuid
-
-# Import the view to be tested
-# Assuming your view is in service.views.user_views.Step4ServiceProfileView
-# Adjust the import path if necessary.
-from service.views.user_views import Step4ServiceProfileView
 from service.forms.step4_service_profile_form import ServiceBookingUserForm
-
-# Import models and factories
-from service.models import TempServiceBooking, ServiceProfile, CustomerMotorcycle, ServiceType, ServiceSettings
-# Adjust the import path for model_factories if it's different
+from service.models import TempServiceBooking, ServiceProfile, CustomerMotorcycle
 from ..test_helpers.model_factories import (
     UserFactory,
     ServiceProfileFactory,

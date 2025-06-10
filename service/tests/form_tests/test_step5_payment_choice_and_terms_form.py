@@ -1,5 +1,4 @@
 from django.test import TestCase
-from django.core.exceptions import ValidationError
 from decimal import Decimal
 import datetime # Import datetime
 
@@ -10,9 +9,6 @@ from service.forms import (
     PAYMENT_OPTION_FULL_ONLINE,
     PAYMENT_OPTION_INSTORE
 )
-
-# Import the ServiceSettings model and its factory
-from service.models import ServiceSettings
 from ..test_helpers.model_factories import ServiceSettingsFactory, TempServiceBookingFactory # Import TempServiceBookingFactory
 
 class PaymentOptionFormTest(TestCase):

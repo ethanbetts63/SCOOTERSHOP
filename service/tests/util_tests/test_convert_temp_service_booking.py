@@ -1,7 +1,7 @@
 from django.test import TestCase
 from decimal import Decimal
 import uuid
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 # Import models and the converter function
 from service.models import TempServiceBooking, ServiceBooking, ServiceSettings

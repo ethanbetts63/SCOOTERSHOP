@@ -1,7 +1,5 @@
 from django.test import TestCase
-from django.core.exceptions import ValidationError
 from service.forms import ServiceBookingUserForm
-from service.models import ServiceProfile
 from ..test_helpers.model_factories import ServiceProfileFactory
 
 class ServiceBookingUserFormTest(TestCase):

@@ -5,18 +5,12 @@ from django.urls import reverse
 from django.contrib.messages import get_messages
 from django.contrib.auth import get_user_model
 import datetime
-from datetime import time, timedelta
+from datetime import time
 import uuid
 from decimal import Decimal
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from django.http import HttpResponse
-
-# Import the view to be tested
-from service.views.user_views import Step5PaymentDropoffAndTermsView
-from service.views.user_views import Step6PaymentView
-
-# Import models and factories
-from service.models import TempServiceBooking, ServiceProfile, CustomerMotorcycle, ServiceType, ServiceSettings
+from service.models import TempServiceBooking, ServiceProfile, CustomerMotorcycle, ServiceSettings
 from service.forms.step5_payment_choice_and_terms_form import (
     PaymentOptionForm,
     PAYMENT_OPTION_DEPOSIT,

@@ -3,7 +3,6 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from datetime import date, time, timedelta
 from django.db import models
-import uuid
 
 # Import the TempServiceBooking model
 from service.models import TempServiceBooking

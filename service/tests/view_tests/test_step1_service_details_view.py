@@ -11,7 +11,7 @@ from unittest.mock import patch, Mock
 from service.views.user_views.step1_service_details_view import Step1ServiceDetailsView
 
 # Import models and factories
-from service.models import TempServiceBooking, ServiceSettings, BlockedServiceDate, ServiceProfile, CustomerMotorcycle, ServiceType
+from service.models import TempServiceBooking, ServiceSettings, BlockedServiceDate, CustomerMotorcycle
 # Corrected import path for model factories
 from ..test_helpers.model_factories import (
     ServiceSettingsFactory,

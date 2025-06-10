@@ -1,7 +1,6 @@
 import factory
 import datetime
 import uuid
-from django.utils import timezone
 from django.contrib.auth import get_user_model
 from decimal import Decimal
 from faker import Faker

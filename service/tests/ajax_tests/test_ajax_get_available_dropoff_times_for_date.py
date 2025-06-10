@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.http import JsonResponse
 import datetime
 import json
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 
 # Corrected import path for the view function
 from service.ajax.ajax_get_available_dropoff_times_for_date import get_available_dropoff_times_for_date

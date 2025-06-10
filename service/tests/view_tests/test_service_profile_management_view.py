@@ -1,15 +1,10 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib import messages
-from django.contrib.messages.storage.fallback import FallbackStorage
-from django.http import HttpRequest
 from django.utils import timezone # Import timezone for created_at ordering
 
 # Import models and forms
 from service.models import ServiceProfile
-from service.forms import AdminServiceProfileForm
-
-# Import factories for setting up test data
 from ..test_helpers.model_factories import UserFactory, ServiceProfileFactory
 
 class ServiceProfileManagementViewTest(TestCase):

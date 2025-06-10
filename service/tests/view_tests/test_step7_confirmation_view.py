@@ -2,7 +2,6 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.messages import get_messages
-from unittest.mock import patch, Mock
 import uuid
 
 from service.models import ServiceBooking, TempServiceBooking
@@ -10,12 +9,8 @@ from payments.models import Payment
 from ..test_helpers.model_factories import (
     UserFactory,
     ServiceBookingFactory,
-    TempServiceBookingFactory,
     PaymentFactory,
 )
-
-# Views to be tested
-from service.views.user_views.step7_confirmation_view import Step7ConfirmationView
 
 class ServiceBookingConfirmationViewTest(TestCase):
     """

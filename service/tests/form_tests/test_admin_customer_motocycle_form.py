@@ -1,5 +1,4 @@
 from django.test import TestCase
-from django.core.exceptions import ValidationError
 from datetime import date
 
 # Import the form and model to be tested

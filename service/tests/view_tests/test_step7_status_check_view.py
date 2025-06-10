@@ -2,7 +2,6 @@
 from django.test import TestCase
 from django.urls import reverse
 import uuid
-import json
 from unittest.mock import patch
 
 from service.models import ServiceBooking
@@ -12,9 +11,6 @@ from ..test_helpers.model_factories import (
     ServiceBookingFactory,
     PaymentFactory,
 )
-
-# View to be tested
-from service.views.user_views.step7_status_check_view import Step7StatusCheckView
 
 class Step7StatusCheckViewTest(TestCase):
     """

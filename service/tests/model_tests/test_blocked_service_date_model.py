@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
-from datetime import date, timedelta
+from datetime import date
 
 # Import the BlockedServiceDate model
 from service.models import BlockedServiceDate

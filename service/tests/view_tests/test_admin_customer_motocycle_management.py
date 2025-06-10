@@ -1,11 +1,9 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.db.models import Q
 from django.utils import timezone # For precise ordering of created_at
 
 # Import models and factories
-from service.models import CustomerMotorcycle, ServiceProfile
+from service.models import CustomerMotorcycle
 from ..test_helpers.model_factories import UserFactory, CustomerMotorcycleFactory, ServiceProfileFactory
 
 class CustomerMotorcycleManagementViewTest(TestCase):

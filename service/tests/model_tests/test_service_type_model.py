@@ -1,13 +1,7 @@
 from django.test import TestCase
-from django.core.files.uploadedfile import SimpleUploadedFile # Still needed for other potential tests, but not directly used in this class now
 from datetime import timedelta
 from decimal import Decimal
-
-# Import the ServiceType model
 from service.models import ServiceType
-
-# Import the ServiceTypeFactory from your factories file
-# Adjust the import path if your model_factories.py is in a different location
 from ..test_helpers.model_factories import ServiceTypeFactory
 
 class ServiceTypeModelTest(TestCase):

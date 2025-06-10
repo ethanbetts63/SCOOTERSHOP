@@ -1,11 +1,9 @@
 from django.test import TestCase
-from django.core.exceptions import ValidationError
 from decimal import Decimal
 from datetime import time
 from django.utils.translation import gettext_lazy as _
 
 from service.forms import ServiceBookingSettingsForm
-from service.models import ServiceSettings
 from ..test_helpers.model_factories import ServiceSettingsFactory
 
 class ServiceBookingSettingsFormTest(TestCase):

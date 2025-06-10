@@ -1,12 +1,10 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.utils import timezone
 import datetime
-import json
 from unittest.mock import patch
 
 # Import models and factories
-from service.models import ServiceSettings, BlockedServiceDate, ServiceBooking
+from service.models import BlockedServiceDate, ServiceBooking
 from ..test_helpers.model_factories import (
     ServiceSettingsFactory,
     BlockedServiceDateFactory,
