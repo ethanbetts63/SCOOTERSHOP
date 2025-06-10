@@ -1,9 +1,9 @@
-from service.forms import ServiceBookingUserForm
+from service.forms import AdminServiceProfileForm # Changed from ServiceBookingUserForm
 from service.models import ServiceProfile
 
 def admin_process_service_profile_form(request_post_data, profile_id=None):
     """
-    Processes the ServiceProfile form data.
+    Processes the AdminServiceProfileForm data.
     Returns (form_instance, saved_instance)
     """
     instance = None
@@ -11,10 +11,12 @@ def admin_process_service_profile_form(request_post_data, profile_id=None):
         try:
             instance = ServiceProfile.objects.get(pk=profile_id)
         except ServiceProfile.DoesNotExist:
-            # Handle this error more gracefully, e.g., via form error or raise an exception
-            pass # For now, just let form be invalid if instance not found
+            form = AdminServiceProfileForm(request_post_data, instance=None)
+            form.add_error(None, "Selected customer profile not found.")
+            return form, None
 
-    form = ServiceBookingUserForm(request_post_data, instance=instance)
+    # Use AdminServiceProfileForm
+    form = AdminServiceProfileForm(request_post_data, instance=instance)
     if form.is_valid():
         saved_instance = form.save()
         return form, saved_instance
