@@ -4,7 +4,10 @@
 {% block extra_css %}
     {{ block.super }}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Custom styles for search results - improved contrast */
         .customer-search-results ul {
             list-style-type: none;
             padding: 0;
@@ -13,11 +16,16 @@
             border-radius: 0.25rem;
             max-height: 200px;
             overflow-y: auto;
+            position: absolute;
+            background-color: white;
+            z-index: 1000;
+            width: calc(100% - 2px);
+            color: #333; /* Darker text for better contrast */
         }
         .customer-search-results li {
             padding: 10px;
             cursor: pointer;
-            background-color: #fff;
+            color: #333; /* Ensure list item text is dark */
         }
         .customer-search-results li:hover {
             background-color: #f0f0f0;
@@ -28,96 +36,136 @@
             border: 1px solid #ced4da;
             border-radius: 0.25rem;
             margin-top: 1rem;
+            color: #333; /* Darker text for better contrast */
+        }
+        /* Ensure small text within selected-item-display is also readable */
+        .selected-item-display small,
+        .selected-item-display span.text-muted {
+            color: #555 !important;
+        }
+
+        /* Basic form control styling, for Django fields if not using widget tweaks */
+        input[type="text"].form-control,
+        input[type="email"].form-control,
+        input[type="tel"].form-control,
+        input[type="date"].form-control,
+        input[type="time"].form-control,
+        textarea.form-control,
+        select.form-select {
+            display: block;
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #495057;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        input[type="text"].form-control:focus,
+        input[type="email"].form-control:focus,
+        input[type="tel"].form-control:focus,
+        input[type="date"].form-control:focus,
+        input[type="time"].form-control:focus,
+        textarea.form-control:focus,
+        select.form-select:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
         }
     </style>
 {% endblock %}
 
 {% block admin_main_content %}
-    <div class="container mt-4">
-        <h2>Create New Service Booking</h2>
+    <div class="font-inter antialiased bg-gray-100 min-h-screen p-4 sm:p-6 lg:p-8">
+        <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6 sm:p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Create New Service Booking</h2>
 
-        {% if messages %}
-            <div class="mb-3">
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                        <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative mb-2" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" id="adminBookingForm">
+                {% csrf_token %}
+
+                <input type="hidden" name="selected_profile_id" id="selected_profile_id" value="{{ selected_profile.pk|default:'' }}">
+                <input type="hidden" name="selected_motorcycle_id" id="selected_motorcycle_id" value="{{ selected_motorcycle.pk|default:'' }}">
+
+                <!-- Section 1: Customer Profile -->
+                <div class="form-section mb-6 p-4 border border-gray-200 rounded-md">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2 sm:mb-0">1. Select Customer Profile</h3>
+                        <a href="{{ create_profile_url }}" target="_blank" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-3 rounded-md text-sm">
+                            <i class="fas fa-plus-circle mr-1"></i> Create New Profile
+                        </a>
                     </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-
-        <form method="post" id="adminBookingForm">
-            {% csrf_token %}
-
-            <input type="hidden" name="selected_profile_id" id="selected_profile_id" value="{{ selected_profile.pk|default:'' }}">
-            <input type="hidden" name="selected_motorcycle_id" id="selected_motorcycle_id" value="{{ selected_motorcycle.pk|default:'' }}">
-
-            <!-- Section 1: Customer Profile -->
-            <div class="form-section mb-4 p-3 border rounded">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h3>1. Select Customer Profile</h3>
-                    <a href="{{ create_profile_url }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-plus-circle me-1"></i> Create New Profile
-                    </a>
-                </div>
-                <div class="mb-3">
-                    <label for="profileSearch" class="form-label">Search Customer (Name, Email, Phone)</label>
-                    <input type="text" class="form-control" id="profileSearch" placeholder="Start typing to search...">
-                    <div id="profileSearchResults" class="customer-search-results mt-2"></div>
-                </div>
-                <div id="selectedProfileDisplay" class="selected-item-display d-none"></div>
-            </div>
-
-            <!-- Section 2: Customer Motorcycle -->
-            <div id="motorcycleSection" class="form-section mb-4 p-3 border rounded d-none">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h3>2. Select Customer Motorcycle</h3>
-                    <a href="{{ create_motorcycle_url }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-plus-circle me-1"></i> Add New Motorcycle
-                    </a>
-                </div>
-                <div class="mb-3">
-                    <label for="motorcycleDropdown" class="form-label">Select Motorcycle</label>
-                    <select class="form-select" id="motorcycleDropdown" disabled>
-                        <option value="">-- First, select a customer profile --</option>
-                    </select>
-                </div>
-                <div id="selectedMotorcycleDisplay" class="selected-item-display d-none"></div>
-            </div>
-
-            <!-- Section 3: Booking Details -->
-            <div id="bookingDetailsSection" class="form-section mb-4 p-3 border rounded d-none">
-                <h3>3. Enter Booking Details</h3>
-                {% for field in booking_details_form %}
-                    <div class="mb-3">
-                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.help_text %}
-                            <div class="form-text">{{ field.help_text }}</div>
-                        {% endif %}
-                        {% for error in field.errors %}
-                            <div class="invalid-feedback d-block">{{ error }}</div>
-                        {% endfor %}
+                    <div class="mb-3 position-relative">
+                        <label for="profileSearch" class="form-label">Search Customer (Name, Email, Phone)</label>
+                        <input type="text" class="form-control" id="profileSearch" placeholder="Start typing to search..." autocomplete="off">
+                        <div id="profileSearchResults" class="customer-search-results"></div>
                     </div>
-                {% endfor %}
-                 <button type="submit" class="btn btn-success">Create Booking</button>
-            </div>
-        </form>
+                    <div id="selectedProfileDisplay" class="selected-item-display d-none"></div>
+                </div>
+
+                <!-- Section 2: Customer Motorcycle -->
+                <div id="motorcycleSection" class="form-section mb-6 p-4 border border-gray-200 rounded-md">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2 sm:mb-0">2. Select Customer Motorcycle</h3>
+                        <a href="{{ create_motorcycle_url }}" target="_blank" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-3 rounded-md text-sm">
+                            <i class="fas fa-plus-circle mr-1"></i> Add New Motorcycle
+                        </a>
+                    </div>
+                    <div class="mb-4">
+                        <label for="motorcycleDropdown" class="block text-gray-700 text-sm font-medium mb-2">Select Motorcycle</label>
+                        <select class="form-select" id="motorcycleDropdown">
+                            <option value="">-- First, select a customer profile --</option>
+                        </select>
+                    </div>
+                    <div id="selectedMotorcycleDisplay" class="selected-item-display"></div>
+                </div>
+
+                <!-- Section 3: Booking Details -->
+                <div id="bookingDetailsSection" class="form-section mb-6 p-4 border border-gray-200 rounded-md">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">3. Enter Booking Details</h3>
+                    {% for field in booking_details_form %}
+                        <div class="mb-4">
+                            <label for="{{ field.id_for_label }}" class="block text-gray-700 text-sm font-medium mb-2">
+                                {{ field.label }}
+                                {% if field.field.required %}
+                                    <span class="text-red-500">*</span>
+                                {% endif %}
+                            </label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="text-gray-600 text-xs italic mt-1">{{ field.help_text }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md">Create Booking</button>
+                </div>
+            </form>
+        </div>
     </div>
 {% endblock %}
 
 {% block extra_js %}
     {{ block.super }}
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
 
-        // =========================================================
-        // DOM Element Caching
-        // =========================================================
         const dom = {
             selectedProfileIdInput: document.getElementById('selected_profile_id'),
             selectedMotorcycleIdInput: document.getElementById('selected_motorcycle_id'),
@@ -130,27 +178,54 @@
             bookingDetailsSection: document.getElementById('bookingDetailsSection'),
         };
 
-        // =========================================================
-        // AJAX URLs
-        // =========================================================
         const ajaxUrls = {
             searchCustomer: "{{ ajax_search_customer_url }}",
             getCustomerDetails: "{{ admin_api_get_customer_details }}",
             getCustomerMotorcycles: "{{ ajax_get_customer_motorcycles_url }}",
             getMotorcycleDetails: "{{ ajax_get_motorcycle_details_url }}",
-            serviceDateAvailability: "{{ ajax_service_date_availability_url }}",
-            dropoffTimeAvailability: "{{ ajax_dropoff_time_availability_url }}",
         };
 
-        // =========================================================
-        // UI Update Functions
-        // =========================================================
+        // Function to perform the search
+        function performSearch() {
+            const query = dom.profileSearchInput.value.trim();
+            dom.profileSearchResults.innerHTML = '';
+
+            if (query.length < 2) return;
+
+            fetch(`${ajaxUrls.searchCustomer}?query=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const ul = document.createElement('ul');
+                    if (data.profiles && data.profiles.length > 0) {
+                        data.profiles.forEach(profile => {
+                            const li = document.createElement('li');
+                            li.textContent = `${profile.name} (${profile.email || profile.phone_number})`;
+                            li.dataset.profileId = profile.id;
+                            li.addEventListener('click', () => selectProfile(profile.id));
+                            ul.appendChild(li);
+                        });
+                    } else {
+                        const li = document.createElement('li');
+                        li.textContent = 'No profiles found.';
+                        ul.appendChild(li);
+                    }
+                    dom.profileSearchResults.innerHTML = '';
+                    dom.profileSearchResults.appendChild(ul);
+                })
+                .catch(error => console.error('Error searching profiles:', error));
+        }
+
         function updateProfileDisplay(profileData) {
             if (profileData) {
+                // Modified clear button to be red (Tailwind classes)
                 dom.selectedProfileDisplay.innerHTML = `
-                    <strong>Selected Profile:</strong> <span>${profileData.name}</span> (<span>${profileData.email}</span>)<br>
-                    <span>${profileData.phone_number}</span>
-                    <button type="button" class="btn btn-sm btn-outline-danger ms-3 mt-2" id="clearProfileSelection">Clear Selection</button>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Selected Profile:</strong> ${profileData.name} (<span>${profileData.email}</span>)<br>
+                            <small class="text-muted">${profileData.phone_number}</small>
+                        </div>
+                        <button type="button" class="bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-2 rounded-md text-sm" id="clearProfileSelection">Clear</button>
+                    </div>
                 `;
                 dom.selectedProfileDisplay.classList.remove('d-none');
                 document.getElementById('clearProfileSelection').addEventListener('click', clearProfileSelection);
@@ -163,13 +238,19 @@
         function updateMotorcycleDisplay(motorcycleData) {
              if (motorcycleData) {
                 dom.selectedMotorcycleDisplay.innerHTML = `
-                    <strong>Selected Motorcycle:</strong> <span>${motorcycleData.brand} ${motorcycleData.model}</span> (<span>${motorcycleData.rego}</span>)<br>
-                    <button type="button" class="btn btn-sm btn-outline-danger ms-3 mt-2" id="clearMotorcycleSelection">Clear Selection</button>
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <strong class="block text-gray-700">Selected Motorcycle:</strong>
+                            <span class="text-base font-medium">${motorcycleData.brand} ${motorcycleData.model}</span><br>
+                            <small class="text-gray-500 text-sm">Rego: ${motorcycleData.rego}</small>
+                        </div>
+                        <button type="button" class="bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-2 rounded-md text-sm" id="clearMotorcycleSelection">Clear</button>
+                    </div>
                 `;
-                dom.selectedMotorcycleDisplay.classList.remove('d-none');
+                dom.selectedMotorcycleDisplay.style.display = 'block';
                 document.getElementById('clearMotorcycleSelection').addEventListener('click', clearMotorcycleSelection);
             } else {
-                dom.selectedMotorcycleDisplay.classList.add('d-none');
+                dom.selectedMotorcycleDisplay.style.display = 'none';
                 dom.selectedMotorcycleDisplay.innerHTML = '';
             }
         }
@@ -188,36 +269,24 @@
             }
         }
         
-        function toggleSections() {
-            const profileSelected = !!dom.selectedProfileIdInput.value;
-            const motorcycleSelected = !!dom.selectedMotorcycleIdInput.value;
-
-            dom.motorcycleSection.classList.toggle('d-none', !profileSelected);
-            dom.bookingDetailsSection.classList.toggle('d-none', !motorcycleSelected);
-        }
-
-        // =========================================================
-        // Event Handlers & Core Logic
-        // =========================================================
         function clearProfileSelection() {
             dom.selectedProfileIdInput.value = '';
             dom.profileSearchInput.value = '';
-            dom.profileSearchResults.innerHTML = '';
+            dom.profileSearchInput.disabled = false;
             updateProfileDisplay(null);
-            clearMotorcycleSelection(); // Clearing profile also clears motorcycle
+            clearMotorcycleSelection();
         }
 
         function clearMotorcycleSelection() {
             dom.selectedMotorcycleIdInput.value = '';
             dom.motorcycleDropdown.value = '';
             updateMotorcycleDisplay(null);
-            if (dom.selectedProfileIdInput.value) { // only if a profile is still selected
+            if (dom.selectedProfileIdInput.value) {
                 loadCustomerMotorcycles(dom.selectedProfileIdInput.value);
             } else {
                 updateMotorcycleDropdown([]);
                 dom.motorcycleDropdown.disabled = true;
             }
-            toggleSections();
         }
         
         let searchTimeout;
@@ -228,32 +297,21 @@
 
             if (query.length < 2) return;
 
-            searchTimeout = setTimeout(() => {
-                fetch(`${ajaxUrls.searchCustomer}?query=${encodeURIComponent(query)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        const ul = document.createElement('ul');
-                        if (data.profiles && data.profiles.length > 0) {
-                            data.profiles.forEach(profile => {
-                                const li = document.createElement('li');
-                                li.textContent = `${profile.name} (${profile.email || profile.phone_number})`;
-                                li.dataset.profileId = profile.id;
-                                li.addEventListener('click', () => selectProfile(profile.id));
-                                ul.appendChild(li);
-                            });
-                        } else {
-                            ul.innerHTML = '<li>No profiles found.</li>';
-                        }
-                        dom.profileSearchResults.innerHTML = ''; // Clear previous results
-                        dom.profileSearchResults.appendChild(ul);
-                    })
-                    .catch(error => console.error('Error searching profiles:', error));
-            }, 300);
+            searchTimeout = setTimeout(performSearch, 300);
+        });
+
+        dom.profileSearchInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                clearTimeout(searchTimeout);
+                performSearch();
+            }
         });
 
         function selectProfile(profileId) {
             dom.selectedProfileIdInput.value = profileId;
             dom.profileSearchResults.innerHTML = '';
+            dom.profileSearchInput.disabled = true;
             
             fetch(ajaxUrls.getCustomerDetails.replace('0/', `${profileId}/`))
                 .then(response => response.json())
@@ -264,7 +322,6 @@
                 .catch(error => console.error('Error fetching profile details:', error));
 
             loadCustomerMotorcycles(profileId);
-            toggleSections();
         }
 
         function loadCustomerMotorcycles(profileId) {
@@ -272,9 +329,13 @@
                 .then(response => response.json())
                 .then(data => {
                     updateMotorcycleDropdown(data.motorcycles);
-                    // If a motorcycle was already selected, try to re-select it
-                    if (dom.selectedMotorcycleIdInput.value) {
-                       dom.motorcycleDropdown.value = dom.selectedMotorcycleIdInput.value;
+                    if (dom.selectedMotorcycleIdInput.value && !dom.motorcycleDropdown.disabled) {
+                       setTimeout(() => {
+                            if (dom.motorcycleDropdown.value !== dom.selectedMotorcycleIdInput.value) {
+                                dom.motorcycleDropdown.value = dom.selectedMotorcycleIdInput.value;
+                                selectMotorcycle(dom.selectedMotorcycleIdInput.value);
+                            }
+                       }, 10);
                     }
                 })
                 .catch(error => console.error('Error loading motorcycles:', error));
@@ -282,43 +343,37 @@
 
         dom.motorcycleDropdown.addEventListener('change', function() {
             const motorcycleId = this.value;
+            dom.selectedMotorcycleIdInput.value = motorcycleId;
             if (motorcycleId) {
                 selectMotorcycle(motorcycleId);
             } else {
-                clearMotorcycleSelection();
+                updateMotorcycleDisplay(null);
             }
         });
 
         function selectMotorcycle(motorcycleId) {
-            dom.selectedMotorcycleIdInput.value = motorcycleId;
             fetch(ajaxUrls.getMotorcycleDetails.replace('0/', `${motorcycleId}/`))
                 .then(response => response.json())
-                .then(data => {
-                    updateMotorcycleDisplay(data.motorcycle_details);
-                })
+                .then(data => updateMotorcycleDisplay(data.motorcycle_details))
                 .catch(error => console.error('Error fetching motorcycle details:', error));
-            toggleSections();
         }
         
         // =========================================================
-        // Flatpickr Initialization
+        // Flatpickr Initialization (UPDATED)
         // =========================================================
         function initFlatpickr() {
-            fetch(ajaxUrls.serviceDateAvailability)
-                .then(response => response.json())
-                .then(data => {
-                    const commonOptions = { dateFormat: "Y-m-d", minDate: "today", disable: data.disabled_dates };
-                    
-                    flatpickr(".flatpickr-admin-date-input", commonOptions);
+            flatpickr(".flatpickr-admin-date-input", {
+                dateFormat: "Y-m-d",
+                allowInput: true
+            });
 
-                    flatpickr(".flatpickr-admin-time-input", {
-                        enableTime: true,
-                        noCalendar: true,
-                        dateFormat: "H:i",
-                        time_24hr: true,
-                    });
-                })
-                .catch(error => console.error('Error fetching date availability:', error));
+            flatpickr(".flatpickr-admin-time-input", {
+                enableTime: true,
+                noCalendar: true,
+                dateFormat: "H:i",
+                time_24hr: true,
+                allowInput: true
+            });
         }
         
         // =========================================================
@@ -331,12 +386,25 @@
             if (initialProfileId) {
                 selectProfile(initialProfileId);
                 if (initialMotorcycleId) {
-                    selectMotorcycle(initialMotorcycleId);
+                   setTimeout(() => {
+                        if (dom.motorcycleDropdown.value !== initialMotorcycleId) {
+                            dom.motorcycleDropdown.value = initialMotorcycleId;
+                            selectMotorcycle(initialMotorcycleId);
+                        }
+                   }, 100);
                 }
+            } else {
+                dom.motorcycleDropdown.disabled = true;
             }
-            toggleSections();
+
             initFlatpickr();
         }
+
+        document.addEventListener('click', function(event) {
+            if (!dom.profileSearchInput.contains(event.target)) {
+                dom.profileSearchResults.innerHTML = '';
+            }
+        });
 
         initializeForm();
     });
