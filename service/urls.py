@@ -4,7 +4,14 @@ from service.views import (
     user_views,
     admin_views, # Ensure admin_views is imported here
 )
-from service import utils
+from service.ajax import (
+    ajax_get_available_dropoff_times_for_date,
+    ajax_get_available_service_dates,
+    ajax_get_customer_motorcycle_details,
+    ajax_get_customer_motorcycles,
+    ajax_get_service_profile_details,
+    ajax_search_customer_profiles
+)
 
 app_name = 'service'
 
@@ -13,7 +20,8 @@ urlpatterns = [
     path('', user_views.service, name='service'),
 
     # User-facing booking flow steps
-    path('service-book/get-available-times/', utils.ajax_get_available_times_for_date, name='get_available_times_for_date'),
+    # CORRECTED: Referencing the function within the module
+    path('service-book/get-available-times/', ajax_get_available_dropoff_times_for_date.get_available_dropoff_times_for_date, name='get_available_dropoff_times_for_date'),
     path('service-book/step1/', user_views.Step1ServiceDetailsView.as_view(), name='service_book_step1'),
     path('service-book/step2/', user_views.Step2MotorcycleSelectionView.as_view(), name='service_book_step2'),
     path('service-book/step3/', user_views.Step3CustomerMotorcycleView.as_view(), name='service_book_step3'),
@@ -26,6 +34,7 @@ urlpatterns = [
 
     # NEW: AJAX endpoint for checking booking status
     path('service-book/status-check/', user_views.Step7StatusCheckView.as_view(), name='service_booking_status_check'),
+
 
     # Admin-facing management
     path('service-booking-management/', admin_views.ServiceBookingManagementView.as_view(), name='service_booking_management'),
@@ -55,33 +64,43 @@ urlpatterns = [
     path('admin/customer-motorcycles/create/', admin_views.CustomerMotorcycleCreateUpdateView.as_view(), name='admin_create_customer_motorcycle'),
     path('admin/customer-motorcycles/edit/<int:pk>/', admin_views.CustomerMotorcycleCreateUpdateView.as_view(), name='admin_edit_customer_motorcycle'),
     path('admin/customer-motorcycles/delete/<int:pk>/', admin_views.CustomerMotorcycleDeleteView.as_view(), name='admin_delete_customer_motorcycle'),
-
 # --- NEW AJAX Endpoints for Admin Booking Flow ---
+    # Customer Profile Search & Details
     path(
         'admin/api/search-customer/',
-        utils.ajax_search_customer_profiles.search_customer_profiles_ajax,
+        ajax_search_customer_profiles.search_customer_profiles_ajax,
         name='admin_api_search_customer'
     ),
     path(
         'admin/api/get-customer-details/<int:profile_id>/',
-        utils.ajax_get_customer_profile_details.get_customer_profile_details_ajax,
+        ajax_get_service_profile_details.get_service_profile_details_ajax,
         name='admin_api_get_customer_details'
     ),
+
+    # Customer Motorcycle List & Details
     path(
         'admin/api/customer-motorcycles/<int:profile_id>/',
-        utils.ajax_get_customer_motorcycles.get_customer_motorcycles_ajax,
+        ajax_get_customer_motorcycles.get_customer_motorcycles_ajax,
         name='admin_api_customer_motorcycles'
     ),
     path(
         'admin/api/get-motorcycle-details/<int:motorcycle_id>/',
-        utils.ajax_get_customer_motorcycle_details.get_motorcycle_details_ajax,
+        ajax_get_customer_motorcycle_details.get_motorcycle_details_ajax,
         name='admin_api_get_motorcycle_details'
     ),
+
+    # Service Date Availability
     path(
         'admin/api/service-date-availability/',
-        utils.ajax_get_available_service_dates.get_service_date_availability_ajax,
+        ajax_get_available_service_dates.get_service_date_availability_ajax,
         name='admin_api_service_date_availability'
     ),
 
+    # Drop-off Time Availability (Next, we'll create this file/view)
+    # CORRECTED: Referencing the function within the module with the correct function name
+    path(
+        'admin/api/dropoff-time-availability/',
+        ajax_get_available_dropoff_times_for_date.get_available_dropoff_times_for_date,
+        name='admin_api_dropoff_time_availability'
+    ),
 ]
-

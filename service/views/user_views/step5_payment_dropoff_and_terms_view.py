@@ -70,7 +70,7 @@ class Step5PaymentDropoffAndTermsView(View):
             'temp_booking': self.temp_booking,
             'service_settings': self.service_settings,
             'available_dropoff_dates_json': json.dumps(available_dropoff_dates),
-            'get_times_url': reverse('service:get_available_times_for_date'),
+            'get_times_url': reverse('service:get_available_dropoff_times_for_date'),
             'step': 5,
             'total_steps': 7,
             'is_same_day_dropoff_only': is_same_day_dropoff_only,

@@ -4,7 +4,7 @@ from django.views.decorators.http import require_GET
 from service.utils.get_available_service_dropoff_times import get_available_dropoff_times
 
 @require_GET
-def get_available_times_for_date(request):
+def get_available_dropoff_times_for_date(request):
     """
     AJAX endpoint to return available drop-off times for a selected date.
     It relies on the frontend (Flatpickr) to ensure the date itself is valid
