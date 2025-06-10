@@ -78,6 +78,33 @@
             outline: 0;
             box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
         }
+
+        /* Modal specific styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 2000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
     </style>
 {% endblock %}
 
@@ -150,11 +177,32 @@
                             {% if field.help_text %}
                                 <div class="text-gray-600 text-xs italic mt-1">{{ field.help_text }}</div>
                             {% endif %}
+                            {% for error in field.errors %}
+                                <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+                            {% endfor %}
                         </div>
                     {% endfor %}
-                    <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md">Create Booking</button>
+                    <!-- Error display area for non-field errors -->
+                    <div id="formErrors" class="text-red-500 text-sm mb-4"></div>
+
+                    <button type="submit" id="submitBookingButton" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md">Create Booking</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Warning/Confirmation Modal -->
+    <div id="warningModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Confirm Submission</h3>
+            <div id="modalWarnings" class="mb-4 text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                <!-- Warnings will be inserted here -->
+            </div>
+            <p class="text-gray-700 mb-6">Are you sure you want to proceed with this booking despite the warnings?</p>
+            <div class="flex justify-end space-x-4">
+                <button type="button" id="cancelSubmissionButton" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-md">Cancel</button>
+                <button type="button" id="confirmSubmissionButton" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md">Confirm Submit</button>
+            </div>
         </div>
     </div>
 {% endblock %}
@@ -176,13 +224,21 @@
             motorcycleDropdown: document.getElementById('motorcycleDropdown'),
             selectedMotorcycleDisplay: document.getElementById('selectedMotorcycleDisplay'),
             bookingDetailsSection: document.getElementById('bookingDetailsSection'),
+            adminBookingForm: document.getElementById('adminBookingForm'), // Added form reference
+            submitBookingButton: document.getElementById('submitBookingButton'), // Added submit button reference
+            warningModal: document.getElementById('warningModal'), // Modal reference
+            modalWarnings: document.getElementById('modalWarnings'), // Modal warnings content
+            cancelSubmissionButton: document.getElementById('cancelSubmissionButton'), // Modal cancel button
+            confirmSubmissionButton: document.getElementById('confirmSubmissionButton'), // Modal confirm button
+            formErrors: document.getElementById('formErrors'), // Area to display general form errors
         };
 
         const ajaxUrls = {
             searchCustomer: "{{ ajax_search_customer_url }}",
-            getCustomerDetails: "{{ admin_api_get_customer_details }}",
-            getCustomerMotorcycles: "{{ ajax_get_customer_motorcycles_url }}",
-            getMotorcycleDetails: "{{ ajax_get_motorcycle_details_url }}",
+            getCustomerDetails: "{% url 'service:admin_api_get_customer_details' 0 %}".replace('0/', ''), // Corrected URL
+            getCustomerMotorcycles: "{% url 'service:admin_api_customer_motorcycles' 0 %}".replace('0/', ''), // Corrected URL
+            getMotorcycleDetails: "{% url 'service:admin_api_get_motorcycle_details' 0 %}".replace('0/', ''), // Corrected URL
+            bookingPrecheck: "{% url 'service:admin_api_booking_precheck' %}", // Pre-check URL
         };
 
         // Function to perform the search
@@ -217,12 +273,11 @@
 
         function updateProfileDisplay(profileData) {
             if (profileData) {
-                // Modified clear button to be red (Tailwind classes)
                 dom.selectedProfileDisplay.innerHTML = `
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <strong>Selected Profile:</strong> ${profileData.name} (<span>${profileData.email}</span>)<br>
-                            <small class="text-muted">${profileData.phone_number}</small>
+                            <strong>Selected Profile:</strong> ${profileData.name} (<span>${profileData.email || 'N/A'}</span>)<br>
+                            <small class="text-muted">Phone: ${profileData.phone_number || 'N/A'}</small>
                         </div>
                         <button type="button" class="bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-2 rounded-md text-sm" id="clearProfileSelection">Clear</button>
                     </div>
@@ -254,7 +309,7 @@
                 dom.selectedMotorcycleDisplay.innerHTML = '';
             }
         }
-        
+
         function updateMotorcycleDropdown(motorcycles) {
             dom.motorcycleDropdown.innerHTML = '<option value="">-- Select an existing motorcycle --</option>';
             if (motorcycles && motorcycles.length > 0) {
@@ -268,7 +323,7 @@
                 dom.motorcycleDropdown.disabled = true;
             }
         }
-        
+
         function clearProfileSelection() {
             dom.selectedProfileIdInput.value = '';
             dom.profileSearchInput.value = '';
@@ -288,7 +343,7 @@
                 dom.motorcycleDropdown.disabled = true;
             }
         }
-        
+
         let searchTimeout;
         dom.profileSearchInput.addEventListener('input', function() {
             clearTimeout(searchTimeout);
@@ -312,8 +367,8 @@
             dom.selectedProfileIdInput.value = profileId;
             dom.profileSearchResults.innerHTML = '';
             dom.profileSearchInput.disabled = true;
-            
-            fetch(ajaxUrls.getCustomerDetails.replace('0/', `${profileId}/`))
+
+            fetch(ajaxUrls.getCustomerDetails + profileId + '/')
                 .then(response => response.json())
                 .then(data => {
                     updateProfileDisplay(data.profile_details);
@@ -325,7 +380,7 @@
         }
 
         function loadCustomerMotorcycles(profileId) {
-            fetch(ajaxUrls.getCustomerMotorcycles.replace('0/', `${profileId}/`))
+            fetch(ajaxUrls.getCustomerMotorcycles + profileId + '/')
                 .then(response => response.json())
                 .then(data => {
                     updateMotorcycleDropdown(data.motorcycles);
@@ -352,14 +407,14 @@
         });
 
         function selectMotorcycle(motorcycleId) {
-            fetch(ajaxUrls.getMotorcycleDetails.replace('0/', `${motorcycleId}/`))
+            fetch(ajaxUrls.getMotorcycleDetails + motorcycleId + '/')
                 .then(response => response.json())
                 .then(data => updateMotorcycleDisplay(data.motorcycle_details))
                 .catch(error => console.error('Error fetching motorcycle details:', error));
         }
-        
+
         // =========================================================
-        // Flatpickr Initialization (UPDATED)
+        // Flatpickr Initialization
         // =========================================================
         function initFlatpickr() {
             flatpickr(".flatpickr-admin-date-input", {
@@ -375,7 +430,76 @@
                 allowInput: true
             });
         }
-        
+
+        // =========================================================
+        // Handle Form Submission with Pre-check (NEW LOGIC)
+        // =========================================================
+        dom.adminBookingForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            dom.formErrors.innerHTML = ''; // Clear previous errors
+            dom.modalWarnings.innerHTML = ''; // Clear previous warnings in modal
+            dom.warningModal.style.display = 'none'; // Hide modal initially
+
+            // Collect all form data
+            const formData = new FormData(dom.adminBookingForm);
+
+            // Perform AJAX pre-check
+            fetch(ajaxUrls.bookingPrecheck, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest' // Important for Django's is_ajax()
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'errors') {
+                    // Display errors from backend validation
+                    let errorsHtml = 'Please correct the following errors:<br>';
+                    for (const formName in data.errors) {
+                        try {
+                            const errors = JSON.parse(data.errors[formName]);
+                            for (const fieldName in errors) {
+                                errorsHtml += `<p class="ml-2">- ${fieldName}: ${errors[fieldName].map(e => e.message).join(', ')}</p>`;
+                            }
+                        } catch (e) {
+                            errorsHtml += `<p>${data.errors[formName]}</p>`; // Fallback for non-JSON errors
+                        }
+                    }
+                    dom.formErrors.innerHTML = errorsHtml;
+                } else if (data.status === 'warnings') {
+                    // Display warnings in the modal
+                    let warningsHtml = '<ul class="list-disc list-inside">';
+                    data.warnings.forEach(warning => {
+                        warningsHtml += `<li>${warning}</li>`;
+                    });
+                    warningsHtml += '</ul>';
+                    dom.modalWarnings.innerHTML = warningsHtml;
+                    dom.warningModal.style.display = 'flex'; // Show the modal
+                } else {
+                    // No errors or warnings, proceed with submission
+                    dom.adminBookingForm.submit();
+                }
+            })
+            .catch(error => {
+                console.error('Error during booking pre-check:', error);
+                dom.formErrors.innerHTML = '<p class="text-red-500">An unexpected error occurred during pre-check. Please try again.</p>';
+            });
+        });
+
+        // Event listener for "Confirm Submission" button in modal
+        dom.confirmSubmissionButton.addEventListener('click', function() {
+            dom.warningModal.style.display = 'none'; // Hide the modal
+            dom.adminBookingForm.submit(); // Programmatically submit the form
+        });
+
+        // Event listener for "Cancel" button in modal
+        dom.cancelSubmissionButton.addEventListener('click', function() {
+            dom.warningModal.style.display = 'none'; // Hide the modal
+        });
+
         // =========================================================
         // Initial Page Load
         // =========================================================
