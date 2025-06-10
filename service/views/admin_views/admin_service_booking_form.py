@@ -53,9 +53,12 @@ class AdminBookingCreateView(LoginRequiredMixin, UserPassesTestMixin, View):
             'show_booking_details_section': bool(kwargs.get('selected_profile') and kwargs.get('selected_motorcycle')),
             'all_service_types': ServiceType.objects.filter(is_active=True).order_by('name'),
             'ajax_search_customer_url': reverse_lazy('service:admin_api_search_customer'),
-            'admin_api_get_customer_details': reverse_lazy('service:admin_api_get_customer_details'),
-            'ajax_get_customer_motorcycles_url': reverse_lazy('service:admin_api_customer_motorcycles'),
-            'ajax_get_motorcycle_details_url': reverse_lazy('service:admin_api_get_motorcycle_details'),
+            # FIX: Pass a dummy profile_id=0 to reverse_lazy as a placeholder for JavaScript
+            'admin_api_get_customer_details': reverse_lazy('service:admin_api_get_customer_details', kwargs={'profile_id': 0}),
+            # FIX: Pass a dummy profile_id=0 to reverse_lazy as a placeholder for JavaScript
+            'ajax_get_customer_motorcycles_url': reverse_lazy('service:admin_api_customer_motorcycles', kwargs={'profile_id': 0}),
+            # FIX: Pass a dummy motorcycle_id=0 to reverse_lazy as a placeholder for JavaScript
+            'ajax_get_motorcycle_details_url': reverse_lazy('service:admin_api_get_motorcycle_details', kwargs={'motorcycle_id': 0}),
             'ajax_service_date_availability_url': reverse_lazy('service:admin_api_service_date_availability'),
             'ajax_dropoff_time_availability_url': reverse_lazy('service:admin_api_dropoff_time_availability'),
             'ajax_booking_precheck_url': reverse_lazy('service:admin_api_booking_precheck'),
@@ -188,4 +191,3 @@ class AdminBookingCreateView(LoginRequiredMixin, UserPassesTestMixin, View):
             selected_motorcycle=customer_motorcycle_instance
         )
         return render(request, self.template_name, context)
-
