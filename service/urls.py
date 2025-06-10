@@ -39,6 +39,9 @@ urlpatterns = [
 
     # Admin-facing management
     path('service-booking-management/', admin_views.ServiceBookingManagementView.as_view(), name='service_booking_management'),
+    # service/urls.py
+    path('service-booking-management/create-booking/', admin_views.AdminBookingCreateView.as_view(), name='admin_create_service_booking'),
+
     path('service-settings/', admin_views.ServiceSettingsView.as_view(), name='service_settings'),
     path('service-bookings/json/', admin_views.ServiceBookingJSONFeedView.as_view(), name='get_service_bookings_json'),
 
