@@ -41,6 +41,5 @@ def get_service_date_availability_ajax(request):
 
     except Exception as e:
         # Log the error for debugging
-        print(f"Error in get_service_date_availability_ajax: {e}")
         return JsonResponse({'error': 'Could not retrieve service date availability.'}, status=500)
 
