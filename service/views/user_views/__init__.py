@@ -1,6 +1,5 @@
 
 from .service import *
-from .ajax_get_available_times_for_date import *
 from .step1_service_details_view import *
 from .step2_motorcycle_selection_view import *
 from .step3_customer_motorcycle_view import *

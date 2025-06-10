@@ -4,6 +4,7 @@ from service.views import (
     user_views,
     admin_views, # Ensure admin_views is imported here
 )
+from service import utils
 
 app_name = 'service'
 
@@ -12,7 +13,7 @@ urlpatterns = [
     path('', user_views.service, name='service'),
 
     # User-facing booking flow steps
-    path('service-book/get-available-times/', user_views.get_available_times_for_date, name='get_available_times_for_date'),
+    path('service-book/get-available-times/', utils.ajax_get_available_times_for_date, name='get_available_times_for_date'),
     path('service-book/step1/', user_views.Step1ServiceDetailsView.as_view(), name='service_book_step1'),
     path('service-book/step2/', user_views.Step2MotorcycleSelectionView.as_view(), name='service_book_step2'),
     path('service-book/step3/', user_views.Step3CustomerMotorcycleView.as_view(), name='service_book_step3'),
@@ -25,7 +26,6 @@ urlpatterns = [
 
     # NEW: AJAX endpoint for checking booking status
     path('service-book/status-check/', user_views.Step7StatusCheckView.as_view(), name='service_booking_status_check'),
-
 
     # Admin-facing management
     path('service-booking-management/', admin_views.ServiceBookingManagementView.as_view(), name='service_booking_management'),
@@ -55,4 +55,33 @@ urlpatterns = [
     path('admin/customer-motorcycles/create/', admin_views.CustomerMotorcycleCreateUpdateView.as_view(), name='admin_create_customer_motorcycle'),
     path('admin/customer-motorcycles/edit/<int:pk>/', admin_views.CustomerMotorcycleCreateUpdateView.as_view(), name='admin_edit_customer_motorcycle'),
     path('admin/customer-motorcycles/delete/<int:pk>/', admin_views.CustomerMotorcycleDeleteView.as_view(), name='admin_delete_customer_motorcycle'),
+
+# --- NEW AJAX Endpoints for Admin Booking Flow ---
+    path(
+        'admin/api/search-customer/',
+        utils.ajax_search_customer_profiles.search_customer_profiles_ajax,
+        name='admin_api_search_customer'
+    ),
+    path(
+        'admin/api/get-customer-details/<int:profile_id>/',
+        utils.ajax_get_customer_profile_details.get_customer_profile_details_ajax,
+        name='admin_api_get_customer_details'
+    ),
+    path(
+        'admin/api/customer-motorcycles/<int:profile_id>/',
+        utils.ajax_get_customer_motorcycles.get_customer_motorcycles_ajax,
+        name='admin_api_customer_motorcycles'
+    ),
+    path(
+        'admin/api/get-motorcycle-details/<int:motorcycle_id>/',
+        utils.ajax_get_customer_motorcycle_details.get_motorcycle_details_ajax,
+        name='admin_api_get_motorcycle_details'
+    ),
+    path(
+        'admin/api/service-date-availability/',
+        utils.ajax_get_available_service_dates.get_service_date_availability_ajax,
+        name='admin_api_service_date_availability'
+    ),
+
 ]
+

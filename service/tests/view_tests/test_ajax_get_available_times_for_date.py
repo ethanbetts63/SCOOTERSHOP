@@ -6,7 +6,7 @@ import json
 from unittest.mock import patch, Mock
 
 # Corrected import path for the view function
-from service.views.user_views.ajax_get_available_times_for_date import get_available_times_for_date
+from service.utils.ajax_get_available_times_for_date import get_available_times_for_date
 
 class AjaxGetAvailableTimesForDateTest(TestCase):
     """
