@@ -8,7 +8,7 @@ from unittest.mock import patch, Mock
 # Corrected import path for the view function
 from service.ajax.ajax_get_available_dropoff_times_for_date import get_available_dropoff_times_for_date
 
-class AjaxGetAvailableTimesForDateTest(TestCase):
+class AjaxGetAvailableDropoffTimesForDateTest(TestCase):
     """
     Tests for the AJAX view `get_available_dropoff_times_for_date`.
     This test suite focuses on the view's handling of requests and responses,
