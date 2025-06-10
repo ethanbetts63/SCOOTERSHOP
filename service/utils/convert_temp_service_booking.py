@@ -21,11 +21,8 @@ def convert_temp_service_booking(
             currency_code = 'AUD'
             if service_settings:
                 currency_code = service_settings.currency_code
-                
-            service_booking_reference = f"SVC-{uuid.uuid4().hex[:8].upper()}"
 
             service_booking = ServiceBooking.objects.create(
-                service_booking_reference=service_booking_reference,
                 service_type=temp_booking.service_type,
                 service_profile=temp_booking.service_profile,
                 customer_motorcycle=temp_booking.customer_motorcycle,

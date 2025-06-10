@@ -91,7 +91,7 @@ class ServiceBooking(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.service_booking_reference:
-            self.service_booking_reference = f"SERVICE-{uuid.uuid4().hex[:8].upper()}"
+            self.service_booking_reference = f"SVC-{uuid.uuid4().hex[:8].upper()}"
         super().save(*args, **kwargs)
 
     def __str__(self):
