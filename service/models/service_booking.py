@@ -74,7 +74,7 @@ class ServiceBooking(models.Model):
     service_date = models.DateField(help_text="Requested date for the service.")
     dropoff_date = models.DateField(help_text="Requested date for the drop off.")
     dropoff_time = models.TimeField(help_text="Requested drop-off time for the service.")
-    estimated_pickup_date = models.DateField(help_text="Estimated pickup date set by admin.")
+    estimated_pickup_date = models.DateField(blank=True, null=True, help_text="Estimated pickup date set by admin.")
 
     booking_status = models.CharField(max_length=30, choices=BOOKING_STATUS_CHOICES, default='PENDING_CONFIRMATION')
     customer_notes = models.TextField(blank=True, null=True, help_text="Any additional notes from the customer.")
