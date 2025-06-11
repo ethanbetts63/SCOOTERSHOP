@@ -39,6 +39,7 @@ urlpatterns = [
 
     # Admin-facing management
     path('service-booking-management/', admin_views.ServiceBookingManagementView.as_view(), name='service_booking_management'),
+    path('admin/bookings/<int:pk>/', admin_views.AdminServiceBookingDetailView.as_view(), name='admin_service_booking_detail'),
     path('service-booking-management/create-booking/', admin_views.AdminBookingCreateView.as_view(), name='admin_create_service_booking'),
 
     path('service-settings/', admin_views.ServiceSettingsView.as_view(), name='service_settings'),

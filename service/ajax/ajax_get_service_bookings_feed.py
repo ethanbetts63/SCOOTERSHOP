@@ -22,9 +22,8 @@ def get_service_bookings_json_ajax(request):
         booking_url = None
         if hasattr(booking, 'pk'):
             try:
-                booking_url = reverse('service:booking_detail', args=[booking.pk])
+                booking_url = reverse('service:admin_service_booking_detail', args=[booking.pk])
             except Exception as e:
-                # Handle case where 'service:booking_detail' might not be defined
                 print(f"Warning: Could not reverse URL for booking detail (booking PK: {booking.pk}): {e}")
 
         # Get customer and vehicle details safely

@@ -1,0 +1,267 @@
+{% extends "dashboard/admin_layout.html" %}
+{% load static %}
+
+{% block extra_css %}
+{{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
+    <style>
+        .booking-details-container {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 20px auto;
+        }
+        .booking-details-header {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #333;
+        }
+        .detail-group {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .detail-group:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #555;
+            display: inline-block;
+            width: 180px; /* Adjust as needed for alignment */
+        }
+        .detail-value {
+            color: #666;
+            display: inline-block;
+        }
+        .detail-value pre {
+            white-space: pre-wrap; /* Allows long text to wrap */
+            word-wrap: break-word;
+            font-family: inherit;
+            font-size: inherit;
+            background-color: #eef;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        .loading-message, .error-message {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+        }
+        .error-message {
+            color: #d9534f;
+            font-weight: bold;
+        }
+        .section-header {
+            background-color: #e0e0e0;
+            padding: 8px 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            color: #444;
+            font-weight: bold;
+        }
+    </style>
+{% endblock %}
+
+{% block admin_main_content %}
+<div class="booking-details-container">
+    <h2 class="booking-details-header">Service Booking Details</h2>
+
+    <div id="loadingMessage" class="loading-message">
+        Loading booking details...
+    </div>
+
+    <div id="errorMessage" class="error-message" style="display: none;">
+        Failed to load booking details. Please try again.
+    </div>
+
+    <div id="bookingDetails" style="display: none;">
+        <div class="section-header">Booking Information</div>
+        <div class="detail-group">
+            <span class="detail-label">Reference:</span>
+            <span class="detail-value" id="bookingReference"></span>
+        </div>
+        <div class="detail-group">
+            <span class="detail-label">Customer Name:</span>
+            <span class="detail-value" id="customerName"></span>
+        </div>
+        <div class="detail-group">
+            <span class="detail-label">Service Date:</span>
+            <span class="detail-value" id="serviceDate"></span>
+        </div>
+        <div class="detail-group">
+            <span class="detail-label">Drop-off Date:</span>
+            <span class="detail-value" id="dropoffDate"></span>
+        </div>
+        <div class="detail-group">
+            <span class="detail-label">Drop-off Time:</span>
+            <span class="detail-value" id="dropoffTime"></span>
+        </div>
+        <div class="detail-group">
+            <span class="detail-label">Estimated Pick-up Date:</span>
+            <span class="detail-value" id="estimatedPickupDate"></span>
+        </div>
+        <div class="detail-group">
+            <span class="detail-label">Booking Status:</span>
+            <span class="detail-value" id="bookingStatus"></span>
+        </div>
+        <div class="detail-group">
+            <span class="detail-label">Customer Notes:</span>
+            <span class="detail-value" id="customerNotes"></span>
+        </div>
+
+        <div class="section-header">Motorcycle Details</div>
+        <div class="detail-group">
+            <span class="detail-label">Year:</span>
+            <span class="detail-value" id="motorcycleYear"></span>
+        </div>
+        <div class="detail-group">
+            <span class="detail-label">Brand:</span>
+            <span class="detail-value" id="motorcycleBrand"></span>
+        </div>
+        <div class="detail-group">
+            <span class="detail-label">Model:</span>
+            <span class="detail-value" id="motorcycleModel"></span>
+        </div>
+
+        <div class="section-header">Service Type Details</div>
+        <div class="detail-group">
+            <span class="detail-label">Name:</span>
+            <span class="detail-value" id="serviceTypeName"></span>
+        </div>
+        <div class="detail-group">
+            <span class="detail-label">Description:</span>
+            <span class="detail-value" id="serviceTypeDescription"></span>
+        </div>
+        <div class="detail-group">
+            <span class="detail-label">Base Price:</span>
+            <span class="detail-value" id="serviceTypeBasePrice"></span>
+        </div>
+
+        <div class="section-header">Payment Information</div>
+        <div class="detail-group">
+            <span class="detail-label">Payment Option:</span>
+            <span class="detail-value" id="paymentOption"></span>
+        </div>
+        <div class="detail-group">
+            <span class="detail-label">Payment Date:</span>
+            <span class="detail-value" id="paymentDate"></span>
+        </div>
+        <div class="detail-group">
+            <span class="detail-label">Payment Amount:</span>
+            <span class="detail-value" id="paymentAmount"></span>
+        </div>
+        <div class="detail-group">
+            <span class="detail-label">Payment Status:</span>
+            <span class="detail-value" id="paymentStatus"></span>
+        </div>
+
+        <div class="section-header">Refund Information</div>
+        <div class="detail-group">
+            <span class="detail-label">Refund Request Status:</span>
+            <span class="detail-value" id="refundRequestStatus"></span>
+        </div>
+        <div class="detail-group">
+            <span class="detail-label">Entitled Refund Amount:</span>
+            <span class="detail-value" id="entitledRefundAmount"></span>
+        </div>
+        <div class="detail-group">
+            <span class="detail-label">Refund Policy Applied:</span>
+            <span class="detail-value" id="refundPolicyApplied"></span>
+        </div>
+        <div class="detail-group">
+            <span class="detail-label">Days Before Dropoff:</span>
+            <span class="detail-value" id="refundDaysBeforeDropoff"></span>
+        </div>
+        <div class="detail-group">
+            <span class="detail-label">Refund Calculation Details:</span>
+            <span class="detail-value"><pre id="refundCalculationDetails"></pre></span>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const bookingPk = '{{ booking_pk }}'; // Get the primary key from Django context
+    const apiUrl = `/api/service-booking-details/${bookingPk}/`; // Your existing AJAX endpoint
+
+    const loadingMessage = document.getElementById('loadingMessage');
+    const errorMessage = document.getElementById('errorMessage');
+    const bookingDetailsDiv = document.getElementById('bookingDetails');
+
+    fetch(apiUrl)
+        .then(response => {
+            if (!response.ok) {
+                // Check for 403 (Permission Denied) or 404 (Not Found)
+                if (response.status === 403) {
+                    throw new Error('Permission denied. You do not have access to view this booking.');
+                } else if (response.status === 404) {
+                    throw new Error('Service Booking not found.');
+                }
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                errorMessage.textContent = `Error: ${data.error}`;
+                errorMessage.style.display = 'block';
+                loadingMessage.style.display = 'none';
+                return;
+            }
+
+            // Populate booking information
+            document.getElementById('bookingReference').textContent = data.service_booking_reference || 'N/A';
+            document.getElementById('customerName').textContent = data.customer_name || 'N/A';
+            document.getElementById('serviceDate').textContent = data.service_date || 'N/A';
+            document.getElementById('dropoffDate').textContent = data.dropoff_date || 'N/A';
+            document.getElementById('dropoffTime').textContent = data.dropoff_time || 'N/A';
+            document.getElementById('estimatedPickupDate').textContent = data.estimated_pickup_date || 'N/A';
+            document.getElementById('bookingStatus').textContent = data.booking_status || 'N/A';
+            document.getElementById('customerNotes').textContent = data.customer_notes || 'N/A';
+
+            // Populate motorcycle details
+            document.getElementById('motorcycleYear').textContent = data.motorcycle_details.year || 'N/A';
+            document.getElementById('motorcycleBrand').textContent = data.motorcycle_details.brand || 'N/A';
+            document.getElementById('motorcycleModel').textContent = data.motorcycle_details.model || 'N/A';
+
+            // Populate service type details
+            document.getElementById('serviceTypeName').textContent = data.service_type_details.name || 'N/A';
+            document.getElementById('serviceTypeDescription').textContent = data.service_type_details.description || 'N/A';
+            document.getElementById('serviceTypeBasePrice').textContent = data.service_type_details.base_price !== 'N/A' ? `$${data.service_type_details.base_price.toFixed(2)}` : 'N/A';
+
+            // Populate payment information
+            document.getElementById('paymentOption').textContent = data.payment_option || 'N/A';
+            document.getElementById('paymentDate').textContent = data.payment_date || 'N/A';
+            document.getElementById('paymentAmount').textContent = data.payment_amount !== 'N/A' ? `$${data.payment_amount.toFixed(2)}` : 'N/A';
+            document.getElementById('paymentStatus').textContent = data.payment_status || 'N/A';
+
+            // Populate refund information
+            document.getElementById('refundRequestStatus').textContent = data.refund_request_status_for_booking || 'N/A';
+            document.getElementById('entitledRefundAmount').textContent = data.entitled_refund_amount !== 'N/A' ? `$${data.entitled_refund_amount.toFixed(2)}` : 'N/A';
+            document.getElementById('refundPolicyApplied').textContent = data.refund_policy_applied || 'N/A';
+            document.getElementById('refundDaysBeforeDropoff').textContent = data.refund_days_before_dropoff !== null ? data.refund_days_before_dropoff : 'N/A';
+            document.getElementById('refundCalculationDetails').textContent = JSON.stringify(data.refund_calculation_details, null, 2) || 'N/A';
+
+
+            loadingMessage.style.display = 'none';
+            bookingDetailsDiv.style.display = 'block';
+        })
+        .catch(error => {
+            console.error('Error fetching booking details:', error);
+            errorMessage.textContent = `Error loading details: ${error.message}`;
+            errorMessage.style.display = 'block';
+            loadingMessage.style.display = 'none';
+        });
+});
+</script>
+{% endblock %}

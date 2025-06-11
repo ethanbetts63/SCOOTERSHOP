@@ -1,7 +1,5 @@
 # payments/urls.py
 from django.urls import path
-
-from ..service.ajax import ajax_get_service_booking_details
 from . import views
 from .views import Refunds # This already imports the HireRefunds package
 from .utils import ajax_get_hire_booking_details

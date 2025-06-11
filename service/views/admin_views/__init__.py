@@ -2,6 +2,7 @@ from .admin_service_booking_form import *
 from .admin_service_profile_management import *
 from .admin_customer_motorcycle_management_view import *
 from .admin_create_update_customer_motorcycle import *
+from .admin_service_booking_details import *
 from .admin_create_update_service_profile import *
 from .admin_create_update_service_profile import *
 from .blocked_service_date_management import *
