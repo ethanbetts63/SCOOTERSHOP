@@ -16,6 +16,7 @@ from mailer.utils import send_templated_email
 
 from service.utils.calculate_service_total import calculate_service_total
 from service.utils.calulcate_service_deposit import calculate_service_deposit
+from service.utils.calculate_estimated_pickup_date import calculate_estimated_pickup_date # NEW: Import the new utility
 
 
 class Step5PaymentDropoffAndTermsView(View):
@@ -101,15 +102,21 @@ class Step5PaymentDropoffAndTermsView(View):
             self.temp_booking.dropoff_time = form.cleaned_data['dropoff_time']
             self.temp_booking.payment_method = form.cleaned_data['payment_method']
             
+            # Save the dropoff and payment method updates first
             self.temp_booking.save(update_fields=['dropoff_date', 'dropoff_time', 'payment_method'])
 
+            # Calculate total and deposit amounts
             calculated_total = calculate_service_total(self.temp_booking)
             self.temp_booking.calculated_total = calculated_total
 
             calculated_deposit = calculate_service_deposit(self.temp_booking)
             self.temp_booking.calculated_deposit_amount = calculated_deposit
 
-            self.temp_booking.save(update_fields=['calculated_total', 'calculated_deposit_amount'])
+            # Calculate and set the estimated pickup date
+            calculate_estimated_pickup_date(self.temp_booking) # NEW: Call the utility function here
+
+            # Save the calculated total, deposit, and estimated pickup date
+            self.temp_booking.save(update_fields=['calculated_total', 'calculated_deposit_amount', 'estimated_pickup_date']) # NEW: Add estimated_pickup_date to update_fields
 
             messages.success(request, "Drop-off and payment details have been saved successfully.")
             

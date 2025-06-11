@@ -15,6 +15,7 @@ from service.ajax import (
     ajax_get_service_bookings_feed,
     ajax_get_service_booking_details, 
     ajax_search_service_bookings,
+    ajax_get_estimated_pickup_date,
 )
 
 app_name = 'service'
@@ -81,5 +82,7 @@ urlpatterns = [
     # Original URL for feed (if still needed)
     path('admin/api/service-bookings-json/', ajax_get_service_bookings_feed.get_service_bookings_json_ajax, name='get_service_bookings_json'),
     path('admin/api/search-bookings/', ajax_search_service_bookings.search_service_bookings_ajax, name='admin_api_search_bookings'),
+    path('admin/api/get-estimated-pickup-date/', ajax_get_estimated_pickup_date.get_estimated_pickup_date_ajax, name='admin_api_get_estimated_pickup_date'),
+
 ]   
 
