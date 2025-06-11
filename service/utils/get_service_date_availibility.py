@@ -64,7 +64,7 @@ def get_service_date_availability():
         if service_settings and service_settings.max_visible_slots_per_day is not None:
             booked_slots_count = ServiceBooking.objects.filter(
                 dropoff_date=current_check_date,
-                booking_status__in=['booked', 'in_progress'] # Consider 'booked' and 'in_progress' as occupied
+                booking_status__in=['pending', 'confirmed', 'in_progress'] # Consider 'booked' and 'in_progress' as occupied
             ).count()
 
             if booked_slots_count >= service_settings.max_visible_slots_per_day:
