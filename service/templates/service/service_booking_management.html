@@ -83,18 +83,21 @@
                     if (arg.event.extendedProps.description) {
                          eventEl.setAttribute('title', arg.event.title);
                      }
+                    // Crucial: Set innerHTML for blocked events
+                    eventEl.innerHTML = html;
                     return { domNodes: [eventEl] };
 
                 } else {
                     let customerName = arg.event.extendedProps.customer_name || 'N/A';
-                    let vehicleMake = arg.event.extendedProps.vehicle_make || '';
+                    // Changed 'vehicle_make' to 'vehicle_brand'
+                    let vehicleBrand = arg.event.extendedProps.vehicle_brand || ''; 
                     let vehicleModel = arg.event.extendedProps.vehicle_model || '';
                     let serviceType = arg.event.extendedProps.service_type || 'Service';
                     let status = arg.event.extendedProps.status || 'pending';
 
                     let vehicleString = '';
-                    if (vehicleMake || vehicleModel) {
-                        vehicleString = `${vehicleMake} ${vehicleModel}`.trim();
+                    if (vehicleBrand || vehicleModel) {
+                        vehicleString = `${vehicleBrand} ${vehicleModel}`.trim();
                     }
 
                     if (customerName.length > 15) {
@@ -113,6 +116,8 @@
                     eventEl.classList.add('calendar-tile-base');
                     eventEl.classList.add('fc-event-main-custom');
                     eventEl.classList.add(`status-${status}`);
+                    // Crucial: Set innerHTML for regular booking events
+                    eventEl.innerHTML = html; 
                     return { domNodes: [eventEl] };
                 }
             },

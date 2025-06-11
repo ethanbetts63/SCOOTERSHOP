@@ -1,8 +1,10 @@
 # payments/urls.py
 from django.urls import path
+
+from ..service.ajax import ajax_get_service_booking_details
 from . import views
 from .views import Refunds # This already imports the HireRefunds package
-from .utils import ajax_get_service_booking_details, ajax_get_hire_booking_details
+from .utils import ajax_get_hire_booking_details
 
 
 app_name = 'payments'
@@ -11,7 +13,7 @@ urlpatterns = [
     path('stripe-webhook/', views.stripe_webhook, name='stripe_webhook'),
     # New URL for fetching hire booking details via AJAX
     path('api/hire-booking-details/<int:pk>/', ajax_get_hire_booking_details.get_hire_booking_details_json, name='api_hire_booking_details'),
-    path('api/service-booking-details/<int:pk>/', ajax_get_service_booking_details.get_service_booking_details_json, name='api_service_booking_details'),
+    
     
     path('refund/request/', Refunds.UserRefundRequestView.as_view(), name='user_refund_request'),
     path('refund/request/confirmation/', Refunds.UserConfirmationRefundRequestView.as_view(), name='user_confirmation_refund_request'),

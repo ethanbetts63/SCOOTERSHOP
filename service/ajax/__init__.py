@@ -5,3 +5,5 @@ from .ajax_get_customer_motorcycles import *
 from .ajax_get_customer_motorcycle_details import *
 from .ajax_get_service_profile_details import *
 from .ajax_admin_booking_precheck import *
+from .ajax_get_service_bookings_feed import *
+from .ajax_get_service_booking_details import *

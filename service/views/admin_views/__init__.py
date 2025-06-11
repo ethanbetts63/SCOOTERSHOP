@@ -11,7 +11,6 @@ from .delete_service_brand import *
 from .delete_service_profile import *
 from .delete_service_type import *
 from .service_booking_details_view import *
-from .service_booking_json_feed import *
 from .service_booking_management import *
 from .service_booking_search_view import *
 from .service_settings_view import *

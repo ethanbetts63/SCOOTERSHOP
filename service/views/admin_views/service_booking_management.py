@@ -14,14 +14,15 @@ class ServiceBookingManagementView(View):
         """
         Handles GET requests: retrieves all ServiceBooking objects and renders them.
         """
-        # Changed from '-appointment_date' to '-dropoff_date'
+        # The bookings are fetched here, but this view renders the HTML,
+        # not the JSON data for FullCalendar.
+        # The FullCalendar will make a separate AJAX call to get its data.
         bookings = ServiceBooking.objects.all().order_by('-dropoff_date')
 
         context = {
             'page_title': 'Manage Service Bookings',
-            'bookings': bookings,
+            'bookings': bookings, # This 'bookings' context variable is not used by FullCalendar directly
             'active_tab': 'service_bookings' # Assuming this is for navigation highlighting
         }
         return render(request, self.template_name, context)
-
 
