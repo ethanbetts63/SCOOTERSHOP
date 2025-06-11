@@ -115,7 +115,7 @@ def get_service_bookings_json_ajax(request):
             'end': blocked_event_end_date_for_fc, # Corrected end date for FullCalendar
             'extendedProps': {
                 'is_blocked': True,
-                'description': blocked_date.reason,
+                'description': blocked_date.description,
             },
             'display': 'background', 
             'classNames': ['status-blocked'], 

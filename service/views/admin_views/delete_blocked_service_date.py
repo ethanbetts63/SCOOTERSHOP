@@ -27,5 +27,5 @@ class BlockedServiceDateDeleteView(View):
         except Exception as e:
             messages.error(request, f'Error deleting blocked service date: {e}')
         # Redirect back to the management page after deletion
-        return redirect('dashboard:blocked_service_dates_management')
+        return redirect('service:blocked_service_dates_management')
 

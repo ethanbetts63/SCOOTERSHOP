@@ -45,7 +45,7 @@ class BlockedServiceDateManagementView(View):
             form.save()
             messages.success(request, 'Blocked service date added successfully!')
             # Redirect to the same page to show the updated list and clear the form
-            return redirect('dashboard:blocked_service_dates_management')
+            return redirect('service:blocked_service_dates_management')
         else:
             messages.error(request, 'Error adding blocked service date. Please check the form.')
             # If form is invalid, re-render the page with errors and existing blocked dates

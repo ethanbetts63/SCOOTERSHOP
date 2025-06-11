@@ -152,7 +152,7 @@
                                 {% endif %}
                             </div>
                             {# Form for deleting a blocked date - now uses a custom modal #}
-                            <form method="post" class="inline-form delete-form" data-delete-url="{% url 'dashboard:delete_blocked_service_date' date.pk %}">
+                            <form method="post" class="inline-form delete-form" data-delete-url="{% url 'service:delete_blocked_service_date' date.pk %}">
                                 {% csrf_token %}
                                 <button type="button" class="btn-delete delete-button">Delete</button>
                             </form>
