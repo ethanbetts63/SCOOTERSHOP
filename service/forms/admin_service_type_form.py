@@ -1,10 +1,8 @@
 from django import forms
-from service.models import ServiceType # Ensure ServiceType model is imported
+from service.models import ServiceType
+from django.core.exceptions import ValidationError
 
 class AdminServiceTypeForm(forms.ModelForm):
-    """
-    Form for administrators to create and manage ServiceType instances.
-    """
     class Meta:
         model = ServiceType
         fields = [
@@ -19,7 +17,7 @@ class AdminServiceTypeForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'estimated_duration': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '(e.g. 1)'}),
-            'base_price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'base_price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'image': forms.FileInput(attrs={'class': 'form-control-file'}),
         }
@@ -32,3 +30,20 @@ class AdminServiceTypeForm(forms.ModelForm):
             'image': 'Service Icon/Image',
         }
 
+    def clean_estimated_duration(self):
+        estimated_duration = self.cleaned_data.get('estimated_duration')
+        if estimated_duration:
+            try:
+                duration_value = float(estimated_duration)
+                if duration_value < 0:
+                    raise ValidationError("Estimated duration cannot be negative.")
+            except ValueError:
+                raise ValidationError("Estimated duration must be a valid number.")
+        return estimated_duration
+
+    def clean_base_price(self):
+        base_price = self.cleaned_data.get('base_price')
+        if base_price is not None:
+            if base_price < 0:
+                raise ValidationError("Base price cannot be negative.")
+        return base_price

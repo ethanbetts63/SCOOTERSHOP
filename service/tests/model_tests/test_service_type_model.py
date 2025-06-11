@@ -46,9 +46,12 @@ class ServiceTypeModelTest(TestCase):
         Test the 'estimated_duration' field properties and help text.
         """
         service_type = self.service_type
-        self.assertIsInstance(service_type.estimated_duration, timedelta)
+        # Assert that it's an integer, not timedelta
+        self.assertIsInstance(service_type.estimated_duration, int)
         self.assertIsNotNone(service_type.estimated_duration)
-        self.assertEqual(service_type._meta.get_field('estimated_duration').help_text, "Estimated time to complete this service")
+        # Updated help text assertion to match the model's new help text
+        self.assertEqual(service_type._meta.get_field('estimated_duration').help_text, "Estimated number of days to complete this service")
+
 
     def test_base_price_field(self):
         """
@@ -63,7 +66,8 @@ class ServiceTypeModelTest(TestCase):
         new_service_type = ServiceType.objects.create(
             name="New Service",
             description="A new service description",
-            estimated_duration=timedelta(hours=1),
+            # Pass an integer for estimated_duration
+            estimated_duration=1,
             # base_price will default to 0.00
         )
         self.assertEqual(new_service_type.base_price, Decimal('0.00'))
@@ -80,15 +84,12 @@ class ServiceTypeModelTest(TestCase):
         new_service_type = ServiceType.objects.create(
             name="Another Service",
             description="Another service description",
-            estimated_duration=timedelta(hours=2),
+            # Pass an integer for estimated_duration
+            estimated_duration=2,
             base_price=Decimal('50.00')
             # is_active will default to True
         )
         self.assertEqual(new_service_type.is_active, True)
-
-    # Removed test_image_field as requested.
-    # If you later decide to test image uploads, consider using Django's
-    # `TemporaryMediaRootMixin` or a more robust approach for file handling in tests.
 
     def test_str_method(self):
         """
@@ -115,4 +116,3 @@ class ServiceTypeModelTest(TestCase):
             ServiceTypeFactory(name="Unique Service Name")
         except Exception as e:
             self.fail(f"Creating duplicate service name raised an exception: {e}")
-
