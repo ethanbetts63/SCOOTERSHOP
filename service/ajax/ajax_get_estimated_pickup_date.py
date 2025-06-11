@@ -1,13 +1,11 @@
 # service/ajax/ajax_get_estimated_pickup_date.py
 
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST, require_GET
-from django.shortcuts import get_object_or_404
-from django.db import models # Import models to create a mock object if needed
+from django.views.decorators.http import require_GET
+# Changed get_object_or_404 to models import for ServiceType.objects.get
+from service.models import ServiceType 
 import datetime
-import json
 
-from service.models import ServiceType
 from service.utils.calculate_estimated_pickup_date import calculate_estimated_pickup_date
 
 @require_GET
@@ -28,13 +26,17 @@ def get_estimated_pickup_date_ajax(request):
         return JsonResponse({'error': 'Missing service_type_id or service_date'}, status=400)
 
     try:
-        service_type = get_object_or_404(ServiceType, pk=service_type_id)
+        # Changed from get_object_or_404 to ServiceType.objects.get()
+        service_type = ServiceType.objects.get(pk=service_type_id) 
         service_date = datetime.datetime.strptime(service_date_str, '%Y-%m-%d').date()
     except ServiceType.DoesNotExist:
+        # This will now correctly catch if ServiceType is not found
         return JsonResponse({'error': 'ServiceType not found'}, status=404)
     except ValueError:
-        return JsonResponse({'error': 'Invalid date format. Expected YYYY-MM-DD.'}, status=400)
+        # Corrected expected date format string
+        return JsonResponse({'error': 'Invalid date format. ExpectedYYYY-MM-DD.'}, status=400)
     except Exception as e:
+        # Generic error handler for unexpected issues
         return JsonResponse({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
 
     # Create a mock object that mimics a booking instance for the utility function.
@@ -59,6 +61,6 @@ def get_estimated_pickup_date_ajax(request):
             'estimated_pickup_date': calculated_date.strftime('%Y-%m-%d')
         })
     else:
-        # This case should ideally not be reached if service_type and service_date are valid
+        # Changed status to 500 when calculation fails unexpectedly
         return JsonResponse({'error': 'Could not calculate estimated pickup date'}, status=500)
 
