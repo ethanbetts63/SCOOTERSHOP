@@ -28,7 +28,7 @@ urlpatterns = [
     path('service-book/get-available-times/', ajax_get_available_dropoff_times_for_date.get_available_dropoff_times_for_date, name='get_available_dropoff_times_for_date'),
     path('service-book/step1/', user_views.Step1ServiceDetailsView.as_view(), name='service_book_step1'),
     path('service-book/step2/', user_views.Step2MotorcycleSelectionView.as_view(), name='service_book_step2'),
-    path('service-book/step3/', user_views.Step3CustomerMotorcycleView.as_view(), name='service_book_step3'),
+    path('service-book/step3/', user_views.Step3CustomerMotorcycleView.as_as_view(), name='service_book_step3'),
     path('service-book/step4/', user_views.Step4ServiceProfileView.as_view(), name='service_book_step4'),
     path('service-book/step5/', user_views.Step5PaymentDropoffAndTermsView.as_view(), name='service_book_step5'),
     path('service-book/step6/', user_views.Step6PaymentView.as_view(), name='service_book_step6'),
@@ -42,7 +42,11 @@ urlpatterns = [
     # Admin-facing management
     path('service-booking-management/', admin_views.ServiceBookingManagementView.as_view(), name='service_booking_management'),
     path('admin/bookings/<int:pk>/', admin_views.AdminServiceBookingDetailView.as_view(), name='admin_service_booking_detail'),
-    path('service-booking-management/create-booking/', admin_views.AdminBookingCreateView.as_view(), name='admin_create_service_booking'),
+    
+    # Admin Service Booking Create/Update/Delete
+    path('service-booking-management/create-booking/', admin_views.AdminServiceBookingCreateUpdateView.as_view(), name='admin_create_service_booking'),
+    path('service-booking-management/edit-booking/<int:pk>/', admin_views.AdminServiceBookingCreateUpdateView.as_view(), name='admin_edit_service_booking'),
+    path('service-booking-management/delete-booking/<int:pk>/', admin_views.AdminServiceBookingDeleteView.as_view(), name='admin_delete_service_booking'),
 
     path('service-settings/', admin_views.ServiceSettingsView.as_view(), name='service_settings'),
     
@@ -84,5 +88,4 @@ urlpatterns = [
     path('admin/api/search-bookings/', ajax_search_service_bookings.search_service_bookings_ajax, name='admin_api_search_bookings'),
     path('admin/api/get-estimated-pickup-date/', ajax_get_estimated_pickup_date.get_estimated_pickup_date_ajax, name='admin_api_get_estimated_pickup_date'),
 
-]   
-
+]

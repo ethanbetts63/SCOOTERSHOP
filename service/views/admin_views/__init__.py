@@ -1,4 +1,4 @@
-from .admin_service_booking_form import *
+
 from .admin_service_profile_management import *
 from .admin_customer_motorcycle_management_view import *
 from .admin_create_update_customer_motorcycle import *
@@ -16,3 +16,4 @@ from .service_settings_view import *
 from .service_brands_management import *
 from .service_type_mangement import *
 from .service_type_create_update import *
+from .admin_service_booking_create_update import *

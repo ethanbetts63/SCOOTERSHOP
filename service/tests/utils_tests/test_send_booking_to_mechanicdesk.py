@@ -1,12 +1,8 @@
 import requests
 from unittest.mock import patch, Mock
 from django.test import TestCase, override_settings
-from decimal import Decimal
 from datetime import date, time
 import datetime
-
-# Import models
-from service.models import ServiceBooking, ServiceProfile, CustomerMotorcycle
 
 # Import the utility function to be tested
 from service.utils.send_booking_to_mechanicdesk import send_booking_to_mechanicdesk
