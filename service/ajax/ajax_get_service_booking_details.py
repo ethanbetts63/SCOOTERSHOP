@@ -14,11 +14,19 @@ from payments.utils.service_refund_calc import calculate_service_refund_amount
 @require_GET
 @login_required 
 def get_service_booking_details_json(request, pk):
+    # Debug: Print the PK received by the view
+    print(f"DEBUG: get_service_booking_details_json called with pk: {pk}")
+
     if not request.user.is_staff:
+        # Debug: Permission denied
+        print(f"DEBUG: Permission denied for user {request.user.username} (is_staff: {request.user.is_staff}) trying to access booking {pk}")
         return JsonResponse({'error': 'Permission denied'}, status=403)
 
     try:
+        # Debug: About to attempt fetching ServiceBooking
+        print(f"DEBUG: Attempting to fetch ServiceBooking with pk: {pk}")
         service_booking = get_object_or_404(ServiceBooking, pk=pk)
+        print(f"DEBUG: Successfully fetched ServiceBooking: {service_booking.service_booking_reference} (ID: {service_booking.id})")
 
         customer_name = 'N/A'
         if service_booking.service_profile:
@@ -31,6 +39,7 @@ def get_service_booking_details_json(request, pk):
             elif service_booking.service_profile.name:
                 customer_name = service_booking.service_profile.name
 
+        # It's possible for service_booking.payment to be None if the booking didn't involve a payment yet
         payment_date = service_booking.payment.created_at.strftime('%Y-%m-%d %H:%M') if service_booking.payment and service_booking.payment.created_at else 'N/A'
         payment_amount = float(service_booking.payment.amount) if service_booking.payment and service_booking.payment.amount is not None else 'N/A'
 
@@ -51,7 +60,10 @@ def get_service_booking_details_json(request, pk):
         if latest_refund_request:
             refund_status_for_booking = latest_refund_request.get_status_display()
 
-        refund_policy_snapshot_for_calc = service_booking.payment.refund_policy_snapshot if service_booking.payment and service_booking.payment.refund_policy_snapshot else {}
+        # Handle cases where service_booking.payment might be None or refund_policy_snapshot is missing
+        refund_policy_snapshot_for_calc = {}
+        if service_booking.payment and service_booking.payment.refund_policy_snapshot:
+            refund_policy_snapshot_for_calc = service_booking.payment.refund_policy_snapshot
         
         cancellation_datetime = datetime.combine(service_booking.dropoff_date, service_booking.dropoff_time)
         if timezone.is_aware(timezone.now()): 
@@ -87,7 +99,10 @@ def get_service_booking_details_json(request, pk):
         }
         return JsonResponse(booking_details)
     except Http404: 
+        # Debug: Http404 caught
+        print(f"DEBUG: Http404 caught for ServiceBooking with pk: {pk}. Object not found.")
         return JsonResponse({'error': 'Service Booking not found'}, status=404)
     except Exception as e:
+        # Debug: General exception caught
+        print(f"DEBUG: An unexpected error occurred for booking {pk}: {str(e)}")
         return JsonResponse({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
-

@@ -13,7 +13,8 @@ from service.ajax import (
     ajax_search_service_profiles,
     ajax_admin_booking_precheck, 
     ajax_get_service_bookings_feed,
-    ajax_get_service_booking_details, # Ensure this is imported
+    ajax_get_service_booking_details, 
+    ajax_search_service_bookings,
 )
 
 app_name = 'service'
@@ -79,5 +80,6 @@ urlpatterns = [
     path('admin/api/service-booking-details/<int:pk>/', ajax_get_service_booking_details.get_service_booking_details_json, name='admin_api_get_service_booking_details'), 
     # Original URL for feed (if still needed)
     path('admin/api/service-bookings-json/', ajax_get_service_bookings_feed.get_service_bookings_json_ajax, name='get_service_bookings_json'),
+    path('admin/api/search-bookings/', ajax_search_service_bookings.search_service_bookings_ajax, name='admin_api_search_bookings'),
 ]   
 

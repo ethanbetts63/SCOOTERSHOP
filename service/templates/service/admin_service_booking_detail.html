@@ -192,7 +192,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const bookingPk = '{{ booking_pk }}'; 
-    const apiUrl = `/admin/api/service-booking-details/${bookingPk}/`; 
+    const apiUrl = "{% url 'service:admin_api_get_service_booking_details' pk=0 %}".replace('/0/', `/${bookingPk}/`);
 
     const loadingMessage = document.getElementById('loadingMessage');
     const errorMessage = document.getElementById('errorMessage');
