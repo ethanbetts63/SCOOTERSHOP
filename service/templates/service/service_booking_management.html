@@ -7,18 +7,87 @@
 
 {# Include FullCalendar's core CSS #}
 <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css' rel='stylesheet' />
+{# Add Tailwind CSS for new elements only #}
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+    /* Custom styles for new search results - improved contrast */
+    .booking-search-results ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        border: 1px solid #ddd;
+        border-radius: 0.25rem;
+        max-height: 200px;
+        overflow-y: auto;
+        position: absolute;
+        background-color: white;
+        z-index: 1000;
+        width: calc(100% - 2px); /* Adjust width to match input, considering border */
+        color: #333; /* Darker text for better contrast */
+    }
+    .booking-search-results li {
+        padding: 10px;
+        cursor: pointer;
+        color: #333; /* Ensure list item text is dark */
+        border-bottom: 1px solid #eee; /* Add subtle separation */
+    }
+    .booking-search-results li:last-child {
+        border-bottom: none;
+    }
+    .booking-search-results li:hover {
+        background-color: #f0f0f0;
+    }
+    /* Ensure position relative for the search input container */
+    .relative-position-container {
+        position: relative;
+        width: 100%; /* Take full width within its parent */
+        max-width: 400px; /* Limit width for aesthetics */
+        margin-left: auto; /* Push to the right */
+    }
+
+    /* Basic styling for the new search input to integrate with existing layout */
+    .booking-search-input {
+        display: block;
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+    .booking-search-input:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+</style>
 
 <h2>Service Bookings Calendar</h2>
 
 <div class="card shadow mb-4">
     <div class="card-header">
+        {# NEW: Search Bar for Bookings #}
+        <div class="relative-position-container mb-4">
+            <label for="bookingSearch" class="block text-gray-700 text-sm font-medium mb-1">Search Bookings</label>
+            <input type="text" id="bookingSearch" placeholder="Search by name, reference, motorcycle, status..."
+                   class="booking-search-input" autocomplete="off">
+            <div id="bookingSearchResults" class="booking-search-results hidden"></div>
+        </div>
+
+        {# ORIGINAL BUTTON GROUP (with "Search bookings" removed) #}
         <div class="button-group-spaced mb-4">
-            <a href="" class="btn-primary">
-                Create booking 
-            </a>
-            {# Link to search bookings - updated URL #}
-            <a href="" class="btn-primary">
-                 Search bookings
+            <a href="{% url 'service:admin_create_service_booking' %}" class="btn-primary">
+                Create booking
             </a>
         </div>
     </div>
@@ -38,8 +107,24 @@
             <div class="color-key-item">
                 <span class="color-box status-completed"></span> Completed
             </div>
+            {# Added more status colors as per common Django choices #}
             <div class="color-key-item">
                 <span class="color-box status-blocked"></span> Blocked
+            </div>
+            <div class="color-key-item">
+                <span class="color-box status-cancelled"></span> Cancelled
+            </div>
+            <div class="color-key-item">
+                <span class="color-box status-declined"></span> Declined
+            </div>
+            <div class="color-key-item">
+                <span class="color-box status-in_progress"></span> In Progress
+            </div>
+            <div class="color-key-item">
+                <span class="color-box status-no_show"></span> No Show
+            </div>
+            <div class="color-key-item">
+                <span class="color-box status-DECLINED_REFUNDED"></span> Declined & Refunded
             </div>
         </div>
 
@@ -61,7 +146,7 @@
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
-                right: ''
+                right: '' // Keep original right side, JS will append color key
             },
 
             // Fetch events from the Django backend JSON feed - UPDATED URL
@@ -90,7 +175,7 @@
                 } else {
                     let customerName = arg.event.extendedProps.customer_name || 'N/A';
                     // Changed 'vehicle_make' to 'vehicle_brand'
-                    let vehicleBrand = arg.event.extendedProps.vehicle_brand || ''; 
+                    let vehicleBrand = arg.event.extendedProps.vehicle_brand || '';
                     let vehicleModel = arg.event.extendedProps.vehicle_model || '';
                     let serviceType = arg.event.extendedProps.service_type || 'Service';
                     let status = arg.event.extendedProps.status || 'pending';
@@ -117,7 +202,7 @@
                     eventEl.classList.add('fc-event-main-custom');
                     eventEl.classList.add(`status-${status}`);
                     // Crucial: Set innerHTML for regular booking events
-                    eventEl.innerHTML = html; 
+                    eventEl.innerHTML = html;
                     return { domNodes: [eventEl] };
                 }
             },
@@ -141,6 +226,7 @@
 
         calendar.render();
 
+        // Original JS to move the color key, preserved as per request
         var colorKeyElement = document.getElementById('status-color-key');
         var headerRightChunk = calendarEl.querySelector('.fc-toolbar-chunk:last-child');
 
@@ -148,8 +234,103 @@
             headerRightChunk.appendChild(colorKeyElement);
             colorKeyElement.style.display = 'flex';
         }
-    });
 
+        // =========================================================
+        // Booking Search Functionality (NEW)
+        // =========================================================
+        const bookingSearchInput = document.getElementById('bookingSearch');
+        const bookingSearchResultsDiv = document.getElementById('bookingSearchResults');
+        let searchBookingTimeout;
+
+        function performBookingSearch() {
+            const query = bookingSearchInput.value.trim();
+            bookingSearchResultsDiv.innerHTML = '';
+            // Only hide the results if there's no query or it's too short
+            if (query.length < 2) {
+                bookingSearchResultsDiv.classList.add('hidden');
+                return;
+            }
+
+            fetch(`{% url "service:admin_api_search_bookings" %}?query=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const ul = document.createElement('ul');
+                    // Add basic padding to the ul itself for better spacing
+                    ul.style.padding = '0.5rem';
+
+                    if (data.bookings && data.bookings.length > 0) {
+                        data.bookings.forEach(booking => {
+                            const li = document.createElement('li');
+                            // Add inline styles or classes for new list items
+                            li.style.padding = '8px 12px'; /* px-3 py-2 */
+                            li.style.cursor = 'pointer';
+                            li.style.borderRadius = '0.25rem'; /* rounded-md */
+                            li.style.transition = 'background-color 0.15s ease-in-out';
+                            li.innerHTML = `
+                                <strong>${booking.customer_name}</strong> - ${booking.service_type_name}<br>
+                                <small style="color: #6B7280;">${booking.motorcycle_info}</small><br>
+                                <small style="color: #9CA3AF;">Ref: ${booking.reference} | Status: ${booking.booking_status}</small>
+                            `;
+                            li.dataset.bookingId = booking.id;
+                            // UPDATED: Redirect to the admin_service_booking_detail URL
+                            li.addEventListener('click', () => redirectToBookingDetails(booking.id));
+                            // Add hover effect using JS or a class
+                            li.addEventListener('mouseenter', () => li.style.backgroundColor = '#F3F4F6'); // hover:bg-gray-100
+                            li.addEventListener('mouseleave', () => li.style.backgroundColor = '');
+
+                            ul.appendChild(li);
+                        });
+                        bookingSearchResultsDiv.classList.remove('hidden');
+                    } else {
+                        const li = document.createElement('li');
+                        li.style.padding = '8px 12px';
+                        li.style.color = '#6B7280'; /* text-gray-500 */
+                        li.textContent = 'No bookings found.';
+                        ul.appendChild(li);
+                        bookingSearchResultsDiv.classList.remove('hidden'); // Show "No bookings found" message
+                    }
+                    bookingSearchResultsDiv.innerHTML = '';
+                    bookingSearchResultsDiv.appendChild(ul);
+                })
+                .catch(error => {
+                    console.error('Error searching bookings:', error);
+                    bookingSearchResultsDiv.innerHTML = '<ul style="padding:0.5rem;"><li style="padding:8px 12px; color:#EF4444;">Error searching. Please try again.</li></ul>';
+                    bookingSearchResultsDiv.classList.remove('hidden');
+                });
+        }
+
+        function redirectToBookingDetails(bookingId) {
+            // This URL now matches the one used by FullCalendar event clicks
+            const detailsUrl = "{% url 'service:admin_service_booking_detail' pk=0 %}".replace('0', bookingId);
+            window.location.href = detailsUrl; // Redirect to the detail page
+        }
+
+        bookingSearchInput.addEventListener('input', function() {
+            clearTimeout(searchBookingTimeout);
+            const query = this.value.trim();
+            if (query.length < 2) {
+                bookingSearchResultsDiv.classList.add('hidden'); // Hide if query is too short
+                return;
+            }
+            searchBookingTimeout = setTimeout(performBookingSearch, 300); // Debounce search
+        });
+
+        // Hide search results when clicking outside
+        document.addEventListener('click', function(event) {
+            // Check if the click is outside the search input and results div
+            if (!bookingSearchInput.contains(event.target) && !bookingSearchResultsDiv.contains(event.target)) {
+                bookingSearchResultsDiv.classList.add('hidden');
+            }
+        });
+
+        // Show search results again if input is focused and has content
+        bookingSearchInput.addEventListener('focus', function() {
+            if (this.value.trim().length >= 2 && bookingSearchResultsDiv.innerHTML !== '') {
+                bookingSearchResultsDiv.classList.remove('hidden');
+            }
+        });
+
+    });
 </script>
 
 {% endblock %}
