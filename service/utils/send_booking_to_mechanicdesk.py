@@ -58,7 +58,6 @@ def send_booking_to_mechanicdesk(service_booking_instance):
         "suburb": service_profile.city,
         "state": service_profile.state,
         "postcode": service_profile.post_code,
-
         "registration_number": "",
         "make": "",
         "model": "",
@@ -70,9 +69,7 @@ def send_booking_to_mechanicdesk(service_booking_instance):
         "drive_type": "",
         "engine_size": "",
         "body": "",
-        "odometer": "",
-
-        "drop_off_time": drop_off_datetime_str,
+        "odometer": "",        "drop_off_time": drop_off_datetime_str,
         "pickup_time": pickup_datetime_str,
         "note": customer_notes_combined,
         "courtesy_vehicle_requested": "false",
