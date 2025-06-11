@@ -17,6 +17,6 @@ __all__ = [
     'HireBookingSettingsForm',
     'ServiceBookingSettingsForm',
     'ServiceBrandForm',
-    'ServiceTypeForm',
+    'AdminServiceTypeForm',
     'VisibilitySettingsForm',
 ]

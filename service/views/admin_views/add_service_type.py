@@ -4,12 +4,12 @@
 # from django.contrib import messages
 # from django.contrib.auth.decorators import user_passes_test
 
-# from service.forms import ServiceTypeForm
+# from service.forms import AdminServiceTypeForm
 
 # @user_passes_test(lambda u: u.is_staff)
 # def add_service_type(request):
 #     if request.method == 'POST':
-#         form = ServiceTypeForm(request.POST, request.FILES)
+#         form =AdminServiceTypeForm(request.POST, request.FILES)
 #         if form.is_valid():
 #             service_type = form.save(commit=False)
 #             service_type.estimated_duration = form.cleaned_data['estimated_duration']
@@ -17,7 +17,7 @@
 #             messages.success(request, f"Service type '{service_type.name}' added successfully!")
 #             return redirect('dashboard:settings_service_types')
 #     else:
-#         form = ServiceTypeForm()
+#         form =AdminServiceTypeForm()
 #     context = {
 #         'page_title': 'Add New Service Type',
 #         'form': form,

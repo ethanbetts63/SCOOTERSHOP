@@ -3,16 +3,16 @@ from decimal import Decimal
 from datetime import timedelta
 
 # Import the form and model
-from service.forms import ServiceTypeForm
+from service.forms import AdminServiceTypeForm
 from service.models import ServiceType
 
 # Import the factory for ServiceType
 # Assuming model_factories.py is in a 'test_helpers' directory relative to 'service'
 from ..test_helpers.model_factories import ServiceTypeFactory
 
-class AdminAdminAdminServiceTypeFormTest(TestCase):
+class AdminServiceTypeFormTest(TestCase):
     """
-    Tests for the ServiceTypeForm.
+    Tests for the AdminServiceTypeForm.
     """
 
     @classmethod
@@ -43,7 +43,7 @@ class AdminAdminAdminServiceTypeFormTest(TestCase):
             'is_active': True,
             # 'image' field is optional and not included here
         }
-        form = ServiceTypeForm(data=data)
+        form = AdminServiceTypeForm(data=data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors.as_data()}")
 
         cleaned_data = form.cleaned_data
@@ -66,7 +66,7 @@ class AdminAdminAdminServiceTypeFormTest(TestCase):
             'base_price': '500.00',
             'is_active': True,
         }
-        form = ServiceTypeForm(data=data)
+        form = AdminServiceTypeForm(data=data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors.as_data()}")
         self.assertEqual(form.cleaned_data['estimated_duration'], timedelta(days=5))
 
@@ -82,7 +82,7 @@ class AdminAdminAdminServiceTypeFormTest(TestCase):
             'base_price': '45.00',
             'is_active': True,
         }
-        form = ServiceTypeForm(data=data)
+        form = AdminServiceTypeForm(data=data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors.as_data()}")
         self.assertEqual(form.cleaned_data['estimated_duration'], timedelta(hours=1))
 
@@ -99,7 +99,7 @@ class AdminAdminAdminServiceTypeFormTest(TestCase):
             'base_price': '0.00',
             'is_active': True,
         }
-        form = ServiceTypeForm(data=data)
+        form = AdminServiceTypeForm(data=data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors.as_data()}")
         self.assertEqual(form.cleaned_data['estimated_duration'], timedelta(days=0, hours=0))
 
@@ -114,7 +114,7 @@ class AdminAdminAdminServiceTypeFormTest(TestCase):
             'base_price': '100.00',
             'is_active': True,
         }
-        form = ServiceTypeForm(data=data)
+        form = AdminServiceTypeForm(data=data)
         self.assertFalse(form.is_valid())
         self.assertIn('name', form.errors)
         self.assertIn('This field is required.', form.errors['name'])
@@ -131,7 +131,7 @@ class AdminAdminAdminServiceTypeFormTest(TestCase):
             'base_price': '10.00',
             'is_active': True,
         }
-        form = ServiceTypeForm(data=data)
+        form = AdminServiceTypeForm(data=data)
         self.assertFalse(form.is_valid())
         self.assertIn('estimated_duration_days', form.errors)
         self.assertIn('Ensure this value is greater than or equal to 0.', form.errors['estimated_duration_days'])
@@ -148,7 +148,7 @@ class AdminAdminAdminServiceTypeFormTest(TestCase):
             'base_price': '10.00',
             'is_active': True,
         }
-        form = ServiceTypeForm(data=data)
+        form = AdminServiceTypeForm(data=data)
         self.assertFalse(form.is_valid())
         self.assertIn('estimated_duration_hours', form.errors)
         self.assertIn('Ensure this value is greater than or equal to 0.', form.errors['estimated_duration_hours'])
@@ -165,7 +165,7 @@ class AdminAdminAdminServiceTypeFormTest(TestCase):
             'base_price': '10.00',
             'is_active': True,
         }
-        form = ServiceTypeForm(data=data)
+        form = AdminServiceTypeForm(data=data)
         self.assertFalse(form.is_valid())
         self.assertIn('estimated_duration_hours', form.errors)
         self.assertIn('Ensure this value is less than or equal to 23.', form.errors['estimated_duration_hours'])
@@ -176,7 +176,7 @@ class AdminAdminAdminServiceTypeFormTest(TestCase):
         and correctly splits the estimated_duration into days and hours.
         """
         instance = self.service_type_instance # Using the instance from setUpTestData
-        form = ServiceTypeForm(instance=instance)
+        form =AdminServiceTypeForm(instance=instance)
 
         self.assertEqual(form.initial['name'], instance.name)
         self.assertEqual(form.initial['description'], instance.description)
@@ -198,7 +198,7 @@ class AdminAdminAdminServiceTypeFormTest(TestCase):
             'base_price': '75.00',
             'is_active': False,
         }
-        form = ServiceTypeForm(data=data)
+        form =AdminServiceTypeForm(data=data)
         self.assertTrue(form.is_valid(), f"Form not valid for saving new instance: {form.errors.as_data()}")
 
         new_instance = form.save()
@@ -226,7 +226,7 @@ class AdminAdminAdminServiceTypeFormTest(TestCase):
             'is_active': False,
         }
 
-        form = ServiceTypeForm(data=updated_data, instance=instance)
+        form =AdminServiceTypeForm(data=updated_data, instance=instance)
         self.assertTrue(form.is_valid(), f"Form not valid for updating instance: {form.errors.as_data()}")
 
         updated_instance = form.save()
@@ -259,7 +259,7 @@ class AdminAdminAdminServiceTypeFormTest(TestCase):
             'is_active': True,
         }
         # Test with no image data provided
-        form = ServiceTypeForm(data=data)
+        form =AdminServiceTypeForm(data=data)
         # Note: This form will be invalid due to hours > 23, but we're checking image field handling
         # For a truly valid test, ensure all other data is valid.
         # Let's make it valid for this specific test purpose.
@@ -271,14 +271,14 @@ class AdminAdminAdminServiceTypeFormTest(TestCase):
             'base_price': '50.00',
             'is_active': True,
         }
-        form_no_image = ServiceTypeForm(data=data_valid)
+        form_no_image =AdminServiceTypeForm(data=data_valid)
         self.assertTrue(form_no_image.is_valid(), f"Form is not valid with no image: {form_no_image.errors.as_data()}")
         self.assertIsNone(form_no_image.cleaned_data.get('image'))
 
         # Test with image field explicitly empty
         data_empty_image = data_valid.copy()
         data_empty_image['image'] = None # Or an empty string if it were a CharField
-        form_empty_image = ServiceTypeForm(data=data_empty_image)
+        form_empty_image =AdminServiceTypeForm(data=data_empty_image)
         self.assertTrue(form_empty_image.is_valid(), f"Form is not valid with empty image data: {form_empty_image.errors.as_data()}")
         self.assertIsNone(form_empty_image.cleaned_data.get('image'))
 

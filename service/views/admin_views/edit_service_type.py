@@ -5,19 +5,19 @@
 # from django.contrib.auth.decorators import user_passes_test
 
 # from service.models import ServiceType
-# from service.forms import ServiceTypeForm
+# from service.forms import AdminServiceTypeForm
 
 # @user_passes_test(lambda u: u.is_staff)
 # def edit_service_type(request, pk):
 #     service_type = get_object_or_404(ServiceType, pk=pk)
 #     if request.method == 'POST':
-#         form = ServiceTypeForm(request.POST, request.FILES, instance=service_type)
+#         form =AdminServiceTypeForm(request.POST, request.FILES, instance=service_type)
 #         if form.is_valid():
 #             form.save()
 #             messages.success(request, f"Service type '{service_type.name}' updated successfully!")
 #             return redirect('dashboard:settings_service_types')
 #     else:
-#         form = ServiceTypeForm(instance=service_type)
+#         form =AdminServiceTypeForm(instance=service_type)
 #     context = {
 #         'page_title': 'Edit Service Type',
 #         'form': form,

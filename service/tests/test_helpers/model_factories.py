@@ -57,13 +57,14 @@ class ServiceTypeFactory(factory.django.DjangoModelFactory):
 
     name = factory.Sequence(lambda n: f'Service Type {n}')
     description = factory.Faker('paragraph')
-    estimated_duration = factory.LazyFunction(
-        lambda: datetime.timedelta(hours=fake.random_int(min=1, max=8))
-    )
+    # Updated to generate an integer for estimated_duration
+    estimated_duration = factory.Faker('random_int', min=1, max=30)
     base_price = factory.LazyFunction(
         lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True)
     )
     is_active = True
+    # Added the image field
+    image = None # You can set a default or use a LazyFunction for a dummy image path if needed
 
 
 class ServiceProfileFactory(factory.django.DjangoModelFactory):
