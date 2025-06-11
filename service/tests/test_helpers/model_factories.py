@@ -20,6 +20,9 @@ from service.models import (
 
 from payments.models import Payment, RefundPolicySettings
 
+from service.utils.calculate_estimated_pickup_date import calculate_estimated_pickup_date
+
+
 User = get_user_model()
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -57,14 +60,12 @@ class ServiceTypeFactory(factory.django.DjangoModelFactory):
 
     name = factory.Sequence(lambda n: f'Service Type {n}')
     description = factory.Faker('paragraph')
-    # Updated to generate an integer for estimated_duration
     estimated_duration = factory.Faker('random_int', min=1, max=30)
     base_price = factory.LazyFunction(
         lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True)
     )
     is_active = True
-    # Added the image field
-    image = None # You can set a default or use a LazyFunction for a dummy image path if needed
+    image = None
 
 
 class ServiceProfileFactory(factory.django.DjangoModelFactory):
@@ -159,27 +160,33 @@ class TempServiceBookingFactory(factory.django.DjangoModelFactory):
     dropoff_time = factory.Faker('time_object')
     
     service_date = factory.LazyAttribute(
-        lambda o: o.dropoff_date + datetime.timedelta(days=fake.random_int(min=0, max=7))
+        lambda o: fake.date_between(start_date='today', end_date='+60d')
+
     )
-    
-    estimated_pickup_date = None
+    @factory.post_generation
+    def calculate_estimated_pickup(obj, create, extracted, **kwargs):
+        if create:
+            calculate_estimated_pickup_date(obj)
+
+
     customer_notes = factory.Faker('paragraph')
     calculated_deposit_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
+    calculated_total = factory.LazyFunction(lambda: fake.pydecimal(left_digits=4, right_digits=2, positive=True))
+    payment_method = factory.Faker('random_element', elements=[choice[0] for choice in TempServiceBooking.PAYMENT_METHOD_CHOICES])
 
 
 class PaymentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Payment
 
-    # Default fields
     amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=4, right_digits=2, positive=True))
     currency = 'AUD'
     status = factory.Faker('random_element', elements=['succeeded', 'requires_action', 'requires_payment_method'])
     description = factory.Faker('sentence')
     stripe_payment_intent_id = factory.Sequence(lambda n: f"pi_{uuid.uuid4().hex[:24]}")
     stripe_payment_method_id = factory.Sequence(lambda n: f"pm_{uuid.uuid4().hex[:24]}")
-    refunded_amount = Decimal('0.00') # Default to 0.00
-    refund_policy_snapshot = {} # Ensure it defaults to an empty dictionary
+    refunded_amount = Decimal('0.00')
+    refund_policy_snapshot = {}
     temp_hire_booking = None
     hire_booking = None
     driver_profile = None
@@ -205,14 +212,14 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
     currency = 'AUD'
     stripe_payment_intent_id = factory.Sequence(lambda n: f"pi_{uuid.uuid4().hex[:24]}")
     
-    dropoff_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+30d'))
+    service_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+60d'))
+    dropoff_date = factory.LazyAttribute(lambda o: o.service_date)
     dropoff_time = factory.Faker('time_object')
     
-    service_date = factory.LazyAttribute(
-        lambda o: o.dropoff_date + datetime.timedelta(days=fake.random_int(min=0, max=7))
-    )
-    
-    estimated_pickup_date = factory.LazyAttribute(lambda o: o.service_date + datetime.timedelta(days=fake.random_int(min=1, max=5)))
+    @factory.post_generation
+    def calculate_estimated_pickup(obj, create, extracted, **kwargs):
+        if create:
+            calculate_estimated_pickup_date(obj)
     
     booking_status = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.BOOKING_STATUS_CHOICES])
     customer_notes = factory.Faker('paragraph')
@@ -220,24 +227,19 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
 class RefundPolicySettingsFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = RefundPolicySettings
-        # Do NOT use django_get_or_create = ('pk',) here, it conflicts with custom _create
-        # instead, handle the get_or_create logic directly in _create method.
 
-    # Full Payment Cancellation Policy
     cancellation_full_payment_full_refund_days = factory.Faker('random_int', min=5, max=10)
     cancellation_full_payment_partial_refund_days = factory.Faker('random_int', min=2, max=4)
     cancellation_full_payment_partial_refund_percentage = factory.LazyFunction(lambda: Decimal(fake.random_element([25.00, 50.00, 75.00])))
     cancellation_full_payment_minimal_refund_days = factory.Faker('random_int', min=0, max=1)
     cancellation_full_payment_minimal_refund_percentage = factory.LazyFunction(lambda: Decimal(fake.random_element([0.00, 10.00, 20.00])))
 
-    # Deposit Cancellation Policy
     cancellation_deposit_full_refund_days = factory.Faker('random_int', min=5, max=10)
     cancellation_deposit_partial_refund_days = factory.Faker('random_int', min=2, max=4)
     cancellation_deposit_partial_refund_percentage = factory.LazyFunction(lambda: Decimal(fake.random_element([25.00, 50.00, 75.00])))
     cancellation_deposit_minimal_refund_days = factory.Faker('random_int', min=0, max=1)
     cancellation_deposit_minimal_refund_percentage = factory.LazyFunction(lambda: Decimal(fake.random_element([0.00, 10.00, 20.00])))
 
-    # Stripe Fee Settings
     refund_deducts_stripe_fee_policy = factory.Faker('boolean')
     stripe_fee_percentage_domestic = factory.LazyFunction(lambda: Decimal(fake.random_element(['0.0170', '0.0180'])))
     stripe_fee_fixed_domestic = factory.LazyFunction(lambda: Decimal(fake.random_element(['0.30', '0.40'])))
@@ -250,5 +252,6 @@ class RefundPolicySettingsFactory(factory.django.DjangoModelFactory):
         if not created:
             for k, v in kwargs.items():
                 setattr(obj, k, v)
-            obj.save() # Use obj.save() to trigger model's clean/save.
+            obj.save()
         return obj
+
