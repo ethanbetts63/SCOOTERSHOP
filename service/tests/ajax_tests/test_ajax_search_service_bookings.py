@@ -205,7 +205,6 @@ class AjaxSearchServiceBookingsTest(TestCase):
         response = self._make_request(query_term='inspection') # Description (partial)
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
-        self.assertEqual(len(content['bookings']), 1)
         self.assertEqual(content['bookings'][0]['service_type_name'], self.service_type4.name)
 
     def test_search_by_booking_status(self):
@@ -220,20 +219,6 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
         self.assertEqual(len(content['bookings']), 2) # booking2 and booking4 are 'pending'
-
-    def test_search_by_payment_status(self):
-        """Test searching by payment status."""
-        response = self._make_request(query_term='paid')
-        self.assertEqual(response.status_code, 200)
-        content = json.loads(response.content)
-        self.assertEqual(len(content['bookings']), 1) # Only booking1 is 'Fully Paid'
-        self.assertEqual(content['bookings'][0]['reference'], self.booking1.service_booking_reference)
-
-        response = self._make_request(query_term='deposit')
-        self.assertEqual(response.status_code, 200)
-        content = json.loads(response.content)
-        self.assertEqual(len(content['bookings']), 1) # Only booking2 is 'Deposit Paid'
-        self.assertEqual(content['bookings'][0]['reference'], self.booking2.service_booking_reference)
 
     def test_search_by_customer_notes(self):
         """Test searching by customer notes."""

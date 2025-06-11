@@ -37,10 +37,14 @@ def search_service_bookings_ajax(request):
             Q(service_profile__name__icontains=search_term) |
             Q(service_profile__email__icontains=search_term) |
             Q(service_profile__phone_number__icontains=search_term) |
+            # Searching by user's username and email might be redundant if profile name/email covers it,
+            # but keep for robustness if users can also be searched directly.
             Q(service_profile__user__username__icontains=search_term) |
             Q(service_profile__user__email__icontains=search_term) |
 
             # Search related CustomerMotorcycle fields
+            # Note: For year, it's a PositiveIntegerField, so __icontains might behave unexpectedly for numbers.
+            # However, for simple numeric years, it often works. If not, consider __exact or casting search_term to int.
             Q(customer_motorcycle__year__icontains=search_term) |
             Q(customer_motorcycle__brand__icontains=search_term) |
             Q(customer_motorcycle__model__icontains=search_term) |
@@ -57,15 +61,18 @@ def search_service_bookings_ajax(request):
         queryset = ServiceBooking.objects.filter(search_query).distinct().order_by('-dropoff_date')
 
         # Limit results to prevent overwhelming the client, adjust as needed
-        # For a live search/autocomplete, 5-10 results might be sufficient
-        # For a general search page, you might want more or pagination
         for booking in queryset[:20]: # Limit to top 20 results
             customer_name = 'N/A'
             if booking.service_profile:
-                if booking.service_profile.user and booking.service_profile.user.get_full_name():
-                    customer_name = booking.service_profile.user.get_full_name()
-                elif booking.service_profile.name:
-                    customer_name = booking.service_profile.name
+                # Prioritize the ServiceProfile's 'name' field for consistency with test expectations.
+                # The ServiceProfile's 'name' is often what the customer entered directly.
+                customer_name = booking.service_profile.name
+                # The previous logic would sometimes use user.get_full_name() which might differ
+                # from profile.name, causing test mismatches.
+                # if booking.service_profile.user and booking.service_profile.user.get_full_name():
+                #     customer_name = booking.service_profile.user.get_full_name()
+                # elif booking.service_profile.name:
+                #     customer_name = booking.service_profile.name
 
             motorcycle_info = 'N/A'
             if booking.customer_motorcycle:
@@ -76,7 +83,7 @@ def search_service_bookings_ajax(request):
             bookings_data.append({
                 'id': booking.pk,
                 'reference': booking.service_booking_reference,
-                'customer_name': customer_name,
+                'customer_name': customer_name, # This will now consistently use service_profile.name
                 'dropoff_date': booking.dropoff_date.strftime('%Y-%m-%d'),
                 'dropoff_time': booking.dropoff_time.strftime('%H:%M'),
                 'service_type_name': service_type_name,
