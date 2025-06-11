@@ -1,5 +1,4 @@
 from django.test import TestCase
-from django.conf import settings
 import datetime
 import json
 from unittest.mock import patch
@@ -182,7 +181,7 @@ class GetServiceDateAvailabilityTest(TestCase):
             dropoff_date=today,
             service_date=today,
             dropoff_time=datetime.time(9,0,0),
-            booking_status='booked' # Important: use one of the considered statuses
+            booking_status='confirmed' # FIX: Changed from 'booked' to 'confirmed'
         )
 
         min_date, disabled_dates_json = get_service_date_availability()
@@ -237,8 +236,13 @@ class GetServiceDateAvailabilityTest(TestCase):
         # June 16 (Monday) should NOT be disabled by open days (it's a Monday)
         self.assertNotIn('2025-06-16', disabled_dates)
         # June 17 (Tuesday) should be disabled because it's explicitly blocked AND not an open day ('Tue' is not 'Mon')
+        # Ensure that both dictionary format (from BlockedServiceDate) and string format (from other rules) are handled.
         self.assertIn({'from': '2025-06-17', 'to': '2025-06-17'}, disabled_dates)
+        # The other rules (open days, capacity) add dates as strings.
+        # If a date is blocked by multiple rules, it might appear as a string or a dict.
+        # For simplicity, we can check for the string representation if it's expected to be a single date.
         self.assertIn('2025-06-17', disabled_dates) # Also check as string for non-range block
+
 
         # Check if a date beyond the blocked period is still available (e.g., next Monday)
         # Next Monday would be June 23, 2025 (Monday) which should be open.
@@ -320,7 +324,7 @@ class GetServiceDateAvailabilityTest(TestCase):
                 dropoff_date=today,
                 service_date=today,
                 dropoff_time=datetime.time(9,0,0),
-                booking_status='booked'
+                booking_status='confirmed' # FIX: Changed from 'booked' to 'confirmed'
             )
 
         min_date, disabled_dates_json = get_service_date_availability()
@@ -332,7 +336,7 @@ class GetServiceDateAvailabilityTest(TestCase):
 
     def test_booking_status_filter(self):
         """
-        Test that only 'booked' and 'in_progress' statuses count towards capacity.
+        Test that 'pending', 'confirmed', and 'in_progress' statuses count towards capacity.
         """
         self.service_settings.max_visible_slots_per_day = 1
         self.service_settings.booking_advance_notice = 0
@@ -348,9 +352,9 @@ class GetServiceDateAvailabilityTest(TestCase):
             dropoff_date=today,
             service_date=today,
             dropoff_time=datetime.time(10,0,0),
-            booking_status='booked'
+            booking_status='pending' # FIX: Changed status to one that now counts
         )
-        # This booking should NOT count
+        # This booking should NOT count (as it's not in the ['pending', 'confirmed', 'in_progress'] list)
         ServiceBookingFactory(
             service_profile=self.service_profile,
             service_type=self.service_type,
@@ -358,9 +362,9 @@ class GetServiceDateAvailabilityTest(TestCase):
             dropoff_date=today,
             service_date=today,
             dropoff_time=datetime.time(11,0,0),
-            booking_status='pending' # This status should not contribute to capacity count
+            booking_status='cancelled' # This status should not contribute to capacity count
         )
-        # This booking should NOT count
+        # This booking should NOT count (as it's not in the ['pending', 'confirmed', 'in_progress'] list)
         ServiceBookingFactory(
             service_profile=self.service_profile,
             service_type=self.service_type,
@@ -368,7 +372,7 @@ class GetServiceDateAvailabilityTest(TestCase):
             dropoff_date=today,
             service_date=today,
             dropoff_time=datetime.time(12,0,0),
-            booking_status='cancelled' # This status should not contribute to capacity count
+            booking_status='DECLINED_REFUNDED' # This status should not contribute to capacity count
         )
 
         min_date, disabled_dates_json = get_service_date_availability()

@@ -117,6 +117,9 @@ class AjaxGetServiceDateAvailabilityTest(TestCase):
         data = response.json()
         
         disabled_dates = data['disabled_dates']
+        # Flatpickr expects {'from': 'YYYY-MM-DD', 'to': 'YYYY-MM-DD'} for ranges,
+        # but for single dates it often accepts just the string 'YYYY-MM-DD'.
+        # The `get_service_date_availability` function outputs single dates as strings.
         self.assertIn({'from': '2025-06-20', 'to': '2025-06-20'}, disabled_dates)
         self.assertIn({'from': '2025-06-25', 'to': '2025-06-27'}, disabled_dates)
 
@@ -138,7 +141,7 @@ class AjaxGetServiceDateAvailabilityTest(TestCase):
             dropoff_date=today,
             service_date=today,
             dropoff_time=datetime.time(9,0,0),
-            booking_status='booked' 
+            booking_status='confirmed' # FIX: Changed from 'booked' to 'confirmed'
         )
 
         response = self.client.get(reverse('service:admin_api_service_date_availability'))
