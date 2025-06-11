@@ -1,0 +1,256 @@
+{% extends "dashboard/admin_layout.html" %}
+{% load static %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    /* Basic form control styling, complementing Tailwind */
+    .form-control {
+        display: block;
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem; /* rounded-md */
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    .form-control:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    .form-check-input {
+        width: 1rem;
+        height: 1rem;
+        margin-top: 0.25rem;
+        vertical-align: top;
+        background-color: #fff;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+        border: 1px solid rgba(0, 0, 0, 0.25);
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        color-adjust: from-font;
+        border-radius: 0.25em; /* rounded-sm */
+        transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    .form-check-input:checked {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+    .form-check-input:checked[type="checkbox"] {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
+    }
+    .help-text {
+        font-size: 0.875rem; /* text-sm */
+        color: #6c757d; /* text-gray-600 */
+        margin-top: 0.25rem;
+    }
+    .errorlist {
+        color: #dc3545; /* text-red-600 */
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        list-style: none;
+        padding-left: 0;
+    }
+    .btn-primary {
+        background-color: #4f46e5; /* indigo-600 */
+        color: #ffffff;
+        padding: 0.625rem 1.25rem; /* py-2.5 px-5 */
+        border-radius: 0.375rem; /* rounded-md */
+        font-weight: 500; /* font-medium */
+        transition: background-color 0.15s ease-in-out;
+    }
+    .btn-primary:hover {
+        background-color: #4338ca; /* indigo-700 */
+    }
+    .btn-secondary {
+        background-color: #e2e8f0; /* gray-200 */
+        color: #1a202c; /* gray-900 */
+        padding: 0.625rem 1.25rem;
+        border-radius: 0.375rem;
+        font-weight: 500;
+        transition: background-color 0.15s ease-in-out;
+    }
+    .btn-secondary:hover {
+        background-color: #cbd5e0; /* gray-300 */
+    }
+</style>
+{% endblock %}
+
+{% block admin_main_content %}
+<div class="p-4">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">
+            {% if is_edit_mode %}Edit Service Type{% else %}Create New Service Type{% endif %}
+        </h1>
+    </div>
+
+    {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+                <div class="p-3 rounded-md text-sm {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="bg-white shadow-md rounded-lg p-6">
+        {# enctype="multipart/form-data" is crucial for file uploads #}
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {# Display non-field errors #}
+            {% if form.non_field_errors %}
+                <div class="mb-4 text-red-600">
+                    <ul class="errorlist">
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                {# Name Field #}
+                <div class="col-span-1">
+                    <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.name.label }}
+                    </label>
+                    {{ form.name }}
+                    {% if form.name.help_text %}
+                        <p class="help-text">{{ form.name.help_text }}</p>
+                    {% endif %}
+                    {% if form.name.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.name.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                {# Estimated Duration Field #}
+                <div class="col-span-1">
+                    <label for="{{ form.estimated_duration.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.estimated_duration.label }}
+                    </label>
+                    {{ form.estimated_duration }}
+                    {% if form.estimated_duration.help_text %}
+                        <p class="help-text">{{ form.estimated_duration.help_text }}</p>
+                    {% endif %}
+                    {% if form.estimated_duration.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.estimated_duration.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                {# Base Price Field #}
+                <div class="col-span-1">
+                    <label for="{{ form.base_price.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.base_price.label }}
+                    </label>
+                    {{ form.base_price }}
+                    {% if form.base_price.help_text %}
+                        <p class="help-text">{{ form.base_price.help_text }}</p>
+                    {% endif %}
+                    {% if form.base_price.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.base_price.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                {# Is Active Checkbox #}
+                <div class="col-span-1 flex items-center pt-6"> {# Add padding top to align with other fields #}
+                    <input type="checkbox" name="{{ form.is_active.name }}" id="{{ form.is_active.id_for_label }}"
+                           class="form-check-input" {% if form.is_active.value %}checked{% endif %}>
+                    <label for="{{ form.is_active.id_for_label }}" class="ml-2 block text-sm font-medium text-gray-700">
+                        {{ form.is_active.label }}
+                    </label>
+                    {% if form.is_active.help_text %}
+                        <p class="help-text ml-2">{{ form.is_active.help_text }}</p>
+                    {% endif %}
+                    {% if form.is_active.errors %}
+                        <ul class="errorlist ml-2">
+                            {% for error in form.is_active.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                {# Description Field (full width) #}
+                <div class="col-span-full">
+                    <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.description.label }}
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.help_text %}
+                        <p class="help-text">{{ form.description.help_text }}</p>
+                    {% endif %}
+                    {% if form.description.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.description.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                {# Image Upload Field #}
+                <div class="col-span-full">
+                    <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.image.label }}
+                    </label>
+                    {% if is_edit_mode and current_service_type.image %}
+                        <div class="mb-2">
+                            <p class="text-sm text-gray-500">Current Image:</p>
+                            <img src="{{ current_service_type.image.url }}" alt="{{ current_service_type.name }}" class="w-20 h-20 object-cover rounded-md border border-gray-200">
+                        </div>
+                    {% endif %}
+                    {{ form.image }}
+                    {% if form.image.help_text %}
+                        <p class="help-text">{{ form.image.help_text }}</p>
+                    {% endif %}
+                    {% if form.image.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.image.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-3">
+                <a href="{% url 'service:service_types_management' %}"
+                   class="inline-flex items-center btn-secondary px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm">
+                    Cancel
+                </a>
+                <button type="submit"
+                        class="inline-flex items-center btn-primary px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm">
+                    {% if is_edit_mode %}Save Changes{% else %}Create Service Type{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+{# Any specific JS for this form can go here if needed, e.g., image preview logic #}
+{% endblock %}

@@ -1,27 +1,31 @@
+# service/views/admin_delete_service_type.py
+
 from django.shortcuts import redirect, get_object_or_404
 from django.views import View
+from django.urls import reverse
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
-from service.models import ServiceType
+from service.models import ServiceType # Import the ServiceType model
 
-class ServiceTypeDeleteView(View):
+class ServiceTypeDeleteView(LoginRequiredMixin, UserPassesTestMixin, View):
     """
-    Class-based view for deleting a specific service type.
-    Handles POST requests for deletion.
+    Admin view for deleting a ServiceType instance.
+    Requires the user to be logged in and a staff member or superuser.
     """
+    def test_func(self):
+        """
+        Ensures that only staff members or superusers can access this view.
+        """
+        return self.request.user.is_staff or self.request.user.is_superuser
 
     def post(self, request, pk, *args, **kwargs):
         """
-        Handles POST requests: deletes the ServiceType instance
-        identified by the primary key (pk).
+        Handles POST requests to delete a ServiceType.
         """
         service_type = get_object_or_404(ServiceType, pk=pk)
-        name = service_type.name # Get name before deletion for message
-        try:
-            service_type.delete()
-            messages.success(request, f"Service type '{name}' deleted successfully!")
-        except Exception as e:
-            messages.error(request, f"Error deleting service type: {e}")
-        # Redirect back to the management page after deletion
-        return redirect('service:service_types_management')
+        service_type_name = service_type.name
+        service_type.delete()
+        messages.success(request, f"Service Type '{service_type_name}' deleted successfully.")
+        return redirect(reverse('service:service_types_management'))
 

@@ -12,4 +12,4 @@ from .admin_customer_motorcycle_form import *
 from .blocked_service_date_form import *
 from .service_settings_form import *
 from .service_brand_form import *
-from .service_type_form import *
+from .admin_service_type_form import *
