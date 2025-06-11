@@ -11,6 +11,14 @@ class AdminBookingDetailsForm(forms.ModelForm):
     Form for admins to create and update service booking details.
     This is now a ModelForm to handle both creation and editing of ServiceBooking instances.
     """
+    # Explicitly define estimated_pickup_date to make it required at the form level
+    estimated_pickup_date = forms.DateField(
+        widget=forms.DateInput(attrs={'class': 'form-control flatpickr-admin-date-input', 'placeholder': 'Estimated pickup date'}),
+        label=_("Estimated Pickup Date"),
+        help_text=_("Estimated date when the customer can pick up the motorcycle. Prefilled based on service type duration."),
+        required=True # Explicitly set as required
+    )
+
     class Meta:
         model = ServiceBooking
         fields = [
@@ -21,7 +29,7 @@ class AdminBookingDetailsForm(forms.ModelForm):
             'booking_status',
             'payment_status',
             'customer_notes',
-            'estimated_pickup_date',
+            'estimated_pickup_date', # Keep it in fields
         ]
         widgets = {
             'service_type': forms.Select(attrs={'class': 'form-control'}),
@@ -31,7 +39,7 @@ class AdminBookingDetailsForm(forms.ModelForm):
             'booking_status': forms.Select(attrs={'class': 'form-control'}),
             'payment_status': forms.Select(attrs={'class': 'form-control'}),
             'customer_notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'estimated_pickup_date': forms.DateInput(attrs={'class': 'form-control flatpickr-admin-date-input', 'placeholder': 'Estimated pickup date'}),
+            # 'estimated_pickup_date' widget is now defined above, so removed from here
         }
         labels = {
             'service_type': _("Service Type"),
@@ -41,7 +49,7 @@ class AdminBookingDetailsForm(forms.ModelForm):
             'booking_status': _("Booking Status"),
             'payment_status': _("Payment Status"),
             'customer_notes': _("Customer Notes (Optional)"),
-            'estimated_pickup_date': _("Estimated Pickup Date"),
+            # 'estimated_pickup_date' label is now defined above, so removed from here
         }
         help_texts = {
             'service_date': _("The requested date for the service to be performed."),
@@ -50,7 +58,7 @@ class AdminBookingDetailsForm(forms.ModelForm):
             'booking_status': _("Set the status of this booking."),
             'payment_status': _("Set the payment status for this booking."),
             'customer_notes': _("Any additional notes or requests from the customer."),
-            'estimated_pickup_date': _("Estimated date when the customer can pick up the motorcycle. Prefilled based on service type duration."),
+            # 'estimated_pickup_date' help_text is now defined above, so removed from here
         }
 
     def __init__(self, *args, **kwargs):
@@ -70,9 +78,12 @@ class AdminBookingDetailsForm(forms.ModelForm):
         # This list will store non-blocking warning messages for the admin
         self._warnings = []
 
+        # Check if any required date/time fields are missing before proceeding with warnings.
+        # This will allow Django's default required field validation to occur first.
+        # We only proceed with warnings if the core date/time fields are present and not None.
         if not all([service_date, dropoff_date, dropoff_time]):
-            # If basic date/time fields are missing, let individual field errors handle it.
             return cleaned_data
+
 
         # --- Validation as Warnings for Admin ---
 

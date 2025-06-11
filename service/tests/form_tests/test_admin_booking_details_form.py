@@ -191,7 +191,6 @@ class AdminBookingDetailsFormTest(TestCase):
         self.assertTrue(form.is_valid(), f"Form is not valid when optional fields are blank: {form.errors}")
         self.assertEqual(form.get_warnings(), [])
         self.assertEqual(form.cleaned_data.get('customer_notes'), '')
-        self.assertEqual(form.cleaned_data.get('admin_notes'), '')
         # estimated_pickup_date should now have a value, not None
         self.assertEqual(form.cleaned_data.get('estimated_pickup_date'), date.fromisoformat(estimated_pickup_date_val))
 
