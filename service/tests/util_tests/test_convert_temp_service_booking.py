@@ -1,7 +1,7 @@
 from django.test import TestCase
 from decimal import Decimal
 import uuid
-from unittest.mock import patch
+from unittest.mock import patch, Mock # Import Mock
 
 # Import models and the converter function
 from service.models import TempServiceBooking, ServiceBooking, ServiceSettings
@@ -248,4 +248,48 @@ class ConvertTempServiceBookingTest(TestCase):
         self.assertFalse(TempServiceBooking.objects.filter(pk=temp_booking_pk).exists())
         self.assertEqual(Payment.objects.count(), 0) # No payment object created
         self.assertEqual(ServiceBooking.objects.count(), 1) # Service booking created
+
+    @patch('service.utils.send_booking_to_mechanicdesk.send_booking_to_mechanicdesk')
+    def test_conversion_calls_mechanicdesk_sender(self, mock_mechanicdesk_sender):
+        """
+        Test that convert_temp_service_booking calls the MechanicDesk sender utility
+        upon successful conversion.
+        """
+        temp_booking = TempServiceBookingFactory(
+            service_type=self.service_type,
+            service_profile=self.service_profile,
+            customer_motorcycle=self.customer_motorcycle,
+            payment_method='online_full',
+            calculated_total=Decimal('250.00'),
+            calculated_deposit_amount=Decimal('50.00'),
+        )
+
+        payment_obj = PaymentFactory(
+            amount=Decimal('50.00'),
+            currency='AUD',
+            status='deposit_paid',
+            temp_service_booking=temp_booking,
+        )
+
+        # Perform the conversion
+        service_booking = convert_temp_service_booking(
+            temp_booking=temp_booking,
+            payment_method='online_deposit',
+            booking_payment_status='deposit_paid',
+            amount_paid_on_booking=Decimal('50.00'),
+            calculated_total_on_booking=Decimal('250.00'),
+            stripe_payment_intent_id='pi_test_mechanicdesk_call',
+            payment_obj=payment_obj
+        )
+
+        # Assert that the service booking was created successfully
+        self.assertIsInstance(service_booking, ServiceBooking)
+        self.assertEqual(ServiceBooking.objects.count(), 1)
+
+        # Assert that the temporary booking was deleted
+        self.assertFalse(TempServiceBooking.objects.filter(pk=temp_booking.pk).exists())
+
+        # Assert that send_booking_to_mechanicdesk was called exactly once
+        # and that it was called with the newly created ServiceBooking instance
+        mock_mechanicdesk_sender.assert_called_once_with(service_booking)
 

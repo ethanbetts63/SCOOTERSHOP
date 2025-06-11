@@ -1,12 +1,8 @@
 from django.db import transaction
 from decimal import Decimal
-import uuid
-
-# Import the new utility function
 from service.utils.send_booking_to_mechanicdesk import send_booking_to_mechanicdesk 
-
-from service.models import TempServiceBooking, ServiceBooking, ServiceSettings
-from payments.models import Payment, RefundPolicySettings
+from service.models import ServiceBooking, ServiceSettings
+from payments.models import RefundPolicySettings
 
 def convert_temp_service_booking(
     temp_booking,
