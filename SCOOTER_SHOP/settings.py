@@ -196,3 +196,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'ethan.betts.dev@gmail.com' # Your Gmail address
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
+
+MECHANICDESK_BOOKING_TOKEN = os.getenv('MECHANICDESK_BOOKING_TOKEN')
+
