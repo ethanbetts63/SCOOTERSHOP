@@ -191,8 +191,7 @@
 {{ block.super }}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const bookingPk = '{{ booking_pk }}'; // Get the primary key from Django context
-    // Updated to use the correct URL for the AJAX endpoint
+    const bookingPk = '{{ booking_pk }}'; 
     const apiUrl = `/admin/api/service-booking-details/${bookingPk}/`; 
 
     const loadingMessage = document.getElementById('loadingMessage');
@@ -202,7 +201,6 @@ document.addEventListener('DOMContentLoaded', function() {
     fetch(apiUrl)
         .then(response => {
             if (!response.ok) {
-                // Check for 403 (Permission Denied) or 404 (Not Found)
                 if (response.status === 403) {
                     throw new Error('Permission denied. You do not have access to view this booking.');
                 } else if (response.status === 404) {
@@ -220,7 +218,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Populate booking information
             document.getElementById('bookingReference').textContent = data.service_booking_reference || 'N/A';
             document.getElementById('customerName').textContent = data.customer_name || 'N/A';
             document.getElementById('serviceDate').textContent = data.service_date || 'N/A';
@@ -230,28 +227,24 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('bookingStatus').textContent = data.booking_status || 'N/A';
             document.getElementById('customerNotes').textContent = data.customer_notes || 'N/A';
 
-            // Populate motorcycle details
             document.getElementById('motorcycleYear').textContent = data.motorcycle_details.year || 'N/A';
             document.getElementById('motorcycleBrand').textContent = data.motorcycle_details.brand || 'N/A';
             document.getElementById('motorcycleModel').textContent = data.motorcycle_details.model || 'N/A';
 
-            // Populate service type details
             document.getElementById('serviceTypeName').textContent = data.service_type_details.name || 'N/A';
             document.getElementById('serviceTypeDescription').textContent = data.service_type_details.description || 'N/A';
             document.getElementById('serviceTypeBasePrice').textContent = data.service_type_details.base_price !== 'N/A' ? `$${data.service_type_details.base_price.toFixed(2)}` : 'N/A';
 
-            // Populate payment information
             document.getElementById('paymentOption').textContent = data.payment_option || 'N/A';
             document.getElementById('paymentDate').textContent = data.payment_date || 'N/A';
             document.getElementById('paymentAmount').textContent = data.payment_amount !== 'N/A' ? `$${data.payment_amount.toFixed(2)}` : 'N/A';
             document.getElementById('paymentStatus').textContent = data.payment_status || 'N/A';
 
-            // Populate refund information
             document.getElementById('refundRequestStatus').textContent = data.refund_request_status_for_booking || 'N/A';
             document.getElementById('entitledRefundAmount').textContent = data.entitled_refund_amount !== 'N/A' ? `$${data.entitled_refund_amount.toFixed(2)}` : 'N/A';
             document.getElementById('refundPolicyApplied').textContent = data.refund_policy_applied || 'N/A';
             document.getElementById('refundDaysBeforeDropoff').textContent = data.refund_days_before_dropoff !== null ? data.refund_days_before_dropoff : 'N/A';
-            document.getElementById('refundCalculationDetails').textContent = JSON.stringify(data.refund_calculation_details, null, 2) || 'N/A';
+            document.getElementById('refundCalculationDetails').textContent = data.refund_calculation_details || 'N/A';
 
 
             loadingMessage.style.display = 'none';
