@@ -231,6 +231,11 @@
             cancelSubmissionButton: document.getElementById('cancelSubmissionButton'), // Modal cancel button
             confirmSubmissionButton: document.getElementById('confirmSubmissionButton'), // Modal confirm button
             formErrors: document.getElementById('formErrors'), // Area to display general form errors
+
+            // NEW: References for service type, service date, and estimated pickup date fields
+            serviceTypeSelect: document.querySelector('[name="service_type"]'),
+            serviceDateInput: document.querySelector('[name="service_date"]'),
+            estimatedPickupDateInput: document.querySelector('[name="estimated_pickup_date"]'),
         };
 
         const ajaxUrls = {
@@ -239,6 +244,7 @@
             getCustomerMotorcycles: "{% url 'service:admin_api_customer_motorcycles' 0 %}".replace('0/', ''), // Corrected URL
             getMotorcycleDetails: "{% url 'service:admin_api_get_motorcycle_details' 0 %}".replace('0/', ''), // Corrected URL
             bookingPrecheck: "{% url 'service:admin_api_booking_precheck' %}", // Pre-check URL
+            getEstimatedPickupDate: "{% url 'service:admin_api_get_estimated_pickup_date' %}", // NEW: URL for estimated pickup date AJAX
         };
 
         // Function to perform the search
@@ -417,9 +423,18 @@
         // Flatpickr Initialization
         // =========================================================
         function initFlatpickr() {
-            flatpickr(".flatpickr-admin-date-input", {
+            flatpickr(dom.serviceDateInput, { // Use dom.serviceDateInput directly
+                dateFormat: "Y-m-d",
+                allowInput: true,
+                onChange: function(selectedDates, dateStr, instance) {
+                    updateEstimatedPickupDate(); // Call when service date changes
+                }
+            });
+
+            flatpickr(dom.estimatedPickupDateInput, { // Use dom.estimatedPickupDateInput directly
                 dateFormat: "Y-m-d",
                 allowInput: true
+                // No onChange here, as it's meant to be prefilled but editable
             });
 
             flatpickr(".flatpickr-admin-time-input", {
@@ -429,6 +444,39 @@
                 time_24hr: true,
                 allowInput: true
             });
+        }
+
+        // =========================================================
+        // NEW: Function to update the estimated pickup date via AJAX
+        // =========================================================
+        function updateEstimatedPickupDate() {
+            const serviceTypeId = dom.serviceTypeSelect ? dom.serviceTypeSelect.value : '';
+            const serviceDate = dom.serviceDateInput ? dom.serviceDateInput.value : '';
+
+            if (serviceTypeId && serviceDate) {
+                const url = `${ajaxUrls.getEstimatedPickupDate}?service_type_id=${serviceTypeId}&service_date=${serviceDate}`;
+
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.estimated_pickup_date) {
+                            dom.estimatedPickupDateInput.value = data.estimated_pickup_date;
+                        } else {
+                            dom.estimatedPickupDateInput.value = ''; // Clear if no date returned
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching estimated pickup date:', error);
+                        dom.estimatedPickupDateInput.value = ''; // Clear on error
+                    });
+            } else {
+                dom.estimatedPickupDateInput.value = ''; // Clear if inputs are not complete
+            }
         }
 
         // =========================================================
@@ -521,7 +569,8 @@
                 dom.motorcycleDropdown.disabled = true;
             }
 
-            initFlatpickr();
+            initFlatpickr(); // Initialize Flatpickr instances
+            updateEstimatedPickupDate(); // NEW: Call on initial load to prefill if values exist
         }
 
         document.addEventListener('click', function(event) {
@@ -531,6 +580,12 @@
         });
 
         initializeForm();
+
+        // NEW: Event listeners for service type and service date changes
+        if (dom.serviceTypeSelect) {
+            dom.serviceTypeSelect.addEventListener('change', updateEstimatedPickupDate);
+        }
+        // serviceDateInput's change listener is now handled by Flatpickr's onChange
     });
     </script>
 {% endblock %}
