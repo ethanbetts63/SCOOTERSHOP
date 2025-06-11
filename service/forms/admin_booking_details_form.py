@@ -78,12 +78,12 @@ class AdminBookingDetailsForm(forms.Form):
         help_text=_("Internal notes for staff, not visible to the customer.")
     )
 
-    # Fields for estimated pickup date - purely for admin tracking
+    # Fields for estimated pickup date - now required
     estimated_pickup_date = forms.DateField(
-        label=_("Estimated Pickup Date (Optional)"),
+        label=_("Estimated Pickup Date"),
         widget=forms.DateInput(attrs={'class': 'form-control flatpickr-admin-date-input', 'placeholder': 'Estimated pickup date'}),
-        required=False,
-        help_text=_("Estimated date when the customer can pick up the motorcycle.")
+        required=True, # Changed from False to True
+        help_text=_("Estimated date when the customer can pick up the motorcycle. Prefilled based on service type duration.")
     )
 
 
