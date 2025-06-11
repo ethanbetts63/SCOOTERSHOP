@@ -2,6 +2,9 @@ from django.db import transaction
 from decimal import Decimal
 import uuid
 
+# Import the new utility function
+from service.utils.send_booking_to_mechanicdesk import send_booking_to_mechanicdesk 
+
 from service.models import TempServiceBooking, ServiceBooking, ServiceSettings
 from payments.models import Payment, RefundPolicySettings
 
@@ -78,14 +81,18 @@ def convert_temp_service_booking(
                         }
                     else:
                         payment_obj.refund_policy_snapshot = {}
-                except Exception as e:
+                except Exception: # Removed 'as e' as you requested no comments or prints
                     payment_obj.refund_policy_snapshot = {}
 
                 payment_obj.save()
             
+            # Call the MechanicDesk integration function here
+            send_booking_to_mechanicdesk(service_booking)
+
             temp_booking.delete()
 
             return service_booking
 
-    except Exception as e:
+    except Exception: # Removed 'as e' as you requested no comments or prints
         raise
+
