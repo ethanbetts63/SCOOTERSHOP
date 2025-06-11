@@ -202,10 +202,14 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertEqual(len(content['bookings']), 1)
         self.assertEqual(content['bookings'][0]['service_type_name'], self.service_type1.name)
 
+        # Updated assertion: When searching for 'inspection', booking3 ('Major Service')
+        # will come first due to the '-dropoff_date' sorting.
         response = self._make_request(query_term='inspection') # Description (partial)
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
-        self.assertEqual(content['bookings'][0]['service_type_name'], self.service_type4.name)
+        self.assertEqual(len(content['bookings']), 2) # Both booking3 and booking4 match
+        self.assertEqual(content['bookings'][0]['service_type_name'], self.service_type3.name) # Expect Major Service first
+        self.assertEqual(content['bookings'][1]['service_type_name'], self.service_type4.name) # Then General Check
 
     def test_search_by_booking_status(self):
         """Test searching by booking status."""
@@ -292,3 +296,4 @@ class AjaxSearchServiceBookingsTest(TestCase):
         content = json.loads(response.content)
         self.assertIn('error', content)
         self.assertEqual(content['error'], 'Permission denied')
+
