@@ -2,26 +2,18 @@
 
 from django.http import JsonResponse, Http404 
 from django.shortcuts import get_object_or_404
-from django.contrib.auth.decorators import login_required # user_passes_test is no longer needed
+from django.contrib.auth.decorators import login_required 
 from django.views.decorators.http import require_GET
 from datetime import datetime, time 
 from django.utils import timezone 
-# from django.core.exceptions import PermissionDenied # Not needed if handling permission manually
 
-# Import ServiceBooking and RefundRequest models
 from service.models import ServiceBooking
 from payments.models import RefundRequest
 from payments.utils.service_refund_calc import calculate_service_refund_amount
 
 @require_GET
-@login_required # Ensure user is authenticated
+@login_required 
 def get_service_booking_details_json(request, pk):
-    """
-    API endpoint to return details of a specific ServiceBooking as JSON.
-    Requires staff login. This endpoint also includes the latest
-    refund request status associated with the booking.
-    """
-    # Manual check for staff status
     if not request.user.is_staff:
         return JsonResponse({'error': 'Permission denied'}, status=403)
 
@@ -62,11 +54,11 @@ def get_service_booking_details_json(request, pk):
         refund_policy_snapshot_for_calc = service_booking.payment.refund_policy_snapshot if service_booking.payment and service_booking.payment.refund_policy_snapshot else {}
         
         cancellation_datetime = datetime.combine(service_booking.dropoff_date, service_booking.dropoff_time)
-        if timezone.is_aware(timezone.now()):
+        if timezone.is_aware(timezone.now()): 
             cancellation_datetime = timezone.make_aware(cancellation_datetime)
 
         refund_calculation_results = calculate_service_refund_amount(
-            service_booking=service_booking,
+            booking=service_booking, 
             cancellation_datetime=cancellation_datetime,
             refund_policy_snapshot=refund_policy_snapshot_for_calc
         )
@@ -98,3 +90,4 @@ def get_service_booking_details_json(request, pk):
         return JsonResponse({'error': 'Service Booking not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
+

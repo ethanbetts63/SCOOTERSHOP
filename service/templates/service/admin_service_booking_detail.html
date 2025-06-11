@@ -192,7 +192,8 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const bookingPk = '{{ booking_pk }}'; // Get the primary key from Django context
-    const apiUrl = `/api/service-booking-details/${bookingPk}/`; // Your existing AJAX endpoint
+    // Updated to use the correct URL for the AJAX endpoint
+    const apiUrl = `/admin/api/service-booking-details/${bookingPk}/`; 
 
     const loadingMessage = document.getElementById('loadingMessage');
     const errorMessage = document.getElementById('errorMessage');

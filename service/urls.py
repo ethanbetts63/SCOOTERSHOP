@@ -13,7 +13,7 @@ from service.ajax import (
     ajax_search_service_profiles,
     ajax_admin_booking_precheck, 
     ajax_get_service_bookings_feed,
-    ajax_get_service_booking_details,
+    ajax_get_service_booking_details, # Ensure this is imported
 )
 
 app_name = 'service'
@@ -74,6 +74,10 @@ urlpatterns = [
     path('admin/api/service-date-availability/', ajax_get_available_service_dates.get_service_date_availability_ajax, name='admin_api_service_date_availability'),
     path('admin/api/dropoff-time-availability/', ajax_get_available_dropoff_times_for_date.get_available_dropoff_times_for_date, name='admin_api_dropoff_time_availability'),
     path('admin/api/booking-precheck/', ajax_admin_booking_precheck.admin_booking_precheck_ajax, name='admin_api_booking_precheck'),
+    
+    # Corrected URL for fetching single service booking details
+    path('admin/api/service-booking-details/<int:pk>/', ajax_get_service_booking_details.get_service_booking_details_json, name='admin_api_get_service_booking_details'), 
+    # Original URL for feed (if still needed)
     path('admin/api/service-bookings-json/', ajax_get_service_bookings_feed.get_service_bookings_json_ajax, name='get_service_bookings_json'),
-    path('admin/api/service-booking-details/', ajax_get_service_bookings_feed.get_service_bookings_json_ajax, name='get_service_bookings_json'),
 ]   
+

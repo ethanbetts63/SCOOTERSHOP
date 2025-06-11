@@ -27,5 +27,6 @@ class AdminServiceBookingDetailView(LoginRequiredMixin, UserPassesTestMixin, Det
         context = super().get_context_data(**kwargs)
         # The pk is already available via self.object.pk because DetailView fetches the object
         context['booking_pk'] = self.object.pk 
+        print(f"DEBUG: AdminServiceBookingDetailView - Booking PK being passed to template: {context['booking_pk']}")
         return context
 
