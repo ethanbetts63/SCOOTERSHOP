@@ -1,7 +1,7 @@
 from django.test import TestCase
 from decimal import Decimal
 import uuid
-from unittest.mock import patch, Mock # Import Mock
+from unittest.mock import patch, Mock 
 
 # Import models and the converter function
 from service.models import TempServiceBooking, ServiceBooking, ServiceSettings
@@ -249,7 +249,8 @@ class ConvertTempServiceBookingTest(TestCase):
         self.assertEqual(Payment.objects.count(), 0) # No payment object created
         self.assertEqual(ServiceBooking.objects.count(), 1) # Service booking created
 
-    @patch('service.utils.send_booking_to_mechanicdesk.send_booking_to_mechanicdesk')
+    # FIX: Corrected patch path to where the function is looked up within the module
+    @patch('service.utils.convert_temp_service_booking.send_booking_to_mechanicdesk')
     def test_conversion_calls_mechanicdesk_sender(self, mock_mechanicdesk_sender):
         """
         Test that convert_temp_service_booking calls the MechanicDesk sender utility
