@@ -1,25 +1,17 @@
-# payments/tests/view_tests/test_admin_add_edit_refund_request_view.py
 
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib import messages
 from django.utils import timezone
 from decimal import Decimal
-from unittest.mock import patch, MagicMock
-
-# Import factories
+from unittest.mock import patch
 from payments.tests.test_helpers.model_factories import (
     RefundRequestFactory, HireBookingFactory, ServiceBookingFactory,
-    PaymentFactory, UserFactory, DriverProfileFactory, ServiceProfileFactory
+    PaymentFactory, UserFactory
 )
 from payments.models import RefundRequest
-from hire.models import HireBooking
-from service.models import ServiceBooking
-
-# Assuming 'payments:admin_refund_management' is the URL name for the main admin refund list view.
-# Ensure this URL exists in your payments/urls.py
 ADMIN_REFUND_MANAGEMENT_URL = reverse('payments:admin_refund_management')
-# CORRECTED: Using the custom login URL from users app
+
 LOGIN_URL = reverse('users:login') 
 
 class AdminAddEditRefundRequestViewTests(TestCase):

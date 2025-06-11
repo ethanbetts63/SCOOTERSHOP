@@ -44,7 +44,7 @@ class ServiceWebhookHandlerTest(TestCase):
             service_profile=self.service_profile,
             customer_motorcycle=self.customer_motorcycle,
             service_type=self.service_type,
-            payment_option='online_full',
+            payment_method='online_full',
             calculated_total=self.service_type.base_price
         )
         payment_obj = PaymentFactory(

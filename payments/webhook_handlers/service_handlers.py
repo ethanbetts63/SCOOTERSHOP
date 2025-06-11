@@ -53,17 +53,17 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
             raise TempServiceBooking.DoesNotExist(f"TempServiceBooking for Payment ID {payment_obj.id} does not exist and no ServiceBooking found.")
 
         booking_payment_status = 'unpaid' # Default to unpaid
-        if temp_booking.payment_option == 'online_full':
+        if temp_booking.payment_method == 'online_full':
             booking_payment_status = 'paid'
-        elif temp_booking.payment_option == 'online_deposit':
+        elif temp_booking.payment_method == 'online_deposit':
             booking_payment_status = 'deposit_paid'
-        elif temp_booking.payment_option == 'in_store_full':
+        elif temp_booking.payment_method == 'in_store_full':
             booking_payment_status = 'unpaid' 
         
         print(f"DEBUG: handle_service_booking_succeeded - Determined booking_payment_status: {booking_payment_status}")
         print(f"DEBUG: handle_service_booking_succeeded - Arguments for convert_temp_service_booking:")
         print(f"  temp_booking: {temp_booking}")
-        print(f"  payment_method: {temp_booking.payment_option}")
+        print(f"  payment_method: {temp_booking.payment_method}")
         print(f"  booking_payment_status: {booking_payment_status}")
         print(f"  amount_paid_on_booking: {Decimal(payment_intent_data['amount_received']) / Decimal('100')}")
         print(f"  calculated_total_on_booking: {temp_booking.calculated_total}")
@@ -73,7 +73,7 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
 
         service_booking = convert_temp_service_booking(
             temp_booking=temp_booking,
-            payment_method=temp_booking.payment_option,
+            payment_method=temp_booking.payment_method,
             booking_payment_status=booking_payment_status,
             amount_paid_on_booking=Decimal(payment_intent_data['amount_received']) / Decimal('100'),
             calculated_total_on_booking=temp_booking.calculated_total,

@@ -14,7 +14,6 @@ from payments.tests.test_helpers.model_factories import (
     RefundRequestFactory, HireBookingFactory, ServiceBookingFactory,
     PaymentFactory, UserFactory
 )
-from payments.models import RefundRequest
 
 # Set a dummy Stripe secret key for tests - crucial for Stripe module to not error out
 settings.STRIPE_SECRET_KEY = 'sk_test_dummykey'

@@ -1,11 +1,10 @@
-from django.shortcuts import render
-from django.views import View
+
 from django.http import JsonResponse
 from django.urls import reverse # Import reverse for URL lookups
-from datetime import datetime, timedelta # Import timedelta for date calculations
+from datetime import timedelta # Import timedelta for date calculations
 from django.utils import timezone # Import timezone for handling aware/naive datetimes
 
-from service.models import ServiceBooking, ServiceType, BlockedServiceDate 
+from service.models import ServiceBooking, BlockedServiceDate 
 
 
 def get_service_bookings_json_ajax(request):
