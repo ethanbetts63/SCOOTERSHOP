@@ -12,6 +12,36 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             max-width: 800px;
             margin: 20px auto;
+            position: relative; /* For positioning action buttons */
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: flex-end;
+        }
+        .btn {
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary {
+            background-color: #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
         }
         .booking-details-header {
             text-align: center;
@@ -70,6 +100,17 @@
 
 {% block admin_main_content %}
 <div class="booking-details-container">
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <a href="{% url 'service:admin_edit_service_booking' pk=booking_pk %}" class="btn btn-primary">Edit Booking</a>
+        <button id="deleteButton" class="btn btn-danger">Delete Booking</button>
+    </div>
+
+    <!-- Hidden form for deletion -->
+    <form id="deleteForm" action="{% url 'service:admin_delete_service_booking' pk=booking_pk %}" method="post" style="display: none;">
+        {% csrf_token %}
+    </form>
+
     <h2 class="booking-details-header">Service Booking Details</h2>
 
     <div id="loadingMessage" class="loading-message">
@@ -194,6 +235,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const bookingPk = '{{ booking_pk }}'; 
     const apiUrl = "{% url 'service:admin_api_get_service_booking_details' pk=0 %}".replace('/0/', `/${bookingPk}/`);
 
+    // --- New Delete Button Logic ---
+    const deleteButton = document.getElementById('deleteButton');
+    const deleteForm = document.getElementById('deleteForm');
+
+    if (deleteButton && deleteForm) {
+        deleteButton.addEventListener('click', function() {
+            if (confirm('Are you sure you want to delete this booking? This action cannot be undone.')) {
+                deleteForm.submit();
+            }
+        });
+    }
+    // --- End of New Logic ---
+
     const loadingMessage = document.getElementById('loadingMessage');
     const errorMessage = document.getElementById('errorMessage');
     const bookingDetailsDiv = document.getElementById('bookingDetails');
@@ -233,15 +287,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
             document.getElementById('serviceTypeName').textContent = data.service_type_details.name || 'N/A';
             document.getElementById('serviceTypeDescription').textContent = data.service_type_details.description || 'N/A';
-            document.getElementById('serviceTypeBasePrice').textContent = data.service_type_details.base_price !== 'N/A' ? `$${data.service_type_details.base_price.toFixed(2)}` : 'N/A';
+            document.getElementById('serviceTypeBasePrice').textContent = data.service_type_details.base_price && data.service_type_details.base_price !== 'N/A' ? `$${parseFloat(data.service_type_details.base_price).toFixed(2)}` : 'N/A';
 
             document.getElementById('paymentOption').textContent = data.payment_method || 'N/A';
             document.getElementById('paymentDate').textContent = data.payment_date || 'N/A';
-            document.getElementById('paymentAmount').textContent = data.payment_amount !== 'N/A' ? `$${data.payment_amount.toFixed(2)}` : 'N/A';
+            document.getElementById('paymentAmount').textContent = data.payment_amount && data.payment_amount !== 'N/A' ? `$${parseFloat(data.payment_amount).toFixed(2)}` : 'N/A';
             document.getElementById('paymentStatus').textContent = data.payment_status || 'N/A';
 
             document.getElementById('refundRequestStatus').textContent = data.refund_request_status_for_booking || 'N/A';
-            document.getElementById('entitledRefundAmount').textContent = data.entitled_refund_amount !== 'N/A' ? `$${data.entitled_refund_amount.toFixed(2)}` : 'N/A';
+            document.getElementById('entitledRefundAmount').textContent = data.entitled_refund_amount && data.entitled_refund_amount !== 'N/A' ? `$${parseFloat(data.entitled_refund_amount).toFixed(2)}` : 'N/A';
             document.getElementById('refundPolicyApplied').textContent = data.refund_policy_applied || 'N/A';
             document.getElementById('refundDaysBeforeDropoff').textContent = data.refund_days_before_dropoff !== null ? data.refund_days_before_dropoff : 'N/A';
             document.getElementById('refundCalculationDetails').textContent = data.refund_calculation_details || 'N/A';
