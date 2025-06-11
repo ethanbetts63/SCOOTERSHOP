@@ -3,84 +3,95 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from service.models import ServiceProfile, CustomerMotorcycle, ServiceBooking, ServiceType
+from service.models import ServiceProfile, CustomerMotorcycle, ServiceBooking
 from service.forms import AdminBookingDetailsForm
 from service.utils.admin_create_service_booking import admin_create_service_booking
 
-class AdminBookingCreateView(LoginRequiredMixin, UserPassesTestMixin, View):
+class AdminServiceBookingCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, View):
     """
-    Simplified view for administrators to create a new Service Booking.
-    This view handles the selection of an existing ServiceProfile and CustomerMotorcycle,
-    followed by entering the booking details.
+    Handles the creation and updating of Service Bookings by an administrator.
+    If a 'pk' is provided in the URL, it operates in 'edit' mode.
+    Otherwise, it operates in 'create' mode.
     """
-    template_name = 'service/admin_service_booking_form.html'
+    template_name = 'service/admin_service_booking_create_update.html'
 
     def test_func(self):
-        """
-        Ensures that only staff or superusers can access this view.
-        """
+        """Ensures that only staff or superusers can access this view."""
         return self.request.user.is_staff or self.request.user.is_superuser
 
     def get_context_data(self, **kwargs):
-        """
-        Prepares and returns the context dictionary for the template.
-        """
+        """Prepares and returns the context dictionary for the template."""
         context = {
-            'booking_details_form': kwargs.get('booking_details_form'),
-            'selected_profile': kwargs.get('selected_profile'),
-            'selected_motorcycle': kwargs.get('selected_motorcycle'),
             'ajax_search_customer_url': reverse_lazy('service:admin_api_search_customer'),
-            'admin_api_get_customer_details': reverse('service:admin_api_get_customer_details', kwargs={'profile_id': 0}),
-            'ajax_get_customer_motorcycles_url': reverse('service:admin_api_customer_motorcycles', kwargs={'profile_id': 0}),
-            'ajax_get_motorcycle_details_url': reverse('service:admin_api_get_motorcycle_details', kwargs={'motorcycle_id': 0}),
             'create_profile_url': reverse_lazy('service:admin_create_service_profile'),
             'create_motorcycle_url': reverse_lazy('service:admin_create_customer_motorcycle'),
         }
+        # The kwargs will contain form, instance, selected_profile, etc.
+        context.update(kwargs)
         return context
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, pk=None, *args, **kwargs):
         """
-        Handles GET requests, displaying the initial state of the booking form.
+        Handles GET requests. If a 'pk' is provided, it populates the form
+        with the existing booking's data for editing. Otherwise, it presents
+        a blank form for creation.
         """
-        booking_details_form = AdminBookingDetailsForm()
-        context = self.get_context_data(booking_details_form=booking_details_form)
+        if pk:
+            # Edit mode: Fetch existing booking and populate the form
+            booking = get_object_or_404(ServiceBooking, pk=pk)
+            booking_details_form = AdminBookingDetailsForm(instance=booking)
+            selected_profile = booking.service_profile
+            selected_motorcycle = booking.customer_motorcycle
+            context = self.get_context_data(
+                booking_details_form=booking_details_form,
+                selected_profile=selected_profile,
+                selected_motorcycle=selected_motorcycle,
+                instance=booking  # Pass instance to template for conditional rendering
+            )
+        else:
+            # Create mode: Present a blank form
+            booking_details_form = AdminBookingDetailsForm()
+            context = self.get_context_data(
+                booking_details_form=booking_details_form,
+                selected_profile=None,
+                selected_motorcycle=None,
+                instance=None
+            )
         return render(request, self.template_name, context)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, pk=None, *args, **kwargs):
         """
-        Handles POST requests, processing form submissions and creating the booking.
+        Handles POST requests for both creating new bookings and updating existing ones.
         """
-        selected_profile_id = request.POST.get('selected_profile_id')
-        selected_motorcycle_id = request.POST.get('selected_motorcycle_id')
-
-        service_profile = None
-        customer_motorcycle = None
-        
-        # --- Stage 1: Validate Selections ---
-        if not selected_profile_id:
-            messages.error(request, "A customer profile must be selected.")
+        booking_instance = None
+        if pk:
+            # Edit mode: get the existing instance
+            booking_instance = get_object_or_404(ServiceBooking, pk=pk)
+            # In edit mode, the profile and motorcycle are fixed and come from the instance
+            service_profile = booking_instance.service_profile
+            customer_motorcycle = booking_instance.customer_motorcycle
         else:
-            service_profile = get_object_or_404(ServiceProfile, pk=selected_profile_id)
+            # Create mode: validate the selected profile and motorcycle from the form
+            selected_profile_id = request.POST.get('selected_profile_id')
+            selected_motorcycle_id = request.POST.get('selected_motorcycle_id')
 
-        if not selected_motorcycle_id:
-            messages.error(request, "A customer motorcycle must be selected.")
-        else:
-            customer_motorcycle = get_object_or_404(CustomerMotorcycle, pk=selected_motorcycle_id)
-        
-        if service_profile and customer_motorcycle and customer_motorcycle.service_profile != service_profile:
-            messages.error(request, "The selected motorcycle does not belong to the selected customer profile.")
-            customer_motorcycle = None
+            service_profile = get_object_or_404(ServiceProfile, pk=selected_profile_id) if selected_profile_id else None
+            customer_motorcycle = get_object_or_404(CustomerMotorcycle, pk=selected_motorcycle_id) if selected_motorcycle_id else None
 
-        # --- Stage 2: Process Booking Details ---
-        booking_details_form = AdminBookingDetailsForm(request.POST)
+            if not service_profile or not customer_motorcycle:
+                messages.error(request, "A customer profile and motorcycle must be selected.")
+            elif customer_motorcycle.service_profile != service_profile:
+                messages.error(request, "The selected motorcycle does not belong to the selected customer profile.")
+                customer_motorcycle = None # Invalidate to prevent processing
 
-        if service_profile and customer_motorcycle:
-            if booking_details_form.is_valid():
-                # Add any non-blocking warnings from the form to the messages framework.
-                if hasattr(booking_details_form, 'get_warnings'):
-                    for warning in booking_details_form.get_warnings():
-                        messages.warning(request, warning)
-                
+        # Initialize the form with POST data, and with an instance if we are editing
+        booking_details_form = AdminBookingDetailsForm(request.POST, instance=booking_instance)
+
+        if service_profile and customer_motorcycle and booking_details_form.is_valid():
+            if pk:  # This is an update
+                booking_details_form.save()
+                messages.success(request, f"Booking {booking_instance.service_booking_reference} updated successfully!")
+            else:  # This is a create action
                 try:
                     booking = admin_create_service_booking(
                         admin_booking_form_data=booking_details_form.cleaned_data,
@@ -88,18 +99,33 @@ class AdminBookingCreateView(LoginRequiredMixin, UserPassesTestMixin, View):
                         customer_motorcycle=customer_motorcycle
                     )
                     messages.success(request, f"Booking {booking.service_booking_reference} created successfully!")
-                    return redirect(reverse_lazy('service:service_booking_management'))
                 except Exception as e:
-                    messages.error(request, f"An unexpected error occurred while creating the booking: {e}")
-            else:
-                 for field, error_list in booking_details_form.errors.items():
-                    for error in error_list:
-                        messages.error(request, f"Error in '{booking_details_form[field].label}': {error}")
-        
-        # --- Re-render on failure ---
+                    messages.error(request, f"An unexpected error occurred: {e}")
+                    # Re-render form on creation error
+                    context = self.get_context_data(
+                        booking_details_form=booking_details_form,
+                        selected_profile=service_profile,
+                        selected_motorcycle=customer_motorcycle,
+                        instance=booking_instance
+                    )
+                    return render(request, self.template_name, context)
+            
+            return redirect(reverse_lazy('service:service_booking_management'))
+
+        # If the form is invalid or initial checks failed, re-render with errors
+        if not (service_profile and customer_motorcycle):
+             messages.error(request, "Please select a valid customer and motorcycle.")
+
+        for field, error_list in booking_details_form.errors.items():
+            for error in error_list:
+                messages.error(request, f"Error in '{booking_details_form.fields[field].label}': {error}")
+
         context = self.get_context_data(
             booking_details_form=booking_details_form,
             selected_profile=service_profile,
-            selected_motorcycle=customer_motorcycle
+            selected_motorcycle=customer_motorcycle,
+            instance=booking_instance
         )
         return render(request, self.template_name, context)
+
+

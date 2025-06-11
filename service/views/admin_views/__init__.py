@@ -9,6 +9,7 @@ from .blocked_service_date_management import *
 from .delete_customer_motorcycle import *
 from .delete_blocked_service_date import *
 from .delete_service_brand import *
+from .delete_service_booking import *
 from .delete_service_profile import *
 from .delete_service_type import *
 from .service_booking_management import *

@@ -1,28 +1,34 @@
-from django.views.generic import DeleteView
+from django.views.generic import View
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from service.models import ServiceBooking
 
-class AdminServiceBookingDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+class AdminServiceBookingDeleteView(LoginRequiredMixin, UserPassesTestMixin, View):
     """
-    Admin view for deleting a ServiceBooking instance.
-    Requires the user to be logged in and a staff member or superuser.
+    Handles the deletion of a Service Booking. It presents a confirmation
+    page on GET and deletes the object on POST.
     """
-    model = ServiceBooking
-    template_name = 'service/admin_confirm_delete.html'  # You'll need to create this generic confirmation template
-    success_url = reverse_lazy('service:service_booking_management')
-    
+    template_name = 'service/admin_service_booking_delete.html'
+
     def test_func(self):
-        """
-        Ensures that only staff members or superusers can access this view.
-        """
+        """Ensures that only staff or superusers can access this view."""
         return self.request.user.is_staff or self.request.user.is_superuser
 
-    def form_valid(self, form):
-        messages.success(self.request, f"Booking {self.object.service_booking_reference} deleted successfully.")
-        return super().form_valid(form)
+    def get(self, request, pk, *args, **kwargs):
+        """Displays a confirmation page before deleting the booking."""
+        booking = get_object_or_404(ServiceBooking, pk=pk)
+        return render(request, self.template_name, {'booking': booking})
 
-    def form_invalid(self, form):
-        messages.error(self.request, "There was an error deleting the booking.")
-        return super().form_invalid(form)
+    def post(self, request, pk, *args, **kwargs):
+        """Deletes the ServiceBooking identified by pk after confirmation."""
+        booking = get_object_or_404(ServiceBooking, pk=pk)
+        booking_ref = booking.service_booking_reference
+        try:
+            booking.delete()
+            messages.success(request, f"Booking {booking_ref} has been successfully deleted.")
+        except Exception as e:
+            messages.error(request, f"An error occurred while deleting the booking: {e}")
+        
+        return redirect(reverse_lazy('service:service_booking_management'))

@@ -1,91 +1,62 @@
 # service/forms.py (or service/admin_forms.py)
 
 from django import forms
-from service.models import ServiceType, ServiceBooking # Import ServiceBooking to get PAYMENT_STATUS_CHOICES
+from service.models import ServiceBooking, ServiceType
 from django.utils.translation import gettext_lazy as _
 from datetime import date
 from django.utils import timezone
 
-class AdminBookingDetailsForm(forms.Form):
+class AdminBookingDetailsForm(forms.ModelForm):
     """
-    Form for admins to select service details, dates, times, add notes,
-    and set initial payment status for a new service booking.
-
-    Validation is designed to provide warnings rather than blocking submission,
-    allowing admins to override typical user-facing restrictions.
+    Form for admins to create and update service booking details.
+    This is now a ModelForm to handle both creation and editing of ServiceBooking instances.
     """
-    service_type = forms.ModelChoiceField(
-        queryset=ServiceType.objects.filter(is_active=True).order_by('name'),
-        empty_label=_("Select a Service Type"),
-        label=_("Service Type"),
-        widget=forms.Select(attrs={'class': 'form-control'}),
-        required=True
-    )
+    class Meta:
+        model = ServiceBooking
+        fields = [
+            'service_type',
+            'service_date',
+            'dropoff_date',
+            'dropoff_time',
+            'booking_status',
+            'payment_status',
+            'customer_notes',
+            'estimated_pickup_date',
+        ]
+        widgets = {
+            'service_type': forms.Select(attrs={'class': 'form-control'}),
+            'service_date': forms.DateInput(attrs={'class': 'form-control flatpickr-admin-date-input', 'placeholder': 'Select service date'}),
+            'dropoff_date': forms.DateInput(attrs={'class': 'form-control flatpickr-admin-date-input', 'placeholder': 'Select drop-off date'}),
+            'dropoff_time': forms.TextInput(attrs={'class': 'form-control flatpickr-admin-time-input', 'placeholder': 'Select drop-off time'}),
+            'booking_status': forms.Select(attrs={'class': 'form-control'}),
+            'payment_status': forms.Select(attrs={'class': 'form-control'}),
+            'customer_notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'estimated_pickup_date': forms.DateInput(attrs={'class': 'form-control flatpickr-admin-date-input', 'placeholder': 'Estimated pickup date'}),
+        }
+        labels = {
+            'service_type': _("Service Type"),
+            'service_date': _("Service Date"),
+            'dropoff_date': _("Preferred Drop-off Date"),
+            'dropoff_time': _("Preferred Drop-off Time"),
+            'booking_status': _("Booking Status"),
+            'payment_status': _("Payment Status"),
+            'customer_notes': _("Customer Notes (Optional)"),
+            'estimated_pickup_date': _("Estimated Pickup Date"),
+        }
+        help_texts = {
+            'service_date': _("The requested date for the service to be performed."),
+            'dropoff_date': _("The date the motorcycle will be dropped off for service."),
+            'dropoff_time': _("The preferred time of day for motorcycle drop-off (e.g., 09:00, 14:30)."),
+            'booking_status': _("Set the status of this booking."),
+            'payment_status': _("Set the payment status for this booking."),
+            'customer_notes': _("Any additional notes or requests from the customer."),
+            'estimated_pickup_date': _("Estimated date when the customer can pick up the motorcycle. Prefilled based on service type duration."),
+        }
 
-    service_date = forms.DateField(
-        label=_("Service Date"),
-        widget=forms.DateInput(attrs={'class': 'form-control flatpickr-admin-date-input', 'placeholder': 'Select service date'}),
-        required=True,
-        help_text=_("The requested date for the service to be performed.")
-    )
-
-    dropoff_date = forms.DateField(
-        label=_("Preferred Drop-off Date"),
-        widget=forms.DateInput(attrs={'class': 'form-control flatpickr-admin-date-input', 'placeholder': 'Select drop-off date'}),
-        required=True,
-        help_text=_("The date the motorcycle will be dropped off for service.")
-    )
-
-    dropoff_time = forms.TimeField(
-        label=_("Preferred Drop-off Time"),
-        # Use a text input for flexibility, JS will populate/validate
-        widget=forms.TextInput(attrs={'class': 'form-control flatpickr-admin-time-input', 'placeholder': 'Select drop-off time'}),
-        required=True,
-        help_text=_("The preferred time of day for motorcycle drop-off (e.g., 09:00, 14:30).")
-    )
-
-    # Allow admin to set initial booking status directly
-    booking_status = forms.ChoiceField(
-        label=_("Initial Booking Status"),
-        choices=ServiceBooking.BOOKING_STATUS_CHOICES,
-        widget=forms.Select(attrs={'class': 'form-control'}),
-        required=True,
-        initial='pending', # Default to pending confirmation for admin bookings
-        help_text=_("Set the initial status of this booking.")
-    )
-
-    # Allow admin to set initial payment status directly
-    payment_status = forms.ChoiceField(
-        label=_("Initial Payment Status"),
-        choices=ServiceBooking.PAYMENT_STATUS_CHOICES,
-        widget=forms.Select(attrs={'class': 'form-control'}),
-        required=True,
-        initial='unpaid', # Default to unpaid for admin bookings
-        help_text=_("Set the initial payment status for this booking.")
-    )
-
-    customer_notes = forms.CharField(
-        label=_("Customer Notes (Optional)"),
-        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-        required=False,
-        help_text=_("Any additional notes or requests from the customer.")
-    )
-
-    admin_notes = forms.CharField(
-        label=_("Internal Admin Notes (Optional)"),
-        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-        required=False,
-        help_text=_("Internal notes for staff, not visible to the customer.")
-    )
-
-    # Fields for estimated pickup date - now required
-    estimated_pickup_date = forms.DateField(
-        label=_("Estimated Pickup Date"),
-        widget=forms.DateInput(attrs={'class': 'form-control flatpickr-admin-date-input', 'placeholder': 'Estimated pickup date'}),
-        required=True, # Changed from False to True
-        help_text=_("Estimated date when the customer can pick up the motorcycle. Prefilled based on service type duration.")
-    )
-
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['service_type'].queryset = ServiceType.objects.filter(is_active=True).order_by('name')
+        self.fields['service_type'].empty_label = _("Select a Service Type")
 
     def clean(self):
         """
@@ -118,7 +89,7 @@ class AdminBookingDetailsForm(forms.Form):
             self._warnings.append(_("Warning: Drop-off date is in the past."))
 
         # Warning 4: Drop-off time in the past for today's drop-off
-        if dropoff_date == date.today() and dropoff_time < timezone.localtime(timezone.now()).time():
+        if dropoff_date == date.today() and hasattr(dropoff_time, 'hour') and dropoff_time < timezone.localtime(timezone.now()).time():
             self._warnings.append(_("Warning: Drop-off time for today is in the past."))
 
         return cleaned_data
@@ -128,4 +99,3 @@ class AdminBookingDetailsForm(forms.Form):
         Returns a list of non-blocking warning messages generated during clean.
         """
         return getattr(self, '_warnings', [])
-
