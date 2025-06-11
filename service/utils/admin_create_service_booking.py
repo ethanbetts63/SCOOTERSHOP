@@ -1,6 +1,6 @@
 # service/utils/booking_creator.py
 from service.models import ServiceBooking
-from service.utils.send_booking_to_mechanicdesk import send_booking_to_mechanicdesk 
+from service.utils.send_booking_to_mechanicdesk import send_booking_to_mechanicdesk
 
 def admin_create_service_booking(admin_booking_form_data, service_profile, customer_motorcycle): # Removed created_by_user parameter
     """
@@ -20,6 +20,9 @@ def admin_create_service_booking(admin_booking_form_data, service_profile, custo
         customer_motorcycle=customer_motorcycle,
     )
     booking.save()
+
+    # Debug print: Show the booking object before sending to MechanicDesk
+    print(f"DEBUG: Booking object created in admin_create_service_booking: {booking.__dict__}")
 
     send_booking_to_mechanicdesk(booking)
     return booking
