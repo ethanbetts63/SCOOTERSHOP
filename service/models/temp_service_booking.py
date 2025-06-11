@@ -35,7 +35,7 @@ class TempServiceBooking(models.Model):
         related_name='temp_service_bookings',
         help_text="Chosen motorcycle for this service (set in a later step)."
     )
-    payment_option = models.CharField(
+    payment_method = models.CharField(
         max_length=20,
         choices=PAYMENT_METHOD_CHOICES,
         null=True,

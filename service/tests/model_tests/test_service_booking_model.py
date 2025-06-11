@@ -106,14 +106,6 @@ class ServiceBookingModelTest(TestCase):
         self.assertTrue(field.null)
         self.assertTrue(field.blank)
 
-        # payment_option
-        field = booking._meta.get_field('payment_option')
-        self.assertIsInstance(field, models.CharField)
-        self.assertEqual(field.max_length, 20)
-        self.assertTrue(field.null)
-        self.assertTrue(field.blank)
-        self.assertGreater(len(field.choices), 0)
-
         # payment
         field = booking._meta.get_field('payment')
         self.assertIsInstance(field, models.OneToOneField)
@@ -270,7 +262,6 @@ class ServiceBookingModelTest(TestCase):
         self.assertEqual(booking.currency, 'AUD')
         self.assertEqual(booking.booking_status, 'PENDING_CONFIRMATION')
         self.assertIsNone(booking.customer_motorcycle)
-        self.assertIsNone(booking.payment_option)
         self.assertIsNone(booking.payment)
         self.assertIsNone(booking.payment_method)
         self.assertIsNone(booking.stripe_payment_intent_id)

@@ -82,7 +82,7 @@ class Step5PaymentDropoffAndTermsView(View):
         initial_data = {
             'dropoff_date': self.temp_booking.dropoff_date,
             'dropoff_time': self.temp_booking.dropoff_time,
-            'payment_option': self.temp_booking.payment_option,
+            'payment_method': self.temp_booking.payment_method,
         }
         
         if self.service_settings.max_advance_dropoff_days == 0:
@@ -99,9 +99,9 @@ class Step5PaymentDropoffAndTermsView(View):
         if form.is_valid():
             self.temp_booking.dropoff_date = form.cleaned_data['dropoff_date']
             self.temp_booking.dropoff_time = form.cleaned_data['dropoff_time']
-            self.temp_booking.payment_option = form.cleaned_data['payment_option']
+            self.temp_booking.payment_method = form.cleaned_data['payment_method']
             
-            self.temp_booking.save(update_fields=['dropoff_date', 'dropoff_time', 'payment_option'])
+            self.temp_booking.save(update_fields=['dropoff_date', 'dropoff_time', 'payment_method'])
 
             calculated_total = calculate_service_total(self.temp_booking)
             self.temp_booking.calculated_total = calculated_total
@@ -113,11 +113,11 @@ class Step5PaymentDropoffAndTermsView(View):
 
             messages.success(request, "Drop-off and payment details have been saved successfully.")
             
-            if self.temp_booking.payment_option == 'in_store_full':
+            if self.temp_booking.payment_method == 'in_store_full':
                 try:
                     final_service_booking = convert_temp_service_booking(
                         temp_booking=self.temp_booking,
-                        payment_method=self.temp_booking.payment_option,
+                        payment_method=self.temp_booking.payment_method,
                         booking_payment_status='unpaid',
                         amount_paid_on_booking=Decimal('0.00'),
                         calculated_total_on_booking=self.temp_booking.calculated_total,

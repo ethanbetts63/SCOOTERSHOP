@@ -106,7 +106,7 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
         self.assertAlmostEqual(Decimal(str(content['service_type_details']['base_price'])), self.service_booking.service_type.base_price)
 
         # Assertions for payment information
-        self.assertEqual(content['payment_option'], self.service_booking.get_payment_option_display())
+        self.assertEqual(content['payment_method'], self.service_booking.get_payment_method_display())
         self.assertEqual(content['payment_date'], self.service_booking.payment.created_at.strftime('%Y-%m-%d %H:%M'))
         self.assertAlmostEqual(Decimal(str(content['payment_amount'])), self.service_booking.payment.amount)
         self.assertEqual(content['payment_status'], self.service_booking.get_payment_status_display())

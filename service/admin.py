@@ -114,10 +114,10 @@ class TempServiceBookingAdmin(admin.ModelAdmin):
         'service_profile_name',
         'dropoff_date',
         'dropoff_time',
-        'payment_option',
+        'payment_method',
         'created_at',
     )
-    list_filter = ('service_type', 'dropoff_date', 'payment_option')
+    list_filter = ('service_type', 'dropoff_date', 'payment_method')
     search_fields = (
         'session_uuid',
         'service_profile__name',

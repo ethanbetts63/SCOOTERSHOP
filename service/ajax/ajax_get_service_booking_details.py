@@ -81,7 +81,7 @@ def get_service_booking_details_json(request, pk):
             'estimated_pickup_date': service_booking.estimated_pickup_date.strftime('%Y-%m-%d') if service_booking.estimated_pickup_date else 'N/A',
             'motorcycle_details': motorcycle_details,
             'service_type_details': service_type_details,
-            'payment_option': service_booking.get_payment_option_display() if service_booking.payment_option else 'N/A',
+            'payment_method': service_booking.get_payment_method_display() if service_booking.payment_method else 'N/A',
             'payment_date': payment_date,
             'payment_amount': payment_amount,
             'booking_status': service_booking.get_booking_status_display(),

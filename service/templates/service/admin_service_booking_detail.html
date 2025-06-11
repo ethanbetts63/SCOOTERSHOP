@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('serviceTypeDescription').textContent = data.service_type_details.description || 'N/A';
             document.getElementById('serviceTypeBasePrice').textContent = data.service_type_details.base_price !== 'N/A' ? `$${data.service_type_details.base_price.toFixed(2)}` : 'N/A';
 
-            document.getElementById('paymentOption').textContent = data.payment_option || 'N/A';
+            document.getElementById('paymentOption').textContent = data.payment_method || 'N/A';
             document.getElementById('paymentDate').textContent = data.payment_date || 'N/A';
             document.getElementById('paymentAmount').textContent = data.payment_amount !== 'N/A' ? `$${data.payment_amount.toFixed(2)}` : 'N/A';
             document.getElementById('paymentStatus').textContent = data.payment_status || 'N/A';

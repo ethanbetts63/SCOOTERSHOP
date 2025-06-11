@@ -90,14 +90,6 @@ class TempServiceBookingModelTest(TestCase):
         self.assertTrue(field.null)
         self.assertTrue(field.blank)
 
-        # payment_option
-        field = booking._meta.get_field('payment_option')
-        self.assertIsInstance(field, models.CharField)
-        self.assertEqual(field.max_length, 20)
-        self.assertTrue(field.null)
-        self.assertTrue(field.blank)
-        self.assertGreater(len(field.choices), 0)
-
         # service_date
         field = booking._meta.get_field('service_date')
         self.assertIsInstance(field, models.DateField)
@@ -240,28 +232,28 @@ class TempServiceBookingModelTest(TestCase):
                 service_profile=self.service_profile # Provide required FK for context
             )
 
-    def test_payment_option_choices(self):
+    def test_payment_method_choices(self):
         """
-        Test that payment_option only accepts valid choices.
+        Test that payment_method only accepts valid choices.
         """
         # Test with a valid choice
         try:
             TempServiceBookingFactory.build(
                 service_type=self.service_type,
                 service_profile=self.service_profile,
-                payment_option='online_full'
+                payment_method='online_full'
             ).full_clean()
         except ValidationError as e:
-            self.fail(f"full_clean raised ValidationError unexpectedly for valid payment_option: {e.message_dict}")
+            self.fail(f"full_clean raised ValidationError unexpectedly for valid payment_method: {e.message_dict}")
 
         # Test with an invalid choice
         with self.assertRaises(ValidationError) as cm:
             TempServiceBookingFactory.build(
                 service_type=self.service_type,
                 service_profile=self.service_profile,
-                payment_option='invalid_option'
+                payment_method='invalid_option'
             ).full_clean()
-        self.assertIn('payment_option', cm.exception.message_dict)
+        self.assertIn('payment_method', cm.exception.message_dict)
         self.assertIn("Value 'invalid_option' is not a valid choice.", str(cm.exception))
 
         # Test with None (allowed)
@@ -269,10 +261,10 @@ class TempServiceBookingModelTest(TestCase):
             TempServiceBookingFactory.build(
                 service_type=self.service_type,
                 service_profile=self.service_profile,
-                payment_option=None
+                payment_method=None
             ).full_clean()
         except ValidationError as e:
-            self.fail(f"full_clean raised ValidationError unexpectedly for None payment_option: {e.message_dict}")
+            self.fail(f"full_clean raised ValidationError unexpectedly for None payment_method: {e.message_dict}")
 
     def test_dropoff_date_not_in_past(self):
         """

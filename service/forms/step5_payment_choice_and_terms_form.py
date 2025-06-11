@@ -26,7 +26,7 @@ class PaymentOptionForm(forms.Form):
         required=True
     )
 
-    payment_option = forms.ChoiceField(
+    payment_method = forms.ChoiceField(
         label="How would you like to pay?",
         choices=[],  # Populated dynamically in __init__
         widget=forms.RadioSelect(attrs={'class': 'form-check-input'}),
@@ -69,11 +69,11 @@ class PaymentOptionForm(forms.Form):
         if self.service_settings.enable_instore_full_payment:
             payment_choices.append((PAYMENT_OPTION_INSTORE, "Pay In-Store on Drop-off"))
 
-        self.fields['payment_option'].choices = payment_choices
+        self.fields['payment_method'].choices = payment_choices
         
         # Pre-select the choice if only one is available
         if len(payment_choices) == 1:
-            self.fields['payment_option'].initial = payment_choices[0][0]
+            self.fields['payment_method'].initial = payment_choices[0][0]
 
     def clean(self):
         """

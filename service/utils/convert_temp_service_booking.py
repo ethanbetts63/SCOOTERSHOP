@@ -26,7 +26,6 @@ def convert_temp_service_booking(
                 service_type=temp_booking.service_type,
                 service_profile=temp_booking.service_profile,
                 customer_motorcycle=temp_booking.customer_motorcycle,
-                payment_option=temp_booking.payment_option,
                 calculated_total=calculated_total_on_booking,
                 calculated_deposit_amount=temp_booking.calculated_deposit_amount if temp_booking.calculated_deposit_amount is not None else Decimal('0.00'),
                 amount_paid=amount_paid_on_booking,

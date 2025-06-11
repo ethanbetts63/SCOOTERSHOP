@@ -79,7 +79,7 @@ class Step6PaymentViewTest(TestCase):
             dropoff_time=datetime.time(10, 0),
             customer_motorcycle=self.customer_motorcycle,
             service_profile=self.service_profile,
-            payment_option='online_full', # Default to full payment for most tests. Changed from 'full_online'
+            payment_method='online_full', # Default to full payment for most tests. Changed from 'full_online'
             calculated_deposit_amount=Decimal('50.00') # Example deposit
         )
 
@@ -170,7 +170,7 @@ class Step6PaymentViewTest(TestCase):
         """
         Tests GET request for online full payment, creating a new Stripe PaymentIntent and local Payment.
         """
-        self.temp_booking.payment_option = 'online_full' # Corrected payment_option
+        self.temp_booking.payment_method = 'online_full' # Corrected payment_method
         self.temp_booking.save()
 
         mock_create.return_value = MagicMock(
@@ -215,7 +215,7 @@ class Step6PaymentViewTest(TestCase):
         """
         Tests GET request for online deposit payment, creating a new Stripe PaymentIntent and local Payment.
         """
-        self.temp_booking.payment_option = 'online_deposit'
+        self.temp_booking.payment_method = 'online_deposit'
         self.temp_booking.save()
 
         mock_create.return_value = MagicMock(
@@ -257,7 +257,7 @@ class Step6PaymentViewTest(TestCase):
         """
         existing_amount = Decimal('100.00')
         new_amount = Decimal('150.00')
-        self.temp_booking.payment_option = 'online_full'
+        self.temp_booking.payment_method = 'online_full'
         self.temp_booking.service_type.base_price = new_amount # Update base price for new amount
         self.temp_booking.service_type.save()
         self.temp_booking.save()
@@ -353,7 +353,7 @@ class Step6PaymentViewTest(TestCase):
         Tests that if the payment option is 'in_store_full', no Stripe interaction occurs and
         the user is immediately redirected to step 7 confirmation.
         """
-        self.temp_booking.payment_option = 'in_store_full'
+        self.temp_booking.payment_method = 'in_store_full'
         self.temp_booking.save()
 
         response = self.client.get(self.base_url)
@@ -392,7 +392,7 @@ class Step6PaymentViewTest(TestCase):
         """
         Tests that if the amount to pay is zero or None, the view redirects to step 5.
         """
-        self.temp_booking.payment_option = 'online_full'
+        self.temp_booking.payment_method = 'online_full'
         self.temp_booking.service_type.base_price = Decimal('0.00') # Zero amount
         self.temp_booking.service_type.save()
         self.temp_booking.save()

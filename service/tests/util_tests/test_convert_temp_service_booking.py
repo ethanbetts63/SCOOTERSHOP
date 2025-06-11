@@ -61,7 +61,7 @@ class ConvertTempServiceBookingTest(TestCase):
             service_type=self.service_type,
             service_profile=self.service_profile,
             customer_motorcycle=self.customer_motorcycle,
-            payment_option='in_store_full', # Assuming this option doesn't require upfront payment
+            payment_method='in_store_full', # Assuming this option doesn't require upfront payment
             calculated_total=Decimal('150.00'),
             calculated_deposit_amount=Decimal('0.00'),
             # No payment_obj passed, so converter does not create one
@@ -109,7 +109,7 @@ class ConvertTempServiceBookingTest(TestCase):
             service_type=self.service_type,
             service_profile=self.service_profile,
             customer_motorcycle=self.customer_motorcycle,
-            payment_option='online_full',
+            payment_method='online_full',
             calculated_total=Decimal('200.00'),
             calculated_deposit_amount=Decimal('0.00'),
         )
@@ -160,7 +160,7 @@ class ConvertTempServiceBookingTest(TestCase):
             service_type=self.service_type,
             service_profile=self.service_profile,
             customer_motorcycle=self.customer_motorcycle,
-            payment_option='online_full',
+            payment_method='online_full',
             calculated_total=Decimal('100.00'),
             calculated_deposit_amount=Decimal('0.00'),
         )
@@ -194,7 +194,7 @@ class ConvertTempServiceBookingTest(TestCase):
             service_type=self.service_type,
             service_profile=self.service_profile,
             customer_motorcycle=self.customer_motorcycle,
-            payment_option='online_full',
+            payment_method='online_full',
             calculated_total=Decimal('100.00'),
             calculated_deposit_amount=Decimal('0.00'),
         )
@@ -230,7 +230,7 @@ class ConvertTempServiceBookingTest(TestCase):
             service_type=self.service_type,
             service_profile=self.service_profile,
             customer_motorcycle=self.customer_motorcycle,
-            payment_option='in_store_full', # Example: no payment_obj initially
+            payment_method='in_store_full', # Example: no payment_obj initially
             calculated_total=Decimal('100.00'),
             calculated_deposit_amount=Decimal('0.00'),
         )

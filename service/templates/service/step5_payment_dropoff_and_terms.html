@@ -135,8 +135,8 @@
 
         <!-- Payment Method Selection -->
         <fieldset class="mb-6">
-            <legend class="text-xl font-semibold text-gray-800 mb-4">{{ form.payment_option.label }}</legend>
-            {% for radio in form.payment_option %}
+            <legend class="text-xl font-semibold text-gray-800 mb-4">{{ form.payment_method.label }}</legend>
+            {% for radio in form.payment_method %}
             <div class="flex items-center mb-2">
                 {{ radio.tag }}
                 <label for="{{ radio.id_for_label }}" class="ml-3 block text-sm font-medium text-gray-700">
@@ -144,7 +144,7 @@
                 </label>
             </div>
             {% endfor %}
-            {% for error in form.payment_option.errors %}
+            {% for error in form.payment_method.errors %}
                 <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
             {% endfor %}
         </fieldset>

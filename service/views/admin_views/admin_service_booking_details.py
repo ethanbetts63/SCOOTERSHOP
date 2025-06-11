@@ -30,3 +30,4 @@ class AdminServiceBookingDetailView(LoginRequiredMixin, UserPassesTestMixin, Det
         print(f"DEBUG: AdminServiceBookingDetailView - Booking PK being passed to template: {context['booking_pk']}")
         return context
 
+

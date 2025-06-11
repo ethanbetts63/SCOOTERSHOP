@@ -82,7 +82,7 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
             service_profile=self.service_profile, # Linked from step 4
             dropoff_date=None, # Will be set in this step
             dropoff_time=None, # Will be set in this step
-            payment_option=None, # Will be set in this step
+            payment_method=None, # Will be set in this step
             calculated_deposit_amount=Decimal('50.00') # Example deposit
         )
 
@@ -95,7 +95,7 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         self.valid_post_data = {
             'dropoff_date': (datetime.date.today() + datetime.timedelta(days=7)).strftime('%Y-%m-%d'),
             'dropoff_time': '10:30',
-            'payment_option': PAYMENT_OPTION_FULL_ONLINE,
+            'payment_method': PAYMENT_OPTION_FULL_ONLINE,
             'service_terms_accepted': True,
         }
 
@@ -173,7 +173,7 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         # Set some initial data on temp_booking
         self.temp_booking.dropoff_date = datetime.date.today() + datetime.timedelta(days=5)
         self.temp_booking.dropoff_time = time(11, 0)
-        self.temp_booking.payment_option = PAYMENT_OPTION_DEPOSIT
+        self.temp_booking.payment_method = PAYMENT_OPTION_DEPOSIT
         self.temp_booking.save()
 
         response = self.client.get(self.base_url)
@@ -182,7 +182,7 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         self.assertIsInstance(form, PaymentOptionForm)
         self.assertEqual(form.initial['dropoff_date'], self.temp_booking.dropoff_date)
         self.assertEqual(form.initial['dropoff_time'], self.temp_booking.dropoff_time)
-        self.assertEqual(form.initial['payment_option'], self.temp_booking.payment_option)
+        self.assertEqual(form.initial['payment_method'], self.temp_booking.payment_method)
 
     def test_get_context_data_same_day_dropoff_only_when_max_advance_is_zero(self):
         """
@@ -207,7 +207,7 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         """
         initial_dropoff_date = self.temp_booking.dropoff_date
         initial_dropoff_time = self.temp_booking.dropoff_time
-        initial_payment_option = self.temp_booking.payment_option
+        initial_payment_method = self.temp_booking.payment_method
 
         response = self.client.post(self.base_url, self.valid_post_data)
 
@@ -219,7 +219,7 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         self.temp_booking.refresh_from_db()
         self.assertEqual(self.temp_booking.dropoff_date, datetime.date.fromisoformat(self.valid_post_data['dropoff_date']))
         self.assertEqual(self.temp_booking.dropoff_time, datetime.time.fromisoformat(self.valid_post_data['dropoff_time']))
-        self.assertEqual(self.temp_booking.payment_option, self.valid_post_data['payment_option'])
+        self.assertEqual(self.temp_booking.payment_method, self.valid_post_data['payment_method'])
         
         messages = list(get_messages(response.wsgi_request))
         self.assertTrue(any("Drop-off and payment details have been saved successfully." in str(m) for m in messages))
@@ -246,7 +246,7 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         self.temp_booking.refresh_from_db() # Should not have saved invalid data
         self.assertIsNone(self.temp_booking.dropoff_date)
         self.assertIsNone(self.temp_booking.dropoff_time)
-        self.assertIsNone(self.temp_booking.payment_option)
+        self.assertIsNone(self.temp_booking.payment_method)
         
         messages = list(get_messages(response.wsgi_request))
         self.assertTrue(any("Please correct the errors highlighted below." in str(m) for m in messages))
@@ -316,7 +316,7 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
 
     # Test for payment option choices being populated correctly (implicitly covered by form rendering)
     # but could be explicit if needed.
-    def test_payment_option_choices_are_correctly_populated(self):
+    def test_payment_method_choices_are_correctly_populated(self):
         response = self.client.get(self.base_url)
         self.assertEqual(response.status_code, 200)
         form = response.context['form']
@@ -326,11 +326,11 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
             (PAYMENT_OPTION_FULL_ONLINE, "Pay Full Amount Online Now"),
             (PAYMENT_OPTION_INSTORE, "Pay In-Store on Drop-off"),
         ]
-        self.assertEqual(list(form.fields['payment_option'].choices), expected_choices)
+        self.assertEqual(list(form.fields['payment_method'].choices), expected_choices)
 
 
     @patch('service.views.user_views.Step6PaymentView.dispatch')
-    def test_post_payment_option_deposit_online(self, mock_step6_dispatch):
+    def test_post_payment_method_deposit_online(self, mock_step6_dispatch):
         """
         Tests that submitting with deposit_online option works and correctly triggers redirect to Step 6.
         We mock Step6PaymentView.dispatch to prevent it from performing its own redirects
@@ -340,7 +340,7 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         mock_step6_dispatch.return_value = HttpResponse(status=200) 
 
         valid_data = self.valid_post_data.copy()
-        valid_data['payment_option'] = PAYMENT_OPTION_DEPOSIT
+        valid_data['payment_method'] = PAYMENT_OPTION_DEPOSIT
         response = self.client.post(self.base_url, valid_data)
         
         # Assert that Step5 redirected to Step6 (302 status)
@@ -349,5 +349,5 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         self.assertRedirects(response, reverse('service:service_book_step6')) 
         
         self.temp_booking.refresh_from_db()
-        self.assertEqual(self.temp_booking.payment_option, PAYMENT_OPTION_DEPOSIT)
+        self.assertEqual(self.temp_booking.payment_method, PAYMENT_OPTION_DEPOSIT)
         mock_step6_dispatch.assert_called_once()

@@ -50,15 +50,15 @@ class Step6PaymentView(View):
     def get(self, request, *args, **kwargs):
         temp_booking = request.temp_booking
         service_settings = request.service_settings
-        payment_option = temp_booking.payment_option
+        payment_method = temp_booking.payment_method
         currency = service_settings.currency_code
 
         amount_to_pay = None
-        if payment_option == 'online_full': # Corrected from 'full_online' to 'online_full' based on TempServiceBooking model
+        if payment_method == 'online_full': # Corrected from 'full_online' to 'online_full' based on TempServiceBooking model
             amount_to_pay = temp_booking.service_type.base_price
-        elif payment_option == 'online_deposit':
+        elif payment_method == 'online_deposit':
             amount_to_pay = temp_booking.calculated_deposit_amount
-        elif payment_option == 'in_store_full':
+        elif payment_method == 'in_store_full':
             return redirect(reverse('service:service_book_step7') + f'?temp_booking_uuid={temp_booking.session_uuid}')
         else:
             messages.error(request, "No valid payment option selected. Please choose a payment method.")

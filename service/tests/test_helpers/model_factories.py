@@ -154,8 +154,6 @@ class TempServiceBookingFactory(factory.django.DjangoModelFactory):
     service_type = factory.SubFactory(ServiceTypeFactory)
     service_profile = factory.SubFactory(ServiceProfileFactory)
     customer_motorcycle = factory.SubFactory(CustomerMotorcycleFactory, service_profile=factory.SelfAttribute('..service_profile'))
-    payment_option = factory.Faker('random_element', elements=[choice[0] for choice in TempServiceBooking.PAYMENT_METHOD_CHOICES])
-    
     dropoff_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+30d'))
     dropoff_time = factory.Faker('time_object')
     
@@ -197,7 +195,6 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
     service_type = factory.SubFactory(ServiceTypeFactory)
     service_profile = factory.SubFactory(ServiceProfileFactory)
     customer_motorcycle = factory.SubFactory(CustomerMotorcycleFactory, service_profile=factory.SelfAttribute('..service_profile'))
-    payment_option = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.PAYMENT_METHOD_CHOICES])
     payment = factory.SubFactory(PaymentFactory)
     calculated_total = factory.LazyFunction(lambda: fake.pydecimal(left_digits=4, right_digits=2, positive=True))
     calculated_deposit_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))

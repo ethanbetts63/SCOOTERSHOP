@@ -45,13 +45,6 @@ class ServiceBooking(models.Model):
         related_name='service_bookings',
         help_text="Chosen motorcycle for this service (set in a later step)."
     )
-    payment_option = models.CharField(
-        max_length=20,
-        choices=PAYMENT_METHOD_CHOICES,
-        null=True,
-        blank=True,
-        help_text="The selected payment option for this booking."
-    )
     payment = models.OneToOneField(
         Payment,
         on_delete=models.SET_NULL,
