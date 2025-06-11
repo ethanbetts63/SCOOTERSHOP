@@ -21,8 +21,5 @@ def admin_create_service_booking(admin_booking_form_data, service_profile, custo
     )
     booking.save()
 
-    # Debug print: Show the booking object before sending to MechanicDesk
-    print(f"DEBUG: Booking object created in admin_create_service_booking: {booking.__dict__}")
-
     send_booking_to_mechanicdesk(booking)
     return booking

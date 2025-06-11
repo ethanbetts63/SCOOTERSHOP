@@ -36,8 +36,24 @@ class MechanicDeskIntegrationTests(TestCase):
         """
         # Create factory instances for related models that will be linked to ServiceBooking
         cls.service_type = ServiceTypeFactory()
-        cls.service_profile = ServiceProfileFactory()
-        cls.customer_motorcycle = CustomerMotorcycleFactory(service_profile=cls.service_profile)
+        cls.service_profile = ServiceProfileFactory(
+            address_line_1="123 Test St",
+            city="Testville",
+            state="TS",
+            post_code="1234",
+            phone_number="0412345678", # Ensure phone number is valid
+            name="John Doe" # Ensure name is set for first/last name splitting
+        )
+        cls.customer_motorcycle = CustomerMotorcycleFactory(
+            service_profile=cls.service_profile,
+            transmission='AUTOMATIC',
+            vin_number='ABC123DEF456GHI78',
+            engine_size='500cc',
+            odometer=15000,
+            brand='Honda', # Ensure brand is set for make
+            model='CBR500R', # Ensure model is set
+            rego='ABC123' # Ensure rego is set
+        )
 
         # We will create a fresh ServiceBooking instance for each test method
         # using ServiceBookingFactory in the setUp method to ensure clean state.
@@ -53,9 +69,9 @@ class MechanicDeskIntegrationTests(TestCase):
             customer_motorcycle=self.customer_motorcycle,
             # Ensure dates and times are set to predictable values for assertions
             service_date=date.today(),
-            dropoff_date=date.today(),
+            dropoff_date=date.today() - datetime.timedelta(days=1), # Drop-off day before service
             dropoff_time=time(9, 30),
-            estimated_pickup_date=date.today() + datetime.timedelta(days=1),
+            estimated_pickup_date=date.today() + datetime.timedelta(days=2),
             customer_notes="Regular service and brake check requested."
         )
 
@@ -64,53 +80,82 @@ class MechanicDeskIntegrationTests(TestCase):
     def test_send_booking_to_mechanicdesk_success(self, mock_post):
         """
         Tests that a successful call to MechanicDesk API returns True and
-        sends the correct payload.
+        sends the correct payload with all new fields and formats (Option 2).
         """
         # Configure the mock to simulate a successful HTTP 200 response
         mock_response = Mock()
         mock_response.status_code = 200
-        mock_response.text = "OK" # MechanicDesk usually returns 'OK' for success
+        mock_response.text = "OK"
         mock_post.return_value = mock_response
 
         # Call the utility function with the factory-created booking
         result = send_booking_to_mechanicdesk(self.service_booking)
 
         # Assertions
-        self.assertTrue(result) # Should return True on success
-        mock_post.assert_called_once() # requests.post should have been called exactly once
+        self.assertTrue(result)
+        mock_post.assert_called_once()
 
-        # Verify the arguments passed to requests.post
         args, kwargs = mock_post.call_args
-        self.assertEqual(args[0], "https://mechanicdesk.com.au/booking_requests/") # Check the URL
+        # FIX: Update expected URL for MechanicDesk API
+        self.assertEqual(args[0], "https://www.mechanicdesk.com.au/booking_requests/create_booking")
 
-        sent_data = kwargs['data'] # Get the data payload sent
+        sent_data = kwargs['data']
 
-        # Assert correct token is sent
         self.assertEqual(sent_data['token'], TEST_MECHANICDESK_TOKEN)
 
         # Assert Customer Details
         self.assertEqual(sent_data['name'], self.service_profile.name)
+        self.assertEqual(sent_data['first_name'], "John")
+        self.assertEqual(sent_data['last_name'], "Doe")
         self.assertEqual(sent_data['email'], self.service_profile.email)
         self.assertEqual(sent_data['phone'], self.service_profile.phone_number)
 
-        # Assert Vehicle Details (mapped from brand/rego)
+        # Assert Customer Address Details
+        self.assertEqual(sent_data['street_line'], self.service_profile.address_line_1)
+        self.assertEqual(sent_data['suburb'], self.service_profile.city)
+        self.assertEqual(sent_data['state'], self.service_profile.state)
+        self.assertEqual(sent_data['postcode'], self.service_profile.post_code)
+
+        # Assert Vehicle Details
         self.assertEqual(sent_data['make'], self.customer_motorcycle.brand)
         self.assertEqual(sent_data['model'], self.customer_motorcycle.model)
         self.assertEqual(sent_data['year'], str(self.customer_motorcycle.year))
         self.assertEqual(sent_data['registration_number'], self.customer_motorcycle.rego)
+        self.assertEqual(sent_data['transmission'], self.customer_motorcycle.transmission)
+        self.assertEqual(sent_data['vin'], self.customer_motorcycle.vin_number)
+        self.assertEqual(sent_data['engine_size'], self.customer_motorcycle.engine_size)
+        self.assertEqual(sent_data['odometer'], str(self.customer_motorcycle.odometer))
 
-        # Assert Booking Details and formatted dates
-        expected_dropoff_date = self.service_booking.dropoff_date.strftime("%d/%m/%Y")
-        self.assertEqual(sent_data['drop_off_time'], expected_dropoff_date) # MechanicDesk expects date here
+        # Assert optional vehicle fields are empty strings if not in your model
+        self.assertEqual(sent_data['color'], "")
+        self.assertEqual(sent_data['fuel_type'], "")
+        self.assertEqual(sent_data['drive_type'], "")
+        self.assertEqual(sent_data['body'], "")
 
-        expected_pickup_date = self.service_booking.estimated_pickup_date.strftime("%d/%m/%Y")
-        self.assertEqual(sent_data['pickup_time'], expected_pickup_date) # MechanicDesk expects date here
 
+        # Assert Booking Details and formatted dates/times (Option 2 logic)
+        # drop_off_time should now be service_date + dropoff_time (HH:MM)
+        expected_dropoff_datetime_mechdesk = datetime.datetime.combine(
+            self.service_booking.service_date,
+            self.service_booking.dropoff_time
+        ).strftime("%d/%m/%Y %H:%M")
+        self.assertEqual(sent_data['drop_off_time'], expected_dropoff_datetime_mechdesk)
+
+        # pickup_time should be estimated_pickup_date + default 17:00
+        expected_pickup_datetime = datetime.datetime.combine(
+            self.service_booking.estimated_pickup_date,
+            datetime.time(17, 0)
+        ).strftime("%d/%m/%Y %H:%M")
+        self.assertEqual(sent_data['pickup_time'], expected_pickup_datetime)
+
+        # Assert Note content (Option 2 logic)
         expected_note = (
             f"{self.service_booking.customer_notes}\n"
+            f"Actual Vehicle Drop-off Date: {self.service_booking.dropoff_date.strftime('%d/%m/%Y')}\n"
             f"Customer Preferred Drop-off Time: {self.service_booking.dropoff_time.strftime('%H:%M')}"
         )
         self.assertEqual(sent_data['note'], expected_note)
+        self.assertEqual(sent_data['courtesy_vehicle_requested'], "false")
 
 
     @patch('requests.post')
@@ -119,44 +164,41 @@ class MechanicDeskIntegrationTests(TestCase):
         """
         Tests that an HTTP error response from MechanicDesk results in False.
         """
-        # Simulate a 400 Bad Request error
         mock_response = Mock()
         mock_response.status_code = 400
         mock_response.text = "Invalid Request Data"
-        # Ensure raise_for_status() is called and raises an exception
-        mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError('400 Client Error: Bad Request')
+        mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError('400 Client Error: Bad Request', response=mock_response)
         mock_post.return_value = mock_response
 
         result = send_booking_to_mechanicdesk(self.service_booking)
 
-        self.assertFalse(result) # Should return False on error
+        self.assertFalse(result)
         mock_post.assert_called_once()
-        mock_response.raise_for_status.assert_called_once() # Verify raise_for_status was triggered
+        mock_response.raise_for_status.assert_called_once()
 
 
-    @patch('requests.post', side_effect=requests.exceptions.Timeout)
+    @patch('requests.post')
     @override_settings(MECHANICDESK_BOOKING_TOKEN=TEST_MECHANICDESK_TOKEN)
     def test_send_booking_to_mechanicdesk_timeout(self, mock_post):
         """
         Tests that a network timeout results in False.
         """
-        # requests.post configured to directly raise a Timeout exception
         result = send_booking_to_mechanicdesk(self.service_booking)
 
-        self.assertFalse(result) # Should return False on timeout
+        self.assertFalse(result)
         mock_post.assert_called_once()
 
 
     @patch('requests.post')
-    @override_settings(MECHANICDESK_BOOKING_TOKEN=None) # Override settings to simulate missing token
+    @override_settings(MECHANICDESK_BOOKING_TOKEN=None)
     def test_send_booking_to_mechanicdesk_no_token(self, mock_post):
         """
         Tests that the function handles a missing MechanicDesk token gracefully.
         """
         result = send_booking_to_mechanicdesk(self.service_booking)
 
-        self.assertFalse(result) # Should return False
-        mock_post.assert_not_called() # requests.post should NOT be called if token is missing
+        self.assertFalse(result)
+        mock_post.assert_not_called()
 
 
     @patch('requests.post')
@@ -164,9 +206,8 @@ class MechanicDeskIntegrationTests(TestCase):
     def test_send_booking_to_mechanicdesk_no_customer_motorcycle(self, mock_post):
         """
         Tests that the function handles a ServiceBooking without a linked CustomerMotorcycle.
-        Vehicle details should be empty in the payload.
+        Vehicle details should be empty strings in the payload, but present.
         """
-        # Create a booking WITHOUT a customer_motorcycle
         self.service_booking_no_moto = ServiceBookingFactory(
             service_type=self.service_type,
             service_profile=self.service_profile,
@@ -191,8 +232,156 @@ class MechanicDeskIntegrationTests(TestCase):
         args, kwargs = mock_post.call_args
         sent_data = kwargs['data']
 
-        # Assert vehicle details are empty strings
+        # Assert vehicle details are empty strings (they are now initialized in send_booking_to_mechanicdesk)
         self.assertEqual(sent_data['make'], "")
         self.assertEqual(sent_data['model'], "")
         self.assertEqual(sent_data['year'], "")
         self.assertEqual(sent_data['registration_number'], "")
+        self.assertEqual(sent_data['transmission'], "")
+        self.assertEqual(sent_data['vin'], "")
+        self.assertEqual(sent_data['engine_size'], "")
+        self.assertEqual(sent_data['odometer'], "")
+        self.assertEqual(sent_data['color'], "")
+        self.assertEqual(sent_data['fuel_type'], "")
+        self.assertEqual(sent_data['drive_type'], "")
+        self.assertEqual(sent_data['body'], "")
+
+        # Also assert the notes and date formats remain consistent
+        expected_dropoff_datetime_no_moto = datetime.datetime.combine(
+            self.service_booking_no_moto.service_date,
+            self.service_booking_no_moto.dropoff_time
+        ).strftime("%d/%m/%Y %H:%M")
+        self.assertEqual(sent_data['drop_off_time'], expected_dropoff_datetime_no_moto)
+
+        expected_pickup_datetime_no_moto = datetime.datetime.combine(
+            self.service_booking_no_moto.estimated_pickup_date,
+            datetime.time(17, 0)
+        ).strftime("%d/%m/%Y %H:%M")
+        self.assertEqual(sent_data['pickup_time'], expected_pickup_datetime_no_moto)
+
+        expected_note_no_moto = (
+            f"{self.service_booking_no_moto.customer_notes}\n"
+            f"Actual Vehicle Drop-off Date: {self.service_booking_no_moto.dropoff_date.strftime('%d/%m/%Y')}\n"
+            f"Customer Preferred Drop-off Time: {self.service_booking_no_moto.dropoff_time.strftime('%H:%M')}"
+        )
+        self.assertEqual(sent_data['note'], expected_note_no_moto)
+        self.assertEqual(sent_data['courtesy_vehicle_requested'], "false")
+
+
+    @patch('requests.post')
+    @override_settings(MECHANICDESK_BOOKING_TOKEN=TEST_MECHANICDESK_TOKEN)
+    def test_send_booking_to_mechanicdesk_no_estimated_pickup_date(self, mock_post):
+        """
+        Tests that pickup_time is an empty string in payload when estimated_pickup_date is None.
+        """
+        self.service_booking_no_pickup = ServiceBookingFactory(
+            service_type=self.service_type,
+            service_profile=self.service_profile,
+            customer_motorcycle=self.customer_motorcycle,
+            service_date=date.today(),
+            dropoff_date=date.today(),
+            dropoff_time=time(11, 0),
+            estimated_pickup_date=None, # Explicitly set to None
+            customer_notes="Booking with no estimated pickup date."
+        )
+
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.text = "OK"
+        mock_post.return_value = mock_response
+
+        # DEBUG: Add assertion to confirm estimated_pickup_date is None before calling function
+        self.assertIsNone(self.service_booking_no_pickup.estimated_pickup_date,
+                          "estimated_pickup_date should be None in this test.")
+        # DEBUG: Print the value being passed
+        print(f"DEBUG (TEST): estimated_pickup_date in test: {self.service_booking_no_pickup.estimated_pickup_date}")
+
+
+        result = send_booking_to_mechanicdesk(self.service_booking_no_pickup)
+        self.assertTrue(result)
+        mock_post.assert_called_once()
+
+        args, kwargs = mock_post.call_args
+        sent_data = kwargs['data']
+
+        # FIX: Assert pickup_time is an empty string as expected when estimated_pickup_date is None
+        self.assertEqual(sent_data['pickup_time'], "")
+
+    @patch('requests.post')
+    @override_settings(MECHANICDESK_BOOKING_TOKEN=TEST_MECHANICDESK_TOKEN)
+    def test_send_booking_to_mechanicdesk_minimal_profile_and_motorcycle(self, mock_post):
+        """
+        Tests with a minimal ServiceProfile and CustomerMotorcycle to ensure
+        all fields are handled gracefully.
+        """
+        minimal_service_profile = ServiceProfileFactory(
+            name="Jane Doe",
+            email="jane.doe@example.com",
+            phone_number="0498765432",
+            address_line_1="", city="", state="", post_code="" # Minimal address
+        )
+        minimal_customer_motorcycle = CustomerMotorcycleFactory(
+            service_profile=minimal_service_profile,
+            brand="", model="", year=None, rego="",
+            transmission="", vin_number="", engine_size="", odometer=None # Minimal motorcycle
+        )
+        minimal_service_booking = ServiceBookingFactory(
+            service_type=self.service_type,
+            service_profile=minimal_service_profile,
+            customer_motorcycle=minimal_customer_motorcycle,
+            service_date=date.today(),
+            dropoff_date=date.today(),
+            dropoff_time=None, # No specific dropoff time
+            estimated_pickup_date=None,
+            customer_notes="" # Empty notes
+        )
+
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.text = "OK"
+        mock_post.return_value = mock_response
+
+        result = send_booking_to_mechanicdesk(minimal_service_booking)
+        self.assertTrue(result)
+        mock_post.assert_called_once()
+
+        args, kwargs = mock_post.call_args
+        sent_data = kwargs['data']
+
+        # Assert minimal customer details
+        self.assertEqual(sent_data['name'], "Jane Doe")
+        self.assertEqual(sent_data['email'], "jane.doe@example.com")
+        self.assertEqual(sent_data['phone'], "0498765432")
+        self.assertEqual(sent_data['first_name'], "Jane")
+        self.assertEqual(sent_data['last_name'], "Doe")
+
+        # Assert empty address details
+        self.assertEqual(sent_data['street_line'], "")
+        self.assertEqual(sent_data['suburb'], "")
+        self.assertEqual(sent_data['state'], "")
+        self.assertEqual(sent_data['postcode'], "")
+
+        # Assert empty vehicle details
+        self.assertEqual(sent_data['registration_number'], "")
+        self.assertEqual(sent_data['make'], "")
+        self.assertEqual(sent_data['model'], "")
+        self.assertEqual(sent_data['year'], "")
+        self.assertEqual(sent_data['transmission'], "")
+        self.assertEqual(sent_data['vin'], "")
+        self.assertEqual(sent_data['engine_size'], "")
+        self.assertEqual(sent_data['odometer'], "")
+
+        # Assert date/time handling when dropoff_time is None and estimated_pickup_date is None
+        # drop_off_time should use default 9 AM
+        expected_dropoff_datetime_minimal = datetime.datetime.combine(
+            minimal_service_booking.service_date,
+            datetime.time(9, 0)
+        ).strftime("%d/%m/%Y %H:%M")
+        self.assertEqual(sent_data['drop_off_time'], expected_dropoff_datetime_minimal)
+        self.assertEqual(sent_data['pickup_time'], "") # Should be empty
+
+        # Assert notes with minimal info
+        expected_note_minimal = (
+            f"\nActual Vehicle Drop-off Date: {minimal_service_booking.dropoff_date.strftime('%d/%m/%Y')}"
+        )
+        self.assertEqual(sent_data['note'], expected_note_minimal)
