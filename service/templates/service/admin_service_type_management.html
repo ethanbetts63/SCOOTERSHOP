@@ -96,7 +96,7 @@
                         Description
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Estimated Duration
+                        Estimated Duration (Days) {# Updated Header #}
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Base Price
@@ -129,7 +129,7 @@
                             {{ service_type.description|truncatechars:70 }} {# Truncate long descriptions #}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
-                            {{ service_type.estimated_duration }}
+                            {{ service_type.estimated_duration }} days {# Appending "days" #}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
                             ${{ service_type.base_price }}
@@ -161,12 +161,9 @@
             </tbody>
         </table>
     </div>
-
-    {# Removed Pagination Block #}
 </div>
 {% endblock %}
 
 {% block extra_js %}
 {{ block.super }}
-{# No specific JS needed for this basic listing view. #}
 {% endblock %}

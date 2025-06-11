@@ -10,7 +10,7 @@ from service.models import ServiceType
 # Assuming model_factories.py is in a 'test_helpers' directory relative to 'service'
 from ..test_helpers.model_factories import ServiceTypeFactory
 
-class ServiceTypeFormTest(TestCase):
+class AdminAdminAdminServiceTypeFormTest(TestCase):
     """
     Tests for the ServiceTypeForm.
     """
