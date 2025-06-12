@@ -2,6 +2,8 @@
 
 from django.db import models
 import uuid
+from decimal import Decimal # <-- Add this import
+
 
 PAYMENT_STATUS_CHOICES = [
     ('unpaid', 'Unpaid'),
@@ -53,7 +55,7 @@ class SalesBooking(models.Model):
     amount_paid = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        default=0.00,
+        default=Decimal('0.00'),
         help_text="The total amount paid for this booking (e.g., deposit or full payment)."
     )
     payment_status = models.CharField(
@@ -119,4 +121,3 @@ class SalesBooking(models.Model):
             f"{self.motorcycle.brand} {self.motorcycle.model} "
             f"(Status: {self.get_booking_status_display()})"
         )
-
