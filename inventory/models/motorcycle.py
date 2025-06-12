@@ -1,20 +1,9 @@
-# SCOOTER_SHOP/inventory/models.py
-
+# Main motorcycle model representing inventory
 from django.db import models
 from django.urls import reverse
 # Need to import the User model from the users app
 from users.models import User
 
-
-# Model for motorcycle conditions
-class MotorcycleCondition(models.Model):
-    name = models.CharField(max_length=20, unique=True)
-    display_name = models.CharField(max_length=50)
-
-    def __str__(self):
-        return self.display_name
-
-# Main motorcycle model representing inventory
 class Motorcycle(models.Model):
     STATUS_CHOICES = [
         ('for_sale', 'For Sale'),
@@ -133,11 +122,3 @@ class Motorcycle(models.Model):
     def is_for_hire(self):
         """Checks if 'Hire' is one of the conditions."""
         return self.conditions.filter(name='hire').exists()
-
-# Model for storing additional motorcycle images
-class MotorcycleImage(models.Model):
-    motorcycle = models.ForeignKey(Motorcycle, on_delete=models.CASCADE, related_name='images')
-    image = models.FileField(upload_to='motorcycles/additional/')
-
-    def __str__(self):
-        return f"Image for {self.motorcycle}"
