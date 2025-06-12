@@ -12,7 +12,7 @@ from service.models import ServiceSettings, BlockedServiceDate, TempServiceBooki
 from service.forms import ServiceDetailsForm # Import the ServiceDetailsForm
 
 # Import the utility function for featured motorcycles if still needed
-from inventory.views.utils import get_featured_motorcycles
+from inventory.utils import get_featured_motorcycles
 
 # Import TempHireBooking for potential pre-population of step1 form
 from hire.models import TempHireBooking

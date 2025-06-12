@@ -19,7 +19,15 @@ from inventory.models import (
     TempSalesBooking,
 )
 
+# Import PAYMENT_STATUS_CHOICES and BOOKING_STATUS_CHOICES directly from the model files
+from inventory.models.temp_sales_booking import PAYMENT_STATUS_CHOICES as TEMP_PAYMENT_STATUS_CHOICES
+from inventory.models.sales_booking import PAYMENT_STATUS_CHOICES as SALES_PAYMENT_STATUS_CHOICES
+from inventory.models.sales_booking import BOOKING_STATUS_CHOICES as SALES_BOOKING_STATUS_CHOICES
+
+
 # Import Payment model from payments app
+# This assumes that the 'payments' app is installed in your Django project
+# and payments.models.Payment is correctly defined.
 from payments.models import Payment
 
 User = get_user_model()
@@ -51,7 +59,7 @@ class UserFactory(factory.django.DjangoModelFactory):
 class PaymentFactory(factory.django.DjangoModelFactory):
     """
     Factory for the Payment model from the payments app.
-    Note: This is a placeholder and should align with your actual Payment model fields.
+    This factory directly uses the Payment model imported from payments.models.
     """
     class Meta:
         model = Payment
@@ -82,7 +90,7 @@ class MotorcycleConditionFactory(factory.django.DjangoModelFactory):
         django_get_or_create = ('name',) # Ensures unique conditions are created once
 
     name = factory.Sequence(lambda n: f'condition_{n}')
-    display_name = factory.Faker('word').title()
+    display_name = factory.LazyAttribute(lambda o: fake.word().title())
 
 
 class MotorcycleFactory(factory.django.DjangoModelFactory):
@@ -94,7 +102,7 @@ class MotorcycleFactory(factory.django.DjangoModelFactory):
 
     title = factory.LazyAttribute(lambda o: f"{o.year} {o.brand} {o.model}")
     brand = factory.Faker('word', ext_word_list=['Honda', 'Yamaha', 'Kawasaki', 'Suzuki', 'Ducati', 'Harley-Davidson'])
-    model = factory.Faker('word').title()
+    model = factory.LazyAttribute(lambda o: fake.word().title())
     year = factory.Faker('year')
     price = factory.LazyFunction(lambda: fake.pydecimal(left_digits=5, right_digits=2, positive=True, min_value=5000))
     
@@ -240,7 +248,8 @@ class TempSalesBookingFactory(factory.django.DjangoModelFactory):
 
     sales_booking_reference = factory.Sequence(lambda n: f"TSB-{uuid.uuid4().hex[:8].upper()}")
     amount_paid = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
-    payment_status = factory.Faker('random_element', elements=[choice[0] for choice in TempSalesBooking.PAYMENT_STATUS_CHOICES])
+    # Corrected: Use the imported constant
+    payment_status = factory.Faker('random_element', elements=[choice[0] for choice in TEMP_PAYMENT_STATUS_CHOICES])
     currency = 'AUD'
     stripe_payment_intent_id = factory.Sequence(lambda n: f"pi_{uuid.uuid4().hex[:24]}")
 
@@ -263,14 +272,16 @@ class SalesBookingFactory(factory.django.DjangoModelFactory):
 
     sales_booking_reference = factory.Sequence(lambda n: f"SBK-{uuid.uuid4().hex[:8].upper()}")
     amount_paid = factory.LazyFunction(lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True))
-    payment_status = factory.Faker('random_element', elements=[choice[0] for choice in SalesBooking.PAYMENT_STATUS_CHOICES])
+    # Corrected: Use the imported constant for payment status
+    payment_status = factory.Faker('random_element', elements=[choice[0] for choice in SALES_PAYMENT_STATUS_CHOICES])
     currency = 'AUD'
     stripe_payment_intent_id = factory.Sequence(lambda n: f"pi_{uuid.uuid4().hex[:24]}")
 
     appointment_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+60d'))
     appointment_time = factory.Faker('time_object')
 
-    booking_status = factory.Faker('random_element', elements=[choice[0] for choice in SalesBooking.BOOKING_STATUS_CHOICES])
+    # Corrected: Use the imported constant for booking status
+    booking_status = factory.Faker('random_element', elements=[choice[0] for choice in SALES_BOOKING_STATUS_CHOICES])
     customer_notes = factory.Faker('paragraph')
 
 
@@ -284,4 +295,3 @@ class BlockedSalesDateFactory(factory.django.DjangoModelFactory):
     start_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+30d'))
     end_date = factory.LazyAttribute(lambda o: o.start_date + datetime.timedelta(days=fake.random_int(min=0, max=7)))
     description = factory.Faker('sentence')
-
