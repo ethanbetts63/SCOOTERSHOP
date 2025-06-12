@@ -1,0 +1,120 @@
+from django.db import models
+import uuid
+
+PAYMENT_STATUS_CHOICES = [
+    ('unpaid', 'Unpaid'),
+    ('deposit_paid', 'Deposit Paid'),
+    ('paid', 'Fully Paid'),
+    ('refunded', 'Refunded'),
+]
+BOOKING_STATUS_CHOICES = [
+    ('pending_confirmation', 'Pending Confirmation'),
+    ('confirmed', 'Confirmed'),
+    ('cancelled', 'Cancelled'),
+    ('declined', 'Declined by Admin'),
+    ('completed', 'Completed'),
+    ('no_show', 'No Show'),
+    ('declined_refunded', 'Declined and Refunded'),
+    ('reserved', 'Reserved'),
+    ('enquired', 'Enquired'),
+]
+
+
+class TempSalesBooking(models.Model):
+    motorcycle = models.ForeignKey(
+        'inventory.Motorcycle',
+        on_delete=models.SET_NULL,
+        related_name='temp_sales_bookings',
+        null=True, blank=True,
+        help_text="The motorcycle associated with this temporary sales booking."
+    )
+    sales_profile = models.ForeignKey(
+        'inventory.SalesProfile',
+        on_delete=models.CASCADE,
+        related_name='temp_sales_bookings',
+        null=True, blank=True,
+        help_text="The customer's sales profile for this temporary booking."
+    )
+    payment = models.OneToOneField(
+        'payments.Payment',
+        on_delete=models.SET_NULL,
+        related_name='related_temp_sales_booking',
+        null=True, blank=True,
+        help_text="Link to the associated payment record, if any (e.g., for deposit)."
+    )
+
+    sales_booking_reference = models.CharField(
+        max_length=20,
+        unique=True,
+        blank=True,
+        null=True,
+        help_text="A unique reference code for the temporary sales booking."
+    )
+    amount_paid = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0.00,
+        help_text="The amount paid for this booking (e.g., deposit amount). Defaults to 0."
+    )
+    payment_status = models.CharField(
+        max_length=20,
+        choices=PAYMENT_STATUS_CHOICES,
+        default='unpaid',
+        help_text="Current payment status of the temporary booking (e.g., unpaid, deposit_paid)."
+    )
+    currency = models.CharField(
+        max_length=3,
+        default='AUD',
+        help_text="The three-letter ISO currency code for the booking (e.g., AUD)."
+    )
+    stripe_payment_intent_id = models.CharField(
+        max_length=100,
+        unique=True,
+        blank=True,
+        null=True,
+        help_text="The ID of the Stripe Payment Intent associated with this booking, if applicable."
+    )
+
+    appointment_date = models.DateField(
+        null=True, blank=True,
+        help_text="Requested date for the test drive or appointment."
+    )
+    appointment_time = models.TimeField(
+        null=True, blank=True,
+        help_text="Requested time for the test drive or appointment."
+    )
+
+    customer_notes = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Any additional notes or messages provided by the customer during the process."
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="The date and time when this temporary booking was created."
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        help_text="The date and time when this temporary booking was last updated."
+    )
+
+    class Meta:
+        verbose_name = "Temporary Sales Booking"
+        verbose_name_plural = "Temporary Sales Bookings"
+        ordering = ['-created_at']
+
+    def save(self, *args, **kwargs):
+        if not self.sales_booking_reference:
+            self.sales_booking_reference = f"TSB-{uuid.uuid4().hex[:8].upper()}"
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        motorcycle_display = (
+            f" for {self.motorcycle.year} {self.motorcycle.brand} {self.motorcycle.model}"
+            if self.motorcycle else ""
+        )
+        return (
+            f"Temp Booking {self.sales_booking_reference}{motorcycle_display} "
+            f"(Status: {self.get_payment_status_display()}, Step: {self.current_step})"
+        )
+

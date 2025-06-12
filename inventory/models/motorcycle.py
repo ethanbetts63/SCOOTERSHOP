@@ -8,6 +8,7 @@ class Motorcycle(models.Model):
     STATUS_CHOICES = [
         ('for_sale', 'For Sale'),
         ('sold', 'Sold'),
+        ('reserved', "Reserved")
         ('for_hire', 'For Hire'),
         ('unavailable', 'Unavailable'),
     ]
