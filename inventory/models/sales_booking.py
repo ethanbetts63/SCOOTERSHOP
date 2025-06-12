@@ -30,7 +30,7 @@ class SalesBooking(models.Model):
         help_text="The motorcycle associated with this sales booking."
     )
     sales_profile = models.ForeignKey(
-        'sales.SalesProfile',
+        'inventory.SalesProfile',
         on_delete=models.PROTECT,
         related_name='sales_bookings',
         help_text="The customer's sales profile for this booking."
