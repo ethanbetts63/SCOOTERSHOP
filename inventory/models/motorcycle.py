@@ -33,12 +33,6 @@ class Motorcycle(models.Model):
 
     vin_number = models.CharField(max_length=50, blank=True, null=True, help_text="Vehicle Identification Number")
     engine_number = models.CharField(max_length=50, blank=True, null=True, help_text="Engine number/identifier")
-    owner = models.ForeignKey(
-        'users.User', # Using string reference for User model
-        on_delete=models.SET_NULL,
-        related_name="owned_motorcycles",
-        null=True, blank=True
-    )
 
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES, blank=True)
 

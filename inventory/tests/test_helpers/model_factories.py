@@ -108,8 +108,6 @@ class MotorcycleFactory(factory.django.DjangoModelFactory):
     
     vin_number = factory.Faker('bothify', text='#################')
     engine_number = factory.Faker('bothify', text='######')
-    owner = factory.SubFactory(UserFactory) # Link to a User
-    
     # We will use the ManyToMany 'conditions' field primarily
     condition = '' # Set to empty string as 'conditions' ManyToMany is preferred
     

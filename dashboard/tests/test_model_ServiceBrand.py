@@ -1,13 +1,8 @@
 from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from django.db.utils import DataError
-import os
 from io import BytesIO
 from PIL import Image
-from django.core.files.base import ContentFile
-from django.test.utils import CaptureQueriesContext
 from django.db import connection
 
 from dashboard.models import ServiceBrand
