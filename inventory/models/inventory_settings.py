@@ -42,7 +42,7 @@ class InventorySettings(models.Model):
         help_text="Number of days a deposit holds a motorcycle reservation. After this period, the reservation may expire."
     )
     auto_refund_expired_deposits = models.BooleanField(
-        default=True,
+        default=False, 
         help_text="Automatically process a full refund for deposits if the reservation expires without confirmation/completion."
     )
 
@@ -169,4 +169,3 @@ class InventorySettings(models.Model):
         if not self.pk and InventorySettings.objects.exists():
             raise ValidationError("Only one instance of InventorySettings can be created. Please edit the existing one.")
         super().save(*args, **kwargs)
-

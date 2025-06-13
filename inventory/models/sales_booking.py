@@ -19,7 +19,6 @@ BOOKING_STATUS_CHOICES = [
     ('completed', 'Completed'),
     ('no_show', 'No Show'),
     ('declined_refunded', 'Declined and Refunded'),
-    ('reserved', 'Reserved'),
     ('enquired', 'Enquired'),
 ]
 

@@ -1,0 +1,92 @@
+# inventory/utils/convert_temp_sales_booking.py
+
+from django.db import transaction
+from decimal import Decimal
+from inventory.models import SalesBooking, InventorySettings, Motorcycle # Import Motorcycle
+from payments.models import RefundPolicySettings
+
+def convert_temp_sales_booking(
+    temp_booking,
+    booking_payment_status,
+    amount_paid_on_booking,
+    stripe_payment_intent_id=None,
+    payment_obj=None,
+):
+    try:
+        with transaction.atomic():
+            inventory_settings = InventorySettings.objects.first()
+
+            currency_code = 'AUD'
+            if inventory_settings:
+                currency_code = inventory_settings.currency_code
+
+            # Create the permanent SalesBooking instance
+            sales_booking = SalesBooking.objects.create(
+                motorcycle=temp_booking.motorcycle,
+                sales_profile=temp_booking.sales_profile,
+                amount_paid=amount_paid_on_booking,
+                payment_status=booking_payment_status,
+                currency=currency_code,
+                stripe_payment_intent_id=stripe_payment_intent_id,
+                appointment_date=temp_booking.appointment_date,
+                appointment_time=temp_booking.appointment_time,
+                booking_status='pending_confirmation', # Always pending confirmation initially
+                customer_notes=temp_booking.customer_notes,
+                payment=payment_obj,
+                request_viewing=temp_booking.request_viewing,
+            )
+
+            # Update motorcycle status if a deposit has been paid
+            if temp_booking.motorcycle and booking_payment_status in ['deposit_paid', 'paid']:
+                motorcycle = sales_booking.motorcycle # Get the associated motorcycle
+                motorcycle.status = 'reserved' # Set motorcycle status to 'reserved'
+                motorcycle.is_available = False # Mark as unavailable for general sale
+                motorcycle.save()
+
+            # Update the associated Payment object if provided
+            if payment_obj:
+                payment_obj.amount = amount_paid_on_booking
+                payment_obj.currency = currency_code
+                payment_obj.status = booking_payment_status
+                payment_obj.stripe_payment_intent_id = stripe_payment_intent_id
+                payment_obj.sales_booking = sales_booking
+                payment_obj.sales_customer_profile = sales_booking.sales_profile
+
+                if hasattr(payment_obj, 'temp_sales_booking') and payment_obj.temp_sales_booking:
+                    payment_obj.temp_sales_booking = None
+
+                try:
+                    refund_settings = RefundPolicySettings.objects.first()
+                    if refund_settings:
+                        payment_obj.refund_policy_snapshot = {
+                            'cancellation_full_payment_full_refund_days': refund_settings.cancellation_full_payment_full_refund_days,
+                            'cancellation_full_payment_partial_refund_days': float(refund_settings.cancellation_full_payment_partial_refund_percentage),
+                            'cancellation_full_payment_partial_refund_percentage': float(refund_settings.cancellation_full_payment_partial_refund_percentage),
+                            'cancellation_full_payment_minimal_refund_days': refund_settings.cancellation_full_payment_minimal_refund_days,
+                            'cancellation_full_payment_minimal_refund_percentage': float(refund_settings.cancellation_full_payment_minimal_refund_percentage),
+
+                            'cancellation_deposit_full_refund_days': refund_settings.cancellation_deposit_full_refund_days,
+                            'cancellation_deposit_partial_refund_days': refund_settings.cancellation_deposit_partial_refund_days,
+                            'cancellation_deposit_partial_refund_percentage': float(refund_settings.cancellation_deposit_partial_refund_percentage),
+                            'cancellation_deposit_minimal_refund_days': refund_settings.cancellation_deposit_minimal_refund_days,
+                            'cancellation_deposit_minimal_refund_percentage': float(refund_settings.cancellation_deposit_minimal_refund_percentage),
+
+                            'refund_deducts_stripe_fee_policy': refund_settings.refund_deducts_stripe_fee_policy,
+                            'stripe_fee_percentage_domestic': float(refund_settings.stripe_fee_percentage_domestic),
+                            'stripe_fee_fixed_domestic': float(refund_settings.stripe_fee_fixed_domestic),
+                            'stripe_fee_percentage_international': float(refund_settings.stripe_fee_percentage_international),
+                            'stripe_fee_fixed_international': float(refund_settings.stripe_fee_fixed_international),
+                        }
+                    else:
+                        payment_obj.refund_policy_snapshot = {}
+                except Exception:
+                    payment_obj.refund_policy_snapshot = {}
+
+                payment_obj.save()
+
+            temp_booking.delete()
+
+            return sales_booking
+
+    except Exception as e:
+        raise e
