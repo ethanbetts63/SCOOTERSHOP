@@ -71,27 +71,41 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {# Request Viewing Radio Buttons #}
                 <div class="form-group md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700">{{ form.request_viewing.label }}</label>
-                    <div class="mt-2 flex space-x-4">
-                        {% for radio in form.request_viewing %}
-                            <div class="flex items-center">
-                                {{ radio.tag }}
-                                <label for="{{ radio.id_for_label }}" class="ml-2 block text-sm font-medium text-gray-700">
-                                    {{ radio.choice_label }}
-                                </label>
-                            </div>
+                    {% if form.request_viewing.field.widget.input_type != 'hidden' %}
+                        <label class="block text-sm font-medium text-gray-700">{{ form.request_viewing.label }}</label>
+                        <div class="mt-2 flex space-x-4">
+                            {% for radio in form.request_viewing %}
+                                <div class="flex items-center">
+                                    {{ radio.tag }}
+                                    <label for="{{ radio.id_for_label }}" class="ml-2 block text-sm font-medium text-gray-700">
+                                        {{ radio.choice_label }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.request_viewing.help_text %}
+                            <p class="mt-1 text-sm text-gray-500">{{ form.request_viewing.help_text }}</p>
+                        {% endif %}
+                        {% for error in form.request_viewing.errors %}
+                            <p class="text-red-600 text-sm italic">{{ error }}</p>
                         {% endfor %}
-                    </div>
-                    {% if form.request_viewing.help_text %}
-                        <p class="mt-1 text-sm text-gray-500">{{ form.request_viewing.help_text }}</p>
+                    {% else %}
+                        {# If it's a hidden input, just render the hidden input tag directly #}
+                        {{ form.request_viewing }}
+                        {# Only show label and message if deposit is NOT required, or if viewing for enquiry is enabled #}
+                        {% if not temp_booking.deposit_required_for_flow %}
+                            <label class="block text-sm font-medium text-gray-700">{{ form.request_viewing.label }}</label>
+                            <p class="mt-1 text-sm text-gray-500">
+                                {% if not inventory_settings.enable_viewing_for_enquiry %}
+                                    Viewing/test drive option is currently disabled.
+                                {% endif %}
+                            </p>
+                        {% endif %}
                     {% endif %}
-                    {% for error in form.request_viewing.errors %}
-                        <p class="text-red-600 text-sm italic">{{ error }}</p>
-                    {% endfor %}
                 </div>
 
                 {# Appointment Date and Time Fields Container #}
-                <div id="appointment-fields-container" class="contents"> {# Use 'contents' to avoid breaking grid layout #}
+                <div id="appointment-fields-container" class="contents">
                     {# Appointment Date Field #}
                     <div class="form-group">
                         <label for="{{ form.appointment_date.id_for_label }}" class="block text-sm font-medium text-gray-700">
@@ -171,7 +185,10 @@
         document.addEventListener('DOMContentLoaded', function() {
             const appointmentDateInput = document.getElementById('id_appointment_date');
             const appointmentTimeSelect = document.getElementById('id_appointment_time');
-            const parsedAvailableDates = JSON.parse(document.getElementById('available_dates_json').textContent);
+            // Ensure available_dates_json exists before trying to parse
+            const availableDatesJsonElement = document.getElementById('available_dates_json');
+            const parsedAvailableDates = availableDatesJsonElement ? JSON.parse(availableDatesJsonElement.textContent) : [];
+
             const requestViewingRadios = document.querySelectorAll('input[name="request_viewing"]');
             const appointmentFieldsContainer = document.getElementById('appointment-fields-container');
             const depositRequiredForFlow = '{{ temp_booking.deposit_required_for_flow|lower }}'; // Pass boolean from Django
@@ -181,7 +198,7 @@
             function toggleAppointmentFields() {
                 const selectedValue = document.querySelector('input[name="request_viewing"]:checked').value;
                 // If deposit is required, always show fields. Otherwise, show if 'yes' is selected.
-                const shouldShow = depositRequiredForFlow || (selectedValue === 'yes');
+                const shouldShow = depositRequiredForFlow === 'true' || (selectedValue === 'yes'); // Compare with string 'true'
 
                 if (shouldShow) {
                     appointmentFieldsContainer.style.display = 'contents'; // Show
@@ -190,9 +207,14 @@
                         initializeFlatpickr();
                     } else {
                         // If it's already initialized but was hidden, ensure it's functional
-                        flatpickrInstance.setDate(appointmentDateInput.value, true); // Re-trigger onChange if date is pre-filled
+                        // This will re-trigger onChange if date is pre-filled and valid
+                        if (appointmentDateInput.value && parsedAvailableDates.includes(appointmentDateInput.value)) {
+                            flatpickrInstance.setDate(appointmentDateInput.value, true);
+                        } else {
+                            flatpickrInstance.clear(); // Clear if pre-filled date is invalid or empty
+                        }
                     }
-                    // If a date is already selected, try to load times
+                    // If a date is already selected (or freshly set by flatpickr), try to load times
                     if (appointmentDateInput.value) {
                          fetchAvailableTimes(appointmentDateInput.value);
                     } else {
@@ -205,7 +227,8 @@
                     appointmentDateInput.value = '';
                     appointmentTimeSelect.innerHTML = '<option value="">---------</option>';
                     if (flatpickrInstance) {
-                        flatpickrInstance.clear(); // Clear flatpickr's selection
+                        flatpickrInstance.destroy(); // Destroy flatpickr instance when hiding
+                        flatpickrInstance = null; // Clear the instance
                     }
                 }
             }
@@ -280,9 +303,10 @@
             });
 
             // Initial setup based on default/pre-selected value and deposit_required_for_flow
-            initializeFlatpickr(); // Initialize flatpickr on load
             toggleAppointmentFields(); // Set initial visibility of appointment fields
 
+            // If an appointment date is pre-filled, trigger the time fetch (handled by toggleAppointmentFields now)
+            // No need for a separate call here.
         });
     </script>
 {% endblock %}

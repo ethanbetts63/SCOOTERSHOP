@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.db import transaction
 from django.contrib import messages
 
-from inventory.models import TempSalesBooking, InventorySettings, SalesBooking
+from inventory.models import TempSalesBooking, InventorySettings, SalesBooking, SalesProfile
 from inventory.forms.sales_booking_appointment_form import BookingAppointmentForm
 from inventory.utils.get_available_appointment_dates import get_available_appointment_dates
 
@@ -25,7 +25,8 @@ class Step2BookingDetailsView(View):
             return redirect(reverse('core:index'))
 
         initial_data = {
-            'request_viewing': temp_booking.request_viewing,
+            # Ensure 'request_viewing' is 'yes' or 'no' string for the ChoiceField
+            'request_viewing': 'yes' if temp_booking.request_viewing else 'no',
             'appointment_date': temp_booking.appointment_date,
             'appointment_time': temp_booking.appointment_time,
             'customer_notes': temp_booking.customer_notes,
@@ -69,7 +70,7 @@ class Step2BookingDetailsView(View):
         if form.is_valid():
             with transaction.atomic():
                 customer_notes = form.cleaned_data.get('customer_notes')
-                request_viewing = form.cleaned_data.get('request_viewing')
+                request_viewing = form.cleaned_data.get('request_viewing') # This is now a boolean due to clean_request_viewing
                 appointment_date = form.cleaned_data.get('appointment_date')
                 appointment_time = form.cleaned_data.get('appointment_time')
 
@@ -84,6 +85,7 @@ class Step2BookingDetailsView(View):
                     return redirect(reverse('inventory:payment_page'))
                 else:
                     sales_booking_status = 'enquired'
+                    # If request_viewing is True, then it's a pending confirmation for viewing, not just an enquiry
                     if request_viewing:
                         sales_booking_status = 'pending_confirmation'
 
@@ -91,7 +93,7 @@ class Step2BookingDetailsView(View):
                         motorcycle=temp_booking.motorcycle,
                         sales_profile=temp_booking.sales_profile,
                         customer_notes=customer_notes,
-                        request_viewing=request_viewing,
+                        request_viewing=request_viewing, # Use the boolean from cleaned_data
                         appointment_date=appointment_date,
                         appointment_time=appointment_time,
                         booking_status=sales_booking_status,
