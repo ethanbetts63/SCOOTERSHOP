@@ -21,6 +21,7 @@ from inventory.models import (
 
 # Import PAYMENT_STATUS_CHOICES and BOOKING_STATUS_CHOICES directly from the model files
 from inventory.models.temp_sales_booking import PAYMENT_STATUS_CHOICES as TEMP_PAYMENT_STATUS_CHOICES
+from inventory.models.temp_sales_booking import BOOKING_STATUS_CHOICES as TEMP_BOOKING_STATUS_CHOICES # Added this import
 from inventory.models.sales_booking import PAYMENT_STATUS_CHOICES as SALES_PAYMENT_STATUS_CHOICES
 from inventory.models.sales_booking import BOOKING_STATUS_CHOICES as SALES_BOOKING_STATUS_CHOICES
 
@@ -149,7 +150,8 @@ class InventorySettingsFactory(factory.django.DjangoModelFactory):
     enable_sales_system = True
     enable_depositless_enquiry = True
     enable_reservation_by_deposit = True
-    deposit_amount = Decimal('100.00')
+    # Updated deposit_amount to use LazyFunction for more realistic values
+    deposit_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True, min_value=50, max_value=500))
     deposit_lifespan_days = 5
     auto_refund_expired_deposits = True
     enable_sales_new_bikes = True
@@ -165,6 +167,7 @@ class InventorySettingsFactory(factory.django.DjangoModelFactory):
     currency_code = 'AUD'
     currency_symbol = '$'
     terms_and_conditions_text = factory.Faker('paragraph', nb_sentences=3)
+    enable_viewing_for_enquiry = True # Added this field
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
@@ -217,6 +220,10 @@ class TempSalesBookingFactory(factory.django.DjangoModelFactory):
     appointment_time = factory.Faker('time_object')
     
     customer_notes = factory.Faker('paragraph')
+    # Added new fields as per the request
+    booking_status = factory.Faker('random_element', elements=[choice[0] for choice in TEMP_BOOKING_STATUS_CHOICES])
+    deposit_required_for_flow = factory.Faker('boolean')
+    request_viewing = factory.Faker('boolean')
 
 
 class SalesBookingFactory(factory.django.DjangoModelFactory):
@@ -247,4 +254,3 @@ class BlockedSalesDateFactory(factory.django.DjangoModelFactory):
     start_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+30d'))
     end_date = factory.LazyAttribute(lambda o: o.start_date + datetime.timedelta(days=fake.random_int(min=0, max=7)))
     description = factory.Faker('sentence')
-
