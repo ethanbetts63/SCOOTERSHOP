@@ -32,4 +32,4 @@ class InitiateBookingProcessView(View):
         request.session['current_temp_booking_id'] = temp_booking.pk
 
         # Redirect to the combined details and appointment form
-        return redirect(reverse('inventory:booking_details_and_appointment')) # Ensure this URL name matches your urls.py
+        return redirect(reverse('inventory:step1_sales_profile')) # Ensure this URL name matches your urls.py

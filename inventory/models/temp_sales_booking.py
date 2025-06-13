@@ -18,6 +18,7 @@ BOOKING_STATUS_CHOICES = [
     ('declined_refunded', 'Declined and Refunded'),
     ('reserved', 'Reserved'),
     ('enquired', 'Enquired'),
+    ('pending_details', 'Pending Details') # Added for the initial state of TempSalesBooking
 ]
 
 
@@ -54,7 +55,7 @@ class TempSalesBooking(models.Model):
     amount_paid = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        default=Decimal('0.00'), # <-- Change this line
+        default=Decimal('0.00'),
         help_text="The amount paid for this booking (e.g., deposit amount). Defaults to 0."
     )
     payment_status = models.CharField(
@@ -62,6 +63,12 @@ class TempSalesBooking(models.Model):
         choices=PAYMENT_STATUS_CHOICES,
         default='unpaid',
         help_text="Current payment status of the temporary booking (e.g., unpaid, deposit_paid)."
+    )
+    booking_status = models.CharField(
+        max_length=30, # Increased max_length to accommodate longer choices like 'pending_details'
+        choices=BOOKING_STATUS_CHOICES,
+        default='pending_details', # Set a default suitable for the initial state
+        help_text="Current booking status (e.g., pending_confirmation, confirmed)."
     )
     currency = models.CharField(
         max_length=3,
