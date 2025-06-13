@@ -24,40 +24,51 @@
                 <div class="flex flex-col items-center">
                     <div class="w-full relative bg-gray-100 rounded-xl overflow-hidden shadow-md">
                         <img id="main-bike-image"
-                             src="{% if motorcycle.images.all %}{{ motorcycle.images.first.image.url }}{% elif motorcycle.image %}{{ motorcycle.image.url }}{% else %}https://placehold.co/800x600/e2e8f0/333?text=No+Image{% endif %}"
+                             src="{% if motorcycle.image %}{{ motorcycle.image.url }}{% elif motorcycle.images.all %}{{ motorcycle.images.first.image.url }}{% else %}https://placehold.co/800x600/e2e8f0/333?text=No+Image{% endif %}"
                              alt="{{ motorcycle.title }}"
                              class="w-full h-96 object-cover rounded-xl transition-opacity duration-300 ease-in-out">
-                        <div class="absolute top-4 left-4 bg-gray-800 text-white text-lg font-bold px-4 py-2 rounded-lg shadow-lg">
-                            {% if motorcycle.price %}
-                                ${{ motorcycle.price|floatformat:2 }}
-                            {% else %}
-                                Price on request
-                            {% endif %}
-                        </div>
                     </div>
 
                     <!-- Thumbnails -->
                     <div class="flex space-x-3 mt-6 overflow-x-auto w-full justify-center p-2">
-                        {% if motorcycle.images.all %}
-                            {% for img in motorcycle.images.all %}
-                                <img src="{{ img.image.url }}"
-                                     alt="{{ motorcycle.title }} - Image {{ forloop.counter }}"
-                                     class="thumbnail w-24 h-16 object-cover rounded-lg cursor-pointer border-2 border-transparent hover:border-blue-500 transition-all duration-200
-                                     {% if forloop.first %}border-blue-600{% endif %}"
-                                     data-image-url="{{ img.image.url }}">
-                            {% endfor %}
-                        {% elif motorcycle.image %}
+                        {# First, display the main 'image' field if it exists #}
+                        {% if motorcycle.image %}
                             <img src="{{ motorcycle.image.url }}"
-                                 alt="{{ motorcycle.title }}"
-                                 class="thumbnail w-24 h-16 object-cover rounded-lg cursor-pointer border-2 border-blue-600">
-                        {% else %}
-                            <!-- No thumbnails if no images at all -->
+                                 alt="{{ motorcycle.title }} - Main Image"
+                                 class="thumbnail w-24 h-16 object-cover rounded-lg cursor-pointer border-2 border-transparent hover:border-blue-500 transition-all duration-200 initial-active"
+                                 data-image-url="{{ motorcycle.image.url }}">
+                        {% endif %}
+
+                        {# Then, display all images from the 'images' related manager #}
+                        {% for img in motorcycle.images.all %}
+                            <img src="{{ img.image.url }}"
+                                 alt="{{ motorcycle.title }} - Image {{ forloop.counter }}"
+                                 class="thumbnail w-24 h-16 object-cover rounded-lg cursor-pointer border-2 border-transparent hover:border-blue-500 transition-all duration-200"
+                                 data-image-url="{{ img.image.url }}">
+                        {% endfor %}
+                        
+                        {# Fallback if no images at all #}
+                        {% if not motorcycle.image and not motorcycle.images.all %}
+                            <img src="https://placehold.co/800x600/e2e8f0/333?text=No+Image"
+                                 alt="No Image Available"
+                                 class="thumbnail w-24 h-16 object-cover rounded-lg border-2 border-blue-600">
                         {% endif %}
                     </div>
                 </div>
 
                 <!-- Details Section -->
                 <div class="flex flex-col justify-center">
+                    <!-- Prominent Price Display -->
+                    <div class="mb-6 text-center lg:text-left">
+                        <p class="text-4xl lg:text-5xl font-extrabold text-blue-700">
+                            {% if motorcycle.price %}
+                                ${{ motorcycle.price|floatformat:2 }}
+                            {% else %}
+                                Price on request
+                            {% endif %}
+                        </p>
+                    </div>
+
                     <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-3">Specifications</h2>
                     <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-lg text-gray-700">
                         <div class="flex items-center space-x-2">
@@ -97,6 +108,24 @@
                     </dl>
                 </div>
             </div>
+
+            <!-- Action Buttons Section -->
+            <div class="mt-10 pt-6 border-t border-gray-200 flex flex-col sm:flex-row justify-center items-center gap-4">
+                {% if settings.enable_depositless_enquiry %}
+                <a href="" class="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all transform hover:scale-105 w-full sm:w-auto">
+                    <i class="fas fa-question-circle mr-3 text-xl"></i>
+                    Submit Enquiry
+                </a>
+                {% endif %}
+
+                {% if settings.enable_reservation_by_deposit %}
+                <a href="" class="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all transform hover:scale-105 w-full sm:w-auto">
+                    <i class="fas fa-calendar-check mr-3 text-xl"></i>
+                    Reserve with Deposit
+                </a>
+                {% endif %}
+            </div>
+
         </div>
 
         {% else %}
@@ -117,24 +146,29 @@ document.addEventListener('DOMContentLoaded', function() {
     const mainImage = document.getElementById('main-bike-image');
     const thumbnails = document.querySelectorAll('.thumbnail');
 
+    function setActiveThumbnail(selectedThumbnail) {
+        thumbnails.forEach(thumb => thumb.classList.remove('border-blue-600'));
+        if (selectedThumbnail) {
+            selectedThumbnail.classList.add('border-blue-600');
+            mainImage.src = selectedThumbnail.dataset.imageUrl || selectedThumbnail.src;
+        }
+    }
+
     if (mainImage && thumbnails.length > 0) {
         thumbnails.forEach(thumbnail => {
             thumbnail.addEventListener('click', function() {
-                // Remove active class from all thumbnails
-                thumbnails.forEach(thumb => thumb.classList.remove('border-blue-600'));
-                // Add active class to clicked thumbnail
-                this.classList.add('border-blue-600');
-                // Update main image source
-                mainImage.src = this.dataset.imageUrl || this.src;
+                setActiveThumbnail(this);
             });
         });
-    }
 
-    // Initialize the first thumbnail as active if multiple images exist
-    // This is handled by the Django template logic (forloop.first),
-    // but this JS ensures consistency if the first one is clicked again etc.
-    if (thumbnails.length > 0 && !document.querySelector('.thumbnail.border-blue-600')) {
-        thumbnails[0].classList.add('border-blue-600');
+        const initialActiveThumbnail = document.querySelector('.thumbnail.initial-active');
+        if (initialActiveThumbnail) {
+             setActiveThumbnail(initialActiveThumbnail);
+        } else if (thumbnails.length > 0) {
+            setActiveThumbnail(thumbnails[0]);
+        }
+    } else if (mainImage) {
+        mainImage.classList.add('border-2', 'border-blue-600');
     }
 });
 </script>

@@ -8,10 +8,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{% block title %}Scootershop{% endblock %}</title>
         {% load static %}
-        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
         <link rel="icon" href="{% static 'images/favicon_scooter.png' %}" type="image/png">
         <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-
+        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
         {% block extra_css %}{% endblock %}
     </head>
 
@@ -89,7 +88,27 @@
                     </li>
                 {% endif %}
 
-
+                {# Login/Logout Toggle #}
+                {% if settings.enable_user_accounts or user.is_staff %}
+                    <li>
+                        {% if user.is_authenticated %}
+                            {# If user is authenticated, show Logout link #}
+                            <a class="nav-item" href="{% url 'users:logout' %}">
+                                Logout
+                            </a>
+                        {% else %}
+                            {# If user is not authenticated, show Login/Register link #}
+                            <a class="nav-item" href="{% url 'users:login' %}"
+                                {% if not settings.enable_user_accounts and user.is_staff %}
+                                style="color: #08E5D1;"
+                                {% endif %}
+                            >
+                                Login/Register
+                            </a>
+                        {% endif %}
+                    </li>
+                {% endif %}
+                {# End Login/Logout Toggle #}
 
             </ul>
 
