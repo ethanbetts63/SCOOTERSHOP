@@ -32,7 +32,6 @@ class GetAvailableAppointmentDatesUtilTest(TestCase):
         for i in range(self.inventory_settings_default.max_advance_booking_days + 1):
             current_date = today + timedelta(days=i)
             # Simulate the internal logic of validate_appointment_date and get_available_appointment_dates
-            # This is essentially re-checking the conditions for what 'should' be valid
             if (current_date.weekday() in [0, 1, 2, 3, 4] and # Mon-Fri
                 current_date >= earliest_allowed_date and
                 current_date <= today + timedelta(days=self.inventory_settings_default.max_advance_booking_days)):
@@ -54,7 +53,6 @@ class GetAvailableAppointmentDatesUtilTest(TestCase):
         available_dates = get_available_appointment_dates(settings)
         
         today = date.today()
-        # Earliest allowed date will be at least 2 days from now
         earliest_allowed_datetime = datetime.now() + timedelta(hours=settings.min_advance_booking_hours)
         earliest_allowed_date = earliest_allowed_datetime.date()
 
@@ -62,7 +60,6 @@ class GetAvailableAppointmentDatesUtilTest(TestCase):
         if (today + timedelta(days=1)) < earliest_allowed_date:
             self.assertNotIn(today + timedelta(days=1), available_dates)
         
-        # Ensure the first date is indeed the earliest allowed date or later
         if available_dates:
             self.assertGreaterEqual(available_dates[0], earliest_allowed_date)
 
@@ -76,11 +73,9 @@ class GetAvailableAppointmentDatesUtilTest(TestCase):
         )
         available_dates = get_available_appointment_dates(settings)
         
-        # All dates should be within today to today + 3 days
         for d in available_dates:
             self.assertLessEqual(d, date.today() + timedelta(days=3))
         
-        # Check that a date beyond the limit is not included
         self.assertNotIn(date.today() + timedelta(days=4), available_dates)
 
 
@@ -94,57 +89,70 @@ class GetAvailableAppointmentDatesUtilTest(TestCase):
         )
         available_dates = get_available_appointment_dates(settings)
 
-        # Check that no Saturdays or Sundays are in the list
         for d in available_dates:
             self.assertNotIn(d.weekday(), [5, 6]) # 5=Saturday, 6=Sunday
 
 
     def test_excludes_single_blocked_date(self):
+        # Create a specific settings for this test to control min_advance_booking_hours
+        settings_for_block = InventorySettingsFactory(
+            sales_booking_open_days="Mon,Tue,Wed,Thu,Fri,Sat,Sun", # All days open
+            min_advance_booking_hours=0, # No advance notice required
+            max_advance_booking_days=30,
+            pk=104
+        )
+        
         # Block a specific date
         blocked_date = date.today() + timedelta(days=7) # Block a date 7 days from now
         BlockedSalesDateFactory(start_date=blocked_date, end_date=blocked_date)
-
-        # Ensure that the blocked date would otherwise be valid
-        # (e.g., it's an open day and within min/max advance)
-        self.inventory_settings_default.min_advance_booking_hours = 0 # Temporarily bypass this check
-        self.inventory_settings_default.save() # Save the change for this test's context
         
-        available_dates = get_available_appointment_dates(self.inventory_settings_default)
+        available_dates = get_available_appointment_dates(settings_for_block)
         self.assertNotIn(blocked_date, available_dates)
 
-        # Reset for other tests if needed (though new test DB for each run helps)
-        # InventorySettings.objects.filter(pk=self.inventory_settings_default.pk).update(min_advance_booking_hours=24)
+        # Check a date just before and after the blocked date is still available
+        # if they also pass all other validations.
+        self.assertIn(blocked_date - timedelta(days=1), available_dates)
+        self.assertIn(blocked_date + timedelta(days=1), available_dates)
 
 
     def test_excludes_range_of_blocked_dates(self):
+        # Create a specific settings for this test to control min_advance_booking_hours
+        settings_for_block_range = InventorySettingsFactory(
+            sales_booking_open_days="Mon,Tue,Wed,Thu,Fri,Sat,Sun", # All days open
+            min_advance_booking_hours=0, # No advance notice required
+            max_advance_booking_days=30,
+            pk=105
+        )
+
         # Block a range of dates
         start_block = date.today() + timedelta(days=10)
         end_block = date.today() + timedelta(days=12) # Block 3 days
         BlockedSalesDateFactory(start_date=start_block, end_date=end_block)
 
-        # Temporarily bypass min_advance_booking_hours if it interferes
-        self.inventory_settings_default.min_advance_booking_hours = 0
-        self.inventory_settings_default.save()
-
-        available_dates = get_available_appointment_dates(self.inventory_settings_default)
+        available_dates = get_available_appointment_dates(settings_for_block_range)
 
         for i in range((end_block - start_block).days + 1):
             blocked_date = start_block + timedelta(days=i)
-            # Ensure these dates are not in the available list
             self.assertNotIn(blocked_date, available_dates)
         
         # Check dates just outside the blocked range are still there (if they meet other criteria)
+        # Ensure these boundary dates are also "open days" and not "too soon" relative to setup.
+        # Given min_advance_booking_hours=0 and all days open, these should be present.
         self.assertIn(start_block - timedelta(days=1), available_dates)
         self.assertIn(end_block + timedelta(days=1), available_dates)
 
 
     def test_blocked_date_description_does_not_affect_exclusion(self):
-        # Ensure that description on BlockedSalesDate doesn't prevent exclusion
+        # Create a specific settings for this test
+        settings_for_desc = InventorySettingsFactory(
+            sales_booking_open_days="Mon,Tue,Wed,Thu,Fri,Sat,Sun", # All days open
+            min_advance_booking_hours=0, # No advance notice required
+            max_advance_booking_days=30,
+            pk=106
+        )
+
         blocked_date = date.today() + timedelta(days=5)
         BlockedSalesDateFactory(start_date=blocked_date, end_date=blocked_date, description="Public Holiday")
 
-        self.inventory_settings_default.min_advance_booking_hours = 0
-        self.inventory_settings_default.save()
-
-        available_dates = get_available_appointment_dates(self.inventory_settings_default)
+        available_dates = get_available_appointment_dates(settings_for_desc)
         self.assertNotIn(blocked_date, available_dates)
