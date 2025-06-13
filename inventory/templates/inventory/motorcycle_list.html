@@ -1,0 +1,332 @@
+{% extends 'core/layout.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen font-sans">
+    <div class="container mx-auto px-4 py-8">
+        
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-extrabold text-gray-800 tracking-tight">{{ page_title }}</h1>
+            <p class="text-lg text-gray-600 mt-2">Browse our collection of premium motorcycles.</p>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+
+            <!-- Filter Menu -->
+            <aside class="w-full lg:w-1/4">
+                <div class="bg-white p-6 rounded-2xl shadow-lg sticky top-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-3">Filters</h2>
+                    <form id="filter-form">
+                        <!-- Brand Filter -->
+                        <div class="mb-6">
+                            <label for="brand-select" class="block text-sm font-semibold text-gray-700 mb-2">Brand</label>
+                            <select id="brand-select" name="brand" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-blue-500 transition-all">
+                                <option value="">All Brands</option>
+                                {% for make in unique_makes %}
+                                <option value="{{ make }}">{{ make }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Year Range Filter -->
+                        <div class="mb-6">
+                             <label class="block text-sm font-semibold text-gray-700 mb-2">Year</label>
+                            <div class="flex items-center space-x-2">
+                               <select id="year-min-select" name="year_min" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-blue-500 transition-all">
+                                    <option value="">Min</option>
+                                     {% for year in years %}
+                                        <option value="{{ year }}">{{ year }}</option>
+                                     {% endfor %}
+                                </select>
+                                 <span class="text-gray-500">-</span>
+                                 <select id="year-max-select" name="year_max" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-blue-500 transition-all">
+                                    <option value="">Max</option>
+                                     {% for year in years %}
+                                        <option value="{{ year }}">{{ year }}</option>
+                                     {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Price Range Filter -->
+                        <div class="mb-6">
+                            <label for="price-range" class="block text-sm font-semibold text-gray-700 mb-2">Price Range</label>
+                            <div class="flex items-center space-x-2">
+                                <input type="number" name="price_min" placeholder="Min" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-blue-500 transition-all" step="100">
+                                <span class="text-gray-500">-</span>
+                                <input type="number" name="price_max" placeholder="Max" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-blue-500 transition-all" step="100">
+                            </div>
+                        </div>
+                        
+                        <!-- Engine Size Filter -->
+                        <div class="mb-6">
+                            <label for="engine-size-range" class="block text-sm font-semibold text-gray-700 mb-2">Engine (cc)</label>
+                            <div class="flex items-center space-x-2">
+                                <input type="number" name="engine_min_cc" placeholder="Min" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-blue-500 transition-all" step="50">
+                                <span class="text-gray-500">-</span>
+                                <input type="number" name="engine_max_cc" placeholder="Max" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-blue-500 transition-all" step="50">
+                            </div>
+                        </div>
+
+                        <div class="flex space-x-2 mt-4">
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105">Apply</button>
+                            <button type="reset" id="reset-filters" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105">Reset</button>
+                        </div>
+                    </form>
+                </div>
+            </aside>
+
+            <!-- Main Content: Motorcycle List -->
+            <main class="w-full lg:w-3/4">
+                <!-- Sort Dropdown -->
+                <div class="mb-6 flex justify-end">
+                    <select id="sort-by" name="order" class="bg-white border-2 border-gray-300 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:border-blue-500 transition-all shadow-sm">
+                        <option value="">Sort by...</option>
+                        <option value="price_low_to_high">Price: Low to High</option>
+                        <option value="price_high_to_low">Price: High to Low</option>
+                        <option value="age_new_to_old">Year: New to Old</option>
+                        <option value="age_old_to_new">Year: Old to New</option>
+                    </select>
+                </div>
+
+                <!-- Motorcycle Grid -->
+                <div id="motorcycle-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                    {% for motorcycle in motorcycles %}
+                        <div class="bg-white rounded-2xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 ease-in-out group">
+                            <a href="" class="block">
+                                <div class="relative">
+                                    <img src="{% if motorcycle.image %}{{ motorcycle.image.url }}{% else %}https://placehold.co/600x400/e2e8f0/333?text=No+Image{% endif %}" alt="{{ motorcycle.title }}" class="w-full h-56 object-cover">
+                                    <div class="absolute top-4 right-4 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">{{ motorcycle.get_conditions_display }}</div>
+                                </div>
+                                <div class="p-6">
+                                    <h3 class="text-xl font-bold text-gray-800 truncate">{{ motorcycle.title }}</h3>
+                                    <p class="text-2xl font-extrabold text-blue-600 my-2">
+                                        {% if motorcycle.is_for_hire %}
+                                            {% if motorcycle.daily_hire_rate %}
+                                                ${{ motorcycle.daily_hire_rate|floatformat:2 }} / day
+                                            {% else %}
+                                                Price on request
+                                            {% endif %}
+                                        {% elif motorcycle.price %}
+                                            ${{ motorcycle.price|floatformat:2 }}
+                                        {% else %}
+                                            Price on request
+                                        {% endif %}
+                                    </p>
+                                    <div class="grid grid-cols-3 gap-4 text-sm text-gray-600 mt-4 border-t pt-4">
+                                        <div class="text-center">
+                                            <p class="font-semibold">Year</p>
+                                            <p>{{ motorcycle.year }}</p>
+                                        </div>
+                                        <div class="text-center">
+                                            <p class="font-semibold">Odometer</p>
+                                            <p>{{ motorcycle.odometer }} km</p>
+                                        </div>
+                                        <div class="text-center">
+                                            <p class="font-semibold">Engine</p>
+                                            <p>{{ motorcycle.engine_size }} cc</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    {% empty %}
+                        <p id="no-results-message" class="text-gray-500 col-span-full text-center py-12">No motorcycles match the current criteria.</p>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                <div id="pagination-controls" class="mt-12 flex justify-center items-center space-x-2">
+                    {% if page_obj.has_previous %}
+                    <a href="#" data-page="{{ page_obj.previous_page_number }}" class="pagination-link rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 shadow-sm">Previous</a>
+                    {% endif %}
+                    {% if page_obj.paginator.num_pages > 1 %}
+                    <span class="page-current px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg shadow-md">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                    {% endif %}
+                    {% if page_obj.has_next %}
+                    <a href="#" data-page="{{ page_obj.next_page_number }}" class="pagination-link rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 shadow-sm">Next</a>
+                    {% endif %}
+                </div>
+            </main>
+        </div>
+    </div>
+</div>
+
+
+<!-- JS Template for dynamic loading. This is NOT displayed initially. -->
+<template id="motorcycle-tile-template">
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 ease-in-out group">
+        <a href="#" class="block motorcycle-link">
+            <div class="relative">
+                <img src="https://placehold.co/600x400/e2e8f0/333?text=Bike+Image" alt="Motorcycle Image" class="w-full h-56 object-cover motorcycle-image">
+                <div class="absolute top-4 right-4 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full motorcycle-condition"></div>
+            </div>
+            <div class="p-6">
+                <h3 class="text-xl font-bold text-gray-800 truncate motorcycle-title"></h3>
+                <p class="text-2xl font-extrabold text-blue-600 my-2 motorcycle-price"></p>
+                <div class="grid grid-cols-3 gap-4 text-sm text-gray-600 mt-4 border-t pt-4">
+                    <div class="text-center">
+                        <p class="font-semibold">Year</p>
+                        <p class="motorcycle-year"></p>
+                    </div>
+                    <div class="text-center">
+                        <p class="font-semibold">Odometer</p>
+                        <p class="motorcycle-odometer"></p>
+                    </div>
+                    <div class="text-center">
+                        <p class="font-semibold">Engine</p>
+                        <p class="motorcycle-engine"></p>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+</template>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // --- DOM Elements ---
+    const filterForm = document.getElementById('filter-form');
+    const sortBy = document.getElementById('sort-by');
+    const motorcycleGrid = document.getElementById('motorcycle-grid');
+    const paginationControls = document.getElementById('pagination-controls');
+    const tileTemplate = document.getElementById('motorcycle-tile-template');
+
+    // --- State ---
+    let currentPage = 1;
+
+    // --- Functions ---
+
+    /**
+     * Fetches motorcycle data from the server based on current filters, sorting, and page.
+     * @param {number} page - The page number to fetch.
+     */
+    async function fetchMotorcycles(page = 1) {
+        const formData = new FormData(filterForm);
+        const params = new URLSearchParams(formData);
+        
+        if (sortBy.value) {
+            params.append('order', sortBy.value);
+        }
+        params.append('condition_slug', '{{ current_condition_slug }}');
+        params.append('page', page);
+        currentPage = page;
+
+        const url = `{% url 'inventory:ajax-get-motorcycle-list' %}?${params.toString()}`;
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            renderMotorcycles(data.motorcycles);
+            renderPagination(data.page_obj);
+        } catch (error) {
+            console.error('Error fetching motorcycles:', error);
+            motorcycleGrid.innerHTML = '<p class="text-red-500 col-span-full text-center py-12">Failed to load motorcycles. Please try again later.</p>';
+        }
+    }
+
+    /**
+     * Renders motorcycle tiles in the grid using the <template> tag.
+     * @param {Array} motorcycles - An array of motorcycle objects.
+     */
+    function renderMotorcycles(motorcycles) {
+        motorcycleGrid.innerHTML = ''; // Clear existing grid
+        if (motorcycles.length === 0) {
+            motorcycleGrid.innerHTML = '<p id="no-results-message" class="text-gray-500 col-span-full text-center py-12">No motorcycles match the current criteria.</p>';
+            return;
+        }
+
+        motorcycles.forEach(bike => {
+            const tileContent = tileTemplate.content.cloneNode(true);
+            const tile = tileContent.querySelector('.group'); // Get the main div
+            
+            // Your motorcycle.py defines get_absolute_url which links to 'inventory:motorcycle-detail'.
+            // This assumes that URL exists and follows a pattern like /motorcycles/<pk>/.
+            // We construct it manually for the client-side rendering.
+            const detailUrl = `/inventory/motorcycles/${bike.id}/`; 
+            tile.querySelector('.motorcycle-link').href = detailUrl;
+
+            const image = tile.querySelector('.motorcycle-image');
+            image.src = bike.image_url || 'https://placehold.co/600x400/e2e8f0/333?text=No+Image';
+            image.alt = bike.title;
+            
+            tile.querySelector('.motorcycle-title').textContent = bike.title;
+            
+            let priceText = 'Price on request';
+            if(bike.is_for_hire) {
+                if(bike.daily_hire_rate) {
+                    priceText = `$${parseFloat(bike.daily_hire_rate).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} / day`;
+                }
+            } else if (bike.price) {
+                priceText = `$${parseFloat(bike.price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            }
+            tile.querySelector('.motorcycle-price').textContent = priceText;
+
+            tile.querySelector('.motorcycle-condition').textContent = bike.condition_display;
+            tile.querySelector('.motorcycle-year').textContent = bike.year;
+            tile.querySelector('.motorcycle-odometer').textContent = `${bike.odometer.toLocaleString('en-US')} km`;
+            tile.querySelector('.motorcycle-engine').textContent = `${bike.engine_size} cc`;
+            
+            motorcycleGrid.appendChild(tile);
+        });
+    }
+
+    /**
+     * Renders pagination controls.
+     * @param {object} pageObj - The pagination object from the server.
+     */
+    function renderPagination(pageObj) {
+        paginationControls.innerHTML = '';
+        if (!pageObj || pageObj.num_pages <= 1) {
+            return;
+        }
+
+        let html = '';
+        if (pageObj.has_previous) {
+            html += `<a href="#" data-page="${pageObj.previous_page_number}" class="pagination-link rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 shadow-sm">Previous</a>`;
+        }
+
+        html += `<span class="page-current px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg shadow-md">Page ${pageObj.number} of ${pageObj.num_pages}</span>`;
+        
+        if (pageObj.has_next) {
+            html += `<a href="#" data-page="${pageObj.next_page_number}" class="pagination-link rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 shadow-sm">Next</a>`;
+        }
+        paginationControls.innerHTML = html;
+    }
+
+
+    // --- Event Listeners ---
+    filterForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        fetchMotorcycles(1);
+    });
+
+    sortBy.addEventListener('change', () => {
+        fetchMotorcycles(1);
+    });
+
+    filterForm.addEventListener('reset', () => {
+        // Use setTimeout to allow form fields to clear before fetching
+        setTimeout(() => fetchMotorcycles(1), 0);
+    });
+
+    paginationControls.addEventListener('click', (e) => {
+        if (e.target.matches('.pagination-link')) {
+            e.preventDefault();
+            const page = e.target.dataset.page;
+            fetchMotorcycles(page);
+        }
+    });
+
+});
+</script>
+{% endblock %}
