@@ -1,10 +1,7 @@
 # inventory/forms/sales_booking_appointment_form.py
 
 from django import forms
-from django.core.exceptions import ValidationError
-from datetime import date, datetime, timedelta, time
-
-# Import the new validation utilities
+from datetime import date, timedelta
 from inventory.utils.validate_appointment_date import validate_appointment_date
 from inventory.utils.validate_appointment_time import validate_appointment_time
 
