@@ -30,6 +30,7 @@ class Step2BookingDetailsView(View):
             'appointment_date': temp_booking.appointment_date,
             'appointment_time': temp_booking.appointment_time,
             'customer_notes': temp_booking.customer_notes,
+            'terms_accepted': temp_booking.terms_accepted, # Pass initial value for terms_accepted
         }
 
         form = BookingAppointmentForm(
@@ -73,11 +74,13 @@ class Step2BookingDetailsView(View):
                 request_viewing = form.cleaned_data.get('request_viewing') # This is now a boolean due to clean_request_viewing
                 appointment_date = form.cleaned_data.get('appointment_date')
                 appointment_time = form.cleaned_data.get('appointment_time')
+                terms_accepted = form.cleaned_data.get('terms_accepted') # Get the new field
 
                 temp_booking.customer_notes = customer_notes
                 temp_booking.request_viewing = request_viewing
                 temp_booking.appointment_date = appointment_date
                 temp_booking.appointment_time = appointment_time
+                temp_booking.terms_accepted = terms_accepted # Save the new field
                 temp_booking.save()
 
                 if temp_booking.deposit_required_for_flow:
@@ -112,4 +115,3 @@ class Step2BookingDetailsView(View):
             }
             messages.error(request, "Please correct the errors below.")
             return render(request, self.template_name, context)
-

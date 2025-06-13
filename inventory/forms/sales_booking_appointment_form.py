@@ -33,8 +33,15 @@ class BookingAppointmentForm(forms.Form):
     customer_notes = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
         required=False,
-        label="Additional Notes",
+        label="Message to Admin", # Changed label here
         help_text="Any specific requests or information for us."
+    )
+    # New field for terms and conditions acceptance
+    terms_accepted = forms.BooleanField(
+        required=True,
+        label="I accept the Terms and Conditions",
+        widget=forms.CheckboxInput(attrs={'class': 'form-checkbox h-4 w-4 text-indigo-600 rounded'}),
+        error_messages={'required': "You must accept the terms and conditions to proceed."}
     )
 
     def __init__(self, *args, **kwargs):
@@ -80,6 +87,7 @@ class BookingAppointmentForm(forms.Form):
         request_viewing = cleaned_data.get('request_viewing') # This will now be a boolean due to clean_request_viewing
         appointment_date = cleaned_data.get('appointment_date')
         appointment_time = cleaned_data.get('appointment_time')
+        terms_accepted = cleaned_data.get('terms_accepted') # Get the new field
 
         # Determine if an appointment is truly required based on flow type or user's 'request_viewing' choice
         is_appointment_required = self.deposit_required_for_flow or \
@@ -106,5 +114,9 @@ class BookingAppointmentForm(forms.Form):
             # If no appointment is required, clear any submitted date/time to avoid validation issues
             cleaned_data['appointment_date'] = None
             cleaned_data['appointment_time'] = None
+        
+        # Terms and conditions must always be accepted if present on the form (which it always will be now)
+        if not terms_accepted:
+            self.add_error('terms_accepted', "You must accept the terms and conditions.")
 
         return cleaned_data

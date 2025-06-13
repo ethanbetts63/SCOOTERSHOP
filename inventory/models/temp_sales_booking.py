@@ -102,6 +102,11 @@ class TempSalesBooking(models.Model):
         null=True,
         help_text="Any additional notes or messages provided by the customer during the process."
     )
+    # New field for terms and conditions
+    terms_accepted = models.BooleanField(
+        default=False,
+        help_text="Indicates if the customer accepted the terms and conditions."
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         help_text="The date and time when this temporary booking was created."
