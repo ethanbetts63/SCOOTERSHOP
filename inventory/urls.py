@@ -24,13 +24,19 @@ from .views.admin_views import (
     sales_profile_management_view, 
 )
 
-# from .ajax import (
-
-# )
-
+from .ajax import (
+    get_motorcycle_list,
+)
 
 app_name = 'inventory'
 
 urlpatterns = [
+    # Motorcycle List View
+    path('motorcycles/', motorcycle_list_view.MotorcycleListView.as_view(), {'condition_slug': 'all'}, name='all'),
+    path('motorcycles/new/', motorcycle_list_view.MotorcycleListView.as_view(), {'condition_slug': 'new'}, name='new'),
+    path('motorcycles/used/', motorcycle_list_view.MotorcycleListView.as_view(), {'condition_slug': 'used'}, name='used'),
+
+    # AJAX Endpoints
+    path('ajax/get-motorcycle-list/', get_motorcycle_list, name='ajax-get-motorcycle-list'),
 
 ]

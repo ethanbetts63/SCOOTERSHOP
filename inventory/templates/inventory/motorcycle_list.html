@@ -1,0 +1,288 @@
+{% extends "core/layout.html" %}
+{% load static %}
+
+{% block extra_css %}
+{# Link to your custom CSS if you have any, otherwise rely on Bootstrap #}
+<link rel="stylesheet" href="{% static 'css/motorcycle_list_styles.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h1 class="mb-4">{{ page_title }}</h1>
+
+    {# Filter Form #}
+    <div class="card mb-4 shadow-sm rounded-lg">
+        <div class="card-body">
+            <form id="filter-form" class="row g-3 align-items-end">
+                <input type="hidden" id="condition_slug_input" value="{{ current_condition_slug }}">
+
+                <div class="col-md-3">
+                    <label for="brand" class="form-label font-inter">Brand</label>
+                    <select name="brand" id="brand" class="form-select rounded">
+                        <option value="">All Brands</option>
+                        {% for b in unique_makes %}
+                        <option value="{{ b }}" {% if request.GET.brand == b %}selected{% endif %}>{{ b }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="model" class="form-label font-inter">Model Keyword</label>
+                    <input type="text" name="model" id="model" class="form-control rounded" value="{{ request.GET.model|default:'' }}" placeholder="e.g., CBR, Ninja">
+                </div>
+                <div class="col-md-2">
+                    <label for="year_min" class="form-label font-inter">Year From</label>
+                    <select name="year_min" id="year_min" class="form-select rounded">
+                        <option value="">Any</option>
+                        {% for year in "2000"|make_list %} {# Placeholder for years - replace with actual year list from context #}
+                        <option value="{{ year }}" {% if request.GET.year_min == year|stringformat:"d" %}selected{% endif %}>{{ year }}</option>
+                        {% endfor %}
+                        {# Assuming `years` context variable is provided by the view with a list of years #}
+                        {% for year in years %}
+                            <option value="{{ year }}" {% if request.GET.year_min == year|stringformat:"d" %}selected{% endif %}>{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="year_max" class="form-label font-inter">Year To</label>
+                    <select name="year_max" id="year_max" class="form-select rounded">
+                        <option value="">Any</option>
+                        {% for year in "2000"|make_list %} {# Placeholder for years - replace with actual year list from context #}
+                        <option value="{{ year }}" {% if request.GET.year_max == year|stringformat:"d" %}selected{% endif %}>{{ year }}</option>
+                        {% endfor %}
+                        {# Assuming `years` context variable is provided by the view with a list of years #}
+                        {% for year in years %}
+                            <option value="{{ year }}" {% if request.GET.year_max == year|stringformat:"d" %}selected{% endif %}>{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="price_min" class="form-label font-inter">Price Min</label>
+                    <input type="number" name="price_min" id="price_min" class="form-control rounded" value="{{ request.GET.price_min|default:'' }}" placeholder="Min Price">
+                </div>
+                <div class="col-md-2">
+                    <label for="price_max" class="form-label font-inter">Price Max</label>
+                    <input type="number" name="price_max" id="price_max" class="form-control rounded" value="{{ request.GET.price_max|default:'' }}" placeholder="Max Price">
+                </div>
+
+                {# Sort By (optional for AJAX, can be handled client-side or server-side) #}
+                <div class="col-md-3">
+                    <label for="order" class="form-label font-inter">Sort By</label>
+                    <select name="order" id="order" class="form-select rounded">
+                        <option value="price_low_to_high" {% if request.GET.order == 'price_low_to_high' %}selected{% endif %}>Price: Low to High</option>
+                        <option value="price_high_to_low" {% if request.GET.order == 'price_high_to_low' %}selected{% endif %}>Price: High to Low</option>
+                        <option value="age_new_to_old" {% if request.GET.order == 'age_new_to_old' %}selected{% endif %}>Year: Newest First</option>
+                        <option value="age_old_to_new" {% if request.GET.order == 'age_old_to_new' %}selected{% endif %}>Year: Oldest First</option>
+                    </select>
+                </div>
+                <div class="col-md-auto d-flex align-items-end">
+                    <button type="submit" id="apply-filters-btn" class="btn btn-primary me-2 rounded-lg shadow">Apply Filters</button>
+                    <button type="button" id="reset-filters-btn" class="btn btn-secondary rounded-lg shadow">Reset</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {# Loading Indicator #}
+    <div id="loading-indicator" class="text-center my-4" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading motorcycles...</p>
+    </div>
+
+    {# Motorcycle List Container - content will be dynamically updated by AJAX #}
+    <div id="motorcycle-list-container" class="row">
+        {# Initial motorcycles rendered by Django #}
+        {% include 'inventory/motorcycle_cards.html' %}
+    </div>
+
+    {# Pagination will be handled by JavaScript #}
+    <nav aria-label="Page navigation" id="pagination-container" class="mt-4">
+        {# Pagination links will be injected here by JavaScript #}
+    </nav>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterForm = document.getElementById('filter-form');
+        const motorcycleListContainer = document.getElementById('motorcycle-list-container');
+        const paginationContainer = document.getElementById('pagination-container');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const conditionSlugInput = document.getElementById('condition_slug_input');
+        const resetFiltersBtn = document.getElementById('reset-filters-btn');
+
+        // Function to fetch and display motorcycles via AJAX
+        async function fetchMotorcycles(page = 1) {
+            loadingIndicator.style.display = 'block'; // Show loading indicator
+            motorcycleListContainer.innerHTML = ''; // Clear previous content
+
+            const formData = new FormData(filterForm);
+            const params = new URLSearchParams();
+
+            // Append condition_slug from the hidden input
+            params.append('condition_slug', conditionSlugInput.value);
+
+            // Iterate over form data to get all filter parameters
+            for (const [key, value] of formData.entries()) {
+                if (value) { // Only include parameters with values
+                    // Special handling for 'makes' if it's a multi-select or array
+                    // For now, assuming single select for brand, so it's a simple string.
+                    // If 'makes' was a multi-select, you'd need to handle it as an array/JSON string.
+                    params.append(key, value);
+                }
+            }
+
+            // Append current page
+            params.append('page', page);
+
+            const url = `{% url 'inventory:ajax-get-motorcycle-list' %}?${params.toString()}`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                renderMotorcycles(data.motorcycles);
+                renderPagination(data.page_obj); // Assuming API returns page_obj for pagination
+                updateUniqueMakesFilter(data.unique_makes_for_filter); // Update brand filter based on new results
+            } catch (error) {
+                console.error('Error fetching motorcycles:', error);
+                motorcycleListContainer.innerHTML = '<p class="col-12 text-danger">Failed to load motorcycles. Please try again.</p>';
+                paginationContainer.innerHTML = '';
+            } finally {
+                loadingIndicator.style.display = 'none'; // Hide loading indicator
+            }
+        }
+
+        // Function to render motorcycles
+        function renderMotorcycles(motorcycles) {
+            if (motorcycles.length === 0) {
+                motorcycleListContainer.innerHTML = '<p class="col-12">No motorcycles found matching your criteria.</p>';
+                return;
+            }
+
+            let html = '';
+            motorcycles.forEach(motorcycle => {
+                const imageUrl = motorcycle.image_url ? motorcycle.image_url : "{% static 'images/no_image.jpg' %}";
+                const priceDisplay = motorcycle.price !== null ? `$${motorcycle.price.toFixed(2)}` : 'Contact for price';
+                // You might need to adjust the detail URL if it expects 'pk' (ID)
+                const detailUrl = `{% url 'inventory:user_motorcycle_details_view' 0 %}`.replace('0', motorcycle.id); // Dynamically set ID
+                // Check if motorcycle.is_for_hire exists and apply logic
+                const hireOrSalePrice = motorcycle.is_for_hire ?
+                    (motorcycle.daily_hire_rate ? `$${motorcycle.daily_hire_rate.toFixed(2)}/day` : 'Contact for rate') :
+                    (motorcycle.price ? `$${motorcycle.price.toFixed(2)}` : 'Contact for price');
+                const priceLabel = motorcycle.is_for_hire ? 'Hire' : 'Price';
+
+                html += `
+                    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                        <div class="card h-100 shadow-sm rounded-lg">
+                            <img src="${imageUrl}" class="card-img-top rounded-t-lg" alt="${motorcycle.title}" style="height: 200px; object-fit: cover;">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title font-inter text-lg font-semibold">${motorcycle.year} ${motorcycle.brand} ${motorcycle.model}</h5>
+                                <p class="card-text text-muted mb-1 font-inter">
+                                    ${priceLabel}: ${hireOrSalePrice}
+                                </p>
+                                <p class="card-text text-muted font-inter">Status: ${motorcycle.condition_display}</p>
+                                <div class="mt-auto d-flex justify-content-between align-items-center">
+                                    <a href="${detailUrl}" class="btn btn-sm btn-primary rounded-lg shadow">View Details</a>
+                                    {# Admin actions (if applicable) can be added here client-side if user context is available #}
+                                    {# Or handle based on user type #}
+                                    {% if request.user.is_staff %}
+                                    <div class="btn-group" role="group" aria-label="Admin Actions">
+                                        <a href="/admin/motorcycle/create-update/${motorcycle.id}/" class="btn btn-sm btn-info rounded-lg shadow">Edit</a>
+                                        {# Assuming a delete URL pattern exists: #}
+                                        {# <a href="/admin/motorcycle/delete/${motorcycle.id}/" class="btn btn-sm btn-danger rounded-lg shadow">Delete</a> #}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            motorcycleListContainer.innerHTML = html;
+        }
+
+        // Function to render pagination (simplified, assuming `page_obj` structure from Django ListView)
+        function renderPagination(page_obj) {
+            if (!page_obj || page_obj.num_pages <= 1) {
+                paginationContainer.innerHTML = '';
+                return;
+            }
+
+            let paginationHtml = '<ul class="pagination justify-content-center mt-4">';
+
+            // Previous button
+            if (page_obj.has_previous) {
+                paginationHtml += `<li class="page-item"><a class="page-link rounded" href="#" data-page="${page_obj.previous_page_number}">Previous</a></li>`;
+            }
+
+            // Page numbers
+            for (let i = 1; i <= page_obj.num_pages; i++) {
+                paginationHtml += `<li class="page-item ${i === page_obj.number ? 'active' : ''}"><a class="page-link rounded" href="#" data-page="${i}">${i}</a></li>`;
+            }
+
+            // Next button
+            if (page_obj.has_next) {
+                paginationHtml += `<li class="page-item"><a class="page-link rounded" href="#" data-page="${page_obj.next_page_number}">Next</a></li>`;
+            }
+
+            paginationHtml += '</ul>';
+            paginationContainer.innerHTML = paginationHtml;
+
+            // Add event listeners to new pagination links
+            paginationContainer.querySelectorAll('.page-link').forEach(link => {
+                link.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    const page = this.dataset.page;
+                    fetchMotorcycles(page);
+                });
+            });
+        }
+
+        // Function to update the unique makes dropdown based on current filters
+        function updateUniqueMakesFilter(makes) {
+            const brandSelect = document.getElementById('brand');
+            const currentSelectedBrand = brandSelect.value; // Keep track of currently selected brand
+
+            brandSelect.innerHTML = '<option value="">All Brands</option>'; // Clear existing options
+            makes.forEach(make => {
+                const option = document.createElement('option');
+                option.value = make;
+                option.textContent = make;
+                if (make === currentSelectedBrand) {
+                    option.selected = true; // Re-select if it was previously selected
+                }
+                brandSelect.appendChild(option);
+            });
+        }
+
+
+        // Event listener for filter form submission
+        filterForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+            fetchMotorcycles(1); // Fetch from page 1 when filters are applied
+        });
+
+        // Event listener for reset button
+        resetFiltersBtn.addEventListener('click', function() {
+            filterForm.reset(); // Reset all form fields
+            // Manually reset select elements to their default 'All' or 'Any'
+            document.getElementById('brand').value = '';
+            document.getElementById('model').value = '';
+            document.getElementById('year_min').value = '';
+            document.getElementById('year_max').value = '';
+            document.getElementById('price_min').value = '';
+            document.getElementById('price_max').value = '';
+            document.getElementById('order').value = 'price_low_to_high'; // Reset sort order if desired
+
+            fetchMotorcycles(1); // Fetch motorcycles with no filters
+        });
+    });
+</script>
+{% endblock %}
