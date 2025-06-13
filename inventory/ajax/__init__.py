@@ -1,1 +1,1 @@
-from .get_motorcycle_list import *
+from .ajax_get_motorcycle_list import *
