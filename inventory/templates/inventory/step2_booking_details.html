@@ -8,6 +8,33 @@
     <!-- Flatpickr CSS for Date -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+    <style>
+        /* Custom radio button styling */
+        .form-radio {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            display: inline-block;
+            vertical-align: middle;
+            background-color: #fff;
+            border: 1px solid #d1d5db; /* gray-300 */
+            border-radius: 50%;
+            width: 16px; /* h-4 */
+            height: 16px; /* w-4 */
+            outline: none;
+            cursor: pointer;
+        }
+
+        .form-radio:checked {
+            background-color: #4f46e5; /* indigo-600 */
+            border-color: #4f46e5; /* indigo-600 */
+            background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e");
+        }
+
+        .form-radio:focus {
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5); /* focus:ring-indigo-500 with opacity */
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -42,13 +69,18 @@
 
             <h3 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Appointment Details</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {# Request Viewing Checkbox #}
+                {# Request Viewing Radio Buttons #}
                 <div class="form-group md:col-span-2">
-                    <div class="flex items-center">
-                        {{ form.request_viewing }}
-                        <label for="{{ form.request_viewing.id_for_label }}" class="ml-2 block text-sm font-medium text-gray-700">
-                            {{ form.request_viewing.label }}
-                        </label>
+                    <label class="block text-sm font-medium text-gray-700">{{ form.request_viewing.label }}</label>
+                    <div class="mt-2 flex space-x-4">
+                        {% for radio in form.request_viewing %}
+                            <div class="flex items-center">
+                                {{ radio.tag }}
+                                <label for="{{ radio.id_for_label }}" class="ml-2 block text-sm font-medium text-gray-700">
+                                    {{ radio.choice_label }}
+                                </label>
+                            </div>
+                        {% endfor %}
                     </div>
                     {% if form.request_viewing.help_text %}
                         <p class="mt-1 text-sm text-gray-500">{{ form.request_viewing.help_text }}</p>
@@ -58,36 +90,39 @@
                     {% endfor %}
                 </div>
 
-                {# Appointment Date Field #}
-                <div class="form-group">
-                    <label for="{{ form.appointment_date.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                        {{ form.appointment_date.label }}
-                    </label>
-                    {{ form.appointment_date }}
-                    {% if form.appointment_date.help_text %}
-                        <p class="mt-1 text-sm text-gray-500">{{ form.appointment_date.help_text }}</p>
-                    {% endif %}
-                    {% for error in form.appointment_date.errors %}
-                        <p class="text-red-600 text-sm italic">{{ error }}</p>
-                    {% endfor %}
-                </div>
+                {# Appointment Date and Time Fields Container #}
+                <div id="appointment-fields-container" class="contents"> {# Use 'contents' to avoid breaking grid layout #}
+                    {# Appointment Date Field #}
+                    <div class="form-group">
+                        <label for="{{ form.appointment_date.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ form.appointment_date.label }}
+                        </label>
+                        {{ form.appointment_date }}
+                        {% if form.appointment_date.help_text %}
+                            <p class="mt-1 text-sm text-gray-500">{{ form.appointment_date.help_text }}</p>
+                        {% endif %}
+                        {% for error in form.appointment_date.errors %}
+                            <p class="text-red-600 text-sm italic">{{ error }}</p>
+                        {% endfor %}
+                    </div>
 
-                {# Appointment Time Field - Now a regular select #}
-                <div class="form-group">
-                    <label for="{{ form.appointment_time.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                        {{ form.appointment_time.label }}
-                    </label>
-                    <select id="{{ form.appointment_time.id_for_label }}" name="{{ form.appointment_time.name }}"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
-                                   focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-900 border"> {# Added 'border' and 'text-gray-900' classes #}
-                        <option value="">---------</option> {# Default empty option #}
-                    </select>
-                    {% if form.appointment_time.help_text %}
-                        <p class="mt-1 text-sm text-gray-500">{{ form.appointment_time.help_text }}</p>
-                    {% endif %}
-                    {% for error in form.appointment_time.errors %}
-                        <p class="text-red-600 text-sm italic">{{ error }}</p>
-                    {% endfor %}
+                    {# Appointment Time Field - Now a regular select #}
+                    <div class="form-group">
+                        <label for="{{ form.appointment_time.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ form.appointment_time.label }}
+                        </label>
+                        <select id="{{ form.appointment_time.id_for_label }}" name="{{ form.appointment_time.name }}"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
+                                       focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-900 border">
+                            <option value="">---------</option> {# Default empty option #}
+                        </select>
+                        {% if form.appointment_time.help_text %}
+                            <p class="mt-1 text-sm text-gray-500">{{ form.appointment_time.help_text }}</p>
+                        {% endif %}
+                        {% for error in form.appointment_time.errors %}
+                            <p class="text-red-600 text-sm italic">{{ error }}</p>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
 
@@ -137,26 +172,65 @@
             const appointmentDateInput = document.getElementById('id_appointment_date');
             const appointmentTimeSelect = document.getElementById('id_appointment_time');
             const parsedAvailableDates = JSON.parse(document.getElementById('available_dates_json').textContent);
+            const requestViewingRadios = document.querySelectorAll('input[name="request_viewing"]');
+            const appointmentFieldsContainer = document.getElementById('appointment-fields-container');
+            const depositRequiredForFlow = '{{ temp_booking.deposit_required_for_flow|lower }}'; // Pass boolean from Django
 
-            // Initialize Flatpickr for the appointment date input
-            flatpickr(appointmentDateInput, {
-                dateFormat: "Y-m-d",
-                minDate: "today",
-                enable: [
-                    function(date) {
-                        const formattedDate = flatpickr.formatDate(date, "Y-m-d");
-                        return parsedAvailableDates.includes(formattedDate);
-                    }
-                ],
-                onChange: function(selectedDates, dateStr, instance) {
-                    if (selectedDates.length > 0) {
-                        fetchAvailableTimes(dateStr);
+            let flatpickrInstance; // Declare variable to hold flatpickr instance
+
+            function toggleAppointmentFields() {
+                const selectedValue = document.querySelector('input[name="request_viewing"]:checked').value;
+                // If deposit is required, always show fields. Otherwise, show if 'yes' is selected.
+                const shouldShow = depositRequiredForFlow || (selectedValue === 'yes');
+
+                if (shouldShow) {
+                    appointmentFieldsContainer.style.display = 'contents'; // Show
+                    // Ensure date picker is re-initialized if it was destroyed or hidden
+                    if (!flatpickrInstance) {
+                        initializeFlatpickr();
                     } else {
-                        // Clear time options if date is cleared
-                        appointmentTimeSelect.innerHTML = '<option value="">---------</option>';
+                        // If it's already initialized but was hidden, ensure it's functional
+                        flatpickrInstance.setDate(appointmentDateInput.value, true); // Re-trigger onChange if date is pre-filled
+                    }
+                    // If a date is already selected, try to load times
+                    if (appointmentDateInput.value) {
+                         fetchAvailableTimes(appointmentDateInput.value);
+                    } else {
+                         // Clear time options if no date is selected
+                         appointmentTimeSelect.innerHTML = '<option value="">---------</option>';
+                    }
+                } else {
+                    appointmentFieldsContainer.style.display = 'none'; // Hide
+                    // Optionally clear date/time values when hiding
+                    appointmentDateInput.value = '';
+                    appointmentTimeSelect.innerHTML = '<option value="">---------</option>';
+                    if (flatpickrInstance) {
+                        flatpickrInstance.clear(); // Clear flatpickr's selection
                     }
                 }
-            });
+            }
+
+            function initializeFlatpickr() {
+                flatpickrInstance = flatpickr(appointmentDateInput, {
+                    dateFormat: "Y-m-d",
+                    minDate: "today",
+                    enable: [
+                        function(date) {
+                            const formattedDate = flatpickr.formatDate(date, "Y-m-d");
+                            return parsedAvailableDates.includes(formattedDate);
+                        }
+                    ],
+                    onChange: function(selectedDates, dateStr, instance) {
+                        if (selectedDates.length > 0) {
+                            fetchAvailableTimes(dateStr);
+                        } else {
+                            // Clear time options if date is cleared
+                            appointmentTimeSelect.innerHTML = '<option value="">---------</option>';
+                        }
+                    }
+                });
+            }
+
 
             // Function to fetch available times via AJAX
             function fetchAvailableTimes(selectedDate) {
@@ -200,10 +274,15 @@
                     });
             }
 
-            // Initial call if a date is already pre-selected (e.g., on form reload with errors)
-            if (appointmentDateInput.value) {
-                fetchAvailableTimes(appointmentDateInput.value);
-            }
+            // Add event listeners to radio buttons
+            requestViewingRadios.forEach(radio => {
+                radio.addEventListener('change', toggleAppointmentFields);
+            });
+
+            // Initial setup based on default/pre-selected value and deposit_required_for_flow
+            initializeFlatpickr(); // Initialize flatpickr on load
+            toggleAppointmentFields(); // Set initial visibility of appointment fields
+
         });
     </script>
 {% endblock %}
