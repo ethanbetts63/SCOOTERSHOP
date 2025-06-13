@@ -1,5 +1,5 @@
 from django import forms
-from inventory.models import SalesProfile, TempSalesBooking
+from inventory.models import SalesProfile, TempSalesBooking # Ensure TempSalesBooking is imported
 
 class SalesProfileForm(forms.ModelForm):
     class Meta:
@@ -11,8 +11,20 @@ class SalesProfileForm(forms.ModelForm):
             'date_of_birth'
         ]
         widgets = {
-            'drivers_license_expiry': forms.DateInput(attrs={'type': 'date'}),
-            'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
+            # Added 'text-gray-900' for dark text color
+            'name': forms.TextInput(attrs={'class': 'mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 text-gray-900'}),
+            'email': forms.EmailInput(attrs={'class': 'mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 text-gray-900'}),
+            'phone_number': forms.TextInput(attrs={'class': 'mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 text-gray-900'}),
+            'address_line_1': forms.TextInput(attrs={'class': 'mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 text-gray-900'}),
+            'address_line_2': forms.TextInput(attrs={'class': 'mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 text-gray-900'}),
+            'city': forms.TextInput(attrs={'class': 'mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 text-gray-900'}),
+            'state': forms.TextInput(attrs={'class': 'mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 text-gray-900'}),
+            'post_code': forms.TextInput(attrs={'class': 'mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 text-gray-900'}),
+            'country': forms.TextInput(attrs={'class': 'mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 text-gray-900'}),
+            'drivers_license_image': forms.ClearableFileInput(attrs={'class': 'mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-md cursor-pointer bg-gray-50 focus:outline-none'}), # text-gray-900 already here
+            'drivers_license_number': forms.TextInput(attrs={'class': 'mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 text-gray-900'}),
+            'drivers_license_expiry': forms.DateInput(attrs={'type': 'date', 'class': 'mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 text-gray-900'}),
+            'date_of_birth': forms.DateInput(attrs={'type': 'date', 'class': 'mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm p-2 text-gray-900'}),
         }
 
 
@@ -29,6 +41,27 @@ class SalesProfileForm(forms.ModelForm):
                 for field in self.fields:
                     if hasattr(sales_profile_instance, field):
                         self.initial[field] = getattr(sales_profile_instance, field)
+
+        # Apply required attribute based on inventory settings for address and DL fields
+        if self.inventory_settings:
+            if self.inventory_settings.require_address_info:
+                for field_name in ['address_line_1', 'city', 'post_code', 'country']:
+                    self.fields[field_name].required = True
+                    self.fields[field_name].widget.attrs.update({'placeholder': 'Required'})
+            else:
+                # If address not required, ensure these fields are not required by default
+                for field_name in ['address_line_1', 'address_line_2', 'city', 'state', 'post_code', 'country']:
+                    self.fields[field_name].required = False
+
+            if self.inventory_settings.require_drivers_license:
+                for field_name in ['drivers_license_number', 'drivers_license_expiry', 'drivers_license_image']:
+                    self.fields[field_name].required = True
+                    self.fields[field_name].widget.attrs.update({'placeholder': 'Required'})
+                self.fields['date_of_birth'].required = True # DOB is also required with DL
+            else:
+                # If DL not required, ensure these fields are not required by default
+                for field_name in ['drivers_license_number', 'drivers_license_expiry', 'drivers_license_image', 'date_of_birth']:
+                    self.fields[field_name].required = False
 
 
     def clean(self):
@@ -47,8 +80,9 @@ class SalesProfileForm(forms.ModelForm):
                 for field_name in required_dl_fields:
                     if not cleaned_data.get(field_name):
                         self.add_error(field_name, "This field is required based on inventory settings.")
-                # You might also want to validate drivers_license_image here if needed
-                # if not cleaned_data.get('drivers_license_image'):
-                #     self.add_error('drivers_license_image', "Driver's license image is required.")
+                if self.inventory_settings.require_drivers_license and not cleaned_data.get('drivers_license_image'):
+                    self.add_error('drivers_license_image', "Driver's license image is required based on inventory settings.")
+                if self.inventory_settings.require_drivers_license and not cleaned_data.get('date_of_birth'):
+                    self.add_error('date_of_birth', "Date of birth is required based on inventory settings.")
 
         return cleaned_data
