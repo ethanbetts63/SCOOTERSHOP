@@ -4,8 +4,9 @@ from django.urls import reverse
 from django.db import transaction
 from django.contrib import messages
 
-from inventory.models import TempSalesBooking, InventorySettings, SalesBooking, SalesProfile
+from inventory.models import TempSalesBooking, InventorySettings, SalesBooking
 from inventory.forms.sales_booking_appointment_form import BookingAppointmentForm
+from inventory.utils.get_available_appointment_dates import get_available_appointment_dates
 
 class Step2BookingDetailsView(View):
     template_name = 'inventory/step2_booking_details.html'
@@ -36,10 +37,13 @@ class Step2BookingDetailsView(View):
             inventory_settings=inventory_settings
         )
 
+        available_dates = get_available_appointment_dates(inventory_settings)
+
         context = {
             'form': form,
             'temp_booking': temp_booking,
             'inventory_settings': inventory_settings,
+            'available_dates': [d.strftime('%Y-%m-%d') for d in available_dates], # Format dates for JavaScript
         }
         return render(request, self.template_name, context)
 
@@ -77,7 +81,7 @@ class Step2BookingDetailsView(View):
 
                 if temp_booking.deposit_required_for_flow:
                     messages.success(request, "Booking details saved. Proceed to payment.")
-                    return redirect(reverse('inventory:step3_payment'))
+                    return redirect(reverse('inventory:payment_page'))
                 else:
                     sales_booking_status = 'enquired'
                     if request_viewing:
@@ -97,10 +101,13 @@ class Step2BookingDetailsView(View):
                     messages.success(request, "Your enquiry has been submitted. We will get back to you shortly!")
                     return redirect(reverse('inventory:confirmation_page'))
         else:
+            available_dates = get_available_appointment_dates(inventory_settings) # Re-fetch on error
             context = {
                 'form': form,
                 'temp_booking': temp_booking,
                 'inventory_settings': inventory_settings,
+                'available_dates': [d.strftime('%Y-%m-%d') for d in available_dates],
             }
             messages.error(request, "Please correct the errors below.")
             return render(request, self.template_name, context)
+
