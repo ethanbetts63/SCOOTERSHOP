@@ -25,6 +25,11 @@ class InventorySettings(models.Model):
         help_text="Allow customers to reserve a motorcycle by paying a deposit."
     )
 
+    enable_viewing_for_enquiry = models.BooleanField(
+        default=True, # Set default based on desired behavior
+        help_text="Allow customers to request a specific viewing/appointment date/time within the deposit-less enquiry flow."
+    )
+
     # Deposit Settings
     deposit_amount = models.DecimalField(
         max_digits=10,
