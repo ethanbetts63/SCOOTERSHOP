@@ -191,22 +191,14 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // --- DOM Elements ---
     const filterForm = document.getElementById('filter-form');
     const sortBy = document.getElementById('sort-by');
     const motorcycleGrid = document.getElementById('motorcycle-grid');
     const paginationControls = document.getElementById('pagination-controls');
     const tileTemplate = document.getElementById('motorcycle-tile-template');
 
-    // --- State ---
     let currentPage = 1;
 
-    // --- Functions ---
-
-    /**
-     * Fetches motorcycle data from the server based on current filters, sorting, and page.
-     * @param {number} page - The page number to fetch.
-     */
     async function fetchMotorcycles(page = 1) {
         const formData = new FormData(filterForm);
         const params = new URLSearchParams(formData);
@@ -234,12 +226,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    /**
-     * Renders motorcycle tiles in the grid using the <template> tag.
-     * @param {Array} motorcycles - An array of motorcycle objects.
-     */
     function renderMotorcycles(motorcycles) {
-        motorcycleGrid.innerHTML = ''; // Clear existing grid
+        motorcycleGrid.innerHTML = '';
         if (motorcycles.length === 0) {
             motorcycleGrid.innerHTML = '<p id="no-results-message" class="text-gray-500 col-span-full text-center py-12">No motorcycles match the current criteria.</p>';
             return;
@@ -247,11 +235,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         motorcycles.forEach(bike => {
             const tileContent = tileTemplate.content.cloneNode(true);
-            const tile = tileContent.querySelector('.group'); // Get the main div
+            const tile = tileContent.querySelector('.group');
             
-            // Your motorcycle.py defines get_absolute_url which links to 'inventory:motorcycle-detail'.
-            // This assumes that URL exists and follows a pattern like /motorcycles/<pk>/.
-            // We construct it manually for the client-side rendering.
             const detailUrl = `/inventory/motorcycles/${bike.id}/`; 
             tile.querySelector('.motorcycle-link').href = detailUrl;
 
@@ -280,10 +265,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    /**
-     * Renders pagination controls.
-     * @param {object} pageObj - The pagination object from the server.
-     */
     function renderPagination(pageObj) {
         paginationControls.innerHTML = '';
         if (!pageObj || pageObj.num_pages <= 1) {
@@ -303,8 +284,6 @@ document.addEventListener('DOMContentLoaded', function() {
         paginationControls.innerHTML = html;
     }
 
-
-    // --- Event Listeners ---
     filterForm.addEventListener('submit', (e) => {
         e.preventDefault();
         fetchMotorcycles(1);
@@ -315,7 +294,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     filterForm.addEventListener('reset', () => {
-        // Use setTimeout to allow form fields to clear before fetching
         setTimeout(() => fetchMotorcycles(1), 0);
     });
 
@@ -326,6 +304,9 @@ document.addEventListener('DOMContentLoaded', function() {
             fetchMotorcycles(page);
         }
     });
+
+    // Initial fetch of motorcycles when the DOM is loaded
+    fetchMotorcycles(1);
 
 });
 </script>
