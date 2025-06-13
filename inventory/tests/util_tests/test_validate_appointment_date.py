@@ -4,7 +4,6 @@ from django.test import TestCase
 from datetime import date, datetime, time, timedelta
 
 from inventory.utils.validate_appointment_date import validate_appointment_date
-from inventory.models import InventorySettings
 from ..test_helpers.model_factories import InventorySettingsFactory
 
 class ValidateAppointmentDateUtilTest(TestCase):

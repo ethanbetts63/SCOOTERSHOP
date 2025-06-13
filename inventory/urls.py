@@ -28,6 +28,7 @@ from .views.admin_views import (
 
 from .ajax import (
     get_motorcycle_list,
+    get_available_appointment_times_for_date
 )
 
 app_name = 'inventory'
@@ -49,5 +50,5 @@ urlpatterns = [
     
     # AJAX Endpoints
     path('ajax/get-motorcycle-list/', get_motorcycle_list, name='ajax-get-motorcycle-list'),
-
+    path('ajax/get_appointment_times/', get_available_appointment_times_for_date, name='ajax_get_appointment_times'),
 ]

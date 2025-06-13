@@ -1,7 +1,7 @@
 # inventory/utils/validate_appointment_date.py
 
 from datetime import date, datetime, timedelta
-from inventory.models import BlockedSalesDate # Import BlockedSalesDate
+from inventory.models import BlockedSalesDate
 
 def validate_appointment_date(appointment_date: date, inventory_settings):
     errors = []
@@ -35,7 +35,7 @@ def validate_appointment_date(appointment_date: date, inventory_settings):
         errors.append(
             "Appointments are not available on the selected day of the week."
         )
-        
+
     if BlockedSalesDate.objects.filter(
         start_date__lte=appointment_date,
         end_date__gte=appointment_date
