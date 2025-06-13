@@ -4,9 +4,9 @@ from django.urls import path
 
 from .views.user_views import (
     motorcycle_list_view, 
-    step1_details_appointment_and_motorcycle_view, 
-    step2_payment_view, 
-    step3_confirmation_view, 
+    step1_sales_profile, 
+    step3_payment_view,
+    step4_confirmation_view, 
     user_motorcycle_details_view, 
 )
 

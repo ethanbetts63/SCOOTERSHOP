@@ -99,6 +99,11 @@ class TempSalesBooking(models.Model):
         help_text="The date and time when this temporary booking was last updated."
     )
 
+    deposit_required_for_flow = models.BooleanField(
+        default=False,
+        help_text="Indicates if this temporary booking initiated a flow requiring a deposit."
+    )
+
     class Meta:
         verbose_name = "Temporary Sales Booking"
         verbose_name_plural = "Temporary Sales Bookings"
