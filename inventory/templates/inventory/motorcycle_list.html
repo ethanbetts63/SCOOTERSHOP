@@ -96,7 +96,7 @@
                 <div id="motorcycle-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
                     {% for motorcycle in motorcycles %}
                         <div class="bg-white rounded-2xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 ease-in-out group">
-                            <a href="" class="block">
+                            <a href="{% url 'inventory:motorcycle-detail' pk=motorcycle.pk %}" class="block">
                                 <div class="relative">
                                     <img src="{% if motorcycle.image %}{{ motorcycle.image.url }}{% else %}https://placehold.co/600x400/e2e8f0/333?text=No+Image{% endif %}" alt="{{ motorcycle.title }}" class="w-full h-56 object-cover">
                                     <div class="absolute top-4 right-4 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">{{ motorcycle.get_conditions_display }}</div>
