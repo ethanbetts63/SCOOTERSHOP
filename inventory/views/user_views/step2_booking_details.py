@@ -4,6 +4,7 @@ from django.urls import reverse
 from django.db import transaction
 from django.contrib import messages
 from decimal import Decimal
+import json # Import the json module
 
 from inventory.models import TempSalesBooking, InventorySettings, SalesBooking, SalesProfile
 from inventory.forms.sales_booking_appointment_form import BookingAppointmentForm
@@ -40,13 +41,17 @@ class Step2BookingDetailsView(View):
             inventory_settings=inventory_settings
         )
 
-        available_dates = get_available_appointment_dates(inventory_settings)
+        available_dates = get_available_appointment_dates(inventory_settings, temp_booking.deposit_required_for_flow)
+        
+        # Convert the list of dates to a JSON string using json.dumps
+        # This ensures proper double quotes for JavaScript parsing
+        available_dates_json = json.dumps([d.strftime('%Y-%m-%d') for d in available_dates])
 
         context = {
             'form': form,
             'temp_booking': temp_booking,
             'inventory_settings': inventory_settings,
-            'available_dates': [d.strftime('%Y-%m-%d') for d in available_dates],
+            'available_dates': available_dates_json, # Pass the JSON string here
         }
         return render(request, self.template_name, context)
 
@@ -95,21 +100,20 @@ class Step2BookingDetailsView(View):
                         stripe_payment_intent_id=None,
                         payment_obj=None,
                     )
-                    # Clear the temporary booking ID from session
                     if 'current_temp_booking_id' in request.session:
                         del request.session['current_temp_booking_id']
-                    # Store the permanent sales booking reference in session
                     request.session['current_sales_booking_reference'] = converted_sales_booking.sales_booking_reference
 
                     messages.success(request, "Your enquiry has been submitted. We will get back to you shortly!")
                     return redirect(reverse('inventory:confirmation_page'))
         else:
-            available_dates = get_available_appointment_dates(inventory_settings)
+            available_dates = get_available_appointment_dates(inventory_settings, temp_booking.deposit_required_for_flow)
+            available_dates_json = json.dumps([d.strftime('%Y-%m-%d') for d in available_dates])
             context = {
                 'form': form,
                 'temp_booking': temp_booking,
                 'inventory_settings': inventory_settings,
-                'available_dates': [d.strftime('%Y-%m-%d') for d in available_dates],
+                'available_dates': available_dates_json, # Pass the JSON string here
             }
             messages.error(request, "Please correct the errors below.")
             return render(request, self.template_name, context)

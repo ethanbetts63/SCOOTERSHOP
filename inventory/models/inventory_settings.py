@@ -38,7 +38,7 @@ class InventorySettings(models.Model):
         help_text="The fixed amount required for a motorcycle reservation deposit."
     )
     deposit_lifespan_days = models.IntegerField(
-        default=5, # Default to 3 days
+        default=5,
         help_text="Number of days a deposit holds a motorcycle reservation. After this period, the reservation may expire."
     )
     auto_refund_expired_deposits = models.BooleanField(

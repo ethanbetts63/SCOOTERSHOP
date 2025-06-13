@@ -222,54 +222,64 @@
 {% block extra_js %}
     <!-- Flatpickr JS for Date -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    {# Embed available dates as JSON for JavaScript #}
+    <script id="available_dates_data" type="application/json">
+        {{ available_dates|safe }}
+    </script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const appointmentDateInput = document.getElementById('id_appointment_date');
             const appointmentTimeSelect = document.getElementById('id_appointment_time');
-            // Ensure available_dates_json exists before trying to parse
-            const availableDatesJsonElement = document.getElementById('available_dates_json');
-            const parsedAvailableDates = availableDatesJsonElement ? JSON.parse(availableDatesJsonElement.textContent) : [];
+            
+            // Retrieve available dates from the new script tag
+            const availableDatesDataElement = document.getElementById('available_dates_data');
+            const parsedAvailableDates = availableDatesDataElement ? JSON.parse(availableDatesDataElement.textContent) : [];
+
+            console.log("JavaScript parsedAvailableDates:", parsedAvailableDates);
 
             const requestViewingRadios = document.querySelectorAll('input[name="request_viewing"]');
             const appointmentFieldsContainer = document.getElementById('appointment-fields-container');
-            const depositRequiredForFlow = '{{ temp_booking.deposit_required_for_flow|lower }}'; // Pass boolean from Django
+            const depositRequiredForFlow = '{{ temp_booking.deposit_required_for_flow|lower }}' === 'true'; // Convert to boolean
 
-            let flatpickrInstance; // Declare variable to hold flatpickr instance
+            let flatpickrInstance;
 
             function toggleAppointmentFields() {
-                const selectedValue = document.querySelector('input[name="request_viewing"]:checked').value;
-                // If deposit is required, always show fields. Otherwise, show if 'yes' is selected.
-                const shouldShow = depositRequiredForFlow === 'true' || (selectedValue === 'yes'); // Compare with string 'true'
+                let selectedValue;
+                if (depositRequiredForFlow) {
+                    selectedValue = 'yes'; // Force 'yes' if deposit is required
+                } else {
+                    // Only query for checked radio button if it's not a deposit flow
+                    const checkedRadio = document.querySelector('input[name="request_viewing"]:checked');
+                    selectedValue = checkedRadio ? checkedRadio.value : null; // Handle null case gracefully
+                }
+                
+                const shouldShow = depositRequiredForFlow || (selectedValue === 'yes');
 
                 if (shouldShow) {
-                    appointmentFieldsContainer.style.display = 'contents'; // Show
-                    // Ensure date picker is re-initialized if it was destroyed or hidden
+                    appointmentFieldsContainer.style.display = 'contents';
                     if (!flatpickrInstance) {
                         initializeFlatpickr();
                     } else {
-                        // If it's already initialized but was hidden, ensure it's functional
-                        // This will re-trigger onChange if date is pre-filled and valid
                         if (appointmentDateInput.value && parsedAvailableDates.includes(appointmentDateInput.value)) {
                             flatpickrInstance.setDate(appointmentDateInput.value, true);
                         } else {
-                            flatpickrInstance.clear(); // Clear if pre-filled date is invalid or empty
+                            flatpickrInstance.clear();
                         }
                     }
-                    // If a date is already selected (or freshly set by flatpickr), try to load times
                     if (appointmentDateInput.value) {
                          fetchAvailableTimes(appointmentDateInput.value);
                     } else {
-                         // Clear time options if no date is selected
                          appointmentTimeSelect.innerHTML = '<option value="">---------</option>';
                     }
                 } else {
-                    appointmentFieldsContainer.style.display = 'none'; // Hide
-                    // Optionally clear date/time values when hiding
+                    appointmentFieldsContainer.style.display = 'none';
                     appointmentDateInput.value = '';
                     appointmentTimeSelect.innerHTML = '<option value="">---------</option>';
                     if (flatpickrInstance) {
-                        flatpickrInstance.destroy(); // Destroy flatpickr instance when hiding
-                        flatpickrInstance = null; // Clear the instance
+                        flatpickrInstance.destroy();
+                        flatpickrInstance = null;
                     }
                 }
             }
@@ -277,7 +287,7 @@
             function initializeFlatpickr() {
                 flatpickrInstance = flatpickr(appointmentDateInput, {
                     dateFormat: "Y-m-d",
-                    minDate: "today",
+                    // Removed minDate: "today" as backend `enable` list should handle this
                     enable: [
                         function(date) {
                             const formattedDate = flatpickr.formatDate(date, "Y-m-d");
@@ -288,7 +298,6 @@
                         if (selectedDates.length > 0) {
                             fetchAvailableTimes(dateStr);
                         } else {
-                            // Clear time options if date is cleared
                             appointmentTimeSelect.innerHTML = '<option value="">---------</option>';
                         }
                     }
@@ -296,7 +305,6 @@
             }
 
 
-            // Function to fetch available times via AJAX
             function fetchAvailableTimes(selectedDate) {
                 const url = "{% url 'inventory:ajax_get_appointment_times' %}?date=" + selectedDate;
                 fetch(url)
@@ -307,7 +315,7 @@
                         return response.json();
                     })
                     .then(data => {
-                        appointmentTimeSelect.innerHTML = '<option value="">---------</option>'; // Clear existing options
+                        appointmentTimeSelect.innerHTML = '<option value="">---------</option>';
                         if (data.available_times && data.available_times.length > 0) {
                             data.available_times.forEach(time => {
                                 const option = document.createElement('option');
@@ -322,7 +330,6 @@
                             appointmentTimeSelect.appendChild(option);
                         }
 
-                        // If there was a pre-selected time from temp_booking, try to select it
                         const initialTime = "{{ temp_booking.appointment_time|time:'H:i' }}";
                         if (initialTime && initialTime !== 'None') {
                             const matchingOption = Array.from(appointmentTimeSelect.options).find(option => option.value === initialTime);
@@ -338,16 +345,12 @@
                     });
             }
 
-            // Add event listeners to radio buttons
             requestViewingRadios.forEach(radio => {
                 radio.addEventListener('change', toggleAppointmentFields);
             });
 
-            // Initial setup based on default/pre-selected value and deposit_required_for_flow
-            toggleAppointmentFields(); // Set initial visibility of appointment fields
-
-            // If an appointment date is pre-filled, trigger the time fetch (handled by toggleAppointmentFields now)
-            // No need for a separate call here.
+            // Initial setup
+            toggleAppointmentFields();
         });
     </script>
 {% endblock %}
