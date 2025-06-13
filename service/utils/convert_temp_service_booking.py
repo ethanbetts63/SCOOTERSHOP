@@ -89,6 +89,6 @@ def convert_temp_service_booking(
 
             return service_booking
 
-    except Exception: # Removed 'as e' as you requested no comments or prints
+    except Exception:
         raise
 

@@ -26,15 +26,15 @@ class BookingAppointmentForm(forms.Form):
     )
     appointment_time = forms.TimeField(
         required=False,
-        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}), # This widget is actually ignored now as it's a select in HTML
+        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
         label="Preferred Time",
         help_text="Choose your preferred time for the appointment."
     )
     customer_notes = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
         required=False,
-        label="Message to Admin", # Changed label here
-        help_text="Any specific requests or information for us."
+        label="Message to Admin",
+        help_text="Any specific questions or requests for us. This will be sent to our admin along with your contact details."
     )
     # New field for terms and conditions acceptance
     terms_accepted = forms.BooleanField(
