@@ -1,6 +1,7 @@
 # inventory/utils/validate_appointment_date.py
 
 from datetime import date, datetime, timedelta
+from inventory.models import BlockedSalesDate # Import BlockedSalesDate
 
 def validate_appointment_date(appointment_date: date, inventory_settings):
     errors = []
@@ -16,7 +17,6 @@ def validate_appointment_date(appointment_date: date, inventory_settings):
 
     if appointment_date < earliest_allowed_date:
         errors.append(f"Appointments must be booked at least {min_advance_hours} hours in advance from now, meaning from {earliest_allowed_date.strftime('%Y-%m-%d')}.")
-
 
     max_advance_days = inventory_settings.max_advance_booking_days
     max_booking_date = date.today() + timedelta(days=max_advance_days)
@@ -35,5 +35,11 @@ def validate_appointment_date(appointment_date: date, inventory_settings):
         errors.append(
             "Appointments are not available on the selected day of the week."
         )
+        
+    if BlockedSalesDate.objects.filter(
+        start_date__lte=appointment_date,
+        end_date__gte=appointment_date
+    ).exists():
+        errors.append("The selected date is blocked for appointments.")
 
     return errors
