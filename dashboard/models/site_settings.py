@@ -23,22 +23,6 @@ class SiteSettings(models.Model):
     enable_terms_page = models.BooleanField(default=True, help_text="Enable the terms and conditions page")
     enable_google_places_reviews = models.BooleanField(default=True, help_text="Enable displaying Google Places reviews")
 
-    # Service Booking Fields (Settings related to service booking)
-    allow_anonymous_bookings = models.BooleanField(default=True, help_text="Allow service bookings without an account")
-    allow_account_bookings = models.BooleanField(default=True, help_text="Allow service bookings with an account")
-    booking_open_days = models.IntegerField(default=60, help_text="Number of days in advance that bookings can be made")
-    drop_off_start_time = models.TimeField(default=time(9, 0), help_text="Earliest time of day for service drop-offs (e.g., 09:00)")
-    drop_off_end_time = models.TimeField(default=time(17, 0), help_text="Latest time of day for service drop-offs (e.g., 17:00)")
-    booking_advance_notice = models.IntegerField(default=1, help_text="Minimum number of days notice required for a booking")
-    max_visible_slots_per_day = models.IntegerField(default=6, help_text="Maximum number of booking slots to show per day")
-    service_confirmation_email_subject = models.CharField(max_length=200, default="Your service booking has been confirmed")
-    service_pending_email_subject = models.CharField(max_length=200, default="Your service booking request has been received")
-    admin_service_notification_email = models.EmailField(blank=True, null=True, help_text="Email address for service booking notifications")
-
-    # Sales Fields (Settings related to sales display)
-    display_new_prices = models.BooleanField(default=True, help_text="Display prices for new motorcycles")
-    display_used_prices = models.BooleanField(default=True, help_text="Display prices for used motorcycles")
-
     # Business Fields (General business contact info)
     phone_number = models.CharField(max_length=20, blank=True, null=True, default='(08) 9433 4613')
     email_address = models.EmailField(blank=True, null=True, default='admin@scootershop.com.au')
