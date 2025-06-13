@@ -111,14 +111,14 @@
 
             <!-- Action Buttons Section -->
             <div class="mt-10 pt-6 border-t border-gray-200 flex flex-col sm:flex-row justify-center items-center gap-4">
-                {% if settings.enable_depositless_enquiry %}
+                {% if inventory_settings.enable_depositless_enquiry %}
                 <a href="" class="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all transform hover:scale-105 w-full sm:w-auto">
                     <i class="fas fa-question-circle mr-3 text-xl"></i>
                     Submit Enquiry
                 </a>
                 {% endif %}
 
-                {% if settings.enable_reservation_by_deposit %}
+                {% if inventory_settings.enable_reservation_by_deposit %}
                 <a href="" class="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all transform hover:scale-105 w-full sm:w-auto">
                     <i class="fas fa-calendar-check mr-3 text-xl"></i>
                     Reserve with Deposit

@@ -21,6 +21,6 @@ class UserMotorcycleDetailsView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         inventory_settings = InventorySettings.objects.first() 
-        context['settings'] = inventory_settings
+        context['inventory_settings'] = inventory_settings
         
         return context
