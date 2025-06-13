@@ -42,7 +42,8 @@ urlpatterns = [
     path('motorcycles/<int:pk>/', user_motorcycle_details_view.UserMotorcycleDetailsView.as_view(), name='motorcycle-detail'),
     # User Flow 
     path('motorcycles/<int:pk>/initiate_booking/', initiate_booking_process_view.InitiateBookingProcessView.as_view(), name='initiate_booking'),
-    path('booking/details-and-appointment/', step2_booking_details.BookingDetailsAndAppointmentView.as_view(), name='booking_details_and_appointment'),
+    path('booking/your-details/', step1_sales_profile.Step1SalesProfileView.as_view(), name='step1_sales_profile'),
+    #path('booking/details-and-appointment/', step2_booking_details.BookingDetailsAndAppointmentView.as_view(), name='booking_details_and_appointment'),
     # Admin Views
     path('admin/settings/', inventory_settings_view.InventorySettingsView.as_view(), name='inventory_settings'),
     

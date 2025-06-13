@@ -11,7 +11,6 @@ class SalesProfileForm(forms.ModelForm):
             'date_of_birth'
         ]
         widgets = {
-            'appointment_date': forms.DateInput(attrs={'type': 'date'}),
             'drivers_license_expiry': forms.DateInput(attrs={'type': 'date'}),
             'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
         }
