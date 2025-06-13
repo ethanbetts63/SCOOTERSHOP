@@ -4,7 +4,9 @@ from django.urls import path
 
 from .views.user_views import (
     motorcycle_list_view, 
+    initiate_booking_process_view, 
     step1_sales_profile, 
+    step2_booking_details,
     step3_payment_view,
     step4_confirmation_view, 
     user_motorcycle_details_view, 
@@ -38,7 +40,9 @@ urlpatterns = [
 
     # Motorcycle Details View for Users
     path('motorcycles/<int:pk>/', user_motorcycle_details_view.UserMotorcycleDetailsView.as_view(), name='motorcycle-detail'),
-
+    # User Flow 
+    path('motorcycles/<int:pk>/initiate_booking/', initiate_booking_process_view.InitiateBookingProcessView.as_view(), name='initiate_booking'),
+    path('booking/details-and-appointment/', step2_booking_details.BookingDetailsAndAppointmentView.as_view(), name='booking_details_and_appointment'),
     # Admin Views
     path('admin/settings/', inventory_settings_view.InventorySettingsView.as_view(), name='inventory_settings'),
     
