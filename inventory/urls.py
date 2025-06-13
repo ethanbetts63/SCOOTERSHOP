@@ -39,6 +39,9 @@ urlpatterns = [
     # Motorcycle Details View for Users
     path('motorcycles/<int:pk>/', user_motorcycle_details_view.UserMotorcycleDetailsView.as_view(), name='motorcycle-detail'),
 
+    # Admin Views
+    path('admin/settings/', inventory_settings_view.InventorySettingsView.as_view(), name='inventory_settings'),
+    
     # AJAX Endpoints
     path('ajax/get-motorcycle-list/', get_motorcycle_list, name='ajax-get-motorcycle-list'),
 

@@ -16,8 +16,19 @@
         <h2>Admin Navigation</h2>
         <ul class="reset-list">
             <li><a href="{% url 'dashboard:dashboard_index' %}">Dashboard Home</a></li>
-            <li><a href="{% url 'inventory:all' %}">All Motorcycles</a></li>
-            <li><a href="">Add Motorcycle</a></li>
+            {# Inventory Management Section - NEWLY ADDED #}
+            <li class="nav-section">
+                <h3>Inventory Management</h3>
+                <ul class="reset-list">
+                    <li><a href="{% url 'inventory:all' %}">All Motorcycles</a></li>
+                    <li><a href="">Add Motorcycle</a></li> {# Assuming a URL for creating motorcycles #}
+                    <li><a href="{% url 'inventory:inventory_settings' %}">Inventory Settings</a></li> {# Link to the new Inventory Settings page #}
+                    <li><a href="">Inventory Management</a></li>
+                    <li><a href="">Sales Bookings</a></li>
+                    <li><a href="">Sales Profiles</a></li>
+                    <li><a href="">Blocked Sales Dates</a></li>
+                </ul>
+            </li>
 
             {# Service Management Section #}
             <li class="nav-section">
@@ -26,7 +37,7 @@
                     <li><a href="{% url 'service:service_booking_management' %}">Service Bookings</a></li>
                     <li><a href="{% url 'service:admin_create_service_booking' %}">Create Service Booking</a></li>
                     <li><a href="{% url 'service:admin_service_profiles' %}">Service Profiles</a></li>
-                    <li><a href="{% url 'service:admin_customer_motorcycle_management' %}">Customer Motorcycles</a></li> {# ADDED THIS LINE #}
+                    <li><a href="{% url 'service:admin_customer_motorcycle_management' %}">Customer Motorcycles</a></li>
                     <li><a href="{% url 'service:service_settings' %}">Service Settings</a></li>
                     <li><a href="{% url 'service:service_types_management' %}">Service Types</a></li>
                     <li><a href="{% url 'service:service_brands_management' %}">Service Brands</a></li>

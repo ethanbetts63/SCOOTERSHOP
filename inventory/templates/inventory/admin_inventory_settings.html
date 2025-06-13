@@ -1,0 +1,168 @@
+{% extends "dashboard/admin_layout.html" %}
+{% load static %}
+
+{% block extra_css %}
+{{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
+{% endblock %}
+
+{% block admin_main_content %}
+<div class="service-booking-container"> {# Reusing the container class for consistent styling #}
+    <div class="booking-progress">
+        <h2>Inventory Settings</h2>
+    </div>
+
+    <hr>
+
+    {% if messages %}
+    <div class="messages-container">
+        <ul>
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {# Start of the form for general inventory settings #}
+    <form method="post" name="inventory_settings_form"> {# Changed name attribute for easier JS targeting #}
+        {% csrf_token %}
+
+        {# Buttons for Edit, Save, Reset #}
+        <div class="form-field" style="flex-direction: row; justify-content: flex-end; margin-bottom: 20px;">
+            <button type="button" class="btn-secondary" id="editButton" style="margin-right: 10px;">Edit</button>
+            <button type="submit" id="saveButton" name="inventory_settings_submit">Save Changes</button> {# Keep the name for submission #}
+            <button type="button" class="btn-secondary" id="resetButton" style="margin-left: 10px;">Reset</button>
+        </div>
+
+        {# Checkbox fields section #}
+        <h3>System & Reservation Controls</h3>
+        {% for field in form %}
+            {% if field.field.widget.input_type == 'checkbox' %}
+                <div class="form-field checkbox-field">
+                    {{ field }}
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {% if field.help_text %}
+                        <small>{{ field.help_text }}</small>
+                    {% endif %}
+                    {% if field.errors %}
+                        {% for error in field.errors %}
+                            <small style="color: red;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        {# Other fields section #}
+        <h3 style="margin-top: 30px;">Deposit & Appointment Details</h3>
+        {% for field in form %}
+            {% if field.field.widget.input_type != 'checkbox' %}
+                <div class="form-field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small>{{ field.help_text }}</small>
+                    {% endif %}
+                    {% if field.errors %}
+                        {% for error in field.errors %}
+                            <small style="color: red;">{{ error }}</small>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        {# Display non-field errors (e.g., from clean method in form or model) #}
+        {% if form.non_field_errors %}
+            <div class="form-field">
+                {% for error in form.non_field_errors %}
+                    <small style="color: red;">{{ error }}</small>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </form>
+    {# End of the form #}
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const editButton = document.getElementById('editButton');
+        const saveButton = document.getElementById('saveButton');
+        const resetButton = document.getElementById('resetButton');
+        // Select form fields specifically within the Inventory Settings form
+        const mainForm = document.querySelector('form[name="inventory_settings_form"]'); // Target the form by its name
+        const formFields = mainForm.querySelectorAll('input, select, textarea');
+
+        // Function to set form fields read-only or enabled
+        function setFormReadonly(readonly) {
+            formFields.forEach(field => {
+                // Ensure we don't accidentally affect the CSRF token input or the buttons themselves
+                if (field.name !== 'csrfmiddlewaretoken' && field.type !== 'submit' && field.type !== 'button') {
+                    if (readonly) {
+                        field.setAttribute('readonly', true);
+                        // Prevent checkbox and select interaction when read-only
+                        if (field.type === 'checkbox' || field.tagName === 'SELECT') {
+                            field.setAttribute('disabled', true);
+                        }
+                    } else {
+                        field.removeAttribute('readonly');
+                        if (field.type === 'checkbox' || field.tagName === 'SELECT') {
+                            field.removeAttribute('disabled');
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initial state: only show Edit button, form fields in the first form are read-only
+        saveButton.style.display = 'none';
+        resetButton.style.display = 'none';
+        setFormReadonly(true);
+
+        // When Edit button is clicked
+        editButton.addEventListener('click', function() {
+            editButton.style.display = 'none';
+            saveButton.style.display = 'inline-block';
+            resetButton.style.display = 'inline-block';
+            setFormReadonly(false);
+        });
+
+        // When Save Changes or Reset button is clicked
+        function handleSaveOrResetClick() {
+            saveButton.style.display = 'none';
+            resetButton.style.display = 'none';
+            editButton.style.display = 'inline-block';
+            // Form fields will become read-only again *after* the form submission or reset.
+            // For the 'Reset' button, we reset the form before changing button visibility.
+        }
+
+        // Add event listener for Save button (it's a submit button)
+        // The form submission itself will handle the save action.
+        // We attach the click listener to change buttons BEFORE potential submission.
+        saveButton.addEventListener('click', function() {
+             // This will run before the form is submitted
+             // The read-only state will be reset after the page reloads from submission
+        });
+
+        resetButton.addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent the default button click behavior first
+            mainForm.reset(); // Reset the form
+            handleSaveOrResetClick(); // Change button visibility and set form read-only
+            setFormReadonly(true); // Ensure fields are read-only after reset
+        });
+
+        // Re-apply read-only after potential form submission (page load)
+         window.addEventListener('load', function() {
+             setFormReadonly(true);
+         });
+          // Handle the case where the Save button was clicked and the page reloaded without a full navigation
+         if (window.performance && window.performance.getEntriesByType('navigation')[0].type === 'reload') {
+             setFormReadonly(true);
+         }
+    });
+</script>
+{% endblock %}
+
+{% endblock %}
