@@ -56,16 +56,16 @@ def index(request):
             if not is_testing:
                 print(f"An unexpected error occurred fetching reviews: {e}")
 
-    featured_new_motorcycles = []
-    featured_used_motorcycles = []
+    # featured_new_motorcycles = []
+    # featured_used_motorcycles = []
 
-    # Only fetch featured motorcycles if the section is enabled via SiteSettings
-    if site_settings.enable_featured_section:
-        try:
-            featured_new_motorcycles = get_featured_motorcycles(condition='new', limit=3)
-            featured_used_motorcycles = get_featured_motorcycles(condition='used', limit=3)
-        except Exception as e:
-            print(f"Error fetching featured motorcycles: {e}")
+    # # Only fetch featured motorcycles if the section is enabled via SiteSettings
+    # if site_settings.enable_featured_section:
+    #     try:
+    #         featured_new_motorcycles = get_featured_motorcycles(condition='new', limit=3)
+    #         featured_used_motorcycles = get_featured_motorcycles(condition='used', limit=3)
+    #     except Exception as e:
+    #         print(f"Error fetching featured motorcycles: {e}")
 
     # Try to get TempHireBooking from session for pre-populating Step 1 form
     temp_hire_booking = None
@@ -110,8 +110,8 @@ def index(request):
     # Pass the filtered 5-star reviews and featured bikes to the template
     context = {
         'reviews': five_star_reviews,
-        'featured_new_motorcycles': featured_new_motorcycles,
-        'featured_used_motorcycles': featured_used_motorcycles,
+        # 'featured_new_motorcycles': featured_new_motorcycles,
+        # 'featured_used_motorcycles': featured_used_motorcycles,
         'google_api_key': settings.GOOGLE_API_KEY,
         'hire_settings': hire_settings, # Pass hire settings for the hire include
         'temp_booking': temp_hire_booking, # Pass temp_booking for pre-populating the hire form

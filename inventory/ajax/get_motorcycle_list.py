@@ -2,11 +2,13 @@
 
 from django.http import JsonResponse, HttpRequest
 from inventory.utils.get_motorcycles_by_criteria import get_motorcycles_by_criteria
+from inventory.utils.get_unique_makes_for_filter import get_unique_makes_for_filter
 import json
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 def get_motorcycle_list(request: HttpRequest):
     """
-    AJAX endpoint to retrieve a filtered list of motorcycles and associated filter data.
+    AJAX endpoint to retrieve a filtered and paginated list of motorcycles and associated filter data.
     Filters are applied based on query parameters received in the GET request.
     """
     if request.method == 'GET':
@@ -17,9 +19,11 @@ def get_motorcycle_list(request: HttpRequest):
         engine_max_cc = request.GET.get('engine_max_cc')
         price_min = request.GET.get('price_min')
         price_max = request.GET.get('price_max')
-        makes_json = request.GET.get('makes') # This will be a JSON string from the frontend
+        makes_json = request.GET.get('brand') # Changed from 'makes' to 'brand' to match HTML form name
+        page_number = request.GET.get('page', 1) # Get page number, default to 1
+        order_by = request.GET.get('order') # Get sort order
 
-        # Convert year, engine_size, and price parameters to integers/floats if they exist
+        # Convert numerical parameters to integers/floats if they exist
         try:
             year_min = int(year_min) if year_min else None
             year_max = int(year_max) if year_max else None
@@ -30,84 +34,46 @@ def get_motorcycle_list(request: HttpRequest):
         except ValueError:
             return JsonResponse({'error': 'Invalid number format for filters'}, status=400)
 
-        # Parse makes from JSON string to a Python list
-        makes = []
-        if makes_json:
-            try:
-                makes = json.loads(makes_json)
-                if not isinstance(makes, list):
-                    raise ValueError("Makes parameter must be a JSON array.")
-            except json.JSONDecodeError:
-                return JsonResponse({'error': 'Invalid JSON format for makes filter'}, status=400)
-            except ValueError as e:
-                return JsonResponse({'error': str(e)}, status=400)
+        # Parse makes from JSON string (if it were a multi-select) or just use the string
+        # Given the HTML select is single-select for 'brand', makes_json will be a single string.
+        makes = [makes_json] if makes_json else None
 
 
-        # Handle 'used' condition to include 'demo'
-        if condition_slug == 'used':
-            # Get motorcycles for 'used'
-            used_motorcycles = get_motorcycles_by_criteria(
-                condition_slug='used',
-                year_min=year_min,
-                year_max=year_max,
-                engine_min_cc=engine_min_cc,
-                engine_max_cc=engine_max_cc,
-                price_min=price_min,
-                price_max=price_max,
-                makes=makes
-            )
-            # Get motorcycles for 'demo'
-            demo_motorcycles = get_motorcycles_by_criteria(
-                condition_slug='demo',
-                year_min=year_min,
-                year_max=year_max,
-                engine_min_cc=engine_min_cc,
-                engine_max_cc=engine_max_cc,
-                price_min=price_min,
-                price_max=price_max,
-                makes=makes
-            )
-            # Combine the querysets and remove duplicates
-            motorcycles = (used_motorcycles | demo_motorcycles).distinct()
-        elif condition_slug == 'all': # Admin functionality, display all conditions
-            motorcycles = get_motorcycles_by_criteria(
-                condition_slug=None, # Pass None to get_motorcycles_by_criteria to fetch all
-                year_min=year_min,
-                year_max=year_max,
-                engine_min_cc=engine_min_cc,
-                engine_max_cc=engine_max_cc,
-                price_min=price_min,
-                price_max=price_max,
-                makes=makes
-            )
-        else: # 'new' or any other specific condition
-            motorcycles = get_motorcycles_by_criteria(
-                condition_slug=condition_slug,
-                year_min=year_min,
-                year_max=year_max,
-                engine_min_cc=engine_min_cc,
-                engine_max_cc=engine_max_cc,
-                price_min=price_min,
-                price_max=price_max,
-                makes=makes
-            )
+        # Use the utility to get the filtered queryset
+        motorcycles_queryset = get_motorcycles_by_criteria(
+            condition_slug=condition_slug,
+            year_min=year_min,
+            year_max=year_max,
+            engine_min_cc=engine_min_cc,
+            engine_max_cc=engine_max_cc,
+            price_min=price_min,
+            price_max=price_max,
+            makes=makes
+        )
 
-        # Prepare the condition slugs for `get_unique_makes_for_filter`
-        makes_condition_slugs = []
-        if condition_slug == 'used':
-            makes_condition_slugs = ['used', 'demo']
-        elif condition_slug == 'all':
-            makes_condition_slugs = [None] # Represents all conditions
-        else:
-            makes_condition_slugs = [condition_slug]
+        # Apply sorting based on the 'order' parameter
+        if order_by == 'price_low_to_high':
+            motorcycles_queryset = motorcycles_queryset.order_by('price')
+        elif order_by == 'price_high_to_low':
+            motorcycles_queryset = motorcycles_queryset.order_by('-price')
+        elif order_by == 'age_new_to_old':
+            motorcycles_queryset = motorcycles_queryset.order_by('-year')
+        elif order_by == 'age_old_to_new':
+            motorcycles_queryset = motorcycles_queryset.order_by('year')
+        # Default sorting is already applied in get_motorcycles_by_criteria if no order_by
 
-        # Let's get the makes from the *resultant* `motorcycles` queryset directly for accuracy
-        current_unique_makes = sorted(list(motorcycles.values_list('brand', flat=True).distinct()))
+        # Paginate the results
+        paginator = Paginator(motorcycles_queryset, 10) # 10 motorcycles per page, matching ListView
+        try:
+            page_obj = paginator.page(page_number)
+        except PageNotAnInteger:
+            page_obj = paginator.page(1)
+        except EmptyPage:
+            page_obj = paginator.page(paginator.num_pages)
 
-
-        # Serialize the motorcycles data
+        # Serialize the motorcycles data for the current page
         motorcycles_data = []
-        for bike in motorcycles:
+        for bike in page_obj:
             motorcycles_data.append({
                 'id': bike.id,
                 'title': bike.title,
@@ -123,11 +89,27 @@ def get_motorcycle_list(request: HttpRequest):
                 'transmission': bike.transmission,
                 'description': bike.description,
                 'is_available': bike.is_available,
+                'is_for_hire': bike.is_for_hire(), # Add this to determine price display
+                'daily_hire_rate': float(bike.daily_hire_rate) if bike.daily_hire_rate else None, # Add hire rate
             })
+
+        # Get unique makes relevant to the *initially filtered* set,
+        # which means re-calling the utility with only the `condition_slug`.
+        # This provides the full list of brands for the dropdown based on the category (new/used/all).
+        unique_makes_for_filter = get_unique_makes_for_filter(condition_slug=condition_slug)
+
 
         return JsonResponse({
             'motorcycles': motorcycles_data,
-            'unique_makes_for_filter': current_unique_makes, # Renamed for clarity on client side
+            'unique_makes_for_filter': sorted(list(unique_makes_for_filter)),
+            'page_obj': { # Pass pagination details to frontend
+                'number': page_obj.number,
+                'num_pages': page_obj.paginator.num_pages,
+                'has_previous': page_obj.has_previous(),
+                'has_next': page_obj.has_next(),
+                'previous_page_number': page_obj.previous_page_number() if page_obj.has_previous() else None,
+                'next_page_number': page_obj.next_page_number() if page_obj.has_next() else None,
+            }
         })
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 

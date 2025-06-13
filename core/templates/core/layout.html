@@ -88,27 +88,7 @@
                     </li>
                 {% endif %}
 
-                {# Login/Logout Toggle #}
-                {% if settings.enable_user_accounts or user.is_staff %}
-                    <li>
-                        {% if user.is_authenticated %}
-                            {# If user is authenticated, show Logout link #}
-                            <a class="nav-item" href="{% url 'users:logout' %}">
-                                Logout
-                            </a>
-                        {% else %}
-                            {# If user is not authenticated, show Login/Register link #}
-                            <a class="nav-item" href="{% url 'users:login' %}"
-                                {% if not settings.enable_user_accounts and user.is_staff %}
-                                style="color: #08E5D1;"
-                                {% endif %}
-                            >
-                                Login/Register
-                            </a>
-                        {% endif %}
-                    </li>
-                {% endif %}
-                {# End Login/Logout Toggle #}
+
 
             </ul>
 
