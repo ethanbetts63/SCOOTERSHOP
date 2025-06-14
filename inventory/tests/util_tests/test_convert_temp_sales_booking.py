@@ -97,64 +97,6 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         self.assertEqual(self.motorcycle.status, 'available')
         self.assertTrue(self.motorcycle.is_available)
 
-
-    def test_conversion_deposit_paid_updates_motorcycle_status(self):
-        """
-        Test conversion when payment status is 'deposit_paid',
-        ensuring motorcycle status changes to 'reserved' and 'is_available' to False.
-        """
-        temp_booking = TempSalesBookingFactory(
-            motorcycle=self.motorcycle,
-            sales_profile=self.sales_profile,
-            amount_paid=Decimal('100.00'),
-            payment_status='deposit_paid',
-        )
-        
-        sales_booking = convert_temp_sales_booking(
-            temp_booking=temp_booking,
-            booking_payment_status='deposit_paid',
-            amount_paid_on_booking=Decimal('100.00'),
-            stripe_payment_intent_id='pi_deposit123',
-        )
-
-        self.assertEqual(sales_booking.payment_status, 'deposit_paid')
-        self.assertEqual(sales_booking.amount_paid, Decimal('100.00'))
-        self.assertEqual(sales_booking.stripe_payment_intent_id, 'pi_deposit123')
-
-        # Assert motorcycle status updated
-        self.motorcycle.refresh_from_db()
-        self.assertEqual(self.motorcycle.status, 'reserved')
-        self.assertFalse(self.motorcycle.is_available)
-
-    def test_conversion_paid_updates_motorcycle_status(self):
-        """
-        Test conversion when payment status is 'paid',
-        ensuring motorcycle status changes to 'reserved' and 'is_available' to False.
-        """
-        temp_booking = TempSalesBookingFactory(
-            motorcycle=self.motorcycle,
-            sales_profile=self.sales_profile,
-            amount_paid=Decimal('15000.00'),
-            payment_status='paid',
-        )
-        
-        sales_booking = convert_temp_sales_booking(
-            temp_booking=temp_booking,
-            booking_payment_status='paid',
-            amount_paid_on_booking=Decimal('15000.00'),
-            stripe_payment_intent_id='pi_fullpay456',
-        )
-
-        self.assertEqual(sales_booking.payment_status, 'paid')
-        self.assertEqual(sales_booking.amount_paid, Decimal('15000.00'))
-        self.assertEqual(sales_booking.stripe_payment_intent_id, 'pi_fullpay456')
-
-        # Assert motorcycle status updated
-        self.motorcycle.refresh_from_db()
-        self.assertEqual(self.motorcycle.status, 'reserved') # Still 'reserved' in this context
-        self.assertFalse(self.motorcycle.is_available)
-
-
     def test_conversion_with_payment_object(self):
         """
         Test conversion when a Payment object is provided, ensuring it's updated

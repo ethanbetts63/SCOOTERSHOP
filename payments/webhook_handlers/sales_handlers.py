@@ -1,12 +1,9 @@
 from django.conf import settings
 from decimal import Decimal
-
-from inventory.models import TempSalesBooking, SalesBooking, SalesProfile
+from inventory.models import TempSalesBooking
 from payments.models import Payment
 from inventory.utils.convert_temp_sales_booking import convert_temp_sales_booking
 from mailer.utils import send_templated_email
-from inventory.models import Motorcycle
-
 
 def handle_sales_booking_succeeded(payment_obj: Payment, payment_intent_data: dict):
     if payment_obj.sales_booking:
@@ -22,10 +19,9 @@ def handle_sales_booking_succeeded(payment_obj: Payment, payment_intent_data: di
             raise TempSalesBooking.DoesNotExist(f"TempSalesBooking for Payment ID {payment_obj.id} does not exist and no SalesBooking found.")
 
         booking_payment_status = 'unpaid'
-        # Determine payment status based on whether a deposit was required and the amount paid
         if temp_booking.deposit_required_for_flow and (Decimal(payment_intent_data['amount_received']) / Decimal('100')) > 0:
             booking_payment_status = 'deposit_paid'
-        elif (Decimal(payment_intent_data['amount_received']) / Decimal('100')) >= temp_booking.motorcycle.price: # Assuming full payment for simplicity or a defined 'full' amount
+        elif (Decimal(payment_intent_data['amount_received']) / Decimal('100')) >= temp_booking.motorcycle.price:
              booking_payment_status = 'paid'
         
         sales_booking = convert_temp_sales_booking(
@@ -40,11 +36,10 @@ def handle_sales_booking_succeeded(payment_obj: Payment, payment_intent_data: di
             payment_obj.status = payment_intent_data['status']
             payment_obj.save()
 
-        # Update motorcycle status to 'reserved' if a deposit was paid
         if sales_booking.payment_status in ['deposit_paid', 'paid'] and sales_booking.motorcycle:
             motorcycle = sales_booking.motorcycle
             motorcycle.status = 'reserved'
-            motorcycle.is_available = False # Mark as unavailable for general sale
+            motorcycle.is_available = False 
             motorcycle.save()
 
         email_context = {

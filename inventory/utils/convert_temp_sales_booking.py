@@ -35,13 +35,6 @@ def convert_temp_sales_booking(
                 request_viewing=temp_booking.request_viewing,
             )
 
-            # Update motorcycle status if a deposit has been paid
-            if temp_booking.motorcycle and booking_payment_status in ['deposit_paid', 'paid']:
-                motorcycle = sales_booking.motorcycle # Get the associated motorcycle
-                motorcycle.status = 'reserved' # Set motorcycle status to 'reserved'
-                motorcycle.is_available = False # Mark as unavailable for general sale
-                motorcycle.save()
-
             # Update the associated Payment object if provided
             if payment_obj:
                 payment_obj.amount = amount_paid_on_booking

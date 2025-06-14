@@ -1,10 +1,7 @@
 from django.conf import settings
 from decimal import Decimal
-
-from service.models import TempServiceBooking, ServiceBooking, ServiceProfile
-
+from service.models import TempServiceBooking
 from payments.models import Payment
-
 from service.utils.convert_temp_service_booking import convert_temp_service_booking
 from mailer.utils import send_templated_email
 
