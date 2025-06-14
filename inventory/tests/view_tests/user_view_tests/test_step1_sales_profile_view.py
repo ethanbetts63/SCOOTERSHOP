@@ -55,7 +55,7 @@ class Step1SalesProfileViewTest(TestCase):
             booking_status='pending_details' # Initial status for Step 1
         )
         session = client.session
-        session['current_temp_booking_id'] = temp_booking.pk
+        session['temp_sales_booking_uuid'] = temp_booking.pk
         session.save()
         return temp_booking
 
@@ -71,7 +71,7 @@ class Step1SalesProfileViewTest(TestCase):
 
     def test_get_no_temp_booking_id_in_session(self):
         """
-        Test GET request when 'current_temp_booking_id' is not in session.
+        Test GET request when 'temp_sales_booking_uuid' is not in session.
         Should redirect to inventory:all with an error message.
         """
         response = self.client.get(self.url, follow=True)
@@ -82,11 +82,11 @@ class Step1SalesProfileViewTest(TestCase):
 
     def test_get_invalid_temp_booking_id(self):
         """
-        Test GET request with an invalid 'current_temp_booking_id' in session.
+        Test GET request with an invalid 'temp_sales_booking_uuid' in session.
         Should return a 404.
         """
         session = self.client.session
-        session['current_temp_booking_id'] = 99999 # Non-existent ID
+        session['temp_sales_booking_uuid'] = 99999 # Non-existent ID
         session.save()
 
         response = self.client.get(self.url)
@@ -189,7 +189,7 @@ class Step1SalesProfileViewTest(TestCase):
     @mock.patch('django.contrib.messages.error')
     def test_post_no_temp_booking_id_in_session(self, mock_error, mock_success):
         """
-        Test POST request when 'current_temp_booking_id' is not in session.
+        Test POST request when 'temp_sales_booking_uuid' is not in session.
         Should redirect with an error message.
         """
         response = self.client.post(self.url, data={}, follow=True)
@@ -201,11 +201,11 @@ class Step1SalesProfileViewTest(TestCase):
     @mock.patch('django.contrib.messages.error')
     def test_post_invalid_temp_booking_id(self, mock_error, mock_success):
         """
-        Test POST request with an invalid 'current_temp_booking_id' in session.
+        Test POST request with an invalid 'temp_sales_booking_uuid' in session.
         Should return a 404.
         """
         session = self.client.session
-        session['current_temp_booking_id'] = 99999 # Non-existent ID
+        session['temp_sales_booking_uuid'] = 99999 # Non-existent ID
         session.save()
 
         response = self.client.post(self.url, data={'name': 'Test User'})

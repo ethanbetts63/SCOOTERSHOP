@@ -29,7 +29,7 @@ class InitiateBookingProcessView(View):
             )
 
         # Store the temp_booking ID in the session for the next step
-        request.session['current_temp_booking_id'] = temp_booking.pk
+        request.session['temp_sales_booking_uuid'] = temp_booking.pk
 
         # Redirect to the combined details and appointment form
         return redirect(reverse('inventory:step1_sales_profile')) # Ensure this URL name matches your urls.py

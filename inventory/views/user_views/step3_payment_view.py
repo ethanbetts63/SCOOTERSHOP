@@ -19,18 +19,19 @@ class Step3PaymentView(View):
 
         if not temp_booking_uuid:
             messages.error(request, "Your booking session has expired or is invalid.")
-            return redirect('inventory:motorcycle_list')
+            print('No temp booking uuid in step 3')
+            return redirect('inventory:used')
 
         try:
             temp_booking = get_object_or_404(TempSalesBooking, session_uuid=temp_booking_uuid)
             request.temp_booking = temp_booking
         except Http404:
             messages.error(request, "Your booking session could not be found.")
-            return redirect('inventory:motorcycle_list')
+            return redirect('inventory:used')
 
         if not temp_booking.motorcycle:
             messages.error(request, "Please select a motorcycle first.")
-            return redirect('inventory:motorcycle_list') 
+            return redirect('inventory:used') 
         
         if not temp_booking.sales_profile:
             messages.error(request, "Please provide your contact details first.")
@@ -40,7 +41,7 @@ class Step3PaymentView(View):
             request.inventory_settings = InventorySettings.objects.get()
         except InventorySettings.DoesNotExist:
             messages.error(request, "Inventory settings are not configured. Please contact support.")
-            return redirect('inventory:motorcycle_list')
+            return redirect('inventory:used')
 
         if not temp_booking.deposit_required_for_flow:
             messages.warning(request, "Payment is not required for this type of booking. Redirecting to confirmation.")

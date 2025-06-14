@@ -16,7 +16,7 @@ class Step2BookingDetailsView(View):
     template_name = 'inventory/step2_booking_details.html'
 
     def get(self, request, *args, **kwargs):
-        temp_booking_id = request.session.get('current_temp_booking_id')
+        temp_booking_id = request.session.get('temp_sales_booking_uuid')
         if not temp_booking_id:
             messages.error(request, "Your booking session has expired or is invalid. Please start again.")
             return redirect(reverse('core:index'))
@@ -63,7 +63,7 @@ class Step2BookingDetailsView(View):
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
-        temp_booking_id = request.session.get('current_temp_booking_id')
+        temp_booking_id = request.session.get('temp_sales_booking_uuid')
         if not temp_booking_id:
             messages.error(request, "Your booking session has expired or is invalid. Please start again.")
             return redirect(reverse('core:index'))
@@ -98,7 +98,7 @@ class Step2BookingDetailsView(View):
 
                 if temp_booking.deposit_required_for_flow:
                     messages.success(request, "Booking details saved. Proceed to payment.")
-                    return redirect(reverse('inventory:payment_page'))
+                    return redirect(reverse('inventory:step3_payment'))
                 else:
                     converted_sales_booking = convert_temp_sales_booking(
                         temp_booking=temp_booking,
@@ -107,8 +107,8 @@ class Step2BookingDetailsView(View):
                         stripe_payment_intent_id=None,
                         payment_obj=None,
                     )
-                    if 'current_temp_booking_id' in request.session:
-                        del request.session['current_temp_booking_id']
+                    if 'temp_sales_booking_uuid' in request.session:
+                        del request.session['temp_sales_booking_uuid']
                     request.session['current_sales_booking_reference'] = converted_sales_booking.sales_booking_reference
 
                     messages.success(request, "Your enquiry has been submitted. We will get back to you shortly!")

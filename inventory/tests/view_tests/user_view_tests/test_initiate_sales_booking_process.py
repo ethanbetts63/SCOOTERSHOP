@@ -57,8 +57,8 @@ class InitiateBookingProcessViewTest(TestCase):
         self.assertRedirects(response, reverse('inventory:step1_sales_profile'))
 
         # Assert temp_booking ID is stored in session
-        self.assertIn('current_temp_booking_id', self.client.session)
-        self.assertEqual(self.client.session['current_temp_booking_id'], temp_booking.pk)
+        self.assertIn('temp_sales_booking_uuid', self.client.session)
+        self.assertEqual(self.client.session['temp_sales_booking_uuid'], temp_booking.pk)
 
 
     def test_post_request_creates_temp_booking_enquiry_flow(self):
@@ -83,8 +83,8 @@ class InitiateBookingProcessViewTest(TestCase):
         self.assertEqual(temp_booking.booking_status, 'pending_details')
 
         self.assertRedirects(response, reverse('inventory:step1_sales_profile'))
-        self.assertIn('current_temp_booking_id', self.client.session)
-        self.assertEqual(self.client.session['current_temp_booking_id'], temp_booking.pk)
+        self.assertIn('temp_sales_booking_uuid', self.client.session)
+        self.assertEqual(self.client.session['temp_sales_booking_uuid'], temp_booking.pk)
 
     def test_post_request_creates_temp_booking_with_viewing_request(self):
         """
@@ -108,8 +108,8 @@ class InitiateBookingProcessViewTest(TestCase):
         self.assertEqual(temp_booking.booking_status, 'pending_details')
 
         self.assertRedirects(response, reverse('inventory:step1_sales_profile'))
-        self.assertIn('current_temp_booking_id', self.client.session)
-        self.assertEqual(self.client.session['current_temp_booking_id'], temp_booking.pk)
+        self.assertIn('temp_sales_booking_uuid', self.client.session)
+        self.assertEqual(self.client.session['temp_sales_booking_uuid'], temp_booking.pk)
 
 
     def test_post_request_non_existent_motorcycle_pk(self):

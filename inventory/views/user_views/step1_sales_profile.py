@@ -18,8 +18,8 @@ class Step1SalesProfileView(View):
     template_name = 'inventory/step1_sales_profile.html' # New template for this step
 
     def get(self, request, *args, **kwargs):
-        # 1. Retrieve current_temp_booking_id from session
-        temp_booking_id = request.session.get('current_temp_booking_id')
+        # 1. Retrieve temp_sales_booking_uuid from session
+        temp_booking_id = request.session.get('temp_sales_booking_uuid')
         if not temp_booking_id:
             messages.error(request, "Your booking session has expired or is invalid. Please start again.")
             return redirect(reverse('inventory:all')) # Redirect to motorcycle list or home
@@ -56,8 +56,8 @@ class Step1SalesProfileView(View):
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
-        # 1. Retrieve current_temp_booking_id from session
-        temp_booking_id = request.session.get('current_temp_booking_id')
+        # 1. Retrieve temp_sales_booking_uuid from session
+        temp_booking_id = request.session.get('temp_sales_booking_uuid')
         if not temp_booking_id:
             messages.error(request, "Your booking session has expired or is invalid. Please start again.")
             return redirect(reverse('inventory:all'))
