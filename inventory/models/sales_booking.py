@@ -2,13 +2,11 @@
 
 from django.db import models
 import uuid
-from decimal import Decimal # <-- Add this import
-
+from decimal import Decimal 
 
 PAYMENT_STATUS_CHOICES = [
     ('unpaid', 'Unpaid'),
     ('deposit_paid', 'Deposit Paid'),
-    ('paid', 'Fully Paid'),
     ('refunded', 'Refunded'),
 ]
 BOOKING_STATUS_CHOICES = [
