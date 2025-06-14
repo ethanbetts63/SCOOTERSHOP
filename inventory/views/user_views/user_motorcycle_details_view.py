@@ -1,8 +1,6 @@
-# inventory/views/user_views/user_motorcycle_details_view.py
-
 from django.views.generic import DetailView
 from django.http import Http404
-from inventory.models import Motorcycle, InventorySettings # Import InventorySettings
+from inventory.models import Motorcycle, InventorySettings
 from inventory.utils.get_motorcycle_details import get_motorcycle_details
 
 class UserMotorcycleDetailsView(DetailView):
@@ -20,7 +18,7 @@ class UserMotorcycleDetailsView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        inventory_settings = InventorySettings.objects.first() 
+        inventory_settings = InventorySettings.objects.first()
         context['inventory_settings'] = inventory_settings
         
         return context
