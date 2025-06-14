@@ -1,0 +1,179 @@
+{% extends "dashboard/admin_layout.html" %}
+{% load static %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .detail-item {
+        margin-bottom: 1rem;
+    }
+    .detail-label {
+        font-weight: 600;
+        color: #4a5568; /* gray-700 */
+    }
+    .detail-value {
+        color: #2d3748; /* gray-800 */
+    }
+    .action-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 16px;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        transition: all 0.15s ease-in-out;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    .action-button:hover {
+        opacity: 0.9;
+    }
+    .btn-edit {
+        color: #ffffff;
+        background-color: #3b82f6; /* blue-500 */
+        border: 1px solid #2563eb; /* blue-600 */
+    }
+    .btn-edit:hover {
+        background-color: #2563eb;
+    }
+    .btn-delete {
+        color: #ffffff;
+        background-color: #ef4444; /* red-500 */
+        border: 1px solid #dc2626; /* red-600 */
+    }
+    .btn-delete:hover {
+        background-color: #dc2626;
+    }
+</style>
+{% endblock %}
+
+{% block admin_main_content %}
+<div class="p-4">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">{{ page_title|default:"Motorcycle Details" }}</h1>
+        <div class="flex space-x-2">
+            <a href="{% url 'inventory:admin_motorcycle_update' pk=motorcycle.pk %}" class="action-button btn-edit">Edit Motorcycle</a>
+            <form action="{% url 'inventory:admin_motorcycle_delete' pk=motorcycle.pk %}" method="post" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="action-button btn-delete" onclick="return confirm('Are you sure you want to delete {{ motorcycle.title }}? This action cannot be undone.');">
+                    Delete Motorcycle
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+                <div class="p-3 rounded-md text-sm {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Motorcycle Information</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="detail-item">
+                <div class="detail-label">Title:</div>
+                <div class="detail-value">{{ motorcycle.title }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Brand:</div>
+                <div class="detail-value">{{ motorcycle.brand }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Model:</div>
+                <div class="detail-value">{{ motorcycle.model }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Year:</div>
+                <div class="detail-value">{{ motorcycle.year }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Price:</div>
+                <div class="detail-value">${{ motorcycle.price|floatformat:2|default:"N/A" }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">VIN Number:</div>
+                <div class="detail-value">{{ motorcycle.vin_number|default:"N/A" }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Engine Number:</div>
+                <div class="detail-value">{{ motorcycle.engine_number|default:"N/A" }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Condition:</div>
+                <div class="detail-value">{{ motorcycle.get_conditions_display }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Status:</div>
+                <div class="detail-value">{{ motorcycle.get_status_display }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Odometer:</div>
+                <div class="detail-value">{{ motorcycle.odometer }} km</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Engine Size:</div>
+                <div class="detail-value">{{ motorcycle.engine_size }} cc</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Seats:</div>
+                <div class="detail-value">{{ motorcycle.seats|default:"N/A" }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Transmission:</div>
+                <div class="detail-value">{{ motorcycle.get_transmission_display|default:"N/A" }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Is Available:</div>
+                <div class="detail-value">{{ motorcycle.is_available|yesno:"Yes,No" }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Registration Number:</div>
+                <div class="detail-value">{{ motorcycle.rego|default:"N/A" }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Registration Expiry:</div>
+                <div class="detail-value">{{ motorcycle.rego_exp|date:"M d, Y"|default:"N/A" }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Stock Number:</div>
+                <div class="detail-value">{{ motorcycle.stock_number|default:"N/A" }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Daily Hire Rate:</div>
+                <div class="detail-value">${{ motorcycle.daily_hire_rate|floatformat:2|default:"N/A" }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Hourly Hire Rate:</div>
+                <div class="detail-value">${{ motorcycle.hourly_hire_rate|floatformat:2|default:"N/A" }}</div>
+            </div>
+            <div class="detail-item md:col-span-2">
+                <div class="detail-label">Description:</div>
+                <div class="detail-value">{{ motorcycle.description|linebreaksbr|default:"N/A" }}</div>
+            </div>
+            <div class="detail-item md:col-span-2">
+                <div class="detail-label">Date Posted:</div>
+                <div class="detail-value">{{ motorcycle.date_posted|date:"M d, Y H:i" }}</div>
+            </div>
+            {% if motorcycle.image %}
+            <div class="detail-item md:col-span-2">
+                <div class="detail-label">Motorcycle Image:</div>
+                <img src="{{ motorcycle.image.url }}" alt="{{ motorcycle.title }}" class="mt-2 max-w-sm h-auto rounded-md shadow-sm">
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="mt-6 text-center">
+        <a href="{% url 'inventory:admin_inventory_management' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+            Back to Inventory Management
+        </a>
+    </div>
+</div>
+{% endblock %}

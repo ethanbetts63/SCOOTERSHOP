@@ -111,7 +111,11 @@
                     {% for motorcycle in motorcycles %}
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 table-cell-padding">{{ motorcycle.stock_number|default:"N/A" }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ motorcycle.title }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
+                                <a href="{% url 'inventory:admin_motorcycle_details' pk=motorcycle.pk %}" class="text-blue-600 hover:underline">
+                                    {{ motorcycle.title }}
+                                </a>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ motorcycle.get_conditions_display }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ motorcycle.get_status_display }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">${{ motorcycle.price|floatformat:2|default:"N/A" }}</td>

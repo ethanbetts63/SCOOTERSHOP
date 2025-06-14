@@ -55,7 +55,7 @@
 <div class="p-4">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">{{ page_title|default:"Sales Profiles Management" }}</h1>
-        <a href="" class="action-button btn-create">
+        <a href="{% url 'inventory:sales_profile_create_update' %}" class="action-button btn-create">
             Create New Sales Profile
         </a>
     </div>
@@ -108,7 +108,11 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     {% for profile in sales_profiles %}
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 table-cell-padding">{{ profile.name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 table-cell-padding">
+                                <a href="{% url 'inventory:sales_profile_details' pk=profile.pk %}" class="text-blue-600 hover:underline">
+                                    {{ profile.name }}
+                                </a>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ profile.email }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ profile.phone_number }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
@@ -117,11 +121,15 @@
                                 {% if profile.state %}, {{ profile.state }}{% endif %}
                                 {% if profile.post_code %}, {{ profile.post_code }}{% endif %}
                                 {% if profile.country %}, {{ profile.country }}{% endif %}
+                                {% comment %} Handle case where address is entirely empty {% endcomment %}
+                                {% if not profile.address_line_1 and not profile.address_line_2 and not profile.city and not profile.state and not profile.post_code and not profile.country %}
+                                    N/A
+                                {% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ profile.created_at|date:"M d, Y H:i" }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium table-cell-padding">
                                 <div class="flex space-x-2">
-                                    <a href="" class="action-button btn-edit">Edit</a>
+                                    <a href="{% url 'inventory:sales_profile_create_update' pk=profile.pk %}" class="action-button btn-edit">Edit</a>
                                     <form action="{% url 'inventory:admin_sales_profile_delete' pk=profile.pk %}" method="post" class="inline">
                                         {% csrf_token %}
                                         <button type="submit" class="action-button btn-delete" onclick="return confirm('Are you sure you want to delete sales profile for {{ profile.name }}? This action cannot be undone.');">
