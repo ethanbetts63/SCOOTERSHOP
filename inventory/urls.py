@@ -59,6 +59,8 @@ urlpatterns = [
     path('admin/motorcycles/create/', motorcycle_create_update_view.MotorcycleCreateUpdateView.as_view(), name='admin_motorcycle_create'),
     path('admin/motorcycles/<int:pk>/update/', motorcycle_create_update_view.MotorcycleCreateUpdateView.as_view(), name='admin_motorcycle_update'),
     path('admin/motorcycles/<int:pk>/delete/', delete_motorcycle.MotorcycleDeleteView.as_view(), name='admin_motorcycle_delete'),
+    path('admin/sales-profiles/', sales_profile_management_view.SalesProfileManagementView.as_view(), name='sales_profile_management'),\
+    path('admin/sales-bookings/', sales_bookings_management_view.SalesBookingsManagementView.as_view(), name='sales_bookings_management'),
 
     # New delete URLs for BlockedSalesDate, SalesBooking, and SalesProfile
     path('admin/blocked-sales-dates/<int:pk>/delete/', delete_blocked_sales_date.BlockedSalesDateDeleteView.as_view(), name='admin_blocked_sales_date_delete'),
