@@ -12,9 +12,13 @@ fake = Faker()
 from payments.models import Payment, WebhookEvent, RefundRequest, RefundPolicySettings
 from hire.models import TempHireBooking, HireBooking, DriverProfile, BookingAddOn, Package, AddOn, TempBookingAddOn
 from service.models import ServiceBooking, ServiceProfile, TempServiceBooking, CustomerMotorcycle, ServiceBrand, ServiceType, BlockedServiceDate, ServiceSettings
-from inventory.models import Motorcycle, MotorcycleCondition
+from inventory.models import Motorcycle, MotorcycleCondition, SalesBooking, TempSalesBooking, SalesProfile
 
-# Get Django's User model
+from inventory.models.temp_sales_booking import PAYMENT_STATUS_CHOICES as TEMP_PAYMENT_STATUS_CHOICES
+from inventory.models.temp_sales_booking import BOOKING_STATUS_CHOICES as TEMP_BOOKING_STATUS_CHOICES # Added this import
+from inventory.models.sales_booking import PAYMENT_STATUS_CHOICES as SALES_PAYMENT_STATUS_CHOICES
+from inventory.models.sales_booking import BOOKING_STATUS_CHOICES as SALES_BOOKING_STATUS_CHOICES
+
 User = get_user_model()
 
 
@@ -535,3 +539,71 @@ class RefundPolicySettingsFactory(factory.django.DjangoModelFactory):
                 setattr(obj, k, v)
             obj.save() # Use obj.save() to trigger model's clean/save.
         return obj
+
+
+class SalesProfileFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = SalesProfile
+
+    user = factory.SubFactory(UserFactory)
+    name = factory.Faker('name')
+    email = factory.LazyAttribute(lambda o: o.user.email if o.user else factory.Faker('email'))
+    phone_number = factory.Faker('phone_number')
+    
+    address_line_1 = factory.Faker('street_address')
+    address_line_2 = factory.Faker('secondary_address')
+    city = factory.Faker('city')
+    state = factory.Faker('state_abbr')
+    post_code = factory.Faker('postcode')
+    country = factory.Faker('country_code')
+
+    drivers_license_image = None
+    drivers_license_number = factory.Faker('bothify', text='?#########')
+    drivers_license_expiry = factory.LazyFunction(lambda: fake.date_between(start_date='+1y', end_date='+5y'))
+    
+    date_of_birth = factory.Faker('date_of_birth', minimum_age=18, maximum_age=65)
+
+
+class TempSalesBookingFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = TempSalesBooking
+
+    motorcycle = factory.SubFactory(MotorcycleFactory)
+    sales_profile = factory.SubFactory(SalesProfileFactory)
+    payment = factory.SubFactory(PaymentFactory)
+
+    sales_booking_reference = factory.Sequence(lambda n: f"TSB-{uuid.uuid4().hex[:8].upper()}")
+    amount_paid = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
+    payment_status = factory.Faker('random_element', elements=[choice[0] for choice in TEMP_PAYMENT_STATUS_CHOICES])
+    currency = 'AUD'
+    stripe_payment_intent_id = factory.Sequence(lambda n: f"pi_{uuid.uuid4().hex[:24]}")
+
+    appointment_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+30d'))
+    appointment_time = factory.Faker('time_object')
+    
+    customer_notes = factory.Faker('paragraph')
+    # Added new fields as per the request
+    booking_status = factory.Faker('random_element', elements=[choice[0] for choice in TEMP_BOOKING_STATUS_CHOICES])
+    deposit_required_for_flow = factory.Faker('boolean')
+    request_viewing = factory.Faker('boolean')
+
+
+class SalesBookingFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = SalesBooking
+
+    motorcycle = factory.SubFactory(MotorcycleFactory)
+    sales_profile = factory.SubFactory(SalesProfileFactory)
+    payment = factory.SubFactory(PaymentFactory)
+
+    sales_booking_reference = factory.Sequence(lambda n: f"SBK-{uuid.uuid4().hex[:8].upper()}")
+    amount_paid = factory.LazyFunction(lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True))
+    payment_status = factory.Faker('random_element', elements=[choice[0] for choice in SALES_PAYMENT_STATUS_CHOICES])
+    currency = 'AUD'
+    stripe_payment_intent_id = factory.Sequence(lambda n: f"pi_{uuid.uuid4().hex[:24]}")
+
+    appointment_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+60d'))
+    appointment_time = factory.Faker('time_object')
+
+    booking_status = factory.Faker('random_element', elements=[choice[0] for choice in SALES_BOOKING_STATUS_CHOICES])
+    customer_notes = factory.Faker('paragraph')
