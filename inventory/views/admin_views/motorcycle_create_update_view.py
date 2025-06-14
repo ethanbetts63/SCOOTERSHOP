@@ -2,7 +2,7 @@ from django.views.generic import CreateView, UpdateView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
-from inventory.models import Motorcycle
+from inventory.models import Motorcycle, MotorcycleCondition
 from inventory.forms.admin_motorcycle_form import MotorcycleForm
 from inventory.forms.admin_motorcycle_image_form import MotorcycleImageFormSet
 
@@ -20,6 +20,14 @@ class MotorcycleCreateUpdateView(CreateView, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        required_conditions = ['new', 'used', 'demo', 'hire']
+        for condition_name in required_conditions:
+            MotorcycleCondition.objects.get_or_create(
+                name=condition_name,
+                defaults={'display_name': condition_name.capitalize()}
+            )
+
         if self.object:
             context['title'] = f'Edit Motorcycle: {self.object.title}'
             context['image_formset'] = MotorcycleImageFormSet(instance=self.object)
@@ -50,5 +58,5 @@ class MotorcycleCreateUpdateView(CreateView, UpdateView):
         return self.render_to_response(self.get_context_data(form=form, image_formset=image_formset))
 
     def get_success_url(self):
-        return reverse_lazy('inventory:admin_motorcycle_details', kwargs={'pk': self.object.pk})
+        return reverse_lazy('inventory:inventory_settings')
 

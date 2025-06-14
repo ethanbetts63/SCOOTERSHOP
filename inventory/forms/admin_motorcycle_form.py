@@ -1,6 +1,7 @@
 from django import forms
 import datetime
-from inventory.models import Motorcycle, MotorcycleCondition # Ensure MotorcycleCondition is imported if used in clean method
+from inventory.models import Motorcycle, MotorcycleCondition
+
 
 class MotorcycleForm(forms.ModelForm):
     class Meta:
@@ -14,19 +15,29 @@ class MotorcycleForm(forms.ModelForm):
             'hourly_hire_rate',
             'description', 'image',
             'is_available', 'rego', 'rego_exp', 'stock_number',
-            'vin_number', 'engine_number', # Added these fields
+            'vin_number', 'engine_number',
         ]
         widgets = {
-            'hourly_hire_rate': forms.NumberInput(attrs={'class': 'hire-field', 'step': '0.01'}),
-            'rego_exp': forms.DateInput(attrs={'type': 'date'}),
+            'brand': forms.TextInput(attrs={'class': 'form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900'}),
+            'model': forms.TextInput(attrs={'class': 'form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900'}),
+            'year': forms.NumberInput(attrs={'class': 'form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900'}),
+            'price': forms.NumberInput(attrs={'class': 'form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900', 'step': '0.01'}),
+            'odometer': forms.NumberInput(attrs={'class': 'form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900'}),
+            'engine_size': forms.NumberInput(attrs={'class': 'form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900', 'min': '0'}),
+            'seats': forms.NumberInput(attrs={'class': 'form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900', 'min': '0', 'max': '3'}),
+            'transmission': forms.Select(attrs={'class': 'form-select mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900'}),
+            'daily_hire_rate': forms.NumberInput(attrs={'class': 'hire-field form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900', 'step': '0.01'}),
+            'hourly_hire_rate': forms.NumberInput(attrs={'class': 'hire-field form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900', 'step': '0.01'}),
+            'description': forms.Textarea(attrs={'class': 'form-textarea mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900'}),
+            'image': forms.FileInput(attrs={'class': 'form-input mt-1 block w-full text-gray-900'}),
+            'rego': forms.TextInput(attrs={'class': 'form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900'}),
+            'rego_exp': forms.DateInput(attrs={'type': 'date', 'class': 'form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900'}),
+            'stock_number': forms.TextInput(attrs={'class': 'form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900'}),
+            'vin_number': forms.TextInput(attrs={'class': 'form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900'}),
+            'engine_number': forms.TextInput(attrs={'class': 'form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900'}),
             'conditions': forms.CheckboxSelectMultiple(attrs={'class': 'condition-checkbox-list'}),
-            'daily_hire_rate': forms.NumberInput(attrs={'class': 'hire-field', 'step': '0.01'}),
-            'seats': forms.NumberInput(attrs={'min': '0', 'max': '3'}),
-            'transmission': forms.Select(attrs={'class': 'form-control'}),
         }
 
-    engine_size = forms.IntegerField(min_value=0)
-    odometer = forms.IntegerField(min_value=0)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -35,15 +46,15 @@ class MotorcycleForm(forms.ModelForm):
         self.fields['hourly_hire_rate'].required = False
         self.fields['description'].required = False
         self.fields['seats'].required = False
-        self.fields['transmission'].required = True # User specified
+        self.fields['transmission'].required = True
         self.fields['rego'].required = False
         self.fields['rego_exp'].required = False
-        self.fields['stock_number'].required = True # User specified
-        self.fields['brand'].required = True # User specified
-        self.fields['model'].required = True # User specified
-        self.fields['year'].required = True # User specified
-        self.fields['vin_number'].required = False # Made optional
-        self.fields['engine_number'].required = False # Made optional
+        self.fields['stock_number'].required = True
+        self.fields['brand'].required = True
+        self.fields['model'].required = True
+        self.fields['year'].required = True
+        self.fields['vin_number'].required = False
+        self.fields['engine_number'].required = False
 
 
     def clean(self):
@@ -53,7 +64,7 @@ class MotorcycleForm(forms.ModelForm):
         model = cleaned_data.get('model')
         year = cleaned_data.get('year')
         rego = cleaned_data.get('rego')
-        conditions = cleaned_data.get('conditions') # Get selected conditions
+        conditions = cleaned_data.get('conditions')
 
         if brand:
             cleaned_data['brand'] = brand.capitalize()
@@ -100,3 +111,4 @@ class MotorcycleForm(forms.ModelForm):
             instance.save()
             self.save_m2m()
         return instance
+
