@@ -1,27 +1,35 @@
 from django.views.generic import CreateView, UpdateView
 from django.urls import reverse_lazy
 from django.contrib import messages
-from django.shortcuts import get_object_or_404
-from inventory.models import Motorcycle, MotorcycleCondition
+from django.shortcuts import get_object_or_404, redirect
+from inventory.models import Motorcycle, MotorcycleCondition, MotorcycleImage
 from inventory.forms.admin_motorcycle_form import MotorcycleForm
 from inventory.forms.admin_motorcycle_image_form import MotorcycleImageFormSet
-from inventory.mixins import AdminRequiredMixin # Import the new mixin
+from inventory.mixins import AdminRequiredMixin
 
 
-class MotorcycleCreateUpdateView(AdminRequiredMixin, CreateView, UpdateView):
+class MotorcycleCreateUpdateView(AdminRequiredMixin, CreateView):
     model = Motorcycle
     form_class = MotorcycleForm
     template_name = 'inventory/admin_motorcycle_create_update.html'
     context_object_name = 'motorcycle'
 
     def get_object(self, queryset=None):
+        """
+        Returns the object the view is displaying.
+        For updates, it fetches by 'pk'. For creates, it returns None.
+        """
         if self.kwargs.get('pk'):
             return get_object_or_404(Motorcycle, pk=self.kwargs['pk'])
         return None
 
     def get_context_data(self, **kwargs):
+        """
+        Insert the formset for existing images into the context.
+        """
         context = super().get_context_data(**kwargs)
 
+        # Ensure required conditions exist in the database
         required_conditions = ['new', 'used', 'demo', 'hire']
         for condition_name in required_conditions:
             MotorcycleCondition.objects.get_or_create(
@@ -29,34 +37,55 @@ class MotorcycleCreateUpdateView(AdminRequiredMixin, CreateView, UpdateView):
                 defaults={'display_name': condition_name.capitalize()}
             )
 
+        # When re-rendering the form due to an error, use the submitted data.
+        # Otherwise, for a GET request, initialize a fresh formset.
+        if self.request.POST:
+            context['image_formset'] = MotorcycleImageFormSet(self.request.POST, instance=self.object)
+        else:
+            context['image_formset'] = MotorcycleImageFormSet(instance=self.object)
+
         if self.object:
             context['title'] = f'Edit Motorcycle: {self.object.title}'
-            context['image_formset'] = MotorcycleImageFormSet(instance=self.object)
         else:
             context['title'] = 'Add New Motorcycle'
-            context['image_formset'] = MotorcycleImageFormSet()
         return context
 
     def post(self, request, *args, **kwargs):
+        """
+        Handles POST requests, validating the form and formset,
+        and processing both single and multiple file uploads.
+        """
         self.object = self.get_object()
         form = self.get_form()
-        image_formset = MotorcycleImageFormSet(self.request.POST, self.request.FILES, instance=self.object)
+        
+        # The formset handles deletions of existing images.
+        # We don't pass request.FILES here because new uploads are handled separately.
+        image_formset = MotorcycleImageFormSet(self.request.POST, instance=self.object)
 
         if form.is_valid() and image_formset.is_valid():
-            return self.form_valid(form, image_formset)
+            # Save the main Motorcycle instance
+            self.object = form.save()
+
+            # Save the formset to process deletions of existing images
+            image_formset.save()
+
+            # Process the newly uploaded additional images
+            for image_file in request.FILES.getlist('additional_images'):
+                MotorcycleImage.objects.create(motorcycle=self.object, image=image_file)
+
+            messages.success(self.request, "Motorcycle saved successfully!")
+            return redirect(self.get_success_url())
         else:
-            return self.form_invalid(form, image_formset)
-
-    def form_valid(self, form, image_formset):
-        self.object = form.save()
-        image_formset.instance = self.object
-        image_formset.save()
-        messages.success(self.request, "Motorcycle saved successfully!")
-        return super().form_valid(form)
-
-    def form_invalid(self, form, image_formset):
-        messages.error(self.request, "Please correct the errors below.")
-        return self.render_to_response(self.get_context_data(form=form, image_formset=image_formset))
+            messages.error(self.request, "Please correct the errors below.")
+            # If form or formset is invalid, re-render the page with errors
+            return self.render_to_response(self.get_context_data(form=form, image_formset=image_formset))
 
     def get_success_url(self):
-        return reverse_lazy('inventory:inventory_settings')
+        """
+        Return the URL to redirect to after successful processing.
+        Redirect to the detail page of the created/updated motorcycle.
+        """
+        if self.object:
+            return reverse_lazy('inventory:admin_motorcycle_details', kwargs={'pk': self.object.pk})
+        # Fallback if object not created for some reason
+        return reverse_lazy('inventory:admin_inventory_management')

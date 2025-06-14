@@ -13,7 +13,7 @@ class MotorcycleForm(forms.ModelForm):
             'seats', 'transmission',
             'daily_hire_rate',
             'hourly_hire_rate',
-            'description', 'image',
+            'description', 'image', # Re-added 'image' field
             'is_available', 'rego', 'rego_exp', 'stock_number',
             'vin_number', 'engine_number',
         ]
@@ -29,7 +29,7 @@ class MotorcycleForm(forms.ModelForm):
             'daily_hire_rate': forms.NumberInput(attrs={'class': 'hire-field form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900', 'step': '0.01'}),
             'hourly_hire_rate': forms.NumberInput(attrs={'class': 'hire-field form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900', 'step': '0.01'}),
             'description': forms.Textarea(attrs={'class': 'form-textarea mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900'}),
-            'image': forms.FileInput(attrs={'class': 'form-input mt-1 block w-full text-gray-900'}),
+            'image': forms.FileInput(attrs={'class': 'form-input mt-1 block w-full text-gray-900'}), # Re-added image widget
             'rego': forms.TextInput(attrs={'class': 'form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900'}),
             'rego_exp': forms.DateInput(attrs={'type': 'date', 'class': 'form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900'}),
             'stock_number': forms.TextInput(attrs={'class': 'form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900'}),
@@ -55,6 +55,7 @@ class MotorcycleForm(forms.ModelForm):
         self.fields['year'].required = True
         self.fields['vin_number'].required = False
         self.fields['engine_number'].required = False
+        self.fields['image'].required = False # Primary image is optional
 
 
     def clean(self):
