@@ -43,7 +43,12 @@ class Motorcycle(models.Model):
         blank=True,
         help_text="Select all applicable conditions (e.g., Used, Hire)",
     )
-
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='for_sale', # Or another appropriate default
+        help_text="The sales/hire status of the motorcycle."
+    )
     odometer = models.IntegerField(default=0)
     engine_size = models.IntegerField(
         help_text="Engine size in cubic centimeters (cc)"

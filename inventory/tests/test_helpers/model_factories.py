@@ -19,6 +19,8 @@ from inventory.models import (
     TempSalesBooking,
 )
 
+from payments.models import RefundPolicySettings
+
 # Import PAYMENT_STATUS_CHOICES and BOOKING_STATUS_CHOICES directly from the model files
 from inventory.models.temp_sales_booking import PAYMENT_STATUS_CHOICES as TEMP_PAYMENT_STATUS_CHOICES
 from inventory.models.temp_sales_booking import BOOKING_STATUS_CHOICES as TEMP_BOOKING_STATUS_CHOICES # Added this import
@@ -95,7 +97,7 @@ class MotorcycleFactory(factory.django.DjangoModelFactory):
     
     vin_number = factory.Faker('bothify', text='#################')
     engine_number = factory.Faker('bothify', text='######')
-    condition = ''
+    condition = '' # This is for a single choice field, not the ManyToManyField 'conditions'
     
     odometer = factory.Faker('random_int', min=0, max=100000)
     engine_size = factory.Faker('random_int', min=50, max=1800)
@@ -110,6 +112,9 @@ class MotorcycleFactory(factory.django.DjangoModelFactory):
 
     daily_hire_rate = factory.LazyFunction(lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True, min_value=50, max_value=300))
     hourly_hire_rate = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True, min_value=10, max_value=50))
+
+    # Add the new 'status' field
+    status = factory.Faker('random_element', elements=[choice[0] for choice in Motorcycle.STATUS_CHOICES])
 
     @factory.post_generation
     def conditions(obj, create, extracted, **kwargs):
@@ -254,3 +259,35 @@ class BlockedSalesDateFactory(factory.django.DjangoModelFactory):
     start_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+30d'))
     end_date = factory.LazyAttribute(lambda o: o.start_date + datetime.timedelta(days=fake.random_int(min=0, max=7)))
     description = factory.Faker('sentence')
+
+class RefundPolicySettingsFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RefundPolicySettings
+
+    cancellation_full_payment_full_refund_days = factory.Faker('random_int', min=5, max=10)
+    cancellation_full_payment_partial_refund_days = factory.Faker('random_int', min=2, max=4)
+    cancellation_full_payment_partial_refund_percentage = factory.LazyFunction(lambda: Decimal(fake.random_element([25.00, 50.00, 75.00])))
+    cancellation_full_payment_minimal_refund_days = factory.Faker('random_int', min=0, max=1)
+    cancellation_full_payment_minimal_refund_percentage = factory.LazyFunction(lambda: Decimal(fake.random_element([0.00, 10.00, 20.00])))
+
+    cancellation_deposit_full_refund_days = factory.Faker('random_int', min=5, max=10)
+    cancellation_deposit_partial_refund_days = factory.Faker('random_int', min=2, max=4)
+    cancellation_deposit_partial_refund_percentage = factory.LazyFunction(lambda: Decimal(fake.random_element([25.00, 50.00, 75.00])))
+    cancellation_deposit_minimal_refund_days = factory.Faker('random_int', min=0, max=1)
+    cancellation_deposit_minimal_refund_percentage = factory.LazyFunction(lambda: Decimal(fake.random_element([0.00, 10.00, 20.00])))
+
+    refund_deducts_stripe_fee_policy = factory.Faker('boolean')
+    stripe_fee_percentage_domestic = factory.LazyFunction(lambda: Decimal(fake.random_element(['0.0170', '0.0180'])))
+    stripe_fee_fixed_domestic = factory.LazyFunction(lambda: Decimal(fake.random_element(['0.30', '0.40'])))
+    stripe_fee_percentage_international = factory.LazyFunction(lambda: Decimal(fake.random_element(['0.0350', '0.0390'])))
+    stripe_fee_fixed_international = factory.LazyFunction(lambda: Decimal(fake.random_element(['0.30', '0.40'])))
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        obj, created = model_class.objects.get_or_create(pk=1, defaults=kwargs)
+        if not created:
+            for k, v in kwargs.items():
+                setattr(obj, k, v)
+            obj.save()
+        return obj
+
