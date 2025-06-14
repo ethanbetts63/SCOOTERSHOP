@@ -6,7 +6,7 @@ class BookingAppointmentForm(forms.Form):
     request_viewing = forms.ChoiceField(
         choices=[('yes', 'Yes'), ('no', 'No')],
         widget=forms.RadioSelect(attrs={'class': 'form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out'}),
-        initial='yes', # Default to 'Yes'
+        initial='no', # Default to 'Yes'
         required=True,
         label="I would like to book a viewing/test drive",
         help_text="Select 'Yes' to request a specific date and time for a viewing or test drive, or 'No' to submit a general enquiry."
@@ -79,9 +79,7 @@ class BookingAppointmentForm(forms.Form):
         terms_accepted = cleaned_data.get('terms_accepted') # Get the new field
 
         # Determine if an appointment is truly required based on flow type or user's 'request_viewing' choice
-        is_appointment_required = self.deposit_required_for_flow or \
-                                  (request_viewing and self.inventory_settings and self.inventory_settings.enable_viewing_for_enquiry)
-
+        is_appointment_required = self.deposit_required_for_flow 
         if is_appointment_required:
             if not appointment_date:
                 self.add_error('appointment_date', "This field is required for your selected option.")
