@@ -10,7 +10,7 @@ from inventory.forms import AdminSalesBookingForm # Ensure this import path is c
 from inventory.models import SalesBooking
 
 class SalesBookingCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, View):
-    template_name = 'inventory/admin_sales_booking_form.html'
+    template_name = 'inventory/admin_sales_booking_create_update.html'
     form_class = AdminSalesBookingForm
 
     def test_func(self):

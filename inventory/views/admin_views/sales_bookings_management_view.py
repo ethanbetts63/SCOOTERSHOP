@@ -1,18 +1,15 @@
 # SCOOTER_SHOP/inventory/views/admin_views/sales_bookings_management_view.py
 
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Q
 from django.views.generic import ListView
 from inventory.models import SalesBooking
+from inventory.mixins import AdminRequiredMixin
 
-class SalesBookingsManagementView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+class SalesBookingsManagementView(AdminRequiredMixin, ListView):
     model = SalesBooking
     template_name = 'inventory/admin_sales_bookings_management.html'
     context_object_name = 'sales_bookings'
     paginate_by = 10
-
-    def test_func(self):
-        return self.request.user.is_staff or self.request.user.is_superuser
 
     def get_queryset(self):
         queryset = super().get_queryset().order_by('-created_at')
@@ -36,4 +33,3 @@ class SalesBookingsManagementView(LoginRequiredMixin, UserPassesTestMixin, ListV
         context['search_term'] = self.request.GET.get('q', '')
         context['page_title'] = "Sales Bookings Management"
         return context
-
