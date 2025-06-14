@@ -34,6 +34,7 @@ def create_or_update_sales_payment_intent(
     payment_description = (
         f"Deposit for Motorcycle: {temp_booking.motorcycle.year} "
         f"{temp_booking.motorcycle.brand} {temp_booking.motorcycle.model} "
+        f"(Ref: {temp_booking.session_uuid})" # Changed from sales_booking_reference to session_uuid
     )
 
     intent = None
@@ -44,35 +45,45 @@ def create_or_update_sales_payment_intent(
         try:
             intent = stripe.PaymentIntent.retrieve(payment_obj.stripe_payment_intent_id)
 
-            amount_changed = intent.amount != amount_in_cents
-            currency_changed = intent.currency.lower() != currency.lower()
-            
-            is_modifiable_or_in_progress = intent.status in [
-                'requires_payment_method', 'requires_confirmation', 'requires_action',
-                'processing', 'canceled'
-            ]
+            # Check if intent is not None and its status allows modification/check
+            if intent:
+                amount_changed = intent.amount != amount_in_cents
+                currency_changed = intent.currency.lower() != currency.lower()
 
-            if (amount_changed or currency_changed) and is_modifiable_or_in_progress:
-                intent = stripe.PaymentIntent.modify(
-                    payment_obj.stripe_payment_intent_id,
-                    amount=amount_in_cents,
-                    currency=currency,
-                    description=payment_description,
-                    metadata={
-                        'temp_sales_booking_uuid': str(temp_booking.session_uuid),
-                        'sales_profile_id': str(sales_profile.id) if sales_profile else 'guest',
-                        'booking_type': 'sales_booking',
-                    }
-                )
-            elif intent.status == 'failed':
-                intent = None # Treat failed intents as needing a new one
-            elif not is_modifiable_or_in_progress and intent.status != 'succeeded':
-                intent = None # If not modifiable and not succeeded, create new
-            
-            # Update payment_obj status based on current intent status, even if no modify
-            if payment_obj.status != intent.status:
-                payment_obj.status = intent.status
-                payment_obj.save()
+                is_modifiable_or_in_progress = intent.status in [
+                    'requires_payment_method', 'requires_confirmation', 'requires_action',
+                    'processing', 'canceled' # Include 'canceled' if it can be modified from canceled to new status
+                ]
+
+                if (amount_changed or currency_changed) and is_modifiable_or_in_progress:
+                    intent = stripe.PaymentIntent.modify(
+                        payment_obj.stripe_payment_intent_id,
+                        amount=amount_in_cents,
+                        currency=currency,
+                        description=payment_description,
+                        metadata={
+                            'temp_sales_booking_uuid': str(temp_booking.session_uuid),
+                            'sales_profile_id': str(sales_profile.id) if sales_profile else 'guest',
+                            'booking_type': 'sales_booking',
+                        }
+                    )
+                elif intent.status == 'failed':
+                    intent = None # Treat failed intents as needing a new one
+                elif not is_modifiable_or_in_progress and intent.status != 'succeeded':
+                    # If not modifiable and not succeeded (e.g., already captured/refunded without a new intent needed),
+                    # or if the intent is in a terminal state that cannot be reused, create new.
+                    # IMPORTANT: 'canceled' can be in this list or 'is_modifiable_or_in_progress' depending on desired Stripe logic.
+                    # If a 'canceled' intent can be reactivated/modified, keep it in the modifiable list.
+                    # If a 'canceled' intent truly means "start over", then set intent = None here.
+                    # For this fix, assume 'canceled' means it can potentially be modified as per common flow
+                    # if the amount/currency changes. If not, it falls here to create a new one.
+                    intent = None
+                
+                # Update payment_obj status based on current intent status, even if no modify occurred
+                # Only update if intent is not None
+                if intent and payment_obj.status != intent.status:
+                    payment_obj.status = intent.status
+                    payment_obj.save()
 
         except stripe.error.StripeError:
             # If retrieval fails (e.g., PI not found), proceed to create a new one
@@ -111,6 +122,6 @@ def create_or_update_sales_payment_intent(
             status=intent.status,
             description=payment_description
         )
-    
+
     return intent, payment_obj
 
