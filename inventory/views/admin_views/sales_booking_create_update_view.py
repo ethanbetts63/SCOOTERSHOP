@@ -1,0 +1,59 @@
+# SCOOTER_SHOP/inventory/views/admin_views/sales_booking_create_update_view.py
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views import View
+from django.urls import reverse
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+
+from inventory.forms import AdminSalesBookingForm # Ensure this import path is correct
+from inventory.models import SalesBooking
+
+class SalesBookingCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, View):
+    template_name = 'inventory/admin_sales_booking_form.html'
+    form_class = AdminSalesBookingForm
+
+    def test_func(self):
+        return self.request.user.is_staff or self.request.user.is_superuser
+
+    def get(self, request, pk=None, *args, **kwargs):
+        instance = None
+        if pk:
+            instance = get_object_or_404(SalesBooking, pk=pk)
+            form = self.form_class(instance=instance)
+        else:
+            form = self.form_class()
+
+        context = {
+            'form': form,
+            'is_edit_mode': bool(pk),
+            'current_booking': instance,
+            'page_title': "Edit Sales Booking" if pk else "Create Sales Booking"
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, pk=None, *args, **kwargs):
+        instance = None
+        if pk:
+            instance = get_object_or_404(SalesBooking, pk=pk)
+            form = self.form_class(request.POST, instance=instance)
+        else:
+            form = self.form_class(request.POST)
+
+        if form.is_valid():
+            sales_booking = form.save()
+            if pk:
+                messages.success(request, f"Sales Booking '{sales_booking.sales_booking_reference}' updated successfully.")
+            else:
+                messages.success(request, f"Sales Booking '{sales_booking.sales_booking_reference}' created successfully.")
+            return redirect(reverse('inventory:sales_bookings_management'))
+        else:
+            messages.error(request, "Please correct the errors below.")
+            context = {
+                'form': form,
+                'is_edit_mode': bool(pk),
+                'current_booking': instance,
+                'page_title': "Edit Sales Booking" if pk else "Create Sales Booking"
+            }
+            return render(request, self.template_name, context)
+

@@ -60,22 +60,26 @@ urlpatterns = [
     path('admin/motorcycles/create/', motorcycle_create_update_view.MotorcycleCreateUpdateView.as_view(), name='admin_motorcycle_create'),
     path('admin/motorcycles/<int:pk>/update/', motorcycle_create_update_view.MotorcycleCreateUpdateView.as_view(), name='admin_motorcycle_update'),
     path('admin/motorcycles/<int:pk>/delete/', delete_motorcycle.MotorcycleDeleteView.as_view(), name='admin_motorcycle_delete'),
-    path('admin/motorcycles/<int:pk>/details/', admin_motorcycle_details_view.AdminMotorcycleDetailsView.as_view(), name='admin_motorcycle_details'), # New URL for motorcycle details
+    path('admin/motorcycles/<int:pk>/details/', admin_motorcycle_details_view.AdminMotorcycleDetailsView.as_view(), name='admin_motorcycle_details'),
 
     # Blocked Sales Date Management
+    # path('admin/blocked-sales-dates/', blocked_sales_date_management_view.BlockedSalesDateManagementView.as_view(), name='blocked_sales_date_management'),
     path('admin/blocked-sales-dates/<int:pk>/delete/', delete_blocked_sales_date.BlockedSalesDateDeleteView.as_view(), name='admin_blocked_sales_date_delete'),
 
     # Sales Booking Management
     path('admin/sales-bookings/', sales_bookings_management_view.SalesBookingsManagementView.as_view(), name='sales_bookings_management'),
+    path('admin/sales-bookings/create/', sales_booking_create_update_view.SalesBookingCreateUpdateView.as_view(), name='sales_booking_create_update'),
+    path('admin/sales-bookings/<int:pk>/update/', sales_booking_create_update_view.SalesBookingCreateUpdateView.as_view(), name='sales_booking_create_update'),
     path('admin/sales-bookings/<int:pk>/delete/', delete_sales_booking.SalesBookingDeleteView.as_view(), name='admin_sales_booking_delete'),
     path('admin/sales-bookings/<int:pk>/details/', sales_booking_details_view.SalesBookingDetailsView.as_view(), name='sales_booking_details'),
 
+
     # Sales Profile Management
     path('admin/sales-profiles/', sales_profile_management_view.SalesProfileManagementView.as_view(), name='sales_profile_management'),
-    path('admin/sales-profiles/create/', sales_profile_create_update_view.SalesProfileCreateUpdateView.as_view(), name='sales_profile_create_update'), # New path for create
-    path('admin/sales-profiles/<int:pk>/update/', sales_profile_create_update_view.SalesProfileCreateUpdateView.as_view(), name='sales_profile_create_update'), # New path for update
+    path('admin/sales-profiles/create/', sales_profile_create_update_view.SalesProfileCreateUpdateView.as_view(), name='sales_profile_create_update'),
+    path('admin/sales-profiles/<int:pk>/update/', sales_profile_create_update_view.SalesProfileCreateUpdateView.as_view(), name='sales_profile_create_update'),
     path('admin/sales-profiles/<int:pk>/delete/', delete_sales_profile.SalesProfileDeleteView.as_view(), name='admin_sales_profile_delete'),
-    path('admin/sales-profiles/<int:pk>/details/', sales_profile_details_view.SalesProfileDetailsView.as_view(), name='sales_profile_details'), # New URL for sales profile details
+    path('admin/sales-profiles/<int:pk>/details/', sales_profile_details_view.SalesProfileDetailsView.as_view(), name='sales_profile_details'),
 
 
     # AJAX Endpoints
