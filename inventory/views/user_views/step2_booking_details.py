@@ -8,7 +8,8 @@ import json # Import the json module
 
 from inventory.models import TempSalesBooking, InventorySettings, SalesBooking, SalesProfile
 from inventory.forms.sales_booking_appointment_form import BookingAppointmentForm
-from inventory.utils.get_available_appointment_dates import get_available_appointment_dates
+# Import the new utility function
+from inventory.utils.get_sales_appointment_date_info import get_sales_appointment_date_info
 from inventory.utils.convert_temp_sales_booking import convert_temp_sales_booking
 
 class Step2BookingDetailsView(View):
@@ -41,17 +42,23 @@ class Step2BookingDetailsView(View):
             inventory_settings=inventory_settings
         )
 
-        available_dates = get_available_appointment_dates(inventory_settings, temp_booking.deposit_required_for_flow)
+        # Call the new utility to get min_date, max_date, and blocked_dates
+        min_date_obj, max_date_obj, blocked_dates_list = get_sales_appointment_date_info(
+            inventory_settings, temp_booking.deposit_required_for_flow
+        )
         
-        # Convert the list of dates to a JSON string using json.dumps
-        # This ensures proper double quotes for JavaScript parsing
-        available_dates_json = json.dumps([d.strftime('%Y-%m-%d') for d in available_dates])
+        # Convert date objects to string format for Flatpickr and JSON serialization
+        min_date_str = min_date_obj.strftime('%Y-%m-%d')
+        max_date_str = max_date_obj.strftime('%Y-%m-%d')
+        blocked_dates_json = json.dumps(blocked_dates_list)
 
         context = {
             'form': form,
             'temp_booking': temp_booking,
             'inventory_settings': inventory_settings,
-            'available_dates': available_dates_json, # Pass the JSON string here
+            'min_appointment_date': min_date_str,             # Pass min date string
+            'max_appointment_date': max_date_str,             # Pass max date string
+            'blocked_appointment_dates_json': blocked_dates_json, # Pass JSON string of blocked dates
         }
         return render(request, self.template_name, context)
 
@@ -107,13 +114,21 @@ class Step2BookingDetailsView(View):
                     messages.success(request, "Your enquiry has been submitted. We will get back to you shortly!")
                     return redirect(reverse('inventory:confirmation_page'))
         else:
-            available_dates = get_available_appointment_dates(inventory_settings, temp_booking.deposit_required_for_flow)
-            available_dates_json = json.dumps([d.strftime('%Y-%m-%d') for d in available_dates])
+            # If form is invalid, re-render with errors AND pass date info again
+            min_date_obj, max_date_obj, blocked_dates_list = get_sales_appointment_date_info(
+                inventory_settings, temp_booking.deposit_required_for_flow
+            )
+            min_date_str = min_date_obj.strftime('%Y-%m-%d')
+            max_date_str = max_date_obj.strftime('%Y-%m-%d')
+            blocked_dates_json = json.dumps(blocked_dates_list)
+
             context = {
                 'form': form,
                 'temp_booking': temp_booking,
                 'inventory_settings': inventory_settings,
-                'available_dates': available_dates_json, # Pass the JSON string here
+                'min_appointment_date': min_date_str,
+                'max_appointment_date': max_date_str,
+                'blocked_appointment_dates_json': blocked_dates_json,
             }
             messages.error(request, "Please correct the errors below.")
             return render(request, self.template_name, context)

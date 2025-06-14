@@ -3,7 +3,7 @@
 from django.test import TestCase
 from datetime import date, datetime, time, timedelta
 
-from inventory.utils.get_available_appointment_dates import get_available_appointment_dates
+from inventory.utils.get_sales_appointment_date_info import get_available_appointment_dates
 from inventory.models import InventorySettings, BlockedSalesDate
 from ..test_helpers.model_factories import InventorySettingsFactory, BlockedSalesDateFactory
 

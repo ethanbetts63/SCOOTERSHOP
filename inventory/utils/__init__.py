@@ -5,7 +5,7 @@ from .delete_blocked_sales_date import *
 from .delete_motorcycle import *
 from .delete_sales_booking import *
 from .delete_sales_profile import *
-from .get_available_appointment_dates import *
+from .get_sales_appointment_date_info import *
 from .get_available_appointment_times import *
 from .validate_appointment_date import *
 from .validate_appointment_time import *
