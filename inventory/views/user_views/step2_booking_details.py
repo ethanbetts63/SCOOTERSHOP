@@ -6,7 +6,7 @@ from django.contrib import messages
 from decimal import Decimal
 import json
 
-from inventory.models import TempSalesBooking, InventorySettings, SalesBooking, SalesProfile
+from inventory.models import TempSalesBooking, InventorySettings
 from inventory.forms.sales_booking_appointment_form import BookingAppointmentForm
 from inventory.utils.get_sales_appointment_date_info import get_sales_appointment_date_info
 from inventory.utils.convert_temp_sales_booking import convert_temp_sales_booking

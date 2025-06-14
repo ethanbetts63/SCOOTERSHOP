@@ -1,10 +1,6 @@
-# inventory/tests/view_tests/user_view_tests/test_initiate_booking_process_view.py
-
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.db import transaction
-
-from inventory.models import Motorcycle, TempSalesBooking, InventorySettings
+from inventory.models import TempSalesBooking
 from ...test_helpers.model_factories import MotorcycleFactory, InventorySettingsFactory
 
 class InitiateBookingProcessViewTest(TestCase):

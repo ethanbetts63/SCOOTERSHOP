@@ -1,13 +1,8 @@
-# inventory/tests/test_views/test_motorcycle_list_view.py
-
 from django.test import TestCase, Client
 from django.urls import reverse
 from decimal import Decimal
 import datetime
-
-# We still import these for setUpTestData, but note that the ListView
-# will no longer actively query them directly based on URL params for initial display.
-from inventory.models import Motorcycle, MotorcycleCondition
+from inventory.models import Motorcycle
 from ...test_helpers.model_factories import MotorcycleFactory, MotorcycleConditionFactory
 
 class MotorcycleListViewTest(TestCase):

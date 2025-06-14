@@ -1,16 +1,11 @@
-# inventory/tests/test_views/test_step1_sales_profile_view.py
-
-import datetime # Import datetime for date objects
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.messages import get_messages
 from django.core.files.uploadedfile import SimpleUploadedFile
 from unittest import mock
-import os
 import tempfile
 from PIL import Image # Required for creating dummy image files
-
-from inventory.models import TempSalesBooking, SalesProfile, InventorySettings
+from inventory.models import SalesProfile, InventorySettings
 from ...test_helpers.model_factories import (
     TempSalesBookingFactory,
     InventorySettingsFactory,

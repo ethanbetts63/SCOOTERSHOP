@@ -7,7 +7,7 @@ from django.contrib import messages
 import stripe
 import json
 from payments.models import Payment
-from inventory.models import TempSalesBooking, InventorySettings, Motorcycle
+from inventory.models import TempSalesBooking, InventorySettings
 from inventory.utils.create_update_sales_payment_intent import create_or_update_sales_payment_intent
 from decimal import Decimal
 

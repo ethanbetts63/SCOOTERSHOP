@@ -3,9 +3,7 @@ from django.views import View
 from django.urls import reverse
 from django.db import transaction
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
-
-from inventory.models import TempSalesBooking, SalesProfile, InventorySettings
+from inventory.models import TempSalesBooking, InventorySettings
 from inventory.forms import SalesProfileForm
 
 class Step1SalesProfileView(View):

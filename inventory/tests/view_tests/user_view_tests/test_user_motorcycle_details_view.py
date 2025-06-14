@@ -1,11 +1,5 @@
-# inventory/tests/test_views/test_user_motorcycle_details_view.py
-
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.http import Http404
-
-# Import necessary models and factories
-from inventory.models import Motorcycle, InventorySettings
 from ...test_helpers.model_factories import MotorcycleFactory, InventorySettingsFactory, MotorcycleConditionFactory
 
 class UserMotorcycleDetailsViewTest(TestCase):
@@ -110,6 +104,3 @@ class UserMotorcycleDetailsViewTest(TestCase):
         self.assertIn('motorcycle', response.context)
         self.assertEqual(response.context['motorcycle'], unavailable_motorcycle)
         self.assertContains(response, unavailable_motorcycle.title)
-        # You might want to add assertions here to check for UI elements indicating unavailability
-        # e.g., self.assertContains(response, "This motorcycle is currently unavailable.")
-        # if your template displays such a message based on `is_available`.

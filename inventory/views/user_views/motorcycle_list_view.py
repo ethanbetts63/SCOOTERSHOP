@@ -1,5 +1,3 @@
-# inventory/views/user_views/motorcycle_list_view.py
-
 from django.views.generic import ListView
 from inventory.models import Motorcycle
 from inventory.utils.get_unique_makes_for_filter import get_unique_makes_for_filter

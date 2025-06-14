@@ -2,10 +2,8 @@ from django.shortcuts import render, redirect
 from django.views import View
 from django.contrib import messages
 from decimal import Decimal
-
 from inventory.models import SalesBooking
 from payments.models import Payment
-
 
 class Step4ConfirmationView(View):
     def get(self, request):

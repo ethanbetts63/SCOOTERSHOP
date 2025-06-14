@@ -1,24 +1,16 @@
-# inventory/tests/test_views/test_step2_booking_details_view.py
-
 import datetime
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.messages import get_messages
 from unittest import mock
 import json
-from decimal import Decimal
-
-from inventory.models import TempSalesBooking, InventorySettings, SalesBooking, SalesProfile
+from inventory.models import InventorySettings
 from inventory.forms.sales_booking_appointment_form import BookingAppointmentForm
-from inventory.utils.get_sales_appointment_date_info import get_sales_appointment_date_info
-from inventory.utils.convert_temp_sales_booking import convert_temp_sales_booking # Import the utility for mocking
-
 from ...test_helpers.model_factories import (
     TempSalesBookingFactory,
     InventorySettingsFactory,
     MotorcycleFactory,
     SalesProfileFactory,
-    SalesBookingFactory
 )
 
 class Step2BookingDetailsViewTest(TestCase):
