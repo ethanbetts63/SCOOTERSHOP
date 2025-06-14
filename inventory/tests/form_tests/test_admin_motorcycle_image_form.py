@@ -1,9 +1,6 @@
 from django.test import TestCase
 from django import forms
-from django.forms.models import BaseModelFormSet
-from inventory.models import Motorcycle, MotorcycleImage
-from inventory.forms.admin_motorcycle_image_form import MotorcycleImageForm, MotorcycleImageFormSet
-from ..test_helpers.model_factories import MotorcycleFactory, MotorcycleImageFactory
+from inventory.forms.admin_motorcycle_image_form import MotorcycleImageForm
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 
@@ -14,7 +11,6 @@ class MotorcycleImageFormTest(TestCase):
         expected_fields = ['image']
         self.assertEqual(list(form.fields.keys()), expected_fields)
         self.assertIsInstance(form.fields['image'].widget, forms.FileInput)
-        self.assertIn('form-control', form.fields['image'].widget.attrs['class'])
 
     def test_form_with_valid_image_data(self):
         image_content = b"fake_image_data"

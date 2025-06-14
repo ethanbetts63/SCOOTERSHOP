@@ -7,7 +7,6 @@ from io import BytesIO # To simulate image file
 from PIL import Image # For creating dummy image files
 
 from inventory.forms import SalesProfileForm
-from inventory.models import SalesProfile, InventorySettings
 from ..test_helpers.model_factories import UserFactory, SalesProfileFactory, InventorySettingsFactory
 
 class SalesProfileFormTest(TestCase):
