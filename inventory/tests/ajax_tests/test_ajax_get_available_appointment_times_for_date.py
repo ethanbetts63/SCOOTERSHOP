@@ -1,10 +1,7 @@
-# inventory/tests/test_ajax/test_get_available_appointment_times_for_date.py
-
 import datetime
 from django.test import TestCase, Client
 from django.urls import reverse
-from inventory.models import InventorySettings, SalesBooking
-# Corrected import path as per your suggestion, assuming test file is in inventory/tests/ajax_tests/
+from inventory.models import InventorySettings
 from ..test_helpers.model_factories import InventorySettingsFactory, SalesBookingFactory, MotorcycleFactory, SalesProfileFactory
 
 class GetAvailableAppointmentTimesForDateAjaxTest(TestCase):
