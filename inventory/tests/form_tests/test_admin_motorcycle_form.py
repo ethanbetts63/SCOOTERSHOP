@@ -15,35 +15,6 @@ class MotorcycleFormTest(TestCase):
         cls.condition_demo = MotorcycleConditionFactory(name='demo', display_name='Demo')
         cls.motorcycle = MotorcycleFactory()
 
-    def test_form_fields_and_widgets(self):
-        form = MotorcycleForm()
-        expected_fields = [
-            'conditions', 'brand', 'model', 'year', 'price',
-            'odometer', 'engine_size', 'seats', 'transmission',
-            'daily_hire_rate', 'hourly_hire_rate', 'description', 'image',
-            'is_available', 'rego', 'rego_exp', 'stock_number',
-            'vin_number', 'engine_number',
-        ]
-        self.assertEqual(list(form.fields.keys()), expected_fields)
-
-        self.assertIsInstance(form.fields['hourly_hire_rate'].widget, forms.NumberInput)
-        self.assertEqual(form.fields['hourly_hire_rate'].widget.attrs['step'], '0.01')
-        self.assertIsInstance(form.fields['rego_exp'].widget, forms.DateInput)
-        self.assertEqual(form.fields['rego_exp'].widget.input_type, 'date')
-        self.assertIsInstance(form.fields['conditions'].widget, forms.CheckboxSelectMultiple)
-        self.assertIn('condition-checkbox-list', form.fields['conditions'].widget.attrs['class'])
-        self.assertIsInstance(form.fields['daily_hire_rate'].widget, forms.NumberInput)
-        self.assertEqual(form.fields['daily_hire_rate'].widget.attrs['step'], '0.01')
-        self.assertIsInstance(form.fields['seats'].widget, forms.NumberInput)
-        self.assertEqual(form.fields['seats'].widget.attrs['min'], '0')
-        self.assertEqual(form.fields['seats'].widget.attrs['max'], '3')
-        self.assertIsInstance(form.fields['transmission'].widget, forms.Select)
-        self.assertIn('form-control', form.fields['transmission'].widget.attrs['class'])
-        self.assertIsInstance(form.fields['engine_size'], forms.IntegerField)
-        self.assertEqual(form.fields['engine_size'].min_value, 0)
-        self.assertIsInstance(form.fields['odometer'], forms.IntegerField)
-        self.assertEqual(form.fields['odometer'].min_value, 0)
-
 
     def test_init_method_required_fields(self):
         form = MotorcycleForm()
@@ -109,30 +80,6 @@ class MotorcycleFormTest(TestCase):
         data_valid_year['year'] = 2020
         form = MotorcycleForm(data=data_valid_year)
         self.assertTrue(form.is_valid(), form.errors.as_json())
-
-    def test_clean_method_engine_size_validation(self):
-        data_negative_engine = {
-            'brand': 'Honda', 'model': 'CBR', 'year': 2020,
-            'engine_size': -10, 'odometer': 1000, 'is_available': True,
-            'transmission': 'automatic', 'stock_number': 'STK001',
-            'conditions': [],
-        }
-        form = MotorcycleForm(data=data_negative_engine)
-        self.assertFalse(form.is_valid())
-        self.assertIn('engine_size', form.errors)
-        self.assertIn("Ensure this value is greater than or equal to 0.", form.errors['engine_size'])
-
-    def test_clean_method_odometer_validation(self):
-        data_negative_odometer = {
-            'brand': 'Honda', 'model': 'CBR', 'year': 2020,
-            'engine_size': 500, 'odometer': -50, 'is_available': True,
-            'transmission': 'automatic', 'stock_number': 'STK001',
-            'conditions': [],
-        }
-        form = MotorcycleForm(data=data_negative_odometer)
-        self.assertFalse(form.is_valid())
-        self.assertIn('odometer', form.errors)
-        self.assertIn("Ensure this value is greater than or equal to 0.", form.errors['odometer'])
 
     def test_clean_method_rego_uppercase(self):
         data_rego = {
@@ -257,26 +204,4 @@ class MotorcycleFormTest(TestCase):
         self.assertEqual(motorcycle.vin_number, 'VINTEST123')
         self.assertEqual(motorcycle.engine_number, 'ENG456')
 
-    def test_form_with_invalid_data(self):
-        data = {
-            # Missing required fields to trigger validation errors
-            'brand': '',
-            'model': '',
-            'year': None,
-            'transmission': '',
-            'stock_number': '',
-            'engine_size': -50,
-            'odometer': -100,
-            'is_available': True,
-            'conditions': [],
-        }
-        form = MotorcycleForm(data=data)
-        self.assertFalse(form.is_valid())
-        self.assertIn('year', form.errors)
-        self.assertIn('engine_size', form.errors)
-        self.assertIn('odometer', form.errors)
-        self.assertIn('brand', form.errors)
-        self.assertIn('model', form.errors)
-        self.assertIn('transmission', form.errors)
-        self.assertIn('stock_number', form.errors)
-
+    

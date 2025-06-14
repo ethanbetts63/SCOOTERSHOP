@@ -23,7 +23,6 @@ class GetPaymentStatusView(View):
                 'currency': sales_booking.currency,
                 'motorcycle_details': f"{sales_booking.motorcycle.year} {sales_booking.motorcycle.brand} {sales_booking.motorcycle.model}",
                 'customer_name': sales_booking.sales_profile.name,
-                # Include appointment details if they exist
                 'appointment_date': sales_booking.appointment_date.strftime('%d %b %Y') if sales_booking.appointment_date else None,
                 'appointment_time': sales_booking.appointment_time.strftime('%I:%M %p') if sales_booking.appointment_time else None,
             }
