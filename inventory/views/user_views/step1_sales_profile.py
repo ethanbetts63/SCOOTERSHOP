@@ -103,7 +103,7 @@ class Step1SalesProfileView(View):
 
                 messages.success(request, "Personal details saved. Proceed to booking details and appointment.")
                 # Redirect to the next step: Booking Details and Appointment
-                return redirect(reverse('inventory:booking_details_and_appointment'))
+                return redirect(reverse('inventory:step2_booking_details_and_appointment'))
         else:
             # Form is invalid, re-render the template with errors
             context = {

@@ -1,14 +1,10 @@
 from decimal import Decimal
 from django.test import TestCase, override_settings
-from django.core.exceptions import ObjectDoesNotExist
 from unittest import mock
 from django.conf import settings
 
 # Import models
-from inventory.models import SalesBooking, TempSalesBooking, Motorcycle
-from payments.models import Payment
-
-# Import the handler
+from inventory.models import SalesBooking, TempSalesBooking
 from payments.webhook_handlers.sales_handlers import handle_sales_booking_succeeded
 
 # Import factories

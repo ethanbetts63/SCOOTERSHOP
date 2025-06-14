@@ -1,18 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.http import JsonResponse, Http404
-from django.db import transaction
 from django.conf import settings
 from django.urls import reverse
 from django.contrib import messages
-
 import stripe
 import json
-
 from payments.models import Payment
-from service.models import TempServiceBooking, ServiceProfile, ServiceSettings, ServiceType
-from django.contrib.auth import get_user_model
-
+from service.models import TempServiceBooking, ServiceSettings
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 class Step6PaymentView(View):

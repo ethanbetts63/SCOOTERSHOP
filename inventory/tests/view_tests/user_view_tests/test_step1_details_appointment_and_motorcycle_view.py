@@ -249,7 +249,7 @@ class Step1SalesProfileViewTest(TestCase):
         }
         response = self.client.post(self.url, data=post_data, follow=True)
 
-        self.assertRedirects(response, reverse('inventory:booking_details_and_appointment'))
+        self.assertRedirects(response, reverse('inventory:step2_booking_details_and_appointment'))
         mock_success.assert_called_once_with(mock.ANY, "Personal details saved. Proceed to booking details and appointment.")
         mock_error.assert_not_called()
 
@@ -282,7 +282,7 @@ class Step1SalesProfileViewTest(TestCase):
         }
         response = self.client.post(self.url, data=post_data, follow=True)
 
-        self.assertRedirects(response, reverse('inventory:booking_details_and_appointment'))
+        self.assertRedirects(response, reverse('inventory:step2_booking_details_and_appointment'))
         mock_success.assert_called_once_with(mock.ANY, "Personal details saved. Proceed to booking details and appointment.")
         mock_error.assert_not_called()
 
@@ -407,7 +407,7 @@ class Step1SalesProfileViewTest(TestCase):
         }
         response = self.client.post(self.url, data=post_data_with_address, follow=True)
 
-        self.assertRedirects(response, reverse('inventory:booking_details_and_appointment'))
+        self.assertRedirects(response, reverse('inventory:step2_booking_details_and_appointment'))
         mock_success.assert_called_once_with(mock.ANY, "Personal details saved. Proceed to booking details and appointment.")
         mock_error.assert_not_called() # Ensure no error message for this valid submission
 

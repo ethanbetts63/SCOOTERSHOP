@@ -30,7 +30,7 @@
         </div>
         {% endif %}
 
-        <form method="post" action="{% url 'inventory:booking_details_and_appointment' %}" class="space-y-6">
+        <form method="post" action="{% url 'inventory:step2_booking_details_and_appointment' %}" class="space-y-6">
             {% csrf_token %}
 
             {# Request Viewing Radio Buttons - Only show if not a deposit flow #}

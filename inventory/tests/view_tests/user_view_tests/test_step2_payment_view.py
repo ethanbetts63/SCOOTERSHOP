@@ -26,7 +26,7 @@
 #         Set up common data for all tests in this class.
 #         """
 #         cls.client = Client()
-#         cls.url = reverse('inventory:booking_details_and_appointment')
+#         cls.url = reverse('inventory:step2_booking_details_and_appointment')
 
 #         # Ensure a singleton InventorySettings instance exists
 #         cls.inventory_settings = InventorySettingsFactory(

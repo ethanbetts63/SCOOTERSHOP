@@ -1,12 +1,10 @@
 from decimal import Decimal
 from django.test import TestCase, override_settings
-from django.core.exceptions import ObjectDoesNotExist
 from unittest import mock
 from django.conf import settings
 
 # Import models
 from service.models import ServiceBooking, TempServiceBooking
-from payments.models import Payment
 
 # Import the handler
 from payments.webhook_handlers.service_handlers import handle_service_booking_succeeded
@@ -19,7 +17,6 @@ from ..test_helpers.model_factories import (
     ServiceTypeFactory,
     TempServiceBookingFactory,
     PaymentFactory,
-    ServiceBookingFactory,
 )
 
 @override_settings(ADMIN_EMAIL='admin-service@example.com')
