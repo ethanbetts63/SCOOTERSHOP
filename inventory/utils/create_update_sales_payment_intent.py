@@ -65,7 +65,6 @@ def create_or_update_sales_payment_intent(
                     django_payment_obj.save()
 
         except stripe.error.StripeError as e:
-            print(f"StripeError retrieving PaymentIntent {existing_payment_obj.stripe_payment_intent_id}: {e}")
             stripe_intent = None
             django_payment_obj = None
 

@@ -21,7 +21,7 @@
                 <h3>Inventory Management</h3>
                 <ul class="reset-list">
                     <li><a href="{% url 'inventory:all' %}">All Motorcycles</a></li>
-                    <li><a href="">Add Motorcycle</a></li> {# Assuming a URL for creating motorcycles #}
+                    <li><a href="{% url 'inventory:admin_motorcycle_create' %}">Add Motorcycle</a></li> {# Assuming a URL for creating motorcycles #}
                     <li><a href="{% url 'inventory:inventory_settings' %}">Inventory Settings</a></li> {# Link to the new Inventory Settings page #}
                     <li><a href="">Inventory Management</a></li>
                     <li><a href="">Sales Bookings</a></li>

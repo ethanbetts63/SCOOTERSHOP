@@ -49,7 +49,8 @@ urlpatterns = [
     path('booking/payment/', step3_payment_view.Step3PaymentView.as_view(), name='step3_payment'),
     # Admin Views
     path('admin/settings/', inventory_settings_view.InventorySettingsView.as_view(), name='inventory_settings'),
-
+    path('admin/motorcycles/create/', motorcycle_create_update_view.MotorcycleCreateUpdateView.as_view(), name='admin_motorcycle_create'),
+    path('admin/motorcycles/<int:pk>/update/', motorcycle_create_update_view.MotorcycleCreateUpdateView.as_view(), name='admin_motorcycle_update'),
     # AJAX Endpoints
     path('ajax/get-motorcycle-list/', get_motorcycle_list, name='ajax-get-motorcycle-list'),
     path('ajax/get_appointment_times/', get_available_appointment_times_for_date, name='ajax_get_appointment_times'),
