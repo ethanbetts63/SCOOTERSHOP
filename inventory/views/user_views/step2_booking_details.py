@@ -50,7 +50,7 @@ class Step2BookingDetailsView(View):
         min_date_obj, max_date_obj, blocked_dates_list = get_sales_appointment_date_info(
             inventory_settings, temp_booking.deposit_required_for_flow
         )
-        
+
         min_date_str = min_date_obj.strftime('%Y-%m-%d')
         max_date_str = max_date_obj.strftime('%Y-%m-%d')
         blocked_dates_json = json.dumps(blocked_dates_list)
@@ -124,7 +124,8 @@ class Step2BookingDetailsView(View):
 
 
                     messages.success(request, "Your enquiry has been submitted. We will get back to you shortly!")
-                    return redirect(reverse('inventory:confirmation_page'))
+                    # Corrected URL name here:
+                    return redirect(reverse('inventory:step4_confirmation'))
         else:
             min_date_obj, max_date_obj, blocked_dates_list = get_sales_appointment_date_info(
                 inventory_settings, temp_booking.deposit_required_for_flow
@@ -143,3 +144,4 @@ class Step2BookingDetailsView(View):
             }
             messages.error(request, "Please correct the errors below.")
             return render(request, self.template_name, context)
+

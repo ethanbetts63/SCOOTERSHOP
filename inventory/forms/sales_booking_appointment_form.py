@@ -1,11 +1,5 @@
-# inventory/forms/sales_booking_appointment_form.py
-
 from django import forms
-from django.core.exceptions import ValidationError
-from datetime import date, datetime, timedelta, time
-
-# Import the new validation utilities
-from inventory.utils.validate_appointment_time import validate_appointment_time
+from datetime import date, timedelta
 
 class BookingAppointmentForm(forms.Form):
     # Changed to CharField with RadioSelect for 'Yes'/'No'
@@ -73,10 +67,6 @@ class BookingAppointmentForm(forms.Form):
             max_date = date.today() + timedelta(days=self.inventory_settings.max_advance_booking_days)
             self.fields['appointment_date'].widget.attrs['max'] = max_date.strftime('%Y-%m-%d')
 
-            # Time min/max are not directly used by the select field, but kept for potential reference
-            # self.fields['appointment_time'].widget.attrs['min'] = self.inventory_settings.sales_appointment_start_time.strftime('%H:%M')
-            # self.fields['appointment_time'].widget.attrs['max'] = self.inventory_settings.sales_appointment_end_time.strftime('%H:%M')
-
     def clean_request_viewing(self):
         # Convert 'yes'/'no' string to boolean True/False
         return self.cleaned_data['request_viewing'] == 'yes'
@@ -98,10 +88,6 @@ class BookingAppointmentForm(forms.Form):
             if not appointment_time:
                 self.add_error('appointment_time', "This field is required for your selected option.")
 
-                # Call the time validation utility
-                time_errors = validate_appointment_time(appointment_date, appointment_time, self.inventory_settings)
-                for error in time_errors:
-                    self.add_error('appointment_time', error)
         else:
             # If no appointment is required, clear any submitted date/time to avoid validation issues
             cleaned_data['appointment_date'] = None
