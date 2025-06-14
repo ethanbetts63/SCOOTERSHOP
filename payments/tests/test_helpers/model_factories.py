@@ -49,7 +49,6 @@ class MotorcycleFactory(factory.django.DjangoModelFactory):
 
     vin_number = factory.Sequence(lambda n: f"VIN{uuid.uuid4().hex[:14].upper()}{n}")
     engine_number = factory.Sequence(lambda n: f"ENG{uuid.uuid4().hex[:14].upper()}{n}")
-    owner = None
 
     condition = factory.Faker('random_element', elements=factory.LazyFunction(lambda: [choice[0] for choice in Motorcycle.CONDITION_CHOICES]))
 
