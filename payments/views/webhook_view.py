@@ -1,13 +1,10 @@
-import sys 
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 import stripe
-import json
-from decimal import Decimal 
-
+from decimal import Decimal
 from payments.models import Payment, WebhookEvent
 from payments.webhook_handlers import WEBHOOK_HANDLERS
 
@@ -67,14 +64,12 @@ def stripe_webhook(request):
                     payment_obj.save()
 
                 booking_type = None
-                if payment_obj.hire_booking:
+                if payment_obj.hire_booking or payment_obj.temp_hire_booking:
                     booking_type = 'hire_booking'
-                elif payment_obj.temp_hire_booking:
-                    booking_type = 'hire_booking'
-                elif payment_obj.service_booking:
+                elif payment_obj.service_booking or payment_obj.temp_service_booking:
                     booking_type = 'service_booking'
-                elif payment_obj.temp_service_booking:
-                    booking_type = 'service_booking'
+                elif payment_obj.sales_booking or payment_obj.temp_sales_booking:
+                    booking_type = 'sales_booking'
                 elif 'metadata' in event_data and 'booking_type' in event_data['metadata']:
                     booking_type = event_data['metadata']['booking_type']
                 else:
@@ -86,7 +81,7 @@ def stripe_webhook(request):
                         try:
                             handler(payment_obj, event_data)
                         except Exception as handler_e:
-                            raise 
+                            raise
                     else:
                         pass
                 else:
@@ -97,6 +92,6 @@ def stripe_webhook(request):
         except Exception as e:
             return HttpResponse(status=500)
     else:
-        pass 
+        pass
 
     return HttpResponse(status=200)
