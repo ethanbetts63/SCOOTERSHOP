@@ -572,7 +572,6 @@ class TempSalesBookingFactory(factory.django.DjangoModelFactory):
     sales_profile = factory.SubFactory(SalesProfileFactory)
     payment = factory.SubFactory(PaymentFactory)
 
-    sales_booking_reference = factory.Sequence(lambda n: f"TSB-{uuid.uuid4().hex[:8].upper()}")
     amount_paid = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
     payment_status = factory.Faker('random_element', elements=[choice[0] for choice in TEMP_PAYMENT_STATUS_CHOICES])
     currency = 'AUD'

@@ -1,6 +1,6 @@
 from django.db import models
 import uuid
-from decimal import Decimal # <-- Add this import
+from decimal import Decimal
 
 PAYMENT_STATUS_CHOICES = [
     ('unpaid', 'Unpaid'),
@@ -18,7 +18,7 @@ BOOKING_STATUS_CHOICES = [
     ('declined_refunded', 'Declined and Refunded'),
     ('reserved', 'Reserved'),
     ('enquired', 'Enquired'),
-    ('pending_details', 'Pending Details') # Added for the initial state of TempSalesBooking
+    ('pending_details', 'Pending Details')
 ]
 
 
@@ -45,13 +45,7 @@ class TempSalesBooking(models.Model):
         help_text="Link to the associated payment record, if any (e.g., for deposit)."
     )
 
-    sales_booking_reference = models.CharField(
-        max_length=20,
-        unique=True,
-        blank=True,
-        null=True,
-        help_text="A unique reference code for the temporary sales booking."
-    )
+    session_uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, help_text="Unique identifier for retrieving the temporary booking.")
     amount_paid = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -65,9 +59,9 @@ class TempSalesBooking(models.Model):
         help_text="Current payment status of the temporary booking (e.g., unpaid, deposit_paid)."
     )
     booking_status = models.CharField(
-        max_length=30, # Increased max_length to accommodate longer choices like 'pending_details'
+        max_length=30,
         choices=BOOKING_STATUS_CHOICES,
-        default='pending_details', # Set a default suitable for the initial state
+        default='pending_details',
         help_text="Current booking status (e.g., pending_confirmation, confirmed)."
     )
     currency = models.CharField(
@@ -102,7 +96,6 @@ class TempSalesBooking(models.Model):
         null=True,
         help_text="Any additional notes or messages provided by the customer during the process."
     )
-    # New field for terms and conditions
     terms_accepted = models.BooleanField(
         default=False,
         help_text="Indicates if the customer accepted the terms and conditions."
@@ -127,8 +120,6 @@ class TempSalesBooking(models.Model):
         ordering = ['-created_at']
 
     def save(self, *args, **kwargs):
-        if not self.sales_booking_reference:
-            self.sales_booking_reference = f"TSB-{uuid.uuid4().hex[:8].upper()}"
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -137,6 +128,6 @@ class TempSalesBooking(models.Model):
             if self.motorcycle else ""
         )
         return (
-            f"Temp Booking {self.sales_booking_reference}{motorcycle_display} "
+            f"Temp Booking {self.session_uuid} {motorcycle_display} "
             f"(Status: {self.get_payment_status_display()})"
         )

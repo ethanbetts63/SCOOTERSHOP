@@ -34,7 +34,6 @@ def create_or_update_sales_payment_intent(
     payment_description = (
         f"Deposit for Motorcycle: {temp_booking.motorcycle.year} "
         f"{temp_booking.motorcycle.brand} {temp_booking.motorcycle.model} "
-        f"(Ref: {temp_booking.sales_booking_reference})"
     )
 
     intent = None

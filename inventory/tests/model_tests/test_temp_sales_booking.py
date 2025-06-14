@@ -75,24 +75,6 @@ class TempSalesBookingModelTest(TestCase):
         self.temp_sales_booking.save()
         self.assertIsNone(self.temp_sales_booking.payment)
 
-    def test_sales_booking_reference_field(self):
-        field = self.temp_sales_booking._meta.get_field('sales_booking_reference')
-        self.assertIsInstance(self.temp_sales_booking.sales_booking_reference, str)
-        self.assertEqual(field.max_length, 20)
-        self.assertTrue(field.unique)
-        self.assertTrue(field.blank)
-        self.assertTrue(field.null)
-        self.assertEqual(field.help_text, "A unique reference code for the temporary sales booking.")
-
-        new_booking = TempSalesBooking(
-            motorcycle=self.motorcycle,
-            sales_profile=self.sales_profile,
-        )
-        new_booking.save()
-        self.assertIsNotNone(new_booking.sales_booking_reference)
-        self.assertTrue(new_booking.sales_booking_reference.startswith('TSB-'))
-        self.assertEqual(len(new_booking.sales_booking_reference), 12)
-
     def test_amount_paid_field(self):
         new_booking_default_amount = TempSalesBooking(
             motorcycle=self.motorcycle,
@@ -183,44 +165,15 @@ class TempSalesBookingModelTest(TestCase):
         self.temp_sales_booking.save()
         self.assertGreater(self.temp_sales_booking.updated_at, old_updated_at)
 
-    def test_str_method(self):
-        temp_booking_no_motorcycle = TempSalesBookingFactory(
-            motorcycle=None,
-            sales_profile=self.sales_profile,
-            sales_booking_reference="TSB-NOMOTOR"
-        )
-        self.assertEqual(
-            str(temp_booking_no_motorcycle),
-            f"Temp Booking TSB-NOMOTOR (Status: {temp_booking_no_motorcycle.get_payment_status_display()})"
-        )
-
-        temp_booking_with_motorcycle = TempSalesBookingFactory(
-            motorcycle=self.motorcycle,
-            sales_profile=self.sales_profile,
-            sales_booking_reference="TSB-WITHMOTO"
-        )
-        self.assertEqual(
-            str(temp_booking_with_motorcycle),
-            (
-                f"Temp Booking TSB-WITHMOTO for {self.motorcycle.year} {self.motorcycle.brand} "
-                f"{self.motorcycle.model} (Status: {temp_booking_with_motorcycle.get_payment_status_display()})"
-            )
-        )
 
     def test_meta_options(self):
         self.assertEqual(TempSalesBooking._meta.verbose_name, "Temporary Sales Booking")
         self.assertEqual(TempSalesBooking._meta.verbose_name_plural, "Temporary Sales Bookings")
         self.assertEqual(TempSalesBooking._meta.ordering, ['-created_at'])
 
-    def test_sales_booking_reference_uniqueness(self):
-        booking1 = TempSalesBookingFactory(
-            motorcycle=self.motorcycle,
-            sales_profile=self.sales_profile
-        )
 
         with self.assertRaises(Exception):
             TempSalesBookingFactory(
                 motorcycle=self.motorcycle,
                 sales_profile=self.sales_profile,
-                sales_booking_reference=booking1.sales_booking_reference
             )

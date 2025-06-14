@@ -1,8 +1,6 @@
-# sales/models/sales_booking.py
-
 from django.db import models
 import uuid
-from decimal import Decimal 
+from decimal import Decimal
 
 PAYMENT_STATUS_CHOICES = [
     ('unpaid', 'Unpaid'),
@@ -77,7 +75,6 @@ class SalesBooking(models.Model):
         default=False,
         help_text="Indicates if the customer specifically requested a viewing/test drive in a deposit-less enquiry flow."
     )
-    
     appointment_date = models.DateField(
         help_text="Confirmed date for the test drive, appointment, or pickup.",
         blank=True,
