@@ -1,9 +1,8 @@
 # inventory/utils/get_available_appointment_times.py
 
-from datetime import date, datetime, time, timedelta
-from django.utils import timezone
+from datetime import date, datetime, timedelta
 
-from inventory.models import InventorySettings, SalesBooking
+from inventory.models import SalesBooking
 from inventory.utils.validate_appointment_time import validate_appointment_time # Import the enhanced time validator
 
 def get_available_appointment_times(selected_date: date, inventory_settings):

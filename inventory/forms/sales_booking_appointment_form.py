@@ -5,7 +5,6 @@ from django.core.exceptions import ValidationError
 from datetime import date, datetime, timedelta, time
 
 # Import the new validation utilities
-from inventory.utils.validate_appointment_date import validate_appointment_date
 from inventory.utils.validate_appointment_time import validate_appointment_time
 
 class BookingAppointmentForm(forms.Form):
@@ -98,13 +97,6 @@ class BookingAppointmentForm(forms.Form):
                 self.add_error('appointment_date', "This field is required for your selected option.")
             if not appointment_time:
                 self.add_error('appointment_time', "This field is required for your selected option.")
-
-            # Only proceed with detailed validation if both fields are present and required
-            if appointment_date and appointment_time: # No need for inventory_settings here, already checked by is_appointment_required
-                # Call the date validation utility
-                date_errors = validate_appointment_date(appointment_date, self.inventory_settings)
-                for error in date_errors:
-                    self.add_error('appointment_date', error)
 
                 # Call the time validation utility
                 time_errors = validate_appointment_time(appointment_date, appointment_time, self.inventory_settings)

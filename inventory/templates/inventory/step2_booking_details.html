@@ -33,26 +33,30 @@
         <form method="post" action="{% url 'inventory:booking_details_and_appointment' %}" class="space-y-6">
             {% csrf_token %}
 
-            {# Request Viewing Radio Buttons #}
-            <div class="form-field">
-                <label class="block text-gray-700 text-sm font-bold mb-2">{{ form.request_viewing.label }}</label>
-                <div class="mt-2 flex space-x-4">
-                    {% for radio in form.request_viewing %}
-                        <label class="inline-flex items-center">
-                            {{ radio.tag }}
-                            <span class="ml-2 text-gray-700">{{ radio.choice_label }}</span>
-                        </label>
-                    {% endfor %}
-                </div>
-                <p class="text-gray-500 text-xs italic mt-1">{{ form.request_viewing.help_text }}</p>
-                {% if form.request_viewing.errors %}
-                    <div class="text-red-500 text-xs italic mt-2">
-                        {% for error in form.request_viewing.errors %}
-                            <p>{{ error }}</p>
+            {# Request Viewing Radio Buttons - Only show if not a deposit flow #}
+            {% if not temp_booking.deposit_required_for_flow %}
+                <div class="form-field">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">{{ form.request_viewing.label }}</label>
+                    <div class="mt-2 flex space-x-4">
+                        {% for radio in form.request_viewing %}
+                            <label class="inline-flex items-center">
+                                {{ radio.tag }}
+                                <span class="ml-2 text-gray-700">{{ radio.choice_label }}</span>
+                            </label>
                         {% endfor %}
                     </div>
-                {% endif %}
-            </div>
+                    <p class="text-gray-500 text-xs italic mt-1">{{ form.request_viewing.help_text }}</p>
+                    {% if form.request_viewing.errors %}
+                        <div class="text-red-500 text-xs italic mt-2">
+                            {% for error in form.request_viewing.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+            {{ form.request_viewing.as_hidden }}
+
 
             {# Appointment Date Field #}
             <div id="appointment-date-field" class="form-field" {% if not form.request_viewing.initial or form.request_viewing.initial.0 != 'yes' %}style="display: none;"{% endif %}>
@@ -188,7 +192,6 @@
         // Get min, max, and blocked dates from Django context
         const minAppointmentDate = "{{ min_appointment_date|default:'' }}";
         const maxAppointmentDate = "{{ max_appointment_date|default:'' }}";
-        // *** CRITICAL CHANGE: Use |escapejs here, just like the service version ***
         const blockedAppointmentDatesRaw = "{{ blocked_appointment_dates_json|default:'[]'|escapejs }}"; 
         let blockedDates = [];
         try {
@@ -226,15 +229,20 @@
         // Function to toggle visibility of date and time fields
         function toggleAppointmentFields() {
             let requestViewingValue = 'no';
-            for (const radio of requestViewingRadios) {
-                if (radio.checked) {
-                    requestViewingValue = radio.value;
-                    break;
+            // Only check radio buttons if they are actually visible
+            if (!depositRequiredForFlow) {
+                for (const radio of requestViewingRadios) {
+                    if (radio.checked) {
+                        requestViewingValue = radio.value;
+                        break;
+                    }
                 }
+            } else {
+                // If deposit flow, request_viewing is always considered 'yes' internally
+                requestViewingValue = 'yes';
             }
 
             // If deposit is required, always show appointment fields regardless of radio state
-            // (The radio buttons themselves might be hidden by Django form in this case)
             if (depositRequiredForFlow || requestViewingValue === 'yes') {
                 appointmentDateField.style.display = 'block';
                 appointmentTimeField.style.display = 'block';
@@ -295,16 +303,18 @@
             }
         }
 
-        // Add event listeners to radio buttons
-        requestViewingRadios.forEach(radio => {
-            radio.addEventListener('change', toggleAppointmentFields);
-        });
-
+        // Add event listeners to radio buttons (only if they are visible)
+        if (!depositRequiredForFlow) {
+            requestViewingRadios.forEach(radio => {
+                radio.addEventListener('change', toggleAppointmentFields);
+            });
+        }
+        
         // Initial setup on page load
         toggleAppointmentFields(); // Set initial visibility based on Django's initial form value
 
         // If an initial date is already set (e.g., on form re-render after error), fetch times for it
-        if (appointmentDatePickerInput.value && (depositRequiredForFlow || document.querySelector('input[name="request_viewing"]:checked')?.value === 'yes')) {
+        if (appointmentDatePickerInput.value && (depositRequiredForFlow || (document.querySelector('input[name="request_viewing"]:checked') && document.querySelector('input[name="request_viewing"]:checked').value === 'yes'))) {
             fetchAvailableTimes(appointmentDatePickerInput.value);
         }
     });
