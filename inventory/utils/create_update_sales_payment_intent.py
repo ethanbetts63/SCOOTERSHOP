@@ -18,26 +18,25 @@ def create_or_update_sales_payment_intent(
         f"(Ref: {temp_booking.session_uuid})"
     )
 
-    intent = None
-    payment_obj = existing_payment_obj
+    stripe_intent = None
+    django_payment_obj = None
 
-    if payment_obj and payment_obj.stripe_payment_intent_id:
+    if existing_payment_obj and existing_payment_obj.stripe_payment_intent_id:
         try:
-            intent = stripe.PaymentIntent.retrieve(payment_obj.stripe_payment_intent_id)
+            retrieved_intent = stripe.PaymentIntent.retrieve(existing_payment_obj.stripe_payment_intent_id)
 
-            if intent:
-                amount_changed = intent.amount != amount_in_cents
-                currency_changed = intent.currency.lower() != currency.lower()
+            if retrieved_intent:
+                amount_changed = retrieved_intent.amount != amount_in_cents
+                currency_changed = retrieved_intent.currency.lower() != currency.lower()
 
-                # Removed 'canceled' from this list, so it falls into the 'intent = None' case below
-                is_modifiable_or_in_progress = intent.status in [
+                is_modifiable_or_in_progress = retrieved_intent.status in [
                     'requires_payment_method', 'requires_confirmation', 'requires_action',
                     'processing'
                 ]
 
                 if (amount_changed or currency_changed) and is_modifiable_or_in_progress:
-                    intent = stripe.PaymentIntent.modify(
-                        payment_obj.stripe_payment_intent_id,
+                    stripe_intent = stripe.PaymentIntent.modify(
+                        existing_payment_obj.stripe_payment_intent_id,
                         amount=amount_in_cents,
                         currency=currency,
                         description=payment_description,
@@ -47,20 +46,31 @@ def create_or_update_sales_payment_intent(
                             'booking_type': 'sales_booking',
                         }
                     )
-                elif intent.status == 'failed' or intent.status == 'canceled': # Explicitly handle 'canceled' here
-                    intent = None
-                elif not is_modifiable_or_in_progress and intent.status != 'succeeded':
-                    intent = None
+                    django_payment_obj = existing_payment_obj
+
+                elif retrieved_intent.status in ['failed', 'canceled']:
+                    stripe_intent = None
+                    django_payment_obj = None
+
+                elif not is_modifiable_or_in_progress and retrieved_intent.status != 'succeeded':
+                    stripe_intent = None
+                    django_payment_obj = None
                 
-                if intent and payment_obj.status != intent.status:
-                    payment_obj.status = intent.status
-                    payment_obj.save()
+                else:
+                    stripe_intent = retrieved_intent
+                    django_payment_obj = existing_payment_obj
 
-        except stripe.error.StripeError:
-            intent = None
+                if django_payment_obj and stripe_intent and django_payment_obj.status != stripe_intent.status:
+                    django_payment_obj.status = stripe_intent.status
+                    django_payment_obj.save()
 
-    if not intent:
-        intent = stripe.PaymentIntent.create(
+        except stripe.error.StripeError as e:
+            print(f"StripeError retrieving PaymentIntent {existing_payment_obj.stripe_payment_intent_id}: {e}")
+            stripe_intent = None
+            django_payment_obj = None
+
+    if not stripe_intent:
+        stripe_intent = stripe.PaymentIntent.create(
             amount=amount_in_cents,
             currency=currency,
             metadata={
@@ -70,26 +80,25 @@ def create_or_update_sales_payment_intent(
             },
             description=payment_description
         )
-
-    if payment_obj:
-        payment_obj.stripe_payment_intent_id = intent.id
-        payment_obj.amount = amount_to_pay
-        payment_obj.currency = currency
-        payment_obj.status = intent.status
-        payment_obj.description = payment_description
-        if sales_profile and not payment_obj.sales_customer_profile:
-            payment_obj.sales_customer_profile = sales_profile
-        payment_obj.save()
-    else:
-        payment_obj = Payment.objects.create(
+        django_payment_obj = Payment.objects.create(
             temp_sales_booking=temp_booking,
             sales_customer_profile=sales_profile,
-            stripe_payment_intent_id=intent.id,
+            stripe_payment_intent_id=stripe_intent.id,
             amount=amount_to_pay,
             currency=currency,
-            status=intent.status,
+            status=stripe_intent.status,
             description=payment_description
         )
-    
-    return intent, payment_obj
+    elif django_payment_obj and django_payment_obj.stripe_payment_intent_id != stripe_intent.id:
+        pass
+
+    if django_payment_obj:
+        django_payment_obj.amount = amount_to_pay
+        django_payment_obj.currency = currency
+        django_payment_obj.description = payment_description
+        if sales_profile and not django_payment_obj.sales_customer_profile:
+            django_payment_obj.sales_customer_profile = sales_profile
+        django_payment_obj.save()
+
+    return stripe_intent, django_payment_obj
 
