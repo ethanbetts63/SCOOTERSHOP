@@ -48,14 +48,17 @@ class Step1SalesProfileViewTest(TestCase):
 
 
     def _create_temp_booking_in_session(self, client, user=None, sales_profile=None):
-        """Helper to create a TempSalesBooking and set its ID in the session."""
+        """
+        Helper to create a TempSalesBooking and set its session_uuid (as string) in the session.
+        """
         temp_booking = TempSalesBookingFactory(
             motorcycle=self.motorcycle,
             sales_profile=sales_profile,
             booking_status='pending_details' # Initial status for Step 1
         )
         session = client.session
-        session['temp_sales_booking_uuid'] = temp_booking.pk
+        # Store the session_uuid as a string, matching how initiate_sales_booking_process_view sets it.
+        session['temp_sales_booking_uuid'] = str(temp_booking.session_uuid)
         session.save()
         return temp_booking
 
@@ -83,25 +86,29 @@ class Step1SalesProfileViewTest(TestCase):
     def test_get_invalid_temp_booking_id(self):
         """
         Test GET request with an invalid 'temp_sales_booking_uuid' in session.
-        Should return a 404.
+        Should redirect to inventory:all with an error message.
         """
         session = self.client.session
-        session['temp_sales_booking_uuid'] = 99999 # Non-existent ID
+        session['temp_sales_booking_uuid'] = 'a2b3c4d5-e6f7-8901-2345-67890abcdef0' # Invalid UUID format or non-existent
         session.save()
 
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 404)
+        response = self.client.get(self.url, follow=True) # Follow redirect
+        self.assertRedirects(response, reverse('inventory:all'))
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertIn("Your booking session could not be found or is invalid.", str(messages[0]))
+
 
     def test_get_no_inventory_settings(self):
         """
         Test GET request when no InventorySettings exist.
         Should redirect to inventory:all with an error message.
         """
-        # Delete existing settings
+        # Need a valid temp booking ID for the view to run and reach the settings check
+        self._create_temp_booking_in_session(self.client)
+        # Delete existing settings AFTER creating the temp booking
         InventorySettings.objects.all().delete()
         self.assertFalse(InventorySettings.objects.exists()) # Verify deletion
-
-        self._create_temp_booking_in_session(self.client) # Need a valid temp booking ID for the view to run
 
         response = self.client.get(self.url, follow=True)
         self.assertRedirects(response, reverse('inventory:all'))
@@ -124,7 +131,7 @@ class Step1SalesProfileViewTest(TestCase):
         self.assertTemplateUsed(response, 'inventory/step1_sales_profile.html')
         self.assertIn('sales_profile_form', response.context)
         self.assertIn('temp_booking', response.context)
-        self.assertEqual(response.context['temp_booking'], temp_booking)
+        self.assertEqual(response.context['temp_booking'].session_uuid, temp_booking.session_uuid) # Compare UUID objects
         self.assertIsNone(response.context['sales_profile_form'].instance.pk) # Should be an unsaved instance
 
     def test_get_success_authenticated_user_no_profile(self):
@@ -202,15 +209,16 @@ class Step1SalesProfileViewTest(TestCase):
     def test_post_invalid_temp_booking_id(self, mock_error, mock_success):
         """
         Test POST request with an invalid 'temp_sales_booking_uuid' in session.
-        Should return a 404.
+        Should redirect with an error message.
         """
         session = self.client.session
-        session['temp_sales_booking_uuid'] = 99999 # Non-existent ID
+        session['temp_sales_booking_uuid'] = 'a2b3c4d5-e6f7-8901-2345-67890abcdef0' # Invalid UUID format or non-existent
         session.save()
 
-        response = self.client.post(self.url, data={'name': 'Test User'})
-        self.assertEqual(response.status_code, 404)
-        mock_error.assert_not_called()
+        response = self.client.post(self.url, data={'name': 'Test User'}, follow=True) # Follow redirect
+        self.assertRedirects(response, reverse('inventory:all'))
+        mock_error.assert_called_once() # Check if error was called at all
+        self.assertIn("Your booking session could not be found or is invalid.", str(mock_error.call_args[0][1]))
         mock_success.assert_not_called()
 
     @mock.patch('django.contrib.messages.success')
@@ -220,8 +228,8 @@ class Step1SalesProfileViewTest(TestCase):
         Test POST request when no InventorySettings exist.
         Should redirect to inventory:all with an error message.
         """
-        InventorySettings.objects.all().delete()
         self._create_temp_booking_in_session(self.client) # Need a valid temp booking ID
+        InventorySettings.objects.all().delete() # Delete settings AFTER temp booking is in session
 
         response = self.client.post(self.url, data={'name': 'Test User'}, follow=True)
         self.assertRedirects(response, reverse('inventory:all'))
@@ -357,7 +365,6 @@ class Step1SalesProfileViewTest(TestCase):
         self.assertIn('date_of_birth', form.errors) # DOB is required with DL
 
 
-
     @mock.patch('django.contrib.messages.success')
     @mock.patch('django.contrib.messages.error')
     def test_post_requires_address_info(self, mock_error, mock_success):
@@ -415,4 +422,3 @@ class Step1SalesProfileViewTest(TestCase):
         self.assertEqual(new_profile.address_line_1, '123 Main St')
         self.assertEqual(new_profile.city, 'Sydney')
         self.assertEqual(new_profile.country, 'AU')
-
