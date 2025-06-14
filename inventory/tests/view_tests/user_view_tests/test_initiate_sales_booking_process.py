@@ -56,9 +56,10 @@ class InitiateBookingProcessViewTest(TestCase):
         # Assert redirect to step1_sales_profile
         self.assertRedirects(response, reverse('inventory:step1_sales_profile'))
 
-        # Assert temp_booking ID is stored in session
+        # Assert temp_booking ID is stored in session and matches the temp_booking's session_uuid (as a string)
         self.assertIn('temp_sales_booking_uuid', self.client.session)
-        self.assertEqual(self.client.session['temp_sales_booking_uuid'], temp_booking.pk)
+        # The session stores the UUID as a string, so compare with the string representation of session_uuid
+        self.assertEqual(self.client.session['temp_sales_booking_uuid'], str(temp_booking.session_uuid))
 
 
     def test_post_request_creates_temp_booking_enquiry_flow(self):
@@ -84,7 +85,8 @@ class InitiateBookingProcessViewTest(TestCase):
 
         self.assertRedirects(response, reverse('inventory:step1_sales_profile'))
         self.assertIn('temp_sales_booking_uuid', self.client.session)
-        self.assertEqual(self.client.session['temp_sales_booking_uuid'], temp_booking.pk)
+        # The session stores the UUID as a string, so compare with the string representation of session_uuid
+        self.assertEqual(self.client.session['temp_sales_booking_uuid'], str(temp_booking.session_uuid))
 
     def test_post_request_creates_temp_booking_with_viewing_request(self):
         """
@@ -109,7 +111,8 @@ class InitiateBookingProcessViewTest(TestCase):
 
         self.assertRedirects(response, reverse('inventory:step1_sales_profile'))
         self.assertIn('temp_sales_booking_uuid', self.client.session)
-        self.assertEqual(self.client.session['temp_sales_booking_uuid'], temp_booking.pk)
+        # The session stores the UUID as a string, so compare with the string representation of session_uuid
+        self.assertEqual(self.client.session['temp_sales_booking_uuid'], str(temp_booking.session_uuid))
 
 
     def test_post_request_non_existent_motorcycle_pk(self):
