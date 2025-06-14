@@ -185,7 +185,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' # Changed to SMTP 
 
 # Default email address to use for sending emails
 DEFAULT_FROM_EMAIL = 'ethan.betts.dev@gmail.com' # Set to your testing Gmail address
-
+LOGIN_URL = 'users:login'
 # Administrator's email address for notifications
 ADMIN_EMAIL = 'ethan.betts.dev@gmail.com' # Set to your testing Gmail address
 
