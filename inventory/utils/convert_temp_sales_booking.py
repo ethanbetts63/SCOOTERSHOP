@@ -1,8 +1,7 @@
 # inventory/utils/convert_temp_sales_booking.py
 
 from django.db import transaction
-from decimal import Decimal
-from inventory.models import SalesBooking, InventorySettings, Motorcycle # Import Motorcycle
+from inventory.models import SalesBooking, InventorySettings
 from payments.models import RefundPolicySettings
 
 def convert_temp_sales_booking(

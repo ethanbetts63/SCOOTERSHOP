@@ -195,8 +195,8 @@ class SalesBookingModelTest(TestCase):
         """
         field = self.sales_booking._meta.get_field('appointment_date')
         self.assertIsInstance(self.sales_booking.appointment_date, date)
-        self.assertFalse(field.blank)
-        self.assertFalse(field.null)
+        self.assertTrue(field.blank)
+        self.assertTrue(field.null)
         self.assertEqual(field.help_text, "Confirmed date for the test drive, appointment, or pickup.")
 
     def test_appointment_time_field(self):
@@ -205,8 +205,8 @@ class SalesBookingModelTest(TestCase):
         """
         field = self.sales_booking._meta.get_field('appointment_time')
         self.assertIsInstance(self.sales_booking.appointment_time, time)
-        self.assertFalse(field.blank)
-        self.assertFalse(field.null)
+        self.assertTrue(field.blank)
+        self.assertTrue(field.null)
         self.assertEqual(field.help_text, "Confirmed time for the test drive, appointment, or pickup.")
 
     def test_booking_status_field(self):
