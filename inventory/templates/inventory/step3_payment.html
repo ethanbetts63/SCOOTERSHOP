@@ -51,7 +51,7 @@
                 Deposit Amount: <span class="font-semibold text-xl text-green-700">{{ amount|floatformat:2 }} {{ currency }}</span>
             </p>
              <p class="text-gray-600 text-sm mt-1">
-                Amount Remaining (approx.): <span class="font-semibold text-base">{{ temp_booking.motorcycle.price|sub:amount|floatformat:2 }} {{ currency }}</span>
+                Amount Remaining (approx.): <span class="font-semibold text-base">{{ amount_remaining|floatformat:2 }} {{ currency }}</span> {# <--- CHANGED THIS LINE #}
             </p>
             <p class="text-sm text-gray-500 mt-2">
                 Your deposit secures the motorcycle and it will be marked as reserved.
@@ -165,7 +165,7 @@
         } else {
             if (paymentIntent.status === 'succeeded') {
                 // Post payment intent ID to your Django view
-                fetch("{% url 'inventory:sales_book_step3' %}", {
+                fetch("{% url 'inventory:step3_payment' %}", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -210,7 +210,7 @@
                 submitButton.textContent = `Pay {{ amount|floatformat:2 }} {{ currency }} Deposit`;
 
                 // In case of non-succeeded status, still inform backend for potential updates
-                fetch("{% url 'inventory:sales_book_step3' %}", {
+                fetch("{% url 'inventory:step3_payment' %}", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

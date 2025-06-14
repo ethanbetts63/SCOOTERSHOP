@@ -47,6 +47,8 @@ urlpatterns = [
     path('booking/your-details/', step1_sales_profile.Step1SalesProfileView.as_view(), name='step1_sales_profile'),
     path('booking/details-and-appointment/', step2_booking_details.Step2BookingDetailsView.as_view(), name='step2_booking_details_and_appointment'),
     path('booking/payment/', step3_payment_view.Step3PaymentView.as_view(), name='step3_payment'),
+    path('booking/confirmation/', step4_confirmation_view.Step4ConfirmationView.as_view(), name='step4_confirmation'),
+
     # Admin Views
     path('admin/settings/', inventory_settings_view.InventorySettingsView.as_view(), name='inventory_settings'),
     path('admin/motorcycles/create/', motorcycle_create_update_view.MotorcycleCreateUpdateView.as_view(), name='admin_motorcycle_create'),

@@ -9,14 +9,14 @@ import json
 from payments.models import Payment
 from inventory.models import TempSalesBooking, InventorySettings, Motorcycle
 from inventory.utils.create_update_sales_payment_intent import create_or_update_sales_payment_intent
-
+from decimal import Decimal # Ensure Decimal is imported
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 class Step3PaymentView(View):
     def dispatch(self, request, *args, **kwargs):
         print(f"--- Entering Step3PaymentView dispatch method ---")
-        print(f"Session data at start: {request.session.keys()}") # Print all session keys
+        print(f"Session data at start: {request.session.keys()}") 
         
         temp_booking_uuid = request.session.get('temp_sales_booking_uuid')
         print(f"Retrieved 'temp_sales_booking_uuid' from session: {temp_booking_uuid}")
@@ -60,7 +60,7 @@ class Step3PaymentView(View):
 
         if not temp_booking.deposit_required_for_flow:
             messages.warning(request, "Payment is not required for this type of booking. Redirecting to confirmation.")
-            redirect_url = reverse('inventory:sales_book_step4') + f'?payment_intent_id={temp_booking.stripe_payment_intent_id if temp_booking.stripe_payment_intent_id else ""}'
+            redirect_url = reverse('inventory:step4_confirmation') + f'?payment_intent_id={temp_booking.stripe_payment_intent_id if temp_booking.stripe_payment_intent_id else ""}'
             print(f'DEBUG: Deposit not required. Redirecting to: {redirect_url}')
             return redirect(redirect_url)
 
@@ -110,12 +110,20 @@ class Step3PaymentView(View):
             print(f"DEBUG (Step3 GET): No Stripe Payment Intent returned. Redirecting to inventory:step2_booking_details_and_appointment.")
             return redirect('inventory:step2_booking_details_and_appointment')
 
+        # Calculate amount_remaining here and pass it to the context
+        amount_remaining = Decimal('0.00')
+        if temp_booking.motorcycle and temp_booking.motorcycle.price is not None:
+            amount_remaining = temp_booking.motorcycle.price - amount_to_pay
+        print(f"DEBUG (Step3 GET): Calculated amount_remaining: {amount_remaining}")
+
+
         context = {
             'client_secret': intent.client_secret,
             'amount': amount_to_pay,
             'currency': currency.upper(),
             'temp_booking': temp_booking,
             'stripe_publishable_key': settings.STRIPE_PUBLISHABLE_KEY,
+            'amount_remaining': amount_remaining, # <--- NEW CONTEXT VARIABLE
         }
         print(f"--- Exiting Step3PaymentView GET method, rendering template ---")
         return render(request, 'inventory/step3_payment.html', context)
@@ -145,7 +153,7 @@ class Step3PaymentView(View):
                 return JsonResponse({
                     'status': 'success',
                     'message': 'Payment processed successfully. Your booking is being finalized.',
-                    'redirect_url': reverse('inventory:sales_book_step4') + f'?payment_intent_id={payment_intent_id}'
+                    'redirect_url': reverse('inventory:step4_confirmation') + f'?payment_intent_id={payment_intent_id}'
                 })
 
             elif intent.status in ['requires_action', 'requires_confirmation', 'requires_payment_method', 'processing']:
