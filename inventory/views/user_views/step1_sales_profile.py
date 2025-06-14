@@ -34,14 +34,14 @@ class Step1SalesProfileView(View):
             return redirect(reverse('inventory:all'))
 
         # 4. Initialize SalesProfileForm
-        # Try to prefill SalesProfileForm if the user is logged in and has an existing profile
         sales_profile_instance = None
-        if request.user.is_authenticated and hasattr(request.user, 'sales_profile'):
-            sales_profile_instance = request.user.sales_profile
-        # If a sales_profile is already linked to the temp_booking, use that instance for prefill
-        elif temp_booking.sales_profile:
+        # Prioritize sales_profile linked to temp_booking
+        if temp_booking.sales_profile:
             sales_profile_instance = temp_booking.sales_profile
-
+        # Fallback to logged-in user's profile if no profile on temp_booking
+        elif request.user.is_authenticated and hasattr(request.user, 'sales_profile'):
+            sales_profile_instance = request.user.sales_profile
+        
         sales_profile_form = SalesProfileForm(
             instance=sales_profile_instance,
             inventory_settings=inventory_settings,
@@ -73,10 +73,12 @@ class Step1SalesProfileView(View):
 
         # 4. Initialize SalesProfileForm with POST data
         sales_profile_instance = None
-        if request.user.is_authenticated and hasattr(request.user, 'sales_profile'):
-            sales_profile_instance = request.user.sales_profile
-        elif temp_booking.sales_profile:
+        # Prioritize sales_profile linked to temp_booking
+        if temp_booking.sales_profile:
             sales_profile_instance = temp_booking.sales_profile
+        # Fallback to logged-in user's profile if no profile on temp_booking
+        elif request.user.is_authenticated and hasattr(request.user, 'sales_profile'):
+            sales_profile_instance = request.user.sales_profile
 
         sales_profile_form = SalesProfileForm(
             request.POST,
@@ -111,4 +113,3 @@ class Step1SalesProfileView(View):
             }
             messages.error(request, "Please correct the errors below.")
             return render(request, self.template_name, context)
-

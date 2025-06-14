@@ -114,8 +114,8 @@ class SalesProfileFormTest(TestCase):
             country='CA',
         )
 
-        # Create an unbound form with the user
-        form = SalesProfileForm(user=user)
+        # CORRECTED: Pass the existing_profile as 'instance' to the form
+        form = SalesProfileForm(instance=existing_profile, user=user)
 
         self.assertEqual(form.initial['name'], existing_profile.name)
         self.assertEqual(form.initial['email'], existing_profile.email)
@@ -192,6 +192,7 @@ class SalesProfileFormTest(TestCase):
         self.assertIn('city', form.errors)
         self.assertIn('post_code', form.errors)
         self.assertIn('country', form.errors)
+        self.assertIn('state', form.errors) # Added state to the check
         self.assertNotIn('drivers_license_number', form.errors) # Should not be required
 
 
@@ -226,7 +227,10 @@ class SalesProfileFormTest(TestCase):
         form = SalesProfileForm(data=data, inventory_settings=self.inventory_settings_dl_required) # No files
         self.assertFalse(form.is_valid())
         self.assertIn('drivers_license_image', form.errors)
-        self.assertNotIn('drivers_license_number', form.errors) # Should be valid if provided
+        # These should NOT be in errors if data was provided for them in get_valid_data(include_dl=True)
+        self.assertNotIn('drivers_license_number', form.errors)
+        self.assertNotIn('drivers_license_expiry', form.errors)
+        self.assertNotIn('date_of_birth', form.errors)
 
 
     # --- Test cases with both address and DL required ---
@@ -255,6 +259,7 @@ class SalesProfileFormTest(TestCase):
         self.assertIn('city', form.errors)
         self.assertIn('post_code', form.errors)
         self.assertIn('country', form.errors)
+        self.assertIn('state', form.errors) # Added state to the check
         self.assertIn('drivers_license_number', form.errors)
         self.assertIn('drivers_license_expiry', form.errors)
         self.assertIn('drivers_license_image', form.errors)
@@ -277,3 +282,4 @@ class SalesProfileFormTest(TestCase):
         self.assertTrue(form_no_settings_missing_address.is_valid(), form_no_settings_missing_address.errors.as_json())
         # The clean method's conditional validation relies on self.inventory_settings being set.
         # If it's None, those checks are skipped. This confirms the desired fallback.
+

@@ -1,5 +1,6 @@
 from django import forms
 from inventory.models import SalesProfile, TempSalesBooking # Ensure TempSalesBooking is imported
+import datetime # Import datetime for date objects
 
 class SalesProfileForm(forms.ModelForm):
     class Meta:
@@ -30,26 +31,23 @@ class SalesProfileForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.inventory_settings = kwargs.pop('inventory_settings', None)
-        self.user = kwargs.pop('user', None) # Pass the current user for prefilling
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
-        # Prefill for logged-in users with existing SalesProfile
-        if self.user and hasattr(self.user, 'sales_profile'):
-            sales_profile_instance = self.user.sales_profile
-            # Only prefill if the form is not already bound with data
-            if not self.is_bound:
-                for field in self.fields:
-                    if hasattr(sales_profile_instance, field):
-                        self.initial[field] = getattr(sales_profile_instance, field)
+        # Removed the custom initial setting loop as ModelForm handles `instance` argument
+        # correctly. It caused the KeyError when `form.initial` was empty or not handled right.
 
         # Apply required attribute based on inventory settings for address and DL fields
         if self.inventory_settings:
             if self.inventory_settings.require_address_info:
-                for field_name in ['address_line_1', 'city', 'post_code', 'country']:
+                for field_name in ['address_line_1', 'city', 'state', 'post_code', 'country']:
                     self.fields[field_name].required = True
                     self.fields[field_name].widget.attrs.update({'placeholder': 'Required'})
             else:
                 # If address not required, ensure these fields are not required by default
+                # But remember, model fields without blank=True are still implicitly required.
+                # If these fields can truly be optional, the model should have blank=True, null=True.
+                # Since they do, setting required=False here is correct for the form.
                 for field_name in ['address_line_1', 'address_line_2', 'city', 'state', 'post_code', 'country']:
                     self.fields[field_name].required = False
 
@@ -70,19 +68,24 @@ class SalesProfileForm(forms.ModelForm):
         # Conditional validation based on InventorySettings
         if self.inventory_settings:
             if self.inventory_settings.require_address_info:
-                required_address_fields = ['address_line_1', 'city', 'post_code', 'country']
+                required_address_fields = ['address_line_1', 'city', 'state', 'post_code', 'country']
                 for field_name in required_address_fields:
+                    # Check if the field is present and not empty (handles None or empty string)
                     if not cleaned_data.get(field_name):
                         self.add_error(field_name, "This field is required based on inventory settings.")
 
             if self.inventory_settings.require_drivers_license:
                 required_dl_fields = ['drivers_license_number', 'drivers_license_expiry']
                 for field_name in required_dl_fields:
+                    # Check if the field is present and not empty
                     if not cleaned_data.get(field_name):
                         self.add_error(field_name, "This field is required based on inventory settings.")
-                if self.inventory_settings.require_drivers_license and not cleaned_data.get('drivers_license_image'):
+                
+                # Special checks for image and date_of_birth when DL is required
+                if not cleaned_data.get('drivers_license_image'):
                     self.add_error('drivers_license_image', "Driver's license image is required based on inventory settings.")
-                if self.inventory_settings.require_drivers_license and not cleaned_data.get('date_of_birth'):
+                if not cleaned_data.get('date_of_birth'):
                     self.add_error('date_of_birth', "Date of birth is required based on inventory settings.")
 
         return cleaned_data
+
