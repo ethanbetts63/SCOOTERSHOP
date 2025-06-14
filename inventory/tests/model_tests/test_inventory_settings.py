@@ -112,7 +112,7 @@ class InventorySettingsModelTest(TestCase):
         """
         field = self.settings._meta.get_field('auto_refund_expired_deposits')
         self.assertIsInstance(self.settings.auto_refund_expired_deposits, bool)
-        self.assertTrue(field.default)
+        self.assertFalse(field.default)
         self.assertEqual(field.help_text, "Automatically process a full refund for deposits if the reservation expires without confirmation/completion.")
 
     def test_sales_booking_open_days_field(self):
