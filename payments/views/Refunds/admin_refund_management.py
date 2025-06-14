@@ -77,13 +77,11 @@ class AdminRefundManagement(ListView):
                     )
                 else:
                     # If no recipient email found, log or handle silently
-                    # print(f"DEBUG: No recipient email for expired refund request {refund_request.pk}")
                     pass
 
                 refund_request.delete()
 
             except Exception as e:
-                # print(f"ERROR: Failed to clean expired unverified refund request {refund_request.pk}: {e}")
                 pass # Fail silently as per previous requests if no explicit logging is needed
 
 

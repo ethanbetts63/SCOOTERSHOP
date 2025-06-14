@@ -14,14 +14,11 @@ from payments.utils.service_refund_calc import calculate_service_refund_amount
 @require_GET
 @login_required 
 def get_service_booking_details_json(request, pk):
-    # Debug: Print the PK received by the view
 
     if not request.user.is_staff:
-        # Debug: Permission denied
         return JsonResponse({'error': 'Permission denied'}, status=403)
 
     try:
-        # Debug: About to attempt fetching ServiceBooking
         service_booking = get_object_or_404(ServiceBooking, pk=pk)
 
         customer_name = 'N/A'
@@ -95,8 +92,6 @@ def get_service_booking_details_json(request, pk):
         }
         return JsonResponse(booking_details)
     except Http404: 
-        # Debug: Http404 caught
         return JsonResponse({'error': 'Service Booking not found'}, status=404)
     except Exception as e:
-        # Debug: General exception caught
         return JsonResponse({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
