@@ -72,6 +72,8 @@ urlpatterns = [
 
     # Sales Profile Management
     path('admin/sales-profiles/', sales_profile_management_view.SalesProfileManagementView.as_view(), name='sales_profile_management'),
+    path('admin/sales-profiles/create/', sales_profile_create_update_view.SalesProfileCreateUpdateView.as_view(), name='sales_profile_create_update'), # New path for create
+    path('admin/sales-profiles/<int:pk>/update/', sales_profile_create_update_view.SalesProfileCreateUpdateView.as_view(), name='sales_profile_create_update'), # New path for update
     path('admin/sales-profiles/<int:pk>/delete/', delete_sales_profile.SalesProfileDeleteView.as_view(), name='admin_sales_profile_delete'),
     path('admin/sales-profiles/<int:pk>/details/', sales_profile_details_view.SalesProfileDetailsView.as_view(), name='sales_profile_details'), # New URL for sales profile details
 
