@@ -21,12 +21,12 @@
                 <h3>Inventory Management</h3>
                 <ul class="reset-list">
                     <li><a href="{% url 'inventory:all' %}">All Motorcycles</a></li>
-                    <li><a href="{% url 'inventory:admin_motorcycle_create' %}">Add Motorcycle</a></li> {# Assuming a URL for creating motorcycles #}
-                    <li><a href="{% url 'inventory:inventory_settings' %}">Inventory Settings</a></li> {# Link to the new Inventory Settings page #}
-                    <li><a href="{% url 'inventory:admin_inventory_management' %}">Inventory Management</a></li>
-                    <li><a href="{% url 'inventory:sales_bookings_management' %}">Sales Bookings</a></li>
-                    <li><a href="{% url 'inventory:sales_profile_management' %}">Sales Profiles</a></li>
-                    <li><a href="">Blocked Sales Dates</a></li>
+                    <li><a href="{% url 'inventory:admin_motorcycle_create' %}">Add Motorcycle</a></li>
+                    <li><a href="{% url 'inventory:admin_inventory_management' %}">Motorcycle Management</a></li>
+                    <li><a href="{% url 'inventory:sales_bookings_management' %}">Sales Bookings Management</a></li>
+                    <li><a href="{% url 'inventory:sales_profile_management' %}">Sales Profiles Management</a></li>
+                    <li><a href="{% url 'inventory:blocked_sales_date_management' %}">Blocked Sales Dates Management</a></li>
+                    <li><a href="{% url 'inventory:inventory_settings' %}">Inventory Settings</a></li>
                 </ul>
             </li>
 

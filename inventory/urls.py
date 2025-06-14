@@ -15,6 +15,7 @@ from .views.user_views import (
 from .views.admin_views import (
     admin_motorcycle_details_view,
     blocked_sales_date_management_view,
+    blocked_sales_date_create_update_view,
     inventory_management_view,
     inventory_settings_view,
     motorcycle_create_update_view,
@@ -63,8 +64,11 @@ urlpatterns = [
     path('admin/motorcycles/<int:pk>/details/', admin_motorcycle_details_view.AdminMotorcycleDetailsView.as_view(), name='admin_motorcycle_details'),
 
     # Blocked Sales Date Management
-    # path('admin/blocked-sales-dates/', blocked_sales_date_management_view.BlockedSalesDateManagementView.as_view(), name='blocked_sales_date_management'),
+    path('admin/blocked-sales-dates/', blocked_sales_date_management_view.BlockedSalesDateManagementView.as_view(), name='blocked_sales_date_management'),
+    path('admin/blocked-sales-dates/create/', blocked_sales_date_create_update_view.BlockedSalesDateCreateUpdateView.as_view(), name='blocked_sales_date_create_update'), # New path for create
+    path('admin/blocked-sales-dates/<int:pk>/update/', blocked_sales_date_create_update_view.BlockedSalesDateCreateUpdateView.as_view(), name='blocked_sales_date_create_update'), # New path for update (re-uses same name)
     path('admin/blocked-sales-dates/<int:pk>/delete/', delete_blocked_sales_date.BlockedSalesDateDeleteView.as_view(), name='admin_blocked_sales_date_delete'),
+
 
     # Sales Booking Management
     path('admin/sales-bookings/', sales_bookings_management_view.SalesBookingsManagementView.as_view(), name='sales_bookings_management'),
@@ -87,4 +91,3 @@ urlpatterns = [
     path('ajax/get_appointment_times/', get_available_appointment_times_for_date, name='ajax_get_appointment_times'),
     path('ajax/payment-status-check/', ajax_get_payment_status.GetPaymentStatusView.as_view(), name='ajax_sales_payment_status_check'),
 ]
-
