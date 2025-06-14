@@ -24,6 +24,10 @@ from .views.admin_views import (
     sales_profile_create_update_view,
     sales_profile_details_view,
     sales_profile_management_view,
+    delete_motorcycle, 
+    delete_blocked_sales_date, 
+    delete_sales_booking,      
+    delete_sales_profile,     
 )
 
 from .ajax import (
@@ -51,10 +55,19 @@ urlpatterns = [
 
     # Admin Views
     path('admin/settings/', inventory_settings_view.InventorySettingsView.as_view(), name='inventory_settings'),
+    path('admin/inventory/', inventory_management_view.InventoryManagementView.as_view(), name='admin_inventory_management'),
     path('admin/motorcycles/create/', motorcycle_create_update_view.MotorcycleCreateUpdateView.as_view(), name='admin_motorcycle_create'),
     path('admin/motorcycles/<int:pk>/update/', motorcycle_create_update_view.MotorcycleCreateUpdateView.as_view(), name='admin_motorcycle_update'),
+    path('admin/motorcycles/<int:pk>/delete/', delete_motorcycle.MotorcycleDeleteView.as_view(), name='admin_motorcycle_delete'),
+
+    # New delete URLs for BlockedSalesDate, SalesBooking, and SalesProfile
+    path('admin/blocked-sales-dates/<int:pk>/delete/', delete_blocked_sales_date.BlockedSalesDateDeleteView.as_view(), name='admin_blocked_sales_date_delete'),
+    path('admin/sales-bookings/<int:pk>/delete/', delete_sales_booking.SalesBookingDeleteView.as_view(), name='admin_sales_booking_delete'),
+    path('admin/sales-profiles/<int:pk>/delete/', delete_sales_profile.SalesProfileDeleteView.as_view(), name='admin_sales_profile_delete'),
+
     # AJAX Endpoints
     path('ajax/get-motorcycle-list/', get_motorcycle_list, name='ajax-get-motorcycle-list'),
     path('ajax/get_appointment_times/', get_available_appointment_times_for_date, name='ajax_get_appointment_times'),
     path('ajax/payment-status-check/', ajax_get_payment_status.GetPaymentStatusView.as_view(), name='ajax_sales_payment_status_check'),
 ]
+

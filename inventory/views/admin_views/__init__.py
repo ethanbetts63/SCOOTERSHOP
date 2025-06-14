@@ -9,3 +9,7 @@ from .sales_bookings_management_view import *
 from .sales_profile_create_update_view import *
 from .sales_booking_details_view import *
 from .sales_profile_management_view import *
+from .delete_blocked_sales_date import *
+from .delete_motorcycle import *
+from .delete_sales_booking import *
+from .delete_motorcycle import *
