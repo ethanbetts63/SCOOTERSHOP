@@ -65,8 +65,6 @@
                        class="form-control bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                        placeholder="Select preferred date"
                        value="{{ form.appointment_date.value|default:''|date:'Y-m-d' }}"
-                       {# OLD: data-available-dates="{{ available_dates|escapejs }}" #}
-                       {# NEW: We will get min, max, and blocked dates directly #}
                 >
                 <p class="text-gray-500 text-xs italic mt-1">{{ form.appointment_date.help_text }}</p>
                 {% if form.appointment_date.errors %}
@@ -187,10 +185,11 @@
         const appointmentTimeSelect = document.getElementById('id_appointment_time');
         const loadingTimesDiv = document.getElementById('loading-times');
 
-        // NEW: Get min, max, and blocked dates from Django context
+        // Get min, max, and blocked dates from Django context
         const minAppointmentDate = "{{ min_appointment_date|default:'' }}";
         const maxAppointmentDate = "{{ max_appointment_date|default:'' }}";
-        const blockedAppointmentDatesRaw = "{{ blocked_appointment_dates_json|default:'[]' }}"; // NO |escapejs HERE!
+        // *** CRITICAL CHANGE: Use |escapejs here, just like the service version ***
+        const blockedAppointmentDatesRaw = "{{ blocked_appointment_dates_json|default:'[]'|escapejs }}"; 
         let blockedDates = [];
         try {
             blockedDates = JSON.parse(blockedAppointmentDatesRaw);
@@ -199,7 +198,6 @@
             // Fallback for parsing error, prevent blocking all dates
             blockedDates = [];
         }
-
 
         // Determine if deposit is required (from context or initial form value if hidden)
         // This relies on the Django view setting the initial value correctly for 'request_viewing'
