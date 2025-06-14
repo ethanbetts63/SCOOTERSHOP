@@ -1,18 +1,15 @@
 # SCOOTER_SHOP/inventory/views/admin_views/sales_profile_management_view.py
 
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Q
 from django.views.generic import ListView
 from inventory.models import SalesProfile
+from inventory.mixins import AdminRequiredMixin
 
-class SalesProfileManagementView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+class SalesProfileManagementView(AdminRequiredMixin, ListView):
     model = SalesProfile
     template_name = 'inventory/admin_sales_profile_management.html'
     context_object_name = 'sales_profiles'
     paginate_by = 10
-
-    def test_func(self):
-        return self.request.user.is_staff or self.request.user.is_superuser
 
     def get_queryset(self):
         queryset = super().get_queryset().order_by('name')
@@ -37,4 +34,3 @@ class SalesProfileManagementView(LoginRequiredMixin, UserPassesTestMixin, ListVi
         context['search_term'] = self.request.GET.get('q', '')
         context['page_title'] = "Sales Profiles Management"
         return context
-

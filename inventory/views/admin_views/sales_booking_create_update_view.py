@@ -4,17 +4,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.urls import reverse
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from inventory.mixins import AdminRequiredMixin
 
-from inventory.forms import AdminSalesBookingForm # Ensure this import path is correct
+from inventory.forms import AdminSalesBookingForm
 from inventory.models import SalesBooking
 
-class SalesBookingCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, View):
+class SalesBookingCreateUpdateView(AdminRequiredMixin, View):
     template_name = 'inventory/admin_sales_booking_create_update.html'
     form_class = AdminSalesBookingForm
-
-    def test_func(self):
-        return self.request.user.is_staff or self.request.user.is_superuser
 
     def get(self, request, pk=None, *args, **kwargs):
         instance = None
@@ -56,4 +53,3 @@ class SalesBookingCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, View
                 'page_title': "Edit Sales Booking" if pk else "Create Sales Booking"
             }
             return render(request, self.template_name, context)
-

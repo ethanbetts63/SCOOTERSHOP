@@ -4,17 +4,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.urls import reverse
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from inventory.mixins import AdminRequiredMixin
 
-from inventory.forms import AdminBlockedSalesDateForm # Ensure this import path is correct
+from inventory.forms import AdminBlockedSalesDateForm
 from inventory.models import BlockedSalesDate
 
-class BlockedSalesDateCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, View):
+class BlockedSalesDateCreateUpdateView(AdminRequiredMixin, View):
     template_name = 'inventory/admin_blocked_sales_date_create_update.html'
     form_class = AdminBlockedSalesDateForm
-
-    def test_func(self):
-        return self.request.user.is_staff or self.request.user.is_superuser
 
     def get(self, request, pk=None, *args, **kwargs):
         instance = None
@@ -56,4 +53,3 @@ class BlockedSalesDateCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, 
                 'page_title': "Edit Blocked Sales Date" if pk else "Create New Blocked Sales Date"
             }
             return render(request, self.template_name, context)
-

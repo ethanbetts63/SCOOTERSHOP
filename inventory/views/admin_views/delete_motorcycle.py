@@ -3,14 +3,11 @@
 from django.shortcuts import redirect, get_object_or_404
 from django.views import View
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from inventory.mixins import AdminRequiredMixin
 
 from inventory.models import Motorcycle
 
-class MotorcycleDeleteView(LoginRequiredMixin, UserPassesTestMixin, View):
-    def test_func(self):
-        return self.request.user.is_staff or self.request.user.is_superuser
-
+class MotorcycleDeleteView(AdminRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         motorcycle = get_object_or_404(Motorcycle, pk=pk)
         try:
@@ -19,4 +16,3 @@ class MotorcycleDeleteView(LoginRequiredMixin, UserPassesTestMixin, View):
         except Exception as e:
             messages.error(request, f'Error deleting motorcycle "{motorcycle.title}": {e}')
         return redirect('inventory:admin_inventory_management')
-

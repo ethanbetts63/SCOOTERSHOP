@@ -4,18 +4,15 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.urls import reverse
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from inventory.mixins import AdminRequiredMixin
 
-from inventory.forms import AdminSalesProfileForm # Assuming you'll create inventory/forms/__init__.py
+from inventory.forms import AdminSalesProfileForm
 from inventory.models import SalesProfile
 
 
-class SalesProfileCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, View):
+class SalesProfileCreateUpdateView(AdminRequiredMixin, View):
     template_name = 'inventory/admin_sales_profile_create_update.html'
     form_class = AdminSalesProfileForm
-
-    def test_func(self):
-        return self.request.user.is_staff or self.request.user.is_superuser
 
     def get(self, request, pk=None, *args, **kwargs):
         instance = None
@@ -57,4 +54,3 @@ class SalesProfileCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, View
                 'page_title': "Edit Sales Profile" if pk else "Create Sales Profile"
             }
             return render(request, self.template_name, context)
-

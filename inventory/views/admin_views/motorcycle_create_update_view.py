@@ -5,9 +5,10 @@ from django.shortcuts import get_object_or_404
 from inventory.models import Motorcycle, MotorcycleCondition
 from inventory.forms.admin_motorcycle_form import MotorcycleForm
 from inventory.forms.admin_motorcycle_image_form import MotorcycleImageFormSet
+from inventory.mixins import AdminRequiredMixin # Import the new mixin
 
 
-class MotorcycleCreateUpdateView(CreateView, UpdateView):
+class MotorcycleCreateUpdateView(AdminRequiredMixin, CreateView, UpdateView):
     model = Motorcycle
     form_class = MotorcycleForm
     template_name = 'inventory/admin_motorcycle_create_update.html'
@@ -59,4 +60,3 @@ class MotorcycleCreateUpdateView(CreateView, UpdateView):
 
     def get_success_url(self):
         return reverse_lazy('inventory:inventory_settings')
-
