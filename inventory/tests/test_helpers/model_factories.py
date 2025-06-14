@@ -155,7 +155,6 @@ class InventorySettingsFactory(factory.django.DjangoModelFactory):
     enable_sales_system = True
     enable_depositless_enquiry = True
     enable_reservation_by_deposit = True
-    # Updated deposit_amount to use LazyFunction for more realistic values
     deposit_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True, min_value=50, max_value=500))
     deposit_lifespan_days = 5
     auto_refund_expired_deposits = True
@@ -226,7 +225,7 @@ class TempSalesBookingFactory(factory.django.DjangoModelFactory):
     customer_notes = factory.Faker('paragraph')
     # Added new fields as per the request
     booking_status = factory.Faker('random_element', elements=[choice[0] for choice in TEMP_BOOKING_STATUS_CHOICES])
-    deposit_required_for_flow = factory.Faker('boolean')
+    deposit_required_for_flow = factory.Faker('boolean') # This is correctly on TempSalesBooking
     request_viewing = factory.Faker('boolean')
 
 
