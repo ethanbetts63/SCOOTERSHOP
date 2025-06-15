@@ -11,6 +11,12 @@ from django.contrib.auth.decorators import user_passes_test
 from users.views.auth import is_admin
 from payments.models import RefundRequest
 
+# Import booking models to access their specific fields
+from hire.models import HireBooking
+from service.models import ServiceBooking
+from inventory.models import SalesBooking # Import SalesBooking
+
+
 @method_decorator(user_passes_test(is_admin), name='dispatch')
 class ProcessRefundView(View):
     def post(self, request, pk, *args, **kwargs):
@@ -41,16 +47,23 @@ class ProcessRefundView(View):
                 amount_in_cents = int(refund_request.amount_to_refund * Decimal('100'))
 
                 booking_reference_for_metadata = "N/A"
+                booking_type_for_metadata = "unknown"
+
                 if refund_request.hire_booking:
                     booking_reference_for_metadata = refund_request.hire_booking.booking_reference
+                    booking_type_for_metadata = 'hire'
                 elif refund_request.service_booking:
                     booking_reference_for_metadata = refund_request.service_booking.service_booking_reference
+                    booking_type_for_metadata = 'service'
+                elif refund_request.sales_booking: # Added SalesBooking
+                    booking_reference_for_metadata = refund_request.sales_booking.sales_booking_reference
+                    booking_type_for_metadata = 'sales'
 
                 metadata = {
                     'refund_request_id': str(refund_request.pk),
                     'admin_user_id': str(request.user.pk),
                     'booking_reference': booking_reference_for_metadata,
-                    'booking_type': 'hire' if refund_request.hire_booking else 'service' if refund_request.service_booking else 'unknown',
+                    'booking_type': booking_type_for_metadata,
                 }
 
                 stripe_refund = stripe.Refund.create(
@@ -80,6 +93,6 @@ class ProcessRefundView(View):
             error_message = f"An unexpected error occurred: {e}"
             messages.error(request, error_message)
             refund_request.status = 'failed'
-            refund_request.staff_notes = (refund_request.staff_notes or "") + f"\nUnexpected error during initiation: {e} at {timezone.now()}"
+            refund_request.staff_notes = (refund_request.staff_notes or "") + f"\nUnexpected error during initiation: {e} at {timezone.now()}\""
             refund_request.save()
             return redirect(admin_management_redirect_url)
