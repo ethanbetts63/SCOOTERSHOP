@@ -32,6 +32,11 @@ class Motorcycle(models.Model):
     year = models.IntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Sale price (if applicable)")
 
+    quantity = models.IntegerField(
+        default=1,
+        help_text="Quantity of this motorcycle model in stock. Leave blank for unique used bikes."
+    )
+
     vin_number = models.CharField(max_length=50, blank=True, null=True, help_text="Vehicle Identification Number")
     engine_number = models.CharField(max_length=50, blank=True, null=True, help_text="Engine number/identifier")
 
@@ -105,4 +110,3 @@ class Motorcycle(models.Model):
 
     def is_for_hire(self):
         return self.conditions.filter(name='hire').exists()
-
