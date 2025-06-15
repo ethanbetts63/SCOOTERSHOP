@@ -278,7 +278,18 @@
                     return;
                 }
 
-                const url = `/payments/api/${bookingType}-booking-details/${bookingId}/`; // Dynamic URL based on type
+                // Corrected URL for sales booking details to point to inventory/ajax/
+                let url;
+                if (bookingType === 'hire') {
+                    url = `/payments/api/hire-booking-details/${bookingId}/`; // Assuming hire is still under payments/api
+                } else if (bookingType === 'service') {
+                    url = `/payments/api/service-booking-details/${bookingId}/`; // Assuming service is still under payments/api
+                } else if (bookingType === 'sales') {
+                    url = `/inventory/ajax/sales-booking-details/${bookingId}/`; // Corrected path for sales
+                } else {
+                    console.error("Unknown booking type:", bookingType);
+                    return;
+                }
 
                 loader.classList.remove('hidden');
 
