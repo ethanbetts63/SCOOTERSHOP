@@ -38,6 +38,16 @@ class RefundRequest(models.Model):
         blank=True, # Make it optional
         help_text="The service booking for which the refund is requested (if applicable)."
     )
+    
+    # Optional link to a SalesBooking
+    sales_booking = models.ForeignKey(
+        'inventory.SalesBooking', # Use string reference to avoid circular import
+        on_delete=models.SET_NULL,
+        related_name='refund_requests',
+        null=True,
+        blank=True,
+        help_text="The sales booking for which the refund is requested (if applicable)."
+    )
 
     # Optional link to a ServiceProfile (e.g., if no specific booking is linked but a customer profile is relevant)
     service_profile = models.ForeignKey(
@@ -47,6 +57,16 @@ class RefundRequest(models.Model):
         null=True, # Make it optional
         blank=True, # Make it optional
         help_text="The service profile associated with this refund request (if applicable)."
+    )
+    
+    # Optional link to a SalesProfile
+    sales_profile = models.ForeignKey(
+        'inventory.SalesProfile',
+        on_delete=models.SET_NULL,
+        related_name='refund_requests_related_sales_profile',
+        null=True,
+        blank=True,
+        help_text="The sales profile associated with this refund request (if applicable)."
     )
 
     driver_profile = models.ForeignKey(
@@ -156,6 +176,8 @@ class RefundRequest(models.Model):
         elif self.service_booking:
             # Changed to be more generic "Booking"
             booking_ref = f"Booking {self.service_booking.service_booking_reference}"
+        elif self.sales_booking: # Added sales booking check
+            booking_ref = f"Sales Booking {self.sales_booking.sales_booking_reference}"
         return f"Refund Request for {booking_ref} - Status: {self.status}"
 
     def save(self, *args, **kwargs):
@@ -163,4 +185,3 @@ class RefundRequest(models.Model):
         if not self.verification_token:
             self.verification_token = uuid.uuid4()
         super().save(*args, **kwargs)
-
