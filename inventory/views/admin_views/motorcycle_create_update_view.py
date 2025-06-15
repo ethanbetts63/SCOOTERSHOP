@@ -1,4 +1,4 @@
-from django.views.generic import CreateView, UpdateView
+from django.views.generic import CreateView, UpdateView # Keep both imported for clarity, but use UpdateView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
@@ -8,7 +8,8 @@ from inventory.forms.admin_motorcycle_image_form import MotorcycleImageFormSet
 from inventory.mixins import AdminRequiredMixin
 
 
-class MotorcycleCreateUpdateView(AdminRequiredMixin, CreateView):
+# --- THE FIX IS HERE: Changed CreateView to UpdateView ---
+class MotorcycleCreateUpdateView(AdminRequiredMixin, UpdateView):
     model = Motorcycle
     form_class = MotorcycleForm
     template_name = 'inventory/admin_motorcycle_create_update.html'
@@ -18,9 +19,19 @@ class MotorcycleCreateUpdateView(AdminRequiredMixin, CreateView):
         """
         Returns the object the view is displaying.
         For updates, it fetches by 'pk'. For creates, it returns None.
+        UpdateView will call this automatically when a PK is present.
         """
-        if self.kwargs.get('pk'):
-            return get_object_or_404(Motorcycle, pk=self.kwargs['pk'])
+        pk = self.kwargs.get('pk')
+        # print(f"DEBUG: MotorcycleCreateUpdateView - get_object called. PK from kwargs: {pk}") # Debug print
+        if pk:
+            try:
+                obj = get_object_or_404(Motorcycle, pk=pk)
+                # print(f"DEBUG: MotorcycleCreateUpdateView - Object found: {obj.title} (PK: {obj.pk})") # Debug print
+                return obj
+            except Exception as e:
+                # print(f"ERROR: MotorcycleCreateUpdateView - Failed to get object for PK {pk}: {e}") # Debug print
+                raise # Re-raise to ensure Django's 404 handling or error page
+        # print("DEBUG: MotorcycleCreateUpdateView - No PK in kwargs, returning None (create view).") # Debug print
         return None
 
     def get_context_data(self, **kwargs):
@@ -37,11 +48,15 @@ class MotorcycleCreateUpdateView(AdminRequiredMixin, CreateView):
                 defaults={'display_name': condition_name.capitalize()}
             )
 
-        # When re-rendering the form due to an error, use the submitted data.
-        # Otherwise, for a GET request, initialize a fresh formset.
+        # self.object is now reliably set by UpdateView's dispatch/get methods
+        # based on get_object() being called when a PK is in the URL.
+        # print(f"DEBUG: MotorcycleCreateUpdateView - get_context_data called. self.object: {self.object}") # Debug print
+
         if self.request.POST:
+            # print("DEBUG: MotorcycleCreateUpdateView - Initializing image_formset with POST data.") # Debug print
             context['image_formset'] = MotorcycleImageFormSet(self.request.POST, instance=self.object)
         else:
+            # print("DEBUG: MotorcycleCreateUpdateView - Initializing image_formset for GET request (instance will pre-fill).") # Debug print
             context['image_formset'] = MotorcycleImageFormSet(instance=self.object)
 
         if self.object:
@@ -55,29 +70,28 @@ class MotorcycleCreateUpdateView(AdminRequiredMixin, CreateView):
         Handles POST requests, validating the form and formset,
         and processing both single and multiple file uploads.
         """
-        self.object = self.get_object()
-        form = self.get_form()
+        self.object = self.get_object() # This ensures self.object is set if it's an update
+        form = self.get_form() # get_form() will now correctly pass self.object as instance
         
-        # The formset handles deletions of existing images.
-        # We don't pass request.FILES here because new uploads are handled separately.
+        # print(f"DEBUG: MotorcycleCreateUpdateView - POST method called. self.object: {self.object}") # Debug print
+        # print(f"DEBUG: MotorcycleCreateUpdateView - Form instance during POST: {form.instance}") # Debug print
+
         image_formset = MotorcycleImageFormSet(self.request.POST, instance=self.object)
 
         if form.is_valid() and image_formset.is_valid():
-            # Save the main Motorcycle instance
+            # print("DEBUG: MotorcycleCreateUpdateView - Form and formset are valid. Saving.") # Debug print
             self.object = form.save()
-
-            # Save the formset to process deletions of existing images
             image_formset.save()
 
-            # Process the newly uploaded additional images
             for image_file in request.FILES.getlist('additional_images'):
                 MotorcycleImage.objects.create(motorcycle=self.object, image=image_file)
 
             messages.success(self.request, "Motorcycle saved successfully!")
             return redirect(self.get_success_url())
         else:
+            # print(f"DEBUG: MotorcycleCreateUpdateView - Form errors: {form.errors}") # Debug print
+            # print(f"DEBUG: MotorcycleCreateUpdateView - Image Formset errors: {image_formset.errors}") # Debug print
             messages.error(self.request, "Please correct the errors below.")
-            # If form or formset is invalid, re-render the page with errors
             return self.render_to_response(self.get_context_data(form=form, image_formset=image_formset))
 
     def get_success_url(self):
@@ -87,5 +101,5 @@ class MotorcycleCreateUpdateView(AdminRequiredMixin, CreateView):
         """
         if self.object:
             return reverse_lazy('inventory:admin_motorcycle_details', kwargs={'pk': self.object.pk})
-        # Fallback if object not created for some reason
         return reverse_lazy('inventory:admin_inventory_management')
+

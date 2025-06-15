@@ -144,30 +144,31 @@
     document.addEventListener('DOMContentLoaded', function() {
         const conditionsCheckboxes = document.querySelectorAll('.condition-checkbox-list input[type="checkbox"]');
         const quantityFieldContainer = document.getElementById('quantity-field-container');
-        const quantityInputField = document.getElementById('id_quantity'); // Get the quantity input field
+        const quantityInputField = document.getElementById('id_quantity');
 
         function toggleQuantityField() {
             let isNewSelected = false;
             conditionsCheckboxes.forEach(checkbox => {
-                if (checkbox.checked && checkbox.nextSibling.textContent.includes('New')) {
+                // Check if the checkbox is for 'New' condition
+                // Using .includes('New') on nextSibling.textContent is a bit fragile if display_name changes
+                // A more robust way might be to add a data-attribute to the label or checkbox
+                // e.g., <label data-condition-name="{{ condition.name }}">
+                if (checkbox.checked && (checkbox.nextSibling.textContent.trim().toLowerCase() === 'new' || checkbox.dataset.conditionName === 'new')) {
                     isNewSelected = true;
                 }
             });
 
             if (isNewSelected) {
                 quantityFieldContainer.style.display = 'flex'; // Show the field
-                // If it's a new motorcycle, ensure quantity is at least 1.
-                // This doesn't make it "required" by HTML, but visually prompts the user.
+                // Ensure quantity is at least 1 when 'New' is selected, if not already set.
+                // This client-side suggestion aligns with form's server-side validation.
                 if (quantityInputField.value === '' || parseInt(quantityInputField.value) < 1) {
                     quantityInputField.value = '1';
                 }
             } else {
                 quantityFieldContainer.style.display = 'none'; // Hide the field
-                // Optionally clear the value or set to 1 when hidden, depending on desired behavior
-                // If the model default is 1, clearing is fine, as it will revert to default.
-                // If the user previously entered a quantity for a new bike and then deselected 'new',
-                // we might want to keep that value or reset it. For now, we'll let the form's clean
-                // method handle defaulting to 1 for non-new conditions.
+                // For non-new motorcycles, the model default of 1 will apply if the field is cleared.
+                // It's generally better to let the server-side clean method manage the final value.
             }
         }
 
@@ -176,7 +177,7 @@
             checkbox.addEventListener('change', toggleQuantityField);
         });
 
-        // Initial check on page load
+        // Initial check on page load to set correct visibility for existing bikes
         toggleQuantityField();
     });
 </script>
