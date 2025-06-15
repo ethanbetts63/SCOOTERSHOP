@@ -8,27 +8,10 @@ from django.db import transaction
 import logging
 import re
 from django.utils import timezone
-
 from .models import EmailLog
-
-try:
-    from hire.models import HireBooking
-except ImportError:
-    HireBooking = None
-    logging.warning("Could not import HireBooking model in mailer.utils. Ensure 'hire' app is installed.")
-
-try:
-    from hire.models.driver_profile import DriverProfile
-except ImportError:
-    DriverProfile = None
-    logging.warning("Could not import DriverProfile model in mailer.utils. Ensure 'hire' app is installed.")
-
-try:
-    from service.models import ServiceProfile, ServiceBooking
-except ImportError:
-    ServiceProfile = None
-    ServiceBooking = None
-    logging.warning("Could not import ServiceProfile or ServiceBooking model in mailer.utils. Ensure 'service' app is installed.")
+from hire.models import HireBooking
+from service.models import ServiceBooking
+from inventory.models import SalesBooking # Import SalesBooking and SalesProfile
 
 
 logger = logging.getLogger(__name__)
@@ -42,17 +25,22 @@ def send_templated_email(
     user=None,
     driver_profile=None,
     service_profile=None,
-    booking=None
+    sales_profile=None, # Added sales_profile parameter
+    booking=None,
+    service_booking=None, # Explicitly added service_booking for EmailLog context
+    sales_booking=None, # Explicitly added sales_booking for EmailLog context
 ):
     if not recipient_list:
         return False
 
     sender_email = from_email if from_email else settings.DEFAULT_FROM_EMAIL
 
-    if booking:
+    if booking: # This 'booking' can be HireBooking, ServiceBooking, or SalesBooking
         context['booking'] = booking
     if service_profile:
         context['service_profile'] = service_profile
+    if sales_profile: # Add sales_profile to context
+        context['sales_profile'] = sales_profile
 
     try:
         html_content = render_to_string(template_name, context)
@@ -63,6 +51,7 @@ def send_templated_email(
         text_content = strip_tags(text_content_prep).strip()
 
     except Exception as e:
+        # Pass all relevant booking and profile objects to EmailLog on error
         EmailLog.objects.create(
             sender=sender_email,
             recipient=", ".join(recipient_list),
@@ -73,8 +62,10 @@ def send_templated_email(
             user=user,
             driver_profile=driver_profile,
             service_profile=service_profile,
+            sales_profile=sales_profile, # Pass sales_profile to EmailLog
             booking=booking if isinstance(booking, HireBooking) else None,
-            service_booking=booking if isinstance(booking, ServiceBooking) else None
+            service_booking=booking if isinstance(booking, ServiceBooking) else None,
+            sales_booking=booking if isinstance(booking, SalesBooking) else None, # Pass sales_booking to EmailLog
         )
         return False
 
@@ -94,6 +85,7 @@ def send_templated_email(
     finally:
         try:
             with transaction.atomic():
+                # Pass all relevant booking and profile objects to EmailLog
                 EmailLog.objects.create(
                     timestamp=timezone.now(),
                     sender=sender_email,
@@ -105,8 +97,10 @@ def send_templated_email(
                     user=user,
                     driver_profile=driver_profile,
                     service_profile=service_profile,
+                    sales_profile=sales_profile, # Pass sales_profile to EmailLog
                     booking=booking if isinstance(booking, HireBooking) else None,
-                    service_booking=booking if isinstance(booking, ServiceBooking) else None
+                    service_booking=booking if isinstance(booking, ServiceBooking) else None,
+                    sales_booking=booking if isinstance(booking, SalesBooking) else None, # Pass sales_booking to EmailLog
                 )
         except Exception as log_e:
             pass # Suppress critical logging errors as requested
