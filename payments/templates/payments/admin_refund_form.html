@@ -90,6 +90,11 @@
                             <input class="form-check-input" type="radio" name="booking_type_selector" id="serviceBookingRadio" value="service" {% if refund_request.service_booking %}checked{% endif %}>
                             <label class="form-check-label" for="serviceBookingRadio">Service Booking</label>
                         </div>
+                        {# Added Sales Booking Radio Button #}
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="booking_type_selector" id="salesBookingRadio" value="sales" {% if refund_request.sales_booking %}checked{% endif %}>
+                            <label class="form-check-label" for="salesBookingRadio">Sales Booking</label>
+                        </div>
                     </div>
                 </div>
 
@@ -113,6 +118,17 @@
                     <small class="form-text text-muted">{{ form.service_booking.help_text }}</small>
                 </div>
                 
+                {# Added Sales Booking Section #}
+                <div id="salesBookingSection" class="form-group mb-3 {% if not refund_request.sales_booking %}hidden{% endif %}">
+                    <label for="{{ form.sales_booking.id_for_label }}">
+                        {{ form.sales_booking.label }}
+                        {% if form.sales_booking.field.required %}<span class="required-indicator">*</span>{% endif %}
+                    </label>
+                    {{ form.sales_booking }}
+                    {% if form.sales_booking.errors %}<div class="invalid-feedback d-block">{% for error in form.sales_booking.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    <small class="form-text text-muted">{{ form.sales_booking.help_text }}</small>
+                </div>
+                
                 <!-- AJAX Loader -->
                 <div id="loader" class="loader hidden"></div>
 
@@ -124,6 +140,9 @@
                 
                 <!-- Service Booking Details Container -->
                 <div id="serviceBookingDetails" class="booking-details-box hidden"></div>
+
+                {# Added Sales Booking Details Container #}
+                <div id="salesBookingDetails" class="booking-details-box hidden"></div>
 
 
                 <div class="form-group mb-3">
@@ -169,20 +188,29 @@
         document.addEventListener('DOMContentLoaded', function() {
             const hireBookingRadio = document.getElementById('hireBookingRadio');
             const serviceBookingRadio = document.getElementById('serviceBookingRadio');
+            const salesBookingRadio = document.getElementById('salesBookingRadio'); // New radio button
+            
             const hireBookingSection = document.getElementById('hireBookingSection');
             const serviceBookingSection = document.getElementById('serviceBookingSection');
+            const salesBookingSection = document.getElementById('salesBookingSection'); // New section
+
             const hireBookingSelect = document.getElementById('id_hire_booking');
             const serviceBookingSelect = document.getElementById('id_service_booking');
+            const salesBookingSelect = document.getElementById('id_sales_booking'); // New select field
+
             const amountToRefundInput = document.getElementById('id_amount_to_refund');
             
             const hireDetailsContainer = document.getElementById('hireBookingDetails');
             const serviceDetailsContainer = document.getElementById('serviceBookingDetails');
+            const salesDetailsContainer = document.getElementById('salesBookingDetails'); // New details container
+
             const loader = document.getElementById('loader');
             const ajaxErrorContainer = document.getElementById('ajaxError');
 
             function hideAllDetails() {
                 hireDetailsContainer.classList.add('hidden');
                 serviceDetailsContainer.classList.add('hidden');
+                salesDetailsContainer.classList.add('hidden'); // Hide sales details
                 ajaxErrorContainer.classList.add('hidden');
             }
 
@@ -190,58 +218,54 @@
                 amountToRefundInput.value = '0.00';
                 hideAllDetails();
 
+                // Hide all sections and disable all selects initially
+                hireBookingSection.classList.add('hidden');
+                serviceBookingSection.classList.add('hidden');
+                salesBookingSection.classList.add('hidden'); // Hide sales section
+
+                hireBookingSelect.setAttribute('disabled', 'disabled');
+                serviceBookingSelect.setAttribute('disabled', 'disabled');
+                salesBookingSelect.setAttribute('disabled', 'disabled'); // Disable sales select
+
                 if (hireBookingRadio.checked) {
                     hireBookingSection.classList.remove('hidden');
-                    serviceBookingSection.classList.add('hidden');
-                    serviceBookingSelect.value = '';
-                    serviceBookingSelect.setAttribute('disabled', 'disabled');
                     hireBookingSelect.removeAttribute('disabled');
                 } else if (serviceBookingRadio.checked) {
                     serviceBookingSection.classList.remove('hidden');
-                    hireBookingSection.classList.add('hidden');
-                    hireBookingSelect.value = '';
-                    hireBookingSelect.setAttribute('disabled', 'disabled');
                     serviceBookingSelect.removeAttribute('disabled');
-                } else {
-                    hireBookingSection.classList.add('hidden');
-                    serviceBookingSection.classList.add('hidden');
-                    hireBookingSelect.removeAttribute('disabled');
-                    serviceBookingSelect.removeAttribute('disabled');
+                } else if (salesBookingRadio.checked) { // Handle sales booking
+                    salesBookingSection.classList.remove('hidden');
+                    salesBookingSelect.removeAttribute('disabled');
                 }
             }
 
             function displayBookingDetails(data, bookingType) {
                 let detailsHtml = '';
                 let container;
+                let bookingRefField = '';
 
-                // *** FIX: Display refund_calculation_details as a single string ***
                 if (bookingType === 'hire') {
                     container = hireDetailsContainer;
-                    detailsHtml = `
-                        <h5>Hire Booking Refund Details</h5>
-                        <p><strong>Customer:</strong> ${data.customer_name}</p>
-                        <p><strong>Booking Ref:</strong> ${data.booking_reference}</p>
-                        <p><strong>Payment Amount:</strong> $${data.payment_amount}</p>
-                        <p><strong>Booking Status:</strong> ${data.booking_status}</p>
-                        <p><strong>Payment Status:</strong> ${data.payment_status}</p>
-                        <p><strong>Entitled Refund:</strong> $${data.entitled_refund_amount}</p>
-                        <p><strong>Calculation Details:</strong> ${data.refund_calculation_details}</p>
-                    `;
+                    bookingRefField = 'booking_reference'; // Field name for hire booking
                 } else if (bookingType === 'service') {
                     container = serviceDetailsContainer;
-                    detailsHtml = `
-                        <h5>Service Booking Refund Details</h5>
-                        <p><strong>Customer:</strong> ${data.customer_name}</p>
-                        <p><strong>Booking Ref:</strong> ${data.service_booking_reference}</p>
-                        <p><strong>Payment Amount:</strong> $${data.payment_amount}</p>
-                        <p><strong>Booking Status:</strong> ${data.booking_status}</p>
-                        <p><strong>Payment Status:</strong> ${data.payment_status}</p>
-                        <p><strong>Entitled Refund:</strong> $${data.entitled_refund_amount}</p>
-                        <p><strong>Calculation Details:</strong> ${data.refund_calculation_details}</p>
-                    `;
+                    bookingRefField = 'service_booking_reference'; // Field name for service booking
+                } else if (bookingType === 'sales') { // Handle sales booking
+                    container = salesDetailsContainer;
+                    bookingRefField = 'sales_booking_reference'; // Field name for sales booking
                 }
 
                 if (container) {
+                    detailsHtml = `
+                        <h5>${bookingType.charAt(0).toUpperCase() + bookingType.slice(1)} Booking Refund Details</h5>
+                        <p><strong>Customer:</strong> ${data.customer_name}</p>
+                        <p><strong>Booking Ref:</strong> ${data[bookingRefField]}</p>
+                        <p><strong>Payment Amount:</strong> $${data.payment_amount}</p>
+                        <p><strong>Booking Status:</strong> ${data.booking_status}</p>
+                        <p><strong>Payment Status:</strong> ${data.payment_status}</p>
+                        <p><strong>Entitled Refund:</strong> $${data.entitled_refund_amount}</p>
+                        <p><strong>Calculation Details:</strong> ${data.refund_calculation_details}</p>
+                    `;
                     container.innerHTML = detailsHtml;
                     container.classList.remove('hidden');
                 }
@@ -254,9 +278,7 @@
                     return;
                 }
 
-                const url = bookingType === 'hire' 
-                    ? `/payments/api/hire-booking-details/${bookingId}/`
-                    : `/payments/api/service-booking-details/${bookingId}/`;
+                const url = `/payments/api/${bookingType}-booking-details/${bookingId}/`; // Dynamic URL based on type
 
                 loader.classList.remove('hidden');
 
@@ -287,6 +309,7 @@
 
             hireBookingRadio.addEventListener('change', handleBookingTypeChange);
             serviceBookingRadio.addEventListener('change', handleBookingTypeChange);
+            salesBookingRadio.addEventListener('change', handleBookingTypeChange); // Add event listener for sales radio
 
             hireBookingSelect.addEventListener('change', function() {
                 fetchBookingDetails('hire', this.value);
@@ -294,6 +317,10 @@
 
             serviceBookingSelect.addEventListener('change', function() {
                 fetchBookingDetails('service', this.value);
+            });
+
+            salesBookingSelect.addEventListener('change', function() { // Add event listener for sales select
+                fetchBookingDetails('sales', this.value);
             });
             
             const refundRequestExists = "{{ refund_request.pk|default:'' }}" ? true : false;
@@ -305,6 +332,9 @@
                 } else if (serviceBookingRadio.checked) {
                     handleBookingTypeChange();
                     fetchBookingDetails('service', serviceBookingSelect.value);
+                } else if (salesBookingRadio.checked) { // Handle initial load for sales booking
+                    handleBookingTypeChange();
+                    fetchBookingDetails('sales', salesBookingSelect.value);
                 }
             } else {
                 handleBookingTypeChange();

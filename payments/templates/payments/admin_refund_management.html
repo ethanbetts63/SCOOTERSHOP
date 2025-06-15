@@ -146,16 +146,24 @@
                                 {{ request.id }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
-                                {% if request.hire_booking %}Hire{% elif request.service_booking %}Service{% else %}N/A{% endif %}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
-                                {% if request.hire_booking %}{{ request.hire_booking.booking_reference }}
-                                {% elif request.service_booking %}{{ request.service_booking.service_booking_reference }}
+                                {# Display Booking Type #}
+                                {% if request.hire_booking %}Hire
+                                {% elif request.service_booking %}Service
+                                {% elif request.sales_booking %}Sales{# Added Sales Booking Type #}
                                 {% else %}N/A{% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
-                                {% if request.driver_profile %}{{ request.driver_profile.user.email|default:"N/A" }}
-                                {% elif request.service_profile %}{{ request.service_profile.user.email|default:"N/A" }}
+                                {# Display Booking Reference #}
+                                {% if request.hire_booking %}{{ request.hire_booking.booking_reference }}
+                                {% elif request.service_booking %}{{ request.service_booking.service_booking_reference }}
+                                {% elif request.sales_booking %}{{ request.sales_booking.sales_booking_reference }}{# Added Sales Booking Reference #}
+                                {% else %}N/A{% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
+                                {# Display Requested By Email #}
+                                {% if request.driver_profile %}{{ request.driver_profile.email|default:"N/A" }}
+                                {% elif request.service_profile %}{{ request.service_profile.email|default:"N/A" }}
+                                {% elif request.sales_profile %}{{ request.sales_profile.email|default:"N/A" }}{# Added Sales Profile Email #}
                                 {% elif request.request_email %}{{ request.request_email }}
                                 {% else %}N/A{% endif %}
                             </td>
