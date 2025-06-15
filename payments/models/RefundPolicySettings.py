@@ -58,6 +58,21 @@ class RefundPolicySettings(models.Model):
         help_text="Percentage of deposit to refund for late cancellations."
     )
 
+    # --- Inventory app refund settings
+    sales_enable_deposit_refund_grace_period = models.BooleanField(
+        default=True,
+        help_text="Enable a grace period for deposit refunds after cancellation or decline."
+    )
+    sales_deposit_refund_grace_period_hours = models.IntegerField(
+        default=24, # 48 hours (2 days)
+        help_text="The number of hours within which a deposit can be refunded after cancellation or decline."
+    )
+    sales_enable_deposit_refund = models.BooleanField(
+        default=True,
+        help_text="Globally enable or disable the ability to refund deposits."
+    )
+
+
     # --- Stripe Fee Settings ---
     refund_deducts_stripe_fee_policy = models.BooleanField(
         default=True,
