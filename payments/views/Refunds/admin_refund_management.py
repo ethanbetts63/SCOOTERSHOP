@@ -10,6 +10,7 @@ from django.conf import settings
 # Import booking and profile models to access their specific fields and types
 from hire.models import HireBooking, DriverProfile
 from service.models import ServiceBooking, ServiceProfile
+from inventory.models import SalesBooking, SalesProfile # Import SalesBooking and SalesProfile
 
 
 @method_decorator(staff_member_required, name='dispatch')
@@ -17,7 +18,7 @@ class AdminRefundManagement(ListView):
     """
     View for administrators to manage all RefundRequest instances,
     displaying them in a list with filtering and actions.
-    This view is generalized to handle both HireBookings and ServiceBookings.
+    This view is generalized to handle HireBookings, ServiceBookings, and SalesBookings.
     """
     model = RefundRequest
     template_name = 'payments/admin_refund_management.html' # Renamed to generic template name
@@ -28,7 +29,7 @@ class AdminRefundManagement(ListView):
         """
         Deletes 'unverified' RefundRequest objects older than 24 hours
         and sends an email notification to the user.
-        This method is now generalized to handle both Hire and Service bookings.
+        This method is now generalized to handle Hire, Service, and Sales bookings.
         """
         cutoff_time = timezone.now() - timedelta(hours=24)
 
@@ -53,6 +54,11 @@ class AdminRefundManagement(ListView):
                     booking_object = refund_request.service_booking
                     customer_profile_object = refund_request.service_profile
                     booking_reference_for_email = refund_request.service_booking.service_booking_reference
+                elif refund_request.sales_booking: # Added SalesBooking
+                    booking_object = refund_request.sales_booking
+                    customer_profile_object = refund_request.sales_profile
+                    booking_reference_for_email = refund_request.sales_booking.sales_booking_reference
+
 
                 # Fallback to user email from profile if request_email not set on RefundRequest
                 if not recipient_email and customer_profile_object and customer_profile_object.user:
@@ -71,9 +77,10 @@ class AdminRefundManagement(ListView):
                         template_name=email_template_name,
                         context=admin_email_context,
                         booking=booking_object, # Pass generic booking object
-                        # Conditionally pass driver/service profile based on type
+                        # Conditionally pass driver/service/sales profile based on type
                         driver_profile=customer_profile_object if isinstance(customer_profile_object, DriverProfile) else None,
                         service_profile=customer_profile_object if isinstance(customer_profile_object, ServiceProfile) else None,
+                        sales_profile=customer_profile_object if isinstance(customer_profile_object, SalesProfile) else None, # Added SalesProfile
                     )
                 else:
                     # If no recipient email found, log or handle silently
@@ -89,7 +96,7 @@ class AdminRefundManagement(ListView):
         """
         Overrides get_queryset to perform cleaning of expired unverified refund requests
         before retrieving the queryset for display.
-        The queryset now implicitly includes both hire and service bookings
+        The queryset now implicitly includes hire, service, and sales bookings
         due to the RefundRequest model's structure.
         """
         self.clean_expired_unverified_refund_requests()
@@ -109,4 +116,3 @@ class AdminRefundManagement(ListView):
         context['status_choices'] = RefundRequest.STATUS_CHOICES
         context['current_status'] = self.request.GET.get('status', 'all')
         return context
-
