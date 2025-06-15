@@ -1,13 +1,8 @@
 # hire/tests/form_tests/test_admin_hire_form.py
 from django.test import TestCase
-from django.core.exceptions import ValidationError
 from datetime import date, time, timedelta
 from decimal import Decimal
-
-# Import the form to be tested
 from hire.forms.Admin_Hire_Booking_form import AdminHireBookingForm
-
-# Import model factories
 from hire.tests.test_helpers.model_factories import(
     create_motorcycle,
     create_driver_profile,
@@ -17,11 +12,6 @@ from hire.tests.test_helpers.model_factories import(
     create_booking_addon,
     create_hire_settings
 )
-
-# Import models for direct access if needed (e.g., for querysets)
-from inventory.models import Motorcycle
-from hire.models import AddOn, Package, DriverProfile, HireBooking
-from hire.models.hire_booking import PAYMENT_STATUS_CHOICES, STATUS_CHOICES, PAYMENT_METHOD_CHOICES
 
 
 class AdminHireBookingFormTest(TestCase):
