@@ -12,6 +12,7 @@ from payments.models.RefundRequest import RefundRequest
 from mailer.utils import send_templated_email
 from service.models import ServiceProfile
 from hire.models import DriverProfile
+from inventory.models import SalesProfile # Import SalesProfile
 
 
 class UserRefundRequestView(View):
@@ -20,7 +21,7 @@ class UserRefundRequestView(View):
     Allows users to submit a refund request by providing their booking reference and email.
     Upon successful submission, a RefundRequest instance is created with 'unverified' status.
     An email is then sent to the user for confirmation.
-    This view is generalized to handle both HireBookings and ServiceBookings.
+    This view is generalized to handle HireBookings, ServiceBookings, and SalesBookings.
     """
     template_name = 'payments/user_refund_request.html' # Renamed template for generality
 
@@ -75,6 +76,10 @@ class UserRefundRequestView(View):
                 booking_reference_for_email = refund_request.service_booking.service_booking_reference
                 booking_object = refund_request.service_booking
                 customer_profile_object = refund_request.service_profile
+            elif refund_request.sales_booking: # Added SalesBooking
+                booking_reference_for_email = refund_request.sales_booking.sales_booking_reference
+                booking_object = refund_request.sales_booking
+                customer_profile_object = refund_request.sales_profile
 
             user_email_context = {
                 'refund_request': refund_request,
@@ -91,9 +96,10 @@ class UserRefundRequestView(View):
                 template_name='user_refund_request_verification.html',
                 context=user_email_context,
                 # Pass the correct related objects for mailer's context processing
-                booking=booking_object, # Can be HireBooking or ServiceBooking instance
+                booking=booking_object, # Can be HireBooking, ServiceBooking, or SalesBooking instance
                 driver_profile=customer_profile_object if isinstance(customer_profile_object, DriverProfile) else None,
                 service_profile=customer_profile_object if isinstance(customer_profile_object, ServiceProfile) else None,
+                sales_profile=customer_profile_object if isinstance(customer_profile_object, SalesProfile) else None, # Added SalesProfile
             )
 
             messages.success(request, 'Your refund request has been submitted. Please check your email to confirm your request.')
