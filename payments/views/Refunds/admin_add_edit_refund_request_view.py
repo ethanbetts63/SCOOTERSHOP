@@ -6,20 +6,21 @@ from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.decorators import user_passes_test
 # Import the (soon-to-be) generalized AdminRefundRequestForm
-from payments.forms.admin_refund_request_form import AdminRefundRequestForm 
+from payments.forms.admin_refund_request_form import AdminRefundRequestForm
 from payments.models.RefundRequest import RefundRequest
 from users.views.auth import is_admin # Assuming this utility exists for admin check
 
 # Import booking models to access their specific fields
 from hire.models import HireBooking
 from service.models import ServiceBooking
+from inventory.models import SalesBooking # Import SalesBooking
 
 
 @method_decorator(user_passes_test(is_admin), name='dispatch')
 class AdminAddEditRefundRequestView(View):
     """
     View for administrators to create or edit RefundRequest instances for
-    both HireBookings and ServiceBookings.
+    HireBookings, ServiceBookings, and SalesBookings.
     This view handles both GET (displaying the form) and POST (processing form submission) requests.
     """
     template_name = 'payments/admin_refund_form.html' # Changed to a generic template name
@@ -44,6 +45,9 @@ class AdminAddEditRefundRequestView(View):
             elif refund_request.service_booking:
                 booking_reference = refund_request.service_booking.service_booking_reference
                 title = f"Edit Service Refund Request for Booking {booking_reference}"
+            elif refund_request.sales_booking: # Added sales booking
+                booking_reference = refund_request.sales_booking.sales_booking_reference
+                title = f"Edit Sales Refund Request for Booking {booking_reference}"
         else:
             form = AdminRefundRequestForm()
             title = "Create New Refund Request"
@@ -69,7 +73,6 @@ class AdminAddEditRefundRequestView(View):
             form = AdminRefundRequestForm(request.POST)
 
         # Determine the redirect URL for admin management based on booking type
-        # This assumes separate admin views for hire and service refund management
         admin_management_redirect_url = 'payments:admin_refund_management' # Generic fallback
 
         if form.is_valid():
@@ -82,7 +85,9 @@ class AdminAddEditRefundRequestView(View):
             if not pk: # This is a new request created by admin
                 # If admin is creating, assume it's ready for review unless explicitly set otherwise
                 refund_request_instance.status = 'reviewed_pending_approval'
-            elif refund_request_instance.status == 'pending': # Existing request was user-submitted and unverified
+            elif refund_request_instance.status == 'unverified': # Existing request was user-submitted and unverified
+                refund_request_instance.status = 'reviewed_pending_approval'
+            elif refund_request_instance.status == 'pending': # Existing request was user-submitted and pending
                 refund_request_instance.status = 'reviewed_pending_approval'
 
 
@@ -98,10 +103,10 @@ class AdminAddEditRefundRequestView(View):
             booking_reference_for_msg = "N/A"
             if refund_request_instance.hire_booking:
                 booking_reference_for_msg = refund_request_instance.hire_booking.booking_reference
-                admin_management_redirect_url = 'payments:admin_refund_management'
             elif refund_request_instance.service_booking:
                 booking_reference_for_msg = refund_request_instance.service_booking.service_booking_reference
-                admin_management_redirect_url = 'payments:admin_refund_management'
+            elif refund_request_instance.sales_booking: # Added sales booking
+                booking_reference_for_msg = refund_request_instance.sales_booking.sales_booking_reference
 
 
             messages.success(request, f"Refund Request for booking '{booking_reference_for_msg}' saved successfully! Current Status: {refund_request_instance.get_status_display()}")
@@ -114,6 +119,8 @@ class AdminAddEditRefundRequestView(View):
                  booking_reference_for_display = refund_request_instance.hire_booking.booking_reference
             elif refund_request_instance and refund_request_instance.service_booking:
                  booking_reference_for_display = refund_request_instance.service_booking.service_booking_reference
+            elif refund_request_instance and refund_request_instance.sales_booking: # Added sales booking
+                 booking_reference_for_display = refund_request_instance.sales_booking.sales_booking_reference
 
 
             context = {
@@ -123,4 +130,3 @@ class AdminAddEditRefundRequestView(View):
                 'booking_reference': booking_reference_for_display, # Pass for template display
             }
             return render(request, self.template_name, context)
-
