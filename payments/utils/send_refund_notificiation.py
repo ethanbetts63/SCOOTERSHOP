@@ -22,6 +22,11 @@ def send_refund_notifications(payment_obj: Payment, booking_obj, booking_type_st
             customer_name = booking_obj.service_profile.name if booking_obj.service_profile else "Customer"
             user_email = booking_obj.service_profile.user.email if booking_obj.service_profile and booking_obj.service_profile.user else booking_obj.service_profile.email
             booking_for_email = booking_obj
+        elif booking_type_str == 'sales_booking': # Added SalesBooking
+            booking_reference = booking_obj.sales_booking_reference
+            customer_name = booking_obj.sales_profile.name if booking_obj.sales_profile else "Customer"
+            user_email = booking_obj.sales_profile.user.email if booking_obj.sales_profile and booking_obj.sales_profile.user else booking_obj.sales_profile.email
+            booking_for_email = booking_obj
 
     if user_email:
         email_context = {
@@ -40,6 +45,7 @@ def send_refund_notifications(payment_obj: Payment, booking_obj, booking_type_st
             booking=booking_for_email,
             driver_profile=booking_obj.driver_profile if booking_type_str == 'hire_booking' else None,
             service_profile=booking_obj.service_profile if booking_type_str == 'service_booking' else None,
+            sales_profile=booking_obj.sales_profile if booking_type_str == 'sales_booking' else None, # Added SalesProfile
         )
 
     if settings.ADMIN_EMAIL:
