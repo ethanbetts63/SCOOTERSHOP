@@ -4,9 +4,8 @@ from django.http import JsonResponse, Http404
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required 
 from django.views.decorators.http import require_GET
-from datetime import datetime, time 
+from datetime import datetime 
 from django.utils import timezone 
-
 from service.models import ServiceBooking
 from payments.models import RefundRequest
 from payments.utils.service_refund_calc import calculate_service_refund_amount
