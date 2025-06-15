@@ -54,7 +54,7 @@
 {% block admin_main_content %}
 <div class="p-4">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">{{ page_title|default:"Inventory Management" }}</h1>
+        <h1 class="text-2xl font-bold text-gray-800">{{ page_title }}</h1>
         <a href="{% url 'inventory:admin_motorcycle_create' %}" class="action-button btn-create">
             Add New Motorcycle
         </a>
@@ -83,7 +83,10 @@
                 Search
             </button>
             {% if search_term %}
-                <a href="{% url 'inventory:admin_inventory_management' %}"
+                {# Clear button now redirects to the correct management page based on current condition_type #}
+                <a href="{% if condition_type == 'new' %}{% url 'inventory:admin_new_motorcycle_management' %}
+                          {% elif condition_type == 'used' %}{% url 'inventory:admin_used_motorcycle_management' %}
+                          {% else %}{% url 'inventory:admin_inventory_management' %}{% endif %}"
                    class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                     Clear
                 </a>
@@ -102,8 +105,15 @@
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Condition</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rego</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Odometer</th>
+                        
+                        {# Conditional table headers based on condition_type #}
+                        {% if condition_type == 'new' %}
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                        {% else %} {# For 'used' or 'all' #}
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rego</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Odometer</th>
+                        {% endif %}
+                        
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
@@ -119,13 +129,19 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ motorcycle.get_conditions_display }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ motorcycle.get_status_display }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">${{ motorcycle.price|floatformat:2|default:"N/A" }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ motorcycle.rego|default:"N/A" }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ motorcycle.odometer }} km</td>
+                            
+                            {# Conditional table data based on condition_type #}
+                            {% if condition_type == 'new' %}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ motorcycle.quantity|default:"N/A" }}</td>
+                            {% else %} {# For 'used' or 'all' #}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ motorcycle.rego|default:"N/A" }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ motorcycle.odometer }} km</td>
+                            {% endif %}
+
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium table-cell-padding">
                                 <div class="flex space-x-2">
                                     <a href="{% url 'inventory:admin_motorcycle_update' pk=motorcycle.pk %}" class="action-button btn-edit">Edit</a>
                                     
-                                    {# Note: You will need to create a URL pattern and view for the delete functionality. #}
                                     <form action="{% url 'inventory:admin_motorcycle_delete' pk=motorcycle.pk %}" method="post" class="inline">
                                         {% csrf_token %}
                                         <button type="submit" class="action-button btn-delete" onclick="return confirm('Are you sure you want to delete this motorcycle? This action cannot be undone.');">
@@ -145,8 +161,9 @@
             <div class="pagination mt-6 flex justify-center items-center space-x-2">
                 <span class="step-links">
                     {% if page_obj.has_previous %}
-                        <a href="?page=1&q={{ search_term }}" class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">&laquo; first</a>
-                        <a href="?page={{ page_obj.previous_page_number }}&q={{ search_term }}" class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">previous</a>
+                        {# Pass condition_type in pagination links #}
+                        <a href="?page=1&q={{ search_term }}{% if condition_type %}&condition={{ condition_type }}{% endif %}" class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">&laquo; first</a>
+                        <a href="?page={{ page_obj.previous_page_number }}&q={{ search_term }}{% if condition_type %}&condition={{ condition_type }}{% endif %}" class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">previous</a>
                     {% endif %}
                     
                     <span class="current px-3 py-1 text-sm font-medium text-gray-700">
@@ -154,8 +171,9 @@
                     </span>
 
                     {% if page_obj.has_next %}
-                        <a href="?page={{ page_obj.next_page_number }}&q={{ search_term }}" class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">next</a>
-                        <a href="?page={{ page_obj.paginator.num_pages }}&q={{ search_term }}" class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">last &raquo;</a>
+                        {# Pass condition_type in pagination links #}
+                        <a href="?page={{ page_obj.next_page_number }}&q={{ search_term }}{% if condition_type %}&condition={{ condition_type }}{% endif %}" class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">next</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}&q={{ search_term }}{% if condition_type %}&condition={{ condition_type }}{% endif %}" class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">last &raquo;</a>
                     {% endif %}
                 </span>
             </div>
@@ -166,7 +184,7 @@
             {% if search_term %}
                 <p class="text-gray-500 mt-2">Your search for "{{ search_term }}" did not match any inventory items. Try another search or clear the filter.</p>
             {% else %}
-                 <p class="text-gray-500 mt-2">There are currently no motorcycles in the inventory system.</p>
+                 <p class="text-gray-500 mt-2">There are currently no motorcycles in this {{ page_title|lower }} section.</p>
             {% endif %}
         </div>
     {% endif %}

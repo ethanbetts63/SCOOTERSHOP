@@ -16,7 +16,7 @@ from .views.admin_views import (
     admin_motorcycle_details_view,
     blocked_sales_date_management_view,
     blocked_sales_date_create_update_view,
-    inventory_management_view,
+    inventory_management_view, # Keep this import for the single view
     inventory_settings_view,
     motorcycle_create_update_view,
     sales_booking_create_update_view,
@@ -58,6 +58,9 @@ urlpatterns = [
     # Admin Views
     path('admin/settings/', inventory_settings_view.InventorySettingsView.as_view(), name='inventory_settings'),
     path('admin/inventory/', inventory_management_view.InventoryManagementView.as_view(), name='admin_inventory_management'),
+    path('admin/inventory/new/', inventory_management_view.InventoryManagementView.as_view(), {'condition_slug': 'new'}, name='admin_new_motorcycle_management'),
+    path('admin/inventory/used/', inventory_management_view.InventoryManagementView.as_view(), {'condition_slug': 'used'}, name='admin_used_motorcycle_management'),
+    
     path('admin/motorcycles/create/', motorcycle_create_update_view.MotorcycleCreateUpdateView.as_view(), name='admin_motorcycle_create'),
     path('admin/motorcycles/<int:pk>/update/', motorcycle_create_update_view.MotorcycleCreateUpdateView.as_view(), name='admin_motorcycle_update'),
     path('admin/motorcycles/<int:pk>/delete/', delete_motorcycle.MotorcycleDeleteView.as_view(), name='admin_motorcycle_delete'),

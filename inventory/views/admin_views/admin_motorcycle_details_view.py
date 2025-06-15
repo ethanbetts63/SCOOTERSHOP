@@ -1,6 +1,4 @@
 # SCOOTER_SHOP/inventory/views/admin_views/admin_motorcycle_details_view.py
-
-from django.shortcuts import get_object_or_404
 from django.views.generic import DetailView
 from inventory.mixins import AdminRequiredMixin
 

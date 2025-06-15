@@ -14,6 +14,10 @@
     .delete-checkbox input[type="checkbox"]:checked + svg {
         color: #ef4444; /* Red color when checked for deletion */
     }
+    /* Style for the quantity field container */
+    .quantity-field-container {
+        display: none; /* Hidden by default */
+    }
 </style>
 {% endblock %}
 
@@ -42,17 +46,45 @@
             <h2 class="text-2xl font-semibold text-gray-700 mb-4 border-b pb-2">Motorcycle Details</h2>
             {{ form.non_field_errors }}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {# Loop through fields explicitly to control rendering order and visibility #}
                 {% for field in form %}
-                    <div class="flex flex-col">
-                        <label for="{{ field.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">{{ field.label }} {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}:</label>
-                        {{ field }}
-                        {% if field.help_text %}
-                            <p class="text-gray-500 text-xs italic mt-1">{{ field.help_text }}</p>
-                        {% endif %}
-                        {% for error in field.errors %}
-                            <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
-                        {% endfor %}
-                    </div>
+                    {# Exclude quantity field from general loop for controlled display #}
+                    {% if field.name == 'quantity' %}
+                        <div id="quantity-field-container" class="flex flex-col quantity-field-container">
+                            <label for="{{ field.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">{{ field.label }} {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}:</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <p class="text-gray-500 text-xs italic mt-1">{{ field.help_text }}</p>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% elif field.name == 'conditions' %}
+                        {# Render conditions field #}
+                        <div class="flex flex-col">
+                            <label for="{{ field.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">{{ field.label }} {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}:</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <p class="text-gray-500 text-xs italic mt-1">{{ field.help_text }}</p>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {# Render other fields #}
+                        <div class="flex flex-col">
+                            <label for="{{ field.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">{{ field.label }} {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}:</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <p class="text-gray-500 text-xs italic mt-1">{{ field.help_text }}</p>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 {% endfor %}
             </div>
         </div>
@@ -107,4 +139,45 @@
         </div>
     </form>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const conditionsCheckboxes = document.querySelectorAll('.condition-checkbox-list input[type="checkbox"]');
+        const quantityFieldContainer = document.getElementById('quantity-field-container');
+        const quantityInputField = document.getElementById('id_quantity'); // Get the quantity input field
+
+        function toggleQuantityField() {
+            let isNewSelected = false;
+            conditionsCheckboxes.forEach(checkbox => {
+                if (checkbox.checked && checkbox.nextSibling.textContent.includes('New')) {
+                    isNewSelected = true;
+                }
+            });
+
+            if (isNewSelected) {
+                quantityFieldContainer.style.display = 'flex'; // Show the field
+                // If it's a new motorcycle, ensure quantity is at least 1.
+                // This doesn't make it "required" by HTML, but visually prompts the user.
+                if (quantityInputField.value === '' || parseInt(quantityInputField.value) < 1) {
+                    quantityInputField.value = '1';
+                }
+            } else {
+                quantityFieldContainer.style.display = 'none'; // Hide the field
+                // Optionally clear the value or set to 1 when hidden, depending on desired behavior
+                // If the model default is 1, clearing is fine, as it will revert to default.
+                // If the user previously entered a quantity for a new bike and then deselected 'new',
+                // we might want to keep that value or reset it. For now, we'll let the form's clean
+                // method handle defaulting to 1 for non-new conditions.
+            }
+        }
+
+        // Add event listeners
+        conditionsCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', toggleQuantityField);
+        });
+
+        // Initial check on page load
+        toggleQuantityField();
+    });
+</script>
 {% endblock %}
