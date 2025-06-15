@@ -98,7 +98,7 @@
 
         <h3 class="form-section-title">Deposit Cancellation Policy</h3>
         {% for field in form %}
-            {% if 'cancellation_deposit' in field.name %}
+            {% if 'cancellation_deposit' in field.name and 'sales_enable_deposit_refund' not in field.name %} {# Exclude new sales fields #}
                 <div class="form-field">
                     <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
@@ -111,6 +111,39 @@
                         {% endfor %}
                     {% endif %}
                 </div>
+            {% endif %}
+        {% endfor %}
+
+        <h3 class="form-section-title">Inventory App Refund Settings</h3>
+        {% for field in form %}
+            {% if 'sales_enable_deposit_refund_grace_period' == field.name or 'sales_deposit_refund_grace_period_hours' == field.name or 'sales_enable_deposit_refund' == field.name %}
+                {% if field.field.widget.input_type == 'checkbox' %}
+                    <div class="form-field checkbox-field">
+                        {{ field }}
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {% if field.help_text %}
+                            <small>{{ field.help_text }}</small>
+                        {% endif %}
+                        {% if field.errors %}
+                            {% for error in field.errors %}
+                                <small style="color: red;">{{ error }}</small>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="form-field">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small>{{ field.help_text }}</small>
+                        {% endif %}
+                        {% if field.errors %}
+                            {% for error in field.errors %}
+                                <small style="color: red;">{{ error }}</small>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                {% endif %}
             {% endif %}
         {% endfor %}
 
@@ -150,6 +183,7 @@
 
     </form>
 </div>
+{% endblock %}
 
 {% block extra_js %}
 <script>
@@ -213,5 +247,4 @@
         }
     });
 </script>
-{% endblock %}
 {% endblock %}
