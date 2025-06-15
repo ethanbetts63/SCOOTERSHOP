@@ -4,7 +4,7 @@ from unittest import mock
 from django.conf import settings
 
 # Import models
-from inventory.models import SalesBooking, TempSalesBooking
+from inventory.models import SalesBooking, TempSalesBooking, MotorcycleCondition # Import MotorcycleCondition
 from payments.webhook_handlers.sales_handlers import handle_sales_booking_succeeded
 
 # Import factories
@@ -15,6 +15,7 @@ from ..test_helpers.model_factories import (
     TempSalesBookingFactory,
     PaymentFactory,
     SalesBookingFactory,
+    MotorcycleConditionFactory, # Import MotorcycleConditionFactory
 )
 
 @override_settings(ADMIN_EMAIL='admin-sales@example.com')
@@ -23,12 +24,22 @@ class SalesWebhookHandlerTest(TestCase):
     def setUpTestData(cls):
         cls.user = UserFactory(email="salesuser@example.com")
         cls.sales_profile = SalesProfileFactory(user=cls.user)
-        cls.motorcycle = MotorcycleFactory(price=Decimal('10000.00'), status='for_sale', is_available=True)
+        # Create a 'new' condition for tests
+        cls.condition_new = MotorcycleConditionFactory(name='new', display_name='New')
+        cls.condition_used = MotorcycleConditionFactory(name='used', display_name='Used') # For explicit used bike tests
+
+        # Default motorcycle for general tests (e.g., used bike behavior)
+        cls.motorcycle = MotorcycleFactory(
+            price=Decimal('10000.00'), 
+            status='for_sale', 
+            is_available=True,
+            conditions=[cls.condition_used] # Explicitly set as 'used' for default
+        )
 
     def test_handle_sales_booking_succeeded_deposit_flow(self):
         deposit_amount = Decimal('500.00')
         temp_booking = TempSalesBookingFactory(
-            motorcycle=self.motorcycle,
+            motorcycle=self.motorcycle, # This is a 'used' bike by default setup
             sales_profile=self.sales_profile,
             amount_paid=deposit_amount,
             deposit_required_for_flow=True,
@@ -58,8 +69,13 @@ class SalesWebhookHandlerTest(TestCase):
             self.assertEqual(sales_booking.payment_status, 'deposit_paid')
             self.assertEqual(sales_booking.booking_status, 'pending_confirmation')
             self.assertEqual(sales_booking.amount_paid, deposit_amount)
-            self.assertEqual(sales_booking.motorcycle.status, 'reserved')
-            self.assertFalse(sales_booking.motorcycle.is_available)
+            
+            # Assertions for 'used' bike behavior
+            motorcycle_after_booking = sales_booking.motorcycle
+            motorcycle_after_booking.refresh_from_db() # Ensure we have the latest state
+            self.assertEqual(motorcycle_after_booking.status, 'reserved')
+            self.assertFalse(motorcycle_after_booking.is_available)
+            self.assertEqual(motorcycle_after_booking.quantity, 1) # Quantity remains 1 for used bike
 
             payment_obj.refresh_from_db()
             self.assertEqual(payment_obj.status, 'succeeded')
@@ -131,3 +147,90 @@ class SalesWebhookHandlerTest(TestCase):
                 payment_obj.refresh_from_db()
                 self.assertEqual(payment_obj.status, 'succeeded')
                 self.assertEqual(mock_send_email.call_count, 0)
+
+    def test_handle_sales_booking_succeeded_new_bike_decrements_quantity(self):
+        # Create a new motorcycle with quantity > 1 and 'new' condition
+        new_motorcycle = MotorcycleFactory(
+            price=Decimal('15000.00'),
+            status='for_sale',
+            is_available=True,
+            quantity=5, # Initial quantity
+            conditions=[self.condition_new] # Assign 'new' condition
+        )
+        initial_quantity = new_motorcycle.quantity
+
+        deposit_amount = Decimal('500.00')
+        temp_booking = TempSalesBookingFactory(
+            motorcycle=new_motorcycle,
+            sales_profile=self.sales_profile,
+            amount_paid=deposit_amount,
+            deposit_required_for_flow=True,
+            booking_status='pending_details'
+        )
+        payment_obj = PaymentFactory(
+            temp_sales_booking=temp_booking,
+            amount=deposit_amount,
+            status='requires_payment_method',
+            stripe_payment_intent_id=temp_booking.stripe_payment_intent_id
+        )
+        payment_intent_data = {
+            'id': payment_obj.stripe_payment_intent_id,
+            'amount_received': int(deposit_amount * 100),
+            'status': 'succeeded',
+            'currency': 'AUD'
+        }
+
+        with mock.patch('payments.webhook_handlers.sales_handlers.send_templated_email'): # Mock email sending
+            handle_sales_booking_succeeded(payment_obj, payment_intent_data)
+
+            new_motorcycle.refresh_from_db() # Refresh to get the updated quantity
+            self.assertEqual(new_motorcycle.quantity, initial_quantity - 1)
+            self.assertTrue(new_motorcycle.is_available) # Should still be available if quantity > 0
+            self.assertEqual(new_motorcycle.status, 'for_sale') # Status doesn't change unless quantity hits 0
+
+            sales_booking = SalesBooking.objects.get(stripe_payment_intent_id=payment_obj.stripe_payment_intent_id)
+            self.assertEqual(sales_booking.payment_status, 'deposit_paid')
+
+    def test_handle_sales_booking_succeeded_new_bike_quantity_to_zero(self):
+        # Create a new motorcycle with quantity = 1 and 'new' condition
+        new_motorcycle = MotorcycleFactory(
+            price=Decimal('12000.00'),
+            status='for_sale',
+            is_available=True,
+            quantity=1, # Initial quantity is 1
+            conditions=[self.condition_new] # Assign 'new' condition
+        )
+        initial_quantity = new_motorcycle.quantity
+
+        deposit_amount = Decimal('500.00')
+        temp_booking = TempSalesBookingFactory(
+            motorcycle=new_motorcycle,
+            sales_profile=self.sales_profile,
+            amount_paid=deposit_amount,
+            deposit_required_for_flow=True,
+            booking_status='pending_details'
+        )
+        payment_obj = PaymentFactory(
+            temp_sales_booking=temp_booking,
+            amount=deposit_amount,
+            status='requires_payment_method',
+            stripe_payment_intent_id=temp_booking.stripe_payment_intent_id
+        )
+        payment_intent_data = {
+            'id': payment_obj.stripe_payment_intent_id,
+            'amount_received': int(deposit_amount * 100),
+            'status': 'succeeded',
+            'currency': 'AUD'
+        }
+
+        with mock.patch('payments.webhook_handlers.sales_handlers.send_templated_email'): # Mock email sending
+            handle_sales_booking_succeeded(payment_obj, payment_intent_data)
+
+            new_motorcycle.refresh_from_db() # Refresh to get the updated quantity and status
+            self.assertEqual(new_motorcycle.quantity, 0) # Quantity should be 0
+            self.assertFalse(new_motorcycle.is_available) # Should become unavailable
+            self.assertEqual(new_motorcycle.status, 'sold') # Status should change to 'sold'
+
+            sales_booking = SalesBooking.objects.get(stripe_payment_intent_id=payment_obj.stripe_payment_intent_id)
+            self.assertEqual(sales_booking.payment_status, 'deposit_paid')
+

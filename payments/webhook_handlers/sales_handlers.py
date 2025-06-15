@@ -22,7 +22,6 @@ def handle_sales_booking_succeeded(payment_obj: Payment, payment_intent_data: di
             raise TempSalesBooking.DoesNotExist(f"TempSalesBooking for Payment ID {payment_obj.id} does not exist and no SalesBooking found.")
 
         booking_payment_status = 'unpaid'
-        # If a deposit was required and an amount was paid, mark as deposit_paid
         if temp_booking.deposit_required_for_flow and (Decimal(payment_intent_data['amount_received']) / Decimal('100')) > 0:
             booking_payment_status = 'deposit_paid'
 
@@ -40,15 +39,26 @@ def handle_sales_booking_succeeded(payment_obj: Payment, payment_intent_data: di
 
         if sales_booking.payment_status == 'deposit_paid' and sales_booking.motorcycle:
             motorcycle = sales_booking.motorcycle
-            motorcycle.status = 'reserved'
-            motorcycle.is_available = False 
+            
+            if motorcycle.conditions.filter(name='new').exists():
+                if motorcycle.quantity is not None and motorcycle.quantity > 0:
+                    motorcycle.quantity -= 1
+                    if motorcycle.quantity == 0:
+                        motorcycle.is_available = False
+                        motorcycle.status = 'sold'
+                else:
+                    pass
+            else:
+                motorcycle.status = 'reserved'
+                motorcycle.is_available = False
+            
             motorcycle.save()
 
         email_context = {
             'sales_booking': sales_booking,
             'user': sales_booking.sales_profile.user if sales_booking.sales_profile and sales_booking.sales_profile.user else None,
             'sales_profile': sales_booking.sales_profile,
-            'is_deposit_confirmed': sales_booking.payment_status == 'deposit_paid', # Only true if a deposit was paid
+            'is_deposit_confirmed': sales_booking.payment_status == 'deposit_paid',
         }
 
         user_email = sales_booking.sales_profile.user.email if sales_booking.sales_profile.user else sales_booking.sales_profile.email
