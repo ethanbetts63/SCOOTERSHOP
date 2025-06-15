@@ -7,7 +7,6 @@ from faker import Faker
 
 fake = Faker()
 
-# Import models from inventory app
 from inventory.models import (
     BlockedSalesDate,
     InventorySettings,
@@ -21,16 +20,11 @@ from inventory.models import (
 
 from payments.models import RefundPolicySettings
 
-# Import PAYMENT_STATUS_CHOICES and BOOKING_STATUS_CHOICES directly from the model files
 from inventory.models.temp_sales_booking import PAYMENT_STATUS_CHOICES as TEMP_PAYMENT_STATUS_CHOICES
-from inventory.models.temp_sales_booking import BOOKING_STATUS_CHOICES as TEMP_BOOKING_STATUS_CHOICES # Added this import
+from inventory.models.temp_sales_booking import BOOKING_STATUS_CHOICES as TEMP_BOOKING_STATUS_CHOICES
 from inventory.models.sales_booking import PAYMENT_STATUS_CHOICES as SALES_PAYMENT_STATUS_CHOICES
 from inventory.models.sales_booking import BOOKING_STATUS_CHOICES as SALES_BOOKING_STATUS_CHOICES
 
-
-# Import Payment model from payments app
-# This assumes that the 'payments' app is installed in your Django project
-# and payments.models.Payment is correctly defined.
 from payments.models import Payment
 
 User = get_user_model()
@@ -94,10 +88,11 @@ class MotorcycleFactory(factory.django.DjangoModelFactory):
     model = factory.LazyAttribute(lambda o: fake.word().title())
     year = factory.Faker('year')
     price = factory.LazyFunction(lambda: fake.pydecimal(left_digits=5, right_digits=2, positive=True, min_value=5000))
-    
+    quantity = 1 # Added quantity field with default value
+
     vin_number = factory.Faker('bothify', text='#################')
     engine_number = factory.Faker('bothify', text='######')
-    condition = '' # This is for a single choice field, not the ManyToManyField 'conditions'
+    condition = ''
     
     odometer = factory.Faker('random_int', min=0, max=100000)
     engine_size = factory.Faker('random_int', min=50, max=1800)
@@ -113,7 +108,6 @@ class MotorcycleFactory(factory.django.DjangoModelFactory):
     daily_hire_rate = factory.LazyFunction(lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True, min_value=50, max_value=300))
     hourly_hire_rate = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True, min_value=10, max_value=50))
 
-    # Add the new 'status' field
     status = factory.Faker('random_element', elements=[choice[0] for choice in Motorcycle.STATUS_CHOICES])
 
     @factory.post_generation
@@ -121,17 +115,15 @@ class MotorcycleFactory(factory.django.DjangoModelFactory):
         if not create:
             return
 
-        if extracted is not None:  # Check if 'conditions' was explicitly passed (even if empty list)
-            if extracted: # If it's a non-empty list
+        if extracted is not None:
+            if extracted:
                 for condition_name in extracted:
                     condition, _ = MotorcycleCondition.objects.get_or_create(
                         name=condition_name,
                         defaults={'display_name': condition_name.replace('_', ' ').title()}
                     )
                     obj.conditions.add(condition)
-            # If extracted is an empty list [], do nothing (no default condition added)
         else:
-            # If 'conditions' was not passed at all, add a default 'used' condition
             condition, _ = MotorcycleCondition.objects.get_or_create(
                 name='used',
                 defaults={'display_name': 'Used'}
@@ -171,7 +163,7 @@ class InventorySettingsFactory(factory.django.DjangoModelFactory):
     currency_code = 'AUD'
     currency_symbol = '$'
     terms_and_conditions_text = factory.Faker('paragraph', nb_sentences=3)
-    enable_viewing_for_enquiry = True # Added this field
+    enable_viewing_for_enquiry = True
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
@@ -223,9 +215,8 @@ class TempSalesBookingFactory(factory.django.DjangoModelFactory):
     appointment_time = factory.Faker('time_object')
     
     customer_notes = factory.Faker('paragraph')
-    # Added new fields as per the request
     booking_status = factory.Faker('random_element', elements=[choice[0] for choice in TEMP_BOOKING_STATUS_CHOICES])
-    deposit_required_for_flow = factory.Faker('boolean') # This is correctly on TempSalesBooking
+    deposit_required_for_flow = factory.Faker('boolean')
     request_viewing = factory.Faker('boolean')
 
 

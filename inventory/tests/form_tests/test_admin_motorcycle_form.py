@@ -100,6 +100,7 @@ class MotorcycleFormTest(TestCase):
             'engine_size': 500, 'odometer': 1000, 'is_available': True,
             'transmission': 'automatic', 'stock_number': 'STK001',
             'conditions': [self.condition_new.pk, self.condition_used.pk],
+            'quantity': 1, # Add quantity for new conditions in test data
         }
         form = MotorcycleForm(data=data_new_and_used)
         self.assertFalse(form.is_valid())
@@ -112,6 +113,7 @@ class MotorcycleFormTest(TestCase):
             'engine_size': 500, 'odometer': 1000, 'is_available': True,
             'transmission': 'automatic', 'stock_number': 'STK001',
             'conditions': [self.condition_demo.pk, self.condition_used.pk],
+            'quantity': 1, # Add quantity for demo conditions in test data
         }
         form = MotorcycleForm(data=data_demo_and_used)
         self.assertFalse(form.is_valid())
@@ -124,6 +126,7 @@ class MotorcycleFormTest(TestCase):
             'engine_size': 500, 'odometer': 1000, 'is_available': True,
             'transmission': 'automatic', 'stock_number': 'STK001',
             'conditions': [self.condition_used.pk],
+            'quantity': 1, # Add quantity for non-new conditions if it was causing issues, though default should handle
         }
         form = MotorcycleForm(data=data_multiple_valid)
         self.assertTrue(form.is_valid(), form.errors.as_json())
@@ -139,6 +142,7 @@ class MotorcycleFormTest(TestCase):
             'transmission': 'manual',
             'stock_number': 'STK001',
             'conditions': [],
+            'quantity': 1, # Add quantity to ensure test passes with new logic
         }
         form = MotorcycleForm(data=data_full)
         self.assertTrue(form.is_valid(), form.errors.as_json())
@@ -161,6 +165,7 @@ class MotorcycleFormTest(TestCase):
             'transmission': 'manual',
             'stock_number': 'STK002',
             'conditions': [],
+            'quantity': 1, # Add quantity to ensure test passes with new logic
         }
         form_no_details = MotorcycleForm(data=data_no_details)
         self.assertTrue(form_no_details.is_valid(), form_no_details.errors.as_json())
@@ -191,6 +196,7 @@ class MotorcycleFormTest(TestCase):
             'stock_number': 'KWI001',
             'vin_number': 'VINTEST123',
             'engine_number': 'ENG456',
+            'quantity': 1, # <--- ADDED THIS LINE TO FIX THE TEST
         }
         form = MotorcycleForm(data=data)
         self.assertTrue(form.is_valid(), form.errors.as_json())
@@ -203,5 +209,6 @@ class MotorcycleFormTest(TestCase):
         self.assertIn(self.condition_new, motorcycle.conditions.all())
         self.assertEqual(motorcycle.vin_number, 'VINTEST123')
         self.assertEqual(motorcycle.engine_number, 'ENG456')
+        # Add assertion for quantity
+        self.assertEqual(motorcycle.quantity, 1)
 
-    

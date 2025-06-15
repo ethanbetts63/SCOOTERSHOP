@@ -41,19 +41,9 @@ class MotorcycleForm(forms.ModelForm):
 
 
     def __init__(self, *args, **kwargs):
-        # Extract the instance before calling super().__init__
         instance = kwargs.get('instance')
         super().__init__(*args, **kwargs)
         
-        print(f"DEBUG: MotorcycleForm - __init__ called. Instance received: {instance}")
-        if instance:
-            print(f"DEBUG: MotorcycleForm - Instance attributes: Brand={instance.brand}, Model={instance.model}, Year={instance.year}, Quantity={instance.quantity}")
-            # For ManyToMany fields like 'conditions', they are typically set after the instance
-            # is loaded, which `super().__init__` handles automatically.
-            # You can inspect them after `super().__init__` if needed:
-            # print(f"DEBUG: MotorcycleForm - Instance conditions (after super): {[c.name for c in instance.conditions.all()]}")
-
-
         self.fields['price'].required = False
         self.fields['daily_hire_rate'].required = False
         self.fields['hourly_hire_rate'].required = False
@@ -74,7 +64,6 @@ class MotorcycleForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        print(f"DEBUG: MotorcycleForm - clean() called. Cleaned data before custom validation: {cleaned_data}")
 
         brand = cleaned_data.get('brand')
         model = cleaned_data.get('model')
@@ -116,7 +105,6 @@ class MotorcycleForm(forms.ModelForm):
             if not is_new and (quantity is None or quantity <= 0):
                  cleaned_data['quantity'] = 1
         
-        print(f"DEBUG: MotorcycleForm - clean() finished. Final cleaned data: {cleaned_data}")
         return cleaned_data
 
     def save(self, commit=True):
@@ -138,3 +126,4 @@ class MotorcycleForm(forms.ModelForm):
             instance.save()
             self.save_m2m()
         return instance
+
