@@ -17,7 +17,7 @@ def handle_booking_refunded(payment_obj: Payment, event_object_data: dict):
             extracted_data = extract_stripe_refund_data(event_object_data)
 
             if extracted_data['refunded_amount_decimal'] <= 0 or \
-               (not extracted_data['is_charge_object'] and not extracted_data['is_refund_object']):
+               (not extracted_data['is_charge_object'] and not extracted_data['is_refund_object'] and not extracted_data['is_payment_intent_object']):
                 return
 
             booking_obj, booking_type_str = get_booking_from_payment(payment_obj)
@@ -50,4 +50,3 @@ def handle_booking_refunded(payment_obj: Payment, event_object_data: dict):
 
 def handle_booking_refund_updated(payment_obj: Payment, event_data: dict):
     handle_booking_refunded(payment_obj, event_data)
-
