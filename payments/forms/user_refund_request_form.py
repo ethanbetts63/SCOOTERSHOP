@@ -6,7 +6,6 @@ from hire.models import HireBooking, DriverProfile
 from service.models import ServiceBooking, ServiceProfile
 from inventory.models import SalesBooking, SalesProfile
 from payments.models.RefundRequest import RefundRequest
-from payments.models.PaymentModel import Payment
 
 
 class RefundRequestForm(forms.ModelForm):
