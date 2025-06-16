@@ -4,7 +4,7 @@ import uuid
 from django.contrib.auth import get_user_model
 from decimal import Decimal
 from faker import Faker
-
+from django.utils import timezone
 fake = Faker()
 
 from inventory.models import (
@@ -25,7 +25,7 @@ from inventory.models.temp_sales_booking import BOOKING_STATUS_CHOICES as TEMP_B
 from inventory.models.sales_booking import PAYMENT_STATUS_CHOICES as SALES_PAYMENT_STATUS_CHOICES
 from inventory.models.sales_booking import BOOKING_STATUS_CHOICES as SALES_BOOKING_STATUS_CHOICES
 
-from payments.models import Payment
+from payments.models import Payment, RefundRequest, RefundPolicySettings
 
 User = get_user_model()
 
@@ -279,4 +279,41 @@ class RefundPolicySettingsFactory(factory.django.DjangoModelFactory):
                 setattr(obj, k, v)
             obj.save()
         return obj
+
+class RefundRequestFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RefundRequest
+
+    # Ensure these are set to None if they are truly optional and not always present
+    hire_booking = None
+    service_booking = None
+    sales_booking = None # NEW: Added sales_booking
+    service_profile = None
+    sales_profile = None # NEW: Added sales_profile
+    driver_profile = None
+    
+    payment = factory.SubFactory(PaymentFactory) # Ensure a Payment object is created for the refund
+
+    reason = factory.Faker('paragraph')
+    rejection_reason = None
+    requested_at = factory.LazyFunction(timezone.now)
+    status = factory.Faker('random_element', elements=['unverified', 'pending', 'reviewed_pending_approval', 'approved', 'rejected', 'partially_refunded', 'refunded', 'failed']) # Updated with new statuses
+    amount_to_refund = factory.LazyFunction(lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True))
+    processed_by = None
+    processed_at = None
+    staff_notes = factory.Faker('paragraph')
+    stripe_refund_id = factory.Sequence(lambda n: f"re_{uuid.uuid4().hex[:24]}_{n}")
+    is_admin_initiated = factory.Faker('boolean')
+    refund_calculation_details = factory.LazyFunction(
+        lambda: {
+            'policy_version': '1.0',
+            'refunded_amount': str(fake.pydecimal(left_digits=2, right_digits=2, positive=True)),
+            # You might want to add more specific calculation details here for sales refunds
+            'sales_grace_period_applied': fake.boolean(),
+            'sales_grace_period_hours': fake.random_int(min=12, max=72),
+        }
+    )
+    request_email = factory.Faker('email')
+    verification_token = factory.LazyFunction(uuid.uuid4)
+    token_created_at = factory.LazyFunction(timezone.now)
 
