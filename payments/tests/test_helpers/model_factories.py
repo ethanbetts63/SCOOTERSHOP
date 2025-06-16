@@ -130,6 +130,9 @@ class PaymentFactory(factory.django.DjangoModelFactory):
     temp_service_booking = None
     service_booking = None
     service_customer_profile = None
+    temp_sales_booking = None
+    sales_booking = None
+    sales_customer_profile = None
 
     stripe_payment_intent_id = factory.Sequence(lambda n: f"pi_{uuid.uuid4().hex[:24]}_{n}")
     stripe_payment_method_id = factory.Faker('md5')
@@ -148,7 +151,15 @@ class PaymentFactory(factory.django.DjangoModelFactory):
     description = factory.Faker('sentence')
     # Changed metadata to use factory.LazyFunction(dict) to default to an empty dictionary
     metadata = factory.LazyFunction(dict)
-    refund_policy_snapshot = factory.LazyFunction(lambda: {'policy_version': '1.0', 'deduct_fees': True})
+    
+    # UPDATED: Populate refund_policy_snapshot with sales-specific settings
+    refund_policy_snapshot = factory.LazyFunction(lambda: {
+        'policy_version': '1.0', 
+        'deduct_fees': True, # Keep this general setting
+        'sales_enable_deposit_refund_grace_period': fake.boolean(),
+        'sales_deposit_refund_grace_period_hours': fake.random_int(min=12, max=72),
+        'sales_enable_deposit_refund': fake.boolean(),
+    })
     refunded_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
 
 
@@ -289,15 +300,20 @@ class RefundRequestFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = RefundRequest
 
-    hire_booking = factory.SubFactory(HireBookingFactory)
-    payment = factory.SubFactory(PaymentFactory)
-    driver_profile = factory.SubFactory(DriverProfileFactory)
+    # Ensure these are set to None if they are truly optional and not always present
+    hire_booking = None
+    service_booking = None
+    sales_booking = None # NEW: Added sales_booking
+    service_profile = None
+    sales_profile = None # NEW: Added sales_profile
+    driver_profile = None
+    
+    payment = factory.SubFactory(PaymentFactory) # Ensure a Payment object is created for the refund
 
     reason = factory.Faker('paragraph')
     rejection_reason = None
     requested_at = factory.LazyFunction(timezone.now)
-    status = factory.Faker('random_element', elements=['pending', 'approved', 'rejected', 'processed'])
-    # Corrected field name: 'requested_amount' changed to 'amount_to_refund'
+    status = factory.Faker('random_element', elements=['unverified', 'pending', 'reviewed_pending_approval', 'approved', 'rejected', 'partially_refunded', 'refunded', 'failed']) # Updated with new statuses
     amount_to_refund = factory.LazyFunction(lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True))
     processed_by = None
     processed_at = None
@@ -307,7 +323,10 @@ class RefundRequestFactory(factory.django.DjangoModelFactory):
     refund_calculation_details = factory.LazyFunction(
         lambda: {
             'policy_version': '1.0',
-            'refunded_amount': str(fake.pydecimal(left_digits=2, right_digits=2, positive=True))
+            'refunded_amount': str(fake.pydecimal(left_digits=2, right_digits=2, positive=True)),
+            # You might want to add more specific calculation details here for sales refunds
+            'sales_grace_period_applied': fake.boolean(),
+            'sales_grace_period_hours': fake.random_int(min=12, max=72),
         }
     )
     request_email = factory.Faker('email')
@@ -523,6 +542,11 @@ class RefundPolicySettingsFactory(factory.django.DjangoModelFactory):
     cancellation_deposit_partial_refund_percentage = factory.LazyFunction(lambda: Decimal(fake.random_element([25.00, 50.00, 75.00])))
     cancellation_deposit_minimal_refund_days = factory.Faker('random_int', min=0, max=1)
     cancellation_deposit_minimal_refund_percentage = factory.LazyFunction(lambda: Decimal(fake.random_element([0.00, 10.00, 20.00])))
+
+    # Inventory app refund settings - These are the fields that are now snapshotted
+    sales_enable_deposit_refund_grace_period = factory.Faker('boolean')
+    sales_deposit_refund_grace_period_hours = factory.Faker('random_int', min=12, max=72)
+    sales_enable_deposit_refund = factory.Faker('boolean')
 
     # Stripe Fee Settings
     refund_deducts_stripe_fee_policy = factory.Faker('boolean')

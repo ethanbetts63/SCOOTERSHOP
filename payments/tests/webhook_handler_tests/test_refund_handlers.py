@@ -11,8 +11,8 @@ from payments.webhook_handlers.refund_handlers import handle_booking_refunded, h
 
 # Import factories
 from payments.tests.test_helpers.model_factories import (
-    PaymentFactory, HireBookingFactory, ServiceBookingFactory,
-    RefundRequestFactory, UserFactory, DriverProfileFactory,
+    PaymentFactory, HireBookingFactory, ServiceBookingFactory, SalesBookingFactory, # Added SalesBookingFactory
+    RefundRequestFactory, UserFactory, DriverProfileFactory, SalesProfileFactory, # Added SalesProfileFactory
     ServiceProfileFactory, MotorcycleFactory, ServiceTypeFactory, CustomerMotorcycleFactory
 )
 
@@ -38,28 +38,48 @@ class RefundHandlersTests(TestCase):
         self.user = UserFactory()
         self.driver_profile = DriverProfileFactory(user=self.user)
         self.motorcycle = MotorcycleFactory()
-        self.payment = PaymentFactory(amount=Decimal('100.00'), refunded_amount=Decimal('0.00'))
-        self.hire_booking = HireBookingFactory(payment=self.payment, driver_profile=self.driver_profile, motorcycle=self.motorcycle)
         
+        # Payment object, initially not linked to any specific booking
+        self.payment = PaymentFactory(amount=Decimal('100.00'), refunded_amount=Decimal('0.00')) 
+
+        # Hire Booking setup
+        self.hire_booking = HireBookingFactory(
+            payment=self.payment, # Link the payment to the hire booking
+            driver_profile=self.driver_profile, 
+            motorcycle=self.motorcycle
+        )
+        
+        # Service Booking setup
         self.service_profile = ServiceProfileFactory(user=self.user)
         self.customer_motorcycle = CustomerMotorcycleFactory(service_profile=self.service_profile)
         self.service_type = ServiceTypeFactory()
         self.service_booking = ServiceBookingFactory(
-            payment=self.payment, 
+            payment=self.payment, # Link the payment to the service booking
             service_profile=self.service_profile, 
             customer_motorcycle=self.customer_motorcycle, 
             service_type=self.service_type
         )
+
+        # Sales Booking setup
+        self.sales_profile = SalesProfileFactory(user=self.user)
+        self.sales_booking = SalesBookingFactory(
+            payment=self.payment, # Link the payment to the sales booking
+            sales_profile=self.sales_profile,
+            motorcycle=self.motorcycle
+        )
         
         self.refund_request = RefundRequestFactory() # A generic refund request instance
 
+        # Default mock return value for extract_stripe_refund_data
         self.mock_extract_stripe_refund_data.return_value = {
             'refunded_amount_decimal': Decimal('50.00'),
             'is_charge_object': True,
             'is_refund_object': False,
+            'is_payment_intent_object': False, # FIX: Added the missing key
             'refund_id': 're_test_id',
             'charge_id': 'ch_test_id',
         }
+        # Default booking type for tests that don't specify
         self.mock_get_booking_from_payment.return_value = (self.hire_booking, 'hire')
         self.mock_process_refund_request_entry.return_value = self.refund_request
 
@@ -71,7 +91,7 @@ class RefundHandlersTests(TestCase):
 
     def test_handle_booking_refunded_full_flow(self):
         """
-        Tests the full flow of handle_booking_refunded for a valid refund.
+        Tests the full flow of handle_booking_refunded for a valid refund (Hire Booking).
         """
         event_data = {'id': 'evt_test', 'object': 'event'}
 
@@ -81,7 +101,7 @@ class RefundHandlersTests(TestCase):
             
             handle_booking_refunded(self.payment, event_data)
 
-            mock_atomic.assert_called_once() # Now asserts only calls within this context
+            mock_atomic.assert_called_once()
             self.mock_extract_stripe_refund_data.assert_called_once_with(event_data)
             self.mock_get_booking_from_payment.assert_called_once_with(self.payment)
             self.mock_update_associated_bookings_and_payments.assert_called_once_with(
@@ -124,12 +144,13 @@ class RefundHandlersTests(TestCase):
             self.mock_send_refund_notifications.assert_not_called()
             mock_atomic.assert_called_once() # atomic() context is still entered
 
-    def test_handle_booking_refunded_not_charge_or_refund_object(self):
+    def test_handle_booking_refunded_not_charge_or_refund_or_payment_intent_object(self):
         """
-        Tests that handle_booking_refunded returns early if not a charge or refund object.
+        Tests that handle_booking_refunded returns early if not a charge, refund, or payment intent object.
         """
         self.mock_extract_stripe_refund_data.return_value['is_charge_object'] = False
         self.mock_extract_stripe_refund_data.return_value['is_refund_object'] = False
+        self.mock_extract_stripe_refund_data.return_value['is_payment_intent_object'] = False # Ensure this is also False
         event_data = {'id': 'evt_test', 'object': 'event'}
 
         with patch('django.db.transaction.atomic') as mock_atomic:
@@ -174,8 +195,12 @@ class RefundHandlersTests(TestCase):
 
     def test_handle_booking_refunded_with_service_booking(self):
         """
-        Tests the flow with a service booking.
+        Tests the full flow of handle_booking_refunded for a valid refund (Service Booking).
         """
+        # Ensure the payment object is linked to the service booking for this test context
+        self.payment.service_booking = self.service_booking
+        self.payment.save()
+
         self.mock_get_booking_from_payment.return_value = (self.service_booking, 'service')
         event_data = {'id': 'evt_test_service', 'object': 'event'}
 
@@ -184,7 +209,7 @@ class RefundHandlersTests(TestCase):
 
             handle_booking_refunded(self.payment, event_data)
 
-            mock_atomic.assert_called_once() # Now asserts only calls within this context
+            mock_atomic.assert_called_once()
             self.mock_extract_stripe_refund_data.assert_called_once_with(event_data)
             self.mock_get_booking_from_payment.assert_called_once_with(self.payment)
             self.mock_update_associated_bookings_and_payments.assert_called_once_with(
@@ -206,3 +231,43 @@ class RefundHandlersTests(TestCase):
                 self.refund_request,
                 self.mock_extract_stripe_refund_data.return_value
             )
+
+    def test_handle_booking_refunded_with_sales_booking(self):
+        """
+        Tests the full flow of handle_booking_refunded for a valid refund (Sales Booking).
+        """
+        # Ensure the payment object is linked to the sales booking for this test context
+        self.payment.sales_booking = self.sales_booking
+        self.payment.save()
+
+        self.mock_get_booking_from_payment.return_value = (self.sales_booking, 'sales')
+        event_data = {'id': 'evt_test_sales', 'object': 'event'}
+
+        with patch('django.db.transaction.atomic') as mock_atomic:
+            mock_atomic.return_value.__enter__.return_value = MagicMock()
+
+            handle_booking_refunded(self.payment, event_data)
+
+            mock_atomic.assert_called_once()
+            self.mock_extract_stripe_refund_data.assert_called_once_with(event_data)
+            self.mock_get_booking_from_payment.assert_called_once_with(self.payment)
+            self.mock_update_associated_bookings_and_payments.assert_called_once_with(
+                self.payment,
+                self.sales_booking,
+                'sales',
+                Decimal('50.00')
+            )
+            self.mock_process_refund_request_entry.assert_called_once_with(
+                self.payment,
+                self.sales_booking,
+                'sales',
+                self.mock_extract_stripe_refund_data.return_value
+            )
+            self.mock_send_refund_notifications.assert_called_once_with(
+                self.payment,
+                self.sales_booking,
+                'sales',
+                self.refund_request,
+                self.mock_extract_stripe_refund_data.return_value
+            )
+
