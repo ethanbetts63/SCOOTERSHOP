@@ -14,6 +14,7 @@ class RefundSettingsFormTests(TestCase):
     def _get_valid_form_data(self):
         """
         Returns a dictionary representing a valid set of form data for RefundPolicySettings.
+        Includes the new sales refund settings.
         """
         return {
             'cancellation_full_payment_full_refund_days': 7,
@@ -26,6 +27,12 @@ class RefundSettingsFormTests(TestCase):
             'cancellation_deposit_partial_refund_percentage': Decimal('50.00'),
             'cancellation_deposit_minimal_refund_days': 1,
             'cancellation_deposit_minimal_refund_percentage': Decimal('0.00'),
+            
+            # NEW: Sales Refund Settings
+            'sales_enable_deposit_refund_grace_period': True,
+            'sales_deposit_refund_grace_period_hours': 48, # Example value
+            'sales_enable_deposit_refund': True,
+
             'refund_deducts_stripe_fee_policy': True,
             'stripe_fee_percentage_domestic': Decimal('0.0170'),
             'stripe_fee_fixed_domestic': Decimal('0.30'),
@@ -39,8 +46,6 @@ class RefundSettingsFormTests(TestCase):
         as it's designed to be a singleton.
         """
         # Ensure only one instance exists, or create it if none.
-        # Use get_or_create to avoid errors if a previous test left an instance.
-        # Ensure PK is 1 for the singleton pattern
         self.refund_settings, created = RefundPolicySettings.objects.get_or_create(pk=1, defaults=self._get_valid_form_data())
         # If it was just created, save it to ensure the save logic (including full_clean) runs
         if created:
@@ -48,7 +53,7 @@ class RefundSettingsFormTests(TestCase):
 
     def test_form_valid_data(self):
         """
-        Test that the form is valid with correct data.
+        Test that the form is valid with correct data, including new sales settings.
         """
         data = self._get_valid_form_data()
         data.update({
@@ -67,6 +72,10 @@ class RefundSettingsFormTests(TestCase):
             'stripe_fee_fixed_domestic': Decimal('0.40'),
             'stripe_fee_percentage_international': Decimal('0.0360'),
             'stripe_fee_fixed_international': Decimal('0.40'),
+            # Update new sales settings
+            'sales_enable_deposit_refund_grace_period': False,
+            'sales_deposit_refund_grace_period_hours': 72,
+            'sales_enable_deposit_refund': False,
         })
         form = RefundSettingsForm(instance=self.refund_settings, data=data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
@@ -77,6 +86,11 @@ class RefundSettingsFormTests(TestCase):
         self.assertEqual(updated_settings.cancellation_full_payment_partial_refund_percentage, Decimal('75.00'))
         self.assertFalse(updated_settings.refund_deducts_stripe_fee_policy)
         self.assertEqual(updated_settings.stripe_fee_percentage_domestic, Decimal('0.0180'))
+        # Assert new sales settings
+        self.assertFalse(updated_settings.sales_enable_deposit_refund_grace_period)
+        self.assertEqual(updated_settings.sales_deposit_refund_grace_period_hours, 72)
+        self.assertFalse(updated_settings.sales_enable_deposit_refund)
+
         self.assertEqual(RefundPolicySettings.objects.count(), 1) # Ensure still only one instance
 
     def test_form_invalid_percentage_fields(self):
@@ -202,11 +216,39 @@ class RefundSettingsFormTests(TestCase):
     def test_form_initial_data_for_existing_instance(self):
         """
         Test that the form correctly loads initial data when an instance is provided.
+        Includes new sales settings.
         """
         initial_percentage = Decimal('45.00')
+        initial_grace_hours = 36
+        initial_enable_refund = False
+
         self.refund_settings.cancellation_full_payment_partial_refund_percentage = initial_percentage
+        self.refund_settings.sales_deposit_refund_grace_period_hours = initial_grace_hours
+        self.refund_settings.sales_enable_deposit_refund = initial_enable_refund
         self.refund_settings.save()
 
         form = RefundSettingsForm(instance=self.refund_settings)
         self.assertEqual(form.initial['cancellation_full_payment_partial_refund_percentage'], initial_percentage)
+        self.assertEqual(form.initial['sales_deposit_refund_grace_period_hours'], initial_grace_hours)
+        self.assertEqual(form.initial['sales_enable_deposit_refund'], initial_enable_refund)
 
+    def test_sales_refund_settings_validation(self):
+        """
+        Test validation for the new sales refund settings.
+        """
+        # Test valid data
+        data = self._get_valid_form_data()
+        data['sales_enable_deposit_refund_grace_period'] = True
+        data['sales_deposit_refund_grace_period_hours'] = 24
+        data['sales_enable_deposit_refund'] = True
+        form = RefundSettingsForm(instance=self.refund_settings, data=data)
+        self.assertTrue(form.is_valid(), f"Form unexpectedly invalid for valid sales settings: {form.errors}")
+
+        # Test invalid grace period hours (e.g., negative)
+        data_invalid_hours = self._get_valid_form_data()
+        data_invalid_hours['sales_deposit_refund_grace_period_hours'] = -10
+        form_invalid_hours = RefundSettingsForm(instance=self.refund_settings, data=data_invalid_hours)
+        self.assertFalse(form_invalid_hours.is_valid())
+        self.assertIn('sales_deposit_refund_grace_period_hours', form_invalid_hours.errors)
+        # FIX: Corrected expected error message to match the custom validation in the model
+        self.assertIn('Sales deposit refund grace period hours cannot be negative.', form_invalid_hours.errors['sales_deposit_refund_grace_period_hours'][0])

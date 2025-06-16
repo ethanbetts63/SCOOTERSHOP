@@ -84,7 +84,7 @@ class RefundPolicySettings(models.Model):
     )
     stripe_fee_fixed_domestic = models.DecimalField(
         max_digits=5, decimal_places=2, default=Decimal('0.30'),
-        help_text="Stripe's fixed fee per transaction for domestic cards (e.g., 0.30 for A$0.30)."
+        help_text="Stripe's fixed fee per transaction for domestic cards (e.30 for A$0.30)."
     )
     stripe_fee_percentage_international = models.DecimalField(
         max_digits=5, decimal_places=4, default=Decimal('0.0350'),
@@ -92,7 +92,7 @@ class RefundPolicySettings(models.Model):
     )
     stripe_fee_fixed_international = models.DecimalField(
         max_digits=5, decimal_places=2, default=Decimal('0.30'),
-        help_text="Stripe's fixed fee per transaction for international cards (e.g., 0.30 for A$0.30)."
+        help_text="Stripe's fixed fee per transaction for international cards (e.30 for A$0.30)."
     )
 
     def __str__(self):
@@ -139,6 +139,11 @@ class RefundPolicySettings(models.Model):
             errors['cancellation_deposit_full_refund_days'] = ["Full deposit refund days must be greater than or equal to partial deposit refund days."]
         if partial_days_deposit is not None and minimal_days_deposit is not None and partial_days_deposit < minimal_days_deposit:
             errors['cancellation_deposit_partial_refund_days'] = ["Partial deposit refund days must be greater than or equal to minimal deposit refund days."]
+
+        # NEW: Validate sales_deposit_refund_grace_period_hours
+        if self.sales_deposit_refund_grace_period_hours is not None and self.sales_deposit_refund_grace_period_hours < 0:
+            errors['sales_deposit_refund_grace_period_hours'] = ["Sales deposit refund grace period hours cannot be negative."]
+
 
         if errors:
             raise ValidationError(errors)
