@@ -49,6 +49,7 @@ urlpatterns = [
     # Motorcycle Details View for Users
     path('motorcycles/<int:pk>/', user_motorcycle_details_view.UserMotorcycleDetailsView.as_view(), name='motorcycle-detail'),
     # User Flow
+    path('motorcycles/<int:pk>/initiate_booking/', initiate_sales_booking_process_view.InitiateBookingProcessView.as_view(), name='initiate_booking'),
     path('booking/your-details/', step1_sales_profile.Step1SalesProfileView.as_view(), name='step1_sales_profile'),
     path('booking/details-and-appointment/', step2_booking_details.Step2BookingDetailsView.as_view(), name='step2_booking_details_and_appointment'),
     path('booking/payment/', step3_payment_view.Step3PaymentView.as_view(), name='step3_payment'),
