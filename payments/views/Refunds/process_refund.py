@@ -88,8 +88,6 @@ class ProcessRefundView(View):
             refund_request.save()
             return redirect(admin_management_redirect_url)
         except Exception as e:
-            import traceback
-            traceback.print_exc()
             error_message = f"An unexpected error occurred: {e}"
             messages.error(request, error_message)
             refund_request.status = 'failed'
