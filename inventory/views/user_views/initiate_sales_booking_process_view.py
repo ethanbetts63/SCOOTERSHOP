@@ -37,5 +37,7 @@ class InitiateBookingProcessView(View):
             temp_booking.save()
 
         request.session['temp_sales_booking_uuid'] = str(temp_booking.session_uuid)
+        if 'current_sales_booking_reference' in request.session:
+            del request.session['current_sales_booking_reference'] # <-- ADD THIS LINE
 
         return redirect(reverse('inventory:step1_sales_profile'))
