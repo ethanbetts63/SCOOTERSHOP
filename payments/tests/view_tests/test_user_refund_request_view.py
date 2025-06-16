@@ -15,7 +15,7 @@ from payments.models import RefundRequest
 from payments.tests.test_helpers.model_factories import (
     HireBookingFactory, ServiceBookingFactory, SalesBookingFactory,
     UserFactory, DriverProfileFactory, ServiceProfileFactory, SalesProfileFactory,
-    PaymentFactory
+    PaymentFactory, ServiceTypeFactory # Assuming ServiceBookingFactory needs ServiceType
 )
 
 class UserRefundRequestViewTests(TestCase):
@@ -32,14 +32,19 @@ class UserRefundRequestViewTests(TestCase):
         """
         cls.client = Client()
 
+        # Create sample ServiceType and other dependencies that might be required by factories
+        # Ensure that ServiceBookingFactory can create instances without errors.
+        # If ServiceBookingFactory depends on ServiceType, ensure it exists.
+        cls.service_type = ServiceTypeFactory()
+
+
         # Create sample bookings with unique references and associated profiles
         # Hire Booking
         cls.hire_user = UserFactory(email='hire_customer@example.com')
         cls.driver_profile = DriverProfileFactory(user=cls.hire_user)
         cls.hire_booking = HireBookingFactory(
             booking_reference="HIREBOOK123",
-            # REMOVED 'customer_email' here as HireBooking model does not have this field
-            driver_profile=cls.driver_profile, # Ensure this is correctly linked
+            driver_profile=cls.driver_profile, # Correctly linked
             payment=PaymentFactory()
         )
 
@@ -48,9 +53,9 @@ class UserRefundRequestViewTests(TestCase):
         cls.service_profile = ServiceProfileFactory(user=cls.service_user)
         cls.service_booking = ServiceBookingFactory(
             service_booking_reference="SERVBOOK456",
-            # REMOVED 'customer_email' here as ServiceBooking model does not have this field
-            service_profile=cls.service_profile, # Ensure this is correctly linked
-            payment=PaymentFactory()
+            service_profile=cls.service_profile, # Correctly linked
+            payment=PaymentFactory(),
+            service_type=cls.service_type, # Ensure service_type is provided if required by factory
         )
 
         # Sales Booking
@@ -59,7 +64,7 @@ class UserRefundRequestViewTests(TestCase):
         cls.sales_booking = SalesBookingFactory(
             sales_booking_reference="SALESBOOK789",
             payment=PaymentFactory(),
-            sales_profile=cls.sales_profile, # Ensure this is correctly linked
+            sales_profile=cls.sales_profile, # Correctly linked
         )
 
         # A booking with a non-matching email (for invalid form submission tests)
@@ -67,7 +72,6 @@ class UserRefundRequestViewTests(TestCase):
         cls.mismatch_driver_profile = DriverProfileFactory(user=cls.mismatch_user)
         cls.hire_booking_mismatch_email = HireBookingFactory(
             booking_reference="MISMATCH000",
-            # REMOVED 'customer_email' here
             driver_profile=cls.mismatch_driver_profile, # Link to the profile with the 'actual_customer@example.com'
             payment=PaymentFactory()
         )
@@ -242,8 +246,8 @@ class UserRefundRequestViewTests(TestCase):
         self.assertTemplateUsed(response, 'payments/user_refund_request.html')
         self.assertIn('form', response.context)
         self.assertFalse(response.context['form'].is_valid())
-        # The form's clean method combines booking_reference and email validation
-        self.assertIn('No booking found with this reference and email.', response.context['form'].errors['booking_reference'][0])
+        # Corrected: Access non_field_errors as this is likely a form-wide error
+        self.assertIn('No booking found with this reference and email.', response.context['form'].non_field_errors()[0])
         self.assertEqual(RefundRequest.objects.count(), 0) # No object created
 
     def test_post_request_invalid_form_email_mismatch(self):
@@ -263,7 +267,8 @@ class UserRefundRequestViewTests(TestCase):
         self.assertTemplateUsed(response, 'payments/user_refund_request.html')
         self.assertIn('form', response.context)
         self.assertFalse(response.context['form'].is_valid())
-        self.assertIn('No booking found with this reference and email.', response.context['form'].errors['booking_reference'][0])
+        # Corrected: Access non_field_errors as this is likely a form-wide error
+        self.assertIn('No booking found with this reference and email.', response.context['form'].non_field_errors()[0])
         self.assertEqual(RefundRequest.objects.count(), 0) # No object created
 
     @patch('payments.views.Refunds.user_refund_request_view.send_templated_email')
@@ -277,12 +282,13 @@ class UserRefundRequestViewTests(TestCase):
             'reason': 'Test 1',
         }
         # Create a new service booking for the second request to ensure isolation and a different token
+        # Ensure that ServiceType is provided if ServiceBookingFactory needs it.
         service_user_2 = UserFactory(email='service_customer_2@example.com')
         service_profile_2 = ServiceProfileFactory(user=service_user_2)
         service_booking_2 = ServiceBookingFactory(
             service_booking_reference="SERVBOOKXYZ",
-            customer_email='service_customer_2@example.com',
-            service_profile=service_profile_2,
+            service_profile=service_profile_2, # Corrected: link to profile
+            service_type=self.service_type, # Provide service_type
             payment=PaymentFactory()
         )
         form_data_2 = {
