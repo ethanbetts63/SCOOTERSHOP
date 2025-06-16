@@ -70,7 +70,7 @@ class ProcessRefundViewTests(TestCase):
             service_booking=None,
             sales_booking=None,
             payment=hire_booking.payment,
-            status='pending', # Changed to 'pending' to allow processing
+            status='pending', # Ensure this is an approvable status
             amount_to_refund=Decimal('250.00'),
             stripe_refund_id=None,
             processed_by=None,
@@ -295,7 +295,7 @@ class ProcessRefundViewTests(TestCase):
         Tests that a refund request with invalid/zero amount_to_refund is rejected.
         """
         refund_request = RefundRequestFactory(
-            status='approved', # Use an approvable status to hit this check
+            status='pending', # Changed to 'pending' to allow this test to proceed
             amount_to_refund=Decimal('0.00'), # Invalid amount
             payment=PaymentFactory(stripe_payment_intent_id='pi_test')
         )
@@ -311,7 +311,8 @@ class ProcessRefundViewTests(TestCase):
         self.assertEqual(messages_list[0].tags, 'error')
 
         refund_request.refresh_from_db()
-        self.assertEqual(refund_request.status, 'approved') # Status should not change
+        # Status should remain 'pending' as it's a validation error before Stripe call
+        self.assertEqual(refund_request.status, 'pending') 
 
 
     @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
@@ -320,7 +321,7 @@ class ProcessRefundViewTests(TestCase):
         Tests that a refund request with no Stripe Payment Intent ID is rejected.
         """
         refund_request = RefundRequestFactory(
-            status='approved', # Use an approvable status to hit this check
+            status='pending', # Changed to 'pending' to allow this test to proceed
             amount_to_refund=Decimal('50.00'),
             payment=PaymentFactory(stripe_payment_intent_id=None) # No Stripe Intent ID
         )
@@ -336,7 +337,8 @@ class ProcessRefundViewTests(TestCase):
         self.assertEqual(messages_list[0].tags, 'error')
 
         refund_request.refresh_from_db()
-        self.assertEqual(refund_request.status, 'approved') # Status should not change
+        # Status should remain 'pending' as it's a validation error before Stripe call
+        self.assertEqual(refund_request.status, 'pending')
 
 
     @patch('payments.views.Refunds.process_refund.stripe.Refund.create')
