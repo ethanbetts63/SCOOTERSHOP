@@ -7,11 +7,9 @@ import stripe
 from inventory.models import Motorcycle
 from .driver_profile import DriverProfile
 from dashboard.models import HireSettings
-# Import the Payment model from the payments app
 from payments.models import Payment
 
 
-# Choices for booking status
 STATUS_CHOICES = [
     ('pending', 'Pending'),
     ('confirmed', 'Confirmed'),
@@ -21,8 +19,6 @@ STATUS_CHOICES = [
     ('no_show', 'No Show'),
 ]
 
-# Choices for payment status
-# note for later: does this not need a partial refund status? 
 PAYMENT_STATUS_CHOICES = [
     ('unpaid', 'Unpaid'),
     ('deposit_paid', 'Deposit Paid'),
@@ -30,7 +26,6 @@ PAYMENT_STATUS_CHOICES = [
     ('refunded', 'Refunded'),
 ]
 
-# Choices for payment method
 PAYMENT_METHOD_CHOICES = [
     ('online_full', 'Full Payment Online'),
     ('online_deposit', 'Deposit Payment Online'),
@@ -38,7 +33,6 @@ PAYMENT_METHOD_CHOICES = [
 ]
 
 class HireBooking(models.Model):
-    # Relationships
     motorcycle = models.ForeignKey(
         Motorcycle,
         on_delete=models.CASCADE,
@@ -51,52 +45,43 @@ class HireBooking(models.Model):
         related_name='hire_bookings'
     )
     package = models.ForeignKey(
-        'Package', # Using string literal as Package is in another file
+        'Package',
         on_delete=models.SET_NULL,
         related_name='hire_bookings',
         null=True, blank=True
     )
 
-    # Add a OneToOneField to the Payment model for robust linking
-    # This ensures that each HireBooking corresponds to exactly one Payment record
-    # and makes it easy to retrieve the HireBooking from a Payment Intent ID.
     payment = models.OneToOneField(
         Payment,
-        on_delete=models.SET_NULL, # If payment record is deleted, don't delete booking
-        related_name='related_hire_booking_payment', # CHANGED: Renamed related_name to avoid clash
-        null=True, blank=True, # Allow null initially, will be set upon successful payment
+        on_delete=models.SET_NULL,
+        related_name='related_hire_booking_payment',
+        null=True, blank=True,
         help_text="Link to the associated payment record."
     )
 
-    # Add a field to store the Stripe Payment Intent ID directly
     stripe_payment_intent_id = models.CharField(
         max_length=100,
-        unique=True, # Ensure uniqueness for this ID
+        unique=True,
         blank=True,
         null=True,
         help_text="The ID of the Stripe Payment Intent associated with this booking."
     )
 
-    # Add-ons through intermediate model
     add_ons = models.ManyToManyField(
-        'AddOn', # Using string literal as AddOn is in another file
+        'AddOn',
         through='BookingAddOn',
         related_name='hire_bookings',
         blank=True
     )
 
-    # Booking Dates and Times
     pickup_date = models.DateField(help_text="Pickup date")
     pickup_time = models.TimeField(help_text="Pickup time")
     return_date = models.DateField(help_text="Return date")
     return_time = models.TimeField(help_text="Return time")
 
-    # Identifiers and Flags
     booking_reference = models.CharField(max_length=20, unique=True, blank=True, null=True)
-    # Indicates if booking requires international documentation/considerations
     is_international_booking = models.BooleanField(default=False)
 
-    # Financial Details
     booked_hourly_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     booked_daily_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     total_hire_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -108,24 +93,20 @@ class HireBooking(models.Model):
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='unpaid')
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, null=True, blank=True, help_text="Method by which the payment was made.")
 
-    # Currency of the booking (NEW FIELD)
     currency = models.CharField(
         max_length=3,
         default='AUD',
         help_text="The three-letter ISO currency code for the booking."
     )
 
-    # Status and Notes
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     customer_notes = models.TextField(blank=True, null=True)
     internal_notes = models.TextField(blank=True, null=True)
 
-    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        # Generate booking reference if not provided
         if not self.booking_reference:
             self.booking_reference = f"HIRE-{uuid.uuid4().hex[:8].upper()}"
         super().save(*args, **kwargs)
@@ -134,15 +115,11 @@ class HireBooking(models.Model):
         return f"Hire: {self.motorcycle} ({self.pickup_date} to {self.return_date}) - {self.status}"
 
     def clean(self):
-        """
-        Custom validation for HireBooking data.
-        """
         super().clean()
 
         errors = {}
         now = timezone.now()
 
-        # --- Date and Time Validation ---
         pickup_datetime = None
         return_datetime = None
 
@@ -158,7 +135,6 @@ class HireBooking(models.Model):
                 errors['return_time'] = "Return date and time must be after pickup date and time."
 
         if pickup_datetime:
-            # Check booking lead time against settings
             try:
                 settings = HireSettings.objects.first()
                 if settings and settings.booking_lead_time_hours is not None:
@@ -169,11 +145,9 @@ class HireBooking(models.Model):
             except HireSettings.DoesNotExist:
                 pass
             except Exception as e:
-                print(f"Error checking booking lead time: {e}")
                 pass
 
 
-        # --- Financial Validation ---
         if self.grand_total is not None and self.grand_total < 0:
             errors['grand_total'] = "Grand total cannot be negative."
         if self.total_hire_price is not None and self.total_hire_price < 0:
@@ -187,7 +161,6 @@ class HireBooking(models.Model):
         if self.amount_paid is not None and self.amount_paid < 0:
             errors['amount_paid'] = "Amount paid cannot be negative."
 
-        # Consistency between payment status and amount paid
         if self.payment_status == 'paid' and self.amount_paid != self.grand_total:
             errors['amount_paid'] = "Amount paid must equal grand total when payment status is 'Paid'."
         if self.payment_status == 'deposit_paid':
@@ -198,24 +171,19 @@ class HireBooking(models.Model):
         if self.payment_status == 'unpaid' and self.amount_paid > 0:
             pass
 
-        # Booked rates non-negative
         if self.booked_daily_rate is not None and self.booked_daily_rate < 0:
             errors['booked_daily_rate'] = "Booked daily rate cannot be negative."
         if self.booked_hourly_rate is not None and self.booked_hourly_rate < 0:
             errors['booked_hourly_rate'] = "Booked hourly rate cannot be negative."
 
 
-        # --- Relationship Consistency ---
-        # Check package availability if a package is selected
         if self.package and not self.package.is_available:
             errors['package'] = f"The selected package '{self.package.name}' is currently not available."
 
-        # Consistency between is_international_booking and driver residency
         if self.is_international_booking and self.driver_profile and self.driver_profile.is_australian_resident:
             errors['is_international_booking'] = "Cannot mark as international booking if the driver is an Australian resident."
 
 
-        # --- Raise Errors ---
         if errors:
             raise ValidationError(errors)
 
@@ -223,4 +191,3 @@ class HireBooking(models.Model):
         ordering = ['pickup_date', 'pickup_time', 'motorcycle']
         verbose_name = "Hire Booking"
         verbose_name_plural = "Hire Bookings"
-

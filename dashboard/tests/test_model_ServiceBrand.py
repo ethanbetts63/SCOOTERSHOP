@@ -4,9 +4,7 @@ from django.db import IntegrityError
 from io import BytesIO
 from PIL import Image
 from django.db import connection
-
 from dashboard.models import ServiceBrand
-
 
 class ServiceBrandModelTest(TestCase):
 
@@ -23,14 +21,12 @@ class ServiceBrandModelTest(TestCase):
                                  image_file.read(),
                                  content_type=f'image/{format.lower()}')
 
-    # Test creating a basic service brand
     def test_create_service_brand(self):
         brand = ServiceBrand.objects.create(name="Test Brand")
         self.assertEqual(brand.name, "Test Brand")
         self.assertFalse(brand.is_primary)
         self.assertIsNone(brand.image.name)
 
-    # Test creating a primary brand with an image
     def test_create_primary_brand_with_image(self):
         brand = ServiceBrand.objects.create(
             name="Primary Brand",
@@ -42,7 +38,6 @@ class ServiceBrandModelTest(TestCase):
         self.assertNotEqual(brand.image.name, '')
         brand.image.delete()
 
-    # Test that we cannot have more than 5 primary brands
     def test_max_primary_brands_limit(self):
         for i in range(5):
             ServiceBrand.objects.create(
@@ -60,7 +55,6 @@ class ServiceBrandModelTest(TestCase):
                 image=self._create_test_image()
             )
 
-    # Test updating a non-primary brand to primary when limit is reached
     def test_update_to_primary_exceeding_limit(self):
         for i in range(5):
             ServiceBrand.objects.create(
@@ -80,7 +74,6 @@ class ServiceBrandModelTest(TestCase):
         with self.assertRaises(ValueError):
             non_primary.save()
 
-    # Test updating an existing primary brand (shouldn't count against the limit)
     def test_update_existing_primary_brand(self):
         brands = []
         for i in range(5):
@@ -97,7 +90,6 @@ class ServiceBrandModelTest(TestCase):
         updated_brand = ServiceBrand.objects.get(pk=brands[0].pk)
         self.assertEqual(updated_brand.name, "Updated Primary Brand")
 
-    # Test that brand names must be unique
     def test_unique_name_constraint(self):
         from django.db import transaction
 
@@ -107,7 +99,6 @@ class ServiceBrandModelTest(TestCase):
             with transaction.atomic():
                 ServiceBrand.objects.create(name="Unique Brand")
 
-    # Test that brand names cannot exceed the maximum length
     def test_name_max_length(self):
         from django.core.exceptions import ValidationError
 
@@ -115,12 +106,10 @@ class ServiceBrandModelTest(TestCase):
         with self.assertRaises(ValidationError):
             brand.full_clean()
 
-    # Test the string representation of the model
     def test_string_representation(self):
         brand = ServiceBrand.objects.create(name="String Rep Test")
         self.assertEqual(str(brand), "String Rep Test")
 
-    # Test that last_updated is automatically set
     def test_last_updated_auto_now(self):
         brand = ServiceBrand.objects.create(name="Auto Now Test")
         self.assertIsNotNone(brand.last_updated)
@@ -132,4 +121,4 @@ class ServiceBrandModelTest(TestCase):
                     brand.image.delete(save=False)
             ServiceBrand.objects.all().delete()
         except Exception as e:
-            print(f"Error in tearDown: {e}")
+            pass

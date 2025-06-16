@@ -51,14 +51,12 @@ class ServiceBrandManagementViewTest(TestCase):
         self.management_url = reverse('dashboard:service_brands_management')
 
 
-    # Test that view requires login.
     def test_view_requires_login(self):
         response = self.client.get(self.management_url)
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse('users:login'), response.url)
 
 
-    # Test that view requires staff status.
     def test_view_requires_staff_access(self):
         self.client.login(username='regularuser', password='password123')
         response = self.client.get(self.management_url)
@@ -66,7 +64,6 @@ class ServiceBrandManagementViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
 
 
-    # Test GET request for management view as staff user.
     def test_get_management_view_as_staff(self):
         self.client.login(username='staffuser', password='password123')
         response = self.client.get(self.management_url)
@@ -80,7 +77,6 @@ class ServiceBrandManagementViewTest(TestCase):
 
         self.assertTemplateUsed(response, 'dashboard/service_brands_management.html')
 
-    # Test adding a new brand.
     def test_add_brand(self):
         self.client.login(username='staffuser', password='password123')
 
@@ -99,7 +95,6 @@ class ServiceBrandManagementViewTest(TestCase):
         messages = list(get_messages(response.wsgi_request))
         self.assertTrue(any("added successfully" in str(msg) for msg in messages))
 
-    # Test adding a primary brand with image.
     def test_add_primary_brand_with_image(self):
         self.client.login(username='staffuser', password='password123')
 
@@ -120,12 +115,6 @@ class ServiceBrandManagementViewTest(TestCase):
 
         response = self.client.post(self.management_url, form_data)
 
-        if response.status_code != 302:
-            if 'form' in response.context:
-                print(f"Form errors: {response.context['form'].errors}")
-            else:
-                print("Form not in context")
-
         self.assertEqual(response.status_code, 302)
 
         self.assertTrue(ServiceBrand.objects.filter(name='New Primary Brand').exists())
@@ -134,7 +123,6 @@ class ServiceBrandManagementViewTest(TestCase):
         self.assertTrue(brand.is_primary)
         self.assertTrue(brand.image)
 
-    # Test adding a primary brand without image fails.
     def test_add_primary_brand_without_image_fails(self):
         self.client.login(username='staffuser', password='password123')
 
@@ -156,7 +144,6 @@ class ServiceBrandManagementViewTest(TestCase):
         self.assertIn('image', form.errors)
 
 
-    # Test editing an existing brand.
     def test_edit_brand(self):
         self.client.login(username='staffuser', password='password123')
 
@@ -178,7 +165,6 @@ class ServiceBrandManagementViewTest(TestCase):
         messages = list(get_messages(response.wsgi_request))
         self.assertTrue(any("updated successfully" in str(msg) for msg in messages))
 
-    # Test deleting a brand.
     def test_delete_brand(self):
         self.client.login(username='staffuser', password='password123')
 
@@ -215,14 +201,12 @@ class DeleteServiceBrandViewTest(TestCase):
 
         self.delete_url = reverse('dashboard:delete_service_brand', args=[self.brand.pk])
 
-    # Test that delete view requires login.
     def test_delete_view_requires_login(self):
         response = self.client.post(self.delete_url)
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse('users:login'), response.url)
 
 
-    # Test that delete view requires staff status.
     def test_delete_view_requires_staff_access(self):
         self.client.login(username='regularuser', password='password123')
         response = self.client.post(self.delete_url)
@@ -230,7 +214,6 @@ class DeleteServiceBrandViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
 
 
-    # Test that delete view only accepts POST requests.
     def test_delete_view_requires_post(self):
         self.client.login(username='staffuser', password='password123')
 
@@ -244,7 +227,6 @@ class DeleteServiceBrandViewTest(TestCase):
 
         self.assertTrue(ServiceBrand.objects.filter(pk=self.brand.pk).exists())
 
-    # Test deleting a brand via the dedicated delete view.
     def test_delete_brand_via_separate_view(self):
         self.client.login(username='staffuser', password='password123')
 
@@ -258,7 +240,6 @@ class DeleteServiceBrandViewTest(TestCase):
         messages = list(get_messages(response.wsgi_request))
         self.assertTrue(any("deleted successfully" in str(msg) for msg in messages))
 
-    # Test attempting to delete a non-existent brand.
     def test_delete_nonexistent_brand(self):
         self.client.login(username='staffuser', password='password123')
 

@@ -1,5 +1,3 @@
-# SCOOTER_SHOP/dashboard/views/settings_hire_booking.py
-
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
@@ -16,7 +14,6 @@ def settings_hire_booking(request):
 
     if request.method == 'POST':
         form = HireBookingSettingsForm(request.POST, instance=settings)
-        print("Is form valid?", form.is_valid())
         if form.is_valid():
             form.save()
             messages.success(request, 'Hire booking settings updated successfully!')
