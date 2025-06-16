@@ -239,6 +239,74 @@ class ProcessRefundViewTests(TestCase):
         self.assertIsNotNone(refund_request.processed_at)
 
 
+    @patch('payments.views.Refunds.process_refund.stripe.Refund.create')
+    @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
+    def test_successful_unverified_refund(
+        self, mock_is_admin, mock_stripe_refund_create
+    ):
+        """
+        Tests successful processing of a refund request with 'unverified' status.
+        """
+        mock_stripe_refund_create.return_value = MagicMock(
+            id='re_mockedunverified123',
+            status='succeeded'
+        )
+
+        hire_booking = HireBookingFactory(
+            payment=PaymentFactory(
+                stripe_payment_intent_id='pi_unverified123',
+                amount=Decimal('500.00'),
+                status='succeeded',
+                refund_policy_snapshot={'key': 'value'}
+            ),
+            pickup_date=timezone.now().date() + timedelta(days=5),
+            pickup_time=time(10,0),
+            return_date=timezone.now().date() + timedelta(days=15),
+            booking_reference="UNVERIFIEDBOOKINGREF"
+        )
+        
+        refund_request = RefundRequestFactory(
+            hire_booking=hire_booking,
+            service_booking=None,
+            sales_booking=None,
+            payment=hire_booking.payment,
+            status='unverified', # Explicitly test 'unverified' status
+            amount_to_refund=Decimal('250.00'),
+            stripe_refund_id=None,
+            processed_by=None,
+            processed_at=None,
+        )
+
+        url = reverse('payments:process_refund', kwargs={'pk': refund_request.pk})
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('payments:admin_refund_management'))
+
+        messages_list = list(messages.get_messages(response.wsgi_request))
+        self.assertEqual(len(messages_list), 1)
+        self.assertIn(f"Refund request for booking '{hire_booking.booking_reference}' has been approved and initiated with Stripe (ID: {mock_stripe_refund_create.return_value.id}). Awaiting final confirmation from Stripe.", str(messages_list[0]))
+        self.assertEqual(messages_list[0].tags, 'success')
+
+        mock_stripe_refund_create.assert_called_once_with(
+            payment_intent='pi_unverified123',
+            amount=int(Decimal('250.00') * 100),
+            reason='requested_by_customer',
+            metadata={
+                'refund_request_id': str(refund_request.pk),
+                'admin_user_id': str(self.admin_user.pk),
+                'booking_reference': 'UNVERIFIEDBOOKINGREF',
+                'booking_type': 'hire',
+            }
+        )
+
+        refund_request.refresh_from_db()
+        self.assertEqual(refund_request.status, 'approved') 
+        self.assertEqual(refund_request.stripe_refund_id, 're_mockedunverified123')
+        self.assertEqual(refund_request.processed_by, self.admin_user)
+        self.assertIsNotNone(refund_request.processed_at)
+
+
     @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
     def test_refund_invalid_status_rejection(self, mock_is_admin):
         """
@@ -481,4 +549,3 @@ class ProcessRefundViewTests(TestCase):
 
         refund_request.refresh_from_db()
         self.assertEqual(refund_request.status, 'approved')
-
