@@ -35,7 +35,13 @@ from .ajax import (
     get_motorcycle_list,
     get_available_appointment_times_for_date,
     ajax_get_payment_status, 
-    ajax_get_sales_booking_details
+    ajax_get_sales_booking_details,
+    # New AJAX imports below
+    ajax_search_motorcycles,
+    ajax_get_motorcycle_details,
+    ajax_search_sales_profiles,
+    ajax_get_sales_profile_details,
+    ajax_sales_booking_precheck, # The new precheck AJAX view
 )
 
 app_name = 'inventory'
@@ -68,8 +74,8 @@ urlpatterns = [
 
     # Blocked Sales Date Management
     path('admin/blocked-sales-dates/', blocked_sales_date_management_view.BlockedSalesDateManagementView.as_view(), name='blocked_sales_date_management'),
-    path('admin/blocked-sales-dates/create/', blocked_sales_date_create_update_view.BlockedSalesDateCreateUpdateView.as_view(), name='blocked_sales_date_create_update'), # New path for create
-    path('admin/blocked-sales-dates/<int:pk>/update/', blocked_sales_date_create_update_view.BlockedSalesDateCreateUpdateView.as_view(), name='blocked_sales_date_create_update'), # New path for update (re-uses same name)
+    path('admin/blocked-sales-dates/create/', blocked_sales_date_create_update_view.BlockedSalesDateCreateUpdateView.as_view(), name='blocked_sales_date_create_update'), 
+    path('admin/blocked-sales-dates/<int:pk>/update/', blocked_sales_date_create_update_view.BlockedSalesDateCreateUpdateView.as_view(), name='blocked_sales_date_create_update'), 
     path('admin/blocked-sales-dates/<int:pk>/delete/', delete_blocked_sales_date.BlockedSalesDateDeleteView.as_view(), name='admin_blocked_sales_date_delete'),
 
 
@@ -94,4 +100,12 @@ urlpatterns = [
     path('ajax/get_appointment_times/', get_available_appointment_times_for_date, name='ajax_get_appointment_times'),
     path('ajax/payment-status-check/', ajax_get_payment_status.GetPaymentStatusView.as_view(), name='ajax_sales_payment_status_check'),
     path('ajax/sales-booking-details/<int:pk>/', ajax_get_sales_booking_details.get_sales_booking_details_json, name='api_sales_booking_details'),
+    
+    # New Sales Booking Admin AJAX Endpoints
+    path('ajax/admin/search-motorcycles/', ajax_search_motorcycles.search_motorcycles_ajax, name='admin_api_search_motorcycles'),
+    path('ajax/admin/get-motorcycle-details/<int:pk>/', ajax_get_motorcycle_details.get_motorcycle_details_ajax, name='admin_api_get_motorcycle_details'),
+    path('ajax/admin/search-sales-profiles/', ajax_search_sales_profiles.search_sales_profiles_ajax, name='admin_api_search_sales_profiles'),
+    path('ajax/admin/get-sales-profile-details/<int:pk>/', ajax_get_sales_profile_details.get_sales_profile_details_ajax, name='admin_api_get_sales_profile_details'),
+    path('ajax/admin/sales-booking-precheck/', ajax_sales_booking_precheck.sales_booking_precheck_ajax, name='admin_api_sales_booking_precheck'),
 ]
+

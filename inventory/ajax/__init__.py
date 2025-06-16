@@ -2,3 +2,8 @@ from .ajax_get_available_appointment_times_for_date import *
 from .ajax_get_motorcycle_list import *
 from .ajax_get_payment_status import *
 from .ajax_get_sales_booking_details import *
+from .ajax_get_motorcycle_details import *
+from .ajax_get_sales_profile_details import *
+from .ajax_sales_booking_precheck import *
+from .ajax_search_motorcycles import *
+from .ajax_search_sales_profiles import *

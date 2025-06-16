@@ -1,58 +1,52 @@
-# inventory/ajax/ajax_get_motorcycle_details.py
+# inventory/ajax/ajax_sales_booking_precheck.py
 
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
-from inventory.models import Motorcycle # Import the Motorcycle model
+from inventory.forms import AdminSalesBookingForm # Import your updated sales booking form
+from django import forms
 
-@require_GET
+@require_POST
 @login_required
-def get_motorcycle_details_ajax(request, pk):
+def sales_booking_precheck_ajax(request):
     """
-    AJAX endpoint to retrieve detailed information for a specific Motorcycle.
-    Returns a JSON response with all fields necessary to populate the motorcycle display area
-    in the admin sales booking form.
+    AJAX endpoint to perform validation and gather warnings for the admin sales booking form.
+    Returns JSON indicating errors, warnings, or if valid.
     """
     # Ensure only staff members can access this endpoint
     if not request.user.is_staff:
         return JsonResponse({'error': 'Permission denied'}, status=403)
 
-    try:
-        motorcycle = get_object_or_404(Motorcycle, pk=pk)
-    except Exception as e:
-        # Return a 404 error if the motorcycle is not found
-        return JsonResponse({'error': f'Motorcycle not found or invalid ID: {e}'}, status=404)
+    # When creating the form, pass the initial instance if it's an edit view
+    # The selected_profile_id and selected_motorcycle_id are expected in request.POST
+    # along with other form fields.
+    # For a precheck, we typically don't pass an instance from the database,
+    # as we're just validating the data that the user has currently entered into the form.
+    form = AdminSalesBookingForm(request.POST) 
 
-    # Serialize all relevant fields from the Motorcycle instance
-    # This should include all fields you might want to display for the selected motorcycle
-    motorcycle_details = {
-        'id': motorcycle.pk,
-        'title': motorcycle.title,
-        'brand': motorcycle.brand,
-        'model': motorcycle.model,
-        'year': motorcycle.year,
-        'price': str(motorcycle.price) if motorcycle.price else None, # Convert Decimal to string
-        'quantity': motorcycle.quantity,
-        'vin_number': motorcycle.vin_number,
-        'engine_number': motorcycle.engine_number,
-        'condition': motorcycle.condition, # 'new', 'used', 'demo', 'hire'
-        'conditions_display': motorcycle.get_conditions_display(), # Display string for conditions
-        'status': motorcycle.status, # Current sales/hire status
-        'is_available': motorcycle.is_available, # Boolean availability flag
-        'odometer': motorcycle.odometer,
-        'engine_size': motorcycle.engine_size,
-        'seats': motorcycle.seats,
-        'transmission': motorcycle.transmission,
-        'description': motorcycle.description,
-        'image_url': motorcycle.image.url if motorcycle.image else None, # URL for motorcycle image
-        'date_posted': str(motorcycle.date_posted), # Convert datetime to string
-        'rego': motorcycle.rego,
-        'rego_exp': str(motorcycle.rego_exp) if motorcycle.rego_exp else None, # Convert date to string
-        'stock_number': motorcycle.stock_number,
-        'daily_hire_rate': str(motorcycle.daily_hire_rate) if motorcycle.daily_hire_rate else None,
-        'hourly_hire_rate': str(motorcycle.hourly_hire_rate) if motorcycle.hourly_hire_rate else None,
+    response_data = {
+        'status': 'success', # default success
+        'errors': {},
+        'warnings': []
     }
 
-    return JsonResponse({'motorcycle_details': motorcycle_details})
+    if form.is_valid():
+        warnings = form.get_warnings()
+        if warnings:
+            response_data['status'] = 'warnings'
+            response_data['warnings'] = [str(w) for w in warnings] # Convert lazy strings
+    else:
+        response_data['status'] = 'errors'
+        # Collect errors for each field that failed validation
+        errors_dict = {}
+        for field, errors in form.errors.items():
+            errors_dict[field] = [str(e) for e in errors] # Convert lazy strings
+        
+        # If there are non-field errors (e.g., from clean method's add_error), include them
+        if forms.NON_FIELD_ERRORS in form.errors:
+            errors_dict[forms.NON_FIELD_ERRORS] = [str(e) for e in form.errors[forms.NON_FIELD_ERRORS]]
+
+        response_data['errors'] = errors_dict
+
+    return JsonResponse(response_data)
 
