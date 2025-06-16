@@ -1,0 +1,638 @@
+{% extends "dashboard/admin_layout.html" %}
+{% load static %}
+
+{% block extra_css %}
+    {{ block.super }}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for search results - improved contrast */
+        .search-results ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            border: 1px solid #ddd;
+            border-radius: 0.25rem;
+            max-height: 200px;
+            overflow-y: auto;
+            position: absolute;
+            background-color: white;
+            z-index: 1000;
+            width: calc(100% - 2px); /* Adjust for border */
+            color: #333; /* Darker text for better contrast */
+        }
+        .search-results li {
+            padding: 10px;
+            cursor: pointer;
+            color: #333; /* Ensure list item text is dark */
+            border-bottom: 1px solid #eee; /* Add a subtle separator */
+        }
+        .search-results li:last-child {
+            border-bottom: none;
+        }
+        .search-results li:hover {
+            background-color: #f0f0f0;
+        }
+        .selected-item-display {
+            padding: 1rem;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            margin-top: 1rem;
+            color: #333; /* Darker text for better contrast */
+        }
+        /* Ensure small text within selected-item-display is also readable */
+        .selected-item-display small,
+        .selected-item-display span.text-muted {
+            color: #555 !important;
+        }
+
+        /* Basic form control styling, for Django fields if not using widget tweaks */
+        input[type="text"].form-control,
+        input[type="email"].form-control,
+        input[type="tel"].form-control,
+        input[type="date"].form-control,
+        input[type="time"].form-control,
+        input[type="number"].form-control,
+        textarea.form-control,
+        select.form-control {
+            display: block;
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #495057;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        input[type="text"].form-control:focus,
+        input[type="email"].form-control:focus,
+        input[type="tel"].form-control:focus,
+        input[type="date"].form-control:focus,
+        input[type="time"].form-control:focus,
+        input[type="number"].form-control:focus,
+        textarea.form-control:focus,
+        select.form-control:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        /* Checkbox styling */
+        .form-checkbox {
+            height: 1.25rem; /* h-5 */
+            width: 1.25rem;  /* w-5 */
+            border-radius: 0.25rem; /* rounded */
+            border: 1px solid #d1d5db; /* gray-300 */
+            color: #2563eb; /* blue-600 */
+            background-color: #ffffff;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            cursor: pointer;
+            vertical-align: middle;
+            position: relative;
+            outline: none;
+        }
+
+        .form-checkbox:checked {
+            background-color: currentColor;
+            border-color: currentColor;
+        }
+
+        .form-checkbox:checked::before {
+            content: '\2713'; /* Checkmark character */
+            display: block;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 0.75rem; /* Adjust as needed */
+        }
+        .form-checkbox:focus {
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        /* Modal specific styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 2000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+    </style>
+{% endblock %}
+
+{% block admin_main_content %}
+    <div class="font-inter antialiased bg-gray-100 min-h-screen p-4 sm:p-6 lg:p-8">
+        <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6 sm:p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">{{ page_title }}</h2>
+
+            {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                        <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative mb-2" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" id="adminSalesBookingForm">
+                {% csrf_token %}
+
+                <!-- Hidden fields for selected Profile and Motorcycle IDs -->
+                {{ form.selected_profile_id }}
+                {{ form.selected_motorcycle_id }}
+
+                <!-- Section 1: Customer Profile -->
+                <div class="form-section mb-6 p-4 border border-gray-200 rounded-md">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2 sm:mb-0">1. Select Sales Profile (Customer)</h3>
+                        <a href="{% url 'inventory:sales_profile_create_update' %}" target="_blank" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-3 rounded-md text-sm">
+                            <i class="fas fa-plus-circle mr-1"></i> Create New Sales Profile
+                        </a>
+                    </div>
+                    <div class="mb-3 position-relative">
+                        <label for="profileSearch" class="form-label">Search Customer (Name, Email, Phone, ID)</label>
+                        <input type="text" class="form-control" id="profileSearch" placeholder="Start typing to search sales profiles..." autocomplete="off">
+                        <div id="profileSearchResults" class="search-results"></div>
+                        {% for error in form.selected_profile_id.errors %}
+                            <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    <div id="selectedProfileDisplay" class="selected-item-display {% if not form.selected_profile_id.value %}d-none{% endif %}">
+                        {# Initial content for selected profile if in edit mode #}
+                        {% if current_booking and current_booking.sales_profile %}
+                            <div>
+                                <strong>Selected Profile:</strong> {{ current_booking.sales_profile.name }} (<span>{{ current_booking.sales_profile.email|default:'N/A' }}</span>)<br>
+                                <small class="text-muted">Phone: {{ current_booking.sales_profile.phone_number|default:'N/A' }}</small>
+                                <small class="text-muted block mt-1">ID: {{ current_booking.sales_profile.pk }}</small>
+                            </div>
+                            <button type="button" class="bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-2 rounded-md text-sm" id="clearProfileSelection">Clear</button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Section 2: Motorcycle -->
+                <div id="motorcycleSection" class="form-section mb-6 p-4 border border-gray-200 rounded-md">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2 sm:mb-0">2. Select Motorcycle</h3>
+                        <a href="{% url 'inventory:admin_motorcycle_create' %}" target="_blank" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-3 rounded-md text-sm">
+                            <i class="fas fa-plus-circle mr-1"></i> Add New Motorcycle
+                        </a>
+                    </div>
+                    <div class="mb-3 position-relative">
+                        <label for="motorcycleSearch" class="form-label">Search Motorcycle (Brand, Model, VIN, Stock#, Rego, ID)</label>
+                        <input type="text" class="form-control" id="motorcycleSearch" placeholder="Start typing to search motorcycles..." autocomplete="off">
+                        <div id="motorcycleSearchResults" class="search-results"></div>
+                        {% for error in form.selected_motorcycle_id.errors %}
+                            <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    <div id="selectedMotorcycleDisplay" class="selected-item-display {% if not form.selected_motorcycle_id.value %}d-none{% endif %}">
+                        {# Initial content for selected motorcycle if in edit mode #}
+                        {% if current_booking and current_booking.motorcycle %}
+                            <div>
+                                <strong class="block text-gray-700">Selected Motorcycle:</strong>
+                                <span class="text-base font-medium">{{ current_booking.motorcycle.brand }} {{ current_booking.motorcycle.model }} ({{ current_booking.motorcycle.year }})</span><br>
+                                <small class="text-gray-500 text-sm">Status: {{ current_booking.motorcycle.get_status_display }} | Quantity: {{ current_booking.motorcycle.quantity }}</small><br>
+                                <small class="text-gray-500 text-sm block mt-1">Rego: {{ current_booking.motorcycle.rego|default:'N/A' }} | VIN: {{ current_booking.motorcycle.vin_number|default:'N/A' }} | ID: {{ current_booking.motorcycle.pk }}</small>
+                            </div>
+                            <button type="button" class="bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-2 rounded-md text-sm" id="clearMotorcycleSelection">Clear</button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Section 3: Booking Details -->
+                <div id="bookingDetailsSection" class="form-section mb-6 p-4 border border-gray-200 rounded-md">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">3. Enter Booking Details</h3>
+                    {# Render the rest of the form fields #}
+                    {% for field in form %}
+                        {# Exclude hidden ID fields and the removed stripe_payment_intent_id field #}
+                        {% if field.name != 'selected_profile_id' and field.name != 'selected_motorcycle_id' and field.name != 'stripe_payment_intent_id' %}
+                            <div class="mb-4">
+                                <label for="{{ field.id_for_label }}" class="block text-gray-700 text-sm font-medium mb-2">
+                                    {{ field.label }}
+                                    {% if field.field.required %} {# Removed specific check for stripe_payment_intent_id here #}
+                                        <span class="text-red-500">*</span>
+                                    {% endif %}
+                                </label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <div class="text-gray-600 text-xs italic mt-1">{{ field.help_text }}</div>
+                                {% endif %}
+                                {% for error in field.errors %}
+                                    <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    <!-- Error display area for non-field errors from precheck -->
+                    <div id="formErrors" class="text-red-500 text-sm mb-4"></div>
+
+                    <button type="submit" id="submitBookingButton" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md">
+                        {% if is_edit_mode %}Update Booking{% else %}Create Booking{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Warning/Confirmation Modal -->
+    <div id="warningModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Confirm Submission</h3>
+            <div id="modalWarnings" class="mb-4 text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                <!-- Warnings will be inserted here -->
+            </div>
+            <p class="text-gray-700 mb-6">Are you sure you want to proceed with this booking despite the warnings?</p>
+            <div class="flex justify-end space-x-4">
+                <button type="button" id="cancelSubmissionButton" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-md">Cancel</button>
+                <button type="button" id="confirmSubmissionButton" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md">Confirm Submit</button>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    {{ block.super }}
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        const dom = {
+            selectedProfileIdInput: document.getElementById('id_selected_profile_id'),
+            selectedMotorcycleIdInput: document.getElementById('id_selected_motorcycle_id'),
+            
+            profileSearchInput: document.getElementById('profileSearch'),
+            profileSearchResults: document.getElementById('profileSearchResults'),
+            selectedProfileDisplay: document.getElementById('selectedProfileDisplay'),
+
+            motorcycleSearchInput: document.getElementById('motorcycleSearch'),
+            motorcycleSearchResults: document.getElementById('motorcycleSearchResults'),
+            selectedMotorcycleDisplay: document.getElementById('selectedMotorcycleDisplay'),
+            
+            adminSalesBookingForm: document.getElementById('adminSalesBookingForm'),
+            submitBookingButton: document.getElementById('submitBookingButton'),
+            formErrors: document.getElementById('formErrors'),
+
+            warningModal: document.getElementById('warningModal'),
+            modalWarnings: document.getElementById('modalWarnings'),
+            cancelSubmissionButton: document.getElementById('cancelSubmissionButton'),
+            confirmSubmissionButton: document.getElementById('confirmSubmissionButton'),
+
+            appointmentDateInput: document.getElementById('id_appointment_date'),
+            appointmentTimeInput: document.getElementById('id_appointment_time'),
+        };
+
+        const ajaxUrls = {
+            searchSalesProfiles: "{% url 'inventory:admin_api_search_sales_profiles' %}",
+            getSalesProfileDetails: "{% url 'inventory:admin_api_get_sales_profile_details' 0 %}".replace('0/', ''),
+            searchMotorcycles: "{% url 'inventory:admin_api_search_motorcycles' %}",
+            getMotorcycleDetails: "{% url 'inventory:admin_api_get_motorcycle_details' 0 %}".replace('0/', ''),
+            salesBookingPrecheck: "{% url 'inventory:admin_api_sales_booking_precheck' %}",
+        };
+
+        // =========================================================
+        // Sales Profile Search and Selection
+        // =========================================================
+        let profileSearchTimeout;
+        dom.profileSearchInput.addEventListener('input', function() {
+            clearTimeout(profileSearchTimeout);
+            const query = this.value.trim();
+            dom.profileSearchResults.innerHTML = '';
+
+            if (query.length < 2) return;
+
+            profileSearchTimeout = setTimeout(() => performProfileSearch(query), 300);
+        });
+
+        dom.profileSearchInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                clearTimeout(profileSearchTimeout);
+                performProfileSearch(this.value.trim());
+            }
+        });
+
+        function performProfileSearch(query) {
+            fetch(`${ajaxUrls.searchSalesProfiles}?query=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const ul = document.createElement('ul');
+                    if (data.profiles && data.profiles.length > 0) {
+                        data.profiles.forEach(profile => {
+                            const li = document.createElement('li');
+                            // Updated: Display name, email, phone, and ID
+                            li.innerHTML = `
+                                <strong>${profile.name}</strong> (${profile.email || 'N/A'})<br>
+                                <small>Phone: ${profile.phone_number || 'N/A'} | ID: ${profile.id}</small>
+                            `;
+                            li.dataset.profileId = profile.id;
+                            li.addEventListener('click', () => selectProfile(profile.id));
+                            ul.appendChild(li);
+                        });
+                    } else {
+                        const li = document.createElement('li');
+                        li.textContent = 'No sales profiles found.';
+                        ul.appendChild(li);
+                    }
+                    dom.profileSearchResults.innerHTML = '';
+                    dom.profileSearchResults.appendChild(ul);
+                })
+                .catch(error => console.error('Error searching sales profiles:', error));
+        }
+
+        function selectProfile(profileId) {
+            dom.selectedProfileIdInput.value = profileId;
+            dom.profileSearchResults.innerHTML = '';
+            dom.profileSearchInput.disabled = true;
+
+            fetch(ajaxUrls.getSalesProfileDetails + profileId + '/')
+                .then(response => response.json())
+                .then(data => {
+                    updateProfileDisplay(data.profile_details);
+                    dom.profileSearchInput.value = data.profile_details.name;
+                })
+                .catch(error => console.error('Error fetching sales profile details:', error));
+        }
+
+        function updateProfileDisplay(profileData) {
+            if (profileData) {
+                dom.selectedProfileDisplay.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <strong>Selected Profile:</strong> ${profileData.name} (<span>${profileData.email || 'N/A'}</span>)<br>
+                            <small class="text-muted">Phone: ${profileData.phone_number || 'N/A'}</small>
+                            <small class="text-muted block mt-1">ID: ${profileData.id}</small>
+                        </div>
+                        <button type="button" class="bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-2 rounded-md text-sm" id="clearProfileSelection">Clear</button>
+                    </div>
+                `;
+                dom.selectedProfileDisplay.classList.remove('d-none');
+                dom.selectedProfileDisplay.style.display = 'block';
+                document.getElementById('clearProfileSelection').addEventListener('click', clearProfileSelection);
+            } else {
+                dom.selectedProfileDisplay.classList.add('d-none');
+                dom.selectedProfileDisplay.style.display = 'none';
+                dom.selectedProfileDisplay.innerHTML = '';
+            }
+        }
+
+        function clearProfileSelection() {
+            dom.selectedProfileIdInput.value = '';
+            dom.profileSearchInput.value = '';
+            dom.profileSearchInput.disabled = false;
+            updateProfileDisplay(null);
+            clearMotorcycleSelection();
+        }
+
+        // =========================================================
+        // Motorcycle Search and Selection
+        // =========================================================
+        let motorcycleSearchTimeout;
+        dom.motorcycleSearchInput.addEventListener('input', function() {
+            clearTimeout(motorcycleSearchTimeout);
+            const query = this.value.trim();
+            dom.motorcycleSearchResults.innerHTML = '';
+
+            if (query.length < 2) return;
+
+            motorcycleSearchTimeout = setTimeout(() => performMotorcycleSearch(query), 300);
+        });
+
+        dom.motorcycleSearchInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                clearTimeout(motorcycleSearchTimeout);
+                performMotorcycleSearch(this.value.trim());
+            }
+        });
+
+        function performMotorcycleSearch(query) {
+            fetch(`${ajaxUrls.searchMotorcycles}?query=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const ul = document.createElement('ul');
+                    if (data.motorcycles && data.motorcycles.length > 0) {
+                        data.motorcycles.forEach(motorcycle => {
+                            const li = document.createElement('li');
+                            // Updated: Display brand, model, year, stock#, status, rego, VIN, and ID
+                            li.innerHTML = `
+                                <strong>${motorcycle.brand} ${motorcycle.model} (${motorcycle.year})</strong><br>
+                                <small>Rego: ${motorcycle.rego || 'N/A'} | VIN: ${motorcycle.vin_number || 'N/A'}</small><br>
+                                <small>Stock#: ${motorcycle.stock_number || 'N/A'} | Status: ${motorcycle.status.replace('_', ' ').toUpperCase()} | ID: ${motorcycle.id}</small>
+                            `;
+                            li.dataset.motorcycleId = motorcycle.id;
+                            li.addEventListener('click', () => selectMotorcycle(motorcycle.id));
+                            ul.appendChild(li);
+                        });
+                    } else {
+                        const li = document.createElement('li');
+                        li.textContent = 'No motorcycles found.';
+                        ul.appendChild(li);
+                    }
+                    dom.motorcycleSearchResults.innerHTML = '';
+                    dom.motorcycleSearchResults.appendChild(ul);
+                })
+                .catch(error => console.error('Error searching motorcycles:', error));
+        }
+
+        function selectMotorcycle(motorcycleId) {
+            dom.selectedMotorcycleIdInput.value = motorcycleId;
+            dom.motorcycleSearchResults.innerHTML = '';
+            dom.motorcycleSearchInput.disabled = true;
+
+            fetch(ajaxUrls.getMotorcycleDetails + motorcycleId + '/')
+                .then(response => response.json())
+                .then(data => {
+                    updateMotorcycleDisplay(data.motorcycle_details);
+                    dom.motorcycleSearchInput.value = `${data.motorcycle_details.brand} ${data.motorcycle_details.model} (${data.motorcycle_details.year})`;
+                })
+                .catch(error => console.error('Error fetching motorcycle details:', error));
+        }
+
+        function updateMotorcycleDisplay(motorcycleData) {
+            if (motorcycleData) {
+                dom.selectedMotorcycleDisplay.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <strong class="block text-gray-700">Selected Motorcycle:</strong>
+                            <span class="text-base font-medium">${motorcycleData.brand} ${motorcycleData.model} (${motorcycleData.year})</span><br>
+                            <small class="text-gray-500 text-sm">Status: ${motorcycleData.status.replace('_', ' ').toUpperCase()} | Quantity: ${motorcycleData.quantity} | Price: $${parseFloat(motorcycleData.price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</small><br>
+                            <small class="text-gray-500 text-sm block mt-1">Rego: ${motorcycleData.rego || 'N/A'} | VIN: ${motorcycleData.vin_number || 'N/A'} | ID: ${motorcycleData.id}</small>
+                        </div>
+                        <button type="button" class="bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-2 rounded-md text-sm" id="clearMotorcycleSelection">Clear</button>
+                    </div>
+                `;
+                dom.selectedMotorcycleDisplay.classList.remove('d-none');
+                dom.selectedMotorcycleDisplay.style.display = 'block';
+                document.getElementById('clearMotorcycleSelection').addEventListener('click', clearMotorcycleSelection);
+            } else {
+                dom.selectedMotorcycleDisplay.classList.add('d-none');
+                dom.selectedMotorcycleDisplay.style.display = 'none';
+                dom.selectedMotorcycleDisplay.innerHTML = '';
+            }
+        }
+
+        function clearMotorcycleSelection() {
+            dom.selectedMotorcycleIdInput.value = '';
+            dom.motorcycleSearchInput.value = '';
+            dom.motorcycleSearchInput.disabled = false;
+            updateMotorcycleDisplay(null);
+        }
+
+        // =========================================================
+        // Flatpickr Initialization for Appointment Date/Time
+        // =========================================================
+        function initFlatpickr() {
+            flatpickr(dom.appointmentDateInput, {
+                dateFormat: "Y-m-d",
+                allowInput: true,
+            });
+
+            flatpickr(dom.appointmentTimeInput, {
+                enableTime: true,
+                noCalendar: true,
+                dateFormat: "H:i",
+                time_24hr: true,
+                allowInput: true
+            });
+        }
+
+        // =========================================================
+        // Handle Form Submission with Pre-check (NEW LOGIC)
+        // =========================================================
+        dom.adminSalesBookingForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            dom.formErrors.innerHTML = '';
+            dom.modalWarnings.innerHTML = '';
+            dom.warningModal.style.display = 'none';
+
+            const formData = new FormData(dom.adminSalesBookingForm);
+
+            fetch(ajaxUrls.salesBookingPrecheck, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'errors') {
+                    let errorsHtml = '<p class="font-semibold mb-2">Please correct the following errors:</p><ul class="list-disc list-inside">';
+                    for (const fieldName in data.errors) {
+                        const errorMessages = data.errors[fieldName];
+                        errorsHtml += `<li><strong>${fieldName.replace('_', ' ').replace('selected ', '').replace('id', 'ID').title()}:</strong> ${errorMessages.join(', ')}</li>`;
+                    }
+                    errorsHtml += '</ul>';
+                    dom.formErrors.innerHTML = errorsHtml;
+                } else if (data.status === 'warnings') {
+                    let warningsHtml = '<p class="font-semibold mb-2">Warnings:</p><ul class="list-disc list-inside">';
+                    data.warnings.forEach(warning => {
+                        warningsHtml += `<li>${warning}</li>`;
+                    });
+                    warningsHtml += '</ul>';
+                    dom.modalWarnings.innerHTML = warningsHtml;
+                    dom.warningModal.style.display = 'flex';
+                } else {
+                    dom.adminSalesBookingForm.submit();
+                }
+            })
+            .catch(error => {
+                console.error('Error during sales booking pre-check:', error);
+                dom.formErrors.innerHTML = '<p class="text-red-500">An unexpected error occurred during pre-check. Please try again.</p>';
+            });
+        });
+
+        dom.confirmSubmissionButton.addEventListener('click', function() {
+            dom.warningModal.style.display = 'none';
+            dom.adminSalesBookingForm.submit();
+        });
+
+        dom.cancelSubmissionButton.addEventListener('click', function() {
+            dom.warningModal.style.display = 'none';
+        });
+
+        // =========================================================
+        // Initial Page Load Logic (for Edit Mode)
+        // =========================================================
+        function initializeForm() {
+            const initialProfileId = dom.selectedProfileIdInput.value;
+            const initialMotorcycleId = dom.selectedMotorcycleIdInput.value;
+
+            if (initialProfileId) {
+                // Fetch full details for the initial profile to populate display and search input
+                fetch(ajaxUrls.getSalesProfileDetails + initialProfileId + '/')
+                    .then(response => response.json())
+                    .then(data => {
+                        updateProfileDisplay(data.profile_details);
+                        dom.profileSearchInput.value = data.profile_details.name;
+                        dom.profileSearchInput.disabled = true; // Disable search after pre-filling
+                    })
+                    .catch(error => console.error('Error initializing profile details:', error));
+            } else {
+                updateProfileDisplay(null);
+            }
+
+            if (initialMotorcycleId) {
+                // Fetch full details for the initial motorcycle
+                fetch(ajaxUrls.getMotorcycleDetails + initialMotorcycleId + '/')
+                    .then(response => response.json())
+                    .then(data => {
+                        updateMotorcycleDisplay(data.motorcycle_details);
+                        dom.motorcycleSearchInput.value = `${data.motorcycle_details.brand} ${data.motorcycle_details.model} (${data.motorcycle_details.year})`;
+                        dom.motorcycleSearchInput.disabled = true; // Disable search after pre-filling
+                    })
+                    .catch(error => console.error('Error initializing motorcycle details:', error));
+            } else {
+                updateMotorcycleDisplay(null);
+            }
+
+            initFlatpickr();
+        }
+
+        document.addEventListener('click', function(event) {
+            if (!dom.profileSearchInput.contains(event.target) && !dom.profileSearchResults.contains(event.target)) {
+                dom.profileSearchResults.innerHTML = '';
+            }
+            if (!dom.motorcycleSearchInput.contains(event.target) && !dom.motorcycleSearchResults.contains(event.target)) {
+                dom.motorcycleSearchResults.innerHTML = '';
+            }
+        });
+
+        initializeForm();
+    });
+    </script>
+{% endblock %}
