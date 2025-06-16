@@ -1,9 +1,11 @@
-# payments/tests/form_tests/test_user_refund_request_form.py
+# payments/tests/view_tests/test_user_refund_request_view.py
 
-from django.test import TestCase
+from django.test import TestCase, Client
+from django.urls import reverse
+from django.core import mail
+from unittest.mock import patch
 from decimal import Decimal
 
-from payments.forms.user_refund_request_form import RefundRequestForm
 from payments.models import RefundRequest
 from payments.tests.test_helpers.model_factories import (
     PaymentFactory,
@@ -13,240 +15,161 @@ from payments.tests.test_helpers.model_factories import (
     SalesProfileFactory,
     ServiceBookingFactory,
     ServiceProfileFactory,
-    RefundRequestFactory,
     UserFactory
 )
 
-class UserRefundRequestFormTests(TestCase):
+# Correct path for patching the imported function
+PATCH_PATH = 'payments.views.Refunds.user_refund_request_view.send_templated_email'
+
+class UserRefundRequestViewTests(TestCase):
     """
-    Tests for the user-facing RefundRequestForm.
+    Tests for the UserRefundRequestView (user-facing).
     """
 
     def setUp(self):
-        """Set up test data for all tests."""
-        # Common user and profiles
+        """Set up test data and client for all tests."""
+        self.client = Client()
         self.user = UserFactory()
+
+        # Profiles for different booking types
         self.driver_profile = DriverProfileFactory(email='hire.customer@example.com')
         self.service_profile = ServiceProfileFactory(email='service.customer@example.com', user=self.user)
         self.sales_profile = SalesProfileFactory(email='sales.customer@example.com', user=self.user)
 
-        # --- HIRE BOOKING SETUP ---
-        payment_hire = PaymentFactory(
-            status='succeeded',
-            driver_profile=self.driver_profile,
-            amount=Decimal('200.00')
-        )
-        self.hire_booking = HireBookingFactory(
-            payment=payment_hire,
-            driver_profile=self.driver_profile
-        )
+        # HIRE BOOKING SETUP
+        payment_hire = PaymentFactory(status='succeeded', driver_profile=self.driver_profile)
+        self.hire_booking = HireBookingFactory(payment=payment_hire, driver_profile=self.driver_profile)
         payment_hire.hire_booking = self.hire_booking
         payment_hire.save()
 
-        # --- SERVICE BOOKING SETUP ---
-        payment_service = PaymentFactory(
-            status='succeeded',
-            service_customer_profile=self.service_profile,
-            amount=Decimal('150.00')
-        )
-        self.service_booking = ServiceBookingFactory(
-            payment=payment_service,
-            service_profile=self.service_profile
-        )
+        # SERVICE BOOKING SETUP
+        payment_service = PaymentFactory(status='succeeded', service_customer_profile=self.service_profile)
+        self.service_booking = ServiceBookingFactory(payment=payment_service, service_profile=self.service_profile)
         payment_service.service_booking = self.service_booking
         payment_service.save()
 
-        # --- SALES BOOKING SETUP ---
-        payment_sales = PaymentFactory(
-            status='succeeded',
-            sales_customer_profile=self.sales_profile,
-            amount=Decimal('500.00')
-        )
-        self.sales_booking = SalesBookingFactory(
-            payment=payment_sales,
-            sales_profile=self.sales_profile
-        )
+        # SALES BOOKING SETUP
+        payment_sales = PaymentFactory(status='succeeded', sales_customer_profile=self.sales_profile)
+        self.sales_booking = SalesBookingFactory(payment=payment_sales, sales_profile=self.sales_profile)
         payment_sales.sales_booking = self.sales_booking
         payment_sales.save()
 
-    def test_valid_hire_booking_request(self):
-        """Test a valid refund request for a HIRE booking."""
+        self.refund_request_url = reverse('payments:user_refund_request')
+
+    def test_get_refund_request_page(self):
+        """Test that the refund request page loads correctly with a GET request."""
+        response = self.client.get(self.refund_request_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'payments/user_refund_request.html')
+        self.assertIn('form', response.context)
+        self.assertIn('Request a Refund', str(response.content))
+
+    @patch(PATCH_PATH)
+    def test_post_successful_hire_refund_request(self, mock_send_email):
+        """Test a successful POST request for a HIRE booking."""
         form_data = {
             'booking_reference': self.hire_booking.booking_reference,
             'email': self.driver_profile.email,
-            'reason': 'Test reason for hire refund.'
+            'reason': 'Test hire reason'
         }
-        form = RefundRequestForm(data=form_data)
-        self.assertTrue(form.is_valid(), f"Form should be valid but has errors: {form.errors.as_json()}")
         
-        instance = form.save()
-        self.assertIsNotNone(instance.pk)
-        self.assertEqual(instance.payment, self.hire_booking.payment)
-        self.assertEqual(instance.hire_booking, self.hire_booking)
-        self.assertEqual(instance.driver_profile, self.driver_profile)
-        self.assertEqual(instance.status, 'unverified')
-        self.assertFalse(instance.is_admin_initiated)
-        self.assertEqual(instance.reason, 'Test reason for hire refund.')
-        self.assertEqual(instance.request_email, self.driver_profile.email.lower())
-        # Ensure other booking types are None
-        self.assertIsNone(instance.service_booking)
-        self.assertIsNone(instance.sales_booking)
+        response = self.client.post(self.refund_request_url, form_data)
+        
+        # Check for successful redirection
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('payments:user_confirmation_refund_request'))
+        
+        # Check that a RefundRequest object was created
+        self.assertEqual(RefundRequest.objects.count(), 1)
+        refund_request = RefundRequest.objects.first()
+        self.assertEqual(refund_request.hire_booking, self.hire_booking)
+        self.assertEqual(refund_request.status, 'unverified')
+        
+        # Check that the email sending function was called
+        mock_send_email.assert_called_once()
+        args, kwargs = mock_send_email.call_args
+        self.assertEqual(kwargs['recipient_list'], [self.driver_profile.email.lower()])
+        self.assertIn(self.hire_booking.booking_reference, kwargs['subject'])
 
-    def test_valid_service_booking_request(self):
-        """Test a valid refund request for a SERVICE booking."""
+    @patch(PATCH_PATH)
+    def test_post_successful_service_refund_request(self, mock_send_email):
+        """Test a successful POST request for a SERVICE booking."""
         form_data = {
             'booking_reference': self.service_booking.service_booking_reference,
             'email': self.service_profile.email,
-            'reason': 'Service was not as expected.'
+            'reason': 'Test service reason'
         }
-        form = RefundRequestForm(data=form_data)
-        self.assertTrue(form.is_valid(), f"Form should be valid but has errors: {form.errors.as_json()}")
         
-        instance = form.save()
-        self.assertIsNotNone(instance.pk)
-        self.assertEqual(instance.payment, self.service_booking.payment)
-        self.assertEqual(instance.service_booking, self.service_booking)
-        self.assertEqual(instance.service_profile, self.service_profile)
-        self.assertEqual(instance.status, 'unverified')
-        self.assertFalse(instance.is_admin_initiated)
-        # Ensure other booking types are None
-        self.assertIsNone(instance.hire_booking)
-        self.assertIsNone(instance.sales_booking)
+        response = self.client.post(self.refund_request_url, form_data)
+        
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(RefundRequest.objects.count(), 1)
+        refund_request = RefundRequest.objects.first()
+        self.assertEqual(refund_request.service_booking, self.service_booking)
+        self.assertEqual(refund_request.status, 'unverified')
+        
+        mock_send_email.assert_called_once()
+        args, kwargs = mock_send_email.call_args
+        self.assertEqual(kwargs['recipient_list'], [self.service_profile.email.lower()])
+        self.assertIn(self.service_booking.service_booking_reference, kwargs['subject'])
 
-    def test_valid_sales_booking_request(self):
-        """Test a valid refund request for a SALES booking."""
+    @patch(PATCH_PATH)
+    def test_post_successful_sales_refund_request(self, mock_send_email):
+        """Test a successful POST request for a SALES booking."""
         form_data = {
             'booking_reference': self.sales_booking.sales_booking_reference,
             'email': self.sales_profile.email,
-            'reason': 'Changed my mind about the purchase.'
+            'reason': 'Test sales reason'
         }
-        form = RefundRequestForm(data=form_data)
-        self.assertTrue(form.is_valid(), f"Form should be valid but has errors: {form.errors.as_json()}")
-
-        instance = form.save()
-        self.assertIsNotNone(instance.pk)
-        self.assertEqual(instance.payment, self.sales_booking.payment)
-        self.assertEqual(instance.sales_booking, self.sales_booking)
-        self.assertEqual(instance.sales_profile, self.sales_profile)
-        self.assertEqual(instance.status, 'unverified')
-        self.assertFalse(instance.is_admin_initiated)
-        # Ensure other booking types are None
-        self.assertIsNone(instance.hire_booking)
-        self.assertIsNone(instance.service_booking)
         
-    def test_invalid_nonexistent_booking_reference(self):
-        """Test form with a booking reference that does not exist."""
-        form_data = {
-            'booking_reference': 'HIRE-NONEXISTENT',
-            'email': self.driver_profile.email,
-            'reason': ''
-        }
-        form = RefundRequestForm(data=form_data)
-        self.assertFalse(form.is_valid())
-        self.assertIn('booking_reference', form.errors)
-        self.assertEqual(form.errors['booking_reference'], ["No booking found with this reference number."])
-
-    def test_invalid_email_mismatch(self):
-        """Test form with a valid booking reference but an incorrect email."""
+        response = self.client.post(self.refund_request_url, form_data)
+        
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(RefundRequest.objects.count(), 1)
+        refund_request = RefundRequest.objects.first()
+        self.assertEqual(refund_request.sales_booking, self.sales_booking)
+        self.assertEqual(refund_request.status, 'unverified')
+        
+        mock_send_email.assert_called_once()
+        args, kwargs = mock_send_email.call_args
+        self.assertEqual(kwargs['recipient_list'], [self.sales_profile.email.lower()])
+        self.assertIn(self.sales_booking.sales_booking_reference, kwargs['subject'])
+        
+    @patch(PATCH_PATH)
+    def test_post_invalid_form_data(self, mock_send_email):
+        """Test a POST request with invalid data (e.g., email mismatch)."""
         form_data = {
             'booking_reference': self.hire_booking.booking_reference,
-            'email': 'wrong.email@example.com',
-            'reason': ''
+            'email': 'wrong@email.com',
+            'reason': 'This should fail'
         }
-        form = RefundRequestForm(data=form_data)
-        self.assertFalse(form.is_valid())
-        self.assertIn('email', form.errors)
-        self.assertEqual(form.errors['email'], ["The email address does not match the one registered for this booking."])
         
-    def test_invalid_case_insensitive_email_match(self):
-        """Test email matching is case-insensitive."""
-        form_data = {
-            'booking_reference': self.hire_booking.booking_reference,
-            'email': self.driver_profile.email.upper(), # Submit email in uppercase
-            'reason': 'Testing case insensitivity.'
-        }
-        form = RefundRequestForm(data=form_data)
-        self.assertTrue(form.is_valid(), f"Form should be valid but has errors: {form.errors.as_json()}")
-
-    def test_invalid_booking_without_payment(self):
-        """Test request for a booking that has no associated payment record."""
-        hire_booking_no_payment = HireBookingFactory(driver_profile=self.driver_profile, payment=None)
-        form_data = {
-            'booking_reference': hire_booking_no_payment.booking_reference,
-            'email': self.driver_profile.email,
-            'reason': ''
-        }
-        form = RefundRequestForm(data=form_data)
-        self.assertFalse(form.is_valid())
-        self.assertIn('booking_reference', form.errors)
-        self.assertEqual(form.errors['booking_reference'], ["No payment record found for this booking."])
-
-    def test_invalid_payment_not_succeeded(self):
-        """Test request for a booking where the payment status is not 'succeeded'."""
-        payment_failed = PaymentFactory(status='failed', driver_profile=self.driver_profile)
-        hire_booking_failed_payment = HireBookingFactory(driver_profile=self.driver_profile, payment=payment_failed)
-        payment_failed.hire_booking = hire_booking_failed_payment
-        payment_failed.save()
-
-        form_data = {
-            'booking_reference': hire_booking_failed_payment.booking_reference,
-            'email': self.driver_profile.email,
-            'reason': ''
-        }
-        form = RefundRequestForm(data=form_data)
-        self.assertFalse(form.is_valid())
-        self.assertIn('booking_reference', form.errors)
-        self.assertEqual(form.errors['booking_reference'], ["This booking's payment is not in a 'succeeded' status and is not eligible for a refund."])
-
-    def test_invalid_existing_pending_refund_request(self):
-        """Test submitting a new request when one is already pending."""
-        # Create an existing pending request
-        RefundRequestFactory(payment=self.hire_booking.payment, status='pending')
+        response = self.client.post(self.refund_request_url, form_data)
         
+        # Check that the page is re-rendered with errors
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'payments/user_refund_request.html')
+        self.assertIn('form', response.context)
+        self.assertTrue(response.context['form'].errors)
+        
+        # Check that no RefundRequest was created and no email was sent
+        self.assertEqual(RefundRequest.objects.count(), 0)
+        mock_send_email.assert_not_called()
+        
+    @patch(PATCH_PATH)
+    def test_post_shows_message_on_success(self, mock_send_email):
+        """Test that a success message is shown after a valid submission."""
         form_data = {
             'booking_reference': self.hire_booking.booking_reference,
             'email': self.driver_profile.email,
-            'reason': 'Trying to submit again.'
+            'reason': 'Checking for success message'
         }
-        form = RefundRequestForm(data=form_data)
-        self.assertFalse(form.is_valid())
-        self.assertIn('__all__', form.errors)
-        self.assertEqual(form.errors['__all__'], ["A refund request for this booking is already in progress."])
         
-    def test_valid_request_if_previous_is_rejected_or_failed(self):
-        """Test a new request is allowed if a previous one was rejected or failed."""
-        # Create a rejected request
-        RefundRequestFactory(payment=self.hire_booking.payment, status='rejected')
+        response = self.client.post(self.refund_request_url, form_data, follow=True) # follow=True to check the redirected page
         
-        form_data = {
-            'booking_reference': self.hire_booking.booking_reference,
-            'email': self.driver_profile.email,
-            'reason': 'Submitting after rejection.'
-        }
-        form = RefundRequestForm(data=form_data)
-        self.assertTrue(form.is_valid(), f"Form should be valid after a rejection but has errors: {form.errors.as_json()}")
-        
-        # Create a failed request
-        payment_for_failed = PaymentFactory(status='succeeded')
-        hire_booking_for_failed = HireBookingFactory(payment=payment_for_failed, driver_profile=self.driver_profile)
-        RefundRequestFactory(payment=payment_for_failed, status='failed')
-        
-        form_data_2 = {
-            'booking_reference': hire_booking_for_failed.booking_reference,
-            'email': self.driver_profile.email,
-            'reason': 'Submitting after failure.'
-        }
-        form2 = RefundRequestForm(data=form_data_2)
-        self.assertTrue(form2.is_valid(), f"Form should be valid after a failure but has errors: {form2.errors.as_json()}")
+        # Check the final page after redirection
+        self.assertEqual(response.status_code, 200)
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'Your refund request has been submitted. Please check your email to confirm your request.')
 
-    def test_optional_reason_field(self):
-        """Test that the reason field is optional and form is valid if it's empty."""
-        form_data = {
-            'booking_reference': self.hire_booking.booking_reference,
-            'email': self.driver_profile.email,
-            'reason': '' # Empty reason
-        }
-        form = RefundRequestForm(data=form_data)
-        self.assertTrue(form.is_valid(), f"Form should be valid with an empty reason but has errors: {form.errors.as_json()}")
-        instance = form.save()
-        self.assertEqual(instance.reason, '')
