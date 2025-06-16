@@ -1,34 +1,38 @@
 # SCOOTER_SHOP/inventory/forms/admin_sales_booking_form.py
 
 from django import forms
-from inventory.models import SalesBooking, Motorcycle, SalesProfile
+from inventory.models import SalesBooking, Motorcycle, SalesProfile, InventorySettings
 from django.utils.translation import gettext_lazy as _
+from datetime import date
+from django.utils import timezone
+from decimal import Decimal
 
 class AdminSalesBookingForm(forms.ModelForm):
     """
     Form for administrators to create and update SalesBooking instances.
-    Allows selection of existing Motorcycle and SalesProfile.
+    It now uses hidden fields for SalesProfile and Motorcycle IDs, populated via AJAX.
+    Includes custom clean method for generating non-blocking warnings.
     """
-    motorcycle = forms.ModelChoiceField(
-        queryset=Motorcycle.objects.all().order_by('brand', 'model', 'year'),
+    # These fields will be populated by hidden inputs controlled by JavaScript
+    # We make them required at the form level, but their actual validation will
+    # depend on the presence of selected_profile_id and selected_motorcycle_id
+    # in the clean method.
+    selected_profile_id = forms.IntegerField(
         required=True,
-        empty_label=_("-- Select a Motorcycle --"),
-        help_text=_("The motorcycle associated with this sales booking."),
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.HiddenInput(),
+        label=_("Selected Sales Profile ID")
     )
-    sales_profile = forms.ModelChoiceField(
-        queryset=SalesProfile.objects.all().order_by('name', 'email'),
+    selected_motorcycle_id = forms.IntegerField(
         required=True,
-        empty_label=_("-- Select a Sales Profile (Customer) --"),
-        help_text=_("The customer's sales profile for this booking."),
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.HiddenInput(),
+        label=_("Selected Motorcycle ID")
     )
 
     class Meta:
         model = SalesBooking
         fields = [
-            'motorcycle',
-            'sales_profile',
+            # Removed 'motorcycle' and 'sales_profile' from here,
+            # as they will be handled by custom logic in clean method
             'booking_status',
             'payment_status',
             'amount_paid',
@@ -44,7 +48,7 @@ class AdminSalesBookingForm(forms.ModelForm):
             'payment_status': forms.Select(attrs={'class': 'form-control'}),
             'amount_paid': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'currency': forms.TextInput(attrs={'class': 'form-control'}),
-            'request_viewing': forms.CheckboxInput(attrs={'class': 'form-checkbox h-5 w-5 text-indigo-600'}),
+            'request_viewing': forms.CheckboxInput(attrs={'class': 'form-checkbox h-5 w-5 text-blue-600'}), # Updated indigo to blue
             'appointment_date': forms.DateInput(attrs={'class': 'form-control flatpickr-admin-date-input', 'type': 'date'}),
             'appointment_time': forms.TimeInput(attrs={'class': 'form-control flatpickr-admin-time-input', 'type': 'time'}),
             'customer_notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
@@ -63,7 +67,11 @@ class AdminSalesBookingForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        # Pop the instance of sales profile and motorcycle if passed
+        self.initial_sales_profile = kwargs.pop('initial_sales_profile', None)
+        self.initial_motorcycle = kwargs.pop('initial_motorcycle', None)
         super().__init__(*args, **kwargs)
+        
         # Add 'form-control' class to all text/number/select inputs by default
         for field_name, field in self.fields.items():
             if isinstance(field.widget, (forms.TextInput, forms.NumberInput, forms.Select, forms.Textarea, forms.DateInput, forms.TimeInput)) and 'class' not in field.widget.attrs:
@@ -71,4 +79,109 @@ class AdminSalesBookingForm(forms.ModelForm):
                 if 'form-control' not in current_classes:
                     current_classes.append('form-control')
                 field.widget.attrs['class'] = ' '.join(current_classes)
+        
+        # If an instance is provided for editing, pre-fill the hidden IDs
+        if self.instance and self.instance.pk:
+            if self.instance.sales_profile:
+                self.fields['selected_profile_id'].initial = self.instance.sales_profile.pk
+            if self.instance.motorcycle:
+                self.fields['selected_motorcycle_id'].initial = self.instance.motorcycle.pk
+
+    def clean(self):
+        """
+        Custom clean method for cross-field validation and warning generation.
+        Handles linking SalesProfile and Motorcycle based on IDs from hidden inputs.
+        """
+        cleaned_data = super().clean()
+        
+        # Initialize warnings list
+        self._warnings = []
+
+        # --- Handle SalesProfile and Motorcycle selection ---
+        selected_profile_id = cleaned_data.get('selected_profile_id')
+        selected_motorcycle_id = cleaned_data.get('selected_motorcycle_id')
+
+        sales_profile = None
+        motorcycle = None
+
+        if selected_profile_id:
+            try:
+                sales_profile = SalesProfile.objects.get(pk=selected_profile_id)
+                cleaned_data['sales_profile'] = sales_profile # Assign to the model field
+            except SalesProfile.DoesNotExist:
+                self.add_error('selected_profile_id', _("Selected sales profile does not exist."))
+        else:
+            self.add_error('selected_profile_id', _("A sales profile must be selected."))
+
+        if selected_motorcycle_id:
+            try:
+                motorcycle = Motorcycle.objects.get(pk=selected_motorcycle_id)
+                cleaned_data['motorcycle'] = motorcycle # Assign to the model field
+            except Motorcycle.DoesNotExist:
+                self.add_error('selected_motorcycle_id', _("Selected motorcycle does not exist."))
+        else:
+            self.add_error('selected_motorcycle_id', _("A motorcycle must be selected."))
+
+        # If there are errors in profile or motorcycle selection, stop further processing
+        if self.errors:
+            return cleaned_data
+
+        # --- Sales Booking Specific Warnings ---
+        appointment_date = cleaned_data.get('appointment_date')
+        appointment_time = cleaned_data.get('appointment_time')
+        booking_status = cleaned_data.get('booking_status')
+        payment_status = cleaned_data.get('payment_status')
+        amount_paid = cleaned_data.get('amount_paid')
+        request_viewing = cleaned_data.get('request_viewing')
+
+        # Get InventorySettings for deposit amount check
+        inventory_settings = InventorySettings.objects.first()
+
+        # Warning 1: Appointment date in the past
+        if appointment_date and appointment_date < date.today():
+            self._warnings.append(_("Warning: Appointment date is in the past."))
+
+        # Warning 2: Appointment time in the past for today's appointment
+        if appointment_date == date.today() and appointment_time and appointment_time < timezone.localtime(timezone.now()).time():
+            self._warnings.append(_("Warning: Appointment time for today is in the past."))
+        
+        # Warning 3: Deposit amount inconsistencies
+        if booking_status == 'confirmed' and inventory_settings and inventory_settings.deposit_amount > Decimal('0.00'):
+            if payment_status != 'deposit_paid' and payment_status != 'paid': # Assuming 'paid' could be a future status
+                self._warnings.append(_("Warning: Booking is 'Confirmed' but no deposit or full payment recorded. Please verify payment status."))
+            elif amount_paid < inventory_settings.deposit_amount:
+                self._warnings.append(_(f"Warning: Booking is 'Confirmed' but recorded amount paid (${amount_paid}) is less than the required deposit (${inventory_settings.deposit_amount})."))
+        
+        # Warning 4: Motorcycle availability check for 'confirmed' or 'reserved' status
+        if motorcycle and (booking_status == 'confirmed' or booking_status == 'reserved'):
+            if motorcycle.condition == 'new':
+                # For new bikes, check quantity
+                if motorcycle.quantity <= 0:
+                    self._warnings.append(_(f"Warning: The selected new motorcycle '{motorcycle.title}' is currently out of stock (quantity 0)."))
+                elif motorcycle.quantity == 1:
+                    self._warnings.append(_(f"Warning: The selected new motorcycle '{motorcycle.title}' has only 1 unit remaining. Confirming this booking will make it out of stock."))
+            else:
+                # For used/demo/hire, check if it's already reserved/sold/unavailable
+                if motorcycle.status in ['reserved', 'sold', 'unavailable']:
+                    # If the current instance being edited IS this motorcycle, it's fine.
+                    # Otherwise, it might be a conflict.
+                    if not (self.instance and self.instance.motorcycle == motorcycle):
+                         self._warnings.append(_(f"Warning: The selected motorcycle '{motorcycle.title}' is currently '{motorcycle.get_status_display()}'. Confirm this is acceptable."))
+                    # If the motorcycle is reserved by *another* booking (not this one being edited)
+                    if motorcycle.status == 'reserved' and self.instance and self.instance.motorcycle != motorcycle:
+                        # You might need to fetch existing sales bookings for this motorcycle
+                        # This would be a more complex check, potentially requiring another query
+                        pass # For now, a general warning is sufficient
+
+        # Warning 5: Requesting a viewing without an appointment date
+        if request_viewing and not (appointment_date and appointment_time):
+             self._warnings.append(_("Warning: 'Requested Viewing/Test Drive' is checked, but no appointment date or time is set."))
+
+        return cleaned_data
+
+    def get_warnings(self):
+        """
+        Returns a list of non-blocking warning messages generated during clean.
+        """
+        return getattr(self, '_warnings', [])
 
