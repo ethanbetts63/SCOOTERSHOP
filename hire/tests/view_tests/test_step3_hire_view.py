@@ -250,7 +250,6 @@ class AddonPackageViewTest(TestCase):
         Test that if add-ons are enabled, active add-ons are displayed in the form.
         """
         self.addon_unavailable.refresh_from_db() # Ensure its state is fresh
-        print(f"DEBUG: Test - addon_unavailable.is_available: {self.addon_unavailable.is_available}") # Should be False
         response = self.client.get(reverse('hire:step3_addons_and_packages', args=[self.motorcycle.id]))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.addon1.name)

@@ -1,28 +1,18 @@
-# mailer/models/mail_model.py
-
 from django.db import models
-from django.conf import settings # To access AUTH_USER_MODEL
-from django.utils import timezone # To use timezone.now()
+from django.conf import settings
+from django.utils import timezone
 from hire.models import HireBooking
-from hire.models.driver_profile import DriverProfile # Assuming driver_profile is in hire app
-from service.models import ServiceBooking # NEW: Import ServiceBooking
-from service.models import ServiceProfile # NEW: Import ServiceProfile
+from hire.models.driver_profile import DriverProfile
+from service.models import ServiceBooking
+from service.models import ServiceProfile
 
 
 class EmailLog(models.Model):
-    """
-    Model to log all outgoing emails sent by the application.
-    This provides a record of communication for auditing and debugging.
-    The relationships to User, DriverProfile, HireBooking, ServiceBooking,
-    and ServiceProfile are optional to allow for reuse across different
-    application contexts.
-    """
 
-    # Choices for email status
     STATUS_CHOICES = (
         ('SENT', 'Sent'),
         ('FAILED', 'Failed'),
-        ('PENDING', 'Pending'), # For emails that are queued but not yet sent
+        ('PENDING', 'Pending'),
     )
 
     timestamp = models.DateTimeField(
@@ -56,7 +46,6 @@ class EmailLog(models.Model):
         help_text="Any error message if the email sending failed."
     )
 
-    # Optional Foreign key to the User model
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -66,43 +55,39 @@ class EmailLog(models.Model):
         help_text="The registered user associated with this email, if applicable."
     )
 
-    # Optional Foreign key to the DriverProfile model
     driver_profile = models.ForeignKey(
-        DriverProfile, # Use the imported DriverProfile model
+        DriverProfile,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='sent_emails_for_driver', # Changed related_name to be specific
+        related_name='sent_emails_for_driver',
         help_text="The driver profile associated with this email, if applicable."
     )
 
-    # NEW: Optional Foreign key to the ServiceProfile model
     service_profile = models.ForeignKey(
-        ServiceProfile, # Use the imported ServiceProfile model
+        ServiceProfile,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='sent_emails_for_service_profile', # Added explicit related_name
+        related_name='sent_emails_for_service_profile',
         help_text="The service profile associated with this email, if applicable."
     )
 
-    # Optional Foreign key to the HireBooking model
     booking = models.ForeignKey(
         HireBooking,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='related_emails_for_hire', # Changed related_name to be explicit
+        related_name='related_emails_for_hire',
         help_text="The hire booking associated with this email, if applicable."
     )
 
-    # NEW: Optional Foreign key to the ServiceBooking model
     service_booking = models.ForeignKey(
         ServiceBooking,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='related_emails_for_service', # Added explicit related_name
+        related_name='related_emails_for_service',
         help_text="The service booking associated with this email, if applicable."
     )
 
@@ -114,4 +99,3 @@ class EmailLog(models.Model):
 
     def __str__(self):
         return f"Email to {self.recipient} - Subject: '{self.subject}' ({self.status})"
-
