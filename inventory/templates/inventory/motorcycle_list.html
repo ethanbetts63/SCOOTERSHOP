@@ -94,6 +94,7 @@
 
                 <!-- Motorcycle Grid -->
                 <div id="motorcycle-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                    <!-- Initial motorcycles loaded by Django, will be replaced by JS -->
                     {% for motorcycle in motorcycles %}
                         <div class="bg-white rounded-2xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 ease-in-out group">
                             <a href="{% url 'inventory:motorcycle-detail' pk=motorcycle.pk %}" class="block">
@@ -160,7 +161,10 @@
 
 <!-- JS Template for dynamic loading. This is NOT displayed initially. -->
 <template id="motorcycle-tile-template">
-    <div class="bg-white rounded-2xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 ease-in-out group">
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 ease-in-out group relative">
+        <!-- New: Status Badge for 'Reserved' or 'Out of Stock' -->
+        <div class="motorcycle-status-badge absolute top-4 left-4 text-sm font-bold px-4 py-2 rounded-full z-20 hidden"></div>
+        
         <a href="#" class="block motorcycle-link">
             <div class="relative">
                 <img src="https://placehold.co/600x400/e2e8f0/333?text=Bike+Image" alt="Motorcycle Image" class="w-full h-56 object-cover motorcycle-image">
@@ -236,9 +240,53 @@ document.addEventListener('DOMContentLoaded', function() {
         motorcycles.forEach(bike => {
             const tileContent = tileTemplate.content.cloneNode(true);
             const tile = tileContent.querySelector('.group');
+            const motorcycleLink = tile.querySelector('.motorcycle-link');
+            const statusBadge = tile.querySelector('.motorcycle-status-badge');
             
-            const detailUrl = `/inventory/motorcycles/${bike.id}/`; 
-            tile.querySelector('.motorcycle-link').href = detailUrl;
+            let statusText = '';
+            let statusClass = '';
+            let applyDimming = false; 
+
+            // Always set the detail URL, as bikes should always be clickable
+            motorcycleLink.href = `/inventory/motorcycles/${bike.id}/`; 
+
+            // Logic for 'New' bikes (check quantity)
+            // Assumes bike.condition_name is provided by your AJAX endpoint.
+            if (bike.condition_name === 'new') { 
+                if (bike.quantity <= 0) {
+                    applyDimming = true;
+                    statusText = 'Out of Stock';
+                    statusClass = 'bg-red-700 text-white'; // Darker red for out of stock
+                }
+            } 
+            // Logic for 'Used', 'Demo', 'Hire' bikes (check status)
+            // Assumes bike.status is provided by your AJAX endpoint.
+            else if (bike.status === 'reserved') {
+                applyDimming = true;
+                statusText = 'Reserved';
+                statusClass = 'bg-red-500 text-white'; // Red for reserved
+            } else if (bike.status === 'sold') {
+                applyDimming = true;
+                statusText = 'Sold';
+                statusClass = 'bg-gray-600 text-white'; // Grey for sold
+            }
+
+
+            // Apply grayscale and opacity if dimming is needed
+            if (applyDimming) {
+                tile.classList.add('opacity-50', 'grayscale'); 
+            } else {
+                tile.classList.remove('opacity-50', 'grayscale');
+            }
+
+            // Display status badge if applicable
+            if (statusText) {
+                statusBadge.textContent = statusText;
+                statusBadge.className = `motorcycle-status-badge absolute top-4 left-4 text-sm font-bold px-4 py-2 rounded-full z-20 ${statusClass}`;
+                statusBadge.classList.remove('hidden'); // Show the badge
+            } else {
+                statusBadge.classList.add('hidden'); // Hide if no special status
+            }
 
             const image = tile.querySelector('.motorcycle-image');
             image.src = bike.image_url || 'https://placehold.co/600x400/e2e8f0/333?text=No+Image';
@@ -276,7 +324,7 @@ document.addEventListener('DOMContentLoaded', function() {
             html += `<a href="#" data-page="${pageObj.previous_page_number}" class="pagination-link rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 shadow-sm">Previous</a>`;
         }
 
-        html += `<span class="page-current px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg shadow-md">Page ${pageObj.number} of ${pageObj.num_pages}</span>`;
+        html += `<span class="page-current px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg shadow-md">Page ${pageObj.number} of ${pageObj.paginator.num_pages}</span>`;
         
         if (pageObj.has_next) {
             html += `<a href="#" data-page="${pageObj.next_page_number}" class="pagination-link rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 shadow-sm">Next</a>`;
