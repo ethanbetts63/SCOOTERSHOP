@@ -11,7 +11,7 @@ from datetime import time, timedelta
 import stripe
 # Import factories
 from payments.tests.test_helpers.model_factories import (
-    RefundRequestFactory, HireBookingFactory, ServiceBookingFactory,
+    RefundRequestFactory, HireBookingFactory, ServiceBookingFactory, SalesBookingFactory,
     PaymentFactory, UserFactory
 )
 
@@ -68,12 +68,13 @@ class ProcessRefundViewTests(TestCase):
         refund_request = RefundRequestFactory(
             hire_booking=hire_booking,
             service_booking=None,
+            sales_booking=None,
             payment=hire_booking.payment,
-            status='approved',
+            status='pending', # Changed to 'pending' to allow processing
             amount_to_refund=Decimal('250.00'),
-            stripe_refund_id=None, # Ensure it starts as None
-            processed_by=None,    # Ensure it starts as None
-            processed_at=None,    # Ensure it starts as None
+            stripe_refund_id=None,
+            processed_by=None,
+            processed_at=None,
         )
 
         url = reverse('payments:process_refund', kwargs={'pk': refund_request.pk})
@@ -84,7 +85,7 @@ class ProcessRefundViewTests(TestCase):
 
         messages_list = list(messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages_list), 1)
-        self.assertIn("Refund for booking 'HIREBOOKINGREF' initiated successfully with Stripe", str(messages_list[0]))
+        self.assertIn(f"Refund request for booking '{hire_booking.booking_reference}' has been approved and initiated with Stripe (ID: {mock_stripe_refund_create.return_value.id}). Awaiting final confirmation from Stripe.", str(messages_list[0]))
         self.assertEqual(messages_list[0].tags, 'success')
 
         mock_stripe_refund_create.assert_called_once_with(
@@ -100,7 +101,7 @@ class ProcessRefundViewTests(TestCase):
         )
 
         refund_request.refresh_from_db()
-        self.assertEqual(refund_request.status, 'refunded')
+        self.assertEqual(refund_request.status, 'approved') 
         self.assertEqual(refund_request.stripe_refund_id, 're_mockedhire123')
         self.assertEqual(refund_request.processed_by, self.admin_user)
         self.assertIsNotNone(refund_request.processed_at)
@@ -134,8 +135,9 @@ class ProcessRefundViewTests(TestCase):
         refund_request = RefundRequestFactory(
             hire_booking=None,
             service_booking=service_booking,
+            sales_booking=None,
             payment=service_booking.payment,
-            status='reviewed_pending_approval',
+            status='reviewed_pending_approval', # An approvable status
             amount_to_refund=Decimal('100.00'),
             stripe_refund_id=None,
             processed_by=None,
@@ -150,7 +152,7 @@ class ProcessRefundViewTests(TestCase):
 
         messages_list = list(messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages_list), 1)
-        self.assertIn("Refund for booking 'SERVICEBOOKINGREF' initiated successfully with Stripe", str(messages_list[0]))
+        self.assertIn(f"Refund request for booking '{service_booking.service_booking_reference}' has been approved and initiated with Stripe (ID: {mock_stripe_refund_create.return_value.id}). Awaiting final confirmation from Stripe.", str(messages_list[0]))
         self.assertEqual(messages_list[0].tags, 'success')
 
         mock_stripe_refund_create.assert_called_once_with(
@@ -166,10 +168,76 @@ class ProcessRefundViewTests(TestCase):
         )
 
         refund_request.refresh_from_db()
-        self.assertEqual(refund_request.status, 'refunded')
+        self.assertEqual(refund_request.status, 'approved') 
         self.assertEqual(refund_request.stripe_refund_id, 're_mockedservice456')
         self.assertEqual(refund_request.processed_by, self.admin_user)
         self.assertIsNotNone(refund_request.processed_at)
+
+    @patch('payments.views.Refunds.process_refund.stripe.Refund.create')
+    @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
+    def test_successful_sales_booking_refund(
+        self, mock_is_admin, mock_stripe_refund_create
+    ):
+        """
+        Tests successful processing of a refund for a SalesBooking.
+        """
+        mock_stripe_refund_create.return_value = MagicMock(
+            id='re_mockedsales789',
+            status='succeeded'
+        )
+
+        sales_booking = SalesBookingFactory(
+            payment=PaymentFactory(
+                stripe_payment_intent_id='pi_sales789',
+                amount=Decimal('150.00'),
+                status='succeeded',
+                refund_policy_snapshot={'key': 'value'}
+            ),
+            appointment_date=timezone.now().date() + timedelta(days=7),
+            sales_booking_reference="SALESBOOKINGREF"
+        )
+        
+        refund_request = RefundRequestFactory(
+            hire_booking=None,
+            service_booking=None,
+            sales_booking=sales_booking,
+            payment=sales_booking.payment,
+            status='pending', # An approvable status
+            amount_to_refund=Decimal('75.00'),
+            stripe_refund_id=None,
+            processed_by=None,
+            processed_at=None,
+        )
+
+        url = reverse('payments:process_refund', kwargs={'pk': refund_request.pk})
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('payments:admin_refund_management'))
+
+        messages_list = list(messages.get_messages(response.wsgi_request))
+        self.assertEqual(len(messages_list), 1)
+        self.assertIn(f"Refund request for booking '{sales_booking.sales_booking_reference}' has been approved and initiated with Stripe (ID: {mock_stripe_refund_create.return_value.id}). Awaiting final confirmation from Stripe.", str(messages_list[0]))
+        self.assertEqual(messages_list[0].tags, 'success')
+
+        mock_stripe_refund_create.assert_called_once_with(
+            payment_intent='pi_sales789',
+            amount=int(Decimal('75.00') * 100),
+            reason='requested_by_customer',
+            metadata={
+                'refund_request_id': str(refund_request.pk),
+                'admin_user_id': str(self.admin_user.pk),
+                'booking_reference': 'SALESBOOKINGREF',
+                'booking_type': 'sales',
+            }
+        )
+
+        refund_request.refresh_from_db()
+        self.assertEqual(refund_request.status, 'approved') 
+        self.assertEqual(refund_request.stripe_refund_id, 're_mockedsales789')
+        self.assertEqual(refund_request.processed_by, self.admin_user)
+        self.assertIsNotNone(refund_request.processed_at)
+
 
     @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
     def test_refund_invalid_status_rejection(self, mock_is_admin):
@@ -177,7 +245,7 @@ class ProcessRefundViewTests(TestCase):
         Tests that a refund request with an invalid status is rejected.
         """
         refund_request = RefundRequestFactory(
-            status='pending', # Invalid status for direct processing
+            status='failed', # An invalid status for direct processing
             amount_to_refund=Decimal('50.00'),
             payment=PaymentFactory(stripe_payment_intent_id='pi_test')
         )
@@ -189,11 +257,12 @@ class ProcessRefundViewTests(TestCase):
 
         messages_list = list(messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages_list), 1)
-        self.assertIn("Refund request is not in an approvable state.", str(messages_list[0]))
+        self.assertIn("Refund request is not in an approvable state. Current status: Refund Failed.", str(messages_list[0]))
         self.assertEqual(messages_list[0].tags, 'error')
 
         refund_request.refresh_from_db()
-        self.assertEqual(refund_request.status, 'pending')
+        self.assertEqual(refund_request.status, 'failed') # Status should not change
+
 
     @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
     def test_refund_no_associated_payment_rejection(self, mock_is_admin):
@@ -201,7 +270,7 @@ class ProcessRefundViewTests(TestCase):
         Tests that a refund request with no associated payment is rejected.
         """
         refund_request = RefundRequestFactory(
-            status='approved',
+            status='pending', # Use an approvable status to hit this check
             amount_to_refund=Decimal('50.00'),
             payment=None # No associated payment
         )
@@ -217,7 +286,8 @@ class ProcessRefundViewTests(TestCase):
         self.assertEqual(messages_list[0].tags, 'error')
 
         refund_request.refresh_from_db()
-        self.assertEqual(refund_request.status, 'approved')
+        self.assertEqual(refund_request.status, 'pending') # Status should not change
+
 
     @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
     def test_refund_invalid_amount_rejection(self, mock_is_admin):
@@ -225,7 +295,7 @@ class ProcessRefundViewTests(TestCase):
         Tests that a refund request with invalid/zero amount_to_refund is rejected.
         """
         refund_request = RefundRequestFactory(
-            status='approved',
+            status='approved', # Use an approvable status to hit this check
             amount_to_refund=Decimal('0.00'), # Invalid amount
             payment=PaymentFactory(stripe_payment_intent_id='pi_test')
         )
@@ -241,7 +311,8 @@ class ProcessRefundViewTests(TestCase):
         self.assertEqual(messages_list[0].tags, 'error')
 
         refund_request.refresh_from_db()
-        self.assertEqual(refund_request.status, 'approved')
+        self.assertEqual(refund_request.status, 'approved') # Status should not change
+
 
     @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
     def test_refund_no_stripe_payment_intent_id_rejection(self, mock_is_admin):
@@ -249,7 +320,7 @@ class ProcessRefundViewTests(TestCase):
         Tests that a refund request with no Stripe Payment Intent ID is rejected.
         """
         refund_request = RefundRequestFactory(
-            status='approved',
+            status='approved', # Use an approvable status to hit this check
             amount_to_refund=Decimal('50.00'),
             payment=PaymentFactory(stripe_payment_intent_id=None) # No Stripe Intent ID
         )
@@ -265,7 +336,7 @@ class ProcessRefundViewTests(TestCase):
         self.assertEqual(messages_list[0].tags, 'error')
 
         refund_request.refresh_from_db()
-        self.assertEqual(refund_request.status, 'approved')
+        self.assertEqual(refund_request.status, 'approved') # Status should not change
 
 
     @patch('payments.views.Refunds.process_refund.stripe.Refund.create')
@@ -298,12 +369,13 @@ class ProcessRefundViewTests(TestCase):
         refund_request = RefundRequestFactory(
             hire_booking=hire_booking,
             service_booking=None,
+            sales_booking=None,
             payment=hire_booking.payment,
-            status='approved',
+            status='pending', # Use an approvable status to hit this check
             amount_to_refund=Decimal('250.00'),
-            stripe_refund_id=None, # Ensure it starts as None
-            processed_by=None,    # Ensure it starts as None
-            processed_at=None,    # Ensure it starts as None
+            stripe_refund_id=None,
+            processed_by=None,
+            processed_at=None,
         )
 
         url = reverse('payments:process_refund', kwargs={'pk': refund_request.pk})
@@ -314,7 +386,7 @@ class ProcessRefundViewTests(TestCase):
 
         messages_list = list(messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages_list), 1)
-        self.assertIn("Stripe error initiating refund:", str(messages_list[0]))
+        self.assertIn("Stripe error initiating refund: Test Stripe Error Message", str(messages_list[0]))
         self.assertEqual(messages_list[0].tags, 'error')
 
         mock_stripe_refund_create.assert_called_once()
@@ -322,7 +394,6 @@ class ProcessRefundViewTests(TestCase):
         refund_request.refresh_from_db()
         self.assertEqual(refund_request.status, 'failed')
         self.assertIn("Stripe initiation failed: Test Stripe Error Message", refund_request.staff_notes)
-        # These should remain None as the Stripe call failed before setting them
         self.assertIsNone(refund_request.stripe_refund_id)
         self.assertIsNone(refund_request.processed_by)
         self.assertIsNone(refund_request.processed_at)
@@ -355,12 +426,13 @@ class ProcessRefundViewTests(TestCase):
         refund_request = RefundRequestFactory(
             hire_booking=None,
             service_booking=service_booking,
+            sales_booking=None,
             payment=service_booking.payment,
-            status='approved',
+            status='reviewed_pending_approval', # Use an approvable status to hit this check
             amount_to_refund=Decimal('50.00'),
-            stripe_refund_id=None, # Ensure it starts as None
-            processed_by=None,    # Ensure it starts as None
-            processed_at=None,    # Ensure it starts as None
+            stripe_refund_id=None,
+            processed_by=None,
+            processed_at=None,
         )
 
         url = reverse('payments:process_refund', kwargs={'pk': refund_request.pk})
@@ -371,7 +443,7 @@ class ProcessRefundViewTests(TestCase):
 
         messages_list = list(messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages_list), 1)
-        self.assertIn("An unexpected error occurred:", str(messages_list[0]))
+        self.assertIn("An unexpected error occurred: Something went wrong internally", str(messages_list[0]))
         self.assertEqual(messages_list[0].tags, 'error')
 
         mock_stripe_refund_create.assert_called_once()
@@ -379,7 +451,6 @@ class ProcessRefundViewTests(TestCase):
         refund_request.refresh_from_db()
         self.assertEqual(refund_request.status, 'failed')
         self.assertIn("Unexpected error during initiation: Something went wrong internally", refund_request.staff_notes)
-        # These should remain None as the Stripe call failed before setting them
         self.assertIsNone(refund_request.stripe_refund_id)
         self.assertIsNone(refund_request.processed_by)
         self.assertIsNone(refund_request.processed_at)
@@ -401,7 +472,6 @@ class ProcessRefundViewTests(TestCase):
         response = self.client.post(url)
 
         self.assertEqual(response.status_code, 302)
-        # CORRECTED: Use reverse('users:login') as per your urls.py structure
         self.assertRedirects(response, reverse('users:login') + '?next=' + url)
 
         messages_list = list(messages.get_messages(response.wsgi_request))
