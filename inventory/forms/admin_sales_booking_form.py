@@ -36,7 +36,6 @@ class AdminSalesBookingForm(forms.ModelForm):
             'appointment_date',
             'appointment_time',
             'customer_notes',
-            # 'stripe_payment_intent_id', # REMOVED: This field is now gone
         ]
         widgets = {
             'booking_status': forms.Select(attrs={'class': 'form-control'}),
@@ -47,7 +46,6 @@ class AdminSalesBookingForm(forms.ModelForm):
             'appointment_date': forms.DateInput(attrs={'class': 'form-control flatpickr-admin-date-input', 'type': 'date'}),
             'appointment_time': forms.TimeInput(attrs={'class': 'form-control flatpickr-admin-time-input', 'type': 'time'}),
             'customer_notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            # 'stripe_payment_intent_id': forms.TextInput(attrs={'class': 'form-control'}), # REMOVED: Widget for this field
         }
         labels = {
             'booking_status': _("Booking Status"),
@@ -58,7 +56,6 @@ class AdminSalesBookingForm(forms.ModelForm):
             'appointment_date': _("Appointment Date"),
             'appointment_time': _("Appointment Time"),
             'customer_notes': _("Customer Notes"),
-            # 'stripe_payment_intent_id': _("Stripe Payment Intent ID"), # REMOVED: Label for this field
         }
 
     def __init__(self, *args, **kwargs):
@@ -119,34 +116,67 @@ class AdminSalesBookingForm(forms.ModelForm):
 
         inventory_settings = InventorySettings.objects.first()
 
+        # Warning 1: Appointment date in the past
         if appointment_date and appointment_date < date.today():
             self._warnings.append(_("Warning: Appointment date is in the past."))
 
+        # Warning 2: Appointment time in the past for today's appointment
         if appointment_date == date.today() and appointment_time and appointment_time < timezone.localtime(timezone.now()).time():
             self._warnings.append(_("Warning: Appointment time for today is in the past."))
         
+        # Warning 3: Deposit amount inconsistencies
         if booking_status == 'confirmed' and inventory_settings and inventory_settings.deposit_amount > Decimal('0.00'):
-            if payment_status != 'deposit_paid' and payment_status != 'paid':
+            if payment_status not in ['deposit_paid', 'paid']: # Assuming 'paid' could be a future status
                 self._warnings.append(_("Warning: Booking is 'Confirmed' but no deposit or full payment recorded. Please verify payment status."))
             elif amount_paid < inventory_settings.deposit_amount:
                 self._warnings.append(_(f"Warning: Booking is 'Confirmed' but recorded amount paid (${amount_paid}) is less than the required deposit (${inventory_settings.deposit_amount})."))
         
+        # NEW AND IMPROVED Warning 4: Motorcycle availability check for 'confirmed' or 'reserved' status
         if motorcycle and (booking_status == 'confirmed' or booking_status == 'reserved'):
+            # This flag determines if we should warn the admin about the motorcycle's status.
+            should_warn_about_motorcycle_status = False
+            warning_message_text = ""
+
+            # Case 1: 'New' motorcycle specific checks
             if motorcycle.condition == 'new':
                 if motorcycle.quantity <= 0:
-                    self._warnings.append(_(f"Warning: The selected new motorcycle '{motorcycle.title}' is currently out of stock (quantity 0)."))
+                    should_warn_about_motorcycle_status = True
+                    warning_message_text = _(f"Warning: The selected new motorcycle '{motorcycle.title}' is currently out of stock (quantity 0).")
                 elif motorcycle.quantity == 1:
+                    # This is a less severe warning, so we can append it directly without blocking other, stronger warnings.
                     self._warnings.append(_(f"Warning: The selected new motorcycle '{motorcycle.title}' has only 1 unit remaining. Confirming this booking will make it out of stock."))
-            else:
-                if motorcycle.status in ['reserved', 'sold', 'unavailable']:
-                    if not (self.instance and self.instance.motorcycle == motorcycle):
-                         self._warnings.append(_(f"Warning: The selected motorcycle '{motorcycle.title}' is currently '{motorcycle.get_status_display()}'. Confirm this is acceptable."))
 
+                # If a 'new' bike has a status that implies it's taken (reserved/sold),
+                # this is a warning, regardless of remaining quantity for other 'new' bikes.
+                # Only warn if it's not the same motorcycle already tied to this booking (if in edit mode).
+                if motorcycle.status in ['reserved', 'sold']:
+                    if not (self.instance and self.instance.motorcycle == motorcycle):
+                        should_warn_about_motorcycle_status = True
+                        warning_message_text = _(f"Warning: The selected new motorcycle '{motorcycle.title}' is currently '{motorcycle.get_status_display()}' (e.g., Reserved/Sold). Confirm this is acceptable.")
+            
+            # Case 2: 'Used', 'Demo', 'Hire' (unique) motorcycle specific checks
+            else: # motorcycle.condition in ['used', 'demo', 'hire']
+                if motorcycle.status in ['reserved', 'sold', 'unavailable']:
+                    # Only warn if it's not the same motorcycle already tied to this booking (if in edit mode).
+                    # If it's a new booking or changing to a different reserved bike.
+                    if not (self.instance and self.instance.motorcycle == motorcycle):
+                        should_warn_about_motorcycle_status = True
+                        warning_message_text = _(f"Warning: The selected motorcycle '{motorcycle.title}' is currently '{motorcycle.get_status_display()}'. Confirm this is acceptable.")
+            
+            # Append the warning message if applicable and not already present
+            if should_warn_about_motorcycle_status and warning_message_text and warning_message_text not in self._warnings:
+                self._warnings.append(warning_message_text)
+
+
+        # Warning 5: Requesting a viewing without an appointment date
         if request_viewing and not (appointment_date and appointment_time):
              self._warnings.append(_("Warning: 'Requested Viewing/Test Drive' is checked, but no appointment date or time is set."))
 
         return cleaned_data
 
     def get_warnings(self):
+        """
+        Returns a list of non-blocking warning messages generated during clean.
+        """
         return getattr(self, '_warnings', [])
 
