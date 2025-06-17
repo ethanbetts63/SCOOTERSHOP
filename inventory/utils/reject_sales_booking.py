@@ -29,6 +29,7 @@ def reject_sales_booking(sales_booking_id, message=None, send_notification=True)
                         motorcycle.status = 'available'
                         motorcycle.save()
             else:
+                print(f"DEBUG: Booking {sales_booking_id} already cancelled or declined. No action taken.")
                 return {'success': False, 'message': 'Booking already cancelled or declined.'}
 
             if send_notification:
@@ -42,7 +43,14 @@ def reject_sales_booking(sales_booking_id, message=None, send_notification=True)
                 }
 
                 customer_email_subject = f"Update Regarding Your Sales Booking for {motorcycle.title}"
-                customer_email_template = 'emails/sales_booking_rejected_customer.html'
+                # Corrected template name based on your file tree
+                customer_email_template = 'user_sales_booking_rejected.html'
+
+                print(f"DEBUG: Attempting to send customer rejection email for booking {booking.sales_booking_reference}")
+                print(f"DEBUG: Customer email subject: {customer_email_subject}")
+                print(f"DEBUG: Customer email template: {customer_email_template}")
+                print(f"DEBUG: Customer recipient: {[booking.sales_profile.email]}")
+
                 send_templated_email(
                     recipient_list=[booking.sales_profile.email],
                     subject=customer_email_subject,
@@ -51,9 +59,18 @@ def reject_sales_booking(sales_booking_id, message=None, send_notification=True)
                     sales_profile=booking.sales_profile,
                     sales_booking=booking,
                 )
+                print(f"DEBUG: Customer email for booking {booking.sales_booking_reference} send attempt completed.")
+
 
                 admin_email_subject = f"ADMIN: Sales Booking {booking.sales_booking_reference} Rejected"
-                admin_email_template = 'emails/sales_booking_rejected_admin.html'
+                # Corrected template name based on your file tree
+                admin_email_template = 'admin_sales_booking_rejected.html'
+
+                print(f"DEBUG: Attempting to send admin rejection email for booking {booking.sales_booking_reference}")
+                print(f"DEBUG: Admin email subject: {admin_email_subject}")
+                print(f"DEBUG: Admin email template: {admin_email_template}")
+                print(f"DEBUG: Admin recipient: {[settings.DEFAULT_FROM_EMAIL]}")
+
                 send_templated_email(
                     recipient_list=[settings.DEFAULT_FROM_EMAIL],
                     subject=admin_email_subject,
@@ -62,10 +79,13 @@ def reject_sales_booking(sales_booking_id, message=None, send_notification=True)
                     sales_profile=booking.sales_profile,
                     sales_booking=booking,
                 )
+                print(f"DEBUG: Admin email for booking {booking.sales_booking_reference} send attempt completed.")
 
             return {'success': True, 'message': 'Sales booking rejected successfully.'}
 
     except SalesBooking.DoesNotExist:
+        print(f"DEBUG: Sales Booking with ID {sales_booking_id} not found during rejection.")
         return {'success': False, 'message': 'Sales Booking not found.'}
     except Exception as e:
+        print(f"DEBUG: An error occurred during rejection for booking {sales_booking_id}: {e}")
         return {'success': False, 'message': f'An error occurred: {str(e)}'}
