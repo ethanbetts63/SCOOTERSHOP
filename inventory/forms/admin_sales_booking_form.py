@@ -73,7 +73,8 @@ class AdminSalesBookingForm(forms.ModelForm):
         if self.instance and self.instance.pk:
             if self.instance.sales_profile:
                 self.fields['selected_profile_id'].initial = self.instance.sales_profile.pk
-            if self.instance.motorcycle:
+            # Safely attempt to set initial motorcycle ID if instance exists and has a motorcycle linked
+            if getattr(self.instance, 'motorcycle', None): # Use getattr for safer access
                 self.fields['selected_motorcycle_id'].initial = self.instance.motorcycle.pk
 
     def clean(self):
@@ -126,16 +127,18 @@ class AdminSalesBookingForm(forms.ModelForm):
         
         # Warning 3: Deposit amount inconsistencies
         if booking_status == 'confirmed' and inventory_settings and inventory_settings.deposit_amount > Decimal('0.00'):
-            if payment_status not in ['deposit_paid', 'paid']: # Assuming 'paid' could be a future status
+            if payment_status not in ['deposit_paid', 'paid']:
                 self._warnings.append(_("Warning: Booking is 'Confirmed' but no deposit or full payment recorded. Please verify payment status."))
             elif amount_paid < inventory_settings.deposit_amount:
                 self._warnings.append(_(f"Warning: Booking is 'Confirmed' but recorded amount paid (${amount_paid}) is less than the required deposit (${inventory_settings.deposit_amount})."))
         
         # NEW AND IMPROVED Warning 4: Motorcycle availability check for 'confirmed' or 'reserved' status
         if motorcycle and (booking_status == 'confirmed' or booking_status == 'reserved'):
-            # This flag determines if we should warn the admin about the motorcycle's status.
             should_warn_about_motorcycle_status = False
             warning_message_text = ""
+
+            # Get the current motorcycle linked to the instance being edited, safely
+            instance_motorcycle = getattr(self.instance, 'motorcycle', None)
 
             # Case 1: 'New' motorcycle specific checks
             if motorcycle.condition == 'new':
@@ -144,13 +147,15 @@ class AdminSalesBookingForm(forms.ModelForm):
                     warning_message_text = _(f"Warning: The selected new motorcycle '{motorcycle.title}' is currently out of stock (quantity 0).")
                 elif motorcycle.quantity == 1:
                     # This is a less severe warning, so we can append it directly without blocking other, stronger warnings.
-                    self._warnings.append(_(f"Warning: The selected new motorcycle '{motorcycle.title}' has only 1 unit remaining. Confirming this booking will make it out of stock."))
+                    # Only add if not already present to avoid duplicates if other conditions trigger same warning
+                    if _(f"Warning: The selected new motorcycle '{motorcycle.title}' has only 1 unit remaining. Confirming this booking will make it out of stock.") not in self._warnings:
+                         self._warnings.append(_(f"Warning: The selected new motorcycle '{motorcycle.title}' has only 1 unit remaining. Confirming this booking will make it out of stock."))
 
                 # If a 'new' bike has a status that implies it's taken (reserved/sold),
                 # this is a warning, regardless of remaining quantity for other 'new' bikes.
                 # Only warn if it's not the same motorcycle already tied to this booking (if in edit mode).
                 if motorcycle.status in ['reserved', 'sold']:
-                    if not (self.instance and self.instance.motorcycle == motorcycle):
+                    if not (instance_motorcycle and instance_motorcycle == motorcycle): # Use the safely accessed instance_motorcycle
                         should_warn_about_motorcycle_status = True
                         warning_message_text = _(f"Warning: The selected new motorcycle '{motorcycle.title}' is currently '{motorcycle.get_status_display()}' (e.g., Reserved/Sold). Confirm this is acceptable.")
             
@@ -158,8 +163,7 @@ class AdminSalesBookingForm(forms.ModelForm):
             else: # motorcycle.condition in ['used', 'demo', 'hire']
                 if motorcycle.status in ['reserved', 'sold', 'unavailable']:
                     # Only warn if it's not the same motorcycle already tied to this booking (if in edit mode).
-                    # If it's a new booking or changing to a different reserved bike.
-                    if not (self.instance and self.instance.motorcycle == motorcycle):
+                    if not (instance_motorcycle and instance_motorcycle == motorcycle): # Use the safely accessed instance_motorcycle
                         should_warn_about_motorcycle_status = True
                         warning_message_text = _(f"Warning: The selected motorcycle '{motorcycle.title}' is currently '{motorcycle.get_status_display()}'. Confirm this is acceptable.")
             
