@@ -48,6 +48,22 @@
     .btn-create:hover {
         background-color: #16a34a;
     }
+    .btn-confirm {
+        color: #ffffff;
+        background-color: #10b981; /* emerald-500 */
+        border: 1px solid #059669; /* emerald-600 */
+    }
+    .btn-confirm:hover {
+        background-color: #059669;
+    }
+    .btn-reject {
+        color: #ffffff;
+        background-color: #f59e0b; /* amber-500 */
+        border: 1px solid #d97706; /* amber-600 */
+    }
+    .btn-reject:hover {
+        background-color: #d97706;
+    }
 </style>
 {% endblock %}
 
@@ -102,7 +118,6 @@
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Motorcycle</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Appointment</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
@@ -124,10 +139,21 @@
                                     N/A
                                 {% endif %}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ booking.created_at|date:"M d, Y H:i" }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium table-cell-padding">
                                 <div class="flex space-x-2">
                                     <a href="{% url 'inventory:sales_booking_create_update' pk=booking.pk %}" class="action-button btn-edit">Edit</a>
+                                    <form action="#" method="post" class="inline"> {# Placeholder action #}
+                                        {% csrf_token %}
+                                        <button type="submit" class="action-button btn-confirm" onclick="return confirm('Are you sure you want to confirm sales booking {{ booking.sales_booking_reference }}?');">
+                                            Confirm
+                                        </button>
+                                    </form>
+                                    <form action="#" method="post" class="inline"> {# Placeholder action #}
+                                        {% csrf_token %}
+                                        <button type="submit" class="action-button btn-reject" onclick="return confirm('Are you sure you want to reject sales booking {{ booking.sales_booking_reference }}?');">
+                                            Reject
+                                        </button>
+                                    </form>
                                     <form action="{% url 'inventory:admin_sales_booking_delete' pk=booking.pk %}" method="post" class="inline">
                                         {% csrf_token %}
                                         <button type="submit" class="action-button btn-delete" onclick="return confirm('Are you sure you want to delete sales booking {{ booking.sales_booking_reference }}? This action cannot be undone.');">

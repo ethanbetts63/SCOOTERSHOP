@@ -1,0 +1,159 @@
+{# mailer/templates/emails/sales_booking_rejected_customer.html #}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Regarding Your Sales Booking for {{ motorcycle.title }}</title>
+    <style type="text/css">
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #dc3545; /* Red for rejection/warning */
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #777777;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #007bff;
+            color: #ffffff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .section-title {
+            background-color: #e9ecef;
+            padding: 10px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-left: 5px solid #dc3545; /* Red for sections */
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+            <td style="padding: 20px 0; text-align: center;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="container">
+                    <tr>
+                        <td class="header">
+                            <h1>Important Update Regarding Your Sales Booking</h1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="content">
+                            <p>Hi {% if sales_profile.name %}{{ sales_profile.name }}{% else %}there{% endif %},</p>
+                            <p>We regret to inform you that your sales booking for the <strong>{{ motorcycle.title }}</strong> (Reference: <strong>{{ booking.sales_booking_reference }}</strong>) has been declined by our administration team.</p>
+
+                            {% if admin_message %}
+                            <div class="section-title">Message from SCOOTER_SHOP Team</div>
+                            <p style="white-space: pre-wrap;">{{ admin_message }}</p>
+                            {% endif %}
+
+                            <div class="section-title">Your Booking Details</div>
+                            <table>
+                                <tr>
+                                    <th>Booking Reference:</th>
+                                    <td><strong>{{ booking.sales_booking_reference }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <th>Motorcycle:</th>
+                                    <td>{{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Final Status:</th>
+                                    <td>{{ booking.get_booking_status_display }}</td>
+                                </tr>
+                                {% if booking.appointment_date and booking.appointment_time %}
+                                <tr>
+                                    <th>Original Appointment Date/Time:</th>
+                                    <td>{{ booking.appointment_date|date:"D, M d, Y" }} at {{ booking.appointment_time|time:"P" }}</td>
+                                </tr>
+                                {% endif %}
+                                <tr>
+                                    <th>Amount Paid:</th>
+                                    <td>{{ booking.amount_paid|floatformat:2 }} {{ booking.currency }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Payment Status:</th>
+                                    <td>{{ booking.get_payment_status_display }}</td>
+                                </tr>
+                            </table>
+
+                            {% if refund_note %}
+                            <p style="color: #dc3545; font-weight: bold;">
+                                Important: Your deposit of {{ booking.amount_paid|floatformat:2 }} {{ booking.currency }} will be refunded to your original payment method. Please allow 3-5 business days for the refund to appear in your account.
+                            </p>
+                            {% endif %}
+
+                            <p>If you have any questions or would like to discuss alternative options, please do not hesitate to contact us.</p>
+                            <p>Sincerely,</p>
+                            <p>The SCOOTER_SHOP Team</p>
+
+                            <p style="text-align: center;">
+                                <a href="{% url 'core:index' %}" class="button">Visit Our Website</a>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="footer">
+                            <p>&copy; {{ "now"|date:"Y" }} SCOOTER_SHOP. All rights reserved.</p>
+                            <p>This is an automated email, please do not reply.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

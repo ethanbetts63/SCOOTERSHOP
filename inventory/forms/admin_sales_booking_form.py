@@ -13,7 +13,6 @@ class AdminSalesBookingForm(forms.ModelForm):
     It now uses hidden fields for SalesProfile and Motorcycle IDs, populated via AJAX.
     Includes custom clean method for generating non-blocking warnings.
     """
-    # These fields will be populated by hidden inputs controlled by JavaScript
     selected_profile_id = forms.IntegerField(
         required=True,
         widget=forms.HiddenInput(),
@@ -73,8 +72,7 @@ class AdminSalesBookingForm(forms.ModelForm):
         if self.instance and self.instance.pk:
             if self.instance.sales_profile:
                 self.fields['selected_profile_id'].initial = self.instance.sales_profile.pk
-            # Safely attempt to set initial motorcycle ID if instance exists and has a motorcycle linked
-            if getattr(self.instance, 'motorcycle', None): # Use getattr for safer access
+            if getattr(self.instance, 'motorcycle', None):
                 self.fields['selected_motorcycle_id'].initial = self.instance.motorcycle.pk
 
     def clean(self):
@@ -117,62 +115,45 @@ class AdminSalesBookingForm(forms.ModelForm):
 
         inventory_settings = InventorySettings.objects.first()
 
-        # Warning 1: Appointment date in the past
         if appointment_date and appointment_date < date.today():
             self._warnings.append(_("Warning: Appointment date is in the past."))
 
-        # Warning 2: Appointment time in the past for today's appointment
         if appointment_date == date.today() and appointment_time and appointment_time < timezone.localtime(timezone.now()).time():
             self._warnings.append(_("Warning: Appointment time for today is in the past."))
         
-        # Warning 3: Deposit amount inconsistencies
         if booking_status == 'confirmed' and inventory_settings and inventory_settings.deposit_amount > Decimal('0.00'):
             if payment_status not in ['deposit_paid', 'paid']:
                 self._warnings.append(_("Warning: Booking is 'Confirmed' but no deposit or full payment recorded. Please verify payment status."))
             elif amount_paid < inventory_settings.deposit_amount:
                 self._warnings.append(_(f"Warning: Booking is 'Confirmed' but recorded amount paid (${amount_paid}) is less than the required deposit (${inventory_settings.deposit_amount})."))
         
-        # NEW AND IMPROVED Warning 4: Motorcycle availability check for 'confirmed' or 'reserved' status
         if motorcycle and (booking_status == 'confirmed' or booking_status == 'reserved'):
             should_warn_about_motorcycle_status = False
             warning_message_text = ""
-
-            # Get the current motorcycle linked to the instance being edited, safely
             instance_motorcycle = getattr(self.instance, 'motorcycle', None)
 
-            # Case 1: 'New' motorcycle specific checks
             if motorcycle.condition == 'new':
                 if motorcycle.quantity <= 0:
                     should_warn_about_motorcycle_status = True
                     warning_message_text = _(f"Warning: The selected new motorcycle '{motorcycle.title}' is currently out of stock (quantity 0).")
                 elif motorcycle.quantity == 1:
-                    # This is a less severe warning, so we can append it directly without blocking other, stronger warnings.
-                    # Only add if not already present to avoid duplicates if other conditions trigger same warning
                     if _(f"Warning: The selected new motorcycle '{motorcycle.title}' has only 1 unit remaining. Confirming this booking will make it out of stock.") not in self._warnings:
                          self._warnings.append(_(f"Warning: The selected new motorcycle '{motorcycle.title}' has only 1 unit remaining. Confirming this booking will make it out of stock."))
-
-                # If a 'new' bike has a status that implies it's taken (reserved/sold),
-                # this is a warning, regardless of remaining quantity for other 'new' bikes.
-                # Only warn if it's not the same motorcycle already tied to this booking (if in edit mode).
                 if motorcycle.status in ['reserved', 'sold']:
-                    if not (instance_motorcycle and instance_motorcycle == motorcycle): # Use the safely accessed instance_motorcycle
+                    if not (instance_motorcycle and instance_motorcycle.pk == motorcycle.pk):
                         should_warn_about_motorcycle_status = True
                         warning_message_text = _(f"Warning: The selected new motorcycle '{motorcycle.title}' is currently '{motorcycle.get_status_display()}' (e.g., Reserved/Sold). Confirm this is acceptable.")
             
-            # Case 2: 'Used', 'Demo', 'Hire' (unique) motorcycle specific checks
-            else: # motorcycle.condition in ['used', 'demo', 'hire']
+            else:
                 if motorcycle.status in ['reserved', 'sold', 'unavailable']:
-                    # Only warn if it's not the same motorcycle already tied to this booking (if in edit mode).
-                    if not (instance_motorcycle and instance_motorcycle == motorcycle): # Use the safely accessed instance_motorcycle
+                    # FIX: Compare by PK for robustness.
+                    if not (instance_motorcycle and instance_motorcycle.pk == motorcycle.pk):
                         should_warn_about_motorcycle_status = True
                         warning_message_text = _(f"Warning: The selected motorcycle '{motorcycle.title}' is currently '{motorcycle.get_status_display()}'. Confirm this is acceptable.")
             
-            # Append the warning message if applicable and not already present
             if should_warn_about_motorcycle_status and warning_message_text and warning_message_text not in self._warnings:
                 self._warnings.append(warning_message_text)
 
-
-        # Warning 5: Requesting a viewing without an appointment date
         if request_viewing and not (appointment_date and appointment_time):
              self._warnings.append(_("Warning: 'Requested Viewing/Test Drive' is checked, but no appointment date or time is set."))
 
@@ -183,4 +164,3 @@ class AdminSalesBookingForm(forms.ModelForm):
         Returns a list of non-blocking warning messages generated during clean.
         """
         return getattr(self, '_warnings', [])
-
