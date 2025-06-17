@@ -1,20 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.decorators import user_passes_test
-# Import the (soon-to-be) generalized AdminRefundRequestForm
 from payments.forms.admin_refund_request_form import AdminRefundRequestForm
 from payments.models.RefundRequest import RefundRequest
 from users.views.auth import is_admin # Assuming this utility exists for admin check
-
-# Import booking models to access their specific fields
-from hire.models import HireBooking
-from service.models import ServiceBooking
-from inventory.models import SalesBooking # Import SalesBooking
-
 
 @method_decorator(user_passes_test(is_admin), name='dispatch')
 class AdminAddEditRefundRequestView(View):
