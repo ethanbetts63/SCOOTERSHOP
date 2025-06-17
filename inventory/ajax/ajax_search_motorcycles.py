@@ -15,58 +15,48 @@ def search_motorcycles_ajax(request):
     By default, it shows available or reserved motorcycles.
     Returns a JSON response with a list of matching motorcycles.
     """
-    # Ensure only staff members can access this endpoint
     if not request.user.is_staff:
         return JsonResponse({'error': 'Permission denied'}, status=403)
 
     search_term = request.GET.get('query', '').strip()
-    # An optional parameter to include unavailable motorcycles in the search results
     include_unavailable = request.GET.get('include_unavailable', 'false').lower() == 'true'
 
     motorcycles_data = []
 
     if search_term:
-        # Define base query filters.
-        # Q objects allow for complex OR conditions.
         search_query = (
-            Q(pk__icontains=search_term) | # Added: Search by Motorcycle ID (PK)
+            Q(pk__icontains=search_term) |
             Q(title__icontains=search_term) |
             Q(brand__icontains=search_term) |
             Q(model__icontains=search_term) |
             Q(vin_number__icontains=search_term) |
             Q(stock_number__icontains=search_term) |
-            Q(rego__icontains=search_term) # Added: Search by Registration number
+            Q(rego__icontains=search_term)
         )
 
-        # Start with all motorcycles, then apply availability filters if not including unavailable
         queryset = Motorcycle.objects.filter(search_query)
 
         if not include_unavailable:
-            # Filter for motorcycles that are explicitly 'for_sale' or 'reserved'.
-            # 'sold' and 'unavailable' should generally not appear in regular search for booking.
-            # However, 'reserved' bikes can still be viewed in admin to manage existing bookings.
-            queryset = queryset.filter(Q(is_available=True) | Q(status='reserved'))
+            # FIX: The filter logic is now more precise. It correctly includes only
+            # motorcycles with a status of 'for_sale' or 'reserved'.
+            queryset = queryset.filter(status__in=['for_sale', 'reserved'])
         
-        # Ensure distinct results and order for consistent display
         queryset = queryset.distinct().order_by('brand', 'model', 'year')
 
-        # Limit results to prevent overwhelming the client
-        for motorcycle in queryset[:20]: # Limit to top 20 results
+        for motorcycle in queryset[:20]:
             motorcycles_data.append({
                 'id': motorcycle.pk,
                 'title': motorcycle.title,
                 'brand': motorcycle.brand,
                 'model': motorcycle.model,
                 'year': motorcycle.year,
-                'status': motorcycle.status,
+                'status': motorcycle.get_status_display(), # Use display name for clarity
                 'is_available': motorcycle.is_available,
                 'quantity': motorcycle.quantity,
-                'condition': motorcycle.condition, # 'new', 'used', 'demo', 'hire'
-                'price': str(motorcycle.price) if motorcycle.price else None, # Convert Decimal to string
+                'condition': motorcycle.get_condition_display(), # Use display name
+                'price': str(motorcycle.price) if motorcycle.price else None,
                 'rego': motorcycle.rego,
                 'stock_number': motorcycle.stock_number,
-                # Include other relevant fields for quick display in search results
             })
 
     return JsonResponse({'motorcycles': motorcycles_data})
-

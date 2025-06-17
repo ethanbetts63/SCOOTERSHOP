@@ -16,9 +16,10 @@ from .views.admin_views import (
     admin_motorcycle_details_view,
     blocked_sales_date_management_view,
     blocked_sales_date_create_update_view,
-    inventory_management_view, # Keep this import for the single view
+    inventory_management_view,
     inventory_settings_view,
     motorcycle_create_update_view,
+    sales_booking_action_view,
     sales_booking_create_update_view,
     sales_booking_details_view,
     sales_bookings_management_view,
@@ -34,14 +35,14 @@ from .views.admin_views import (
 from .ajax import (
     get_motorcycle_list,
     get_available_appointment_times_for_date,
-    ajax_get_payment_status, 
+    ajax_get_payment_status,
     ajax_get_sales_booking_details,
-    # New AJAX imports below
     ajax_search_motorcycles,
     ajax_get_motorcycle_details,
     ajax_search_sales_profiles,
     ajax_get_sales_profile_details,
-    ajax_sales_booking_precheck, # The new precheck AJAX view
+    ajax_sales_booking_precheck,
+    # Removed process_sales_booking_action as it's no longer an AJAX view
 )
 
 app_name = 'inventory'
@@ -74,8 +75,8 @@ urlpatterns = [
 
     # Blocked Sales Date Management
     path('admin/blocked-sales-dates/', blocked_sales_date_management_view.BlockedSalesDateManagementView.as_view(), name='blocked_sales_date_management'),
-    path('admin/blocked-sales-dates/create/', blocked_sales_date_create_update_view.BlockedSalesDateCreateUpdateView.as_view(), name='blocked_sales_date_create_update'), 
-    path('admin/blocked-sales-dates/<int:pk>/update/', blocked_sales_date_create_update_view.BlockedSalesDateCreateUpdateView.as_view(), name='blocked_sales_date_create_update'), 
+    path('admin/blocked-sales-dates/create/', blocked_sales_date_create_update_view.BlockedSalesDateCreateUpdateView.as_view(), name='blocked_sales_date_create_update'),
+    path('admin/blocked-sales-dates/<int:pk>/update/', blocked_sales_date_create_update_view.BlockedSalesDateCreateUpdateView.as_view(), name='blocked_sales_date_create_update'),
     path('admin/blocked-sales-dates/<int:pk>/delete/', delete_blocked_sales_date.BlockedSalesDateDeleteView.as_view(), name='admin_blocked_sales_date_delete'),
 
 
@@ -85,6 +86,7 @@ urlpatterns = [
     path('admin/sales-bookings/<int:pk>/update/', sales_booking_create_update_view.SalesBookingCreateUpdateView.as_view(), name='sales_booking_create_update'),
     path('admin/sales-bookings/<int:pk>/delete/', delete_sales_booking.SalesBookingDeleteView.as_view(), name='admin_sales_booking_delete'),
     path('admin/sales-bookings/<int:pk>/details/', sales_booking_details_view.SalesBookingDetailsView.as_view(), name='sales_booking_details'),
+    path('admin/sales-bookings/<int:pk>/<str:action_type>/', sales_booking_action_view.SalesBookingActionView.as_view(), name='admin_sales_booking_action'), # New URL for confirm/reject form
 
 
     # Sales Profile Management
@@ -108,4 +110,3 @@ urlpatterns = [
     path('ajax/admin/get-sales-profile-details/<int:pk>/', ajax_get_sales_profile_details.get_sales_profile_details_ajax, name='admin_api_get_sales_profile_details'),
     path('ajax/admin/sales-booking-precheck/', ajax_sales_booking_precheck.sales_booking_precheck_ajax, name='admin_api_sales_booking_precheck'),
 ]
-

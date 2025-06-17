@@ -14,3 +14,4 @@ from .delete_blocked_sales_date import *
 from .delete_motorcycle import *
 from .delete_sales_booking import *
 from .delete_motorcycle import *
+from .sales_booking_action_view import *

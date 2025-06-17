@@ -5,6 +5,8 @@ from hire.models import HireBooking
 from hire.models.driver_profile import DriverProfile
 from service.models import ServiceBooking
 from service.models import ServiceProfile
+from inventory.models import SalesBooking # Import SalesBooking
+from inventory.models import SalesProfile # Import SalesProfile
 
 
 class EmailLog(models.Model):
@@ -73,6 +75,15 @@ class EmailLog(models.Model):
         help_text="The service profile associated with this email, if applicable."
     )
 
+    sales_profile = models.ForeignKey(
+        SalesProfile,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='sent_emails_for_sales_profile',
+        help_text="The sales profile associated with this email, if applicable."
+    )
+
     booking = models.ForeignKey(
         HireBooking,
         on_delete=models.SET_NULL,
@@ -91,6 +102,14 @@ class EmailLog(models.Model):
         help_text="The service booking associated with this email, if applicable."
     )
 
+    sales_booking = models.ForeignKey(
+        SalesBooking,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='related_emails_for_sales',
+        help_text="The sales booking associated with this email, if applicable."
+    )
 
     class Meta:
         verbose_name = "Email Log"
