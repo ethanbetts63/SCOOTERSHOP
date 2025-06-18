@@ -19,6 +19,7 @@ def reject_sales_booking(sales_booking_id, requesting_user=None, form_data=None,
             
             refund_request_created = False
             refund_amount_initiated = None
+            refund_request_pk = None # Initialize to None
             
             initiate_refund_checkbox = form_data.get('initiate_refund', False)
             
@@ -37,18 +38,19 @@ def reject_sales_booking(sales_booking_id, requesting_user=None, form_data=None,
                         sales_profile=booking.sales_profile,
                         is_admin_initiated=True,
                         staff_notes=f"Admin rejected booking and initiated refund request for {booking.sales_booking_reference}. Amount: {refund_amount_value}" + (f" Admin message: {message}" if message else ""),
-                        initial_status='reviewed_pending_approval',
+                        initial_status='approved', # Set to approved for immediate processing by ProcessRefundView
                     )
 
                     if created_refund_req:
                         refund_request_created = True
                         refund_amount_initiated = refund_amount_value
+                        refund_request_pk = created_refund_req.pk # Store the PK
                         booking.booking_status = 'declined' 
                     else:
                         return {'success': False, 'message': 'Failed to create refund request for rejected booking.'}
                 else:
                     if booking.payment_status == 'deposit_paid':
-                        booking.booking_status = 'declined_refunded'
+                        booking.booking_status = 'declined_refunded' 
                     else:
                         booking.booking_status = 'declined'
                 
@@ -68,8 +70,6 @@ def reject_sales_booking(sales_booking_id, requesting_user=None, form_data=None,
             else:
                 return {'success': False, 'message': 'Booking already cancelled or declined.'}
 
-            # ONLY SEND BOOKING REJECTION EMAILS FROM HERE IF NO REFUND REQUEST WAS CREATED
-            # If a refund request was created, the refund notification system will handle emails.
             if send_notification and not refund_request_created:
                 email_context = {
                     'booking': booking,
@@ -77,7 +77,7 @@ def reject_sales_booking(sales_booking_id, requesting_user=None, form_data=None,
                     'motorcycle': motorcycle,
                     'admin_message': message,
                     'action_type': 'rejection',
-                    'refund_request_pending': False, # No refund request created by this path
+                    'refund_request_pending': False,
                     'refund_amount_requested': None,
                 }
 
@@ -105,9 +105,13 @@ def reject_sales_booking(sales_booking_id, requesting_user=None, form_data=None,
             
             success_message = f"Sales booking rejected successfully."
             if refund_request_created:
-                success_message += f" A refund request for {refund_amount_initiated} has been created and is awaiting your approval in the refund management system."
-
-            return {'success': True, 'message': success_message}
+                success_message += f" A refund request for {refund_amount_initiated} has been created and will be processed automatically."
+                
+            # Include refund_request_pk in the return dictionary if a refund was created
+            return_data = {'success': True, 'message': success_message}
+            if refund_request_created:
+                return_data['refund_request_pk'] = refund_request_pk
+            return return_data
 
     except SalesBooking.DoesNotExist:
         return {'success': False, 'message': 'Sales Booking not found.'}

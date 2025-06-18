@@ -28,5 +28,6 @@ urlpatterns = [
     path('settings/refunds/process/<int:pk>/', Refunds.ProcessRefundView.as_view(), name='process_refund'),
     path('settings/refunds/reject/<int:pk>/', Refunds.AdminRejectRefundView.as_view(), name='reject_refund_request'),
     path('admin/refund-policy-settings/', Refunds.admin_refund_settings_view.AdminRefundSettingsView.as_view(), name='admin_refund_settings'),
+    path('settings/refunds/initiate-process/<int:pk>/', Refunds.IntermediaryRefundProcessingView.as_view(), name='initiate_refund_process'),
 
 ]

@@ -1,0 +1,93 @@
+{# payments/templates/payments/intermediary_refund_processing.html #}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processing Refund...</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 2.5rem; /* p-10 */
+            text-align: center;
+            width: 100%;
+            max-width: 28rem; /* max-w-sm */
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #4f46e5; /* indigo-600 */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem; /* mx-auto mb-6 */
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .message-box {
+            background-color: #e0f2fe; /* blue-100 */
+            color: #1e40af; /* blue-800 */
+            padding: 1rem; /* p-4 */
+            border-radius: 0.5rem; /* rounded-lg */
+            margin-bottom: 1.5rem; /* mb-6 */
+        }
+        .error-box {
+            background-color: #fee2e2; /* red-100 */
+            color: #b91c1c; /* red-800 */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <div class="p-3 rounded-md text-sm {% if message.tags == 'error' %}error-box{% else %}message-box{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if refund_request_pk %}
+            <div class="spinner"></div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Processing Refund...</h2>
+            <p class="text-gray-600 mb-6">Please do not close this page. You will be redirected shortly.</p>
+
+            <form id="post_form" method="post" action="{{ process_refund_url }}" class="hidden">
+                {% csrf_token %}
+                <input type="hidden" name="pk" value="{{ refund_request_pk }}">
+            </form>
+
+            <script>
+                // Automatically submit the form when the page loads
+                document.getElementById('post_form').submit();
+            </script>
+        {% else %}
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Error</h2>
+            <p class="text-red-600">Could not process refund. No valid refund request found or specified.</p>
+            <p class="mt-4"><a href="{% url 'payments:admin_refund_management' %}" class="text-indigo-600 hover:text-indigo-800 font-medium">Go to Refund Management</a></p>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -1,16 +1,17 @@
 # SCOOTER_SHOP/inventory/views/admin_views/sales_booking_action_view.py
 
 from django.views.generic.edit import FormView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse # Import reverse
 from django.contrib import messages
 from inventory.models import SalesBooking
 from inventory.forms import SalesBookingActionForm
 from inventory.utils.confirm_sales_booking import confirm_sales_booking
 from inventory.utils.reject_sales_booking import reject_sales_booking
-from django.contrib.auth.mixins import LoginRequiredMixin # Ensure LoginRequiredMixin is imported
-from users.views.auth import is_admin # Assuming this utility exists for admin check
+from inventory.mixins import AdminRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
+from users.views.auth import is_admin
 
-class SalesBookingActionView(LoginRequiredMixin, FormView): # Ensure LoginRequiredMixin is used
+class SalesBookingActionView(LoginRequiredMixin, FormView):
     template_name = 'inventory/admin_sales_booking_action.html'
     form_class = SalesBookingActionForm
     success_url = reverse_lazy('inventory:sales_bookings_management')
@@ -23,14 +24,13 @@ class SalesBookingActionView(LoginRequiredMixin, FormView): # Ensure LoginRequir
         initial['sales_booking_id'] = sales_booking_id
         initial['action'] = action_type
 
-        # Pre-fill refund amount if action is reject and booking exists with a deposit
         if action_type == 'reject':
             try:
                 booking = SalesBooking.objects.get(pk=sales_booking_id)
                 if booking.payment_status == 'deposit_paid' and booking.amount_paid:
                     initial['refund_amount'] = booking.amount_paid
             except SalesBooking.DoesNotExist:
-                pass # Handled by dispatch/template, no need to raise here
+                pass
 
         return initial
 
@@ -77,8 +77,6 @@ class SalesBookingActionView(LoginRequiredMixin, FormView): # Ensure LoginRequir
         sales_booking_id = form.cleaned_data['sales_booking_id']
         action = form.cleaned_data['action']
         
-        # Pass the entire cleaned_data dictionary (or relevant parts) as form_data
-        # The utility function will then extract 'message', 'send_notification', 'initiate_refund', 'refund_amount' from it.
         form_data_for_utility = {
             'message': form.cleaned_data.get('message'),
             'send_notification': form.cleaned_data.get('send_notification', False),
@@ -89,24 +87,37 @@ class SalesBookingActionView(LoginRequiredMixin, FormView): # Ensure LoginRequir
         if action == 'confirm':
             result = confirm_sales_booking(
                 sales_booking_id=sales_booking_id,
-                requesting_user=self.request.user, # Pass the logged-in user
-                form_data=form_data_for_utility, # Pass the relevant form data
-                send_notification=form_data_for_utility['send_notification'] # Still explicitly pass if needed
+                requesting_user=self.request.user,
+                form_data=form_data_for_utility,
+                send_notification=form_data_for_utility['send_notification']
             )
+            self.success_url = reverse_lazy('inventory:sales_bookings_management')
+
         elif action == 'reject':
             result = reject_sales_booking(
                 sales_booking_id=sales_booking_id,
-                requesting_user=self.request.user, # Pass the logged-in user
-                form_data=form_data_for_utility, # Pass the relevant form data
-                send_notification=form_data_for_utility['send_notification'] # Still explicitly pass if needed
+                requesting_user=self.request.user,
+                form_data=form_data_for_utility,
+                send_notification=form_data_for_utility['send_notification']
             )
+            # If reject and a refund request was successfully created, redirect to intermediary processing page
+            if result['success'] and 'refund_request_pk' in result:
+                messages.success(self.request, result['message'])
+                # Redirect to the intermediary view to perform the POST
+                self.success_url = reverse_lazy('payments:initiate_refund_process', kwargs={'pk': result['refund_request_pk']})
+                return super().form_valid(form)
+            else:
+                self.success_url = reverse_lazy('inventory:sales_bookings_management')
+
         else:
             messages.error(self.request, "Invalid action type provided.")
             return self.form_invalid(form)
 
         if result['success']:
             messages.success(self.request, result['message'])
-            return super().form_valid(form)
         else:
             messages.error(self.request, result['message'])
-            return self.form_invalid(form)
+            if not ('refund_request_pk' in result and result['success']):
+                return self.form_invalid(form)
+            
+        return super().form_valid(form)
