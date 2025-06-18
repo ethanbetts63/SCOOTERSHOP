@@ -1,21 +1,38 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.decorators import user_passes_test
+# Import the (soon-to-be) generalized AdminRefundRequestForm
 from payments.forms.admin_refund_request_form import AdminRefundRequestForm
 from payments.models.RefundRequest import RefundRequest
-from payments.utils.create_refund_request import create_refund_request # Import the new utility
-from users.views.auth import is_admin
+from users.views.auth import is_admin # Assuming this utility exists for admin check
+
+# Import booking models to access their specific fields
+from hire.models import HireBooking
+from service.models import ServiceBooking
+from inventory.models import SalesBooking # Import SalesBooking
+
 
 @method_decorator(user_passes_test(is_admin), name='dispatch')
 class AdminAddEditRefundRequestView(View):
-    template_name = 'payments/admin_refund_form.html'
+    """
+    View for administrators to create or edit RefundRequest instances for
+    HireBookings, ServiceBookings, and SalesBookings.
+    This view handles both GET (displaying the form) and POST (processing form submission) requests.
+    """
+    template_name = 'payments/admin_refund_form.html' # Changed to a generic template name
 
     def get(self, request, pk=None, *args, **kwargs):
-        refund_request = None
-        booking_reference = "N/A"
+        """
+        Handles GET requests to display the refund request form.
+        If a primary key (pk) is provided, it fetches an existing RefundRequest
+        for editing; otherwise, it prepares a form for a new request.
+        """
+        refund_request = None # Use generic name
+        booking_reference = "N/A" # For display in title
 
         if pk:
             refund_request = get_object_or_404(RefundRequest, pk=pk)
@@ -28,7 +45,7 @@ class AdminAddEditRefundRequestView(View):
             elif refund_request.service_booking:
                 booking_reference = refund_request.service_booking.service_booking_reference
                 title = f"Edit Service Refund Request for Booking {booking_reference}"
-            elif refund_request.sales_booking:
+            elif refund_request.sales_booking: # Added sales booking
                 booking_reference = refund_request.sales_booking.sales_booking_reference
                 title = f"Edit Sales Refund Request for Booking {booking_reference}"
         else:
@@ -38,69 +55,49 @@ class AdminAddEditRefundRequestView(View):
         context = {
             'form': form,
             'title': title,
-            'refund_request': refund_request,
-            'booking_reference': booking_reference,
+            'refund_request': refund_request, # Use generic name
+            'booking_reference': booking_reference, # Pass for template display
         }
         return render(request, self.template_name, context)
 
     def post(self, request, pk=None, *args, **kwargs):
-        refund_request_instance = None
+        """
+        Handles POST requests to process the submitted refund request form.
+        Validates the form data and saves/updates the RefundRequest instance.
+        """
+        refund_request_instance = None # Use generic name
         if pk:
             refund_request_instance = get_object_or_404(RefundRequest, pk=pk)
             form = AdminRefundRequestForm(request.POST, instance=refund_request_instance)
         else:
             form = AdminRefundRequestForm(request.POST)
 
-        admin_management_redirect_url = 'payments:admin_refund_management'
+        # Determine the redirect URL for admin management based on booking type
+        admin_management_redirect_url = 'payments:admin_refund_management' # Generic fallback
 
         if form.is_valid():
-            # Extract data from the form
-            amount_to_refund = form.cleaned_data.get('amount_to_refund')
-            reason = form.cleaned_data.get('reason')
-            rejection_reason = form.cleaned_data.get('rejection_reason') # Might be from reject form
-            status = form.cleaned_data.get('status') # This is for direct setting in the form
-            staff_notes = form.cleaned_data.get('staff_notes')
-            hire_booking = form.cleaned_data.get('hire_booking') or (refund_request_instance.hire_booking if refund_request_instance else None)
-            service_booking = form.cleaned_data.get('service_booking') or (refund_request_instance.service_booking if refund_request_instance else None)
-            sales_booking = form.cleaned_data.get('sales_booking') or (refund_request_instance.sales_booking if refund_request_instance else None)
-            payment = form.cleaned_data.get('payment') or (refund_request_instance.payment if refund_request_instance else None)
-            driver_profile = form.cleaned_data.get('driver_profile') or (refund_request_instance.driver_profile if refund_request_instance else None)
-            service_profile = form.cleaned_data.get('service_profile') or (refund_request_instance.service_profile if refund_request_instance else None)
-            sales_profile = form.cleaned_data.get('sales_profile') or (refund_request_instance.sales_profile if refund_request_instance else None)
+            refund_request_instance = form.save(commit=False)
+
+            refund_request_instance.is_admin_initiated = True
+
+            # Logic for initial status setting when creating a new request or
+            # transitioning a pending request to 'reviewed_pending_approval'
+            if not pk: # This is a new request created by admin
+                # If admin is creating, assume it's ready for review unless explicitly set otherwise
+                refund_request_instance.status = 'reviewed_pending_approval'
+            elif refund_request_instance.status == 'unverified': # Existing request was user-submitted and unverified
+                refund_request_instance.status = 'reviewed_pending_approval'
+            elif refund_request_instance.status == 'pending': # Existing request was user-submitted and pending
+                refund_request_instance.status = 'reviewed_pending_approval'
 
 
-            if pk:
-                refund_request_instance = form.save(commit=False)
-                # Set processing details if status becomes approved/refunded and not set
-                if refund_request_instance.status in ['approved', 'refunded', 'partially_refunded'] and not refund_request_instance.processed_by:
-                    refund_request_instance.processed_by = request.user
-                    refund_request_instance.processed_at = timezone.now()
-                # Ensure is_admin_initiated is True if edited by admin
-                refund_request_instance.is_admin_initiated = True
-                refund_request_instance.save()
+            # If status is approved or refunded, and processed_by is not set, set it.
+            # This ensures only the first approval/refund record the processor.
+            if refund_request_instance.status in ['approved', 'refunded', 'partially_refunded'] and not refund_request_instance.processed_by:
+                refund_request_instance.processed_by = request.user
+                refund_request_instance.processed_at = timezone.now()
 
-            else:
-                # For new requests, use the utility function
-                # Default status for admin-created requests is 'reviewed_pending_approval'
-                refund_request_instance = create_refund_request(
-                    amount_to_refund=amount_to_refund,
-                    reason=reason, # or 'Admin Initiated Refund Request'
-                    payment=payment,
-                    hire_booking=hire_booking,
-                    service_booking=service_booking,
-                    sales_booking=sales_booking,
-                    requesting_user=request.user, # The admin user
-                    driver_profile=driver_profile,
-                    service_profile=service_profile,
-                    sales_profile=sales_profile,
-                    is_admin_initiated=True,
-                    staff_notes=staff_notes,
-                    initial_status='reviewed_pending_approval', # Or 'approved' if you want it ready for Stripe immediately
-                )
-                if not refund_request_instance:
-                    messages.error(request, "Failed to create new refund request.")
-                    return render(request, self.template_name, {'form': form, 'title': "Create New Refund Request"})
-
+            refund_request_instance.save()
 
             # Determine booking reference for success message and redirect
             booking_reference_for_msg = "N/A"
@@ -108,7 +105,7 @@ class AdminAddEditRefundRequestView(View):
                 booking_reference_for_msg = refund_request_instance.hire_booking.booking_reference
             elif refund_request_instance.service_booking:
                 booking_reference_for_msg = refund_request_instance.service_booking.service_booking_reference
-            elif refund_request_instance.sales_booking:
+            elif refund_request_instance.sales_booking: # Added sales booking
                 booking_reference_for_msg = refund_request_instance.sales_booking.sales_booking_reference
 
 
@@ -122,14 +119,14 @@ class AdminAddEditRefundRequestView(View):
                  booking_reference_for_display = refund_request_instance.hire_booking.booking_reference
             elif refund_request_instance and refund_request_instance.service_booking:
                  booking_reference_for_display = refund_request_instance.service_booking.service_booking_reference
-            elif refund_request_instance and refund_request_instance.sales_booking:
+            elif refund_request_instance and refund_request_instance.sales_booking: # Added sales booking
                  booking_reference_for_display = refund_request_instance.sales_booking.sales_booking_reference
 
 
             context = {
                 'form': form,
                 'title': title,
-                'refund_request': refund_request_instance,
-                'booking_reference': booking_reference_for_display,
+                'refund_request': refund_request_instance, # Use generic name
+                'booking_reference': booking_reference_for_display, # Pass for template display
             }
             return render(request, self.template_name, context)
