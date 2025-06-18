@@ -3,6 +3,7 @@
 from django.db import transaction
 from inventory.models import SalesBooking, InventorySettings
 from payments.models import RefundPolicySettings
+from inventory.utils.send_sales_booking_to_mechanicdesk import send_sales_booking_to_mechanic_desk # New Import
 
 def convert_temp_sales_booking(
     temp_booking,
@@ -19,7 +20,6 @@ def convert_temp_sales_booking(
             if inventory_settings:
                 currency_code = inventory_settings.currency_code
 
-            # Create the permanent SalesBooking instance
             sales_booking = SalesBooking.objects.create(
                 motorcycle=temp_booking.motorcycle,
                 sales_profile=temp_booking.sales_profile,
@@ -29,13 +29,12 @@ def convert_temp_sales_booking(
                 stripe_payment_intent_id=stripe_payment_intent_id,
                 appointment_date=temp_booking.appointment_date,
                 appointment_time=temp_booking.appointment_time,
-                booking_status='pending_confirmation', # Always pending confirmation initially
+                booking_status='pending_confirmation',
                 customer_notes=temp_booking.customer_notes,
                 payment=payment_obj,
                 request_viewing=temp_booking.request_viewing,
             )
 
-            # Update the associated Payment object if provided
             if payment_obj:
                 payment_obj.amount = amount_paid_on_booking
                 payment_obj.currency = currency_code
@@ -68,6 +67,13 @@ def convert_temp_sales_booking(
                 payment_obj.save()
 
             temp_booking.delete()
+
+            # NEW: Conditionally send sales booking to MechanicDesk
+            if inventory_settings and inventory_settings.send_sales_booking_to_mechanic_desk:
+                try:
+                    send_sales_booking_to_mechanic_desk(sales_booking)
+                except Exception as md_e:
+                    pass 
 
             return sales_booking
 

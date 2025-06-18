@@ -94,6 +94,12 @@ class InventorySettings(models.Model):
         help_text="Minimum number of hours notice required for a sales appointment."
     )
 
+    # NEW: Mechanic Desk Integration Setting
+    send_sales_booking_to_mechanic_desk = models.BooleanField(
+        default=False,
+        help_text="Automatically send sales booking details to the mechanic's desk upon confirmation."
+    )
+
     # Currency Settings
     currency_code = models.CharField(
         max_length=3,
