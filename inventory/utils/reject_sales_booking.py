@@ -1,22 +1,61 @@
-
 from django.db import transaction
 from django.conf import settings
 from inventory.models import SalesBooking
 from mailer.utils import send_templated_email
+from payments.utils.create_refund_request import create_refund_request
+from payments.models import Payment
 
-def reject_sales_booking(sales_booking_id, message=None, send_notification=True):
+def reject_sales_booking(sales_booking_id, requesting_user=None, form_data=None, send_notification=True):
+    if form_data is None:
+        form_data = {}
+
+    # Extract message from form_data instead of expecting it as a direct argument
+    message = form_data.get('message')
+
     try:
         with transaction.atomic():
             booking = SalesBooking.objects.select_for_update().get(id=sales_booking_id)
             motorcycle = booking.motorcycle
 
+            original_booking_status = booking.booking_status
             new_booking_status = 'declined'
-            if booking.payment_status == 'deposit_paid':
-                new_booking_status = 'declined_refunded'
+            refund_request_created = False
+            refund_amount_initiated = None
             
-            if booking.booking_status not in ['cancelled', 'declined', 'declined_refunded']:
-                booking.booking_status = new_booking_status
+            initiate_refund_checkbox = form_data.get('initiate_refund', False)
+            
+            if original_booking_status not in ['cancelled', 'declined', 'declined_refunded']:
+                if booking.payment_status == 'deposit_paid' and initiate_refund_checkbox:
+                    refund_amount_value = form_data.get('refund_amount')
+                    if refund_amount_value is None:
+                         return {'success': False, 'message': 'Refund amount is required to initiate a refund.'}
+                    
+                    created_refund_req = create_refund_request(
+                        amount_to_refund=refund_amount_value,
+                        reason=f"Sales Booking {booking.sales_booking_reference} rejected by admin." + (f" Admin message: {message}" if message else ""),
+                        payment=booking.payment,
+                        sales_booking=booking,
+                        requesting_user=requesting_user,
+                        sales_profile=booking.sales_profile,
+                        is_admin_initiated=True,
+                        staff_notes=f"Admin rejected booking and initiated refund for {booking.sales_booking_reference}. Amount: {refund_amount_value}" + (f" Admin message: {message}" if message else ""),
+                        initial_status='approved',
+                    )
+
+                    if created_refund_req:
+                        refund_request_created = True
+                        refund_amount_initiated = refund_amount_value
+                        booking.booking_status = 'declined' 
+                    else:
+                        return {'success': False, 'message': 'Failed to create refund request for rejected booking.'}
+                else:
+                    if booking.payment_status == 'deposit_paid':
+                        booking.booking_status = 'declined_refunded'
+                    else:
+                        booking.booking_status = 'declined'
+                
                 booking.save()
+
 
                 if not motorcycle.is_available and motorcycle.status == 'reserved':
                     if motorcycle.condition == 'new':
@@ -29,7 +68,6 @@ def reject_sales_booking(sales_booking_id, message=None, send_notification=True)
                         motorcycle.status = 'available'
                         motorcycle.save()
             else:
-                print(f"DEBUG: Booking {sales_booking_id} already cancelled or declined. No action taken.")
                 return {'success': False, 'message': 'Booking already cancelled or declined.'}
 
             if send_notification:
@@ -37,20 +75,14 @@ def reject_sales_booking(sales_booking_id, message=None, send_notification=True)
                     'booking': booking,
                     'sales_profile': booking.sales_profile,
                     'motorcycle': motorcycle,
-                    'admin_message': message,
+                    'admin_message': message, # Now correctly using the 'message' variable
                     'action_type': 'rejection',
-                    'refund_note': True if new_booking_status == 'declined_refunded' else False,
+                    'refund_note': refund_request_created,
+                    'refund_amount': refund_amount_initiated,
                 }
 
                 customer_email_subject = f"Update Regarding Your Sales Booking for {motorcycle.title}"
-                # Corrected template name based on your file tree
                 customer_email_template = 'user_sales_booking_rejected.html'
-
-                print(f"DEBUG: Attempting to send customer rejection email for booking {booking.sales_booking_reference}")
-                print(f"DEBUG: Customer email subject: {customer_email_subject}")
-                print(f"DEBUG: Customer email template: {customer_email_template}")
-                print(f"DEBUG: Customer recipient: {[booking.sales_profile.email]}")
-
                 send_templated_email(
                     recipient_list=[booking.sales_profile.email],
                     subject=customer_email_subject,
@@ -59,18 +91,9 @@ def reject_sales_booking(sales_booking_id, message=None, send_notification=True)
                     sales_profile=booking.sales_profile,
                     sales_booking=booking,
                 )
-                print(f"DEBUG: Customer email for booking {booking.sales_booking_reference} send attempt completed.")
-
 
                 admin_email_subject = f"ADMIN: Sales Booking {booking.sales_booking_reference} Rejected"
-                # Corrected template name based on your file tree
                 admin_email_template = 'admin_sales_booking_rejected.html'
-
-                print(f"DEBUG: Attempting to send admin rejection email for booking {booking.sales_booking_reference}")
-                print(f"DEBUG: Admin email subject: {admin_email_subject}")
-                print(f"DEBUG: Admin email template: {admin_email_template}")
-                print(f"DEBUG: Admin recipient: {[settings.DEFAULT_FROM_EMAIL]}")
-
                 send_templated_email(
                     recipient_list=[settings.DEFAULT_FROM_EMAIL],
                     subject=admin_email_subject,
@@ -79,13 +102,14 @@ def reject_sales_booking(sales_booking_id, message=None, send_notification=True)
                     sales_profile=booking.sales_profile,
                     sales_booking=booking,
                 )
-                print(f"DEBUG: Admin email for booking {booking.sales_booking_reference} send attempt completed.")
+            
+            success_message = f"Sales booking rejected successfully."
+            if refund_request_created:
+                success_message += f" A refund request for {refund_amount_initiated} has been initiated."
 
-            return {'success': True, 'message': 'Sales booking rejected successfully.'}
+            return {'success': True, 'message': success_message}
 
     except SalesBooking.DoesNotExist:
-        print(f"DEBUG: Sales Booking with ID {sales_booking_id} not found during rejection.")
         return {'success': False, 'message': 'Sales Booking not found.'}
     except Exception as e:
-        print(f"DEBUG: An error occurred during rejection for booking {sales_booking_id}: {e}")
         return {'success': False, 'message': f'An error occurred: {str(e)}'}
