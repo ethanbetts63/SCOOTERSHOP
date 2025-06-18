@@ -3,7 +3,7 @@
 from django.db import transaction
 from inventory.models import SalesBooking, InventorySettings
 from payments.models import RefundPolicySettings
-from inventory.utils.send_sales_booking_to_mechanicdesk import send_sales_booking_to_mechanicdesk # New Import
+from inventory.utils.send_sales_booking_to_mechanicdesk import send_sales_booking_to_mechanicdesk
 
 def convert_temp_sales_booking(
     temp_booking,
@@ -12,13 +12,16 @@ def convert_temp_sales_booking(
     stripe_payment_intent_id=None,
     payment_obj=None,
 ):
+    print(f"DEBUG: Starting convert_temp_sales_booking for temp_booking ID: {temp_booking.pk}")
     try:
         with transaction.atomic():
             inventory_settings = InventorySettings.objects.first()
+            print(f"DEBUG: Retrieved inventory_settings: {inventory_settings}")
 
             currency_code = 'AUD'
             if inventory_settings:
                 currency_code = inventory_settings.currency_code
+            print(f"DEBUG: Currency code determined: {currency_code}")
 
             sales_booking = SalesBooking.objects.create(
                 motorcycle=temp_booking.motorcycle,
@@ -34,6 +37,7 @@ def convert_temp_sales_booking(
                 payment=payment_obj,
                 request_viewing=temp_booking.request_viewing,
             )
+            print(f"DEBUG: Permanent SalesBooking created with ID: {sales_booking.pk}")
 
             if payment_obj:
                 payment_obj.amount = amount_paid_on_booking
@@ -50,7 +54,7 @@ def convert_temp_sales_booking(
                     refund_settings = RefundPolicySettings.objects.first()
                     if refund_settings:
                         payment_obj.refund_policy_snapshot = {
-                            'refund_deducts_stripe_fee_policy': refund_settings.refund_deducts_stripe_fee_policy,
+                            'refund_deducts_stripe_fee_policy': float(refund_settings.refund_deducts_stripe_fee_policy),
                             'stripe_fee_percentage_domestic': float(refund_settings.stripe_fee_percentage_domestic),
                             'stripe_fee_fixed_domestic': float(refund_settings.stripe_fee_fixed_domestic),
                             'stripe_fee_percentage_international': float(refund_settings.stripe_fee_percentage_international),
@@ -61,21 +65,29 @@ def convert_temp_sales_booking(
                         }
                     else:
                         payment_obj.refund_policy_snapshot = {}
-                except Exception:
+                except Exception as e:
+                    print(f"ERROR: Failed to set refund_policy_snapshot: {e}")
                     payment_obj.refund_policy_snapshot = {}
 
                 payment_obj.save()
+                print(f"DEBUG: Payment object (ID: {payment_obj.pk}) updated and saved.")
 
             temp_booking.delete()
+            print(f"DEBUG: Temporary booking (ID: {temp_booking.pk}) deleted.")
 
-            # NEW: Conditionally send sales booking to MechanicDesk
+            # Conditionally send sales booking to MechanicDesk
             if inventory_settings and inventory_settings.send_sales_booking_to_mechanic_desk:
+                print(f"DEBUG: Inventory setting 'send_sales_booking_to_mechanic_desk' is TRUE. Attempting to send to MechanicDesk.")
                 try:
-                    send_sales_booking_to_mechanic_desk(sales_booking)
+                    send_success = send_sales_booking_to_mechanicdesk(sales_booking)
+                    print(f"DEBUG: send_sales_booking_to_mechanic_desk returned: {send_success}")
                 except Exception as md_e:
-                    pass 
+                    print(f"ERROR: Failed to call send_sales_booking_to_mechanic_desk: {md_e}")
+            else:
+                print(f"DEBUG: Inventory setting 'send_sales_booking_to_mechanic_desk' is FALSE or inventory_settings not found. Skipping MechanicDesk call.")
 
             return sales_booking
 
     except Exception as e:
+        print(f"ERROR: An error occurred in convert_temp_sales_booking: {e}")
         raise e
