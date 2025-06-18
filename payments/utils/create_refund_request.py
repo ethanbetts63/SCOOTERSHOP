@@ -1,9 +1,5 @@
-# payments/utils/refund_creation_utils.py
 
 from payments.models import RefundRequest, Payment
-from inventory.models import SalesBooking, SalesProfile # Assuming these are the ones to link
-from hire.models import HireBooking, DriverProfile
-from service.models import ServiceBooking, ServiceProfile
 from django.db import transaction
 from django.utils import timezone
 from decimal import Decimal
