@@ -19,7 +19,8 @@ class ProcessRefundView(View):
 
         admin_management_redirect_url = 'payments:admin_refund_management'
 
-        if refund_request.status not in ['pending', 'reviewed_pending_approval', 'unverified']:
+        # ONLY change here: Add 'approved' to the list of approvable statuses
+        if refund_request.status not in ['pending', 'reviewed_pending_approval', 'unverified', 'approved']:
             messages.error(request, f"Refund request is not in an approvable state. Current status: {refund_request.get_status_display()}.")
             return redirect(admin_management_redirect_url)
 
