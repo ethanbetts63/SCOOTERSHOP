@@ -5,20 +5,13 @@ from django.conf import settings
 from django.db.models import ObjectDoesNotExist
 import datetime
 from django.utils import timezone
-
+import pytz # Import the pytz library for timezone handling
 
 def send_sales_booking_to_mechanicdesk(sales_booking_instance):
     """
     Sends sales booking details to MechanicDesk by creating a "booking request".
-    Given MechanicDesk is service-oriented, significant sales details are
-    embedded within the 'note' field for clarity. This version populates
-    more fields to satisfy MechanicDesk API requirements and includes debug prints.
-
-    Args:
-        sales_booking_instance (SalesBooking): The instance of the SalesBooking model.
-
-    Returns:
-        bool: True if the booking request was sent successfully, False otherwise.
+    This version converts the local Perth time to UTC before sending, as the API
+    likely expects UTC time.
     """
     mechanicdesk_token = getattr(settings, 'MECHANICDESK_BOOKING_TOKEN', None)
     if not mechanicdesk_token:
@@ -38,37 +31,47 @@ def send_sales_booking_to_mechanicdesk(sales_booking_instance):
     customer_first_name = sales_profile.name.split(' ')[0] if sales_profile.name else ""
     customer_last_name = ' '.join(sales_profile.name.split(' ')[1:]) if ' ' in sales_profile.name else ""
 
-    # Appointment Time (as drop-off time for MechanicDesk, if available)
+    # --- Timezone Correction Logic (v2) ---
+    # The goal is to send the time to MechanicDesk in UTC.
+    try:
+        perth_tz = pytz.timezone(settings.TIME_ZONE)
+    except pytz.UnknownTimeZoneError:
+        print(f"ERROR: The timezone '{settings.TIME_ZONE}' in settings.py is invalid. Defaulting to UTC.")
+        perth_tz = pytz.utc
+
     appointment_datetime_str = ""
-    appointment_datetime_obj = None
+    
+    # 1. Determine the naive datetime object first from the booking instance
+    naive_datetime = None
     if sales_booking_instance.appointment_date and sales_booking_instance.appointment_time:
-        appointment_datetime_obj = datetime.datetime.combine(
+        naive_datetime = datetime.datetime.combine(
             sales_booking_instance.appointment_date,
             sales_booking_instance.appointment_time
         )
-        appointment_datetime_str = appointment_datetime_obj.strftime("%d/%m/%Y %H:%M")
     elif sales_booking_instance.appointment_date:
-        # Default to 9 AM if only date is available for drop-off time
-        appointment_datetime_obj = datetime.datetime.combine(
+        naive_datetime = datetime.datetime.combine(
             sales_booking_instance.appointment_date,
-            datetime.time(9, 0)
+            datetime.time(9, 0)  # Default to 9 AM if time not specified
         )
-        appointment_datetime_str = appointment_datetime_obj.strftime("%d/%m/%Y %H:%M")
 
-    # Pickup Time: Set to same day as drop-off/appointment, but later (e.g., 5 PM)
-    pickup_datetime_str = ""
-    if appointment_datetime_obj:
-        pickup_time_obj = datetime.time(17, 0) # 5:00 PM
-        pickup_datetime_combined = datetime.datetime.combine(
-            appointment_datetime_obj.date(),
-            pickup_time_obj
-        )
-        pickup_datetime_str = pickup_datetime_combined.strftime("%d/%m/%Y %H:%M")
+    # 2. Convert to an aware, UTC datetime string for the API
+    if naive_datetime:
+        # Localize the naive datetime to the Perth timezone, treating the input time as "Perth time"
+        perth_time = perth_tz.localize(naive_datetime)
+        
+        # Convert the Perth time to UTC
+        utc_time = perth_time.astimezone(pytz.utc)
+        
+        # Format the UTC time into the string format required by the API
+        appointment_datetime_str = utc_time.strftime("%d/%m/%Y %H:%M")
     else:
-        # Fallback if no appointment date is set at all, use current date
-        now = timezone.now()
-        pickup_datetime_str = now.strftime("%d/%m/%Y 17:00")
+        # Fallback: if no appointment date, use current time, convert to UTC and format
+        utc_now = timezone.now().astimezone(pytz.utc)
+        appointment_datetime_str = utc_now.strftime("%d/%m/%Y %H:%M")
 
+    # Pickup time is set to be the same as drop_off_time
+    pickup_datetime_str = appointment_datetime_str
+    # --- End of Timezone Correction Logic ---
 
     # Construct the comprehensive 'note' field
     notes_content = f"--- SALES BOOKING NOTIFICATION ---\n\n"
@@ -83,24 +86,11 @@ def send_sales_booking_to_mechanicdesk(sales_booking_instance):
         if sales_profile.address_line_2:
             notes_content += f", {sales_profile.address_line_2}"
         notes_content += f", {sales_profile.city}, {sales_profile.state} {sales_profile.post_code}, {sales_profile.country}\n"
-    
-    notes_content += f"\nMotorcycle Details:\n"
-    notes_content += f"  Title: {motorcycle.title}\n"
-    notes_content += f"  Brand: {motorcycle.brand}\n"
-    notes_content += f"  Model: {motorcycle.model}\n"
-    notes_content += f"  Year: {motorcycle.year}\n"
-    notes_content += f"  Condition: {motorcycle.get_condition_display()}\n"
-    notes_content += f"  Vin Number: {motorcycle.vin_number if motorcycle.vin_number else 'N/A'}\n"
-    # Populated fields
-    notes_content += f"  Engine Size: {motorcycle.engine_size if motorcycle.engine_size else 'N/A'}\n"
-    notes_content += f"  Odometer: {motorcycle.odometer if motorcycle.odometer is not None else 'N/A'}\n"
-    notes_content += f"  Transmission: {motorcycle.get_transmission_display() if motorcycle.transmission else 'N/A'}\n"
-    
+        
     if sales_booking_instance.appointment_date:
-        notes_content += f"\nAppointment Requested: {sales_booking_instance.appointment_date.strftime('%d/%m/%Y')}"
-        if sales_booking_instance.appointment_time:
-            notes_content += f" at {sales_booking_instance.appointment_time.strftime('%H:%M %p')}"
-        notes_content += "\n"
+        # The note for the human should contain the actual, local appointment time.
+        local_time_str = sales_booking_instance.appointment_time.strftime('%I:%M %p') if sales_booking_instance.appointment_time else "Not specified"
+        notes_content += f"\nAppointment Requested (Perth Time): {sales_booking_instance.appointment_date.strftime('%d/%m/%Y')} at {local_time_str}\n"
         
     notes_content += f"\nFinancial Details:\n"
     notes_content += f"  Amount Paid (Deposit): {sales_booking_instance.amount_paid} {sales_booking_instance.currency}\n"
@@ -121,20 +111,20 @@ def send_sales_booking_to_mechanicdesk(sales_booking_instance):
         "suburb": sales_profile.city if sales_profile.city else "",
         "state": sales_profile.state if sales_profile.state else "",
         "postcode": sales_profile.post_code if sales_profile.post_code else "",
-        "registration_number": motorcycle.rego if motorcycle.rego else "", # Use rego if available
+        "registration_number": motorcycle.rego if motorcycle.rego else "",
         "make": motorcycle.brand if motorcycle.brand else "",
         "model": motorcycle.model if motorcycle.model else "",
         "year": str(motorcycle.year) if motorcycle.year else "",
-        "color": "", # No direct field on your Motorcycle model for this
-        "transmission": motorcycle.transmission if motorcycle.transmission else "", # Populated
+        "color": "",
+        "transmission": motorcycle.transmission if motorcycle.transmission else "",
         "vin": motorcycle.vin_number if motorcycle.vin_number else "",
-        "fuel_type": "", # No direct field
-        "drive_type": "", # No direct field
-        "engine_size": str(motorcycle.engine_size) if motorcycle.engine_size else "", # Populated
-        "body": "", # No direct field
-        "odometer": str(motorcycle.odometer) if motorcycle.odometer is not None else "", # Populated
-        "drop_off_time": appointment_datetime_str,
-        "pickup_time": pickup_datetime_str, # Now populated with a plausible time
+        "fuel_type": "",
+        "drive_type": "",
+        "engine_size": str(motorcycle.engine_size) if motorcycle.engine_size else "",
+        "body": "",
+        "odometer": str(motorcycle.odometer) if motorcycle.odometer is not None else "",
+        "drop_off_time": "", # This string is now in UTC
+        "pickup_time": "",       # This string is now in UTC
         "note": notes_content,
         "courtesy_vehicle_requested": "false",
     }
@@ -142,7 +132,7 @@ def send_sales_booking_to_mechanicdesk(sales_booking_instance):
     mechanicdesk_api_url = "https://www.mechanicdesk.com.au/booking_requests/create_booking"
 
     print(f"DEBUG: Attempting to send sales booking {sales_booking_instance.sales_booking_reference} to MechanicDesk.")
-    print(f"DEBUG: MechanicDesk Payload: {payload}")
+    print(f"DEBUG: MechanicDesk Payload (time is in UTC): {payload}")
 
     try:
         response = requests.post(mechanicdesk_api_url, data=payload, timeout=10)
