@@ -49,6 +49,5 @@ def create_refund_request(
             return refund_request
     except Exception as e:
         # In a real application, you might want more robust logging here
-        # print(f"Error creating RefundRequest: {e}")
         return None
 
