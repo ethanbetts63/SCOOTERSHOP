@@ -22,11 +22,17 @@ def send_refund_notifications(payment_obj: Payment, booking_obj, booking_type_st
             customer_name = booking_obj.service_profile.name if booking_obj.service_profile else "Customer"
             user_email = booking_obj.service_profile.user.email if booking_obj.service_profile and booking_obj.service_profile.user else booking_obj.service_profile.email
             booking_for_email = booking_obj
-        elif booking_type_str == 'sales_booking': # Added SalesBooking
+        elif booking_type_str == 'sales_booking':
             booking_reference = booking_obj.sales_booking_reference
             customer_name = booking_obj.sales_profile.name if booking_obj.sales_profile else "Customer"
             user_email = booking_obj.sales_profile.user.email if booking_obj.sales_profile and booking_obj.sales_profile.user else booking_obj.sales_profile.email
             booking_for_email = booking_obj
+
+    # Get admin's reason/message from the refund_request object
+    # This will contain the message passed from the sales booking rejection form
+    admin_reason_for_refund = refund_request.reason if refund_request else ""
+
+    admin_message_for_email = admin_reason_for_refund if refund_request and refund_request.is_admin_initiated else None
 
     if user_email:
         email_context = {
@@ -36,6 +42,7 @@ def send_refund_notifications(payment_obj: Payment, booking_obj, booking_type_st
             'customer_name': customer_name,
             'admin_email': getattr(settings, 'ADMIN_EMAIL', settings.DEFAULT_FROM_EMAIL),
             'refund_policy_link': settings.SITE_BASE_URL + '/returns/',
+            'admin_message_from_refund': admin_message_for_email, # New context variable for the customer email
         }
         send_templated_email(
             recipient_list=[user_email],
@@ -45,7 +52,7 @@ def send_refund_notifications(payment_obj: Payment, booking_obj, booking_type_st
             booking=booking_for_email,
             driver_profile=booking_obj.driver_profile if booking_type_str == 'hire_booking' else None,
             service_profile=booking_obj.service_profile if booking_type_str == 'service_booking' else None,
-            sales_profile=booking_obj.sales_profile if booking_type_str == 'sales_booking' else None, # Added SalesProfile
+            sales_profile=booking_obj.sales_profile if booking_type_str == 'sales_booking' else None,
         )
 
     if settings.ADMIN_EMAIL:
@@ -60,6 +67,8 @@ def send_refund_notifications(payment_obj: Payment, booking_obj, booking_type_st
             'event_type': 'charge.refund.updated' if extracted_data['is_refund_object'] else 'charge.refunded',
             'booking_type': booking_type_str,
             'customer_name': customer_name,
+            'refund_request_reason': refund_request.reason if refund_request else "", # New context for admin email
+            'refund_request_staff_notes': refund_request.staff_notes if refund_request else "", # New context for admin email
         }
         send_templated_email(
             recipient_list=[settings.ADMIN_EMAIL],

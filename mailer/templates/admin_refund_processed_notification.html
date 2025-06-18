@@ -15,6 +15,14 @@
         .content { margin-bottom: 20px; }
         .info { background-color: #f0f8ff; padding: 10px; border-left: 5px solid #add8e6; margin-bottom: 15px; } /* Blue highlight for info */
         .footer { text-align: center; font-size: 0.9em; color: #777; border-top: 1px solid #eee; padding-top: 15px; margin-top: 20px; }
+        .section-title {
+            background-color: #e9ecef;
+            padding: 10px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-left: 5px solid #add8e6; /* Blue for sections */
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -40,9 +48,22 @@
                 {% if refund_request %}
                 <p><strong>Refund Request ID:</strong> {{ refund_request.pk }}</p>
                 <p><strong>Refund Request Status:</strong> {{ refund_request.get_status_display }}</p>
+                <p><strong>Refund Initiated By Admin:</strong> {% if refund_request.is_admin_initiated %}Yes{% else %}No{% endif %}</p>
                 {% endif %}
                 <p><strong>Final Refund Status:</strong> {{ status }}</p>
+                <p><strong>Event Type:</strong> {{ event_type }}</p>
             </div>
+
+            {# Display refund request reason/notes #}
+            {% if refund_request_reason %}
+            <div class="section-title">Refund Request Reason</div>
+            <p style="white-space: pre-wrap;">{{ refund_request_reason }}</p>
+            {% endif %}
+
+            {% if refund_request_staff_notes %}
+            <div class="section-title">Internal Staff Notes</div>
+            <p style="white-space: pre-wrap;">{{ refund_request_staff_notes }}</p>
+            {% endif %}
 
             <p>Please check the details in the dashboard if needed.</p>
 
