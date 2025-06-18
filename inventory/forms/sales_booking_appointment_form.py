@@ -79,15 +79,15 @@ class BookingAppointmentForm(forms.Form):
         terms_accepted = cleaned_data.get('terms_accepted') # Get the new field
 
         # Determine if an appointment is truly required based on flow type or user's 'request_viewing' choice
-        is_appointment_required = self.deposit_required_for_flow 
+        is_appointment_required = self.deposit_required_for_flow or request_viewing
+
         if is_appointment_required:
             if not appointment_date:
                 self.add_error('appointment_date', "This field is required for your selected option.")
             if not appointment_time:
                 self.add_error('appointment_time', "This field is required for your selected option.")
-
         else:
-            # If no appointment is required, clear any submitted date/time to avoid validation issues
+            # If no appointment is required and no viewing was requested, clear any submitted date/time
             cleaned_data['appointment_date'] = None
             cleaned_data['appointment_time'] = None
         
