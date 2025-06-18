@@ -220,13 +220,9 @@
                                 {% endif %}
                             </table>
 
-                            {% if refund_note and refund_amount %}
-                            <p style="color: #28a745; font-weight: bold;">
-                                A refund request for {{ refund_amount|floatformat:2 }} {{ booking.currency }} has been automatically initiated and approved for this booking. It is now awaiting processing in the <a href="{% url 'payments:admin_refund_management' %}" class="text-blue-600 hover:underline">Refund Management</a> area.
-                            </p>
-                            {% elif booking.payment_status == 'deposit_paid' %}
+                            {% if booking.payment_status == 'deposit_paid' %}
                             <p style="color: #dc3545; font-weight: bold;">
-                                This booking had a deposit of {{ booking.amount_paid|floatformat:2 }} {{ booking.currency }}. Please ensure a refund is processed for the customer via the <a href="{% url 'payments:admin_refund_management' %}" class="text-blue-600 hover:underline">Refund Management</a> area if required.
+                                This booking had a deposit of {{ booking.amount_paid|floatformat:2 }} {{ booking.currency }}. A formal refund request was NOT initiated through the sales booking rejection process. If a refund is required, please process it manually via the <a href="{% url 'payments:admin_refund_management' %}" class="text-blue-600 hover:underline">Refund Management</a> area.
                             </p>
                             {% endif %}
 

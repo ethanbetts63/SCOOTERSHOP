@@ -130,16 +130,6 @@
                                 </tr>
                             </table>
 
-                            {% if refund_note and refund_amount %}
-                            <p style="color: #28a745; font-weight: bold;">
-                                A refund request for {{ refund_amount|floatformat:2 }} {{ booking.currency }} has been initiated for your deposit. Please allow 3-5 business days for the refund to appear in your account.
-                            </p>
-                            {% elif booking.payment_status == 'deposit_paid' %}
-                            <p style="color: #dc3545; font-weight: bold;">
-                                Your deposit of {{ booking.amount_paid|floatformat:2 }} {{ booking.currency }} is due for a refund. Our team will process this shortly. Please allow 3-5 business days for the refund to appear in your account.
-                            </p>
-                            {% endif %}
-
                             <p>If you have any questions or would like to discuss alternative options, please do not hesitate to contact us.</p>
                             <p>Sincerely,</p>
                             <p>The SCOOTER_SHOP Team</p>

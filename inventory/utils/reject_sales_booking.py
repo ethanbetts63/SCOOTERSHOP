@@ -8,8 +8,6 @@ from payments.models import Payment
 def reject_sales_booking(sales_booking_id, requesting_user=None, form_data=None, send_notification=True):
     if form_data is None:
         form_data = {}
-
-    # Extract message from form_data instead of expecting it as a direct argument
     message = form_data.get('message')
 
     try:
@@ -18,7 +16,7 @@ def reject_sales_booking(sales_booking_id, requesting_user=None, form_data=None,
             motorcycle = booking.motorcycle
 
             original_booking_status = booking.booking_status
-            new_booking_status = 'declined'
+            
             refund_request_created = False
             refund_amount_initiated = None
             
@@ -38,8 +36,8 @@ def reject_sales_booking(sales_booking_id, requesting_user=None, form_data=None,
                         requesting_user=requesting_user,
                         sales_profile=booking.sales_profile,
                         is_admin_initiated=True,
-                        staff_notes=f"Admin rejected booking and initiated refund for {booking.sales_booking_reference}. Amount: {refund_amount_value}" + (f" Admin message: {message}" if message else ""),
-                        initial_status='approved',
+                        staff_notes=f"Admin rejected booking and initiated refund request for {booking.sales_booking_reference}. Amount: {refund_amount_value}" + (f" Admin message: {message}" if message else ""),
+                        initial_status='reviewed_pending_approval',
                     )
 
                     if created_refund_req:
@@ -70,15 +68,17 @@ def reject_sales_booking(sales_booking_id, requesting_user=None, form_data=None,
             else:
                 return {'success': False, 'message': 'Booking already cancelled or declined.'}
 
-            if send_notification:
+            # ONLY SEND BOOKING REJECTION EMAILS FROM HERE IF NO REFUND REQUEST WAS CREATED
+            # If a refund request was created, the refund notification system will handle emails.
+            if send_notification and not refund_request_created:
                 email_context = {
                     'booking': booking,
                     'sales_profile': booking.sales_profile,
                     'motorcycle': motorcycle,
-                    'admin_message': message, # Now correctly using the 'message' variable
+                    'admin_message': message,
                     'action_type': 'rejection',
-                    'refund_note': refund_request_created,
-                    'refund_amount': refund_amount_initiated,
+                    'refund_request_pending': False, # No refund request created by this path
+                    'refund_amount_requested': None,
                 }
 
                 customer_email_subject = f"Update Regarding Your Sales Booking for {motorcycle.title}"
@@ -105,7 +105,7 @@ def reject_sales_booking(sales_booking_id, requesting_user=None, form_data=None,
             
             success_message = f"Sales booking rejected successfully."
             if refund_request_created:
-                success_message += f" A refund request for {refund_amount_initiated} has been initiated."
+                success_message += f" A refund request for {refund_amount_initiated} has been created and is awaiting your approval in the refund management system."
 
             return {'success': True, 'message': success_message}
 
