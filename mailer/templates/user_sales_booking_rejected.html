@@ -1,4 +1,4 @@
-{# mailer/templates/emails/sales_booking_rejected_customer.html #}
+{# mailer/templates/user_sales_booking_rejected.html #}
 {% load static %}
 
 <!DOCTYPE html>
@@ -112,7 +112,7 @@
                                 </tr>
                                 <tr>
                                     <th>Final Status:</th>
-                                    <td>{{ booking.get_booking_status_display }}</td>
+                                    <td><strong style="color: #dc3545;">{{ booking.get_booking_status_display }}</strong></td>
                                 </tr>
                                 {% if booking.appointment_date and booking.appointment_time %}
                                 <tr>
@@ -130,9 +130,13 @@
                                 </tr>
                             </table>
 
-                            {% if refund_note %}
+                            {% if refund_note and refund_amount %}
+                            <p style="color: #28a745; font-weight: bold;">
+                                A refund request for {{ refund_amount|floatformat:2 }} {{ booking.currency }} has been initiated for your deposit. Please allow 3-5 business days for the refund to appear in your account.
+                            </p>
+                            {% elif booking.payment_status == 'deposit_paid' %}
                             <p style="color: #dc3545; font-weight: bold;">
-                                Important: Your deposit of {{ booking.amount_paid|floatformat:2 }} {{ booking.currency }} will be refunded to your original payment method. Please allow 3-5 business days for the refund to appear in your account.
+                                Your deposit of {{ booking.amount_paid|floatformat:2 }} {{ booking.currency }} is due for a refund. Our team will process this shortly. Please allow 3-5 business days for the refund to appear in your account.
                             </p>
                             {% endif %}
 

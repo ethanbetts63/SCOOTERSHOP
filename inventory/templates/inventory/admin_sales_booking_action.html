@@ -128,6 +128,7 @@
                 <p class="mb-4 text-gray-700">
                     <strong>Customer:</strong> {{ booking.sales_profile.name }} (<a href="mailto:{{ booking.sales_profile.email }}" class="text-blue-600 hover:underline">{{ booking.sales_profile.email }}</a>)<br>
                     <strong>Current Status:</strong> <span class="font-semibold">{{ booking.get_booking_status_display }}</span>
+                    {% if booking.payment_status == 'deposit_paid' %}<br><strong>Payment Status:</strong> <span class="font-semibold text-green-700">{{ booking.get_payment_status_display }}</span>{% endif %}
                 </p>
 
                 <form method="post" novalidate>
@@ -172,6 +173,43 @@
                                 <div class="invalid-feedback d-block">{% for error in form.send_notification.errors %}{{ error }}{% endfor %}</div>
                             {% endif %}
                         </div>
+
+                        {# Conditionally display refund options for rejection and if deposit paid #}
+                        {% if action_type == 'reject' and booking.payment_status == 'deposit_paid' %}
+                            <hr class="my-4">
+                            <h3 class="text-lg font-semibold mb-3">Refund Options</h3>
+
+                            <div class="form-group form-check mb-4">
+                                <input type="checkbox" name="{{ form.initiate_refund.name }}" id="{{ form.initiate_refund.id_for_label }}" 
+                                       class="form-check-input"
+                                       {% if form.initiate_refund.value %}checked{% endif %}>
+                                <label class="form-check-label" for="{{ form.initiate_refund.id_for_label }}">
+                                    {{ form.initiate_refund.label }}
+                                </label>
+                                {% if form.initiate_refund.help_text %}
+                                    <small class="form-text text-muted ml-2">{{ form.initiate_refund.help_text }}</small>
+                                {% endif %}
+                                {% if form.initiate_refund.errors %}
+                                    <div class="invalid-feedback d-block">{% for error in form.initiate_refund.errors %}{{ error }}{% endfor %}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group mb-4" id="refundAmountField" style="display: none;">
+                                <label for="{{ form.refund_amount.id_for_label }}">
+                                    {{ form.refund_amount.label }}
+                                </label>
+                                <input type="number" step="0.01" name="{{ form.refund_amount.name }}" id="{{ form.refund_amount.id_for_label }}" 
+                                       class="form-control"
+                                       value="{% if form.refund_amount.value %}{{ form.refund_amount.value|floatformat:2 }}{% elif booking.amount_paid %}{{ booking.amount_paid|floatformat:2 }}{% endif %}">
+                                {% if form.refund_amount.help_text %}
+                                    <small class="form-text text-muted">{{ form.refund_amount.help_text }}</small>
+                                {% endif %}
+                                {% if form.refund_amount.errors %}
+                                    <div class="invalid-feedback d-block">{% for error in form.refund_amount.errors %}{{ error }}{% endfor %}</div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
                     </fieldset>
 
                     <div class="flex space-x-2 justify-end mt-6">
@@ -192,4 +230,38 @@
             {% endif %}
         </div>
     </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const initiateRefundCheckbox = document.getElementById('{{ form.initiate_refund.id_for_label }}');
+        const refundAmountField = document.getElementById('refundAmountField');
+        const refundAmountInput = document.getElementById('{{ form.refund_amount.id_for_label }}');
+        const bookingAmountPaid = parseFloat("{{ booking.amount_paid|floatformat:2|default:'0.00' }}");
+
+        function toggleRefundAmountField() {
+            if (initiateRefundCheckbox && initiateRefundCheckbox.checked) {
+                refundAmountField.style.display = 'block';
+                // Only set default if field is empty or was hidden before
+                if (refundAmountInput.value === '' || parseFloat(refundAmountInput.value) === 0) {
+                     refundAmountInput.value = bookingAmountPaid.toFixed(2);
+                }
+            } else if (refundAmountField) {
+                refundAmountField.style.display = 'none';
+                // Clear the value when hidden to prevent accidental submission of hidden data
+                // This is important because 'required=False' in form.py allows it to be empty.
+                // If it's conditionally required, the clean method handles it.
+                // It's safer to null out if not needed.
+                refundAmountInput.value = '';
+            }
+        }
+
+        // Run on load
+        toggleRefundAmountField();
+
+        // Attach event listener
+        if (initiateRefundCheckbox) {
+            initiateRefundCheckbox.addEventListener('change', toggleRefundAmountField);
+        }
+    });
+</script>
 {% endblock %}
