@@ -6,3 +6,4 @@ from .validate_appointment_time import *
 from .create_update_sales_payment_intent import *
 from .reject_sales_booking import *
 from .confirm_sales_booking import *
+from .send_sales_booking_to_mechanicdesk import *

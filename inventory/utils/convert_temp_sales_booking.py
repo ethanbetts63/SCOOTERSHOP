@@ -3,7 +3,7 @@
 from django.db import transaction
 from inventory.models import SalesBooking, InventorySettings
 from payments.models import RefundPolicySettings
-from inventory.utils.send_sales_booking_to_mechanicdesk import send_sales_booking_to_mechanic_desk # New Import
+from inventory.utils.send_sales_booking_to_mechanicdesk import send_sales_booking_to_mechanicdesk # New Import
 
 def convert_temp_sales_booking(
     temp_booking,

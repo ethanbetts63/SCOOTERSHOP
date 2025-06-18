@@ -2,7 +2,7 @@
 
 from django import forms
 from django.utils.translation import gettext_lazy as _
-from inventory.models import InventorySettings # Ensure this import path is correct
+from inventory.models import InventorySettings
 from decimal import Decimal
 from datetime import time
 
@@ -29,6 +29,7 @@ class InventorySettingsForm(forms.ModelForm):
             'sales_appointment_spacing_mins',
             'max_advance_booking_days',
             'min_advance_booking_hours',
+            'send_sales_booking_to_mechanic_desk', # NEW FIELD
             'currency_code',
             'currency_symbol',
             'terms_and_conditions_text',
@@ -50,6 +51,7 @@ class InventorySettingsForm(forms.ModelForm):
             'sales_appointment_spacing_mins': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
             'max_advance_booking_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
             'min_advance_booking_hours': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
+            'send_sales_booking_to_mechanic_desk': forms.CheckboxInput(attrs={'class': 'form-check-input'}), # NEW WIDGET
             'currency_code': forms.TextInput(attrs={'class': 'form-control', 'maxlength': '3', 'placeholder': 'e.g., AUD'}),
             'currency_symbol': forms.TextInput(attrs={'class': 'form-control', 'maxlength': '5', 'placeholder': 'e.g., $'}),
             'terms_and_conditions_text': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),

@@ -91,18 +91,14 @@
         const editButton = document.getElementById('editButton');
         const saveButton = document.getElementById('saveButton');
         const resetButton = document.getElementById('resetButton');
-        // Select form fields specifically within the Inventory Settings form
-        const mainForm = document.querySelector('form[name="inventory_settings_form"]'); // Target the form by its name
+        const mainForm = document.querySelector('form[name="inventory_settings_form"]');
         const formFields = mainForm.querySelectorAll('input, select, textarea');
 
-        // Function to set form fields read-only or enabled
         function setFormReadonly(readonly) {
             formFields.forEach(field => {
-                // Ensure we don't accidentally affect the CSRF token input or the buttons themselves
                 if (field.name !== 'csrfmiddlewaretoken' && field.type !== 'submit' && field.type !== 'button') {
                     if (readonly) {
                         field.setAttribute('readonly', true);
-                        // Prevent checkbox and select interaction when read-only
                         if (field.type === 'checkbox' || field.tagName === 'SELECT') {
                             field.setAttribute('disabled', true);
                         }
@@ -116,12 +112,10 @@
             });
         }
 
-        // Initial state: only show Edit button, form fields in the first form are read-only
         saveButton.style.display = 'none';
         resetButton.style.display = 'none';
         setFormReadonly(true);
 
-        // When Edit button is clicked
         editButton.addEventListener('click', function() {
             editButton.style.display = 'none';
             saveButton.style.display = 'inline-block';
@@ -129,35 +123,25 @@
             setFormReadonly(false);
         });
 
-        // When Save Changes or Reset button is clicked
         function handleSaveOrResetClick() {
             saveButton.style.display = 'none';
             resetButton.style.display = 'none';
             editButton.style.display = 'inline-block';
-            // Form fields will become read-only again *after* the form submission or reset.
-            // For the 'Reset' button, we reset the form before changing button visibility.
         }
 
-        // Add event listener for Save button (it's a submit button)
-        // The form submission itself will handle the save action.
-        // We attach the click listener to change buttons BEFORE potential submission.
         saveButton.addEventListener('click', function() {
-             // This will run before the form is submitted
-             // The read-only state will be reset after the page reloads from submission
         });
 
         resetButton.addEventListener('click', function(event) {
-            event.preventDefault(); // Prevent the default button click behavior first
-            mainForm.reset(); // Reset the form
-            handleSaveOrResetClick(); // Change button visibility and set form read-only
-            setFormReadonly(true); // Ensure fields are read-only after reset
+            event.preventDefault();
+            mainForm.reset();
+            handleSaveOrResetClick();
+            setFormReadonly(true);
         });
 
-        // Re-apply read-only after potential form submission (page load)
          window.addEventListener('load', function() {
              setFormReadonly(true);
          });
-          // Handle the case where the Save button was clicked and the page reloaded without a full navigation
          if (window.performance && window.performance.getEntriesByType('navigation')[0].type === 'reload') {
              setFormReadonly(true);
          }
