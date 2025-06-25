@@ -1,157 +1,133 @@
 {% extends 'core/layout.html' %}
-
 {% load static %}
 
 {% block title %}Book Service - Step 3{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
-<style>
-    .required-label::after {
-        content: " *";
-        color: red;
-    }
-    /* Add some spacing for help text */
-    small {
-        display: block; /* Ensures help text appears on a new line */
-        margin-top: 2px;
-        color: #666; /* Slightly lighter color for help text */
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="service-booking-container">
-    <div class="booking-progress">
-        {# Assuming 'step' and 'total_steps' are passed from the context, e.g., in views #}
-        <h2>Book Service - Step {{ step|default:'3' }} of {{ total_steps|default:'7' }}</h2>
-        <div></div>
-    </div>
+<div class="max-w-4xl mx-auto px-4 py-8">
 
-    <hr>
+    <div class="mb-6">
+        <h2 class="text-3xl font-bold text-white">Book Service - Step {{ step|default:'3' }} of {{ total_steps|default:'7' }}</h2>
+    </div>
 
     {% include 'service/_booking_summary_include.html' %}
 
-    <h3>Your Motorcycle Details</h3>
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mt-4">
+        <h3 class="text-2xl font-semibold text-gray-800 mb-4">Your Motorcycle Details</h3>
 
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
 
-        {# Required Fields Section #}
-        <h4>Required Information</h4>
-        {# Brand Field with Conditional 'Other' Input - Always required #}
-        <p>
-            <label for="{{ form.brand.id_for_label }}" class="required-label">{{ form.brand.label }}</label>
-            {{ form.brand }}
-            {% if form.brand.help_text %}<small>{{ form.brand.help_text }}</small>{% endif %}
-            {% for error in form.brand.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
-        </p>
+            <div class="space-y-6">
+                <div>
+                    <h4 class="text-lg font-medium text-gray-700 mb-2">Required Information</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="{{ form.brand.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.brand.label }}</label>
+                            {{ form.brand }}
+                            {% if form.brand.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.brand.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+                        </div>
 
-        <div id="otherBrandNameDiv" style="display: none;">
-            <p>
-                {# This label should also have the required-label class because if 'Other' is selected, this becomes required #}
-                <label for="{{ form.other_brand_name.id_for_label }}" class="required-label">{{ form.other_brand_name.label }}</label>
-                {{ form.other_brand_name }}
-                {% if form.other_brand_name.help_text %}<small>{{ form.other_brand_name.help_text }}</small>{% endif %}
-                {% for error in form.other_brand_name.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
-            </p>
-            
-            {% if enable_service_brands and other_brand_policy_text %}
-                <p style="color: blue; border: 1px solid lightblue; padding: 5px; border-radius: 5px; margin-top: 10px;">
-                    {{ other_brand_policy_text }}
-                </p>
-            {% endif %}
-        </div>
+                        <div id="otherBrandNameDiv" style="display: none;">
+                            <label for="{{ form.other_brand_name.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.other_brand_name.label }}</label>
+                            {{ form.other_brand_name }}
+                            {% if form.other_brand_name.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.other_brand_name.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+                        </div>
 
-        {# Explicitly list other required fields #}
-        {# Removed 'make' field #}
+                        <div>
+                            <label for="{{ form.model.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.model.label }}</label>
+                            {{ form.model }}
+                            {% if form.model.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.model.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+                        </div>
+                        
+                        <div>
+                            <label for="{{ form.engine_size.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.engine_size.label }}</label>
+                            {{ form.engine_size }}
+                            {% if form.engine_size.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.engine_size.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+                        </div>
 
-        <p>
-            <label for="{{ form.model.id_for_label }}" class="required-label">{{ form.model.label }}</label>
-            {{ form.model }}
-            {% if form.model.help_text %}<small>{{ form.model.help_text }}</small>{% endif %}
-            {% for error in form.model.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
-        </p>
+                        <div>
+                            <label for="{{ form.year.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.year.label }}</label>
+                            {{ form.year }}
+                            {% if form.year.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.year.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+                        </div>
 
-        {# Engine Size - Remains in required section, placed under model, and marked as required #}
-        <p>
-            <label for="{{ form.engine_size.id_for_label }}" class="required-label">{{ form.engine_size.label }}</label>
-            {{ form.engine_size }}
-            {% if form.engine_size.help_text %}<small>{{ form.engine_size.help_text }}</small>{% endif %}
-            {% for error in form.engine_size.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
-        </p>
+                        <div>
+                            <label for="{{ form.rego.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.rego.label }}</label>
+                            {{ form.rego }}
+                            {% if form.rego.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.rego.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+                        </div>
 
-        <p>
-            <label for="{{ form.year.id_for_label }}" class="required-label">{{ form.year.label }}</label>
-            {{ form.year }}
-            {% if form.year.help_text %}<small>{{ form.year.help_text }}</small>{% endif %}
-            {% for error in form.year.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
-        </p>
-
-        <p>
-            <label for="{{ form.rego.id_for_label }}" class="required-label">{{ form.rego.label }}</label>
-            {{ form.rego }}
-            {% if form.rego.help_text %}<small>{{ form.rego.help_text }}</small>{% endif %}
-            {% for error in form.rego.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
-        </p>
-
-        <p>
-            <label for="{{ form.odometer.id_for_label }}" class="required-label">{{ form.odometer.label }}</label>
-            {{ form.odometer }}
-            {% if form.odometer.help_text %}<small>{{ form.odometer.help_text }}</small>{% endif %}
-            {% for error in form.odometer.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
-        </p>
-
-        {# Transmission Type - Remains in required section and marked as required #}
-        <p>
-            <label for="{{ form.transmission.id_for_label }}" class="required-label">{{ form.transmission.label }}</label>
-            {{ form.transmission }}
-            {% if form.transmission.help_text %}<small>{{ form.transmission.help_text }}</small>{% endif %}
-            {% for error in form.transmission.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
-        </p>
-
-
-        {# Optional Fields Section #}
-        <h4>Optional Information</h4>
-        {# Explicitly list optional fields #}
-
-        <p>
-            <label for="{{ form.vin_number.id_for_label }}">{{ form.vin_number.label }}</label>
-            {{ form.vin_number }}
-            {% if form.vin_number.help_text %}<small>{{ form.vin_number.help_text }}</small>{% endif %}
-            {% for error in form.vin_number.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
-        </p>
-
-        <p>
-            <label for="{{ form.engine_number.id_for_label }}">{{ form.engine_number.label }}</label>
-            {{ form.engine_number }}
-            {% if form.engine_number.help_text %}<small>{{ form.engine_number.help_text }}</small>{% endif %}
-            {% for error in form.engine_number.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
-        </p>
-
-        <p>
-            <label for="{{ form.image.id_for_label }}">{{ form.image.label }}</label>
-            {{ form.image }}
-            {% if form.image.help_text %}<small>{{ form.image.help_text }}</small>{% endif %}
-            {% for error in form.image.errors %}<span style="color: red;">{{ error }}</span>{% endfor %}
-            {% if form.instance.image %}
-                <div class="image-preview">
-                    <p>Current Image:</p>
-                    <img src="{{ form.instance.image.url }}" alt="Current Motorcycle Image" style="max-width: 150px; height: auto; border-radius: 5px;">
+                        <div>
+                            <label for="{{ form.odometer.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.odometer.label }}</label>
+                            {{ form.odometer }}
+                            {% if form.odometer.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.odometer.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+                        </div>
+                        
+                        <div>
+                            <label for="{{ form.transmission.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.transmission.label }}</label>
+                            {{ form.transmission }}
+                            {% if form.transmission.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.transmission.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+                        </div>
+                    </div>
                 </div>
-            {% endif %}
-        </p>
-        
-        <div class="flex justify-between mt-6">
-            <a href="{% url 'service:service_book_step2' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out">Back to Step 2</a>
-            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out">Continue to Step 4</button>
-        </div>
-    </form>
+
+                <div class="pt-6 border-t border-gray-200">
+                    <h4 class="text-lg font-medium text-gray-700 mb-2">Optional Information</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="{{ form.vin_number.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.vin_number.label }}</label>
+                            {{ form.vin_number }}
+                            {% if form.vin_number.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.vin_number.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.engine_number.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.engine_number.label }}</label>
+                            {{ form.engine_number }}
+                            {% if form.engine_number.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.engine_number.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.image.label }}</label>
+                            {{ form.image }}
+                            {% if form.image.help_text %}<p class="mt-2 text-sm text-gray-500">{{ form.image.help_text }}</p>{% endif %}
+                            {% if form.image.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.image.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+                            {% if form.instance.image %}
+                                <div class="mt-4">
+                                    <p class="block text-sm font-medium text-gray-700">Current Image:</p>
+                                    <img src="{{ form.instance.image.url }}" alt="Current Motorcycle Image" class="mt-2 rounded-lg border border-gray-200" style="max-width: 150px; height: auto;">
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-8 mt-8 border-t border-gray-200">
+                <a href="{% url 'service:service_book_step2' %}" class="text-sm font-medium text-gray-600 hover:text-indigo-500 transition duration-150 ease-in-out">
+                    &larr; Previous Step
+                </a>
+                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Next Step &rarr;
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
+{% endblock %}
 
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const formInputs = document.querySelectorAll('input[type="text"], input[type="number"], input[type="email"], select');
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+
+        const standardClasses = ['mt-1', 'block', 'w-full', 'py-2', 'px-3', 'border', 'border-gray-400', 'rounded-md', 'shadow-sm', 'text-gray-900', 'focus:outline-none', 'focus:ring-indigo-500', 'focus:border-indigo-500', 'sm:text-sm'];
+        const fileInputClasses = ['mt-1', 'block', 'w-full', 'text-sm', 'text-gray-500', 'file:mr-4', 'file:py-2', 'file:px-4', 'file:rounded-md', 'file:border-0', 'file:text-sm', 'file:font-semibold', 'file:bg-indigo-50', 'file:text-indigo-700', 'hover:file:bg-indigo-100'];
+
+        formInputs.forEach(input => input.classList.add(...standardClasses));
+        fileInputs.forEach(input => input.classList.add(...fileInputClasses));
+
         const brandSelect = document.getElementById('{{ form.brand.id_for_label }}');
         const otherBrandNameDiv = document.getElementById('otherBrandNameDiv');
         const otherBrandNameInput = document.getElementById('{{ form.other_brand_name.id_for_label }}');
@@ -159,20 +135,18 @@
         function toggleOtherBrandField() {
             if (brandSelect.value === 'Other') {
                 otherBrandNameDiv.style.display = 'block';
-                otherBrandNameInput.setAttribute('required', 'required'); // Make required when visible
+                otherBrandNameInput.setAttribute('required', 'required');
             } else {
                 otherBrandNameDiv.style.display = 'none';
-                otherBrandNameInput.removeAttribute('required'); // Remove required when hidden
-                otherBrandNameInput.value = ''; // Clear value when hidden
+                otherBrandNameInput.removeAttribute('required');
+                otherBrandNameInput.value = '';
             }
         }
-
-        // Initial call to set visibility based on initial form data (e.g., if validation failed)
-        toggleOtherBrandField();
-
-        // Add event listener for changes to the brand select
-        brandSelect.addEventListener('change', toggleOtherBrandField);
+        
+        if (brandSelect) {
+            toggleOtherBrandField();
+            brandSelect.addEventListener('change', toggleOtherBrandField);
+        }
     });
 </script>
-{% endblock %}
 {% endblock %}

@@ -4,162 +4,124 @@
 {% block title %}Service Booking Confirmation{% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <div class="max-w-3xl mx-auto bg-white shadow-lg rounded-lg p-6 md:p-10">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Service Booking Confirmation</h1>
-
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+        
         {% if is_processing %}
-            <div id="processing-message" class="text-center py-10">
-                <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mx-auto mb-4"></div>
-                <p class="text-xl text-gray-700">Your payment is being processed and your service booking is being finalized.</p>
-                <p class="text-gray-600 mt-2">Please do not close this page. We'll confirm your booking details shortly.</p>
-            </div>
-
-            <div id="booking-details-container" class="hidden">
-            </div>
-
-            <script>
-                const paymentIntentId = "{{ payment_intent_id }}";
-                // Changed URL to service:service_booking_status_check
-                const statusCheckUrl = "{% url 'service:service_booking_status_check' %}";
-                const homeUrl = "{% url 'core:index' %}";
-
-                const processingMessage = document.getElementById('processing-message');
-                const bookingDetailsContainer = document.getElementById('booking-details-container');
-                let pollInterval;
-                const MAX_POLL_ATTEMPTS = 30; // Poll for up to 30 * 2 seconds = 1 minute
-                let pollAttempts = 0;
-
-                function fetchBookingStatus() {
-                    pollAttempts++;
-                    if (pollAttempts > MAX_POLL_ATTEMPTS) {
-                        clearInterval(pollInterval);
-                        processingMessage.innerHTML = `
-                            <p class="text-red-600 text-xl">
-                                We're having trouble confirming your service booking. Please check your email for a confirmation, or contact support with Payment Intent ID: <strong>${paymentIntentId}</strong>.
-                            </p>
-                            <a href="${homeUrl}" class="inline-block mt-4 px-6 py-3 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 transition duration-300">
-                                Return to Homepage
-                            </a>
-                        `;
-                        return;
-                    }
-
-                    fetch(`${statusCheckUrl}?payment_intent_id=${paymentIntentId}`)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.status === 'ready') {
-                                clearInterval(pollInterval);
-                                processingMessage.classList.add('hidden');
-                                bookingDetailsContainer.classList.remove('hidden');
-                                renderBookingDetails(data);
-                            } else if (data.status === 'processing') {
-                                console.log("Service booking still processing...");
-                            } else {
-                                clearInterval(pollInterval);
-                                processingMessage.innerHTML = `
-                                    <p class="text-red-600 text-xl">
-                                        Error: ${data.message || 'Could not retrieve service booking status.'}
-                                        Please contact support with Payment Intent ID: <strong>${paymentIntentId}</strong>.
-                                    </p>
-                                    <a href="${homeUrl}" class="inline-block mt-4 px-6 py-3 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 transition duration-300">
-                                        Return to Homepage
-                                    </a>
-                                `;
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error fetching service booking status:', error);
-                            clearInterval(pollInterval);
-                            processingMessage.innerHTML = `
-                                <p class="text-red-600 text-xl">
-                                    A network error occurred. Please refresh the page or contact support.
-                                    Payment Intent ID: <strong>${paymentIntentId}</strong>.
-                                </p>
-                                <a href="${homeUrl}" class="inline-block mt-4 px-6 py-3 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 transition duration-300">
-                                    Return to Homepage
-                                </a>
-                            `;
-                        });
-                }
-
-                function renderBookingDetails(booking) {
-                    // Service bookings do not have packages or add-ons in this context,
-                    // so remove those sections from the dynamic rendering.
-                    bookingDetailsContainer.innerHTML = `
-                        <div class="text-center mb-6">
-                            <p class="text-lg text-gray-700">Your motorcycle service booking has been successfully confirmed.</p>
-                            <p class="text-xl font-semibold text-gray-800 mt-2">Booking Reference: <span class="text-blue-600">${booking.service_booking_reference}</span></p>
-                        </div>
-
-                        <div class="border-t border-b border-gray-200 py-4 mb-6">
-                            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Booking Details</h2>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
-                                <div>
-                                    <p><strong class="font-medium">Motorcycle:</strong> ${booking.motorcycle_details}</p>
-                                    <p><strong class="font-medium">Service Type:</strong> ${booking.service_type}</p>
-                                    <p><strong class="font-medium">Service Date:</strong> ${booking.service_date}</p>
-                                    <p><strong class="font-medium">Drop-off:</strong> ${booking.dropoff_datetime}</p>
-                                    <p><strong class="font-medium">Customer:</strong> ${booking.customer_name}</p>
-                                </div>
-                                <div>
-                                    <p><strong class="font-medium">Booking Status:</strong> <span class="capitalize">${booking.booking_status.replace(/_/g, ' ')}</span></p>
-                                    <p><strong class="font-medium">Payment Status:</strong> <span class="capitalize">${booking.payment_status.replace(/_/g, ' ')}</span></p>
-                                    <p><strong class="font-medium">Total Amount:</strong> ${booking.total_amount} ${booking.currency}</p>
-                                    <p><strong class="font-medium">Amount Paid:</strong> ${booking.amount_paid} ${booking.currency}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="text-center mt-8">
-                            <p class="text-gray-600">A confirmation email with all details has been sent to your registered email address.</p>
-                            <a href="${homeUrl}" class="inline-block mt-4 px-6 py-3 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 transition duration-300">
-                                Return to Homepage
-                            </a>
-                        </div>
-                    `;
-                }
-
-                if (paymentIntentId) {
-                    fetchBookingStatus();
-                    pollInterval = setInterval(fetchBookingStatus, 2000); // Poll every 2 seconds
-                }
-            </script>
-        {% else %}
-            <div class="text-center mb-6">
-                <p class="text-lg text-gray-700">Your motorcycle service booking has been successfully confirmed.</p>
-                <p class="text-xl font-semibold text-gray-800 mt-2">Booking Reference: <span class="text-blue-600">{{ service_booking.service_booking_reference }}</span></p>
-            </div>
-
-            <div class="border-t border-b border-gray-200 py-4 mb-6">
-                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Booking Details</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
-                    <div>
-                        <p><strong class="font-medium">Motorcycle:</strong> {{ motorcycle_details }}</p>
-                        <p><strong class="font-medium">Service Type:</strong> {{ service_booking.service_type.name }}</p>
-                        <p><strong class="font-medium">Service Date:</strong> {{ service_booking.service_date|date:"d M Y" }}</p>
-                        <p><strong class="font-medium">Drop-off:</strong> {{ service_booking.dropoff_date|date:"d M Y" }} at {{ service_booking.dropoff_time|time:"P" }}</p>
-                        <p><strong class="font-medium">Customer:</strong> {{ customer_name }}</p>
-                    </div>
-                    <div>
-                        <p><strong class="font-medium">Booking Status:</strong> <span class="capitalize">{{ booking_status }}</span></p>
-                        <p><strong class="font-medium">Payment Status:</strong> <span class="capitalize">{{ payment_status }}</span></p>
-                        <p><strong class="font-medium">Total Amount:</strong> {{ total_amount|floatformat:2 }} {{ currency }}</p>
-                        <p><strong class="font-medium">Amount Paid:</strong> {{ amount_paid|floatformat:2 }} {{ currency }}</p>
-                    </div>
+            <div id="processing-message" class="p-8 text-center">
+                <h1 class="text-2xl font-bold text-gray-800">Finalizing Your Booking...</h1>
+                <p class="mt-2 text-gray-600">Your payment is being processed. Please do not close this page.</p>
+                <div class="mt-6">
+                    <svg class="animate-spin h-8 w-8 text-indigo-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
                 </div>
             </div>
 
-            <div class="text-center mt-8">
-                <p class="text-gray-600">A confirmation email with all details has been sent to your registered email address.</p>
-                <a href="{% url 'core:index' %}" class="inline-block mt-4 px-6 py-3 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 transition duration-300">
-                    Return to Homepage
-                </a>
+            <div id="booking-details-container" style="display: none;">
+                <!-- Content will be rendered by JS -->
+            </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const paymentIntentId = "{{ payment_intent_id }}";
+                    const statusCheckUrl = "{% url 'service:service_booking_status_check' %}";
+                    const homeUrl = "{% url 'core:index' %}";
+
+                    const processingMessage = document.getElementById('processing-message');
+                    const bookingDetailsContainer = document.getElementById('booking-details-container');
+                    let pollInterval;
+                    const MAX_POLL_ATTEMPTS = 30;
+                    let pollAttempts = 0;
+
+                    function fetchBookingStatus() {
+                        pollAttempts++;
+                        if (pollAttempts > MAX_POLL_ATTEMPTS) {
+                            clearInterval(pollInterval);
+                            processingMessage.innerHTML = `
+                                <div class="p-8 text-center">
+                                    <h1 class="text-2xl font-bold text-red-800">Confirmation Error</h1>
+                                    <p class="mt-2 text-gray-600">
+                                        We're having trouble confirming your service booking. Please check your email for a confirmation, or contact support with Payment Intent ID: <strong>${paymentIntentId}</strong>.
+                                    </p>
+                                    <a href="${homeUrl}" class="mt-6 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                                        Return to Homepage
+                                    </a>
+                                </div>
+                            `;
+                            return;
+                        }
+
+                        fetch(`${statusCheckUrl}?payment_intent_id=${paymentIntentId}`)
+                            .then(response => response.ok ? response.json() : Promise.reject('Network response was not ok'))
+                            .then(data => {
+                                if (data.status === 'ready') {
+                                    clearInterval(pollInterval);
+                                    processingMessage.style.display = 'none';
+                                    renderBookingDetails(data);
+                                    bookingDetailsContainer.style.display = 'block';
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error fetching service booking status:', error);
+                            });
+                    }
+
+                    function renderBookingDetails(booking) {
+                        bookingDetailsContainer.innerHTML = `
+                            <div class="p-6 text-center border-b border-gray-200">
+                                <h1 class="text-2xl font-bold text-gray-800">Booking Confirmed!</h1>
+                                <p class="mt-2 text-gray-600">Your motorcycle service has been successfully booked.</p>
+                                <p class="mt-4 text-sm text-gray-500">Booking Reference: <span class="font-semibold text-gray-700">${booking.service_booking_reference}</span></p>
+                            </div>
+                            <div class="p-6">
+                                <h2 class="text-lg font-medium text-gray-900">Booking Details</h2>
+                                <dl class="mt-4 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                                    <div class="sm:col-span-1"><dt class="text-sm font-medium text-gray-500">Motorcycle</dt><dd class="mt-1 text-sm text-gray-900">${booking.motorcycle_details}</dd></div>
+                                    <div class="sm:col-span-1"><dt class="text-sm font-medium text-gray-500">Service Type</dt><dd class="mt-1 text-sm text-gray-900">${booking.service_type}</dd></div>
+                                    <div class="sm:col-span-1"><dt class="text-sm font-medium text-gray-500">Service Date</dt><dd class="mt-1 text-sm text-gray-900">${booking.service_date}</dd></div>
+                                    <div class="sm:col-span-1"><dt class="text-sm font-medium text-gray-500">Drop-off</dt><dd class="mt-1 text-sm text-gray-900">${booking.dropoff_datetime}</dd></div>
+                                    <div class="sm:col-span-1"><dt class="text-sm font-medium text-gray-500">Customer</dt><dd class="mt-1 text-sm text-gray-900">${booking.customer_name}</dd></div>
+                                    <div class="sm:col-span-1"><dt class="text-sm font-medium text-gray-500">Booking Status</dt><dd class="mt-1 text-sm text-gray-900 capitalize">${booking.booking_status.replace(/_/g, ' ')}</dd></div>
+                                    <div class="sm:col-span-1"><dt class="text-sm font-medium text-gray-500">Payment Status</dt><dd class="mt-1 text-sm text-gray-900 capitalize">${booking.payment_status.replace(/_/g, ' ')}</dd></div>
+                                    <div class="sm:col-span-1"><dt class="text-sm font-medium text-gray-500">Amount Paid</dt><dd class="mt-1 text-sm text-gray-900">${booking.amount_paid} ${booking.currency}</dd></div>
+                                </dl>
+                            </div>
+                            <div class="px-6 py-4 bg-gray-50 text-center rounded-b-lg">
+                                <a href="${homeUrl}" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">Return to Homepage</a>
+                            </div>
+                        `;
+                    }
+
+                    if (paymentIntentId) {
+                        fetchBookingStatus();
+                        pollInterval = setInterval(fetchBookingStatus, 3000);
+                    }
+                });
+            </script>
+        {% else %}
+            <div class="p-6 text-center border-b border-gray-200">
+                <h1 class="text-2xl font-bold text-gray-800">Booking Confirmed!</h1>
+                <p class="mt-2 text-gray-600">Your motorcycle service has been successfully booked.</p>
+                <p class="mt-4 text-sm text-gray-500">Booking Reference: <span class="font-semibold text-gray-700">{{ service_booking.service_booking_reference }}</span></p>
+            </div>
+            <div class="p-6">
+                <h2 class="text-lg font-medium text-gray-900">Booking Details</h2>
+                <dl class="mt-4 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                    <div class="sm:col-span-1"><dt class="text-sm font-medium text-gray-500">Motorcycle</dt><dd class="mt-1 text-sm text-gray-900">{{ motorcycle_details }}</dd></div>
+                    <div class="sm:col-span-1"><dt class="text-sm font-medium text-gray-500">Service Type</dt><dd class="mt-1 text-sm text-gray-900">{{ service_booking.service_type.name }}</dd></div>
+                    <div class="sm:col-span-1"><dt class="text-sm font-medium text-gray-500">Service Date</dt><dd class="mt-1 text-sm text-gray-900">{{ service_booking.service_date|date:"d M Y" }}</dd></div>
+                    <div class="sm:col-span-1"><dt class="text-sm font-medium text-gray-500">Drop-off</dt><dd class="mt-1 text-sm text-gray-900">{{ service_booking.dropoff_date|date:"d M Y" }} at {{ service_booking.dropoff_time|time:"P" }}</dd></div>
+                    <div class="sm:col-span-1"><dt class="text-sm font-medium text-gray-500">Customer</dt><dd class="mt-1 text-sm text-gray-900">{{ customer_name }}</dd></div>
+                    <div class="sm:col-span-1"><dt class="text-sm font-medium text-gray-500">Booking Status</dt><dd class="mt-1 text-sm text-gray-900 capitalize">{{ booking_status }}</dd></div>
+                    <div class="sm:col-span-1"><dt class="text-sm font-medium text-gray-500">Payment Status</dt><dd class="mt-1 text-sm text-gray-900 capitalize">{{ payment_status }}</dd></div>
+                    <div class="sm:col-span-1"><dt class="text-sm font-medium text-gray-500">Amount Paid</dt><dd class="mt-1 text-sm text-gray-900">{{ amount_paid|floatformat:2 }} {{ currency }}</dd></div>
+                </dl>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 text-center rounded-b-lg">
+                <p class="text-sm text-gray-600 mb-4">A confirmation email with all details has been sent to your registered email address.</p>
+                <a href="{% url 'core:index' %}" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">Return to Homepage</a>
             </div>
         {% endif %}
     </div>

@@ -4,168 +4,112 @@
 {% block title %}Book Service - Step {{ step|default:'5' }} - Drop-off & Payment{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-{# Added Flatpickr dark theme for consistent styling with Step 1 #}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 <style>
-    /* Style for required form field labels */
-    .required-label::after {
-        content: " *";
-        color: red;
+    .flatpickr-calendar {
+        background: #fff;
+        border-radius: 0.5rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
-    /* Custom styles for message tags */
-    .messages-container ul {
-        list-style-type: none;
-        padding: 0;
-    }
-    .messages-container li {
-        padding: 10px;
-        margin-bottom: 10px;
-        border-radius: 4px;
-    }
-    .messages-container li.success {
-        background-color: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-    }
-    .messages-container li.error {
-        background-color: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-    }
-    .messages-container li.warning {
-        background-color: #fff3cd;
-        color: #856404;
-        border: 1px solid #ffeeba;
-    }
-    .messages-container li.info {
-        background-color: #d1ecf1;
-        color: #0c5460;
-        border: 1px solid #bee5eb;
-    }
-    /* Ensure invalid-feedback for custom select is visible */
-    .was-validated .form-select:invalid ~ .invalid-feedback, .form-select.is-invalid ~ .invalid-feedback {
-      display: block;
+    .flatpickr-day.selected {
+        background: #4f46e5;
+        border-color: #4f46e5;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="service-booking-container max-w-2xl mx-auto p-4 md:p-6 bg-white shadow-lg rounded-lg">
+<div class="max-w-4xl mx-auto px-4 py-8">
     
-    <!-- Progress Indicator -->
-    <div class="booking-progress text-center mb-6">
-        <h2 class="text-2xl font-semibold text-gray-700">Book Service - Step {{ step }} of {{ total_steps }}</h2>
-        <p class="text-gray-600">Drop-off, Payment & Terms</p>
-        <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-            <div class="bg-blue-600 h-2.5 rounded-full" ></div>
-        </div>
+    <div class="mb-6">
+        <h2 class="text-3xl font-bold text-white">Book Service - Step {{ step }} of {{ total_steps }}</h2>
+        <p class="text-lg text-gray-200 mt-1">Drop-off, Payment & Terms</p>
     </div>
-
-    <hr class="mb-6">
 
     {% include 'service/_booking_summary_include.html' %}
 
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm mt-4">
+        <form method="post" id="payment-form" novalidate>
+            {% csrf_token %}
 
-    <form method="post" id="payment-form" novalidate>
-        {% csrf_token %}
-
-        <!-- Form-wide Non-field Errors -->
-        {% if form.non_field_errors %}
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                {% for error in form.non_field_errors %}
-                    <strong class="font-bold">Error:</strong>
-                    <span class="block sm:inline">{{ error }}</span>
-                {% endfor %}
-            </div>
-        {% endif %}
-
-        <!-- Drop-off Details Section -->
-        <fieldset class="mb-6">
-            <legend class="text-xl font-semibold text-gray-800 mb-4">Drop-off Details</legend>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {% if is_same_day_dropoff_only %}
-                    <!-- Display fixed date information and a hidden input -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Drop-off Date</label> {# Changed label here #}
-                        <p class="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm sm:text-sm text-gray-800 font-semibold">
-                            {{ temp_booking.service_date|date:"F j, Y" }}
-                        </p>
-                        <!-- Hidden input to ensure the date is submitted with the form -->
-                        <input type="hidden"
-                               name="{{ form.dropoff_date.name }}"
-                               value="{{ temp_booking.service_date|date:'Y-m-d' }}"
-                               id="{{ form.dropoff_date.id_for_label }}">
+            {% if form.non_field_errors %}
+            <div class="p-6 border-b border-gray-200">
+                <div class="rounded-md bg-red-50 p-4">
+                    <div class="flex">
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">There was an error with your submission</h3>
+                            <div class="mt-2 text-sm text-red-700">
+                                <ul role="list" class="list-disc pl-5 space-y-1">
+                                    {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
                     </div>
-                {% else %}
-                    <!-- Display Flatpickr input for date selection -->
-                    <div>
-                        <label for="{{ form.dropoff_date.id_for_label }}" class="block text-sm font-medium text-gray-700 required-label">{{ form.dropoff_date.label }}</label>
-                        {{ form.dropoff_date }}
-                        {% for error in form.dropoff_date.errors %}
-                            <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="p-6">
+                <fieldset>
+                    <legend class="text-lg font-medium text-gray-900">Drop-off Details</legend>
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        
+                        <div>
+                            <label for="{{ form.dropoff_date.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.dropoff_date.label }}</label>
+                            {{ form.dropoff_date }}
+                            {% for error in form.dropoff_date.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
+                        </div>
+                        
+                        <div>
+                            <label for="{{ form.dropoff_time.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.dropoff_time.label }}</label>
+                            {{ form.dropoff_time }}
+                            {% for error in form.dropoff_time.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+
+            <div class="p-6 border-t border-gray-200">
+                <fieldset>
+                    <legend class="text-lg font-medium text-gray-900">{{ form.payment_method.label }}</legend>
+                    <div class="mt-4 space-y-4">
+                        {% for radio in form.payment_method %}
+                        <div class="flex items-center">
+                            {{ radio.tag|safe }}
+                            <label for="{{ radio.id_for_label }}" class="ml-3 block text-sm font-medium text-gray-700">{{ radio.choice_label }}</label>
+                        </div>
                         {% endfor %}
+                        {% for error in form.payment_method.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
                     </div>
-                {% endif %}
-                
-                <!-- Drop-off Time Field (always visible, but dependent on date) -->
-                <div>
-                    <label for="{{ form.dropoff_time.id_for_label }}" class="block text-sm font-medium text-gray-700 required-label">{{ form.dropoff_time.label }}</label>
-                    <select name="{{ form.dropoff_time.name }}"
-                            id="{{ form.dropoff_time.id_for_label }}"
-                            class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm {% if form.dropoff_time.errors %}border-red-500{% endif %}"
-                            disabled>
-                        <option value="">Select a date first</option>
-                    </select>
-                    {% for error in form.dropoff_time.errors %}
-                         <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
-                    {% endfor %}
-                </div>
+                </fieldset>
             </div>
-        </fieldset>
-
-        <!-- Payment Method Selection -->
-        <fieldset class="mb-6">
-            <legend class="text-xl font-semibold text-gray-800 mb-4">{{ form.payment_method.label }}</legend>
-            {% for radio in form.payment_method %}
-            <div class="flex items-center mb-2">
-                {{ radio.tag }}
-                <label for="{{ radio.id_for_label }}" class="ml-3 block text-sm font-medium text-gray-700">
-                    {{ radio.choice_label }}
-                </label>
+            
+            <div class="p-6 border-t border-gray-200">
+                <fieldset>
+                    <div class="relative flex items-start">
+                        <div class="flex items-center h-5">
+                           {{ form.service_terms_accepted }}
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="{{ form.service_terms_accepted.id_for_label }}" class="font-medium text-gray-700">{{ form.service_terms_accepted.label|safe }}</label>
+                        </div>
+                    </div>
+                    {% for error in form.service_terms_accepted.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
+                </fieldset>
             </div>
-            {% endfor %}
-            {% for error in form.payment_method.errors %}
-                <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
-            {% endfor %}
-        </fieldset>
-
-        <!-- Terms and Conditions -->
-        <fieldset>
-             <div class="flex items-start">
-                <div class="flex items-center h-5">
-                   {{ form.service_terms_accepted }}
-                </div>
-                <div class="ml-3 text-sm">
-                    <label for="{{ form.service_terms_accepted.id_for_label }}" class="font-medium text-gray-700 required-label">{{ form.service_terms_accepted.label|safe }}</label>
-                </div>
+            
+            <div class="flex items-center justify-between p-6 bg-gray-50 rounded-b-lg">
+                <a href="{% url 'service:service_book_step4' %}" class="text-sm font-medium text-gray-600 hover:text-indigo-500 transition duration-150 ease-in-out">
+                    &larr; Back
+                </a>
+                <button type="submit" id="submit-button" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Continue &rarr;
+                </button>
             </div>
-            {% for error in form.service_terms_accepted.errors %}
-                <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
-            {% endfor %}
-        </fieldset>
-        
-        <!-- Navigation Buttons -->
-        <div class="flex justify-between items-center mt-8 pt-6 border-t">
-            <a href="{% url 'service:service_book_step4' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out">
-                Back
-            </a>
-            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out">
-                Continue to Final Summary
-            </button>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 {% endblock %}
 
@@ -173,21 +117,31 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Note the selector is now '.flatpickr-date-input'
-    const dateInput = document.querySelector('.flatpickr-date-input');
+    const standardClasses = ['mt-1', 'block', 'w-full', 'py-2', 'px-3', 'border', 'border-gray-400', 'rounded-md', 'shadow-sm', 'text-gray-900', 'focus:outline-none', 'focus:ring-indigo-500', 'focus:border-indigo-500', 'sm:text-sm'];
+    
+    const dateInput = document.querySelector('input[name="dropoff_date"]');
+    if (dateInput) {
+        dateInput.classList.add(...standardClasses);
+    }
+    
     const timeSelect = document.getElementById('{{ form.dropoff_time.id_for_label }}');
+    if (timeSelect) {
+        timeSelect.classList.add(...standardClasses, 'disabled:bg-gray-100', 'disabled:text-gray-500');
+        timeSelect.disabled = true; // Ensure it starts disabled
+        timeSelect.innerHTML = `<option value="">Select a date first</option>`;
+    }
+
+    document.querySelectorAll('input[type="radio"]').forEach(el => el.classList.add('h-4', 'w-4', 'text-indigo-600', 'border-gray-300', 'focus:ring-indigo-500'));
+    document.querySelectorAll('input[type="checkbox"]').forEach(el => el.classList.add('h-4', 'w-4', 'text-indigo-600', 'border-gray-300', 'rounded', 'focus:ring-indigo-500'));
+    
     const getTimesUrl = '{{ get_times_url }}';
-    const isSameDayDropoffOnly = '{{ is_same_day_dropoff_only|yesno:"true,false" }}'; // Convert Django boolean to JS boolean
 
-    if (dateInput) { // Only initialize if the date input exists on the page
-        // Safely parse the JSON data from the template
+    if (dateInput) {
         const availableDates = JSON.parse('{{ available_dropoff_dates_json|escapejs }}');
-
         flatpickr(dateInput, {
             altInput: true,
             altFormat: "F j, Y",
             dateFormat: "Y-m-d",
-            // Use the 'enable' option to only allow selection of specific dates
             enable: availableDates,
             onChange: function(selectedDates, dateStr, instance) {
                 if (dateStr) {
@@ -200,30 +154,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function resetTimeSelect(message = 'Select a date first') {
-        timeSelect.innerHTML = `<option value="">${message}</option>`;
-        timeSelect.disabled = true;
+        if (timeSelect) {
+            timeSelect.innerHTML = `<option value="">${message}</option>`;
+            timeSelect.disabled = true;
+        }
     }
 
     async function fetchAvailableTimes(selectedDate) {
         resetTimeSelect('Loading times...');
         
         try {
-            // Include service_date in the AJAX request for accurate time slot calculation
             const serviceDate = '{{ temp_booking.service_date|date:"Y-m-d" }}'; 
             const response = await fetch(`${getTimesUrl}?date=${selectedDate}&service_date=${serviceDate}`);
-            
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
             
-            if (data.available_times && data.available_times.length > 0) {
+            if (timeSelect && data.available_times && data.available_times.length > 0) {
                 timeSelect.innerHTML = '<option value="">Select a time</option>';
                 const previousTimeValue = '{{ form.dropoff_time.value|default_if_none:""|date:"H:i:s" }}';
 
                 data.available_times.forEach(time => {
                     const option = document.createElement('option');
                     option.value = time.value;
-                    option.textContent = time.text; // Assumes text is formatted time
-                    
+                    option.textContent = time.text;
                     if (previousTimeValue && previousTimeValue === time.value) {
                         option.selected = true;
                     }
@@ -239,18 +192,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // This block handles initial fetching of times
-    // It will run on page load:
-    // 1. If not same-day dropoff only, and a date is pre-filled (e.g., from a form error).
-    // 2. If same-day dropoff only, it will automatically use the service_date.
-    if (isSameDayDropoffOnly) {
-        // If same-day dropoff, the date is fixed to service_date. Fetch times for it immediately.
-        // We use temp_booking.service_date directly from the template context.
-        fetchAvailableTimes('{{ temp_booking.service_date|date:"Y-m-d" }}');
-    } else if (dateInput && dateInput.value) {
-        // If a date is already in the input (e.g., from form error reload), fetch times.
+    if (dateInput && dateInput.value) {
         fetchAvailableTimes(dateInput.value);
     }
+
+    const paymentRadios = document.querySelectorAll('input[name="{{ form.payment_method.html_name }}"]');
+    const submitButton = document.getElementById('submit-button');
+
+    function updateButtonText() {
+        const selectedValue = document.querySelector('input[name="{{ form.payment_method.html_name }}"]:checked')?.value;
+        if (selectedValue === 'in_store_full') {
+            submitButton.innerHTML = 'Submit Booking';
+        } else {
+            submitButton.innerHTML = 'Continue to Payment &rarr;';
+        }
+    }
+
+    paymentRadios.forEach(radio => radio.addEventListener('change', updateButtonText));
+    updateButtonText();
 });
 </script>
 {% endblock %}

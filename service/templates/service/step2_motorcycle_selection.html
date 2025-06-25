@@ -1,39 +1,35 @@
 {% extends 'core/layout.html' %}
-
 {% load static %}
 
 {% block title %}Book Service - Step 2{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
-{% endblock %}
-
 {% block content %}
-<div class="service-booking-container">
-    <div class="booking-progress">
-        {# Assuming 'step' and 'total_steps' are passed from the context, e.g., in views #}
-        <h2>Book Service - Step {{ step|default:'2' }} of {{ total_steps|default:'X' }}</h2>
+<div class="max-w-4xl mx-auto px-4 py-8">
+    
+    <div class="mb-6">
+        <h2 class="text-3xl font-bold text-white">Book Service - Step {{ step|default:'2' }} of {{ total_steps|default:'X' }}</h2>
     </div>
-
-    <hr>
 
     {% include 'service/_booking_summary_include.html' %}
 
-    <div class="booking-form-card">
-        <h3 class="form-title">Select Your Motorcycle</h3>
-        <p class="form-description">Please choose an existing motorcycle from your profile or select the option to add a new one.</p>
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mt-4">
+        <h3 class="text-2xl font-semibold text-gray-800 mb-2">Select Your Motorcycle</h3>
+        <p class="text-gray-600 mb-6">Choose an existing motorcycle or add a new one.</p>
 
-        <form method="post" class="booking-form">
+        <form method="post" class="space-y-6">
             {% csrf_token %}
 
-            <div class="form-group">
-                <label for="{{ form.selected_motorcycle.id_for_label }}">{{ form.selected_motorcycle.label }}</label>
+            <div>
+                <label for="{{ form.selected_motorcycle.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ form.selected_motorcycle.label }}</label>
+                
                 {{ form.selected_motorcycle }}
+
                 {% if form.selected_motorcycle.help_text %}
-                    <p class="help-text">{{ form.selected_motorcycle.help_text }}</p>
+                    <p class="mt-2 text-sm text-gray-500">{{ form.selected_motorcycle.help_text }}</p>
                 {% endif %}
+
                 {% if form.selected_motorcycle.errors %}
-                    <div class="form-errors">
+                    <div class="mt-2 text-sm text-red-600 space-y-1">
                         {% for error in form.selected_motorcycle.errors %}
                             <p>{{ error }}</p>
                         {% endfor %}
@@ -41,11 +37,11 @@
                 {% endif %}
             </div>
 
-            <div class="form-navigation">
-                <a href="{% url 'service:service_book_step1' %}" class="btn btn-secondary">
+            <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+                <a href="{% url 'service:service_book_step1' %}" class="text-sm font-medium text-gray-600 hover:text-indigo-500 transition duration-150 ease-in-out">
                     &larr; Previous Step
                 </a>
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Next Step &rarr;
                 </button>
             </div>
@@ -55,5 +51,12 @@
 {% endblock %}
 
 {% block extra_js %}
-{# Any specific JavaScript for this step, e.g., dynamic form behavior, goes here #}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const motorcycleSelect = document.getElementById('{{ form.selected_motorcycle.id_for_label }}');
+        if (motorcycleSelect) {
+            motorcycleSelect.classList.add('mt-1', 'block', 'w-full', 'py-2', 'px-3', 'border', 'border-gray-400', 'rounded-md', 'shadow-sm', 'text-gray-900', 'focus:outline-none', 'focus:ring-indigo-500', 'focus:border-indigo-500', 'sm:text-sm');
+        }
+    });
+</script>
 {% endblock %}

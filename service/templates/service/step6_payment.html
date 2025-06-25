@@ -3,76 +3,67 @@
 
 {% block title %}Book Service - Step 6 - Payment{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
+{% block extra_head %}
 <script src="https://js.stripe.com/v3/"></script>
 <style>
-    .StripeElement {
-        box-sizing: border-box;
-        height: 40px;
-        padding: 10px 12px;
-        border: 1px solid #e2e8f0;
-        border-radius: 0.375rem;
+    #card-element {
+        border-radius: 0.375rem; /* rounded-md */
+        border: 1px solid #9ca3af; /* border-gray-400 */
+        padding: 0.75rem 1rem; /* py-3 px-4 */
         background-color: white;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-        -webkit-transition: box-shadow 150ms ease;
-        transition: box-shadow 150ms ease;
+        color: #111827; /* text-gray-900 */
     }
-    .StripeElement--focus {
-        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
-        border-color: #4299e1;
-    }
-    .StripeElement--invalid {
-        border-color: #ef4444;
-    }
-    .StripeElement--webkit-autofill {
-        background-color: #fefcbf !important;
+    #card-errors {
+        color: #dc2626;
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="service-booking-container">
-    <div class="booking-progress">
-        <h2>Book Service - Step 6 of 7</h2>
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="mb-6">
+        <h2 class="text-3xl font-bold text-white">Book Service - Step 6 of 7</h2>
     </div>
-
-    <hr>
 
     {% include 'service/_booking_summary_include.html' %}
 
-    <div class="booking-form-card">
-        <h3 class="form-title">Complete Your Payment</h3>
-        <p class="form-description">Please enter your payment details below to finalize your booking.</p>
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mt-4">
+        <h3 class="text-2xl font-semibold text-gray-800 mb-2">Complete Your Payment</h3>
+        <p class="text-gray-600 mb-6">Please enter your payment details below to finalize your booking.</p>
 
         {% if payment_already_succeeded %}
-        <div id="payment-success-message" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6" role="alert">
-            <span class="block sm:inline">Your payment has already been successfully processed. Redirecting you to confirmation...</span>
+        <div id="payment-success-message" class="rounded-md bg-blue-50 p-4">
+             <p class="text-sm font-medium text-blue-800">Your payment has already been successfully processed. Redirecting you to confirmation...</p>
         </div>
         <script>
-            window.location.href = "{% url 'service:service_book_step7' %}";
+            window.setTimeout(() => {
+                window.location.href = "{% url 'service:service_book_step7' %}";
+            }, 2000);
         </script>
         {% endif %}
 
-        <form id="payment-form" class="space-y-4">
-            <div>
-                <label for="card-element" class="block text-sm font-medium text-gray-700 mb-2">
-                    Credit or debit card
-                </label>
-                <div id="card-element" class="StripeElement"></div>
-                <div id="card-errors" role="alert" class="text-red-600 text-sm mt-2"></div>
+        <form id="payment-form" class="{% if payment_already_succeeded %}hidden{% endif %}">
+            <div class="space-y-4">
+                <div>
+                    <label for="card-element" class="block text-sm font-medium text-gray-700 mb-1">
+                        Credit or debit card
+                    </label>
+                    <div id="card-element"></div>
+                    <div id="card-errors" role="alert"></div>
+                </div>
+
+                <div id="payment-message" style="display: none;" class="rounded-md bg-red-50 p-4">
+                    <p class="text-sm text-red-700"></p>
+                </div>
             </div>
 
-            <div id="payment-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                <span class="block sm:inline"></span>
+            <div class="pt-6 mt-6 border-t border-gray-200">
+                <button id="submit-button" class="w-full inline-flex justify-center py-3 px-4 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
+                    Pay {{ amount }} {{ currency }}
+                </button>
             </div>
-
-            <button
-                id="submit-button"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
-            >
-                Pay {{ amount }} {{ currency }}
-            </button>
         </form>
     </div>
 </div>
@@ -80,79 +71,44 @@
 
 {% block extra_js %}
 <script>
+if (!document.getElementById('payment-success-message')) {
     const stripePublishableKey = "{{ stripe_publishable_key }}";
     const clientSecret = "{{ client_secret }}";
 
     const stripe = Stripe(stripePublishableKey);
     const elements = stripe.elements();
 
-    const card = elements.create('card', {
-        style: {
-            base: {
-                iconColor: '#6B7280',
-                color: '#374151',
-                fontWeight: '500',
-                fontFamily: 'Inter, sans-serif',
-                fontSize: '16px',
-                '::placeholder': {
-                    color: '#9CA3AF',
-                },
-            },
-            invalid: {
-                iconColor: '#EF4444',
-                color: '#EF4444',
-            },
-        }
-    });
-
+    const card = elements.create('card');
     card.mount('#card-element');
 
     card.on('change', function(event) {
         const displayError = document.getElementById('card-errors');
-        if (event.error) {
-            displayError.textContent = event.error.message;
-        } else {
-            displayError.textContent = '';
-        }
+        displayError.textContent = event.error ? event.error.message : '';
     });
 
-    function showMessage(messageText, isError = true) {
-        const messageContainer = document.getElementById('payment-message');
-        if (messageContainer) {
-            const messageSpan = messageContainer.querySelector('span');
-            messageSpan.textContent = messageText;
-            messageContainer.classList.remove('hidden');
-            if (isError) {
-                messageContainer.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
-                messageContainer.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
-            } else {
-                messageContainer.classList.remove('bg-red-100', 'border-red-400', 'text-red-700');
-                messageContainer.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
-            }
-        } else {
-            console.warn("Payment message container not found. Message: ", messageText);
-        }
+    const form = document.getElementById('payment-form');
+    const submitButton = document.getElementById('submit-button');
+    const messageContainer = document.getElementById('payment-message');
+    const messageTextElement = messageContainer.querySelector('p');
+
+    function showMessage(messageText) {
+        messageTextElement.textContent = messageText;
+        messageContainer.style.display = 'block';
     }
 
-    const form = document.getElementById('payment-form');
     form.addEventListener('submit', async function(event) {
         event.preventDefault();
 
-        const submitButton = document.getElementById('submit-button');
         submitButton.disabled = true;
         submitButton.textContent = 'Processing...';
-        document.getElementById('payment-message').classList.add('hidden');
+        messageContainer.style.display = 'none';
 
         const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-            payment_method: {
-                card: card,
-            }
+            payment_method: { card: card }
         });
 
         if (error) {
-            const errorDisplay = document.getElementById('card-errors');
-            errorDisplay.textContent = error.message;
-            showMessage(error.message, true);
+            showMessage(error.message);
             submitButton.disabled = false;
             submitButton.textContent = `Pay {{ amount }} {{ currency }}`;
         } else {
@@ -163,66 +119,27 @@
                         'Content-Type': 'application/json',
                         'X-CSRFToken': '{{ csrf_token }}'
                     },
-                    body: JSON.stringify({
-                        payment_intent_id: paymentIntent.id
-                    })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        console.error('Server responded with an error:', response.status, response.statusText);
-                        showMessage('Payment processed, but booking finalization failed on server. Please contact support.', true);
-                        submitButton.disabled = false;
-                        submitButton.textContent = `Pay {{ amount }} {{ currency }}`;
-                        throw new Error('Server error during booking finalization');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Server confirmation response:', data);
-                    if (data.status === 'success' && data.redirect_url) {
-                        window.location.href = data.redirect_url;
-                    } else {
-                        showMessage(data.error || 'Unknown server response after payment. Please contact support.', true);
-                        submitButton.disabled = false;
-                        submitButton.textContent = `Pay {{ amount }} {{ currency }}`;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error sending payment intent to server for confirmation:', error);
-                    showMessage('Network error or unexpected issue during booking finalization. Please try again.', true);
-                    submitButton.disabled = false;
-                    submitButton.textContent = `Pay {{ amount }} {{ currency }}`;
-                });
-
-            } else {
-                const errorDisplay = document.getElementById('card-errors');
-                errorDisplay.textContent = 'Payment status: ' + paymentIntent.status + '. Please try again or contact support.';
-                showMessage('Payment status: ' + paymentIntent.status + '. Please try again or contact support.', true);
-                submitButton.disabled = false;
-                submitButton.textContent = `Pay {{ amount }} {{ currency }}`;
-
-                fetch("{% url 'service:service_book_step6' %}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({
-                        payment_intent_id: paymentIntent.id
-                    })
+                    body: JSON.stringify({ payment_intent_id: paymentIntent.id })
                 })
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Server status update response (background):', data);
-                    if (data.redirect_url) {
+                    if (data.status === 'success' && data.redirect_url) {
                         window.location.href = data.redirect_url;
+                    } else {
+                        showMessage(data.error || 'Payment succeeded, but there was an issue finalizing your booking. Please contact support.');
+                        submitButton.disabled = false;
+                        submitButton.textContent = `Pay {{ amount }} {{ currency }}`;
                     }
                 })
                 .catch(error => {
-                    console.error('Error sending payment intent to server for status update:', error);
+                    console.error('Error during booking finalization:', error);
+                    showMessage('A network error occurred after payment. Please contact support.');
+                    submitButton.disabled = false;
+                    submitButton.textContent = `Pay {{ amount }} {{ currency }}`;
                 });
             }
         }
     });
+}
 </script>
 {% endblock %}
