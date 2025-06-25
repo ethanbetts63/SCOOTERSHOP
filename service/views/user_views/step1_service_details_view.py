@@ -10,11 +10,17 @@ from django.conf import settings
 from service.forms import ServiceDetailsForm
 from service.models import TempServiceBooking, ServiceProfile, ServiceType, ServiceSettings, BlockedServiceDate
 from service.models import CustomerMotorcycle
+from service.utils.booking_protection import check_and_manage_recent_booking_flag # NEW: Import the utility
 
 class Step1ServiceDetailsView(View):
     template_name = 'service/step1_service_details_include.html'
 
     def post(self, request, *args, **kwargs):
+        # NEW: Check for recent booking flag before allowing new booking process
+        redirect_response = check_and_manage_recent_booking_flag(request)
+        if redirect_response:
+            return redirect_response
+
         # Remove any existing service booking reference from the session to start clean
         if 'service_booking_reference' in request.session:
             del request.session['service_booking_reference']

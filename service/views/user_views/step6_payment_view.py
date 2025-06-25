@@ -9,6 +9,7 @@ import json
 from payments.models import Payment
 from service.models import TempServiceBooking, ServiceSettings, ServiceBooking
 from service.utils.get_service_date_availibility import get_service_date_availability
+from service.utils.booking_protection import check_and_manage_recent_booking_flag # NEW: Import the utility
 import datetime
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -46,6 +47,10 @@ class Step6PaymentView(View):
 
 
     def get(self, request, *args, **kwargs):
+        redirect_response = check_and_manage_recent_booking_flag(request)
+        if redirect_response:
+            return redirect_response
+
         temp_booking = request.temp_booking
         service_settings = request.service_settings
         payment_method = temp_booking.payment_method
@@ -78,8 +83,7 @@ class Step6PaymentView(View):
             amount_to_pay = temp_booking.service_type.base_price
         elif payment_method == 'online_deposit':
             amount_to_pay = temp_booking.calculated_deposit_amount
-        # Removed 'in_store_full' logic, as it should be handled by redirection in Step 5
-        else:
+        else: # This implicitly handles invalid payment methods and in_store_full if it somehow lands here.
             messages.error(request, "No valid payment option selected. Please choose a payment method.")
             return redirect('service:service_book_step5')
         

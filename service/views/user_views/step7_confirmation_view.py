@@ -4,6 +4,7 @@ from django.contrib import messages
 
 from service.models import ServiceBooking
 from payments.models import Payment
+from service.utils.booking_protection import set_recent_booking_flag # NEW: Import the utility
 
 class Step7ConfirmationView(View):
     def get(self, request):
@@ -43,6 +44,8 @@ class Step7ConfirmationView(View):
         if service_booking:
             if 'temp_service_booking_uuid' in request.session:
                 del request.session['temp_service_booking_uuid']
+            
+            set_recent_booking_flag(request)
 
             context = {
                 'service_booking': service_booking,
@@ -66,4 +69,3 @@ class Step7ConfirmationView(View):
         else:
             messages.warning(request, "Could not find a booking confirmation. Please start over if you have not booked.")
             return redirect('service:service')
-
