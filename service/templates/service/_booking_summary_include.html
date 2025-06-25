@@ -1,0 +1,65 @@
+{% if temp_booking %}
+<div class="booking-summary-include bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+    <h4 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-3">Your Booking Summary</h4>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm text-gray-600">
+
+        <!-- Service Type and Date -->
+        {% if temp_booking.service_type %}
+        <div>
+            <strong class="font-medium text-gray-800">Service Type:</strong>
+            <p>{{ temp_booking.service_type.name }}</p>
+        </div>
+        {% endif %}
+
+        {% if temp_booking.service_date %}
+        <div>
+            <strong class="font-medium text-gray-800">Service Date:</strong>
+            <p>{{ temp_booking.service_date|date:"l, F j, Y" }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Motorcycle Details -->
+        {% if temp_booking.customer_motorcycle %}
+        <div>
+            <strong class="font-medium text-gray-800">Motorcycle:</strong>
+            <p>{{ temp_booking.customer_motorcycle.year }} {{ temp_booking.customer_motorcycle.brand }} {{ temp_booking.customer_motorcycle.model }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Customer Details -->
+        {% if temp_booking.service_profile %}
+        <div>
+            <strong class="font-medium text-gray-800">Your Details:</strong>
+            <p>{{ temp_booking.service_profile.name }} ({{ temp_booking.service_profile.email }})</p>
+        </div>
+        {% endif %}
+
+        <!-- Drop-off Details -->
+        {% if temp_booking.dropoff_date and temp_booking.dropoff_time %}
+        <div>
+            <strong class="font-medium text-gray-800">Drop-off Appointment:</strong>
+            <p>{{ temp_booking.dropoff_date|date:"l, F j, Y" }} at {{ temp_booking.dropoff_time|time:"g:i A" }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Payment Method -->
+        {% if temp_booking.payment_method %}
+        <div>
+            <strong class="font-medium text-gray-800">Payment Choice:</strong>
+            <p>{{ temp_booking.get_payment_method_display }}</p>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- Total Price -->
+    {% if temp_booking.calculated_total and temp_booking.calculated_total > 0 %}
+    <div class="mt-4 pt-3 border-t">
+        <p class="text-right text-lg font-bold text-gray-800">
+            Total: ${{ temp_booking.calculated_total|floatformat:2 }}
+        </p>
+    </div>
+    {% endif %}
+
+</div>
+{% endif %}
