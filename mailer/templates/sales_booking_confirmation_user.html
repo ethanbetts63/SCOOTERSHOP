@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Sales Booking Confirmation</title>
+    <title>Your Sales Booking Is Not Confirmed</title>
     <style type="text/css">
         body {
             font-family: Arial, sans-serif;
@@ -79,7 +79,7 @@
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="container">
                     <tr>
                         <td class="header">
-                            <h1>Your Sales Booking Confirmation!</h1>
+                            <h1>Your Sales Booking Is Not Confirmed!</h1>
                         </td>
                     </tr>
                     <tr>
@@ -88,7 +88,7 @@
                             {% if is_deposit_confirmed %}
                             <p>
                                 Your deposit has been confirmed for the motorcycle! The bike ({{ booking.motorcycle.brand }} {{ booking.motorcycle.model }})
-                                will be delisted from our website and reserved for you until your deposit expires or the sale is completed.
+                                will be displayed as reserved on our website and will be reserved for you until your deposit expires or the sale is completed.
                             </p>
                             {% else %}
                             <p>Thank you for your sales enquiry regarding the motorcycle. We have received your request.</p>
@@ -96,9 +96,9 @@
 
                             {% if booking.appointment_date %}
                             <p>Your requested appointment date is <strong>{{ booking.appointment_date|date:"D, M d, Y" }} at {{ booking.appointment_time|time:"P" }}</strong>. Please note that this appointment is not yet confirmed.</p>
-                            <p>You will receive a separate confirmation email after our admin team has reviewed your booking details and confirmed the appointment.</p>
+                            <p>IMPORTANT: You will receive a separate confirmation email after our admin team has reviewed your booking details and confirmed the appointment. </p>
                             {% else %}
-                            <p>Our admin team will get back to you as soon as possible to discuss your enquiry further.</p>
+                            <p>Our admin team will get back to you as soon as possible to discuss your enquiry further and confirm and appointments.</p>
                             {% endif %}
 
                             <h2>Booking Details</h2>

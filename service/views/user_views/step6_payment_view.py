@@ -7,7 +7,10 @@ from django.contrib import messages
 import stripe
 import json
 from payments.models import Payment
-from service.models import TempServiceBooking, ServiceSettings
+from service.models import TempServiceBooking, ServiceSettings, ServiceBooking
+from service.utils.get_service_date_availibility import get_service_date_availability
+import datetime
+
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 class Step6PaymentView(View):
@@ -48,13 +51,40 @@ class Step6PaymentView(View):
         payment_method = temp_booking.payment_method
         currency = service_settings.currency_code
 
+        min_date, disabled_dates_json = get_service_date_availability()
+        disabled_dates = json.loads(disabled_dates_json)
+
+        date_to_check = temp_booking.dropoff_date
+
+        is_date_now_disabled = False
+        for disabled_entry in disabled_dates:
+            if isinstance(disabled_entry, str) and disabled_entry == str(date_to_check):
+                is_date_now_disabled = True
+                break
+            elif isinstance(disabled_entry, dict) and 'from' in disabled_entry and 'to' in disabled_entry:
+                start_range = datetime.datetime.strptime(disabled_entry['from'], '%Y-%m-%d').date()
+                end_range = datetime.datetime.strptime(disabled_entry['to'], '%Y-%m-%d').date()
+                if start_range <= date_to_check <= end_range:
+                    is_date_now_disabled = True
+                    break
+
+        if is_date_now_disabled:
+            messages.error(request, f"The selected service date ({date_to_check.strftime('%Y-%m-%d')}) is no longer available. Please choose another date.")
+            return redirect(reverse('service:service_book_step5'))
+
+
         amount_to_pay = None
-        if payment_method == 'online_full': # Corrected from 'full_online' to 'online_full' based on TempServiceBooking model
+        if payment_method == 'online_full':
             amount_to_pay = temp_booking.service_type.base_price
         elif payment_method == 'online_deposit':
             amount_to_pay = temp_booking.calculated_deposit_amount
         elif payment_method == 'in_store_full':
-            return redirect(reverse('service:service_book_step7') + f'?temp_booking_uuid={temp_booking.session_uuid}')
+            if ServiceBooking.objects.filter(temp_booking_link=temp_booking).exists():
+                messages.info(request, "Your in-store payment booking is already confirmed.")
+                return redirect(reverse('service:service_book_step7'))
+            else:
+                messages.warning(request, "In-store full payment selected. Please complete your booking from the previous step.")
+                return redirect(reverse('service:service_book_step5'))
         else:
             messages.error(request, "No valid payment option selected. Please choose a payment method.")
             return redirect('service:service_book_step5')
@@ -192,8 +222,6 @@ class Step6PaymentView(View):
         try:
             intent = stripe.PaymentIntent.retrieve(payment_intent_id)
 
-            payment_obj = Payment.objects.filter(stripe_payment_intent_id=intent.id).first()
-
             if intent.status == 'succeeded':
                 return JsonResponse({
                     'status': 'success',
@@ -202,20 +230,12 @@ class Step6PaymentView(View):
                 })
 
             elif intent.status in ['requires_action', 'requires_confirmation', 'requires_payment_method', 'processing']:
-                if payment_obj:
-                    if payment_obj.status != intent.status:
-                        payment_obj.status = intent.status
-                        payment_obj.save()
                 return JsonResponse({
                     'status': 'requires_action',
                     'message': 'Payment requires further action or is pending. Please follow prompts provided by Stripe.'
                 })
 
             else:
-                if payment_obj:
-                    if payment_obj.status != intent.status:
-                        payment_obj.status = intent.status
-                        payment_obj.save()
                 return JsonResponse({
                     'status': 'failed',
                     'message': 'Payment failed or an unexpected status occurred. Please try again.'

@@ -21,7 +21,7 @@ class CustomerMotorcycleForm(forms.ModelForm):
     brand = forms.ChoiceField(
         label=_("Motorcycle Brand"),
         widget=forms.Select(attrs={'class': 'form-control'}),
-        help_text=_("Select the brand of your motorcycle. Choose 'Other' if your brand is not listed."),
+        help_text=_("Select the brand of your motorcycle. Choose 'Other' if your brand is not listed. Please note we normally do not work on bike not in the displayed list."),
         required=True
     )
 
@@ -54,7 +54,6 @@ class CustomerMotorcycleForm(forms.ModelForm):
         model = CustomerMotorcycle
         fields = [
             'brand',
-            # Removed 'make' field
             'model',
             'year',
             'engine_size',
@@ -63,7 +62,6 @@ class CustomerMotorcycleForm(forms.ModelForm):
             'odometer',
             'transmission',
             'engine_number',
-            'image',
         ]
         widgets = {
             # Removed 'make' widget
@@ -75,7 +73,6 @@ class CustomerMotorcycleForm(forms.ModelForm):
             'odometer': forms.NumberInput(attrs={'class': 'form-control'}),
             'transmission': forms.Select(attrs={'class': 'form-control'}),
             'engine_number': forms.TextInput(attrs={'class': 'form-control'}),
-            'image': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
         }
         labels = {
             # Removed 'make' label
@@ -87,7 +84,6 @@ class CustomerMotorcycleForm(forms.ModelForm):
             'odometer': _('Odometer Reading (km)'),
             'transmission': _('Transmission Type'),
             'engine_number': _('Engine Number'),
-            'image': _('Motorcycle Image (Optional)'),
         }
 
     def clean(self):
