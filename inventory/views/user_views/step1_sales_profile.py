@@ -5,11 +5,16 @@ from django.db import transaction
 from django.contrib import messages
 from inventory.models import TempSalesBooking, InventorySettings
 from inventory.forms import SalesProfileForm
+from inventory.utils.booking_protection import check_and_manage_recent_booking_flag
 
 class Step1SalesProfileView(View):
     template_name = 'inventory/step1_sales_profile.html'
 
     def get(self, request, *args, **kwargs):
+        redirect_response = check_and_manage_recent_booking_flag(request)
+        if redirect_response:
+            return redirect_response
+
         temp_booking_uuid = request.session.get('temp_sales_booking_uuid')
 
         if not temp_booking_uuid:

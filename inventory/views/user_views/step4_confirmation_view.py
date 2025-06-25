@@ -4,6 +4,7 @@ from django.contrib import messages
 from decimal import Decimal
 from inventory.models import SalesBooking
 from payments.models import Payment
+from inventory.utils.booking_protection import set_recent_booking_flag
 
 class Step4ConfirmationView(View):
     def get(self, request):
@@ -42,6 +43,8 @@ class Step4ConfirmationView(View):
         if sales_booking:
             if 'temp_sales_booking_uuid' in request.session:
                 del request.session['temp_sales_booking_uuid']
+
+            set_recent_booking_flag(request)
 
             amount_owing = Decimal('0.00')
             if sales_booking.motorcycle and sales_booking.motorcycle.price is not None:

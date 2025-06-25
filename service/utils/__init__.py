@@ -10,3 +10,4 @@ from .get_available_service_dropoff_times import *
 from .calculate_service_total import *
 from .calulcate_service_deposit import *
 from .send_booking_to_mechanicdesk import *
+from .booking_protection import *

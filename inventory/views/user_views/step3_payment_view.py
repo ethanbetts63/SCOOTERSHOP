@@ -7,7 +7,7 @@ from django.contrib import messages
 import stripe
 import json
 from payments.models import Payment
-from inventory.models import TempSalesBooking, InventorySettings
+from inventory.models import TempSalesBooking, InventorySettings, Motorcycle
 from inventory.utils.create_update_sales_payment_intent import create_or_update_sales_payment_intent
 from decimal import Decimal
 
@@ -56,6 +56,16 @@ class Step3PaymentView(View):
 
     def get(self, request, *args, **kwargs):
         temp_booking = request.temp_booking
+        
+        try:
+            motorcycle = Motorcycle.objects.get(pk=temp_booking.motorcycle.pk)
+            if not motorcycle.is_available:
+                messages.error(request, "Sorry, this motorcycle has just been reserved or sold and is no longer available.")
+                return redirect(reverse('inventory:used'))
+        except Motorcycle.DoesNotExist:
+            messages.error(request, "The selected motorcycle could not be found.")
+            return redirect(reverse('inventory:used'))
+
         inventory_settings = request.inventory_settings
         currency = inventory_settings.currency_code
         
@@ -116,8 +126,6 @@ class Step3PaymentView(View):
         try:
             intent = stripe.PaymentIntent.retrieve(payment_intent_id)
 
-            payment_obj = Payment.objects.filter(stripe_payment_intent_id=intent.id).first()
-
             if intent.status == 'succeeded':
                 return JsonResponse({
                     'status': 'success',
@@ -126,20 +134,12 @@ class Step3PaymentView(View):
                 })
 
             elif intent.status in ['requires_action', 'requires_confirmation', 'requires_payment_method', 'processing']:
-                if payment_obj:
-                    if payment_obj.status != intent.status:
-                        payment_obj.status = intent.status
-                        payment_obj.save()
                 return JsonResponse({
                     'status': 'requires_action',
                     'message': 'Payment requires further action or is pending. Please follow prompts provided by Stripe.'
                 })
 
             else:
-                if payment_obj:
-                    if payment_obj.status != intent.status:
-                        payment_obj.status = intent.status
-                        payment_obj.save()
                 return JsonResponse({
                     'status': 'failed',
                     'message': 'Payment failed or an unexpected status occurred. Please try again.'
