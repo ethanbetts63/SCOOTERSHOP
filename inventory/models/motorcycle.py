@@ -10,7 +10,6 @@ class Motorcycle(models.Model):
         ('reserved', "Reserved"),
         ('for_hire', 'For Hire'),
         ('unavailable', 'Unavailable'),
-        ('reserved', 'Reserved'),
     ]
 
     CONDITION_CHOICES = [
