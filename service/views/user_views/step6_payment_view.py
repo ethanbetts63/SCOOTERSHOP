@@ -78,13 +78,7 @@ class Step6PaymentView(View):
             amount_to_pay = temp_booking.service_type.base_price
         elif payment_method == 'online_deposit':
             amount_to_pay = temp_booking.calculated_deposit_amount
-        elif payment_method == 'in_store_full':
-            if ServiceBooking.objects.filter(temp_booking_link=temp_booking).exists():
-                messages.info(request, "Your in-store payment booking is already confirmed.")
-                return redirect(reverse('service:service_book_step7'))
-            else:
-                messages.warning(request, "In-store full payment selected. Please complete your booking from the previous step.")
-                return redirect(reverse('service:service_book_step5'))
+        # Removed 'in_store_full' logic, as it should be handled by redirection in Step 5
         else:
             messages.error(request, "No valid payment option selected. Please choose a payment method.")
             return redirect('service:service_book_step5')

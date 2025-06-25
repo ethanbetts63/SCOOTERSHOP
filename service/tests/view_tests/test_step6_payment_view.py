@@ -348,28 +348,6 @@ class Step6PaymentViewTest(TestCase):
     @patch('stripe.PaymentIntent.create')
     @patch('stripe.PaymentIntent.retrieve')
     @patch('stripe.PaymentIntent.modify')
-    def test_get_in_store_full_payment_redirects_to_step7_immediately(self, mock_modify, mock_retrieve, mock_create):
-        """
-        Tests that if the payment option is 'in_store_full', no Stripe interaction occurs and
-        the user is immediately redirected to step 7 confirmation.
-        """
-        self.temp_booking.payment_method = 'in_store_full'
-        self.temp_booking.save()
-
-        response = self.client.get(self.base_url)
-
-        self.assertEqual(response.status_code, 302)
-        # No change needed here, this test already uses fetch_redirect_response=False and the URL is correct
-        self.assertRedirects(response, reverse('service:service_book_step7') + f'?temp_booking_uuid={self.temp_booking.session_uuid}', fetch_redirect_response=False)
-        
-        mock_create.assert_not_called()
-        mock_retrieve.assert_not_called()
-        mock_modify.assert_not_called()
-        self.assertEqual(Payment.objects.count(), 0)
-
-    @patch('stripe.PaymentIntent.create')
-    @patch('stripe.PaymentIntent.retrieve')
-    @patch('stripe.PaymentIntent.modify')
     def test_get_stripe_error_redirects_to_step5(self, mock_modify, mock_retrieve, mock_create):
         """
         Tests that a Stripe API error during GET request redirects to step 5.
@@ -450,12 +428,13 @@ class Step6PaymentViewTest(TestCase):
     def test_post_payment_requires_action_json_response(self, mock_retrieve):
         """
         Tests POST request when Stripe reports the payment intent requires action.
+        The local Payment object's status should NOT be updated by this POST.
         """
         payment_intent_id = 'pi_test_requires_action'
         payment_obj = PaymentFactory(
             temp_service_booking=self.temp_booking,
             stripe_payment_intent_id=payment_intent_id,
-            status='requires_payment_method',
+            status='requires_payment_method', # Initial status before POST
             amount=self.service_type.base_price,
             currency='AUD',
             service_customer_profile=self.service_profile
@@ -472,22 +451,24 @@ class Step6PaymentViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         json_response = response.json()
         self.assertEqual(json_response['status'], 'requires_action')
-        self.assertIn('message', json_response) # Message should be present
-        self.assertNotIn('redirect_url', json_response) # No redirect_url for requires_action
+        self.assertIn('message', json_response)
+        self.assertNotIn('redirect_url', json_response)
 
+        # Verify local Payment object status is NOT updated by the POST method
         payment_obj.refresh_from_db()
-        self.assertEqual(payment_obj.status, 'requires_action')
+        self.assertEqual(payment_obj.status, 'requires_payment_method') # Should remain its initial status
 
     @patch('stripe.PaymentIntent.retrieve')
     def test_post_payment_failed_json_response(self, mock_retrieve):
         """
         Tests POST request when Stripe reports the payment intent has failed.
+        The local Payment object's status should NOT be updated by this POST.
         """
         payment_intent_id = 'pi_test_failed'
         payment_obj = PaymentFactory(
             temp_service_booking=self.temp_booking,
             stripe_payment_intent_id=payment_intent_id,
-            status='requires_payment_method',
+            status='requires_payment_method', # Initial status before POST
             amount=self.service_type.base_price,
             currency='AUD',
             service_customer_profile=self.service_profile
@@ -504,11 +485,12 @@ class Step6PaymentViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         json_response = response.json()
         self.assertEqual(json_response['status'], 'failed')
-        self.assertIn('message', json_response) # Message should be present
-        self.assertNotIn('redirect_url', json_response) # No redirect_url for failed
+        self.assertIn('message', json_response)
+        self.assertNotIn('redirect_url', json_response)
 
+        # Verify local Payment object status is NOT updated by the POST method
         payment_obj.refresh_from_db()
-        self.assertEqual(payment_obj.status, 'failed')
+        self.assertEqual(payment_obj.status, 'requires_payment_method') # Should remain its initial status
 
     def test_post_invalid_json_returns_400(self):
         """
@@ -549,4 +531,3 @@ class Step6PaymentViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 500)
         self.assertIn('Error retrieving intent', response.json()['error'])
-

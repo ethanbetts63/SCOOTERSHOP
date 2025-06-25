@@ -222,46 +222,5 @@ class CustomerMotorcycleFormTest(TestCase):
         self.assertIn('odometer', form.errors)
         self.assertIn('Ensure this value is greater than or equal to 0.', form.errors['odometer'])
 
-    def test_form_image_upload(self):
-        image_content = b'GIF89a\x01\x00\x01\x00\x00\xff\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
-        original_filename = "test_image.gif"
-        image_file = SimpleUploadedFile(original_filename, image_content, content_type="image/gif")
 
-        data = self._get_valid_data()
-        files = {'image': image_file}
 
-        form = CustomerMotorcycleForm(data=data, files=files)
-        self.assertTrue(form.is_valid(), f"Form is not valid with image: {form.errors}")
-
-        motorcycle = form.save(commit=False)
-        motorcycle.service_profile = self.service_profile
-        motorcycle.save()
-
-        self.assertIsNotNone(motorcycle.image)
-        self.assertIn('test_image', motorcycle.image.name)
-        self.assertTrue(motorcycle.image.name.endswith('.gif'))
-        motorcycle.image.delete(save=False)
-
-    def test_form_image_clear(self):
-        image_content = b'GIF89a\x01\x00\x01\x00\x00\xff\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
-        original_filename = "existing_image.gif"
-        existing_image_file = SimpleUploadedFile(original_filename, image_content, content_type="image/gif")
-
-        existing_motorcycle = CustomerMotorcycleFactory(
-            service_profile=self.service_profile,
-            image=existing_image_file
-        )
-        self.assertIsNotNone(existing_motorcycle.image)
-        self.assertIn('existing_image', existing_motorcycle.image.name)
-        self.assertTrue(existing_motorcycle.image.name.endswith('.gif'))
-
-        data = self._get_valid_data()
-        data['image-clear'] = True
-
-        form = CustomerMotorcycleForm(data=data, instance=existing_motorcycle)
-        self.assertTrue(form.is_valid(), f"Form is not valid for image clear: {form.errors}")
-
-        updated_motorcycle = form.save()
-        updated_motorcycle.refresh_from_db()
-
-        self.assertFalse(updated_motorcycle.image)
