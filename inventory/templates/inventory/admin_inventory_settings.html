@@ -14,16 +14,6 @@
 
     <hr>
 
-    {% if messages %}
-    <div class="messages-container">
-        <ul>
-            {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
-
     {# Start of the form for general inventory settings #}
     <form method="post" name="inventory_settings_form"> {# Changed name attribute for easier JS targeting #}
         {% csrf_token %}

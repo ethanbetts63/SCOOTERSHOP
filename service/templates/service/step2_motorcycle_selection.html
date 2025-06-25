@@ -17,16 +17,6 @@
 
     <hr>
 
-    {% if messages %}
-    <div class="messages-container">
-        <ul>
-            {% for message in messages %}
-            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
-
     <div class="booking-form-card">
         <h3 class="form-title">Select Your Motorcycle</h3>
         <p class="form-description">Please choose an existing motorcycle from your profile or select the option to add a new one.</p>

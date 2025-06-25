@@ -18,18 +18,6 @@
     {% with current_url_name='hire:step2_choose_bike' page_title='Motorcycles Available for Hire' %}
 
         <div class="container-fluid mt-4">
-            {% if messages %}
-                <div class="messages-container mb-4">
-                    {% for message in messages %}
-                        <div class="alert 
-                            {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %} 
-                            alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
 
             {% if page_title %}
                 <h1 class="mb-4">{{ page_title }}</h1>

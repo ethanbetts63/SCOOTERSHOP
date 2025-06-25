@@ -49,16 +49,6 @@
 
     <hr>
 
-    {% if messages %}
-    <div class="messages-container">
-        <ul>
-            {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
-
     <form method="post" name="refund_policy_settings_form">
         {% csrf_token %}
 

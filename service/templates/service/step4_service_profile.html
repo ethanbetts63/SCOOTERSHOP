@@ -62,16 +62,6 @@
 
     <hr class="mb-6">
 
-    {% if messages %}
-    <div class="messages-container mb-4">
-        <ul>
-            {% for message in messages %}
-            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
-
     <h3 class="text-xl font-semibold text-gray-800 mb-4">
         {% if request.user.is_authenticated and temp_booking.service_profile and temp_booking.service_profile.user == request.user %}
             Confirm or Update Your Details

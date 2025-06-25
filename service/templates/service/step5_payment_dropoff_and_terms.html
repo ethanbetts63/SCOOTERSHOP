@@ -65,17 +65,6 @@
 
     <hr class="mb-6">
 
-    <!-- Django Messages -->
-    {% if messages %}
-    <div class="messages-container mb-4">
-        <ul>
-            {% for message in messages %}
-            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
-
     <form method="post" id="payment-form" novalidate>
         {% csrf_token %}
 

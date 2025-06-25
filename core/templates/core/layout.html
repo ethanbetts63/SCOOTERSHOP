@@ -128,6 +128,24 @@
             </div>
         </nav>
 
+        {# Messages Display Block #}
+        {% if messages %}
+            <div class="messages-container px-4 py-3 max-w-7xl mx-auto mt-4">
+                {% for message in messages %}
+                    <div class="p-4 mb-3 rounded-lg shadow-md text-sm
+                                {% if message.tags == 'error' %}bg-red-100 border-l-4 border-red-500 text-red-700{% endif %}
+                                {% if message.tags == 'success' %}bg-green-100 border-l-4 border-green-500 text-green-700{% endif %}
+                                {% if message.tags == 'warning' %}bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700{% endif %}
+                                {% if message.tags == 'info' %}bg-blue-100 border-l-4 border-blue-500 text-blue-700{% endif %}
+                                {% if message.tags == 'debug' %}bg-gray-100 border-l-4 border-gray-500 text-gray-700{% endif %}
+                                " role="alert">
+                        <p>{{ message }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {# End Messages Display Block #}
+
         <div>
             {% block content %}{% endblock %}
         </div>

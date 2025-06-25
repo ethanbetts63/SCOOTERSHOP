@@ -61,16 +61,6 @@
     </div>
 
     <hr>
-
-    {% if messages %}
-    <div class="messages-container">
-        <ul>
-            {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
     <div>
         <p>Adding a brand to this list will allow a user to book a service with a bike of that brand. If the brand is not on this list it can not be serviced.</p>
         {# Removed primary brand specific explanation #}

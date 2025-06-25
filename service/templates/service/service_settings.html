@@ -14,16 +14,6 @@
 
     <hr>
 
-    {% if messages %}
-    <div class="messages-container">
-        <ul>
-            {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
-
     {# Start of the first form for general service settings #}
     <form method="post" name="service_settings_form"> {# Added name attribute for easier JS targeting #}
         {% csrf_token %}
