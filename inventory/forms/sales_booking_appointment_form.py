@@ -5,7 +5,7 @@ class BookingAppointmentForm(forms.Form):
     # Changed to CharField with RadioSelect for 'Yes'/'No'
     request_viewing = forms.ChoiceField(
         choices=[('yes', 'Yes'), ('no', 'No')],
-        widget=forms.RadioSelect(attrs={'class': 'form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out'}),
+        widget=forms.RadioSelect(),
         initial='no', # Default to 'Yes'
         required=True,
         label="I would like to book a viewing/test drive",
@@ -13,18 +13,18 @@ class BookingAppointmentForm(forms.Form):
     )
     appointment_date = forms.DateField(
         required=False,
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+        widget=forms.DateInput(attrs={'type': 'date'}),
         label="Preferred Date",
         help_text="Choose your preferred date for the appointment."
     )
     appointment_time = forms.TimeField(
         required=False,
-        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+        widget=forms.TimeInput(attrs={'type': 'time'}),
         label="Preferred Time",
         help_text="Choose your preferred time for the appointment."
     )
     customer_notes = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+        widget=forms.Textarea(attrs={'rows': 4}),
         required=False,
         label="Message to Admin",
         help_text="Any specific questions or requests for us. This will be sent to our admin along with your contact details."
@@ -33,7 +33,7 @@ class BookingAppointmentForm(forms.Form):
     terms_accepted = forms.BooleanField(
         required=True,
         label="I accept the Terms and Conditions",
-        widget=forms.CheckboxInput(attrs={'class': 'form-checkbox h-4 w-4 text-indigo-600 rounded'}),
+        widget=forms.CheckboxInput(),
         error_messages={'required': "You must accept the terms and conditions to proceed."}
     )
 

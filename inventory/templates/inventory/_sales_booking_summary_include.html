@@ -1,0 +1,43 @@
+{% if temp_booking and temp_booking.motorcycle %}
+<div class="bg-white shadow-sm rounded-lg border border-gray-200 p-4 my-4">
+    <h4 class="text-lg font-bold text-gray-800 mb-3 pb-2 border-b border-gray-200">Your Enquiry Summary</h4>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+        
+        <div class="flex flex-col md:col-span-2">
+            <strong class="text-sm font-semibold text-gray-500 uppercase">Motorcycle:</strong>
+            <p class="text-lg text-gray-800">{{ temp_booking.motorcycle.year }} {{ temp_booking.motorcycle.brand }} {{ temp_booking.motorcycle.model }}</p>
+            <p class="text-sm text-gray-600">Stock #: {{ temp_booking.motorcycle.stock_number|default:'N/A' }}</p>
+        </div>
+
+        {% if temp_booking.sales_profile %}
+        <div class="flex flex-col">
+            <strong class="text-sm font-semibold text-gray-500 uppercase">Your Details:</strong>
+            <p class="text-gray-800">{{ temp_booking.sales_profile.name }} ({{ temp_booking.sales_profile.email }})</p>
+        </div>
+        {% endif %}
+
+        {% if temp_booking.appointment_date and temp_booking.appointment_time %}
+        <div class="flex flex-col">
+            <strong class="text-sm font-semibold text-gray-500 uppercase">Requested Appointment:</strong>
+            <p class="text-gray-800">{{ temp_booking.appointment_date|date:"D, M j, Y" }} at {{ temp_booking.appointment_time|time:"g:i A" }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="mt-4 pt-4 border-t border-gray-200 space-y-2 text-right">
+        {% if temp_booking.motorcycle.price %}
+        <p class="text-lg font-bold text-gray-800">
+            Total Price: <span class="text-xl">${{ temp_booking.motorcycle.price|floatformat:2 }}</span>
+        </p>
+        {% endif %}
+
+        {% if temp_booking.amount_paid and temp_booking.amount_paid > 0 %}
+        <p class="text-sm font-semibold text-green-700">
+            Deposit Paid: <span>${{ temp_booking.amount_paid|floatformat:2 }}</span>
+        </p>
+        {% endif %}
+    </div>
+
+</div>
+{% endif %}

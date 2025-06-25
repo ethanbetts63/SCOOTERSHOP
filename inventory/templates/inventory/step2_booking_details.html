@@ -1,38 +1,42 @@
-{% extends 'core/layout.html' %}
+{# inventory/templates/inventory/step2_booking_details.html #}
+{% extends 'core/layout.html' %} 
 {% load static %}
 
 {% block title %}Book Your Sales Appointment - {{ block.super }}{% endblock %}
 
 {% block content %}
-<div>
-    <div>
-        <h2>Book Your Sales Appointment</h2>
+<div class="container mx-auto px-4 py-8 max-w-3xl">
+    <div class="bg-white shadow-lg rounded-lg p-6 md:p-8">
+        <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Book Your Sales Appointment</h2>
 
+        {# Display selected motorcycle details #}
         {% if temp_booking.motorcycle %}
-        <div>
-            <h3>Motorcycle Details:</h3>
-            <p><strong>{{ temp_booking.motorcycle.year }} {{ temp_booking.motorcycle.brand }} {{ temp_booking.motorcycle.model }}</strong></p>
-            <p>Price: {{ inventory_settings.currency_symbol }}{{ temp_booking.motorcycle.price|floatformat:2 }}</p>
+        <div class="mb-6 p-4 border border-gray-200 rounded-md bg-gray-50">
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">Motorcycle Details:</h3>
+            <p class="text-gray-600"><strong>{{ temp_booking.motorcycle.year }} {{ temp_booking.motorcycle.brand }} {{ temp_booking.motorcycle.model }}</strong></p>
+            <p class="text-gray-600">Price: {{ inventory_settings.currency_symbol }}{{ temp_booking.motorcycle.price|floatformat:2 }}</p>
+            {# Add more motorcycle details if needed #}
         </div>
         {% endif %}
 
-        <form method="post" action="{% url 'inventory:step2_booking_details_and_appointment' %}">
+        <form method="post" action="{% url 'inventory:step2_booking_details_and_appointment' %}" class="space-y-6">
             {% csrf_token %}
 
+            {# Request Viewing Radio Buttons - Only show if not a deposit flow #}
             {% if not temp_booking.deposit_required_for_flow %}
-                <div>
-                    <label>{{ form.request_viewing.label }}</label>
-                    <div>
+                <div class="form-field">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">{{ form.request_viewing.label }}</label>
+                    <div class="mt-2 flex space-x-4">
                         {% for radio in form.request_viewing %}
-                            <label>
+                            <label class="inline-flex items-center">
                                 {{ radio.tag }}
-                                <span>{{ radio.choice_label }}</span>
+                                <span class="ml-2 text-gray-700">{{ radio.choice_label }}</span>
                             </label>
                         {% endfor %}
                     </div>
-                    <p>{{ form.request_viewing.help_text }}</p>
+                    <p class="text-gray-500 text-xs italic mt-1">{{ form.request_viewing.help_text }}</p>
                     {% if form.request_viewing.errors %}
-                        <div>
+                        <div class="text-red-500 text-xs italic mt-2">
                             {% for error in form.request_viewing.errors %}
                                 <p>{{ error }}</p>
                             {% endfor %}
@@ -43,19 +47,21 @@
             {{ form.request_viewing.as_hidden }}
 
 
-            <div id="appointment-date-field">
-                <label for="{{ form.appointment_date.id_for_label }}">
+            {# Appointment Date Field #}
+            <div id="appointment-date-field" class="form-field" {% if not form.request_viewing.initial or form.request_viewing.initial.0 != 'yes' %}style="display: none;"{% endif %}>
+                <label for="{{ form.appointment_date.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">
                     {{ form.appointment_date.label }}
                 </label>
                 <input type="text"
                        id="{{ form.appointment_date.id_for_label }}"
                        name="{{ form.appointment_date.html_name }}"
+                       class="form-control bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                        placeholder="Select preferred date"
                        value="{{ form.appointment_date.value|default:''|date:'Y-m-d' }}"
                 >
-                <p>{{ form.appointment_date.help_text }}</p>
+                <p class="text-gray-500 text-xs italic mt-1">{{ form.appointment_date.help_text }}</p>
                 {% if form.appointment_date.errors %}
-                    <div>
+                    <div class="text-red-500 text-xs italic mt-2">
                         {% for error in form.appointment_date.errors %}
                             <p>{{ error }}</p>
                         {% endfor %}
@@ -63,42 +69,47 @@
                 {% endif %}
             </div>
 
-            <div id="appointment-time-field">
-                <label for="{{ form.appointment_time.id_for_label }}">
+            {# Appointment Time Field #}
+            <div id="appointment-time-field" class="form-field" {% if not form.request_viewing.initial or form.request_viewing.initial.0 != 'yes' %}style="display: none;"{% endif %}>
+                <label for="{{ form.appointment_time.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">
                     {{ form.appointment_time.label }}
                 </label>
                 <select id="{{ form.appointment_time.id_for_label }}"
                         name="{{ form.appointment_time.html_name }}"
+                        class="form-control bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                         {% if not form.appointment_date.value %}disabled{% endif %}
                 >
                     <option value="">Select a time</option>
+                    {# Options will be populated via JavaScript/AJAX #}
                     {% if form.appointment_time.value %}
                         <option value="{{ form.appointment_time.value|time:'H:i' }}" selected>{{ form.appointment_time.value|time:'h:i A' }}</option>
                     {% endif %}
                 </select>
-                <p>{{ form.appointment_time.help_text }}</p>
+                <p class="text-gray-500 text-xs italic mt-1">{{ form.appointment_time.help_text }}</p>
                 {% if form.appointment_time.errors %}
-                    <div>
+                    <div class="text-red-500 text-xs italic mt-2">
                         {% for error in form.appointment_time.errors %}
                             <p>{{ error }}</p>
                         {% endfor %}
                     </div>
                 {% endif %}
-                <div id="loading-times">Loading available times...</div>
+                <div id="loading-times" class="text-blue-500 text-sm mt-2" style="display: none;">Loading available times...</div>
             </div>
 
-            <div>
-                <label for="{{ form.customer_notes.id_for_label }}">
+            {# Customer Notes Field #}
+            <div class="form-field">
+                <label for="{{ form.customer_notes.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">
                     {{ form.customer_notes.label }}
                 </label>
                 <textarea id="{{ form.customer_notes.id_for_label }}"
                           name="{{ form.customer_notes.html_name }}"
+                          class="form-control bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                           rows="4"
                           placeholder="{{ form.customer_notes.field.widget.attrs.placeholder }}"
                 >{{ form.customer_notes.value|default:'' }}</textarea>
-                <p>{{ form.customer_notes.help_text }}</p>
+                <p class="text-gray-500 text-xs italic mt-1">{{ form.customer_notes.help_text }}</p>
                 {% if form.customer_notes.errors %}
-                    <div>
+                    <div class="text-red-500 text-xs italic mt-2">
                         {% for error in form.customer_notes.errors %}
                             <p>{{ error }}</p>
                         {% endfor %}
@@ -106,39 +117,42 @@
                 {% endif %}
             </div>
 
-            <div>
-                <div>
-                    <div>
+            {# Terms and Conditions Checkbox #}
+            <div class="form-field">
+                <div class="flex items-start">
+                    <div class="flex items-center h-5">
                         <input id="{{ form.terms_accepted.id_for_label }}"
                                name="{{ form.terms_accepted.html_name }}"
                                type="checkbox"
+                               class="form-checkbox h-4 w-4 text-indigo-600 rounded"
                                {% if form.terms_accepted.value %}checked{% endif %}
                         >
                     </div>
-                    <div>
-                        <label for="{{ form.terms_accepted.id_for_label }}">
+                    <div class="ml-3 text-sm">
+                        <label for="{{ form.terms_accepted.id_for_label }}" class="font-medium text-gray-700">
                             {{ form.terms_accepted.label }}
                         </label>
-                        <p>{{ form.terms_accepted.help_text }}</p>
+                        <p class="text-gray-500 text-xs italic mt-1">{{ form.terms_accepted.help_text }}</p>
                     </div>
                 </div>
                 {% if form.terms_accepted.errors %}
-                    <div>
+                    <div class="text-red-500 text-xs italic mt-2">
                         {% for error in form.terms_accepted.errors %}
                             <p>{{ error }}</p>
                         {% endfor %}
                     </div>
                 {% endif %}
+                {# Display terms and conditions text if available #}
                 {% if inventory_settings.terms_and_conditions_text %}
-                    <div>
-                        <h4>Our Terms and Conditions:</h4>
+                    <div class="mt-4 p-4 border border-gray-200 rounded-md bg-gray-50 max-h-48 overflow-y-auto text-sm text-gray-700">
+                        <h4 class="font-semibold mb-2">Our Terms and Conditions:</h4>
                         <p>{{ inventory_settings.terms_and_conditions_text|linebreaksbr }}</p>
                     </div>
                 {% endif %}
             </div>
 
-            <div>
-                <button type="submit">
+            <div class="flex justify-end">
+                <button type="submit" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     {% if temp_booking.deposit_required_for_flow %}
                         Proceed to Payment
                     {% else %}
@@ -149,4 +163,149 @@
         </form>
     </div>
 </div>
+
+{# Flatpickr CSS and JS #}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const requestViewingRadios = document.querySelectorAll('input[name="request_viewing"]');
+        const appointmentDateField = document.getElementById('appointment-date-field');
+        const appointmentTimeField = document.getElementById('appointment-time-field');
+        const appointmentDatePickerInput = document.getElementById('id_appointment_date');
+        const appointmentTimeSelect = document.getElementById('id_appointment_time');
+        const loadingTimesDiv = document.getElementById('loading-times');
+
+        // Get min, max, and blocked dates from Django context
+        const minAppointmentDate = "{{ min_appointment_date|default:'' }}";
+        const maxAppointmentDate = "{{ max_appointment_date|default:'' }}";
+        const blockedAppointmentDatesRaw = "{{ blocked_appointment_dates_json|default:'[]'|escapejs }}"; 
+        let blockedDates = [];
+        try {
+            blockedDates = JSON.parse(blockedAppointmentDatesRaw);
+        } catch (e) {
+            console.error("Error parsing blocked dates JSON:", e);
+            // Fallback for parsing error, prevent blocking all dates
+            blockedDates = [];
+        }
+
+        // Determine if deposit is required (from context or initial form value if hidden)
+        // This relies on the Django view setting the initial value correctly for 'request_viewing'
+        // based on temp_booking.deposit_required_for_flow
+        const depositRequiredForFlow = "{{ temp_booking.deposit_required_for_flow|lower }}" === 'true';
+
+        // Initialize Flatpickr for appointment_date
+        const appointmentDatePicker = flatpickr(appointmentDatePickerInput, {
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "F j, Y",
+            minDate: minAppointmentDate, // Use the new min date
+            maxDate: maxAppointmentDate, // Use the new max date
+            disable: blockedDates,       // Use the parsed blocked dates array
+            onChange: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length > 0) {
+                    fetchAvailableTimes(dateStr);
+                } else {
+                    // Clear time options if date is cleared
+                    appointmentTimeSelect.innerHTML = '<option value="">Select a time</option>';
+                    appointmentTimeSelect.disabled = true;
+                }
+            }
+        });
+
+        // Function to toggle visibility of date and time fields
+        function toggleAppointmentFields() {
+            let requestViewingValue = 'no';
+            // Only check radio buttons if they are actually visible
+            if (!depositRequiredForFlow) {
+                for (const radio of requestViewingRadios) {
+                    if (radio.checked) {
+                        requestViewingValue = radio.value;
+                        break;
+                    }
+                }
+            } else {
+                // If deposit flow, request_viewing is always considered 'yes' internally
+                requestViewingValue = 'yes';
+            }
+
+            // If deposit is required, always show appointment fields regardless of radio state
+            if (depositRequiredForFlow || requestViewingValue === 'yes') {
+                appointmentDateField.style.display = 'block';
+                appointmentTimeField.style.display = 'block';
+                // If a date is already selected, fetch times. Otherwise, ensure time select is enabled.
+                if (appointmentDatePickerInput.value) {
+                    fetchAvailableTimes(appointmentDatePickerInput.value);
+                } else {
+                    appointmentTimeSelect.disabled = true;
+                }
+            } else {
+                appointmentDateField.style.display = 'none';
+                appointmentTimeField.style.display = 'none';
+                appointmentDatePicker.clear(); // Clear selected date
+                appointmentTimeSelect.innerHTML = '<option value="">Select a time</option>';
+                appointmentTimeSelect.disabled = true;
+            }
+        }
+
+        // Function to fetch available times via AJAX
+        async function fetchAvailableTimes(selectedDate) {
+            loadingTimesDiv.style.display = 'block';
+            appointmentTimeSelect.disabled = true;
+            appointmentTimeSelect.innerHTML = '<option value="">Loading times...</option>';
+
+            try {
+                const response = await fetch(`{% url 'inventory:ajax_get_appointment_times' %}?selected_date=${selectedDate}&deposit_required_for_flow=${depositRequiredForFlow}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                appointmentTimeSelect.innerHTML = '<option value="">Select a time</option>'; // Clear previous options
+                if (data.available_times && data.available_times.length > 0) {
+                    data.available_times.forEach(time => {
+                        const option = document.createElement('option');
+                        option.value = time.value; // e.g., "09:00"
+                        option.textContent = time.display; // e.g., "09:00 AM"
+                        // Pre-select if it matches the current form value
+                        if ("{{ form.appointment_time.value|default:''|time:'H:i' }}" === time.value) {
+                            option.selected = true;
+                        }
+                        appointmentTimeSelect.appendChild(option);
+                    });
+                    appointmentTimeSelect.disabled = false;
+                } else {
+                    const option = document.createElement('option');
+                    option.value = "";
+                    option.textContent = "No times available for this date.";
+                    appointmentTimeSelect.appendChild(option);
+                    appointmentTimeSelect.disabled = true;
+                }
+            } catch (error) {
+                console.error("Error fetching available times:", error);
+                appointmentTimeSelect.innerHTML = '<option value="">Error loading times.</option>';
+                appointmentTimeSelect.disabled = true;
+            } finally {
+                loadingTimesDiv.style.display = 'none';
+            }
+        }
+
+        // Add event listeners to radio buttons (only if they are visible)
+        if (!depositRequiredForFlow) {
+            requestViewingRadios.forEach(radio => {
+                radio.addEventListener('change', toggleAppointmentFields);
+            });
+        }
+        
+        // Initial setup on page load
+        toggleAppointmentFields(); // Set initial visibility based on Django's initial form value
+
+        // If an initial date is already set (e.g., on form re-render after error), fetch times for it
+        if (appointmentDatePickerInput.value && (depositRequiredForFlow || (document.querySelector('input[name="request_viewing"]:checked') && document.querySelector('input[name="request_viewing"]:checked').value === 'yes'))) {
+            fetchAvailableTimes(appointmentDatePickerInput.value);
+        }
+    });
+</script>
 {% endblock content %}

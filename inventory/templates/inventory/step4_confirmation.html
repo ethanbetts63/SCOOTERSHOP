@@ -1,100 +1,139 @@
+{# inventory/templates/inventory/step4_confirmation.html #}
 {% extends 'core/layout.html' %}
 {% load static %}
 
 {% block title %}Sales Booking Confirmation - {{ block.super }}{% endblock %}
 
 {% block content %}
-<div>
-    <div>
-        <h2>Your Sales Booking Confirmation</h2>
+<div class="container mx-auto px-4 py-8 max-w-3xl">
+    <div class="bg-white shadow-lg rounded-lg p-6 md:p-8">
+        <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Your Sales Booking Confirmation</h2>
 
         {% if is_processing %}
-            <div id="processing-message">
+            <div id="processing-message" class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative mb-6" role="alert">
                 <p>Your booking is currently being finalized. This may take a moment. Please do not close this window.</p>
-                <p>We are confirming your payment and reserving the motorcycle for you.</p>
-                <p>Status: Processing...</p>
+                <p class="mt-2 text-sm">We are confirming your payment and reserving the motorcycle for you.</p>
+                <p class="mt-2 text-sm font-semibold">Status: Processing...</p>
             </div>
-            <div>
-                <div></div>
-                <p>Please wait while we confirm your booking.</p>
+            <div class="text-center mt-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+                <p class="mt-4 text-gray-600">Please wait while we confirm your booking.</p>
             </div>
 
-        {% else %}
+            <script>
+                // Polling for booking status
+                const paymentIntentId = "{{ payment_intent_id }}";
+                const checkStatusUrl = "{% url 'inventory:ajax_sales_payment_status_check' %}"; // Ensure this URL is correctly defined in your urls.py for an AJAX endpoint
+
+                function pollBookingStatus() {
+                    fetch(`${checkStatusUrl}?payment_intent_id=${paymentIntentId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'ready') {
+                                // Booking is ready, redirect to the same page with updated context
+                                window.location.href = window.location.pathname + '?payment_intent_id=' + paymentIntentId;
+                            } else if (data.status === 'processing') {
+                                // Still processing, poll again after a delay
+                                setTimeout(pollBookingStatus, 3000); // Poll every 3 seconds
+                            } else {
+                                // Error or failed state
+                                const messageDiv = document.getElementById('processing-message');
+                                messageDiv.classList.remove('bg-blue-100', 'border-blue-400', 'text-blue-700');
+                                messageDiv.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
+                                messageDiv.innerHTML = `<p>${data.message || 'Booking finalization failed. Please contact support.'}</p>`;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error polling booking status:', error);
+                            const messageDiv = document.getElementById('processing-message');
+                            messageDiv.classList.remove('bg-blue-100', 'border-blue-400', 'text-blue-700');
+                            messageDiv.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
+                            messageDiv.innerHTML = `<p>An error occurred while checking status. Please try refreshing or contact support.</p>`;
+                        });
+                }
+
+                // Start polling when the page loads, if it's in processing state
+                document.addEventListener('DOMContentLoaded', function() {
+                    pollBookingStatus();
+                });
+            </script>
+
+        {% else %} {# Booking is not processing, display full details #}
             {% if sales_booking %}
-                <div>
+                <div class="mb-6 bg-green-50 border border-green-200 text-green-800 p-4 rounded-md">
                     {% if sales_booking.payment_status == 'deposit_paid' %}
-                        <p>Your deposit has been confirmed!</p>
-                        <p>The motorcycle ({{ sales_booking.motorcycle.year }} {{ sales_booking.motorcycle.brand }} {{ sales_booking.motorcycle.model }}) has been delisted from our website and is now reserved for you.</p>
+                        <p class="text-lg font-semibold mb-2">Your deposit has been confirmed!</p>
+                        <p class="text-base">The motorcycle ({{ sales_booking.motorcycle.year }} {{ sales_booking.motorcycle.brand }} {{ sales_booking.motorcycle.model }}) has been delisted from our website and is now reserved for you.</p>
                         {% if sales_booking.appointment_date %}
-                        <p>Your requested appointment date is <strong>{{ sales_booking.appointment_date|date:"D, M d, Y" }} at {{ sales_booking.appointment_time|time:"P" }}</strong>. Please note that this appointment is not yet confirmed.</p>
-                        <p>You will receive a separate confirmation email after our admin team has reviewed your booking details and confirmed the appointment.</p>
+                        <p class="text-base mt-2">Your requested appointment date is <strong>{{ sales_booking.appointment_date|date:"D, M d, Y" }} at {{ sales_booking.appointment_time|time:"P" }}</strong>. Please note that this appointment is not yet confirmed.</p>
+                        <p class="text-base mt-1">You will receive a separate confirmation email after our admin team has reviewed your booking details and confirmed the appointment.</p>
                         {% else %}
-                        <p>Our team will be in touch shortly to finalize the details and arrange your viewing/pickup.</p>
+                        <p class="text-base mt-2">Our team will be in touch shortly to finalize the details and arrange your viewing/pickup.</p>
                         {% endif %}
-                    {% else %}
-                        <p>Thank you for your enquiry!</p>
-                        <p>We have received your request regarding the motorcycle ({{ sales_booking.motorcycle.year }} {{ sales_booking.motorcycle.brand }} {{ sales_booking.motorcycle.model }}).</p>
+                    {% else %} {# Assumed 'enquired' or other non-deposit status reaching here via direct URL after webhook #}
+                        <p class="text-lg font-semibold mb-2">Thank you for your enquiry!</p>
+                        <p class="text-base">We have received your request regarding the motorcycle ({{ sales_booking.motorcycle.year }} {{ sales_booking.motorcycle.brand }} {{ sales_booking.motorcycle.model }}).</p>
                         {% if sales_booking.appointment_date %}
-                        <p>You requested an appointment on <strong>{{ sales_booking.appointment_date|date:"D, M d, Y" }} at {{ sales_booking.appointment_time|time:"P" }}</strong>. Our admin team will contact you to confirm the appointment details.</p>
+                        <p class="text-base mt-2">You requested an appointment on <strong>{{ sales_booking.appointment_date|date:"D, M d, Y" }} at {{ sales_booking.appointment_time|time:"P" }}</strong>. Our admin team will contact you to confirm the appointment details.</p>
                         {% else %}
-                        <p>Our admin team will get back to you as soon as possible to discuss your enquiry further.</p>
+                        <p class="text-base mt-2">Our admin team will get back to you as soon as possible to discuss your enquiry further.</p>
                         {% endif %}
                     {% endif %}
-                    <p>A detailed confirmation email has been sent to your provided email address.</p>
+                    <p class="text-sm text-gray-600 mt-3">A detailed confirmation email has been sent to your provided email address.</p>
                 </div>
 
-                <div>
-                    <h3>Booking Summary</h3>
+                <div class="mb-6 p-4 border border-gray-200 rounded-md bg-gray-50">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Booking Summary</h3>
                     <table>
                         <tr>
-                            <td>Booking Reference:</td>
+                            <td class="font-medium text-gray-700">Booking Reference:</td>
                             <td><strong>{{ sales_booking.sales_booking_reference }}</strong></td>
                         </tr>
                         <tr>
-                            <td>Customer Name:</td>
+                            <td class="font-medium text-gray-700">Customer Name:</td>
                             <td>{{ sales_booking.sales_profile.name }}</td>
                         </tr>
                         <tr>
-                            <td>Motorcycle:</td>
+                            <td class="font-medium text-gray-700">Motorcycle:</td>
                             <td>{{ sales_booking.motorcycle.year }} {{ sales_booking.motorcycle.brand }} {{ sales_booking.motorcycle.model }}</td>
                         </tr>
                         <tr>
-                            <td>Motorcycle Price:</td>
+                            <td class="font-medium text-gray-700">Motorcycle Price:</td>
                             <td>{{ sales_booking.motorcycle_price|floatformat:2 }} {{ sales_booking.currency }}</td>
                         </tr>
                         <tr>
-                            <td>Payment Status:</td>
+                            <td class="font-medium text-gray-700">Payment Status:</td>
                             <td>{{ sales_booking.payment_status }}</td>
                         </tr>
                         <tr>
-                            <td>Amount Paid:</td>
+                            <td class="font-medium text-gray-700">Amount Paid:</td>
                             <td>{{ sales_booking.amount_paid|floatformat:2 }} {{ sales_booking.currency }}</td>
                         </tr>
                         <tr>
-                            <td>Amount Owing:</td>
-                            <td>{{ amount_owing|floatformat:2 }} {{ sales_booking.currency }}</td>
+                            <td class="font-medium text-gray-700">Amount Owing:</td>
+                            <td class="font-bold text-red-600">{{ amount_owing|floatformat:2 }} {{ sales_booking.currency }}</td> {# <--- CHANGED THIS LINE #}
                         </tr>
                         {% if sales_booking.appointment_date %}
                         <tr>
-                            <td>Requested Appointment Date:</td>
+                            <td class="font-medium text-gray-700">Requested Appointment Date:</td>
                             <td>{{ sales_booking.appointment_date|date:"F d, Y" }}</td>
                         </tr>
                         <tr>
-                            <td>Requested Appointment Time:</td>
+                            <td class="font-medium text-gray-700">Requested Appointment Time:</td>
                             <td>{{ sales_booking.appointment_time|time:"P" }}</td>
                         </tr>
                         {% endif %}
                         {% if sales_booking.customer_notes %}
                         <tr>
-                            <td>Your Notes:</td>
+                            <td class="font-medium text-gray-700">Your Notes:</td>
                             <td>{{ sales_booking.customer_notes }}</td>
                         </tr>
                         {% endif %}
                     </table>
                 </div>
 
-                <div>
-                    <a href="{% url 'inventory:all' %}">
+                <div class="flex justify-center mt-8">
+                    <a href="{% url 'inventory:all' %}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         Browse More Motorcycles
                     </a>
                 </div>

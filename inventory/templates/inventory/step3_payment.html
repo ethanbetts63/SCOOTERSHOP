@@ -1,68 +1,226 @@
+{# inventory/templates/inventory/step3_payment.html #}
 {% extends 'core/layout.html' %}
 {% load static %}
 
 {% block title %}Complete Sales Booking Deposit - {{ block.super }}{% endblock %}
 
 {% block content %}
-<div>
-    <div>
-        <h2>Complete Your Deposit</h2>
+<div class="container mx-auto px-4 py-8 max-w-3xl">
+    <div class="bg-white shadow-lg rounded-lg p-6 md:p-8">
+        <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Complete Your Deposit</h2>
 
         {% if payment_already_succeeded %}
-        <div id="payment-success-message">
-            <span>Your payment has already been successfully processed. Redirecting you to confirmation...</span>
+        <div id="payment-success-message" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6" role="alert">
+            <span class="block sm:inline">Your payment has already been successfully processed. Redirecting you to confirmation...</span>
         </div>
+        <script>
+            // Ensure this URL is correct for your sales confirmation step
+            window.location.href = "{% url 'inventory:sales_book_step4' %}?payment_intent_id={{ temp_booking.stripe_payment_intent_id }}";
+        </script>
         {% endif %}
 
-        <div>
-            <h3>Deposit Summary</h3>
+        <div class="mb-6 p-4 border border-gray-200 rounded-md bg-gray-50">
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">Deposit Summary</h3>
             {% if temp_booking.motorcycle %}
-            <p>
-                Motorcycle: <span>{{ temp_booking.motorcycle.year }} {{ temp_booking.motorcycle.brand }} {{ temp_booking.motorcycle.model }}</span>
+            <p class="text-gray-600 text-sm">
+                Motorcycle: <span class="font-medium">{{ temp_booking.motorcycle.year }} {{ temp_booking.motorcycle.brand }} {{ temp_booking.motorcycle.model }}</span>
             </p>
-            <p>
-                Motorcycle Price: <span>{{ temp_booking.motorcycle.price|floatformat:2 }} {{ currency }}</span>
+            <p class="text-gray-600 text-sm">
+                Motorcycle Price: <span class="font-medium">{{ temp_booking.motorcycle.price|floatformat:2 }} {{ currency }}</span>
             </p>
             {% endif %}
 
             {% if temp_booking.appointment_date %}
-            <p>
-                Requested Appointment: <span>{{ temp_booking.appointment_date|date:"F d, Y" }} at {{ temp_booking.appointment_time|time:"P" }}</span>
+            <p class="text-gray-600 text-sm">
+                Requested Appointment: <span class="font-medium">{{ temp_booking.appointment_date|date:"F d, Y" }} at {{ temp_booking.appointment_time|time:"P" }}</span>
             </p>
             {% endif %}
 
-            <p>
-                Deposit Amount: <span>{{ amount|floatformat:2 }} {{ currency }}</span>
+            <p class="text-gray-600 text-sm mt-2">
+                Deposit Amount: <span class="font-semibold text-xl text-green-700">{{ amount|floatformat:2 }} {{ currency }}</span>
             </p>
-             <p>
-                Amount Remaining (approx.): <span>{{ amount_remaining|floatformat:2 }} {{ currency }}</span>
+             <p class="text-gray-600 text-sm mt-1">
+                Amount Remaining (approx.): <span class="font-semibold text-base">{{ amount_remaining|floatformat:2 }} {{ currency }}</span> {# <--- CHANGED THIS LINE #}
             </p>
-            <p>
+            <p class="text-sm text-gray-500 mt-2">
                 Your deposit secures the motorcycle and it will be marked as reserved.
                 The remaining balance will be handled separately.
             </p>
         </div>
 
-        <form id="payment-form">
+        <form id="payment-form" class="space-y-4">
             {% csrf_token %}
             <div>
-                <label for="card-element">
+                <label for="card-element" class="block text-sm font-medium text-gray-700 mb-2">
                     Credit or debit card
                 </label>
-                <div id="card-element">
+                <div id="card-element" class="StripeElement">
                     <!-- A Stripe Element will be inserted here. -->
                 </div>
-                <div id="card-errors" role="alert"></div>
+                <div id="card-errors" role="alert" class="text-red-600 text-sm mt-2"></div>
             </div>
 
-            <div id="payment-message">
-                <span></span>
+            <div id="payment-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <span class="block sm:inline"></span>
             </div>
 
-            <button id="submit-button">
+            <button
+                id="submit-button"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
+            >
                 Pay {{ amount|floatformat:2 }} {{ currency }} Deposit
             </button>
         </form>
     </div>
 </div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    const stripePublishableKey = "{{ stripe_publishable_key }}";
+    const clientSecret = "{{ client_secret }}";
+
+    const stripe = Stripe(stripePublishableKey);
+    const elements = stripe.elements();
+
+    const card = elements.create('card', {
+        style: {
+            base: {
+                iconColor: '#6B7280',
+                color: '#374151',
+                fontWeight: '500',
+                fontFamily: 'Inter, sans-serif',
+                fontSize: '16px',
+                '::placeholder': {
+                    color: '#9CA3AF',
+                },
+            },
+            invalid: {
+                iconColor: '#EF4444',
+                color: '#EF4444',
+            },
+        }
+    });
+
+    card.mount('#card-element');
+
+    card.on('change', function(event) {
+        const displayError = document.getElementById('card-errors');
+        if (event.error) {
+            displayError.textContent = event.error.message;
+        } else {
+            displayError.textContent = '';
+        }
+    });
+
+    function showMessage(messageText, isError = true) {
+        const messageContainer = document.getElementById('payment-message');
+        if (messageContainer) {
+            const messageSpan = messageContainer.querySelector('span');
+            messageSpan.textContent = messageText;
+            messageContainer.classList.remove('hidden');
+            if (isError) {
+                messageContainer.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
+                messageContainer.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
+            } else {
+                messageContainer.classList.remove('bg-red-100', 'border-red-400', 'text-green-700');
+                messageContainer.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
+            }
+        } else {
+            console.warn("Payment message container not found. Message: ", messageText);
+        }
+    }
+
+    const form = document.getElementById('payment-form');
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const submitButton = document.getElementById('submit-button');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Processing...';
+        document.getElementById('payment-message').classList.add('hidden');
+
+        const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+            payment_method: {
+                card: card,
+            }
+        });
+
+        if (error) {
+            const errorDisplay = document.getElementById('card-errors');
+            errorDisplay.textContent = error.message;
+            showMessage(error.message, true);
+            submitButton.disabled = false;
+            submitButton.textContent = `Pay {{ amount|floatformat:2 }} {{ currency }} Deposit`;
+        } else {
+            if (paymentIntent.status === 'succeeded') {
+                // Post payment intent ID to your Django view
+                fetch("{% url 'inventory:step3_payment' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        payment_intent_id: paymentIntent.id
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        console.error('Server responded with an error:', response.status, response.statusText);
+                        showMessage('Payment processed, but booking finalization failed on server. Please contact support.', true);
+                        submitButton.disabled = false;
+                        submitButton.textContent = `Pay {{ amount|floatformat:2 }} {{ currency }} Deposit`;
+                        throw new Error('Server error during booking finalization');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Server confirmation response:', data);
+                    if (data.status === 'success' && data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    } else {
+                        showMessage(data.error || 'Unknown server response after payment. Please contact support.', true);
+                        submitButton.disabled = false;
+                        submitButton.textContent = `Pay {{ amount|floatformat:2 }} {{ currency }} Deposit`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error sending payment intent to server for confirmation:', error);
+                    showMessage('Network error or unexpected issue during booking finalization. Please try again.', true);
+                    submitButton.disabled = false;
+                    submitButton.textContent = `Pay {{ amount|floatformat:2 }} {{ currency }} Deposit`;
+                });
+
+            } else {
+                const errorDisplay = document.getElementById('card-errors');
+                errorDisplay.textContent = 'Payment status: ' + paymentIntent.status + '. Please try again or contact support.';
+                showMessage('Payment status: ' + paymentIntent.status + '. Please try again or contact support.', true);
+                submitButton.disabled = false;
+                submitButton.textContent = `Pay {{ amount|floatformat:2 }} {{ currency }} Deposit`;
+
+                // In case of non-succeeded status, still inform backend for potential updates
+                fetch("{% url 'inventory:step3_payment' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        payment_intent_id: paymentIntent.id
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Server status update response (background):', data);
+                    if (data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error sending payment intent to server for status update:', error);
+                });
+            }
+        }
+    });
+</script>
 {% endblock content %}
