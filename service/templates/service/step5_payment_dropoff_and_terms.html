@@ -65,6 +65,9 @@
 
     <hr class="mb-6">
 
+    {% include 'service/_booking_summary_include.html' %}
+
+
     <form method="post" id="payment-form" novalidate>
         {% csrf_token %}
 
