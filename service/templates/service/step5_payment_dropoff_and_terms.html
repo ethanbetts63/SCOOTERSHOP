@@ -57,13 +57,13 @@
                     <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
                         
                         <div>
-                            <label for="{{ form.dropoff_date.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.dropoff_date.label }}</label>
+                            <label for="{{ form.dropoff_date.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.dropoff_date.label }}{% if form.dropoff_date.field.required %}<span class="text-red-500">*</span>{% endif %}</label>
                             {{ form.dropoff_date }}
                             {% for error in form.dropoff_date.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
                         </div>
                         
                         <div>
-                            <label for="{{ form.dropoff_time.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.dropoff_time.label }}</label>
+                            <label for="{{ form.dropoff_time.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.dropoff_time.label }}{% if form.dropoff_time.field.required %}<span class="text-red-500">*</span>{% endif %}</label>
                             {{ form.dropoff_time }}
                             {% for error in form.dropoff_time.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
                         </div>
@@ -73,7 +73,7 @@
 
             <div class="p-6 border-t border-gray-200">
                 <fieldset>
-                    <legend class="text-lg font-medium text-gray-900">{{ form.payment_method.label }}</legend>
+                    <legend class="text-lg font-medium text-gray-900">{{ form.payment_method.label }}{% if form.payment_method.field.required %}<span class="text-red-500">*</span>{% endif %}</legend>
                     <div class="mt-4 space-y-4">
                         {% for radio in form.payment_method %}
                         <div class="flex items-center">
@@ -93,7 +93,7 @@
                            {{ form.service_terms_accepted }}
                         </div>
                         <div class="ml-3 text-sm">
-                            <label for="{{ form.service_terms_accepted.id_for_label }}" class="font-medium text-gray-700">{{ form.service_terms_accepted.label|safe }}</label>
+                            <label for="{{ form.service_terms_accepted.id_for_label }}" class="font-medium text-gray-700">{{ form.service_terms_accepted.label|safe }}{% if form.service_terms_accepted.field.required %}<span class="text-red-500">*</span>{% endif %}</label>
                         </div>
                     </div>
                     {% for error in form.service_terms_accepted.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
@@ -118,22 +118,19 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const standardClasses = ['mt-1', 'block', 'w-full', 'py-2', 'px-3', 'border', 'border-gray-400', 'rounded-md', 'shadow-sm', 'text-gray-900', 'focus:outline-none', 'focus:ring-indigo-500', 'focus:border-indigo-500', 'sm:text-sm'];
-    
-    const dateInput = document.querySelector('input[name="dropoff_date"]');
-    if (dateInput) {
-        dateInput.classList.add(...standardClasses);
-    }
+    const standardClassString = standardClasses.join(' ');
     
     const timeSelect = document.getElementById('{{ form.dropoff_time.id_for_label }}');
     if (timeSelect) {
         timeSelect.classList.add(...standardClasses, 'disabled:bg-gray-100', 'disabled:text-gray-500');
-        timeSelect.disabled = true; // Ensure it starts disabled
+        timeSelect.disabled = true;
         timeSelect.innerHTML = `<option value="">Select a date first</option>`;
     }
 
     document.querySelectorAll('input[type="radio"]').forEach(el => el.classList.add('h-4', 'w-4', 'text-indigo-600', 'border-gray-300', 'focus:ring-indigo-500'));
     document.querySelectorAll('input[type="checkbox"]').forEach(el => el.classList.add('h-4', 'w-4', 'text-indigo-600', 'border-gray-300', 'rounded', 'focus:ring-indigo-500'));
     
+    const dateInput = document.querySelector('input[name="dropoff_date"]');
     const getTimesUrl = '{{ get_times_url }}';
 
     if (dateInput) {
@@ -142,6 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
             altInput: true,
             altFormat: "F j, Y",
             dateFormat: "Y-m-d",
+            altInputClass: standardClassString, // Use flatpickr's option to style the new input
             enable: availableDates,
             onChange: function(selectedDates, dateStr, instance) {
                 if (dateStr) {

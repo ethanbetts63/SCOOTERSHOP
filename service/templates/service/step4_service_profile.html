@@ -31,6 +31,9 @@
                     <div class="{% if field.name == 'address_line_1' or field.name == 'address_line_2' %}md:col-span-2{% endif %}">
                         <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
                             {{ field.label }}
+                            {% if field.field.required %}
+                                <span class="text-red-500">*</span>
+                            {% endif %}
                         </label>
                         {{ field }}
                         {% if field.help_text %}

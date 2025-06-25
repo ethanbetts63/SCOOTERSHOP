@@ -23,49 +23,49 @@
                     <h4 class="text-lg font-medium text-gray-700 mb-2">Required Information</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label for="{{ form.brand.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.brand.label }}</label>
+                            <label for="{{ form.brand.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.brand.label }}{% if form.brand.field.required %}<span class="text-red-500">*</span>{% endif %}</label>
                             {{ form.brand }}
                             {% if form.brand.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.brand.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
                         </div>
 
                         <div id="otherBrandNameDiv" style="display: none;">
-                            <label for="{{ form.other_brand_name.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.other_brand_name.label }}</label>
+                            <label for="{{ form.other_brand_name.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.other_brand_name.label }}<span id="other-brand-asterisk" class="text-red-500"></span></label>
                             {{ form.other_brand_name }}
                             {% if form.other_brand_name.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.other_brand_name.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
                         </div>
 
                         <div>
-                            <label for="{{ form.model.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.model.label }}</label>
+                            <label for="{{ form.model.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.model.label }}{% if form.model.field.required %}<span class="text-red-500">*</span>{% endif %}</label>
                             {{ form.model }}
                             {% if form.model.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.model.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
                         </div>
                         
                         <div>
-                            <label for="{{ form.engine_size.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.engine_size.label }}</label>
+                            <label for="{{ form.engine_size.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.engine_size.label }}{% if form.engine_size.field.required %}<span class="text-red-500">*</span>{% endif %}</label>
                             {{ form.engine_size }}
                             {% if form.engine_size.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.engine_size.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
                         </div>
 
                         <div>
-                            <label for="{{ form.year.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.year.label }}</label>
+                            <label for="{{ form.year.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.year.label }}{% if form.year.field.required %}<span class="text-red-500">*</span>{% endif %}</label>
                             {{ form.year }}
                             {% if form.year.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.year.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
                         </div>
 
                         <div>
-                            <label for="{{ form.rego.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.rego.label }}</label>
+                            <label for="{{ form.rego.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.rego.label }}{% if form.rego.field.required %}<span class="text-red-500">*</span>{% endif %}</label>
                             {{ form.rego }}
                             {% if form.rego.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.rego.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
                         </div>
 
                         <div>
-                            <label for="{{ form.odometer.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.odometer.label }}</label>
+                            <label for="{{ form.odometer.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.odometer.label }}{% if form.odometer.field.required %}<span class="text-red-500">*</span>{% endif %}</label>
                             {{ form.odometer }}
                             {% if form.odometer.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.odometer.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
                         </div>
                         
                         <div>
-                            <label for="{{ form.transmission.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.transmission.label }}</label>
+                            <label for="{{ form.transmission.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.transmission.label }}{% if form.transmission.field.required %}<span class="text-red-500">*</span>{% endif %}</label>
                             {{ form.transmission }}
                             {% if form.transmission.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.transmission.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
                         </div>
@@ -76,19 +76,19 @@
                     <h4 class="text-lg font-medium text-gray-700 mb-2">Optional Information</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label for="{{ form.vin_number.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.vin_number.label }}</label>
+                            <label for="{{ form.vin_number.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.vin_number.label }}{% if form.vin_number.field.required %}<span class="text-red-500">*</span>{% endif %}</label>
                             {{ form.vin_number }}
                             {% if form.vin_number.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.vin_number.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
                         </div>
 
                         <div>
-                            <label for="{{ form.engine_number.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.engine_number.label }}</label>
+                            <label for="{{ form.engine_number.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.engine_number.label }}{% if form.engine_number.field.required %}<span class="text-red-500">*</span>{% endif %}</label>
                             {{ form.engine_number }}
                             {% if form.engine_number.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.engine_number.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
                         </div>
 
                         <div class="md:col-span-2">
-                            <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.image.label }}</label>
+                            <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.image.label }}{% if form.image.field.required %}<span class="text-red-500">*</span>{% endif %}</label>
                             {{ form.image }}
                             {% if form.image.help_text %}<p class="mt-2 text-sm text-gray-500">{{ form.image.help_text }}</p>{% endif %}
                             {% if form.image.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.image.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
@@ -131,14 +131,17 @@
         const brandSelect = document.getElementById('{{ form.brand.id_for_label }}');
         const otherBrandNameDiv = document.getElementById('otherBrandNameDiv');
         const otherBrandNameInput = document.getElementById('{{ form.other_brand_name.id_for_label }}');
+        const otherBrandAsterisk = document.getElementById('other-brand-asterisk');
         
         function toggleOtherBrandField() {
             if (brandSelect.value === 'Other') {
                 otherBrandNameDiv.style.display = 'block';
                 otherBrandNameInput.setAttribute('required', 'required');
+                if(otherBrandAsterisk) otherBrandAsterisk.textContent = ' *';
             } else {
                 otherBrandNameDiv.style.display = 'none';
                 otherBrandNameInput.removeAttribute('required');
+                if(otherBrandAsterisk) otherBrandAsterisk.textContent = '';
                 otherBrandNameInput.value = '';
             }
         }
