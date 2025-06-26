@@ -132,7 +132,6 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium table-cell-padding">
                                 <div class="flex flex-wrap gap-2">
                                     <div class="flex flex-wrap gap-2">
-                                    <a href="{% inventory/_sales_FAQ_include.html pk=booking.pk %}" class="action-button btn-edit">Edit</a>
                                     {% if booking.booking_status == 'pending_confirmation' %}
                                         <a href="{% url 'inventory:admin_sales_booking_action' pk=booking.pk action_type='confirm' %}" class="action-button btn-confirm">
                                             Confirm
