@@ -4,19 +4,17 @@
 {% block extra_css %}
 {{ block.super }}
 <style>
-    /* Custom style for the delete checkbox to make it less obtrusive */
     .delete-checkbox input[type="checkbox"] {
-        display: none; /* Hide the actual checkbox */
+        display: none;
     }
     .delete-checkbox svg {
         transition: color 0.2s ease-in-out;
     }
     .delete-checkbox input[type="checkbox"]:checked + svg {
-        color: #ef4444; /* Red color when checked for deletion */
+        color: #ef4444;
     }
-    /* Style for the quantity field container */
     .quantity-field-container {
-        display: none; /* Hidden by default */
+        display: none;
     }
 </style>
 {% endblock %}
@@ -28,14 +26,11 @@
     <form method="post" enctype="multipart/form-data" class="space-y-8">
         {% csrf_token %}
 
-        <!-- Motorcycle Details Section -->
         <div>
             <h2 class="text-2xl font-semibold text-gray-700 mb-4 border-b pb-2">Motorcycle Details</h2>
             {{ form.non_field_errors }}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {# Loop through fields explicitly to control rendering order and visibility #}
                 {% for field in form %}
-                    {# Exclude quantity field from general loop for controlled display #}
                     {% if field.name == 'quantity' %}
                         <div id="quantity-field-container" class="flex flex-col quantity-field-container">
                             <label for="{{ field.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">{{ field.label }} {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}:</label>
@@ -48,7 +43,6 @@
                             {% endfor %}
                         </div>
                     {% elif field.name == 'conditions' %}
-                        {# Render conditions field #}
                         <div class="flex flex-col">
                             <label for="{{ field.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">{{ field.label }} {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}:</label>
                             {{ field }}
@@ -60,7 +54,6 @@
                             {% endfor %}
                         </div>
                     {% else %}
-                        {# Render other fields #}
                         <div class="flex flex-col">
                             <label for="{{ field.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">{{ field.label }} {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}:</label>
                             {{ field }}
@@ -76,11 +69,9 @@
             </div>
         </div>
 
-        <!-- Motorcycle Images Section -->
         <div>
             <h2 class="text-2xl font-semibold text-gray-700 mb-4 border-b pb-2">Motorcycle Images</h2>
             
-            <!-- Existing Images -->
             <div>
                 <h3 class="text-xl font-semibold text-gray-600 mb-3">Existing Additional Images</h3>
                 {{ image_formset.management_form }}
@@ -107,7 +98,6 @@
                  {{ image_formset.non_form_errors }}
             </div>
 
-            <!-- New Image Upload -->
             <div class="mt-6">
                 <h3 class="text-xl font-semibold text-gray-600 mb-3">Upload New Additional Images</h3>
                 <div>
@@ -136,35 +126,25 @@
         function toggleQuantityField() {
             let isNewSelected = false;
             conditionsCheckboxes.forEach(checkbox => {
-                // Check if the checkbox is for 'New' condition
-                // Using .includes('New') on nextSibling.textContent is a bit fragile if display_name changes
-                // A more robust way might be to add a data-attribute to the label or checkbox
-                // e.g., <label data-condition-name="{{ condition.name }}">
                 if (checkbox.checked && (checkbox.nextSibling.textContent.trim().toLowerCase() === 'new' || checkbox.dataset.conditionName === 'new')) {
                     isNewSelected = true;
                 }
             });
 
             if (isNewSelected) {
-                quantityFieldContainer.style.display = 'flex'; // Show the field
-                // Ensure quantity is at least 1 when 'New' is selected, if not already set.
-                // This client-side suggestion aligns with form's server-side validation.
+                quantityFieldContainer.style.display = 'flex';
                 if (quantityInputField.value === '' || parseInt(quantityInputField.value) < 1) {
                     quantityInputField.value = '1';
                 }
             } else {
-                quantityFieldContainer.style.display = 'none'; // Hide the field
-                // For non-new motorcycles, the model default of 1 will apply if the field is cleared.
-                // It's generally better to let the server-side clean method manage the final value.
+                quantityFieldContainer.style.display = 'none';
             }
         }
 
-        // Add event listeners
         conditionsCheckboxes.forEach(checkbox => {
             checkbox.addEventListener('change', toggleQuantityField);
         });
 
-        // Initial check on page load to set correct visibility for existing bikes
         toggleQuantityField();
     });
 </script>
