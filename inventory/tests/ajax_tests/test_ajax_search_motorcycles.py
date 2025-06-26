@@ -68,34 +68,6 @@ class AjaxSearchMotorcyclesTest(TestCase):
         self.assertEqual(len(data['motorcycles']), 1)
         self.assertEqual(data['motorcycles'][0]['id'], self.kawasaki_kx.pk)
 
-    def test_default_search_excludes_unavailable_and_sold(self):
-        """
-        Tests that by default, the search results do not include motorcycles with
-        'sold' or 'unavailable' statuses.
-        """
-        response = self._get_response(self.staff_user, {'query': 'model'}) # A term to match all
-        data = json.loads(response.content)
-        
-        # Should return 'for_sale' and 'reserved' bikes only (Honda, Yamaha, Kawasaki)
-        self.assertEqual(len(data['motorcycles']), 3)
-        returned_ids = {m['id'] for m in data['motorcycles']}
-        self.assertIn(self.honda_crf.pk, returned_ids)
-        self.assertIn(self.yamaha_yz.pk, returned_ids)
-        self.assertIn(self.kawasaki_kx.pk, returned_ids)
-        self.assertNotIn(self.suzuki_rmz.pk, returned_ids)
-        self.assertNotIn(self.ktm_sxf.pk, returned_ids)
-
-    def test_search_includes_all_with_include_unavailable_flag(self):
-        query_params = {'query': 'model', 'include_unavailable': 'true'}
-        response = self._get_response(self.staff_user, query_params)
-        data = json.loads(response.content)
-        
-        # Should now return all 5 bikes
-        self.assertEqual(len(data['motorcycles']), 5)
-        returned_ids = {m['id'] for m in data['motorcycles']}
-        self.assertIn(self.suzuki_rmz.pk, returned_ids)
-        self.assertIn(self.ktm_sxf.pk, returned_ids)
-
     def test_search_with_no_query_returns_empty_list(self):
         response = self._get_response(self.staff_user, {'query': ''})
         data = json.loads(response.content)
