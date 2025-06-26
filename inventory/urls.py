@@ -30,7 +30,10 @@ from .views.admin_views import (
     delete_blocked_sales_date,
     delete_sales_booking,
     delete_sales_profile,
-    SalesFAQManagementView,
+    sales_FAQ_management_view,
+    sales_FAQ_create_update_view,
+    sales_FAQ_details_view,
+    sales_FAQ_delete_view,
 )
 
 from .ajax import (
@@ -67,27 +70,27 @@ urlpatterns = [
     path('admin/motorcycles/<int:pk>/delete/', delete_motorcycle.MotorcycleDeleteView.as_view(), name='admin_motorcycle_delete'),
     path('admin/motorcycles/<int:pk>/details/', admin_motorcycle_details_view.AdminMotorcycleDetailsView.as_view(), name='admin_motorcycle_details'),
     path('admin/blocked-sales-dates/', blocked_sales_date_management_view.BlockedSalesDateManagementView.as_view(), name='blocked_sales_date_management'),
-    path('admin/blocked-sales-dates/create/', blocked_sales_date_create_update_view.BlockedSalesDateCreateUpdateView.as_view(), name='blocked_sales_date_create_update'),
-    path('admin/blocked-sales-dates/<int:pk>/update/', blocked_sales_date_create_update_view.BlockedSalesDateCreateUpdateView.as_view(), name='blocked_sales_date_create_update'),
+    path('admin/blocked-sales-dates/create/', blocked_sales_date_create_update_view.BlockedSalesDateCreateUpdateView.as_view(), name='blocked_sales_date_create'),
+    path('admin/blocked-sales-dates/<int:pk>/update/', blocked_sales_date_create_update_view.BlockedSalesDateCreateUpdateView.as_view(), name='blocked_sales_date_update'),
     path('admin/blocked-sales-dates/<int:pk>/delete/', delete_blocked_sales_date.BlockedSalesDateDeleteView.as_view(), name='admin_blocked_sales_date_delete'),
     path('admin/sales-bookings/', sales_bookings_management_view.SalesBookingsManagementView.as_view(), name='sales_bookings_management'),
-    path('admin/sales-bookings/create/', sales_booking_create_update_view.SalesBookingCreateUpdateView.as_view(), name='sales_booking_create_update'),
-    path('admin/sales-bookings/<int:pk>/update/', sales_booking_create_update_view.SalesBookingCreateUpdateView.as_view(), name='sales_booking_create_update'),
+    path('admin/sales-bookings/create/', sales_booking_create_update_view.SalesBookingCreateUpdateView.as_view(), name='sales_booking_create'),
+    path('admin/sales-bookings/<int:pk>/update/', sales_booking_create_update_view.SalesBookingCreateUpdateView.as_view(), name='sales_booking_update'),
     path('admin/sales-bookings/<int:pk>/delete/', delete_sales_booking.SalesBookingDeleteView.as_view(), name='admin_sales_booking_delete'),
     path('admin/sales-bookings/<int:pk>/details/', sales_booking_details_view.SalesBookingDetailsView.as_view(), name='sales_booking_details'),
     path('admin/sales-bookings/<int:pk>/<str:action_type>/', sales_booking_action_view.SalesBookingActionView.as_view(), name='admin_sales_booking_action'),
     path('admin/sales-profiles/', sales_profile_management_view.SalesProfileManagementView.as_view(), name='sales_profile_management'),
-    path('admin/sales-profiles/create/', sales_profile_create_update_view.SalesProfileCreateUpdateView.as_view(), name='sales_profile_create_update'),
-    path('admin/sales-profiles/<int:pk>/update/', sales_profile_create_update_view.SalesProfileCreateUpdateView.as_view(), name='sales_profile_create_update'),
+    path('admin/sales-profiles/create/', sales_profile_create_update_view.SalesProfileCreateUpdateView.as_view(), name='sales_profile_create'),
+    path('admin/sales-profiles/<int:pk>/update/', sales_profile_create_update_view.SalesProfileCreateUpdateView.as_view(), name='sales_profile_update'),
     path('admin/sales-profiles/<int:pk>/delete/', delete_sales_profile.SalesProfileDeleteView.as_view(), name='admin_sales_profile_delete'),
     path('admin/sales-profiles/<int:pk>/details/', sales_profile_details_view.SalesProfileDetailsView.as_view(), name='sales_profile_details'),
 
     # Sales FAQ Management
-    path('admin/sales-faqs/', SalesFAQManagementView.as_view(), name='sales_faq_management'),
-    # path('admin/sales-faqs/create/', sales_faq_create_update_view.SalesFAQCreateUpdateView.as_view(), name='sales_faq_create'),
-    # path('admin/sales-faqs/<int:pk>/update/', sales_faq_create_update_view.SalesFAQCreateUpdateView.as_view(), name='sales_faq_update'),
-    # path('admin/sales-faqs/<int:pk>/delete/', delete_sales_faq.SalesFAQDeleteView.as_view(), name='sales_faq_delete'),
-    # path('admin/sales-faqs/<int:pk>/details/', sales_faq_details_view.SalesFAQDetailsView.as_view(), name='sales_faq_details'),
+    path('admin/sales-faqs/', sales_FAQ_management_view.SalesFAQManagementView.as_view(), name='sales_faq_management'),
+    path('admin/sales-faqs/create/', sales_FAQ_create_update_view.SalesFAQCreateUpdateView.as_view(), name='sales_faq_create'),
+    path('admin/sales-faqs/<int:pk>/update/', sales_FAQ_create_update_view.SalesFAQCreateUpdateView.as_view(), name='sales_faq_update'),
+    path('admin/sales-faqs/<int:pk>/delete/', sales_FAQ_delete_view.SalesFAQDeleteView.as_view(), name='sales_faq_delete'),
+    path('admin/sales-faqs/<int:pk>/details/', sales_FAQ_details_view.SalesFAQDetailsView.as_view(), name='sales_faq_details'),
 
 
     # AJAX Endpoints
