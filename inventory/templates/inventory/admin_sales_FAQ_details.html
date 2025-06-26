@@ -1,0 +1,118 @@
+{% extends "dashboard/admin_layout.html" %}
+{% load static %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .detail-item {
+        margin-bottom: 1rem;
+    }
+    .detail-label {
+        font-weight: 600;
+        color: #4a5568; /* gray-700 */
+    }
+    .detail-value {
+        color: #2d3748; /* gray-800 */
+        white-space: pre-wrap; /* Allows the answer text to wrap */
+    }
+    .action-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 16px;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        transition: all 0.15s ease-in-out;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    .action-button:hover {
+        opacity: 0.9;
+    }
+    .btn-edit {
+        color: #ffffff;
+        background-color: #3b82f6; /* blue-500 */
+        border: 1px solid #2563eb; /* blue-600 */
+    }
+    .btn-edit:hover {
+        background-color: #2563eb;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 0.25em 0.6em;
+        font-size: 75%;
+        font-weight: 700;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 0.375rem;
+    }
+    .status-active {
+        color: #065f46; /* green-900 */
+        background-color: #d1fae5; /* green-100 */
+    }
+    .status-inactive {
+        color: #991b1b; /* red-900 */
+        background-color: #fee2e2; /* red-100 */
+    }
+</style>
+{% endblock %}
+
+{% block admin_main_content %}
+<div class="p-4">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">{{ page_title|default:"Sales FAQ Details" }}</h1>
+        <div class="flex space-x-2">
+            {# Placeholder URL for edit #}
+            <a href="#" class="action-button btn-edit">Edit FAQ</a>
+        </div>
+    </div>
+
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">FAQ Information</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+            <div class="detail-item md:col-span-2">
+                <div class="detail-label">Question:</div>
+                <div class="detail-value">{{ sales_faq.question }}</div>
+            </div>
+            <div class="detail-item md:col-span-2">
+                <div class="detail-label">Answer:</div>
+                <div class="detail-value">{{ sales_faq.answer }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Booking Step:</div>
+                <div class="detail-value">{{ sales_faq.get_booking_step_display }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Display Order:</div>
+                <div class="detail-value">{{ sales_faq.display_order }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Status:</div>
+                <div class="detail-value">
+                    <span class="status-badge {% if sales_faq.is_active %}status-active{% else %}status-inactive{% endif %}">
+                        {% if sales_faq.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Created At:</div>
+                <div class="detail-value">{{ sales_faq.created_at|date:"M d, Y H:i" }}</div>
+            </div>
+             <div class="detail-item">
+                <div class="detail-label">Last Updated:</div>
+                <div class="detail-value">{{ sales_faq.updated_at|date:"M d, Y H:i" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-6 text-center">
+        <a href="{% url 'inventory:sales_faq_management' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+            Back to FAQs Management
+        </a>
+    </div>
+</div>
+{% endblock %}

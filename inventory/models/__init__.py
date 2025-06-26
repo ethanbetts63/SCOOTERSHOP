@@ -6,3 +6,4 @@ from .motorcycle import *
 from .sales_booking import *
 from .sales_profile import *
 from .temp_sales_booking import *
+from .sales_FAQ import *
