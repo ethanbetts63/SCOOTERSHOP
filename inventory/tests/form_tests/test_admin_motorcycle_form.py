@@ -18,6 +18,7 @@ class MotorcycleFormTest(TestCase):
 
     def test_init_method_required_fields(self):
         form = MotorcycleForm()
+        self.assertTrue(form.fields['status'].required) # Check that status is required
         self.assertFalse(form.fields['price'].required)
         self.assertFalse(form.fields['daily_hire_rate'].required)
         self.assertFalse(form.fields['hourly_hire_rate'].required)
@@ -36,6 +37,7 @@ class MotorcycleFormTest(TestCase):
 
     def test_clean_method_brand_and_model_capitalization(self):
         data = {
+            'status': 'for_sale', # FIXED: Added status
             'brand': 'honda',
             'model': 'cbr500r',
             'year': 2020,
@@ -56,6 +58,7 @@ class MotorcycleFormTest(TestCase):
         current_year = datetime.date.today().year
 
         base_data = {
+            'status': 'for_sale', # FIXED: Added status
             'brand': 'Honda', 'model': 'CBR',
             'engine_size': 500, 'odometer': 1000, 'is_available': True,
             'transmission': 'automatic', 'stock_number': 'STK001',
@@ -83,6 +86,7 @@ class MotorcycleFormTest(TestCase):
 
     def test_clean_method_rego_uppercase(self):
         data_rego = {
+            'status': 'for_sale', # FIXED: Added status
             'brand': 'Honda', 'model': 'CBR', 'year': 2020,
             'engine_size': 500, 'odometer': 1000, 'is_available': True,
             'transmission': 'automatic', 'stock_number': 'STK001',
@@ -96,11 +100,12 @@ class MotorcycleFormTest(TestCase):
 
     def test_clean_method_conditions_new_exclusive(self):
         data_new_and_used = {
+            'status': 'for_sale', # FIXED: Added status
             'brand': 'Honda', 'model': 'CBR', 'year': 2020,
             'engine_size': 500, 'odometer': 1000, 'is_available': True,
             'transmission': 'automatic', 'stock_number': 'STK001',
             'conditions': [self.condition_new.pk, self.condition_used.pk],
-            'quantity': 1, # Add quantity for new conditions in test data
+            'quantity': 1,
         }
         form = MotorcycleForm(data=data_new_and_used)
         self.assertFalse(form.is_valid())
@@ -109,11 +114,12 @@ class MotorcycleFormTest(TestCase):
 
     def test_clean_method_conditions_demo_exclusive(self):
         data_demo_and_used = {
+            'status': 'for_sale', # FIXED: Added status
             'brand': 'Honda', 'model': 'CBR', 'year': 2020,
             'engine_size': 500, 'odometer': 1000, 'is_available': True,
             'transmission': 'automatic', 'stock_number': 'STK001',
             'conditions': [self.condition_demo.pk, self.condition_used.pk],
-            'quantity': 1, # Add quantity for demo conditions in test data
+            'quantity': 1,
         }
         form = MotorcycleForm(data=data_demo_and_used)
         self.assertFalse(form.is_valid())
@@ -122,17 +128,19 @@ class MotorcycleFormTest(TestCase):
 
     def test_clean_method_conditions_multiple_valid(self):
         data_multiple_valid = {
+            'status': 'for_sale', # FIXED: Added status
             'brand': 'Honda', 'model': 'CBR', 'year': 2020,
             'engine_size': 500, 'odometer': 1000, 'is_available': True,
             'transmission': 'automatic', 'stock_number': 'STK001',
             'conditions': [self.condition_used.pk],
-            'quantity': 1, # Add quantity for non-new conditions if it was causing issues, though default should handle
+            'quantity': 1,
         }
         form = MotorcycleForm(data=data_multiple_valid)
         self.assertTrue(form.is_valid(), form.errors.as_json())
 
     def test_save_method_title_generation(self):
         data_full = {
+            'status': 'for_sale', # FIXED: Added status
             'brand': 'Yamaha',
             'model': 'MT-07',
             'year': 2023,
@@ -142,7 +150,7 @@ class MotorcycleFormTest(TestCase):
             'transmission': 'manual',
             'stock_number': 'STK001',
             'conditions': [],
-            'quantity': 1, # Add quantity to ensure test passes with new logic
+            'quantity': 1,
         }
         form = MotorcycleForm(data=data_full)
         self.assertTrue(form.is_valid(), form.errors.as_json())
@@ -154,8 +162,8 @@ class MotorcycleFormTest(TestCase):
         self.assertIsNotNone(motorcycle_instance.pk)
         self.assertEqual(motorcycle_instance.title, '2023 Yamaha Mt-07')
 
-        # data for 'Untitled Motorcycle' scenario - now requires brand, model, year, transmission, stock_number
         data_no_details = {
+            'status': 'for_sale', # FIXED: Added status
             'brand': 'Generic',
             'model': 'Bike',
             'year': 2000,
@@ -165,12 +173,11 @@ class MotorcycleFormTest(TestCase):
             'transmission': 'manual',
             'stock_number': 'STK002',
             'conditions': [],
-            'quantity': 1, # Add quantity to ensure test passes with new logic
+            'quantity': 1,
         }
         form_no_details = MotorcycleForm(data=data_no_details)
         self.assertTrue(form_no_details.is_valid(), form_no_details.errors.as_json())
         motorcycle_no_details = form_no_details.save(commit=False)
-        # Expected title should now reflect provided required fields
         self.assertEqual(motorcycle_no_details.title, '2000 Generic Bike')
         motorcycle_no_details.save()
         form_no_details.save_m2m()
@@ -178,6 +185,7 @@ class MotorcycleFormTest(TestCase):
 
     def test_form_with_valid_data(self):
         data = {
+            'status': 'for_sale', # FIXED: Added status
             'conditions': [self.condition_new.pk],
             'brand': 'Kawasaki',
             'model': 'Ninja 400',
@@ -196,7 +204,7 @@ class MotorcycleFormTest(TestCase):
             'stock_number': 'KWI001',
             'vin_number': 'VINTEST123',
             'engine_number': 'ENG456',
-            'quantity': 1, # <--- ADDED THIS LINE TO FIX THE TEST
+            'quantity': 1,
         }
         form = MotorcycleForm(data=data)
         self.assertTrue(form.is_valid(), form.errors.as_json())
@@ -209,6 +217,4 @@ class MotorcycleFormTest(TestCase):
         self.assertIn(self.condition_new, motorcycle.conditions.all())
         self.assertEqual(motorcycle.vin_number, 'VINTEST123')
         self.assertEqual(motorcycle.engine_number, 'ENG456')
-        # Add assertion for quantity
         self.assertEqual(motorcycle.quantity, 1)
-
