@@ -1,6 +1,9 @@
+# SCOOTER_SHOP/inventory/views/user_views/motorcycle_list_view.py
+
 from django.views.generic import ListView
 from inventory.models import Motorcycle
 from inventory.utils.get_unique_makes_for_filter import get_unique_makes_for_filter
+from inventory.utils.get_sales_faqs import get_faqs_for_step
 import datetime
 
 
@@ -27,5 +30,9 @@ class MotorcycleListView(ListView):
         current_year = datetime.date.today().year
         context['years'] = list(range(2000, current_year + 1))
         context['years'].reverse()
+
+        # Add FAQs to context
+        context['sales_faqs'] = get_faqs_for_step('general')
+        context['faq_title'] = "Frequently Asked Questions"
 
         return context

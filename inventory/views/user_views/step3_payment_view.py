@@ -1,3 +1,5 @@
+# SCOOTER_SHOP/inventory/views/user_views/step3_payment_view.py
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.http import JsonResponse, Http404
@@ -9,12 +11,14 @@ import json
 from payments.models import Payment
 from inventory.models import TempSalesBooking, InventorySettings, Motorcycle
 from inventory.utils.create_update_sales_payment_intent import create_or_update_sales_payment_intent
+from inventory.utils.get_sales_faqs import get_faqs_for_step
 from decimal import Decimal
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 class Step3PaymentView(View):
     def dispatch(self, request, *args, **kwargs):
+        # ... (dispatch logic remains the same)
         temp_booking_uuid = request.session.get('temp_sales_booking_uuid')
 
         if not temp_booking_uuid:
@@ -110,10 +114,13 @@ class Step3PaymentView(View):
             'temp_booking': temp_booking,
             'stripe_publishable_key': settings.STRIPE_PUBLISHABLE_KEY,
             'amount_remaining': amount_remaining,
+            'sales_faqs': get_faqs_for_step('step3'), # Add FAQs
+            'faq_title': "Payment Questions",
         }
         return render(request, 'inventory/step3_payment.html', context)
 
     def post(self, request, *args, **kwargs):
+        # ... (post logic remains the same, as it returns JSON)
         try:
             data = json.loads(request.body)
             payment_intent_id = data.get('payment_intent_id')

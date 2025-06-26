@@ -1,0 +1,62 @@
+{% comment %}
+  Reusable include for displaying a list of expandable FAQs.
+  Expects a context variable `sales_faqs` which is a queryset of SalesFAQ objects.
+  Also expects a `title` for the section.
+{% endcomment %}
+{% if sales_faqs %}
+<div class="bg-gray-50 border border-gray-200 rounded-lg p-4 my-6">
+    <h4 class="text-lg font-bold text-gray-800 mb-3">{{ title|default:"Frequently Asked Questions" }}</h4>
+    
+    <div class="space-y-3" id="faq-accordion">
+        {% for faq in sales_faqs %}
+        <div class="border-b border-gray-200 last:border-b-0 pb-3">
+            <h2>
+                <button type="button" 
+                        class="flex items-center justify-between w-full text-left font-semibold text-gray-700 hover:text-indigo-600 focus:outline-none"
+                        data-accordion-trigger="faq-{{ faq.pk }}">
+                    <span>{{ faq.question }}</span>
+                    <svg class="w-5 h-5 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+            </h2>
+            <div id="faq-{{ faq.pk }}" class="hidden pt-2 text-gray-600">
+                <p>{{ faq.answer|linebreaksbr }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Ensure this script doesn't conflict if the include is used multiple times
+    if (window.faqAccordionInitialized) {
+        return;
+    }
+    window.faqAccordionInitialized = true;
+
+    const accordion = document.getElementById('faq-accordion');
+    if (accordion) {
+        accordion.addEventListener('click', function(event) {
+            const trigger = event.target.closest('[data-accordion-trigger]');
+            if (!trigger) return;
+
+            event.preventDefault();
+            const targetId = trigger.getAttribute('data-accordion-trigger');
+            const targetPanel = document.getElementById(targetId);
+            const icon = trigger.querySelector('svg');
+
+            if (targetPanel) {
+                const isHidden = targetPanel.classList.contains('hidden');
+                if (isHidden) {
+                    targetPanel.classList.remove('hidden');
+                    if(icon) icon.style.transform = 'rotate(180deg)';
+                } else {
+                    targetPanel.classList.add('hidden');
+                    if(icon) icon.style.transform = 'rotate(0deg)';
+                }
+            }
+        });
+    }
+});
+</script>
+{% endif %}

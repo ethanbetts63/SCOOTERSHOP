@@ -6,6 +6,7 @@ from django.contrib import messages
 from inventory.models import TempSalesBooking, InventorySettings
 from inventory.forms import SalesProfileForm
 from inventory.utils.booking_protection import check_and_manage_recent_booking_flag
+from inventory.utils.get_sales_faqs import get_faqs_for_step
 
 class Step1SalesProfileView(View):
     template_name = 'inventory/step1_sales_profile.html'
@@ -49,6 +50,8 @@ class Step1SalesProfileView(View):
             'sales_profile_form': sales_profile_form,
             'temp_booking': temp_booking,
             'inventory_settings': inventory_settings,
+            'sales_faqs': get_faqs_for_step('step1'), # Add FAQs
+            'faq_title': "Your Questions Answered",
         }
         return render(request, self.template_name, context)
 
@@ -101,6 +104,8 @@ class Step1SalesProfileView(View):
                 'sales_profile_form': sales_profile_form,
                 'temp_booking': temp_booking,
                 'inventory_settings': inventory_settings,
+                'sales_faqs': get_faqs_for_step('step1'), # Add FAQs on error
+                'faq_title': "Your Questions Answered",
             }
             messages.error(request, "Please correct the errors below.")
             return render(request, self.template_name, context)

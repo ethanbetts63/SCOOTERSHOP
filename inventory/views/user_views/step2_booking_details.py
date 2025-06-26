@@ -1,3 +1,5 @@
+# SCOOTER_SHOP/inventory/views/user_views/step2_booking_details.py
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.urls import reverse
@@ -10,6 +12,7 @@ from inventory.models import TempSalesBooking, InventorySettings
 from inventory.forms.sales_booking_appointment_form import BookingAppointmentForm
 from inventory.utils.get_sales_appointment_date_info import get_sales_appointment_date_info
 from inventory.utils.convert_temp_sales_booking import convert_temp_sales_booking
+from inventory.utils.get_sales_faqs import get_faqs_for_step
 
 class Step2BookingDetailsView(View):
     template_name = 'inventory/step2_booking_details.html'
@@ -62,6 +65,8 @@ class Step2BookingDetailsView(View):
             'min_appointment_date': min_date_str,
             'max_appointment_date': max_date_str,
             'blocked_appointment_dates_json': blocked_dates_json,
+            'sales_faqs': get_faqs_for_step('step2'), # Add FAQs
+            'faq_title': "Booking & Appointment Questions",
         }
         return render(request, self.template_name, context)
 
@@ -92,6 +97,7 @@ class Step2BookingDetailsView(View):
 
         if form.is_valid():
             with transaction.atomic():
+                # ... (form processing logic remains the same)
                 customer_notes = form.cleaned_data.get('customer_notes')
                 request_viewing = form.cleaned_data.get('request_viewing')
                 appointment_date = form.cleaned_data.get('appointment_date')
@@ -122,9 +128,7 @@ class Step2BookingDetailsView(View):
 
                     request.session['current_sales_booking_reference'] = converted_sales_booking.sales_booking_reference
 
-
                     messages.success(request, "Your enquiry has been submitted. We will get back to you shortly!")
-                    # Corrected URL name here:
                     return redirect(reverse('inventory:step4_confirmation'))
         else:
             min_date_obj, max_date_obj, blocked_dates_list = get_sales_appointment_date_info(
@@ -141,7 +145,8 @@ class Step2BookingDetailsView(View):
                 'min_appointment_date': min_date_str,
                 'max_appointment_date': max_date_str,
                 'blocked_appointment_dates_json': blocked_dates_json,
+                'sales_faqs': get_faqs_for_step('step2'), # Add FAQs on error
+                'faq_title': "Booking & Appointment Questions",
             }
             messages.error(request, "Please correct the errors below.")
             return render(request, self.template_name, context)
-

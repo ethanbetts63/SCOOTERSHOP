@@ -1,3 +1,5 @@
+# SCOOTER_SHOP/inventory/views/user_views/step4_confirmation_view.py
+
 from django.shortcuts import render, redirect
 from django.views import View
 from django.contrib import messages
@@ -5,6 +7,7 @@ from decimal import Decimal
 from inventory.models import SalesBooking
 from payments.models import Payment
 from inventory.utils.booking_protection import set_recent_booking_flag
+from inventory.utils.get_sales_faqs import get_faqs_for_step
 
 class Step4ConfirmationView(View):
     def get(self, request):
@@ -64,6 +67,8 @@ class Step4ConfirmationView(View):
                 'is_processing': False,
                 'motorcycle_price': sales_booking.motorcycle.price,
                 'amount_owing': amount_owing,
+                'sales_faqs': get_faqs_for_step('step4'), # Add FAQs
+                'faq_title': "What Happens Next?",
             }
             return render(request, 'inventory/step4_confirmation.html', context)
 

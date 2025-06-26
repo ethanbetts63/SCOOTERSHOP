@@ -1,7 +1,10 @@
+# SCOOTER_SHOP/inventory/views/user_views/user_motorcycle_details_view.py
+
 from django.views.generic import DetailView
 from django.http import Http404
 from inventory.models import Motorcycle, InventorySettings
 from inventory.utils.get_motorcycle_details import get_motorcycle_details
+from inventory.utils.get_sales_faqs import get_faqs_for_step
 
 class UserMotorcycleDetailsView(DetailView):
     model = Motorcycle
@@ -21,4 +24,8 @@ class UserMotorcycleDetailsView(DetailView):
         inventory_settings = InventorySettings.objects.first()
         context['inventory_settings'] = inventory_settings
         
+        # Add FAQs to context
+        context['sales_faqs'] = get_faqs_for_step('general')
+        context['faq_title'] = "Questions About Our Motorcycles"
+
         return context
