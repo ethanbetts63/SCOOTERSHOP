@@ -7,7 +7,7 @@ class MotorcycleForm(forms.ModelForm):
     class Meta:
         model = Motorcycle
         fields = [
-            'conditions',
+            'status', 'conditions',
             'brand', 'model', 'year', 'price', 'quantity',
             'odometer', 'engine_size',
             'seats', 'transmission',
@@ -18,6 +18,7 @@ class MotorcycleForm(forms.ModelForm):
             'vin_number', 'engine_number',
         ]
         widgets = {
+            'status': forms.Select(attrs={'class': 'form-select mt-1 block w-full rounded-md border border-gray-300 shadow-sm text-gray-900'}),
             'brand': forms.TextInput(attrs={'class': 'form-input mt-1 block w-full rounded-md border border-gray-300 shadow-sm text-gray-900'}),
             'model': forms.TextInput(attrs={'class': 'form-input mt-1 block w-full rounded-md border border-gray-300 shadow-sm text-gray-900'}),
             'year': forms.NumberInput(attrs={'class': 'form-input mt-1 block w-full rounded-md border border-gray-300 shadow-sm text-gray-900'}),
@@ -44,6 +45,7 @@ class MotorcycleForm(forms.ModelForm):
         instance = kwargs.get('instance')
         super().__init__(*args, **kwargs)
         
+        self.fields['status'].required = True
         self.fields['price'].required = False
         self.fields['daily_hire_rate'].required = False
         self.fields['hourly_hire_rate'].required = False
@@ -126,4 +128,3 @@ class MotorcycleForm(forms.ModelForm):
             instance.save()
             self.save_m2m()
         return instance
-
