@@ -179,6 +179,10 @@
 
         </div>
 
+        {% with title=faq_title %}
+            {% include 'inventory/_sales_FAQ_include.html' %}
+        {% endwith %}
+
         {% else %}
         <div class="text-center py-20 bg-white rounded-2xl shadow-xl">
             <h2 class="text-3xl font-bold text-gray-800 mb-4">Motorcycle Not Found</h2>

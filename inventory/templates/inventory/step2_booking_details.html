@@ -149,6 +149,13 @@
             </div>
         </form>
     </div>
+
+    <div class="max-w-3xl mx-auto mt-8">
+        {% with title=faq_title %}
+            {% include 'inventory/_sales_FAQ_include.html' %}
+        {% endwith %}
+    </div>
+
 </div>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
