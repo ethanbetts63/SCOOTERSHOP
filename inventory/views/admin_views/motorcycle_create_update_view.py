@@ -15,26 +15,13 @@ class MotorcycleCreateUpdateView(AdminRequiredMixin, UpdateView):
     context_object_name = 'motorcycle'
 
     def get_object(self, queryset=None):
-        """
-        Returns the object the view is displaying.
-        For updates, it fetches by 'pk'. For creates, it returns None.
-        UpdateView will call this automatically when a PK is present.
-        """
         pk = self.kwargs.get('pk')
         if pk:
-            try:
-                obj = get_object_or_404(Motorcycle, pk=pk)
-                return obj
-            except Exception as e:
-                raise
+            return get_object_or_404(Motorcycle, pk=pk)
         return None
 
     def get_context_data(self, **kwargs):
-        """
-        Insert the formset for existing images into the context.
-        """
         context = super().get_context_data(**kwargs)
-
         required_conditions = ['new', 'used', 'demo', 'hire']
         for condition_name in required_conditions:
             MotorcycleCondition.objects.get_or_create(
@@ -43,25 +30,21 @@ class MotorcycleCreateUpdateView(AdminRequiredMixin, UpdateView):
             )
 
         if self.request.POST:
-            context['image_formset'] = MotorcycleImageFormSet(self.request.POST, instance=self.object)
+            # Pass FILES to the formset on a POST request
+            context['image_formset'] = MotorcycleImageFormSet(self.request.POST, self.request.FILES, instance=self.object)
         else:
             context['image_formset'] = MotorcycleImageFormSet(instance=self.object)
 
-        if self.object:
-            context['title'] = f'Edit Motorcycle: {self.object.title}'
-        else:
-            context['title'] = 'Add New Motorcycle'
+        context['title'] = f'Edit Motorcycle: {self.object.title}' if self.object else 'Add New Motorcycle'
         return context
 
     def post(self, request, *args, **kwargs):
-        """
-        Handles POST requests, validating the form and formset,
-        and processing both single and multiple file uploads.
-        """
         self.object = self.get_object()
         form = self.get_form()
         
-        image_formset = MotorcycleImageFormSet(self.request.POST, instance=self.object)
+        # FIXED: You must pass request.FILES to the formset constructor
+        # so it can see and validate uploaded files.
+        image_formset = MotorcycleImageFormSet(self.request.POST, self.request.FILES, instance=self.object)
 
         if form.is_valid() and image_formset.is_valid():
             self.object = form.save()
@@ -74,14 +57,10 @@ class MotorcycleCreateUpdateView(AdminRequiredMixin, UpdateView):
             return redirect(self.get_success_url())
         else:
             messages.error(self.request, "Please correct the errors below.")
+            # Pass the invalid forms back to the context to display errors
             return self.render_to_response(self.get_context_data(form=form, image_formset=image_formset))
 
     def get_success_url(self):
-        """
-        Return the URL to redirect to after successful processing.
-        Redirect to the detail page of the created/updated motorcycle.
-        """
         if self.object:
             return reverse_lazy('inventory:admin_motorcycle_details', kwargs={'pk': self.object.pk})
         return reverse_lazy('inventory:admin_inventory_management')
-
