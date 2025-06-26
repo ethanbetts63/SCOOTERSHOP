@@ -1,5 +1,3 @@
-# SCOOTER_SHOP/inventory/views/user_views/step3_payment_view.py
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.http import JsonResponse, Http404
@@ -11,14 +9,13 @@ import json
 from payments.models import Payment
 from inventory.models import TempSalesBooking, InventorySettings, Motorcycle
 from inventory.utils.create_update_sales_payment_intent import create_or_update_sales_payment_intent
-from inventory.utils.get_sales_faqs import get_faqs_for_step
 from decimal import Decimal
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 class Step3PaymentView(View):
-    def dispatch(self, request, *args, **kwargs):
-        # ... (dispatch logic remains the same)
+
+    def get(self, request, *args, **kwargs):
         temp_booking_uuid = request.session.get('temp_sales_booking_uuid')
 
         if not temp_booking_uuid:
@@ -27,7 +24,6 @@ class Step3PaymentView(View):
 
         try:
             temp_booking = get_object_or_404(TempSalesBooking, session_uuid=temp_booking_uuid)
-            request.temp_booking = temp_booking
         except Http404:
             messages.error(request, "Your booking session could not be found.")
             return redirect('inventory:used')
@@ -45,7 +41,7 @@ class Step3PaymentView(View):
             return redirect('inventory:step2_booking_details_and_appointment')
 
         try:
-            request.inventory_settings = InventorySettings.objects.get()
+            inventory_settings = InventorySettings.objects.get()
         except InventorySettings.DoesNotExist:
             messages.error(request, "Inventory settings are not configured. Please contact support.")
             return redirect('inventory:used')
@@ -54,12 +50,6 @@ class Step3PaymentView(View):
             messages.warning(request, "Payment is not required for this type of booking. Redirecting to confirmation.")
             redirect_url = reverse('inventory:step4_confirmation') + f'?payment_intent_id={temp_booking.stripe_payment_intent_id if temp_booking.stripe_payment_intent_id else ""}'
             return redirect(redirect_url)
-
-        return super().dispatch(request, *args, **kwargs)
-
-
-    def get(self, request, *args, **kwargs):
-        temp_booking = request.temp_booking
         
         try:
             motorcycle = Motorcycle.objects.get(pk=temp_booking.motorcycle.pk)
@@ -70,7 +60,6 @@ class Step3PaymentView(View):
             messages.error(request, "The selected motorcycle could not be found.")
             return redirect(reverse('inventory:used'))
 
-        inventory_settings = request.inventory_settings
         currency = inventory_settings.currency_code
         
         amount_to_pay = temp_booking.amount_paid
@@ -114,13 +103,10 @@ class Step3PaymentView(View):
             'temp_booking': temp_booking,
             'stripe_publishable_key': settings.STRIPE_PUBLISHABLE_KEY,
             'amount_remaining': amount_remaining,
-            'sales_faqs': get_faqs_for_step('step3'), # Add FAQs
-            'faq_title': "Payment Questions",
         }
         return render(request, 'inventory/step3_payment.html', context)
 
     def post(self, request, *args, **kwargs):
-        # ... (post logic remains the same, as it returns JSON)
         try:
             data = json.loads(request.body)
             payment_intent_id = data.get('payment_intent_id')

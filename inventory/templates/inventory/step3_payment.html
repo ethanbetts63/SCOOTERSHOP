@@ -51,7 +51,7 @@
 
     <div class="max-w-3xl mx-auto mt-8">
         {% with title=faq_title %}
-            {% include 'inventory/_sales_FAQ_include.html' %}
+            {% include 'inventory/_sales_faq_include.html' %}
         {% endwith %}
     </div>
 
@@ -136,42 +136,8 @@
             submitButton.textContent = `Pay {{ amount|floatformat:2 }} {{ currency }} Deposit`;
         } else {
             if (paymentIntent.status === 'succeeded') {
-                fetch("{% url 'inventory:step3_payment' %}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({
-                        payment_intent_id: paymentIntent.id
-                    })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        console.error('Server responded with an error:', response.status, response.statusText);
-                        showMessage('Payment processed, but booking finalization failed on server. Please contact support.', true);
-                        submitButton.disabled = false;
-                        submitButton.textContent = `Pay {{ amount|floatformat:2 }} {{ currency }} Deposit`;
-                        throw new Error('Server error during booking finalization');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Server confirmation response:', data);
-                    if (data.status === 'success' && data.redirect_url) {
-                        window.location.href = data.redirect_url;
-                    } else {
-                        showMessage(data.error || 'Unknown server response after payment. Please contact support.', true);
-                        submitButton.disabled = false;
-                        submitButton.textContent = `Pay {{ amount|floatformat:2 }} {{ currency }} Deposit`;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error sending payment intent to server for confirmation:', error);
-                    showMessage('Network error or unexpected issue during booking finalization. Please try again.', true);
-                    submitButton.disabled = false;
-                    submitButton.textContent = `Pay {{ amount|floatformat:2 }} {{ currency }} Deposit`;
-                });
+                const redirectUrl = "{% url 'inventory:step4_confirmation' %}" + "?payment_intent_id=" + paymentIntent.id;
+                window.location.href = redirectUrl;
 
             } else {
                 const errorDisplay = document.getElementById('card-errors');
@@ -179,27 +145,6 @@
                 showMessage('Payment status: ' + paymentIntent.status + '. Please try again or contact support.', true);
                 submitButton.disabled = false;
                 submitButton.textContent = `Pay {{ amount|floatformat:2 }} {{ currency }} Deposit`;
-
-                fetch("{% url 'inventory:step3_payment' %}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({
-                        payment_intent_id: paymentIntent.id
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Server status update response (background):', data);
-                    if (data.redirect_url) {
-                        window.location.href = data.redirect_url;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error sending payment intent to server for status update:', error);
-                });
             }
         }
     });
