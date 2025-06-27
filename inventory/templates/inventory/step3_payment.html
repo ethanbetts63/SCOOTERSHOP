@@ -16,6 +16,7 @@
             <span class="block sm:inline">Your payment has already been successfully processed. Redirecting you to confirmation...</span>
         </div>
         <script>
+            // Redirect immediately if payment already succeeded
             window.location.href = "{% url 'inventory:step4_confirmation' %}?payment_intent_id={{ temp_booking.stripe_payment_intent_id }}";
         </script>
         {% endif %}
@@ -58,9 +59,13 @@
 </div>
 
 <script src="https://js.stripe.com/v3/"></script>
+{# Include the new JavaScript file for availability check #}
+<script src="{% static 'js/motorcycle_availability.js' %}"></script>
 <script>
     const stripePublishableKey = "{{ stripe_publishable_key }}";
     const clientSecret = "{{ client_secret }}";
+    // Pass the temporary booking UUID to the JavaScript
+    const tempBookingUuid = "{{ temp_booking.session_uuid }}";
 
     const stripe = Stripe(stripePublishableKey);
     const elements = stripe.elements();
@@ -95,23 +100,8 @@
         }
     });
 
-    function showMessage(messageText, isError = true) {
-        const messageContainer = document.getElementById('payment-message');
-        if (messageContainer) {
-            const messageSpan = messageContainer.querySelector('span');
-            messageSpan.textContent = messageText;
-            messageContainer.classList.remove('hidden');
-            if (isError) {
-                messageContainer.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
-                messageContainer.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
-            } else {
-                messageContainer.classList.remove('bg-red-100', 'border-red-400', 'text-green-700');
-                messageContainer.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
-            }
-        } else {
-            console.warn("Payment message container not found. Message: ", messageText);
-        }
-    }
+    // showMessage function from motorcycle_availability.js is expected to be available
+    // and is defined in that file, so no need to redefine here unless it's a global override.
 
     const form = document.getElementById('payment-form');
     form.addEventListener('submit', async function(event) {
@@ -122,6 +112,19 @@
         submitButton.textContent = 'Processing...';
         document.getElementById('payment-message').classList.add('hidden');
 
+        // --- Start of new availability check integration ---
+        const isMotorcycleAvailable = await checkMotorcycleAvailability(tempBookingUuid);
+
+        if (!isMotorcycleAvailable) {
+            // Motorcycle is not available, show error and re-enable button
+            showMessage('Sorry, this motorcycle has just been reserved or sold and is no longer available.', true);
+            submitButton.disabled = false;
+            submitButton.textContent = `Pay {{ amount|floatformat:2 }} {{ currency }} Deposit`;
+            return; // Stop the payment process
+        }
+        // --- End of new availability check integration ---
+
+        // If motorcycle is available, proceed with Stripe payment confirmation
         const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
             payment_method: {
                 card: card,

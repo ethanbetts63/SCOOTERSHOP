@@ -46,6 +46,7 @@ from .ajax import (
     ajax_search_sales_profiles,
     ajax_get_sales_profile_details,
     ajax_sales_booking_precheck,
+    ajax_motorcycle_availability_check, # Import the new view
 )
 
 app_name = 'inventory'
@@ -103,4 +104,5 @@ urlpatterns = [
     path('ajax/admin/search-sales-profiles/', ajax_search_sales_profiles.search_sales_profiles_ajax, name='admin_api_search_sales_profiles'),
     path('ajax/admin/get-sales-profile-details/<int:pk>/', ajax_get_sales_profile_details.get_sales_profile_details_ajax, name='admin_api_get_sales_profile_details'),
     path('ajax/admin/sales-booking-precheck/', ajax_sales_booking_precheck.sales_booking_precheck_ajax, name='admin_api_sales_booking_precheck'),
+    path('ajax/check-motorcycle-availability/', ajax_motorcycle_availability_check.check_motorcycle_availability, name='ajax_check_motorcycle_availability'), # New AJAX URL
 ]

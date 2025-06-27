@@ -18,13 +18,7 @@ from payments.webhook_handlers.sales_handlers import handle_sales_booking_succee
 
 @override_settings(ADMIN_EMAIL='ethan.betts.dev@gmail.com')
 class TestEnquiryFlows(TestCase):
-    """
-    Tests for the enquiry-only flow (no deposit required).
-    This simulates users who want to ask a question or book a viewing without a financial commitment.
-    """
-
     def setUp(self):
-        """Set up the basic environment for enquiry tests."""
         self.client = Client()
         self.user = UserFactory()
         self.client.force_login(self.user)
@@ -42,10 +36,6 @@ class TestEnquiryFlows(TestCase):
         )
 
     def test_enquiry_with_appointment_flow(self):
-        """
-        Test a full enquiry flow where the user requests an appointment.
-        This includes going back to update profile details partway through.
-        """
         initiate_url = reverse('inventory:initiate_booking', kwargs={'pk': self.motorcycle.pk})
         response = self.client.post(initiate_url, {'deposit_required_for_flow': 'false'})
         self.assertEqual(response.status_code, 302)
@@ -54,18 +44,15 @@ class TestEnquiryFlows(TestCase):
         step1_url = reverse('inventory:step1_sales_profile')
         step2_url = reverse('inventory:step2_booking_details_and_appointment')
         
-        # --- User fills out profile and proceeds ---
         profile_data = {'name': 'Enquiry User', 'email': 'enquiry@example.com', 'phone_number': '555-0000'}
         response = self.client.post(step1_url, profile_data)
         self.assertRedirects(response, step2_url)
 
-        # --- User goes back to step 1 to change details ---
         self.client.get(step1_url)
         updated_profile_data = {'name': 'Enquiry User Updated', 'email': 'enquiry@example.com', 'phone_number': '555-1111'}
         response = self.client.post(step1_url, updated_profile_data)
         self.assertRedirects(response, step2_url)
 
-        # --- User fills out appointment and finalizes ---
         appointment_data = {
             'request_viewing': 'yes',
             'appointment_date': '2025-10-20',
@@ -80,7 +67,6 @@ class TestEnquiryFlows(TestCase):
         self.assertEqual(SalesBooking.objects.count(), 1)
         
         final_booking = SalesBooking.objects.first()
-        # --- Assert updated data was saved ---
         self.assertEqual(final_booking.sales_profile.name, 'Enquiry User Updated')
         self.assertEqual(final_booking.sales_profile.phone_number, '555-1111')
         self.assertEqual(final_booking.payment_status, 'unpaid')
@@ -93,28 +79,21 @@ class TestEnquiryFlows(TestCase):
 
 
     def test_enquiry_without_appointment_flow(self):
-        """
-        Test a full enquiry flow where the user only sends a message.
-        This includes going back to update profile details partway through.
-        """
         initiate_url = reverse('inventory:initiate_booking', kwargs={'pk': self.motorcycle.pk})
         self.client.post(initiate_url, {'deposit_required_for_flow': 'false'})
 
         step1_url = reverse('inventory:step1_sales_profile')
         step2_url = reverse('inventory:step2_booking_details_and_appointment')
         
-        # --- User fills out profile and proceeds ---
         profile_data = {'name': 'Message User', 'email': 'message@example.com', 'phone_number': '555-1111'}
         response = self.client.post(step1_url, profile_data)
         self.assertRedirects(response, step2_url)
         
-        # --- User goes back to step 1 to change details ---
         self.client.get(step1_url)
         updated_profile_data = {'name': 'Message User Updated', 'email': 'message@example.com', 'phone_number': '555-2222'}
         response = self.client.post(step1_url, updated_profile_data)
         self.assertRedirects(response, step2_url)
 
-        # --- User fills out enquiry and finalizes ---
         enquiry_data = {
             'request_viewing': 'no',
             'terms_accepted': 'on',
@@ -126,7 +105,6 @@ class TestEnquiryFlows(TestCase):
         self.assertEqual(SalesBooking.objects.count(), 1)
         
         final_booking = SalesBooking.objects.first()
-        # --- Assert updated data was saved ---
         self.assertEqual(final_booking.sales_profile.name, 'Message User Updated')
         self.assertEqual(final_booking.sales_profile.phone_number, '555-2222')
         self.assertEqual(final_booking.payment_status, 'unpaid')
@@ -139,13 +117,7 @@ class TestEnquiryFlows(TestCase):
 
 @skipIf(not settings.STRIPE_SECRET_KEY, "Stripe API key not configured in settings")
 class TestDepositFlows(TestCase):
-    """
-    Tests for the deposit flow, which involves Stripe payments.
-    These tests simulate complex user journeys, including changing their mind and restarting.
-    """
-
     def setUp(self):
-        """Set up the environment for deposit tests, including two motorcycles."""
         self.client = Client()
         self.user = UserFactory()
         self.client.force_login(self.user)
@@ -165,10 +137,6 @@ class TestDepositFlows(TestCase):
         stripe.api_key = settings.STRIPE_SECRET_KEY
 
     def test_logged_in_deposit_flow_with_updates(self):
-        """
-        Tests a logged-in user going back and forth to update details
-        on a single bike booking before paying.
-        """
         initiate_url = reverse('inventory:initiate_booking', kwargs={'pk': self.motorcycle.pk})
         self.client.post(initiate_url, {'deposit_required_for_flow': 'true'})
         
@@ -176,21 +144,18 @@ class TestDepositFlows(TestCase):
         step2_url = reverse('inventory:step2_booking_details_and_appointment')
         step3_url = reverse('inventory:step3_payment')
 
-        # --- User fills out profile, goes back to update, then proceeds ---
         profile_data = {'name': 'Thorough Tester', 'email': 'thorough.tester@example.com', 'phone_number': '555-1234'}
         self.client.post(step1_url, profile_data)
-        self.client.get(step1_url) # Go back
+        self.client.get(step1_url)
         updated_profile_data = {'name': 'Thorough Tester Updated', 'email': 'thorough.tester@example.com', 'phone_number': '555-4321'}
-        self.client.post(step1_url, updated_profile_data) # Resubmit with changes
+        self.client.post(step1_url, updated_profile_data)
         
-        # --- User fills out appointment, goes back to update, then proceeds ---
         appointment_data = {'request_viewing': 'yes', 'appointment_date': '2025-09-15', 'appointment_time': '14:00', 'terms_accepted': 'on'}
         self.client.post(step2_url, appointment_data)
-        self.client.get(step2_url) # Go back
+        self.client.get(step2_url)
         updated_appointment_data = {'request_viewing': 'yes', 'appointment_date': '2025-09-20', 'appointment_time': '09:00', 'terms_accepted': 'on'}
-        self.client.post(step2_url, updated_appointment_data) # Resubmit with changes
+        self.client.post(step2_url, updated_appointment_data)
 
-        # --- User completes payment ---
         self.client.get(step3_url)
         payment_obj = Payment.objects.first()
         payment_intent_id = payment_obj.stripe_payment_intent_id
@@ -208,7 +173,6 @@ class TestDepositFlows(TestCase):
         final_booking = SalesBooking.objects.first()
         self.assertEqual(final_booking.payment_status, 'deposit_paid')
         
-        # --- Assert all UPDATED data was saved correctly ---
         self.assertEqual(final_booking.sales_profile.name, 'Thorough Tester Updated')
         self.assertEqual(final_booking.sales_profile.phone_number, '555-4321')
         self.assertEqual(final_booking.appointment_date, datetime.date(2025, 9, 20))
@@ -217,7 +181,6 @@ class TestDepositFlows(TestCase):
         self.motorcycle.refresh_from_db()
         self.assertFalse(self.motorcycle.is_available)
         
-        # --- Assert another user cannot book the same bike ---
         another_user_client = Client()
         another_user = UserFactory(username="another_user")
         another_user_client.force_login(another_user)
@@ -227,18 +190,10 @@ class TestDepositFlows(TestCase):
         self.assertRedirects(response_blocked, details_url, status_code=302, target_status_code=200)
         
     def test_logged_in_user_switches_bike_mid_flow(self):
-        """
-        A comprehensive test where a logged-in user:
-        1. Starts booking bike A and fills out some details.
-        2. Abandons and starts a new booking for bike B.
-        3. Completes the payment for bike B.
-        4. Verifies bike B is reserved and bike A is still available.
-        """
         step1_url = reverse('inventory:step1_sales_profile')
         step2_url = reverse('inventory:step2_booking_details_and_appointment')
         step3_url = reverse('inventory:step3_payment')
 
-        # --- User starts booking the FIRST bike ---
         initiate_url_1 = reverse('inventory:initiate_booking', kwargs={'pk': self.motorcycle.pk})
         self.client.post(initiate_url_1, {'deposit_required_for_flow': 'true'})
         
@@ -248,20 +203,18 @@ class TestDepositFlows(TestCase):
         updated_appointment_data = {'request_viewing': 'yes', 'appointment_date': '2025-09-20', 'appointment_time': '09:00', 'terms_accepted': 'on'}
         self.client.post(step2_url, updated_appointment_data)
         
-        self.client.get(step3_url) # Reaches payment page for FIRST bike, then abandons
+        self.client.get(step3_url)
 
-        # --- User abandons and starts a NEW booking for a DIFFERENT bike ---
         initiate_url_2 = reverse('inventory:initiate_booking', kwargs={'pk': self.another_motorcycle.pk})
         self.client.post(initiate_url_2, {'deposit_required_for_flow': 'true'})
         
         response = self.client.get(step1_url)
-        self.assertContains(response, "Thorough Tester Updated") # Check profile data is pre-filled
+        self.assertContains(response, "Thorough Tester Updated")
         self.client.post(step1_url, updated_profile_data) 
         
         new_appointment_data = {'request_viewing': 'yes', 'appointment_date': '2025-11-01', 'appointment_time': '10:00', 'terms_accepted': 'on'}
         self.client.post(step2_url, new_appointment_data)
         
-        # --- User completes payment for the NEW bike ---
         self.client.get(step3_url)
         temp_booking = TempSalesBooking.objects.get(session_uuid=self.client.session['temp_sales_booking_uuid'])
         payment_obj = Payment.objects.get(temp_sales_booking=temp_booking)
@@ -277,7 +230,6 @@ class TestDepositFlows(TestCase):
         updated_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
         handle_sales_booking_succeeded(payment_obj, updated_intent)
 
-        # --- Assertions ---
         self.assertEqual(SalesBooking.objects.count(), 1)
         final_booking = SalesBooking.objects.get(motorcycle=self.another_motorcycle)
         self.assertEqual(final_booking.payment_status, 'deposit_paid')
@@ -293,11 +245,6 @@ class TestDepositFlows(TestCase):
         self.assertFalse(self.another_motorcycle.is_available, "Second motorcycle should be reserved.")
 
     def test_anonymous_deposit_flow_with_updates(self):
-        """
-        Test an anonymous user who navigates back and forth between steps,
-        updating their information. This ensures session data is correctly
-        re-populated in forms.
-        """
         anon_client = Client()
         initiate_url = reverse('inventory:initiate_booking', kwargs={'pk': self.motorcycle.pk})
         anon_client.post(initiate_url, {'deposit_required_for_flow': 'true'})
@@ -308,33 +255,26 @@ class TestDepositFlows(TestCase):
         step2_url = reverse('inventory:step2_booking_details_and_appointment')
         step3_url = reverse('inventory:step3_payment')
 
-        # --- User fills out profile details ---
         profile_data = {'name': 'Guest User', 'email': 'guest.user@example.com', 'phone_number': '555-5678'}
         anon_client.post(step1_url, profile_data)
         
-        # --- User gets to step 2, then goes back to step 1 ---
         response = anon_client.get(step1_url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'guest.user@example.com', count=2)
 
-        # --- User updates their phone number and re-submits ---
         updated_profile_data = {'name': 'Guest User', 'email': 'guest.user@example.com', 'phone_number': '555-9999'}
         anon_client.post(step1_url, updated_profile_data)
 
-        # --- User fills out appointment details ---
         appointment_data = {'request_viewing': 'yes', 'appointment_date': '2025-09-16', 'appointment_time': '11:00', 'terms_accepted': 'on'}
         anon_client.post(step2_url, appointment_data)
 
-        # --- User gets to step 3, then goes back to step 2 ---
         response = anon_client.get(step2_url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, '2025-09-16', count=1)
 
-        # --- User changes the appointment time and re-submits ---
         updated_appointment_data = {'request_viewing': 'yes', 'appointment_date': '2025-09-16', 'appointment_time': '15:30', 'terms_accepted': 'on'}
         anon_client.post(step2_url, updated_appointment_data)
 
-        # --- Final check of the payment page and payment completion ---
         anon_client.get(step3_url)
         payment_obj = Payment.objects.first()
         payment_intent_id = payment_obj.stripe_payment_intent_id
@@ -353,10 +293,9 @@ class TestDepositFlows(TestCase):
         final_booking = SalesBooking.objects.first()
         self.assertEqual(final_booking.payment_status, 'deposit_paid')
         
-        # --- Assert that the FINAL, updated details were saved ---
         self.assertEqual(final_booking.sales_profile.name, 'Guest User')
-        self.assertEqual(final_booking.sales_profile.phone_number, '555-9999') # Check updated phone
-        self.assertEqual(final_booking.appointment_time, datetime.time(15, 30)) # Check updated time
+        self.assertEqual(final_booking.sales_profile.phone_number, '555-9999')
+        self.assertEqual(final_booking.appointment_time, datetime.time(15, 30))
         self.assertIsNone(final_booking.sales_profile.user)
         
         self.motorcycle.refresh_from_db()
