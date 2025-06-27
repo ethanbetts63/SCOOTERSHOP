@@ -19,41 +19,33 @@ class Step3PaymentView(View):
         temp_booking_uuid = request.session.get('temp_sales_booking_uuid')
 
         if not temp_booking_uuid:
-            print("DEBUG: Redirecting because temp_booking_uuid is not in session.")
             messages.error(request, "Your booking session has expired or is invalid.")
             return redirect('inventory:used')
 
         try:
             temp_booking = get_object_or_404(TempSalesBooking, session_uuid=temp_booking_uuid)
         except Http404:
-            print("DEBUG: Redirecting because TempSalesBooking not found (Http404).")
             messages.error(request, "Your booking session could not be found.")
             return redirect('inventory:used')
         except Exception as e:
-            print(f"DEBUG: Redirecting due to generic exception finding booking: {e}")
             messages.error(request, "An unexpected error occurred while retrieving your booking.")
             return redirect('inventory:used')
 
-
         if not temp_booking.motorcycle:
-            print("DEBUG: Redirecting because temp_booking has no motorcycle.")
             messages.error(request, "Please select a motorcycle first.")
             return redirect('inventory:used')
         
         if not temp_booking.sales_profile:
-            print("DEBUG: Redirecting because temp_booking has no sales_profile.")
             messages.error(request, "Please provide your contact details first.")
             return redirect('inventory:step2_booking_details_and_appointment')
 
         try:
             inventory_settings = InventorySettings.objects.get()
         except InventorySettings.DoesNotExist:
-            print("DEBUG: Redirecting because InventorySettings do not exist.")
             messages.error(request, "Inventory settings are not configured. Please contact support.")
             return redirect('inventory:used')
 
         if not temp_booking.deposit_required_for_flow:
-            print("DEBUG: Redirecting because deposit is not required for this flow.")
             messages.warning(request, "Payment is not required for this type of booking. Redirecting to confirmation.")
             redirect_url = reverse('inventory:step4_confirmation') + f'?payment_intent_id={temp_booking.stripe_payment_intent_id if temp_booking.stripe_payment_intent_id else ""}'
             return redirect(redirect_url)
@@ -61,11 +53,9 @@ class Step3PaymentView(View):
         try:
             motorcycle = Motorcycle.objects.get(pk=temp_booking.motorcycle.pk)
             if not motorcycle.is_available:
-                print("DEBUG: Redirecting because motorcycle is not available.")
                 messages.error(request, "Sorry, this motorcycle has just been reserved or sold and is no longer available.")
                 return redirect(reverse('inventory:used'))
         except Motorcycle.DoesNotExist:
-            print("DEBUG: Redirecting because motorcycle does not exist.")
             messages.error(request, "The selected motorcycle could not be found.")
             return redirect(reverse('inventory:used'))
 
@@ -74,7 +64,6 @@ class Step3PaymentView(View):
         amount_to_pay = temp_booking.amount_paid
 
         if amount_to_pay is None or amount_to_pay <= 0:
-            print("DEBUG: Redirecting because amount_to_pay is invalid.")
             messages.error(request, "The amount to pay is invalid. Please review your booking details.")
             return redirect('inventory:step2_booking_details_and_appointment')
 
@@ -83,7 +72,6 @@ class Step3PaymentView(View):
 
         try:
             intent, payment_obj = create_or_update_sales_payment_intent(
-                # request=request, # This has been removed as requested
                 temp_booking=temp_booking,
                 sales_profile=sales_customer_profile,
                 amount_to_pay=amount_to_pay,
@@ -92,23 +80,19 @@ class Step3PaymentView(View):
             )
 
         except stripe.error.StripeError as e:
-            print(f"DEBUG: Redirecting due to StripeError: {e}")
             messages.error(request, f"Payment system error: {e}. Please try again later.")
             return redirect('inventory:step2_booking_details_and_appointment')
         except Exception as e:
-            print(f"DEBUG: Redirecting due to generic exception during payment intent creation: {e}")
             messages.error(request, f"An unexpected error occurred during payment setup. Please try again.")
             return redirect('inventory:step2_booking_details_and_appointment')
 
         if not intent:
-            print("DEBUG: Redirecting because payment intent creation returned None.")
             messages.error(request, "Could not set up payment. Please try again.")
             return redirect('inventory:step2_booking_details_and_appointment')
 
         amount_remaining = Decimal('0.00')
         if temp_booking.motorcycle and temp_booking.motorcycle.price is not None:
             amount_remaining = temp_booking.motorcycle.price - amount_to_pay
-
 
         context = {
             'client_secret': intent.client_secret,

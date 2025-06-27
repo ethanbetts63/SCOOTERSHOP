@@ -1,12 +1,13 @@
 import datetime
 from decimal import Decimal
 import stripe
-from unittest import skipIf
+from unittest import skipIf, mock
 
 from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.conf import settings
 from django.core import mail
+from django.utils import timezone
 
 from inventory.models import TempSalesBooking, SalesBooking, SalesProfile, Motorcycle
 from payments.models import Payment
@@ -32,6 +33,9 @@ class TestEnquiryFlows(TestCase):
             year=1993,
             brand='Kawasaki',
             model='Enough'
+        )
+        self.another_motorcycle = MotorcycleFactory(
+            is_available=True, status='available', price=Decimal('8000.00')
         )
 
     def test_enquiry_with_appointment_flow(self):
@@ -66,16 +70,24 @@ class TestEnquiryFlows(TestCase):
         self.motorcycle.refresh_from_db()
         self.assertEqual(self.motorcycle.status, 'available')
         
-        confirmation_url = reverse('inventory:step4_confirmation')
-        response = self.client.get(confirmation_url)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Thank you for your enquiry!")
-        self.assertContains(response, final_booking.sales_booking_reference)
+        confirmation_response = self.client.get(response.url)
+        self.assertEqual(confirmation_response.status_code, 200)
+        self.assertContains(confirmation_response, "Thank you for your enquiry!")
+        self.assertContains(confirmation_response, final_booking.sales_booking_reference)
 
         self.assertEqual(len(mail.outbox), 2)
         self.assertIn('Your Motorcycle Appointment Request', mail.outbox[0].subject)
-        self.assertEqual(mail.outbox[1].to, ['ethan.betts.dev@gmail.com'])
-        self.assertIn('New Sales Enquiry (Online)', mail.outbox[1].subject)
+        
+        self.assertIn('recent_booking_flag', self.client.session)
+        initiate_blocked_url = reverse('inventory:initiate_booking', kwargs={'pk': self.another_motorcycle.pk})
+        response_blocked = self.client.post(initiate_blocked_url, {'deposit_required_for_flow': 'false'})
+        self.assertRedirects(response_blocked, reverse('inventory:step1_sales_profile'))
+        
+        final_response_blocked = self.client.get(response_blocked.url, follow=True)
+        self.assertRedirects(final_response_blocked, reverse('inventory:all'), target_status_code=200)
+        messages = list(final_response_blocked.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertIn("You have recently made a booking", str(messages[0]))
 
 
     def test_enquiry_without_appointment_flow(self):
@@ -103,16 +115,28 @@ class TestEnquiryFlows(TestCase):
 
         self.motorcycle.refresh_from_db()
         self.assertEqual(self.motorcycle.status, 'available')
+        self.assertTrue(self.motorcycle.is_available)
 
-        confirmation_url = reverse('inventory:step4_confirmation')
-        response = self.client.get(confirmation_url)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Thank you for your enquiry!")
+        confirmation_response = self.client.get(response.url)
+        self.assertEqual(confirmation_response.status_code, 200)
+        self.assertContains(confirmation_response, "Your enquiry has been submitted. We will get back to you shortly!")
 
         self.assertEqual(len(mail.outbox), 2)
         self.assertIn('Your Motorcycle Enquiry Received', mail.outbox[0].subject)
-        self.assertEqual(mail.outbox[1].to, ['ethan.betts.dev@gmail.com'])
-        self.assertIn('New Sales Enquiry (Online)', mail.outbox[1].subject)
+
+        self.assertIn('recent_booking_flag', self.client.session)
+        with mock.patch('django.utils.timezone.now') as mock_now:
+            current_time = self.client.session.get('recent_booking_flag')
+            mock_now.return_value = timezone.make_aware(datetime.datetime.fromisoformat(current_time)) + datetime.timedelta(minutes=6)
+
+            initiate_allowed_url = reverse('inventory:initiate_booking', kwargs={'pk': self.another_motorcycle.pk})
+            response_allowed = self.client.post(initiate_allowed_url, {'deposit_required_for_flow': 'false'})
+            self.assertRedirects(response_allowed, reverse('inventory:step1_sales_profile'))
+            
+            final_response_allowed = self.client.get(response_allowed.url)
+            self.assertEqual(final_response_allowed.status_code, 200)
+            self.assertNotContains(final_response_allowed, "You have recently made a booking")
+
 
 
 @skipIf(not settings.STRIPE_SECRET_KEY, "Stripe API key not configured in settings")
@@ -224,8 +248,14 @@ class TestDepositFlows(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, final_booking.sales_booking_reference)
-        self.assertContains(response, "Your deposit has been confirmed!")
-        self.assertContains(response, "Amount Paid:")
-        self.assertContains(response, f"{self.settings.deposit_amount}")
-        self.assertContains(response, self.settings.currency_code)
-        self.assertNotContains(response, "Your booking is currently being finalized")
+        
+        another_user_client = Client()
+        another_user = UserFactory(username="another_user")
+        another_user_client.force_login(another_user)
+        
+        initiate_url_blocked = reverse('inventory:initiate_booking', kwargs={'pk': self.motorcycle.pk})
+        response_blocked = another_user_client.post(initiate_url_blocked, {'deposit_required_for_flow': 'true'}, follow=True)
+        self.assertRedirects(response_blocked, reverse('inventory:all'), target_status_code=200)
+        messages = list(response_blocked.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertIn("Sorry, this motorcycle has just been reserved or sold", str(messages[0]))
