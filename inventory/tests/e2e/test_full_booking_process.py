@@ -48,18 +48,15 @@ class TestEnquiryFlows(TestCase):
         step1_url = reverse('inventory:step1_sales_profile')
         step2_url = reverse('inventory:step2_booking_details_and_appointment')
         
-        # --- User fills out profile and proceeds ---
         profile_data = {'name': 'Enquiry User', 'email': 'enquiry@example.com', 'phone_number': '555-0000'}
         response = self.client.post(step1_url, profile_data)
         self.assertRedirects(response, step2_url)
 
-        # --- User goes back to step 1 to change details ---
         self.client.get(step1_url)
         updated_profile_data = {'name': 'Enquiry User Updated', 'email': 'enquiry@example.com', 'phone_number': '555-1111'}
         response = self.client.post(step1_url, updated_profile_data)
         self.assertRedirects(response, step2_url)
 
-        # --- User fills out appointment and finalizes ---
         appointment_data = {
             'request_viewing': 'yes',
             'appointment_date': '2025-10-20',
@@ -74,7 +71,6 @@ class TestEnquiryFlows(TestCase):
         self.assertEqual(SalesBooking.objects.count(), 1)
         
         final_booking = SalesBooking.objects.first()
-        # --- Assert updated data was saved ---
         self.assertEqual(final_booking.sales_profile.name, 'Enquiry User Updated')
         self.assertEqual(final_booking.sales_profile.phone_number, '555-1111')
         self.assertEqual(final_booking.payment_status, 'unpaid')
@@ -93,18 +89,15 @@ class TestEnquiryFlows(TestCase):
         step1_url = reverse('inventory:step1_sales_profile')
         step2_url = reverse('inventory:step2_booking_details_and_appointment')
         
-        # --- User fills out profile and proceeds ---
         profile_data = {'name': 'Message User', 'email': 'message@example.com', 'phone_number': '555-1111'}
         response = self.client.post(step1_url, profile_data)
         self.assertRedirects(response, step2_url)
         
-        # --- User goes back to step 1 to change details ---
         self.client.get(step1_url)
         updated_profile_data = {'name': 'Message User Updated', 'email': 'message@example.com', 'phone_number': '555-2222'}
         response = self.client.post(step1_url, updated_profile_data)
         self.assertRedirects(response, step2_url)
 
-        # --- User fills out enquiry and finalizes ---
         enquiry_data = {
             'request_viewing': 'no',
             'terms_accepted': 'on',
@@ -116,7 +109,6 @@ class TestEnquiryFlows(TestCase):
         self.assertEqual(SalesBooking.objects.count(), 1)
         
         final_booking = SalesBooking.objects.first()
-        # --- Assert updated data was saved ---
         self.assertEqual(final_booking.sales_profile.name, 'Message User Updated')
         self.assertEqual(final_booking.sales_profile.phone_number, '555-2222')
         self.assertEqual(final_booking.payment_status, 'unpaid')
@@ -157,21 +149,18 @@ class TestDepositFlows(TestCase):
         step2_url = reverse('inventory:step2_booking_details_and_appointment')
         step3_url = reverse('inventory:step3_payment')
 
-        # --- User fills out profile, goes back to update, then proceeds ---
         profile_data = {'name': 'Thorough Tester', 'email': 'thorough.tester@example.com', 'phone_number': '555-1234'}
         self.client.post(step1_url, profile_data)
-        self.client.get(step1_url) # Go back
+        self.client.get(step1_url)
         updated_profile_data = {'name': 'Thorough Tester Updated', 'email': 'thorough.tester@example.com', 'phone_number': '555-4321'}
-        self.client.post(step1_url, updated_profile_data) # Resubmit with changes
+        self.client.post(step1_url, updated_profile_data)
         
-        # --- User fills out appointment, goes back to update, then proceeds ---
         appointment_data = {'request_viewing': 'yes', 'appointment_date': '2025-09-15', 'appointment_time': '14:00', 'terms_accepted': 'on'}
         self.client.post(step2_url, appointment_data)
-        self.client.get(step2_url) # Go back
+        self.client.get(step2_url)
         updated_appointment_data = {'request_viewing': 'yes', 'appointment_date': '2025-09-20', 'appointment_time': '09:00', 'terms_accepted': 'on'}
-        self.client.post(step2_url, updated_appointment_data) # Resubmit with changes
+        self.client.post(step2_url, updated_appointment_data)
 
-        # --- User completes payment ---
         self.client.get(step3_url)
         payment_obj = Payment.objects.first()
         payment_intent_id = payment_obj.stripe_payment_intent_id
@@ -189,7 +178,6 @@ class TestDepositFlows(TestCase):
         final_booking = SalesBooking.objects.first()
         self.assertEqual(final_booking.payment_status, 'deposit_paid')
         
-        # --- Assert all UPDATED data was saved correctly ---
         self.assertEqual(final_booking.sales_profile.name, 'Thorough Tester Updated')
         self.assertEqual(final_booking.sales_profile.phone_number, '555-4321')
         self.assertEqual(final_booking.appointment_date, datetime.date(2025, 9, 20))
@@ -207,54 +195,42 @@ class TestDepositFlows(TestCase):
         self.assertRedirects(response_blocked, details_url, status_code=302, target_status_code=200)
 
     def test_anonymous_deposit_with_appointment_flow(self):
-        # Use a new client instance that is not logged in
         anon_client = Client()
-
         initiate_url = reverse('inventory:initiate_booking', kwargs={'pk': self.motorcycle.pk})
-        response = anon_client.post(initiate_url, {'deposit_required_for_flow': 'true'})
-        
-        self.assertEqual(response.status_code, 302)
-        self.assertIn('temp_sales_booking_uuid', anon_client.session)
-        
         step1_url = reverse('inventory:step1_sales_profile')
         step2_url = reverse('inventory:step2_booking_details_and_appointment')
         step3_url = reverse('inventory:step3_payment')
 
-        # --- User fills out profile details ---
+        # --- First attempt (abandoned) ---
+        anon_client.post(initiate_url, {'deposit_required_for_flow': 'true'})
         profile_data = {'name': 'Guest User', 'email': 'guest.user@example.com', 'phone_number': '555-5678'}
-        response = anon_client.post(step1_url, profile_data)
-        self.assertRedirects(response, step2_url)
-        
-        # --- User gets to step 2, then goes back to step 1 ---
-        response = anon_client.get(step1_url)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'guest.user@example.com') # Check form is pre-filled
-
-        # --- User updates their phone number and re-submits ---
-        updated_profile_data = {'name': 'Guest User', 'email': 'guest.user@example.com', 'phone_number': '555-9999'}
-        response = anon_client.post(step1_url, updated_profile_data)
-        self.assertRedirects(response, step2_url)
-
-        # --- User fills out appointment details ---
+        anon_client.post(step1_url, profile_data)
         appointment_data = {'request_viewing': 'yes', 'appointment_date': '2025-09-16', 'appointment_time': '11:00', 'terms_accepted': 'on'}
-        response = anon_client.post(step2_url, appointment_data)
-        self.assertRedirects(response, step3_url)
+        anon_client.post(step2_url, appointment_data)
+        anon_client.get(step3_url) # Reaches payment page
 
-        # --- User gets to step 3, then goes back to step 2 ---
-        response = anon_client.get(step2_url)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, '2025-09-16') # Check form is pre-filled
+        # --- User abandons and restarts the whole process for the same bike ---
+        # The original TempSalesBooking is now orphaned as the session key is replaced.
+        anon_client.post(initiate_url, {'deposit_required_for_flow': 'true'})
+        self.assertEqual(TempSalesBooking.objects.count(), 2) # There are now two temp bookings
 
-        # --- User changes the appointment time and re-submits ---
-        updated_appointment_data = {'request_viewing': 'yes', 'appointment_date': '2025-09-16', 'appointment_time': '15:30', 'terms_accepted': 'on'}
-        response = anon_client.post(step2_url, updated_appointment_data)
-        self.assertRedirects(response, step3_url)
+        # --- User starts the form again with NEW details ---
+        response = anon_client.get(step1_url)
+        self.assertNotContains(response, 'Guest User') # Check that old data is NOT pre-filled
+        
+        new_profile_data = {'name': 'Restarted User', 'email': 'restarted.user@example.com', 'phone_number': '555-0000'}
+        anon_client.post(step1_url, new_profile_data)
+        
+        new_appointment_data = {'request_viewing': 'yes', 'appointment_date': '2025-10-01', 'appointment_time': '16:00', 'terms_accepted': 'on'}
+        anon_client.post(step2_url, new_appointment_data)
 
-        # --- Final check of the payment page and payment completion ---
-        response = anon_client.get(step3_url)
-        self.assertEqual(response.status_code, 200)
-
-        payment_obj = Payment.objects.first()
+        # --- User completes payment on the second attempt ---
+        anon_client.get(step3_url)
+        # Note: We now expect 2 payments to have been created because the payment intent is generated in the GET request of step3
+        self.assertEqual(Payment.objects.count(), 2) 
+        # Get the latest payment object associated with the current session
+        temp_booking = TempSalesBooking.objects.get(session_uuid=anon_client.session['temp_sales_booking_uuid'])
+        payment_obj = Payment.objects.get(temp_sales_booking=temp_booking)
         payment_intent_id = payment_obj.stripe_payment_intent_id
 
         try:
@@ -271,10 +247,10 @@ class TestDepositFlows(TestCase):
         final_booking = SalesBooking.objects.first()
         self.assertEqual(final_booking.payment_status, 'deposit_paid')
         
-        # --- Assert that the FINAL, updated details were saved ---
-        self.assertEqual(final_booking.sales_profile.name, 'Guest User')
-        self.assertEqual(final_booking.sales_profile.phone_number, '555-9999') # Check updated phone
-        self.assertEqual(final_booking.appointment_time, datetime.time(15, 30)) # Check updated time
+        # --- Assert that the FINAL, RESTARTED details were saved ---
+        self.assertEqual(final_booking.sales_profile.name, 'Restarted User')
+        self.assertEqual(final_booking.sales_profile.phone_number, '555-0000')
+        self.assertEqual(final_booking.appointment_date, datetime.date(2025, 10, 1))
         self.assertIsNone(final_booking.sales_profile.user)
         
         self.motorcycle.refresh_from_db()
