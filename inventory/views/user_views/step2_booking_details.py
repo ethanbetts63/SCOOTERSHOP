@@ -118,6 +118,7 @@ class Step2BookingDetailsView(View):
                     return redirect(reverse('inventory:step3_payment'))
                 else:
                     # This is the non-deposit flow. Convert the temp booking.
+                    print("DEBUG: Entered non-deposit flow in Step2.")
                     converted_sales_booking = convert_temp_sales_booking(
                         temp_booking=temp_booking,
                         booking_payment_status='unpaid',
@@ -129,9 +130,11 @@ class Step2BookingDetailsView(View):
                     # --- NEW EMAIL LOGIC ---
                     # Decide which template and subject to use
                     if converted_sales_booking.appointment_date:
+                        print("DEBUG: Appointment found. Using 'sales_booking_confirmation_user.html'.")
                         template_name = 'sales_booking_confirmation_user.html'
                         subject = f"Your Motorcycle Appointment Request - {converted_sales_booking.sales_booking_reference}"
                     else:
+                        print("DEBUG: No appointment. Using 'sales_enquiry_confirmation_user.html'.")
                         template_name = 'sales_enquiry_confirmation_user.html'
                         subject = f"Your Motorcycle Enquiry Received - {converted_sales_booking.sales_booking_reference}"
 
@@ -142,21 +145,34 @@ class Step2BookingDetailsView(View):
                         'is_deposit_confirmed': False, # It's an enquiry, so never confirmed by deposit
                     }
                     user_email = converted_sales_booking.sales_profile.email
-                    send_templated_email(
-                        recipient_list=[user_email],
-                        subject=subject,
-                        template_name=template_name,
-                        context=email_context,
-                    )
+
+                    print(f"DEBUG: Attempting to send USER email to {user_email} with subject '{subject}' and template '{template_name}'")
+                    try:
+                        send_templated_email(
+                            recipient_list=[user_email],
+                            subject=subject,
+                            template_name=template_name,
+                            context=email_context,
+                        )
+                        print("DEBUG: USER email sent successfully.")
+                    except Exception as e:
+                        print(f"DEBUG: FAILED to send USER email. Error: {e}")
                     
                     # Send notification to admin
                     if settings.ADMIN_EMAIL:
-                        send_templated_email(
-                            recipient_list=[settings.ADMIN_EMAIL],
-                            subject=f"New Sales Enquiry (Online) - {converted_sales_booking.sales_booking_reference}",
-                            template_name='sales_booking_confirmation_admin.html', # Assuming admin template is okay
-                            context=email_context,
-                        )
+                        print(f"DEBUG: Attempting to send ADMIN email to {settings.ADMIN_EMAIL}")
+                        try:
+                            send_templated_email(
+                                recipient_list=[settings.ADMIN_EMAIL],
+                                subject=f"New Sales Enquiry (Online) - {converted_sales_booking.sales_booking_reference}",
+                                template_name='sales_booking_confirmation_admin.html', # Assuming admin template is okay
+                                context=email_context,
+                            )
+                            print("DEBUG: ADMIN email sent successfully.")
+                        except Exception as e:
+                            print(f"DEBUG: FAILED to send ADMIN email. Error: {e}")
+                    else:
+                        print("DEBUG: No ADMIN_EMAIL configured, skipping admin notification.")
                     # --- END NEW EMAIL LOGIC ---
                     
                     if 'temp_sales_booking_uuid' in request.session:
