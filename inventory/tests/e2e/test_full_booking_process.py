@@ -193,7 +193,6 @@ class TestDepositFlows(TestCase):
         self.assertIsNotNone(payment_intent_id)
 
         try:
-            # THIS BLOCK IS RESTORED TO ITS ORIGINAL, WORKING STATE
             confirmation_url_path = reverse('inventory:step4_confirmation')
             full_return_url = f"http://testserver{confirmation_url_path}"
             stripe.PaymentIntent.confirm(
@@ -246,3 +245,56 @@ class TestDepositFlows(TestCase):
         messages = list(get_messages(response_blocked.wsgi_request))
         self.assertTrue(len(messages) > 0)
         self.assertIn("is currently reserved or sold", str(messages[0]))
+
+    # --- NEW TEST FOR ANONYMOUS USER ---
+    def test_anonymous_deposit_with_appointment_flow(self):
+        # Use a new client instance that is not logged in
+        anon_client = Client()
+
+        initiate_url = reverse('inventory:initiate_booking', kwargs={'pk': self.motorcycle.pk})
+        response = anon_client.post(initiate_url, {'deposit_required_for_flow': 'true'})
+        
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('temp_sales_booking_uuid', anon_client.session)
+        
+        step1_url = reverse('inventory:step1_sales_profile')
+        profile_data = {'name': 'Guest User', 'email': 'guest.user@example.com', 'phone_number': '555-5678'}
+        response = anon_client.post(step1_url, profile_data)
+        self.assertRedirects(response, reverse('inventory:step2_booking_details_and_appointment'))
+        
+        temp_booking = TempSalesBooking.objects.get(session_uuid=anon_client.session['temp_sales_booking_uuid'])
+        self.assertIsNotNone(temp_booking.sales_profile)
+        self.assertEqual(temp_booking.sales_profile.name, 'Guest User')
+        
+        step2_url = reverse('inventory:step2_booking_details_and_appointment')
+        appointment_data = {'request_viewing': 'yes', 'appointment_date': '2025-09-16', 'appointment_time': '11:00', 'terms_accepted': 'on'}
+        response = anon_client.post(step2_url, appointment_data)
+        self.assertRedirects(response, reverse('inventory:step3_payment'))
+
+        step3_url = reverse('inventory:step3_payment')
+        response = anon_client.get(step3_url)
+        self.assertEqual(response.status_code, 200)
+
+        payment_obj = Payment.objects.first()
+        payment_intent_id = payment_obj.stripe_payment_intent_id
+
+        try:
+            confirmation_url_path = reverse('inventory:step4_confirmation')
+            full_return_url = f"http://testserver{confirmation_url_path}"
+            stripe.PaymentIntent.confirm(payment_intent_id, payment_method="pm_card_visa", return_url=full_return_url)
+        except stripe.error.StripeError as e:
+            self.fail(f"Stripe API call failed during test: {e}")
+
+        updated_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+        handle_sales_booking_succeeded(payment_obj, updated_intent)
+        
+        self.assertEqual(SalesBooking.objects.count(), 1)
+        final_booking = SalesBooking.objects.first()
+        self.assertEqual(final_booking.payment_status, 'deposit_paid')
+        self.assertEqual(final_booking.sales_profile.name, 'Guest User')
+        
+        # Crucial check: Assert the created profile has no associated user
+        self.assertIsNone(final_booking.sales_profile.user)
+        
+        self.motorcycle.refresh_from_db()
+        self.assertFalse(self.motorcycle.is_available)
