@@ -6,13 +6,12 @@ from django.contrib.auth import get_user_model
 from decimal import Decimal
 import datetime
 import uuid
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 import json
 
 # Import models
-from hire.models import HireBooking, TempHireBooking, BookingAddOn
+from hire.models import HireBooking
 from payments.models import Payment
-from dashboard.models import HireSettings
 
 # Import model factories
 from hire.tests.test_helpers.model_factories import (
