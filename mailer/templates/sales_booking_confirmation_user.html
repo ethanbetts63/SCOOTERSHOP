@@ -137,6 +137,7 @@
                                     <td>General Sales Enquiry</td>
                                 </tr>
                                 {% endif %}
+                                {% if booking.amount_paid > 0 %}
                                 <tr>
                                     <th>Amount Paid:</th>
                                     <td>{{ booking.amount_paid|floatformat:2 }} {{ booking.currency }}</td>
@@ -145,6 +146,7 @@
                                     <th>Payment Status:</th>
                                     <td>{{ booking.get_payment_status_display }}</td>
                                 </tr>
+                                {% endif %}
                                 {% if booking.customer_notes %}
                                 <tr>
                                     <th>Your Notes:</th>
@@ -163,7 +165,7 @@
                     </tr>
                     <tr>
                         <td class="footer">
-                            <p>&copy; {{ "now"|date:"Y" }} SCOOTER_SHOP. All rights reserved.</p>
+                            <p>&copy; {% now "Y" %} SCOOTER_SHOP. All rights reserved.</p>
                             <p>This is an automated email, please do not reply.</p>
                         </td>
                     </tr>

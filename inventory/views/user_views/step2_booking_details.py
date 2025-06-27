@@ -5,6 +5,7 @@ from django.views import View
 from django.urls import reverse
 from django.db import transaction
 from django.contrib import messages
+from django.conf import settings
 from decimal import Decimal
 import json
 
@@ -13,6 +14,7 @@ from inventory.forms.sales_booking_appointment_form import BookingAppointmentFor
 from inventory.utils.get_sales_appointment_date_info import get_sales_appointment_date_info
 from inventory.utils.convert_temp_sales_booking import convert_temp_sales_booking
 from inventory.utils.get_sales_faqs import get_faqs_for_step
+from mailer.utils import send_templated_email # Import the email utility
 
 class Step2BookingDetailsView(View):
     template_name = 'inventory/step2_booking_details.html'
@@ -97,7 +99,6 @@ class Step2BookingDetailsView(View):
 
         if form.is_valid():
             with transaction.atomic():
-                # ... (form processing logic remains the same)
                 customer_notes = form.cleaned_data.get('customer_notes')
                 request_viewing = form.cleaned_data.get('request_viewing')
                 appointment_date = form.cleaned_data.get('appointment_date')
@@ -116,6 +117,7 @@ class Step2BookingDetailsView(View):
                     messages.success(request, "Booking details saved. Proceed to payment.")
                     return redirect(reverse('inventory:step3_payment'))
                 else:
+                    # This is the non-deposit flow. Convert the temp booking.
                     converted_sales_booking = convert_temp_sales_booking(
                         temp_booking=temp_booking,
                         booking_payment_status='unpaid',
@@ -123,6 +125,40 @@ class Step2BookingDetailsView(View):
                         stripe_payment_intent_id=None,
                         payment_obj=None,
                     )
+                    
+                    # --- NEW EMAIL LOGIC ---
+                    # Decide which template and subject to use
+                    if converted_sales_booking.appointment_date:
+                        template_name = 'sales_booking_confirmation_user.html'
+                        subject = f"Your Motorcycle Appointment Request - {converted_sales_booking.sales_booking_reference}"
+                    else:
+                        template_name = 'sales_enquiry_confirmation_user.html'
+                        subject = f"Your Motorcycle Enquiry Received - {converted_sales_booking.sales_booking_reference}"
+
+                    # Prepare context and send email to user
+                    email_context = {
+                        'booking': converted_sales_booking,
+                        'sales_profile': converted_sales_booking.sales_profile,
+                        'is_deposit_confirmed': False, # It's an enquiry, so never confirmed by deposit
+                    }
+                    user_email = converted_sales_booking.sales_profile.email
+                    send_templated_email(
+                        recipient_list=[user_email],
+                        subject=subject,
+                        template_name=template_name,
+                        context=email_context,
+                    )
+                    
+                    # Send notification to admin
+                    if settings.ADMIN_EMAIL:
+                        send_templated_email(
+                            recipient_list=[settings.ADMIN_EMAIL],
+                            subject=f"New Sales Enquiry (Online) - {converted_sales_booking.sales_booking_reference}",
+                            template_name='sales_booking_confirmation_admin.html', # Assuming admin template is okay
+                            context=email_context,
+                        )
+                    # --- END NEW EMAIL LOGIC ---
+                    
                     if 'temp_sales_booking_uuid' in request.session:
                         del request.session['temp_sales_booking_uuid']
 
