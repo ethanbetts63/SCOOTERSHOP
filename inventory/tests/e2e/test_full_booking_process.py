@@ -146,7 +146,6 @@ class TestDepositFlows(TestCase):
         response = self.client.post(initiate_url, {'deposit_required_for_flow': 'true'})
         
         self.assertEqual(response.status_code, 302)
-        # ... (rest of the setup is identical to your original file)
         self.assertIn('temp_sales_booking_uuid', self.client.session)
         self.assertEqual(TempSalesBooking.objects.count(), 1)
         temp_booking = TempSalesBooking.objects.first()
@@ -188,43 +187,62 @@ class TestDepositFlows(TestCase):
 
         self.assertEqual(Payment.objects.count(), 1)
         payment_obj = Payment.objects.first()
+        self.assertEqual(payment_obj.amount, self.settings.deposit_amount)
+        self.assertEqual(payment_obj.temp_sales_booking, temp_booking)
         payment_intent_id = payment_obj.stripe_payment_intent_id
-        
-        # This part remains the same...
+        self.assertIsNotNone(payment_intent_id)
+
         try:
-            stripe.PaymentIntent.confirm(payment_intent_id, payment_method="pm_card_visa")
+            # THIS BLOCK IS RESTORED TO ITS ORIGINAL, WORKING STATE
+            confirmation_url_path = reverse('inventory:step4_confirmation')
+            full_return_url = f"http://testserver{confirmation_url_path}"
+            stripe.PaymentIntent.confirm(
+                payment_intent_id,
+                payment_method="pm_card_visa",
+                return_url=full_return_url,
+            )
         except stripe.error.StripeError as e:
             self.fail(f"Stripe API call failed during test: {e}")
 
         updated_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
         handle_sales_booking_succeeded(payment_obj, updated_intent)
 
+        self.assertEqual(TempSalesBooking.objects.count(), 0)
+        self.assertEqual(SalesBooking.objects.count(), 1)
+        
+        final_booking = SalesBooking.objects.first()
+        self.assertEqual(final_booking.payment_status, 'deposit_paid')
+        self.assertEqual(final_booking.amount_paid, self.settings.deposit_amount)
+        self.assertEqual(final_booking.sales_profile.name, 'Thorough Tester')
+        self.assertEqual(final_booking.appointment_date, datetime.date(2025, 9, 15))
+
         self.motorcycle.refresh_from_db()
         self.assertEqual(self.motorcycle.status, 'reserved')
         self.assertFalse(self.motorcycle.is_available)
         
-        # ... up to here.
+        payment_obj.refresh_from_db()
+        self.assertEqual(payment_obj.status, 'succeeded')
+        self.assertEqual(payment_obj.sales_booking, final_booking)
+
+        confirmation_url = reverse('inventory:step4_confirmation') + f'?payment_intent_id={payment_intent_id}'
+        response = self.client.get(confirmation_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, final_booking.sales_booking_reference)
         
-        # MINIMAL CHANGE: The following block is adjusted to test the *correct* logic.
-        # The original test expected a 404, which was incorrect.
         another_user_client = Client()
         another_user = UserFactory(username="another_user")
         another_user_client.force_login(another_user)
         
-        # Step 1: Assert that the details page IS accessible (returns 200 OK).
         details_url = reverse('inventory:motorcycle-detail', kwargs={'pk': self.motorcycle.pk})
         response_details = another_user_client.get(details_url)
         self.assertEqual(response_details.status_code, 200)
 
-        # Step 2: Assert that ATTEMPTING to book the reserved bike is blocked.
         initiate_blocked_url = reverse('inventory:initiate_booking', kwargs={'pk': self.motorcycle.pk})
-        # We use follow=True to check the final destination and messages after the redirect.
         response_blocked = another_user_client.post(initiate_blocked_url, follow=True)
         
-        # Check that the user was redirected back to the details page.
         self.assertRedirects(response_blocked, details_url, status_code=302, target_status_code=200)
 
-        # Check that the correct warning message was displayed.
         messages = list(get_messages(response_blocked.wsgi_request))
         self.assertTrue(len(messages) > 0)
         self.assertIn("is currently reserved or sold", str(messages[0]))
