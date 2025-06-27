@@ -6,6 +6,8 @@ from django.contrib import messages
 from django.conf import settings
 from decimal import Decimal
 import json
+from inventory.utils.booking_protection import set_recent_booking_flag
+
 
 from inventory.models import TempSalesBooking, InventorySettings
 from inventory.forms.sales_booking_appointment_form import BookingAppointmentForm
@@ -159,7 +161,7 @@ class Step2BookingDetailsView(View):
                         del request.session['temp_sales_booking_uuid']
 
                     request.session['current_sales_booking_reference'] = converted_sales_booking.sales_booking_reference
-
+                    set_recent_booking_flag(request)
                     messages.success(request, "Your enquiry has been submitted. We will get back to you shortly!")
                     return redirect(reverse('inventory:step4_confirmation'))
         else:

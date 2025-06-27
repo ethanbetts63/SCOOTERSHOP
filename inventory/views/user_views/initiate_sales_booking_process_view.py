@@ -10,6 +10,10 @@ class InitiateBookingProcessView(View):
     def post(self, request, pk):
         motorcycle = get_object_or_404(Motorcycle, pk=pk)
 
+        if not motorcycle.is_available:
+            messages.warning(request, f"The {motorcycle.title} is currently reserved or sold and cannot be booked at this time.")
+            return redirect(reverse('inventory:motorcycle-detail', kwargs={'pk': motorcycle.pk}))
+
         deposit_required_for_flow_str = request.POST.get('deposit_required_for_flow', 'false')
         deposit_required_for_flow = (deposit_required_for_flow_str.lower() == 'true')
 
