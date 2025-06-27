@@ -218,3 +218,73 @@ class MotorcycleFormTest(TestCase):
         self.assertEqual(motorcycle.vin_number, 'VINTEST123')
         self.assertEqual(motorcycle.engine_number, 'ENG456')
         self.assertEqual(motorcycle.quantity, 1)
+
+    # --- NEW TESTS START HERE ---
+
+    def test_form_saves_is_available_correctly(self):
+        """Tests that the 'is_available' field is correctly saved."""
+        # Test case for when is_available is True
+        data_available = {
+            'status': 'for_sale',
+            'brand': 'Test', 'model': 'Available', 'year': 2022,
+            'engine_size': 500, 'odometer': 100, 'transmission': 'manual',
+            'stock_number': 'AV-001', 'conditions': [self.condition_used.pk],
+            'is_available': True,
+        }
+        form_available = MotorcycleForm(data=data_available)
+        self.assertTrue(form_available.is_valid(), form_available.errors.as_json())
+        instance_available = form_available.save()
+        self.assertTrue(instance_available.is_available, "Motorcycle should be saved as available.")
+        self.assertEqual(instance_available.status, 'for_sale')
+
+
+        # Test case for when is_available is False.
+        # This will likely fail with the current code because the form field is required.
+        # In a real POST request, an unchecked checkbox for 'is_available'
+        # would mean the key is not in the POST data. Django handles this by setting
+        # the field to False, but only if the field is not required.
+        data_unavailable = {
+            'status': 'unavailable',
+            'brand': 'Test', 'model': 'Unavailable', 'year': 2022,
+            'engine_size': 500, 'odometer': 100, 'transmission': 'manual',
+            'stock_number': 'UN-001', 'conditions': [self.condition_used.pk],
+        } # 'is_available' key is omitted, simulating an unchecked checkbox.
+
+        form_unavailable = MotorcycleForm(data=data_unavailable)
+
+        # This assertion is expected to fail with the current implementation,
+        # revealing that the form is invalid because 'is_available' is a required field.
+        self.assertTrue(form_unavailable.is_valid(),
+                        f"Form should be valid when 'is_available' is unchecked. Errors: {form_unavailable.errors.as_json()}")
+        
+        instance_unavailable = form_unavailable.save()
+        self.assertFalse(instance_unavailable.is_available, "Motorcycle should be saved as not available.")
+        self.assertEqual(instance_unavailable.status, 'unavailable')
+
+
+    def test_form_saves_status_correctly(self):
+        """Tests that the 'status' field is correctly saved."""
+        base_data = {
+            'brand': 'Test', 'model': 'Status', 'year': 2022,
+            'engine_size': 500, 'odometer': 100, 'transmission': 'manual',
+            'stock_number': 'ST-001', 'conditions': [self.condition_used.pk],
+            'is_available': True,
+        }
+
+        # Test 'sold' status
+        sold_data = base_data.copy()
+        sold_data['status'] = 'sold'
+        sold_data['stock_number'] = 'ST-002' # Unique stock number is required
+        form_sold = MotorcycleForm(data=sold_data)
+        self.assertTrue(form_sold.is_valid(), form_sold.errors.as_json())
+        instance_sold = form_sold.save()
+        self.assertEqual(instance_sold.status, 'sold')
+
+        # Test 'reserved' status
+        reserved_data = base_data.copy()
+        reserved_data['status'] = 'reserved'
+        reserved_data['stock_number'] = 'ST-003' # Unique stock number
+        form_reserved = MotorcycleForm(data=reserved_data)
+        self.assertTrue(form_reserved.is_valid(), form_reserved.errors.as_json())
+        instance_reserved = form_reserved.save()
+        self.assertEqual(instance_reserved.status, 'reserved')
