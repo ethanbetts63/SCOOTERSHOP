@@ -1,5 +1,4 @@
 import datetime
-import time
 from decimal import Decimal
 import stripe
 from unittest import skipIf
@@ -15,20 +14,13 @@ from ..test_helpers.model_factories import (
     InventorySettingsFactory,
     MotorcycleFactory,
     UserFactory,
-    SalesProfileFactory,
 )
 from payments.webhook_handlers.sales_handlers import handle_sales_booking_succeeded
 
-# Decorator to set ADMIN_EMAIL specifically for this class of tests.
-# This ensures the admin notification logic runs.
 @override_settings(ADMIN_EMAIL='ethan.betts.dev@gmail.com')
-class TestNonDepositFlows(TestCase):
-    """
-    Tests for the sales booking process that do not involve payment
-    and therefore do not require the Stripe API.
-    """
+class TestEnquiryFlows(TestCase):
+
     def setUp(self):
-        """Set up the necessary objects for the test suite."""
         self.client = Client()
         self.user = UserFactory()
         self.client.force_login(self.user)
@@ -42,23 +34,17 @@ class TestNonDepositFlows(TestCase):
             model='Enough'
         )
 
-    def test_no_deposit_flow_with_appointment(self):
-        """
-        Tests the user flow for an enquiry with an appointment but no deposit.
-        """
-        # --- Step 0: Initiate Booking as a non-deposit enquiry ---
+    def test_enquiry_with_appointment_flow(self):
         initiate_url = reverse('inventory:initiate_booking', kwargs={'pk': self.motorcycle.pk})
         response = self.client.post(initiate_url, {'deposit_required_for_flow': 'false'})
         self.assertEqual(response.status_code, 302)
         self.assertIn('temp_sales_booking_uuid', self.client.session)
 
-        # --- Step 1: Submit Profile ---
         step1_url = reverse('inventory:step1_sales_profile')
         profile_data = {'name': 'Enquiry User', 'email': 'enquiry@example.com', 'phone_number': '555-0000'}
         response = self.client.post(step1_url, profile_data)
         self.assertRedirects(response, reverse('inventory:step2_booking_details_and_appointment'))
 
-        # --- Step 2: Submit Appointment Details (no payment) ---
         step2_url = reverse('inventory:step2_booking_details_and_appointment')
         appointment_data = {
             'request_viewing': 'yes',
@@ -69,7 +55,6 @@ class TestNonDepositFlows(TestCase):
         }
         response = self.client.post(step2_url, appointment_data)
 
-        # --- Assert Final State ---
         self.assertRedirects(response, reverse('inventory:step4_confirmation'))
         self.assertEqual(TempSalesBooking.objects.count(), 0)
         self.assertEqual(SalesBooking.objects.count(), 1)
@@ -81,36 +66,26 @@ class TestNonDepositFlows(TestCase):
         self.motorcycle.refresh_from_db()
         self.assertEqual(self.motorcycle.status, 'available')
         
-        # --- Step 4: Check Confirmation Page ---
         confirmation_url = reverse('inventory:step4_confirmation')
         response = self.client.get(confirmation_url)
         self.assertEqual(response.status_code, 200)
-        # CORRECTED: Assert against the actual text in the template
         self.assertContains(response, "Thank you for your enquiry!")
         self.assertContains(response, final_booking.sales_booking_reference)
 
-        # Check that emails were sent (1 for user, 1 for admin)
         self.assertEqual(len(mail.outbox), 2)
         self.assertIn('Your Motorcycle Appointment Request', mail.outbox[0].subject)
-        # Check that the admin email was sent to the correct, overridden address
         self.assertEqual(mail.outbox[1].to, ['ethan.betts.dev@gmail.com'])
         self.assertIn('New Sales Enquiry (Online)', mail.outbox[1].subject)
 
 
-    def test_no_deposit_flow_as_pure_enquiry(self):
-        """
-        Tests the user flow for a simple message enquiry with no appointment.
-        """
-        # --- Step 0: Initiate Booking as a non-deposit enquiry ---
+    def test_enquiry_without_appointment_flow(self):
         initiate_url = reverse('inventory:initiate_booking', kwargs={'pk': self.motorcycle.pk})
         self.client.post(initiate_url, {'deposit_required_for_flow': 'false'})
 
-        # --- Step 1: Submit Profile ---
         step1_url = reverse('inventory:step1_sales_profile')
         profile_data = {'name': 'Message User', 'email': 'message@example.com', 'phone_number': '555-1111'}
         self.client.post(step1_url, profile_data)
 
-        # --- Step 2: Submit Message only (no appointment) ---
         step2_url = reverse('inventory:step2_booking_details_and_appointment')
         enquiry_data = {
             'request_viewing': 'no',
@@ -119,7 +94,6 @@ class TestNonDepositFlows(TestCase):
         }
         response = self.client.post(step2_url, enquiry_data)
 
-        # --- Assert Final State ---
         self.assertRedirects(response, reverse('inventory:step4_confirmation'))
         self.assertEqual(SalesBooking.objects.count(), 1)
         
@@ -130,41 +104,21 @@ class TestNonDepositFlows(TestCase):
         self.motorcycle.refresh_from_db()
         self.assertEqual(self.motorcycle.status, 'available')
 
-        # --- Step 4: Check Confirmation Page ---
         confirmation_url = reverse('inventory:step4_confirmation')
         response = self.client.get(confirmation_url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Thank you for your enquiry!")
 
-        # DEBUG: Print email details if the count is wrong
-        if len(mail.outbox) != 2:
-            print(f"DEBUG: Expected 2 emails, but found {len(mail.outbox)}.")
-            for i, email in enumerate(mail.outbox):
-                print(f"--- Email {i+1} ---")
-                print(f"Subject: {email.subject}")
-                print(f"To: {email.to}")
-                print(f"From: {email.from_email}")
-                print("--- Body ---")
-                print(email.body)
-                print("--------------")
-
-        # Check that emails were sent (1 for user, 1 for admin)
         self.assertEqual(len(mail.outbox), 2)
         self.assertIn('Your Motorcycle Enquiry Received', mail.outbox[0].subject)
         self.assertEqual(mail.outbox[1].to, ['ethan.betts.dev@gmail.com'])
         self.assertIn('New Sales Enquiry (Online)', mail.outbox[1].subject)
 
 
-# This decorator will skip the test if a Stripe secret key is not configured
 @skipIf(not settings.STRIPE_SECRET_KEY, "Stripe API key not configured in settings")
-class TestSalesBookingE2EWithRealAPI(TestCase):
-    """
-    End-to-end tests for the multi-step sales booking process using the
-    real Stripe test API to ensure integration is working.
-    """
+class TestDepositFlows(TestCase):
 
     def setUp(self):
-        """Set up the necessary objects for the test suite."""
         self.client = Client()
         self.user = UserFactory()
         self.client.force_login(self.user)
@@ -181,82 +135,12 @@ class TestSalesBookingE2EWithRealAPI(TestCase):
             brand='Kawasaki',
             model='Star'
         )
-        # Set the Stripe API key for this test
         stripe.api_key = settings.STRIPE_SECRET_KEY
 
-    def test_full_booking_flow_with_real_stripe_payment(self):
-        """
-        Tests the entire user flow making a real payment confirmation call
-        to the Stripe test API.
-        """
-        # --- Step 0 & 1: Initiate Booking and Profile ---
-        initiate_url = reverse('inventory:initiate_booking', kwargs={'pk': self.motorcycle.pk})
-        self.client.post(initiate_url, {'deposit_required_for_flow': 'true'})
-        
-        step1_url = reverse('inventory:step1_sales_profile')
-        profile_data = {'name': 'Test User', 'email': 'test@example.com', 'phone_number': '123'}
-        self.client.post(step1_url, profile_data)
-        
-        # --- Step 2: Submit Appointment Details ---
-        step2_url = reverse('inventory:step2_booking_details_and_appointment')
-        appointment_data = {'request_viewing': 'yes', 'appointment_date': '2025-08-01', 'appointment_time': '11:00', 'terms_accepted': 'on'}
-        response = self.client.post(step2_url, appointment_data)
-        self.assertRedirects(response, reverse('inventory:step3_payment'))
-
-        # --- Step 3: Load Payment Page & Make Real API Call ---
-        step3_url = reverse('inventory:step3_payment')
-        response = self.client.get(step3_url)
-        self.assertEqual(response.status_code, 200)
-
-        self.assertEqual(Payment.objects.count(), 1)
-        payment_obj = Payment.objects.first()
-        payment_intent_id = payment_obj.stripe_payment_intent_id
-        self.assertIsNotNone(payment_intent_id)
-
-        # ** MAKE REAL STRIPE API CALL **
-        try:
-            confirmation_url_path = reverse('inventory:step4_confirmation')
-            full_return_url = f"http://testserver{confirmation_url_path}"
-            stripe.PaymentIntent.confirm(
-                payment_intent_id,
-                payment_method="pm_card_visa",
-                return_url=full_return_url,
-            )
-        except stripe.error.StripeError as e:
-            self.fail(f"Stripe API call failed during test: {e}")
-
-        # ** SIMULATE THE WEBHOOK ARRIVING **
-        updated_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
-        handle_sales_booking_succeeded(payment_obj, updated_intent)
-
-        # --- Assert Final State ---
-        self.assertEqual(TempSalesBooking.objects.count(), 0)
-        self.assertEqual(SalesBooking.objects.count(), 1)
-        
-        final_booking = SalesBooking.objects.first()
-        self.assertEqual(final_booking.payment_status, 'deposit_paid')
-        self.motorcycle.refresh_from_db()
-        self.assertEqual(self.motorcycle.status, 'reserved')
-
-        # --- Step 4: User is Redirected to Confirmation ---
-        confirmation_url = reverse('inventory:step4_confirmation') + f'?payment_intent_id={payment_intent_id}'
-        response = self.client.get(confirmation_url)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, final_booking.sales_booking_reference)
-        self.assertNotContains(response, "Your booking is currently being finalized")
-
-    def test_full_booking_flow_with_thorough_checks(self):
-        """
-        Tests the entire user flow with detailed checks at each step, including
-        database state and session data, and makes a real payment confirmation
-        call to the Stripe test API.
-        """
-        # --- Step 0: Initiate Booking ---
+    def test_deposit_with_appointment_flow(self):
         initiate_url = reverse('inventory:initiate_booking', kwargs={'pk': self.motorcycle.pk})
         response = self.client.post(initiate_url, {'deposit_required_for_flow': 'true'})
         
-        # Assertions for Step 0
         self.assertEqual(response.status_code, 302)
         self.assertIn('temp_sales_booking_uuid', self.client.session)
         self.assertEqual(TempSalesBooking.objects.count(), 1)
@@ -264,7 +148,6 @@ class TestSalesBookingE2EWithRealAPI(TestCase):
         self.assertEqual(temp_booking.motorcycle, self.motorcycle)
         self.assertTrue(temp_booking.deposit_required_for_flow)
 
-        # --- Step 1: Submit Profile ---
         step1_url = reverse('inventory:step1_sales_profile')
         profile_data = {
             'name': 'Thorough Tester',
@@ -273,14 +156,12 @@ class TestSalesBookingE2EWithRealAPI(TestCase):
         }
         response = self.client.post(step1_url, profile_data)
 
-        # Assertions for Step 1
         self.assertRedirects(response, reverse('inventory:step2_booking_details_and_appointment'))
         temp_booking.refresh_from_db()
         self.assertIsNotNone(temp_booking.sales_profile)
         self.assertEqual(temp_booking.sales_profile.name, 'Thorough Tester')
         self.assertEqual(SalesProfile.objects.count(), 1)
         
-        # --- Step 2: Submit Appointment Details ---
         step2_url = reverse('inventory:step2_booking_details_and_appointment')
         appointment_data = {
             'request_viewing': 'yes',
@@ -290,14 +171,12 @@ class TestSalesBookingE2EWithRealAPI(TestCase):
         }
         response = self.client.post(step2_url, appointment_data)
 
-        # Assertions for Step 2
         self.assertRedirects(response, reverse('inventory:step3_payment'))
         temp_booking.refresh_from_db()
         self.assertEqual(temp_booking.appointment_date, datetime.date(2025, 9, 15))
         self.assertEqual(temp_booking.appointment_time, datetime.time(14, 0))
         self.assertTrue(temp_booking.terms_accepted)
 
-        # --- Step 3: Load Payment Page & Make Real API Call ---
         step3_url = reverse('inventory:step3_payment')
         response = self.client.get(step3_url)
         self.assertEqual(response.status_code, 200)
@@ -309,7 +188,6 @@ class TestSalesBookingE2EWithRealAPI(TestCase):
         payment_intent_id = payment_obj.stripe_payment_intent_id
         self.assertIsNotNone(payment_intent_id)
 
-        # ** MAKE REAL STRIPE API CALL **
         try:
             confirmation_url_path = reverse('inventory:step4_confirmation')
             full_return_url = f"http://testserver{confirmation_url_path}"
@@ -321,11 +199,9 @@ class TestSalesBookingE2EWithRealAPI(TestCase):
         except stripe.error.StripeError as e:
             self.fail(f"Stripe API call failed during test: {e}")
 
-        # ** SIMULATE THE WEBHOOK ARRIVING **
         updated_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
         handle_sales_booking_succeeded(payment_obj, updated_intent)
 
-        # --- Assert Final State ---
         self.assertEqual(TempSalesBooking.objects.count(), 0)
         self.assertEqual(SalesBooking.objects.count(), 1)
         
@@ -343,11 +219,9 @@ class TestSalesBookingE2EWithRealAPI(TestCase):
         self.assertEqual(payment_obj.status, 'succeeded')
         self.assertEqual(payment_obj.sales_booking, final_booking)
 
-        # --- Step 4: User is Redirected to Confirmation ---
         confirmation_url = reverse('inventory:step4_confirmation') + f'?payment_intent_id={payment_intent_id}'
         response = self.client.get(confirmation_url)
 
-        # Assertions for confirmation page
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, final_booking.sales_booking_reference)
         self.assertContains(response, "Your deposit has been confirmed!")
