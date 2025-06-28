@@ -12,17 +12,21 @@
                 <h1 class="text-4xl lg:text-5xl font-extrabold text-gray-800 tracking-tight mb-2">{{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }}</h1>
                 <p class="text-xl text-gray-600">{{ motorcycle.title }}</p>
                 <div class="mt-4">
-                    {% if motorcycle.condition == 'new' and motorcycle.quantity <= 0 %}
-                        <span class="inline-flex items-center rounded-full bg-red-700 px-4 py-2 text-lg font-bold text-white">
-                            Out of Stock
-                        </span>
-                    {% elif motorcycle.status == 'sold' %}
+                    {% if motorcycle.status == 'sold' %}
                         <span class="inline-flex items-center rounded-full bg-gray-600 px-4 py-2 text-lg font-bold text-white">
                             Sold
                         </span>
                     {% elif motorcycle.status == 'reserved' %}
                         <span class="inline-flex items-center rounded-full bg-red-500 px-4 py-2 text-lg font-bold text-white">
                             Reserved
+                        </span>
+                    {% elif not motorcycle.is_available %}
+                        <span class="inline-flex items-center rounded-full bg-yellow-500 px-4 py-2 text-lg font-bold text-white">
+                            Unavailable
+                        </span>
+                    {% elif motorcycle.condition == 'new' and motorcycle.quantity <= 0 %}
+                        <span class="inline-flex items-center rounded-full bg-red-700 px-4 py-2 text-lg font-bold text-white">
+                            Out of Stock
                         </span>
                     {% else %}
                         <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">
@@ -119,22 +123,8 @@
             </div>
 
             <div class="mt-10 pt-6 border-t border-gray-200 flex flex-col sm:flex-row justify-center items-center gap-4">
-                {% if motorcycle.condition == 'new' and motorcycle.quantity <= 0 %}
-                    <div class="text-center">
-                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Out of Stock</h3>
-                        <p class="text-gray-600">This motorcycle is not currently available. Please check back later or browse other models.</p>
-                    </div>
-                {% elif motorcycle.status == 'sold' %}
-                     <div class="text-center">
-                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Sold</h3>
-                        <p class="text-gray-600">This motorcycle has been sold and is no longer available.</p>
-                    </div>
-                {% elif motorcycle.status == 'reserved' %}
-                     <div class="text-center">
-                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Reserved</h3>
-                        <p class="text-gray-600">This motorcycle is currently reserved. Enquiries are not being taken at this time.</p>
-                    </div>
-                {% else %}
+                {# --- LOGIC CHANGE START --- #}
+                {% if motorcycle.is_available %}
                     {# Reserve Now Button - Visible if enable_reservation_by_deposit is True #}
                     {% if inventory_settings.enable_reservation_by_deposit %}
                         <form action="{% url 'inventory:initiate_booking' pk=motorcycle.pk %}" method="post" class="w-full sm:w-auto">
@@ -174,7 +164,25 @@
                             {% endif %}
                         </form>
                     {% endif %}
+                {% else %}
+                    {# Show the reason the motorcycle is unavailable #}
+                    <div class="text-center">
+                        {% if motorcycle.status == 'sold' %}
+                            <h3 class="text-2xl font-bold text-gray-800 mb-2">Sold</h3>
+                            <p class="text-gray-600">This motorcycle has been sold and is no longer available.</p>
+                        {% elif motorcycle.status == 'reserved' %}
+                            <h3 class="text-2xl font-bold text-gray-800 mb-2">Reserved</h3>
+                            <p class="text-gray-600">This motorcycle is currently reserved. Enquiries are not being taken at this time.</p>
+                        {% elif motorcycle.condition == 'new' and motorcycle.quantity <= 0 %}
+                            <h3 class="text-2xl font-bold text-gray-800 mb-2">Out of Stock</h3>
+                            <p class="text-gray-600">This motorcycle is not currently available. Please check back later or browse other models.</p>
+                        {% else %}
+                            <h3 class="text-2xl font-bold text-gray-800 mb-2">Unavailable</h3>
+                            <p class="text-gray-600">This motorcycle is not available for booking or enquiry at this time.</p>
+                        {% endif %}
+                    </div>
                 {% endif %}
+                {# --- LOGIC CHANGE END --- #}
             </div>
 
         </div>
