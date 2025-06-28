@@ -9,7 +9,7 @@ class ServiceFAQManagementView(AdminRequiredMixin, ListView):
     View for admin to manage (list) Service FAQs.
     """
     model = ServiceFAQ
-    template_name = 'service/admin_service_faq_management.html'
+    template_name = 'service/admin_service_FAQ_management.html'
     context_object_name = 'service_faqs'
     paginate_by = 15
 
