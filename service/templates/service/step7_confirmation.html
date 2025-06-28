@@ -91,7 +91,8 @@
                     bookingDetailsContainer.innerHTML = `
                         <div class="text-center mb-6">
                             <p class="text-lg text-gray-700">Your motorcycle service booking has been successfully confirmed.</p>
-                            <p class="text-xl font-semibold text-gray-800 mt-2">Booking Reference: <span class="text-indigo-600">${booking.service_booking_reference}</span></p>
+                            <!-- *** THE FIX: Changed booking.service_booking_reference to booking.booking_reference *** -->
+                            <p class="text-xl font-semibold text-gray-800 mt-2">Booking Reference: <span class="text-indigo-600">${booking.booking_reference}</span></p>
                         </div>
 
                         <div class="border-t border-b border-gray-200 py-4 mb-6">

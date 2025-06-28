@@ -71,6 +71,7 @@
 
 {% block extra_js %}
 <script>
+// Ensure this script only runs if the payment hasn't already succeeded on the server side
 if (!document.getElementById('payment-success-message')) {
     const stripePublishableKey = "{{ stripe_publishable_key }}";
     const clientSecret = "{{ client_secret }}";
@@ -81,6 +82,7 @@ if (!document.getElementById('payment-success-message')) {
     const card = elements.create('card');
     card.mount('#card-element');
 
+    // Listen for changes in the card element and display errors
     card.on('change', function(event) {
         const displayError = document.getElementById('card-errors');
         displayError.textContent = event.error ? event.error.message : '';
@@ -103,40 +105,36 @@ if (!document.getElementById('payment-success-message')) {
         submitButton.textContent = 'Processing...';
         messageContainer.style.display = 'none';
 
+        // Confirm the payment with Stripe
         const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
             payment_method: { card: card }
         });
 
         if (error) {
+            // If there's an error with the card payment itself
             showMessage(error.message);
             submitButton.disabled = false;
             submitButton.textContent = `Pay {{ amount }} {{ currency }}`;
         } else {
+            // If the card payment is successful on the client side
             if (paymentIntent.status === 'succeeded') {
-                fetch("{% url 'service:service_book_step6' %}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({ payment_intent_id: paymentIntent.id })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success' && data.redirect_url) {
-                        window.location.href = data.redirect_url;
-                    } else {
-                        showMessage(data.error || 'Payment succeeded, but there was an issue finalizing your booking. Please contact support.');
-                        submitButton.disabled = false;
-                        submitButton.textContent = `Pay {{ amount }} {{ currency }}`;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error during booking finalization:', error);
-                    showMessage('A network error occurred after payment. Please contact support.');
-                    submitButton.disabled = false;
-                    submitButton.textContent = `Pay {{ amount }} {{ currency }}`;
-                });
+                // *** THE FIX: REMOVED THE FETCH POST CALL ***
+                // Instead of telling our server about the success (which causes a race condition),
+                // we immediately redirect the user to the confirmation page.
+                // This page is already set up to poll for the booking status, which will
+                // be updated by the Stripe webhook in the background.
+
+                // Construct the URL for the confirmation page with the payment intent ID
+                const confirmationUrl = `{% url 'service:service_book_step7' %}?payment_intent_id=${paymentIntent.id}`;
+                
+                // Redirect the browser to start the polling process
+                window.location.href = confirmationUrl;
+
+            } else {
+                // Handle other payment intent statuses if necessary
+                showMessage('Payment not successful. Status: ' + paymentIntent.status);
+                submitButton.disabled = false;
+                submitButton.textContent = `Pay {{ amount }} {{ currency }}`;
             }
         }
     });
