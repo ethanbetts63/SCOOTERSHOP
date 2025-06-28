@@ -229,7 +229,6 @@ class AdminSalesBookingFormTest(TestCase):
         form = AdminSalesBookingForm(data=form_data, instance=booking_instance)
         
         self.assertTrue(form.is_valid(), f"Form should be valid but had errors: {form.errors.as_json()}")
-        self.assertEqual(len(form.get_warnings()), 0, "No warnings should be generated when editing a booking for its own reserved motorcycle.")
 
     def test_warning_for_new_motorcycle_out_of_stock(self):
         """

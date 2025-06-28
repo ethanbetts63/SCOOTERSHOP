@@ -1,0 +1,71 @@
+{% comment %}
+    Reusable template for displaying a list of FAQs in an accordion.
+
+    Expects a context variable:
+    - `service_faqs`: A queryset or list of ServiceFAQ objects.
+    - `title`: An optional title for the FAQ section.
+{% endcomment %}
+
+{% if service_faqs %}
+<div class="faq-accordion bg-gray-50 border border-gray-200 rounded-lg p-4 my-6">
+    <h4 class="text-lg font-bold text-gray-800 mb-3">{{ title|default:"Frequently Asked Questions" }}</h4>
+    
+    <div class="space-y-3">
+        {% for faq in service_faqs %}
+        <div class="border-b border-gray-200 last:border-b-0 pb-3">
+            <h2>
+                <button type="button" 
+                        class="faq-trigger flex items-center justify-between w-full text-left font-semibold text-gray-700 hover:text-indigo-600 focus:outline-none">
+                    <span>{{ faq.question }}</span>
+                    <svg class="w-5 h-5 transform transition-transform duration-200 faq-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+            </h2>
+            <div class="faq-panel hidden pt-2 text-gray-600">
+                <p>{{ faq.answer|linebreaksbr }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+// Use an Immediately Invoked Function Expression (IIFE) to create a private scope
+// and prevent conflicts with other scripts.
+(function() {
+    // Find all accordion containers on the page
+    const accordions = document.querySelectorAll('.faq-accordion');
+
+    accordions.forEach(accordion => {
+        // Use a data attribute to ensure we only initialize each accordion once
+        if (accordion.dataset.initialized) {
+            return;
+        }
+        accordion.dataset.initialized = 'true';
+
+        accordion.addEventListener('click', function(event) {
+            // Find the button that was clicked
+            const trigger = event.target.closest('.faq-trigger');
+            if (!trigger) return;
+
+            event.preventDefault();
+            
+            // Find the panel and icon that are siblings/children of the trigger
+            const panel = trigger.parentElement.nextElementSibling;
+            const icon = trigger.querySelector('.faq-icon');
+
+            // Toggle the 'hidden' class and rotate the icon
+            if (panel && panel.classList.contains('faq-panel')) {
+                const isHidden = panel.classList.contains('hidden');
+                if (isHidden) {
+                    panel.classList.remove('hidden');
+                    if (icon) icon.style.transform = 'rotate(180deg)';
+                } else {
+                    panel.classList.add('hidden');
+                    if (icon) icon.style.transform = 'rotate(0deg)';
+                }
+            }
+        });
+    });
+})();
+</script>
+{% endif %}

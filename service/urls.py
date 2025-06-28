@@ -2,7 +2,7 @@
 from django.urls import path
 from service.views import (
     user_views,
-    admin_views, # Ensure admin_views is imported here
+    admin_views, 
 )
 from service.ajax import (
     ajax_get_available_dropoff_times_for_date,
@@ -32,11 +32,8 @@ urlpatterns = [
     path('service-book/step4/', user_views.Step4ServiceProfileView.as_view(), name='service_book_step4'),
     path('service-book/step5/', user_views.Step5PaymentDropoffAndTermsView.as_view(), name='service_book_step5'),
     path('service-book/step6/', user_views.Step6PaymentView.as_view(), name='service_book_step6'),
-
-    # Step 7: Confirmation page
     path('service-book/step7/', user_views.Step7ConfirmationView.as_view(), name='service_book_step7'),
 
-    # NEW: AJAX endpoint for checking booking status
     path('service-book/status-check/', user_views.Step7StatusCheckView.as_view(), name='service_booking_status_check'),
 
     # Admin-facing management
@@ -61,6 +58,12 @@ urlpatterns = [
     path('service-types/edit/<int:pk>/', admin_views.ServiceTypeCreateUpdateView.as_view(), name='edit_service_type'),
     path('service-types/delete/<int:pk>/', admin_views.ServiceTypeDeleteView.as_view(), name='delete_service_type'),
 
+        # --- Service FAQ Management ---
+    path('admin/service-faqs/', admin_views.ServiceFAQManagementView.as_view(), name='service_faq_management'),
+    path('admin/service-faqs/create/', admin_views.ServiceFAQCreateUpdateView.as_view(), name='service_faq_create'),
+    path('admin/service-faqs/<int:pk>/update/', admin_views.ServiceFAQCreateUpdateView.as_view(), name='service_faq_update'),
+    path('admin/service-faqs/<int:pk>/delete/', admin_views.ServiceFAQDeleteView.as_view(), name='service_faq_delete'),
+
     # ADMIN SERVICE PROFILE MANAGEMENT
     path('admin/service-profiles/', admin_views.ServiceProfileManagementView.as_view(), name='admin_service_profiles'),
     path('admin/service-profiles/create/', admin_views.ServiceProfileCreateUpdateView.as_view(), name='admin_create_service_profile'),
@@ -72,7 +75,6 @@ urlpatterns = [
     path('admin/customer-motorcycles/create/', admin_views.CustomerMotorcycleCreateUpdateView.as_view(), name='admin_create_customer_motorcycle'),
     path('admin/customer-motorcycles/edit/<int:pk>/', admin_views.CustomerMotorcycleCreateUpdateView.as_view(), name='admin_edit_customer_motorcycle'),
     path('admin/customer-motorcycles/delete/<int:pk>/', admin_views.CustomerMotorcycleDeleteView.as_view(), name='admin_delete_customer_motorcycle'),
-    # --- NEW AJAX Endpoints for Admin Booking Flow ---
     path('admin/api/search-customer/', ajax_search_service_profiles.search_customer_profiles_ajax, name='admin_api_search_customer'),
     path('admin/api/get-customer-details/<int:profile_id>/', ajax_get_service_profile_details.get_service_profile_details_ajax, name='admin_api_get_customer_details'),
     path('admin/api/customer-motorcycles/<int:profile_id>/', ajax_get_customer_motorcycles.get_customer_motorcycles_ajax, name='admin_api_customer_motorcycles'),
@@ -83,7 +85,6 @@ urlpatterns = [
     
     # Corrected URL for fetching single service booking details
     path('admin/api/service-booking-details/<int:pk>/', ajax_get_service_booking_details.get_service_booking_details_json, name='admin_api_get_service_booking_details'), 
-    # Original URL for feed (if still needed)
     path('admin/api/service-bookings-json/', ajax_get_service_bookings_feed.get_service_bookings_json_ajax, name='get_service_bookings_json'),
     path('admin/api/search-bookings/', ajax_search_service_bookings.search_service_bookings_ajax, name='admin_api_search_bookings'),
     path('admin/api/get-estimated-pickup-date/', ajax_get_estimated_pickup_date.get_estimated_pickup_date_ajax, name='admin_api_get_estimated_pickup_date'),

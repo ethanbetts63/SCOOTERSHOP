@@ -6,3 +6,4 @@ from .service_profile import ServiceProfile
 from .service_settings import ServiceSettings
 from .service_type import ServiceType
 from .temp_service_booking import TempServiceBooking
+from .service_FAQ import ServiceFAQ
