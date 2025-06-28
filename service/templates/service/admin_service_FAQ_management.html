@@ -56,7 +56,7 @@
                     {% for faq in service_faqs %}
                         <tr>
                             <td class="px-6 py-4 whitespace-normal text-sm font-medium text-gray-900">
-                                <a href="{% url 'service:service_faq_details' pk=faq.pk %}" class="text-blue-600 hover:underline">
+                                <a href="{% url 'service:service_faq_update' pk=faq.pk %}" class="text-blue-600 hover:underline">
                                     {{ faq.question|truncatechars:80 }}
                                 </a>
                             </td>
@@ -82,8 +82,6 @@
                 </tbody>
             </table>
         </div>
-
-        {% include "dashboard/includes/_pagination.html" %}
 
     {% else %}
          <div class="text-center py-10 bg-white rounded-lg shadow-md">
