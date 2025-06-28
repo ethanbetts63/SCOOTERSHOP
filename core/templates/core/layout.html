@@ -59,19 +59,6 @@
                     </li>
                 {% endif %}
 
-                {% if settings.enable_hire or user.is_staff %}
-                    <li>
-                        <a class="nav-item" href="{% url 'hire:step2_choose_bike' %}"
-                           {% if not settings.enable_hire and user.is_staff %}
-                               style="color: #08E5D1;"
-                           {% endif %}
-                        >
-                            Hire Booking
-                        </a>
-                    </a>
-                    </li>
-                {% endif %}
-
                 {% if settings.enable_contact_page or settings.enable_about_page or user.is_staff %}
                     <li>
                         <a href="{% url 'core:contact' %}"
@@ -181,19 +168,7 @@
                             </li>
                         {% endif %}
 
-                        {% if settings.enable_hire or user.is_staff %}
-                            <li>
-                                <a href="{% url 'hire:step2_choose_bike' %}"
-                                   {% if not settings.enable_hire and user.is_staff %}
-                                        style="color: #08E5D1;" {# Bright turquoise color #}
-                                   {% endif %}
-                                >
-                                    Hire Booking
-                                </a>
-                            </li>
-                        {% endif %}
 
-                        {# NEW: Link to Hire Refunds #}
                         <li>
                             <a href="{% url 'payments:user_refund_request' %}">
                                 Refunds

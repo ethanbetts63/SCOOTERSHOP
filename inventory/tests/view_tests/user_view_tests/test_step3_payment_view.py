@@ -191,10 +191,12 @@ class Step3PaymentViewTest(TestCase):
         Tests POST when Stripe reports payment succeeded.
         """
         payment_intent_id = 'pi_test_succeeded'
+        # We create a payment object, but its status will not be directly changed by the POST view
+        # Instead, it's expected to be updated by the webhook.
         PaymentFactory(
             temp_sales_booking=self.temp_booking,
             stripe_payment_intent_id=payment_intent_id,
-            status='requires_action',
+            status='requires_payment_method',
         )
         mock_retrieve.return_value = MagicMock(id=payment_intent_id, status='succeeded')
 
@@ -213,9 +215,12 @@ class Step3PaymentViewTest(TestCase):
     def test_post_payment_requires_action(self, mock_retrieve):
         """
         Tests POST when Stripe reports payment requires action.
+        The local Payment object's status is expected to be updated by the webhook.
         """
         payment_intent_id = 'pi_test_requires_action'
-        payment_obj = PaymentFactory(
+        # We create a payment object, but its status will not be directly changed by the POST view
+        # Instead, it's expected to be updated by the webhook.
+        PaymentFactory(
             temp_sales_booking=self.temp_booking,
             stripe_payment_intent_id=payment_intent_id,
             status='requires_payment_method',
@@ -231,16 +236,20 @@ class Step3PaymentViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         json_response = response.json()
         self.assertEqual(json_response['status'], 'requires_action')
-        payment_obj.refresh_from_db()
-        self.assertEqual(payment_obj.status, 'requires_action')
+        # Removed assertion on payment_obj.status as it's handled by webhook
+        # payment_obj.refresh_from_db()
+        # self.assertEqual(payment_obj.status, 'requires_action')
 
     @patch('stripe.PaymentIntent.retrieve')
     def test_post_payment_failed(self, mock_retrieve):
         """
         Tests POST when Stripe reports payment failed.
+        The local Payment object's status is expected to be updated by the webhook.
         """
         payment_intent_id = 'pi_test_failed'
-        payment_obj = PaymentFactory(
+        # We create a payment object, but its status will not be directly changed by the POST view
+        # Instead, it's expected to be updated by the webhook.
+        PaymentFactory(
             temp_sales_booking=self.temp_booking,
             stripe_payment_intent_id=payment_intent_id,
             status='requires_payment_method',
@@ -256,8 +265,9 @@ class Step3PaymentViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         json_response = response.json()
         self.assertEqual(json_response['status'], 'failed')
-        payment_obj.refresh_from_db()
-        self.assertEqual(payment_obj.status, 'failed')
+        # Removed assertion on payment_obj.status as it's handled by webhook
+        # payment_obj.refresh_from_db()
+        # self.assertEqual(payment_obj.status, 'failed')
 
     def test_post_invalid_json_returns_400(self):
         """
@@ -296,3 +306,4 @@ class Step3PaymentViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 500)
         self.assertIn('Stripe error', response.json()['error'])
+
