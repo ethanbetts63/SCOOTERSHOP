@@ -89,7 +89,7 @@
                     {% for faq in sales_faqs %}
                         <tr>
                             <td class="px-6 py-4 whitespace-normal text-sm font-medium text-gray-900 table-cell-padding">
-                                <a href="{% url 'inventory:sales_faq_details' pk=faq.pk %}" class="text-blue-600 hover:underline">
+                                <a href="{% url 'inventory:sales_faq_update' pk=faq.pk %}" class="text-blue-600 hover:underline">
                                     {{ faq.question|truncatechars:80 }}
                                 </a>
                             </td>

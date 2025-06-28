@@ -32,7 +32,6 @@ from .views.admin_views import (
     delete_sales_profile,
     sales_FAQ_management_view,
     sales_FAQ_create_update_view,
-    sales_FAQ_details_view,
     sales_FAQ_delete_view,
 )
 
@@ -91,7 +90,6 @@ urlpatterns = [
     path('admin/sales-faqs/create/', sales_FAQ_create_update_view.SalesFAQCreateUpdateView.as_view(), name='sales_faq_create'),
     path('admin/sales-faqs/<int:pk>/update/', sales_FAQ_create_update_view.SalesFAQCreateUpdateView.as_view(), name='sales_faq_update'),
     path('admin/sales-faqs/<int:pk>/delete/', sales_FAQ_delete_view.SalesFAQDeleteView.as_view(), name='sales_faq_delete'),
-    path('admin/sales-faqs/<int:pk>/details/', sales_FAQ_details_view.SalesFAQDetailsView.as_view(), name='sales_faq_details'),
 
 
     # AJAX Endpoints
