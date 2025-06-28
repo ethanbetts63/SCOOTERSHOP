@@ -45,23 +45,11 @@
                     <li><a href="{% url 'service:service_types_management' %}">Service Types</a></li>
                     <li><a href="{% url 'service:service_brands_management' %}">Service Brands</a></li>
                     <li><a href="{% url 'service:blocked_service_dates_management' %}">Blocked Service Dates</a></li>
+                    <li><a href="{% url 'service:service_faq_management' %}">Service FAQs Management</a></li> {# ADDED THIS LINE #}
                 </ul>
             </li>
 
-            {# Hire Management Section #}
-            <li class="nav-section">
-                <h3>Hire Management</h3>
-                <ul class="reset-list">
-                    <li><a href="{% url 'dashboard:hire_bookings' %}">Hire Bookings</a></li>
-                    <li><a href="{% url 'hire:admin_hire_booking_create' %}">Create New Hire Booking</a></li>
-                    <li><a href="{% url 'dashboard:settings_hire_booking' %}">Hire Booking Settings</a></li>
-                    <li><a href="{% url 'dashboard:settings_hire_addons' %}">Hire Add-Ons</a></li>
-                    <li><a href="{% url 'dashboard:settings_hire_packages' %}">Hire Packages</a></li>
-                    <li><a href="{% url 'dashboard:blocked_hire_dates_management' %}">Blocked Hire Dates</a></li>
-                    <li><a href="{% url 'dashboard:settings_driver_profiles' %}">Driver Profiles</a></li>
-                </ul>
-            </li>
-
+            {# Hire Management Section - REMOVED #}
 
             {# General Settings Section #}
             <li class="nav-section">
