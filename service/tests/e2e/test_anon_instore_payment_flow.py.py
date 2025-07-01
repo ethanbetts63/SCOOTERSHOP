@@ -75,8 +75,8 @@ class TestAnonymousInStorePaymentFlow(TestCase):
         self.assertEqual(temp_booking.customer_motorcycle, motorcycle)
 
         step4_data = {
-            'name': 'Anonymous User',
-            'email': 'anon.user@example.com',
+            'name': 'instore Anonymous User',
+            'email': 'instoreanon.user@example.com',
             'phone_number': '0412345678',
             'address_line_1': '123 Test St',
             'city': 'Testville',

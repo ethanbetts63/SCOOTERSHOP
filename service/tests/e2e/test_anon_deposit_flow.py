@@ -67,7 +67,7 @@ class TestAnonymousDepositPaymentFlow(TestCase):
         })
 
         self.client.post(step4_url, {
-            'name': 'Deposit Payer', 'email': 'deposit.payer@example.com', 'phone_number': '0444555666',
+            'name': 'Anon Deposit Payer', 'email': 'anondeposit.payer@example.com', 'phone_number': '0444555666',
             'address_line_1': '789 Deposit Dr', 'city': 'Bankstown', 'state': 'NSW', 'post_code': '2200', 'country': 'AU',
         })
 

@@ -45,7 +45,7 @@ class TestLoggedInOnlinePaymentFlow(TestCase):
         )
         # Create a user, profile, and motorcycle for the test
         self.user = UserFactory(username='onlineuser')
-        self.service_profile = ServiceProfileFactory(user=self.user, name='Online Test User', email='online.test@user.com', country='AU')
+        self.service_profile = ServiceProfileFactory(user=self.user, name='Online full account Test User', email='online.test@user.com', country='AU')
         self.motorcycle = CustomerMotorcycleFactory(service_profile=self.service_profile, brand='Ducati', model='Monster')
         # Ensure the brand exists for form validation
         ServiceBrandFactory(name='Ducati')

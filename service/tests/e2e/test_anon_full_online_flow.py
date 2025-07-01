@@ -61,7 +61,7 @@ class TestAnonymousOnlinePaymentFlow(TestCase):
         })
 
         self.client.post(step4_url, {
-            'name': 'Online Payer', 'email': 'online.payer@example.com', 'phone_number': '0411222333',
+            'name': 'Anon Online Payer', 'email': 'anononline.payer@example.com', 'phone_number': '0411222333',
             'address_line_1': '456 Online Ave', 'city': 'Webville', 'state': 'WB', 'post_code': '5678', 'country': 'AU',
         })
 
