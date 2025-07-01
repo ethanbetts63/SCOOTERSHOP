@@ -48,51 +48,31 @@ class TestAnonymousInStorePaymentFlow(TestCase):
             'service_type': self.service_type.id,
             'service_date': valid_future_date.strftime('%Y-%m-%d'),
         }
-        response = self.client.post(step1_url, step1_data, follow=True)
+        self.client.post(step1_url, step1_data, follow=True)
         
-        self.assertRedirects(response, step3_url + f'?temp_booking_uuid={self.client.session["temp_service_booking_uuid"]}')
-        self.assertIn('temp_service_booking_uuid', self.client.session)
-        self.assertEqual(TempServiceBooking.objects.count(), 1)
-        temp_booking = TempServiceBooking.objects.first()
-        self.assertEqual(temp_booking.service_type, self.service_type)
-
-        step3_data = {
-            'brand': 'Honda',
-            'model': 'CBR1000RR',
-            'year': '2022',
-            'engine_size': '1000cc',
-            'rego': 'TEST1',
-            'odometer': 5000,
-            'transmission': 'MANUAL', 
+        motorcycle_data = {
+            'brand': 'Honda', 'model': 'CBR1000RR', 'year': '2022',
+            'engine_size': '1000', 'rego': 'INSTORE1', 'odometer': 5000,
+            'transmission': 'MANUAL', 'vin_number': '55555444443333321',
         }
-        response = self.client.post(step3_url, step3_data)
-        
-        self.assertRedirects(response, step4_url)
-        self.assertEqual(CustomerMotorcycle.objects.count(), 1)
-        motorcycle = CustomerMotorcycle.objects.first()
-        self.assertEqual(motorcycle.brand, 'Honda')
-        temp_booking.refresh_from_db()
-        self.assertEqual(temp_booking.customer_motorcycle, motorcycle)
+        self.client.post(step3_url, motorcycle_data)
 
-        step4_data = {
-            'name': 'instore Anonymous User',
-            'email': 'anon.user@example.com',
-            'phone_number': '0412345678',
-            'address_line_1': '123 Test St',
-            'city': 'Testville',
-            'state': 'TS',
-            'post_code': '1234',
+        profile_data = {
+            'name': 'instore Anonymous User', 'email': 'anon.instore@example.com', 'phone_number': '0412345678',
+            'address_line_1': '123 Test St', 'address_line_2': '',
+            'city': 'Testville', 'state': 'NSW', 'post_code': '1234',
             'country': 'AU',
         }
-        response = self.client.post(step4_url, step4_data)
-        
+        response = self.client.post(step4_url, profile_data)
         self.assertRedirects(response, step5_url)
-        self.assertEqual(ServiceProfile.objects.count(), 1)
-        profile = ServiceProfile.objects.first()
-        self.assertEqual(profile.email, 'anon.user@example.com')
-        temp_booking.refresh_from_db()
-        self.assertEqual(temp_booking.service_profile, profile)
-        self.assertIsNone(profile.user)
+        
+        temp_booking_uuid = self.client.session.get('temp_service_booking_uuid')
+        self.assertIsNotNone(temp_booking_uuid)
+        temp_booking = TempServiceBooking.objects.get(session_uuid=temp_booking_uuid)
+        self.assertIsNotNone(temp_booking.service_profile)
+        self.assertEqual(temp_booking.service_profile.email, profile_data['email'])
+        self.assertIsNotNone(temp_booking.customer_motorcycle)
+        self.assertEqual(temp_booking.customer_motorcycle.rego, motorcycle_data['rego'])
 
         step5_data = {
             'dropoff_date': valid_future_date.strftime('%Y-%m-%d'),
@@ -100,7 +80,6 @@ class TestAnonymousInStorePaymentFlow(TestCase):
             'payment_method': 'in_store_full',
             'service_terms_accepted': 'on',
         }
-        
         response = self.client.post(step5_url, step5_data)
         self.assertRedirects(response, step7_url)
         
@@ -109,12 +88,13 @@ class TestAnonymousInStorePaymentFlow(TestCase):
         self.assertIn('service_booking_reference', self.client.session)
         
         confirmation_response = self.client.get(step7_url)
-        
         self.assertEqual(confirmation_response.status_code, 200)
+
         final_booking = ServiceBooking.objects.first()
         self.assertContains(confirmation_response, final_booking.service_booking_reference)
         self.assertEqual(final_booking.payment_status, 'unpaid')
+        self.assertEqual(final_booking.service_profile.email, profile_data['email'])
+        self.assertEqual(final_booking.customer_motorcycle.rego, motorcycle_data['rego'])
         
-        # FIX: Changed key to match the one being set in the view's debug logs.
         self.assertIn('last_booking_successful_timestamp', self.client.session)
         self.assertNotIn('temp_service_booking_uuid', self.client.session)

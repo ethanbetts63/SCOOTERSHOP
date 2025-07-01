@@ -12,7 +12,7 @@ from service.models import TempServiceBooking, ServiceBooking, CustomerMotorcycl
 from dashboard.models import SiteSettings
 from payments.models import Payment
 from payments.webhook_handlers.service_handlers import handle_service_booking_succeeded
-from ...test_helpers.model_factories import (
+from ..test_helpers.model_factories import (
     ServiceSettingsFactory,
     ServiceTypeFactory,
     ServiceBrandFactory,

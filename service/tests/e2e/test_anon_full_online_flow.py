@@ -55,15 +55,30 @@ class TestAnonymousOnlinePaymentFlow(TestCase):
         
         self.client.post(step1_url, {'service_type': self.service_type.id, 'service_date': valid_future_date.strftime('%Y-%m-%d')}, follow=True)
         
-        self.client.post(step3_url, {
-            'brand': 'Yamaha', 'model': 'MT-07', 'year': '2021', 'engine_size': '689cc',
-            'rego': 'TEST2', 'odometer': 8000, 'transmission': 'MANUAL',
-        })
+        motorcycle_data = {
+            'brand': 'Yamaha', 'model': 'MT-07', 'year': '2021', 
+            'engine_size': '689cc', 'rego': 'ONLINE1', 'odometer': 8000, 
+            'transmission': 'MANUAL', 'vin_number': '98765432109876543',
+        }
+        self.client.post(step3_url, motorcycle_data)
 
-        self.client.post(step4_url, {
+        profile_data = {
             'name': 'Anon Online Payer', 'email': 'anononline.payer@example.com', 'phone_number': '0411222333',
-            'address_line_1': '456 Online Ave', 'city': 'Webville', 'state': 'WB', 'post_code': '5678', 'country': 'AU',
-        })
+            'address_line_1': '456 Online Ave', 'address_line_2': '',
+            'city': 'Webville', 'state': 'NSW', 'post_code': '5678', 
+            'country': 'AU',
+        }
+        response = self.client.post(step4_url, profile_data)
+        self.assertRedirects(response, step5_url)
+
+        # Verify that the temp booking has the correct data before proceeding
+        temp_booking_uuid = self.client.session.get('temp_service_booking_uuid')
+        self.assertIsNotNone(temp_booking_uuid)
+        temp_booking = TempServiceBooking.objects.get(session_uuid=temp_booking_uuid)
+        self.assertIsNotNone(temp_booking.service_profile)
+        self.assertEqual(temp_booking.service_profile.email, profile_data['email'])
+        self.assertIsNotNone(temp_booking.customer_motorcycle)
+        self.assertEqual(temp_booking.customer_motorcycle.rego, motorcycle_data['rego'])
 
         response = self.client.post(step5_url, {
             'dropoff_date': valid_future_date.strftime('%Y-%m-%d'), 'dropoff_time': '14:00',
@@ -76,10 +91,8 @@ class TestAnonymousOnlinePaymentFlow(TestCase):
         payment_obj = Payment.objects.first()
         payment_intent_id = payment_obj.stripe_payment_intent_id
 
-        # FIX: Add the required 'return_url' parameter to the Stripe API call.
         try:
             confirmation_url_path = reverse('service:service_book_step7')
-            # Stripe requires a full URL for the return path.
             full_return_url = f"http://testserver{confirmation_url_path}"
             stripe.PaymentIntent.confirm(
                 payment_intent_id,
@@ -97,6 +110,9 @@ class TestAnonymousOnlinePaymentFlow(TestCase):
         final_booking = ServiceBooking.objects.first()
         self.assertEqual(final_booking.payment_status, 'paid')
         self.assertEqual(final_booking.amount_paid, self.service_type.base_price)
+        
+        self.assertEqual(final_booking.service_profile.email, profile_data['email'])
+        self.assertEqual(final_booking.customer_motorcycle.rego, motorcycle_data['rego'])
 
         confirmation_url_with_param = f"{step7_url}?payment_intent_id={payment_intent_id}"
         confirmation_response = self.client.get(confirmation_url_with_param)
