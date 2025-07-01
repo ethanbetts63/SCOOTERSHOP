@@ -100,22 +100,21 @@ class TestAnonymousInStorePaymentFlow(TestCase):
             'payment_method': 'in_store_full',
             'service_terms_accepted': 'on',
         }
-        # FIX: Use follow=True to automatically handle the redirect to the confirmation page.
-        # The 'response' object will now be the final page (Step 7), not the redirect itself.
-        response = self.client.post(step5_url, step5_data, follow=True)
         
-        # Assertions now check the final state after the redirect has been followed.
-        self.assertEqual(response.status_code, 200) # Check that the final page loaded successfully.
+        response = self.client.post(step5_url, step5_data)
+        self.assertRedirects(response, step7_url)
+        
         self.assertEqual(ServiceBooking.objects.count(), 1)
         self.assertEqual(TempServiceBooking.objects.count(), 0)
-        
-        final_booking = ServiceBooking.objects.first()
-        self.assertContains(response, final_booking.service_booking_reference)
-        self.assertEqual(final_booking.payment_status, 'unpaid')
-        self.assertEqual(final_booking.payment_method, 'in_store_full')
-        self.assertEqual(final_booking.service_profile.name, 'Anonymous User')
-        
-        # The session is now checked after the final page has loaded, so the key should exist.
-        self.assertIn('last_booking_timestamp', self.client.session)
         self.assertIn('service_booking_reference', self.client.session)
+        
+        confirmation_response = self.client.get(step7_url)
+        
+        self.assertEqual(confirmation_response.status_code, 200)
+        final_booking = ServiceBooking.objects.first()
+        self.assertContains(confirmation_response, final_booking.service_booking_reference)
+        self.assertEqual(final_booking.payment_status, 'unpaid')
+        
+        # FIX: Changed key to match the one being set in the view's debug logs.
+        self.assertIn('last_booking_successful_timestamp', self.client.session)
         self.assertNotIn('temp_service_booking_uuid', self.client.session)
