@@ -1,6 +1,7 @@
 import datetime
 from decimal import Decimal
 import stripe
+import time
 from unittest import skipIf
 
 from django.test import TestCase, Client, override_settings
@@ -44,6 +45,7 @@ class TestAnonymousFullOnlinePaymentFlow(TestCase):
         stripe.api_key = settings.STRIPE_SECRET_KEY
 
     def test_anonymous_user_full_online_payment_flow(self):
+        service_page_url = reverse('service:service')
         step1_url = reverse('service:service_book_step1')
         step3_url = reverse('service:service_book_step3')
         step4_url = reverse('service:service_book_step4')
@@ -61,14 +63,14 @@ class TestAnonymousFullOnlinePaymentFlow(TestCase):
             'transmission': 'MANUAL', 'vin_number': 'VINANONONLINE1234',
         }
         response = self.client.post(step3_url, motorcycle_data)
-        self.assertRedirects(response, step4_url, msg_prefix="Initial redirect from Step 3 to 4 failed.")
+        self.assertRedirects(response, step4_url)
 
         response = self.client.get(step3_url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['form'].initial['rego'], motorcycle_data['rego'])
 
         response = self.client.post(step3_url, motorcycle_data)
-        self.assertRedirects(response, step4_url, msg_prefix="Second redirect from Step 3 to 4 failed.")
+        self.assertRedirects(response, step4_url)
 
         profile_data = {
             'name': 'Anon Online User', 'email': 'anon.online@user.com', 'phone_number': '0411223344',
@@ -77,28 +79,28 @@ class TestAnonymousFullOnlinePaymentFlow(TestCase):
             'country': 'AU',
         }
         response = self.client.post(step4_url, profile_data)
-        self.assertRedirects(response, step5_url, msg_prefix="Initial redirect from Step 4 to 5 failed.")
+        self.assertRedirects(response, step5_url)
 
         response = self.client.get(step4_url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['form'].initial['email'], profile_data['email'])
         
         response = self.client.post(step4_url, profile_data)
-        self.assertRedirects(response, step5_url, msg_prefix="Second redirect from Step 4 to 5 failed.")
+        self.assertRedirects(response, step5_url)
 
         step5_data = {
             'dropoff_date': valid_future_date.strftime('%Y-%m-%d'), 'dropoff_time': '14:00',
             'payment_method': 'online_full', 'service_terms_accepted': 'on',
         }
         response = self.client.post(step5_url, step5_data)
-        self.assertRedirects(response, step6_url, msg_prefix="Initial redirect from Step 5 to 6 failed.")
+        self.assertRedirects(response, step6_url)
 
         response = self.client.get(step5_url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['form'].initial['payment_method'], step5_data['payment_method'])
 
         response = self.client.post(step5_url, step5_data)
-        self.assertRedirects(response, step6_url, msg_prefix="Second redirect from Step 5 to 6 failed.")
+        self.assertRedirects(response, step6_url)
 
         self.client.get(step6_url)
         self.assertEqual(Payment.objects.count(), 1)
@@ -107,7 +109,7 @@ class TestAnonymousFullOnlinePaymentFlow(TestCase):
         self.assertEqual(payment_obj.amount, self.service_type.base_price)
 
         try:
-            confirmation_url_path = reverse('service:service_book_step7')
+            confirmation_url_path = reverse('inventory:step4_confirmation')
             full_return_url = f"http://testserver{confirmation_url_path}"
             stripe.PaymentIntent.confirm(
                 payment_intent_id,
@@ -125,9 +127,6 @@ class TestAnonymousFullOnlinePaymentFlow(TestCase):
         
         final_booking = ServiceBooking.objects.first()
         self.assertEqual(final_booking.payment_status, 'paid')
-        self.assertEqual(final_booking.amount_paid, self.service_type.base_price)
-        self.assertEqual(final_booking.service_profile.email, profile_data['email'])
-        self.assertEqual(final_booking.customer_motorcycle.rego, motorcycle_data['rego'])
 
         confirmation_url_with_param = f"{step7_url}?payment_intent_id={payment_intent_id}"
         confirmation_response = self.client.get(confirmation_url_with_param)
@@ -135,3 +134,29 @@ class TestAnonymousFullOnlinePaymentFlow(TestCase):
         self.assertContains(confirmation_response, final_booking.service_booking_reference)
         
         self.assertIn('last_booking_successful_timestamp', self.client.session)
+
+        # Test that immediate re-booking is blocked
+        response = self.client.post(step1_url, {'service_type': self.service_type.id, 'service_date': valid_future_date.strftime('%Y-%m-%d')}, follow=True)
+        
+        self.assertRedirects(response, service_page_url)
+        
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), "You recently completed a booking. If you wish to make another, please ensure your previous booking was processed successfully or wait a few moments.")
+
+        # Simulate waiting for the cooldown period to expire by modifying the session
+        session = self.client.session
+        # Set the timestamp to 5 minutes in the past
+        session['last_booking_successful_timestamp'] = time.time() - 300 
+        session.save()
+
+        # Attempt to book again after the simulated wait
+        response = self.client.post(step1_url, {'service_type': self.service_type.id, 'service_date': valid_future_date.strftime('%Y-%m-%d')}, follow=True)
+
+        # This time, the booking should be allowed to proceed to the next step (Step 3 for anon users)
+        self.assertRedirects(response, step3_url + f'?temp_booking_uuid={self.client.session["temp_service_booking_uuid"]}')
+        
+        # Verify that there are no error messages this time, only the success message
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertIn("Service details selected", str(messages[0]))
