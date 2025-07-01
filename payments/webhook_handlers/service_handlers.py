@@ -23,8 +23,6 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
             booking_payment_status = 'paid'
         elif temp_booking.payment_method == 'online_deposit':
             booking_payment_status = 'deposit_paid'
-        elif temp_booking.payment_method == 'in_store_full':
-            booking_payment_status = 'unpaid'
         
         service_booking = convert_temp_service_booking(
             temp_booking=temp_booking,
@@ -39,31 +37,28 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
         if payment_obj.status != payment_intent_data['status']:
             payment_obj.status = payment_intent_data['status']
             payment_obj.save()
+        
+        service_profile = service_booking.service_profile
+        user_email = service_profile.email
 
-        email_context = {
-            'service_booking': service_booking,
-            'user': service_booking.service_profile.user if service_booking.service_profile and service_booking.service_profile.user else None,
-            'service_profile': service_booking.service_profile,
-            'is_in_store': False,
-        }
-
-        user_email = service_booking.service_profile.user.email if service_booking.service_profile.user else service_booking.service_profile.email
         if user_email:
             send_templated_email(
                 recipient_list=[user_email],
                 subject=f"Your Service Booking Confirmation - {service_booking.service_booking_reference}",
-                template_name='service_booking_confirmation_user.html',
-                context=email_context,
-                booking=service_booking
+                template_name='emails/service_booking_confirmation_user.html',
+                context={},
+                booking=service_booking,
+                profile=service_profile
             )
 
         if settings.ADMIN_EMAIL:
             send_templated_email(
                 recipient_list=[settings.ADMIN_EMAIL],
                 subject=f"New Service Booking (Online) - {service_booking.service_booking_reference}",
-                template_name='service_booking_confirmation_admin.html',
-                context=email_context,
-                booking=service_booking
+                template_name='emails/service_booking_confirmation_admin.html',
+                context={},
+                booking=service_booking,
+                profile=service_profile
             )
 
     except TempServiceBooking.DoesNotExist as e:

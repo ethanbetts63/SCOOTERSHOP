@@ -2,22 +2,17 @@ from django.shortcuts import render, redirect
 from django.views import View
 from django.urls import reverse
 from django.contrib import messages
-from django.utils import timezone
-from datetime import timedelta
 from decimal import Decimal
 from django.conf import settings
 import json
-
 from service.forms.step5_payment_choice_and_terms_form import PaymentOptionForm
 from service.models import TempServiceBooking, ServiceSettings
 from service.utils.convert_temp_service_booking import convert_temp_service_booking
 from service.utils.get_drop_off_date_availability import get_drop_off_date_availability
-from mailer.utils import send_templated_email
-
 from service.utils.calculate_service_total import calculate_service_total
 from service.utils.calulcate_service_deposit import calculate_service_deposit
-from service.utils.calculate_estimated_pickup_date import calculate_estimated_pickup_date # NEW: Import the new utility
-
+from service.utils.calculate_estimated_pickup_date import calculate_estimated_pickup_date
+from mailer.utils import send_templated_email
 
 class Step5PaymentDropoffAndTermsView(View):
     template_name = 'service/step5_payment_dropoff_and_terms.html'
@@ -55,18 +50,11 @@ class Step5PaymentDropoffAndTermsView(View):
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
-        kwargs = {
-            'service_settings': self.service_settings,
-            'temp_booking': self.temp_booking,
-        }
+        kwargs = {'service_settings': self.service_settings, 'temp_booking': self.temp_booking}
         return kwargs
 
     def get_context_data(self, **kwargs):
-        max_advance_days = self.service_settings.max_advance_dropoff_days
-        is_same_day_dropoff_only = (max_advance_days == 0)
-
         available_dropoff_dates = get_drop_off_date_availability(self.temp_booking, self.service_settings)
-
         context = {
             'temp_booking': self.temp_booking,
             'service_settings': self.service_settings,
@@ -74,7 +62,7 @@ class Step5PaymentDropoffAndTermsView(View):
             'get_times_url': reverse('service:get_available_dropoff_times_for_date'),
             'step': 5,
             'total_steps': 7,
-            'is_same_day_dropoff_only': is_same_day_dropoff_only,
+            'is_same_day_dropoff_only': (self.service_settings.max_advance_dropoff_days == 0),
         }
         context.update(kwargs)
         return context
@@ -85,12 +73,9 @@ class Step5PaymentDropoffAndTermsView(View):
             'dropoff_time': self.temp_booking.dropoff_time,
             'payment_method': self.temp_booking.payment_method,
         }
-        
         if self.service_settings.max_advance_dropoff_days == 0:
             initial_data['dropoff_date'] = self.temp_booking.service_date
-
         form = self.form_class(initial=initial_data, **self.get_form_kwargs())
-        
         context = self.get_context_data(form=form)
         return render(request, self.template_name, context)
 
@@ -101,22 +86,12 @@ class Step5PaymentDropoffAndTermsView(View):
             self.temp_booking.dropoff_date = form.cleaned_data['dropoff_date']
             self.temp_booking.dropoff_time = form.cleaned_data['dropoff_time']
             self.temp_booking.payment_method = form.cleaned_data['payment_method']
-            
-            # Save the dropoff and payment method updates first
             self.temp_booking.save(update_fields=['dropoff_date', 'dropoff_time', 'payment_method'])
 
-            # Calculate total and deposit amounts
-            calculated_total = calculate_service_total(self.temp_booking)
-            self.temp_booking.calculated_total = calculated_total
-
-            calculated_deposit = calculate_service_deposit(self.temp_booking)
-            self.temp_booking.calculated_deposit_amount = calculated_deposit
-
-            # Calculate and set the estimated pickup date
-            calculate_estimated_pickup_date(self.temp_booking) # NEW: Call the utility function here
-
-            # Save the calculated total, deposit, and estimated pickup date
-            self.temp_booking.save(update_fields=['calculated_total', 'calculated_deposit_amount', 'estimated_pickup_date']) # NEW: Add estimated_pickup_date to update_fields
+            self.temp_booking.calculated_total = calculate_service_total(self.temp_booking)
+            self.temp_booking.calculated_deposit_amount = calculate_service_deposit(self.temp_booking)
+            calculate_estimated_pickup_date(self.temp_booking)
+            self.temp_booking.save(update_fields=['calculated_total', 'calculated_deposit_amount', 'estimated_pickup_date'])
 
             messages.success(request, "Drop-off and payment details have been saved successfully.")
             
@@ -128,8 +103,6 @@ class Step5PaymentDropoffAndTermsView(View):
                         booking_payment_status='unpaid',
                         amount_paid_on_booking=Decimal('0.00'),
                         calculated_total_on_booking=self.temp_booking.calculated_total,
-                        stripe_payment_intent_id=None,
-                        payment_obj=None,
                     )
                     request.session['service_booking_reference'] = final_service_booking.service_booking_reference
 
@@ -140,13 +113,13 @@ class Step5PaymentDropoffAndTermsView(View):
                                 recipient_list=[user_email],
                                 subject=f"Your Service Booking Confirmed! Ref: {final_service_booking.service_booking_reference}",
                                 template_name='emails/service_booking_confirmation_user.html',
-                                context={'booking': final_service_booking},
-                                user=request.user if request.user.is_authenticated else None,
-                                booking=final_service_booking
+                                context={},
+                                booking=final_service_booking,
+                                profile=final_service_booking.service_profile
                             )
                             messages.info(request, "A confirmation email has been sent to your registered email address.")
                         except Exception:
-                            messages.warning(request, "Booking confirmed, but failed to send confirmation email. Please check your email later or contact us.")
+                            messages.warning(request, "Booking confirmed, but failed to send confirmation email.")
                     else:
                         messages.warning(request, "Booking confirmed, but no email address found to send confirmation.")
 
@@ -157,15 +130,13 @@ class Step5PaymentDropoffAndTermsView(View):
                                 recipient_list=[admin_email],
                                 subject=f"NEW SERVICE BOOKING: {final_service_booking.service_booking_reference} (In-Store Payment)",
                                 template_name='emails/service_booking_confirmation_admin.html',
-                                context={'booking': final_service_booking},
-                                user=request.user if request.user.is_authenticated else None,
-                                booking=final_service_booking
+                                context={},
+                                booking=final_service_booking,
+                                profile=final_service_booking.service_profile
                             )
                         except Exception:
                             pass
-                    else:
-                        pass
-
+                    
                     return redirect(reverse('service:service_book_step7'))
 
                 except Exception as e:
@@ -178,4 +149,3 @@ class Step5PaymentDropoffAndTermsView(View):
             messages.error(request, "Please correct the errors highlighted below.")
             context = self.get_context_data(form=form)
             return render(request, self.template_name, context)
-
