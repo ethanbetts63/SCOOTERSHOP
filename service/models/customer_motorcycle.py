@@ -16,7 +16,6 @@ class CustomerMotorcycle(models.Model):
     )
 
     brand = models.CharField(max_length=100, help_text="Brand of the motorcycle (e.g., Honda, Yamaha, or 'Other').")
-    # Removed 'make' field as it's now redundant
     model = models.CharField(max_length=100, help_text="Model year or specific model identifier.")
     year = models.PositiveIntegerField(help_text="Manufacturing year of the motorcycle.")
     rego = models.CharField(max_length=20, help_text="Registration number (license plate).")

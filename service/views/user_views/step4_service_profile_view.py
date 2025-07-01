@@ -65,10 +65,16 @@ class Step4ServiceProfileView(View):
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
+        # --- DEBUGGING STATEMENTS START ---
+        print("\n--- DEBUG: In Step4ServiceProfileView POST ---")
+        print(f"Request POST data: {request.POST}")
+        # --- DEBUGGING STATEMENTS END ---
+        
         profile_instance = self._get_service_profile_instance(request, self.temp_booking)
         form = self.form_class(request.POST, instance=profile_instance)
 
         if form.is_valid():
+            print("--- DEBUG: Form is VALID ---\n")
             service_profile = form.save(commit=False)
 
             if request.user.is_authenticated and not service_profile.user_id:
@@ -89,6 +95,10 @@ class Step4ServiceProfileView(View):
             messages.success(request, "Your details have been saved successfully.")
             return redirect(reverse('service:service_book_step5'))
         else:
+            # --- DEBUGGING STATEMENTS START ---
+            print("--- DEBUG: Form is INVALID ---")
+            print(f"Form errors: {form.errors.as_json()}\n")
+            # --- DEBUGGING STATEMENTS END ---
             messages.error(request, "Please correct the errors below.")
             context = {
                 'form': form,
@@ -97,4 +107,3 @@ class Step4ServiceProfileView(View):
                 'total_steps': 7, 
             }
             return render(request, self.template_name, context)
-
