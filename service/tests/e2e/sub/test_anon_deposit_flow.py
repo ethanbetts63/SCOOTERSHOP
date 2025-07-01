@@ -8,27 +8,30 @@ from django.urls import reverse
 from django.conf import settings
 from django.utils import timezone
 
-from service.models import TempServiceBooking, ServiceBooking
+from service.models import TempServiceBooking, ServiceBooking, CustomerMotorcycle, ServiceProfile, ServiceBrand
 from dashboard.models import SiteSettings
 from payments.models import Payment
 from payments.webhook_handlers.service_handlers import handle_service_booking_succeeded
-from ..test_helpers.model_factories import (
+from ...test_helpers.model_factories import (
     ServiceSettingsFactory,
     ServiceTypeFactory,
     ServiceBrandFactory,
+    ServiceProfileFactory,
+    CustomerMotorcycleFactory,
 )
 
 @skipIf(not settings.STRIPE_SECRET_KEY, "Stripe API key not configured in settings")
 @override_settings(ADMIN_EMAIL='admin@example.com')
-class TestAnonymousDepositPaymentFlow(TestCase):
+class TestAnonymousDepositPaymentFactoryDataFlow(TestCase):
 
     def setUp(self):
         self.client = Client()
         SiteSettings.objects.create(enable_service_booking=True)
-        self.deposit_amount = Decimal('50.00')
+        self.deposit_amount = Decimal('75.00')
         self.service_settings = ServiceSettingsFactory(
             enable_service_booking=True,
             allow_anonymous_bookings=True,
+            allow_account_bookings=True,
             enable_deposit=True,
             enable_online_deposit=True,
             deposit_calc_method='FLAT_FEE',
@@ -40,14 +43,16 @@ class TestAnonymousDepositPaymentFlow(TestCase):
             currency_code='AUD'
         )
         self.service_type = ServiceTypeFactory(
-            name='Deposit Service',
-            base_price=Decimal('500.00'),
+            name='Account Deposit Service',
+            base_price=Decimal('600.00'),
             is_active=True
         )
-        ServiceBrandFactory(name='Suzuki')
+        self.service_profile = ServiceProfileFactory(user=None, name='Anon Factory User', email='anon.factory@user.com', country='AU')
+        self.motorcycle = CustomerMotorcycleFactory(service_profile=self.service_profile, brand='Triumph', model='Bonneville')
+        ServiceBrandFactory(name='Triumph')
         stripe.api_key = settings.STRIPE_SECRET_KEY
 
-    def test_anonymous_user_deposit_payment_flow(self):
+    def test_anonymous_user_deposit_payment_flow_with_factory_data(self):
         step1_url = reverse('service:service_book_step1')
         step3_url = reverse('service:service_book_step3')
         step4_url = reverse('service:service_book_step4')
@@ -60,17 +65,20 @@ class TestAnonymousDepositPaymentFlow(TestCase):
         self.client.post(step1_url, {'service_type': self.service_type.id, 'service_date': valid_future_date.strftime('%Y-%m-%d')}, follow=True)
         
         self.client.post(step3_url, {
-            'brand': 'Suzuki', 'model': 'Hayabusa', 'year': '2022', 'engine_size': '1340cc',
-            'rego': 'DEPO1', 'odometer': 3000, 'transmission': 'MANUAL',
+            'brand': self.motorcycle.brand, 'model': self.motorcycle.model, 'year': self.motorcycle.year, 
+            'engine_size': self.motorcycle.engine_size, 'rego': self.motorcycle.rego, 'odometer': self.motorcycle.odometer, 
+            'transmission': self.motorcycle.transmission, 'vin_number': self.motorcycle.vin_number,
         })
 
         self.client.post(step4_url, {
-            'name': 'Anon Deposit Payer', 'email': 'anondeposit.payer@example.com', 'phone_number': '0444555666',
-            'address_line_1': '789 Deposit Dr', 'city': 'Bankstown', 'state': 'NSW', 'post_code': '2200', 'country': 'AU',
+            'name': self.service_profile.name, 'email': self.service_profile.email, 'phone_number': self.service_profile.phone_number,
+            'address_line_1': self.service_profile.address_line_1, 'address_line_2': self.service_profile.address_line_2,
+            'city': self.service_profile.city, 'state': self.service_profile.state, 'post_code': self.service_profile.post_code,
+            'country': self.service_profile.country,
         })
 
         response = self.client.post(step5_url, {
-            'dropoff_date': valid_future_date.strftime('%Y-%m-%d'), 'dropoff_time': '09:30',
+            'dropoff_date': valid_future_date.strftime('%Y-%m-%d'), 'dropoff_time': '15:00',
             'payment_method': 'online_deposit', 'service_terms_accepted': 'on',
         })
         self.assertRedirects(response, step6_url)
@@ -101,6 +109,9 @@ class TestAnonymousDepositPaymentFlow(TestCase):
         self.assertEqual(final_booking.payment_status, 'deposit_paid')
         self.assertEqual(final_booking.amount_paid, self.deposit_amount)
         self.assertEqual(final_booking.calculated_total, self.service_type.base_price)
+        
+        self.assertEqual(final_booking.service_profile.email, self.service_profile.email)
+        self.assertEqual(final_booking.customer_motorcycle.rego, self.motorcycle.rego)
 
         confirmation_url_with_param = f"{step7_url}?payment_intent_id={payment_intent_id}"
         confirmation_response = self.client.get(confirmation_url_with_param)
