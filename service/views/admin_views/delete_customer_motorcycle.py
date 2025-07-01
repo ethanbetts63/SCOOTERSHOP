@@ -4,7 +4,7 @@ from django.views import View
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from service.models import CustomerMotorcycle # Ensure CustomerMotorcycle and ServiceProfile are imported
+from service.models import CustomerMotorcycle                                                            
 
 
 class CustomerMotorcycleDeleteView(LoginRequiredMixin, UserPassesTestMixin, View):
@@ -24,7 +24,7 @@ class CustomerMotorcycleDeleteView(LoginRequiredMixin, UserPassesTestMixin, View
         Handles POST requests to delete a CustomerMotorcycle.
         """
         motorcycle = get_object_or_404(CustomerMotorcycle, pk=pk)
-        motorcycle_display_name = f"{motorcycle.year} {motorcycle.brand} {motorcycle.model}" # For success message
+        motorcycle_display_name = f"{motorcycle.year} {motorcycle.brand} {motorcycle.model}"                      
         motorcycle.delete()
         messages.success(request, f"Motorcycle '{motorcycle_display_name}' deleted successfully.")
-        return redirect(reverse('service:admin_customer_motorcycle_management')) # Redirect back to the list view
+        return redirect(reverse('service:admin_customer_motorcycle_management'))                                 

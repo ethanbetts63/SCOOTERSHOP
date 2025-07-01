@@ -1,4 +1,4 @@
-# payments/tests/form_tests/test_admin_hire_refund_request_form.py
+                                                                  
 
 from django.test import TestCase
 from decimal import Decimal
@@ -8,7 +8,7 @@ from payments.models.PaymentModel import Payment
 from hire.models import HireBooking
 from django.utils import timezone
 
-# Updated imports to use the factory classes directly from payments.tests.test_helpers.model_factories
+                                                                                                      
 from payments.tests.test_helpers.model_factories import (
     PaymentFactory, HireBookingFactory, UserFactory, DriverProfileFactory,
     SalesBookingFactory, SalesProfileFactory, MotorcycleFactory,
@@ -27,9 +27,9 @@ class AdminRefundRequestFormTests(TestCase):
         self.driver_profile = DriverProfileFactory(email='test@example.com')
         self.sales_profile = SalesProfileFactory(user=self.admin_user)
         self.service_profile = ServiceProfileFactory(user=self.admin_user)
-        self.motorcycle_gen = MotorcycleFactory() # Generic motorcycle for hire/sales
+        self.motorcycle_gen = MotorcycleFactory()                                    
 
-        # Hire Booking Setup
+                            
         self.payment_succeeded_hire = PaymentFactory(
             amount=Decimal('500.00'),
             status='succeeded',
@@ -39,7 +39,7 @@ class AdminRefundRequestFormTests(TestCase):
         self.hire_booking_paid = HireBookingFactory(
             driver_profile=self.driver_profile,
             payment=self.payment_succeeded_hire,
-            motorcycle=self.motorcycle_gen, # Link motorcycle
+            motorcycle=self.motorcycle_gen,                  
             amount_paid=self.payment_succeeded_hire.amount,
             grand_total=self.payment_succeeded_hire.amount,
             payment_status='paid',
@@ -59,7 +59,7 @@ class AdminRefundRequestFormTests(TestCase):
         self.hire_booking_deposit = HireBookingFactory(
             driver_profile=self.driver_profile,
             payment=self.payment_deposit_paid_hire,
-            motorcycle=self.motorcycle_gen, # Link motorcycle
+            motorcycle=self.motorcycle_gen,                  
             amount_paid=self.payment_deposit_paid_hire.amount,
             grand_total=Decimal('500.00'), 
             deposit_amount=self.payment_deposit_paid_hire.amount,
@@ -74,7 +74,7 @@ class AdminRefundRequestFormTests(TestCase):
         self.hire_booking_unpaid = HireBookingFactory(
             driver_profile=self.driver_profile,
             payment=None, 
-            motorcycle=self.motorcycle_gen, # Link motorcycle
+            motorcycle=self.motorcycle_gen,                  
             amount_paid=Decimal('0.00'),
             grand_total=Decimal('300.00'),
             payment_status='unpaid',
@@ -83,7 +83,7 @@ class AdminRefundRequestFormTests(TestCase):
             return_date=timezone.now().date() + timezone.timedelta(days=22),
         )
 
-        # Service Booking Setup
+                               
         self.motorcycle_service = CustomerMotorcycleFactory(service_profile=self.service_profile)
         self.service_type_obj = ServiceTypeFactory()
         self.payment_succeeded_service = PaymentFactory(
@@ -105,8 +105,8 @@ class AdminRefundRequestFormTests(TestCase):
         self.payment_succeeded_service.service_booking = self.service_booking_paid
         self.payment_succeeded_service.save()
 
-        # Sales Booking Setup
-        self.motorcycle_sales = MotorcycleFactory() # Use general MotorcycleFactory
+                             
+        self.motorcycle_sales = MotorcycleFactory()                                
         self.payment_deposit_sales = PaymentFactory(
             amount=Decimal('100.00'),
             status='succeeded',
@@ -239,7 +239,7 @@ class AdminRefundRequestFormTests(TestCase):
         """
         form_data = {
             'hire_booking': self.hire_booking_paid.pk,
-            'service_booking': self.service_booking_paid.pk, # Select both hire and service
+            'service_booking': self.service_booking_paid.pk,                               
             'reason': 'Test reason',
             'staff_notes': 'Test notes',
             'amount_to_refund': '100.00',
@@ -251,7 +251,7 @@ class AdminRefundRequestFormTests(TestCase):
 
         form_data_2 = {
             'hire_booking': self.hire_booking_paid.pk,
-            'sales_booking': self.sales_booking_deposit.pk, # Select both hire and sales
+            'sales_booking': self.sales_booking_deposit.pk,                             
             'reason': 'Test reason',
             'staff_notes': 'Test notes',
             'amount_to_refund': '100.00',
@@ -266,36 +266,36 @@ class AdminRefundRequestFormTests(TestCase):
         """
         Test that the form is invalid if amount_to_refund exceeds amount_paid for any booking type.
         """
-        # Hire Booking
-        form_data_hire = { # Renamed to avoid UnboundLocalError
+                      
+        form_data_hire = {                                     
             'hire_booking': self.hire_booking_paid.pk,
             'reason': 'Customer requested too much.',
             'staff_notes': 'Amount too high.',
-            'amount_to_refund': '500.01', # Exceeds paid amount
+            'amount_to_refund': '500.01',                      
         }
         form_hire = AdminRefundRequestForm(data=form_data_hire)
         self.assertFalse(form_hire.is_valid())
         self.assertIn('amount_to_refund', form_hire.errors)
         self.assertIn("cannot exceed the amount paid", form_hire.errors['amount_to_refund'][0])
 
-        # Service Booking
-        form_data_service = { # Renamed to avoid UnboundLocalError
+                         
+        form_data_service = {                                     
             'service_booking': self.service_booking_paid.pk,
             'reason': 'Customer requested too much.',
             'staff_notes': 'Amount too high.',
-            'amount_to_refund': '250.01', # Exceeds paid amount
+            'amount_to_refund': '250.01',                      
         }
         form_service = AdminRefundRequestForm(data=form_data_service)
         self.assertFalse(form_service.is_valid())
         self.assertIn('amount_to_refund', form_service.errors)
         self.assertIn("cannot exceed the amount paid", form_service.errors['amount_to_refund'][0])
 
-        # Sales Booking
-        form_data_sales = { # Renamed to avoid UnboundLocalError
+                       
+        form_data_sales = {                                     
             'sales_booking': self.sales_booking_deposit.pk,
             'reason': 'Customer requested too much.',
             'staff_notes': 'Amount too high.',
-            'amount_to_refund': '100.01', # Exceeds paid amount
+            'amount_to_refund': '100.01',                      
         }
         form_sales = AdminRefundRequestForm(data=form_data_sales)
         self.assertFalse(form_sales.is_valid())
@@ -308,7 +308,7 @@ class AdminRefundRequestFormTests(TestCase):
         Test that the form is invalid if the selected booking is not in the queryset (e.g., unpaid).
         """
         form_data = {
-            'hire_booking': self.hire_booking_unpaid.pk, # This booking is not in the queryset
+            'hire_booking': self.hire_booking_unpaid.pk,                                      
             'reason': 'Booking not paid.',
             'staff_notes': 'No payment.',
             'amount_to_refund': '10.00',

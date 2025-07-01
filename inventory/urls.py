@@ -1,4 +1,4 @@
-# SCOOTER_SHOP/inventory/urls.py
+                                
 
 from django.urls import path
 
@@ -45,13 +45,13 @@ from .ajax import (
     ajax_search_sales_profiles,
     ajax_get_sales_profile_details,
     ajax_sales_booking_precheck,
-    ajax_motorcycle_availability_check, # Import the new view
+    ajax_motorcycle_availability_check,                      
 )
 
 app_name = 'inventory'
 
 urlpatterns = [
-    # ... (existing user and admin motorcycle URLs)
+                                                   
     path('motorcycles/', motorcycle_list_view.MotorcycleListView.as_view(), {'condition_slug': 'all'}, name='all'),
     path('motorcycles/new/', motorcycle_list_view.MotorcycleListView.as_view(), {'condition_slug': 'new'}, name='new'),
     path('motorcycles/used/', motorcycle_list_view.MotorcycleListView.as_view(), {'condition_slug': 'used'}, name='used'),
@@ -85,14 +85,14 @@ urlpatterns = [
     path('admin/sales-profiles/<int:pk>/delete/', delete_sales_profile.SalesProfileDeleteView.as_view(), name='admin_sales_profile_delete'),
     path('admin/sales-profiles/<int:pk>/details/', sales_profile_details_view.SalesProfileDetailsView.as_view(), name='sales_profile_details'),
 
-    # Sales FAQ Management
+                          
     path('admin/sales-faqs/', sales_FAQ_management_view.SalesFAQManagementView.as_view(), name='sales_faq_management'),
     path('admin/sales-faqs/create/', sales_FAQ_create_update_view.SalesFAQCreateUpdateView.as_view(), name='sales_faq_create'),
     path('admin/sales-faqs/<int:pk>/update/', sales_FAQ_create_update_view.SalesFAQCreateUpdateView.as_view(), name='sales_faq_update'),
     path('admin/sales-faqs/<int:pk>/delete/', sales_FAQ_delete_view.SalesFAQDeleteView.as_view(), name='sales_faq_delete'),
 
 
-    # AJAX Endpoints
+                    
     path('ajax/get-motorcycle-list/', get_motorcycle_list, name='ajax-get-motorcycle-list'),
     path('ajax/get_appointment_times/', get_available_appointment_times_for_date, name='ajax_get_appointment_times'),
     path('ajax/payment-status-check/', ajax_get_payment_status.GetPaymentStatusView.as_view(), name='ajax_sales_payment_status_check'),
@@ -102,5 +102,5 @@ urlpatterns = [
     path('ajax/admin/search-sales-profiles/', ajax_search_sales_profiles.search_sales_profiles_ajax, name='admin_api_search_sales_profiles'),
     path('ajax/admin/get-sales-profile-details/<int:pk>/', ajax_get_sales_profile_details.get_sales_profile_details_ajax, name='admin_api_get_sales_profile_details'),
     path('ajax/admin/sales-booking-precheck/', ajax_sales_booking_precheck.sales_booking_precheck_ajax, name='admin_api_sales_booking_precheck'),
-    path('ajax/check-motorcycle-availability/', ajax_motorcycle_availability_check.check_motorcycle_availability, name='ajax_check_motorcycle_availability'), # New AJAX URL
+    path('ajax/check-motorcycle-availability/', ajax_motorcycle_availability_check.check_motorcycle_availability, name='ajax_check_motorcycle_availability'),               
 ]

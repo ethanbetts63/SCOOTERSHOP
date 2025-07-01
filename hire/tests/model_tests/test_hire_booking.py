@@ -4,9 +4,9 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from unittest import mock
-from django.db import IntegrityError # Import IntegrityError for uniqueness test
+from django.db import IntegrityError                                            
 
-# Import model factories for easy test data creation
+                                                    
 from hire.tests.test_helpers.model_factories import (
     create_hire_booking,
     create_motorcycle,
@@ -29,10 +29,10 @@ class HireBookingModelTest(TestCase):
         Set up non-modified objects used by all test methods.
         This runs once for the entire test class.
         """
-        # Create a default HireSettings instance for lead time tests
+                                                                    
         cls.hire_settings = create_hire_settings(booking_lead_time_hours=2)
 
-        # Create common related objects using factories
+                                                       
         cls.motorcycle = create_motorcycle()
         cls.driver_profile_aus = create_driver_profile(is_australian_resident=True)
         cls.driver_profile_int = create_driver_profile(is_australian_resident=False)
@@ -46,11 +46,11 @@ class HireBookingModelTest(TestCase):
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
-            booking_reference=None # Explicitly set to None
+            booking_reference=None                         
         )
         self.assertIsNotNone(booking.booking_reference)
         self.assertTrue(booking.booking_reference.startswith("HIRE-"))
-        self.assertEqual(len(booking.booking_reference), 4 + 1 + 8) # HIRE-XXXXXXXX
+        self.assertEqual(len(booking.booking_reference), 4 + 1 + 8)                
 
     def test_save_does_not_overwrite_booking_reference(self):
         """
@@ -62,25 +62,25 @@ class HireBookingModelTest(TestCase):
             driver_profile=self.driver_profile_aus,
             booking_reference=custom_ref
         )
-        # Save again to ensure it's not overwritten
+                                                   
         booking.save()
         self.assertEqual(booking.booking_reference, custom_ref)
 
-    # --- clean() method tests ---
+                                  
 
     def test_clean_return_date_before_pickup_date_raises_error(self):
         """
         Test that clean() raises ValidationError if return_date is before pickup_date.
         """
         pickup_date = timezone.now().date() + datetime.timedelta(days=5)
-        return_date = pickup_date - datetime.timedelta(days=1) # Invalid return date
+        return_date = pickup_date - datetime.timedelta(days=1)                      
 
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
             pickup_date=pickup_date,
             return_date=return_date,
-            grand_total=Decimal('100.00') # Ensure grand_total is valid to avoid other errors
+            grand_total=Decimal('100.00')                                                    
         )
         with self.assertRaises(ValidationError) as cm:
             booking.clean()
@@ -98,14 +98,14 @@ class HireBookingModelTest(TestCase):
         """
         pickup_date = timezone.now().date() + datetime.timedelta(days=5)
         pickup_time = datetime.time(14, 0)
-        return_time = datetime.time(10, 0) # Invalid return time on same day
+        return_time = datetime.time(10, 0)                                  
 
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
             pickup_date=pickup_date,
             pickup_time=pickup_time,
-            return_date=pickup_date, # Same day
+            return_date=pickup_date,           
             return_time=return_time,
             grand_total=Decimal('100.00')
         )
@@ -123,14 +123,14 @@ class HireBookingModelTest(TestCase):
         Test that clean() raises ValidationError if pickup_time is in the past
         relative to the booking lead time.
         """
-        # Set lead time to 2 hours
+                                  
         self.hire_settings.booking_lead_time_hours = 2
         self.hire_settings.save()
 
-        # Define a fixed "now" for consistency
+                                              
         fixed_now = timezone.make_aware(datetime.datetime(2025, 1, 1, 10, 0, 0))
 
-        # Set pickup time to be 1 hour from fixed_now (violates 2-hour lead time)
+                                                                                 
         future_pickup_datetime = fixed_now + datetime.timedelta(hours=1)
 
         booking = create_hire_booking(
@@ -155,17 +155,17 @@ class HireBookingModelTest(TestCase):
         """
         Test that clean() passes if pickup_time is valid with lead time.
         """
-        # Set lead time to 2 hours
+                                  
         self.hire_settings.booking_lead_time_hours = 2
         self.hire_settings.save()
 
-        # Define a fixed "now" for consistency
+                                              
         fixed_now = timezone.make_aware(datetime.datetime(2025, 1, 1, 10, 0, 0))
 
-        # Calculate the minimum valid pickup time based on fixed_now and lead time
+                                                                                  
         min_valid_pickup_datetime = fixed_now + datetime.timedelta(hours=self.hire_settings.booking_lead_time_hours)
 
-        # Set pickup time to be safely after the minimum valid pickup time (e.g., 10 minutes later)
+                                                                                                   
         safe_pickup_datetime = min_valid_pickup_datetime + datetime.timedelta(minutes=10)
 
         booking = create_hire_booking(
@@ -175,7 +175,7 @@ class HireBookingModelTest(TestCase):
             pickup_time=safe_pickup_datetime.time(),
             grand_total=Decimal('100.00')
         )
-        # Patch timezone.now() to return our fixed_now for the duration of this test block
+                                                                                          
         with mock.patch('django.utils.timezone.now', return_value=fixed_now):
             try:
                 booking.clean()
@@ -282,7 +282,7 @@ class HireBookingModelTest(TestCase):
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
             grand_total=Decimal('100.00'),
-            amount_paid=Decimal('50.00'), # Not fully paid
+            amount_paid=Decimal('50.00'),                 
             payment_status='paid'
         )
         with self.assertRaises(ValidationError) as cm:
@@ -302,7 +302,7 @@ class HireBookingModelTest(TestCase):
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
             grand_total=Decimal('100.00'),
-            deposit_amount=Decimal('0.00'), # Invalid deposit amount
+            deposit_amount=Decimal('0.00'),                         
             amount_paid=Decimal('0.00'),
             payment_status='deposit_paid'
         )
@@ -324,7 +324,7 @@ class HireBookingModelTest(TestCase):
             driver_profile=self.driver_profile_aus,
             grand_total=Decimal('100.00'),
             deposit_amount=Decimal('20.00'),
-            amount_paid=Decimal('10.00'), # Amount paid is not deposit amount
+            amount_paid=Decimal('10.00'),                                    
             payment_status='deposit_paid'
         )
         with self.assertRaises(ValidationError) as cm:
@@ -373,7 +373,7 @@ class HireBookingModelTest(TestCase):
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
-            package=self.unavailable_package, # This package is not available
+            package=self.unavailable_package,                                
             grand_total=Decimal('100.00')
         )
         with self.assertRaises(ValidationError) as cm:
@@ -389,7 +389,7 @@ class HireBookingModelTest(TestCase):
         """
         Test that a valid HireBooking instance passes clean() without errors.
         """
-        # Set lead time to 0 for this test to simplify date calculation
+                                                                       
         self.hire_settings.booking_lead_time_hours = 0
         self.hire_settings.save()
 
@@ -400,12 +400,12 @@ class HireBookingModelTest(TestCase):
 
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
-            driver_profile=self.driver_profile_int, # Non-Australian resident
+            driver_profile=self.driver_profile_int,                          
             pickup_date=pickup_date,
             pickup_time=pickup_time,
             return_date=return_date,
             return_time=return_time,
-            is_international_booking=True, # Valid for non-Australian resident
+            is_international_booking=True,                                    
             booked_hourly_rate=Decimal('20.00'),
             booked_daily_rate=Decimal('100.00'),
             total_hire_price=Decimal('150.00'),
@@ -458,20 +458,20 @@ class HireBookingModelTest(TestCase):
         """
         Test that a booking can have a payment link and stripe ID.
         """
-        # Create a Payment object with the correct field names
+                                                              
         payment_obj = create_payment(
             amount=Decimal('100.00'),
             currency='AUD',
             status='pending',
-            stripe_payment_intent_id="pi_test_123", # Use correct field name
-            stripe_payment_method_id="pm_test_abc" # Use correct field name
+            stripe_payment_intent_id="pi_test_123",                         
+            stripe_payment_method_id="pm_test_abc"                         
         )
         booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
             grand_total=Decimal('100.00'),
             payment=payment_obj,
-            stripe_payment_intent_id="pi_test_123" # This is stored on HireBooking
+            stripe_payment_intent_id="pi_test_123"                                
         )
         try:
             booking.clean()
@@ -487,7 +487,7 @@ class HireBookingModelTest(TestCase):
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile_aus,
             grand_total=Decimal('100.00'),
-            amount_paid=Decimal('10.00'), # Positive amount paid, but status is 'unpaid'
+            amount_paid=Decimal('10.00'),                                               
             payment_status='unpaid'
         )
         try:
@@ -495,7 +495,7 @@ class HireBookingModelTest(TestCase):
         except ValidationError:
             self.fail("ValidationError raised unexpectedly for 'unpaid' status with positive amount_paid.")
 
-    # --- NEW TESTS FOR PAYMENT AND CONVERSION LOGIC ---
+                                                        
 
     def test_hire_booking_payment_linkage_on_creation(self):
         """
@@ -516,20 +516,20 @@ class HireBookingModelTest(TestCase):
             stripe_payment_intent_id="pi_new_test_456"
         )
 
-        # Assert HireBooking links to Payment
+                                             
         self.assertEqual(hire_booking.payment, payment_obj)
 
-        # Explicitly set the ForeignKey on the Payment object
+                                                             
         payment_obj.hire_booking = hire_booking
-        payment_obj.driver_profile = self.driver_profile_aus # Also set driver_profile
+        payment_obj.driver_profile = self.driver_profile_aus                          
         payment_obj.save()
 
-        # Assert Payment links back to HireBooking via the new ForeignKey
-        # Refresh payment_obj from DB to ensure it has the latest state
+                                                                         
+                                                                       
         payment_obj.refresh_from_db()
         self.assertEqual(payment_obj.hire_booking, hire_booking)
 
-        # Assert Payment also links to driver_profile
+                                                     
         self.assertEqual(payment_obj.driver_profile, self.driver_profile_aus)
 
 

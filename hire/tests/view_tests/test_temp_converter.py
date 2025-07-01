@@ -1,4 +1,4 @@
-# hire/tests/test_temp_hire_converter.py
+                                        
 
 from django.test import TestCase
 from decimal import Decimal
@@ -6,10 +6,10 @@ from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 from unittest.mock import patch, MagicMock
 
-# Function to be tested
+                       
 from hire.temp_hire_converter import convert_temp_to_hire_booking
 
-# Models
+        
 from hire.models import (
     TempHireBooking,
     HireBooking,
@@ -21,7 +21,7 @@ from payments.models import Payment
 from inventory.models import Motorcycle
 from hire.models.driver_profile import DriverProfile
 
-# Import model factories using the specified path
+                                                 
 from hire.tests.test_helpers.model_factories import (
     create_temp_hire_booking,
     create_temp_booking_addon,
@@ -43,7 +43,7 @@ class TestConvertTempToHireBooking(TestCase):
         Set up common data for tests.
         This method is called before each test function in this class.
         """
-        create_hire_settings() # Ensure HireSettings exist
+        create_hire_settings()                            
         self.motorcycle = create_motorcycle(daily_hire_rate=Decimal('100.00'), hourly_hire_rate=Decimal('20.00'))
         self.driver_profile = create_driver_profile(name="Test Driver")
         self.temp_booking = create_temp_hire_booking(
@@ -75,7 +75,7 @@ class TestConvertTempToHireBooking(TestCase):
             stripe_payment_intent_id=stripe_id
         )
 
-        # Assert HireBooking is created and has correct attributes
+                                                                  
         self.assertIsNotNone(hire_booking)
         self.assertIsInstance(hire_booking, HireBooking)
         self.assertEqual(hire_booking.motorcycle, self.motorcycle)
@@ -95,18 +95,18 @@ class TestConvertTempToHireBooking(TestCase):
         self.assertEqual(hire_booking.deposit_amount, self.temp_booking.deposit_amount)
         self.assertEqual(hire_booking.currency, self.temp_booking.currency)
 
-        # Assert payment related fields
+                                       
         self.assertEqual(hire_booking.amount_paid, amount_paid)
         self.assertEqual(hire_booking.payment_status, booking_payment_status)
         self.assertEqual(hire_booking.payment_method, payment_method)
         self.assertEqual(hire_booking.stripe_payment_intent_id, stripe_id)
         self.assertEqual(hire_booking.status, 'confirmed')
 
-        # Assert TempHireBooking is deleted
+                                           
         with self.assertRaises(TempHireBooking.DoesNotExist):
             TempHireBooking.objects.get(id=temp_booking_id)
 
-        # Assert no BookingAddOns were created
+                                              
         self.assertEqual(BookingAddOn.objects.filter(booking=hire_booking).count(), 0)
 
     def test_convert_booking_with_addons_successful(self):
@@ -145,10 +145,10 @@ class TestConvertTempToHireBooking(TestCase):
 
         self.assertIsNotNone(hire_booking)
         self.assertEqual(hire_booking.total_addons_price, Decimal('40.00'))
-        # Adjust expected grand total based on your factory/logic
-        self.assertEqual(hire_booking.grand_total, Decimal('240.00')) # 200 (base) + 40 (addons)
+                                                                 
+        self.assertEqual(hire_booking.grand_total, Decimal('240.00'))                           
 
-        # Assert BookingAddOns are created
+                                          
         self.assertEqual(BookingAddOn.objects.filter(booking=hire_booking).count(), 2)
         ba1 = BookingAddOn.objects.get(booking=hire_booking, addon=addon1)
         ba2 = BookingAddOn.objects.get(booking=hire_booking, addon=addon2)
@@ -157,7 +157,7 @@ class TestConvertTempToHireBooking(TestCase):
         self.assertEqual(ba2.quantity, temp_addon2.quantity)
         self.assertEqual(ba2.booked_addon_price, temp_addon2.booked_addon_price)
 
-        # Assert TempHireBooking and its TempBookingAddOns are deleted
+                                                                      
         with self.assertRaises(TempHireBooking.DoesNotExist):
             TempHireBooking.objects.get(id=temp_booking_id)
         self.assertEqual(TempBookingAddOn.objects.filter(temp_booking_id=temp_booking_id).count(), 0)
@@ -166,21 +166,21 @@ class TestConvertTempToHireBooking(TestCase):
         """
         Test conversion when an existing Payment object is provided.
         """
-        # Create the payment object using the existing factory, then manually link
-        # This workaround is needed if the create_payment factory is not yet updated
-        # to accept temp_hire_booking and driver_profile directly.
+                                                                                  
+                                                                                    
+                                                                  
         payment_obj = create_payment(
             amount=self.temp_booking.grand_total,
             status='authorized'
-            # stripe_payment_intent_id and stripe_payment_method_id can be added if needed for this test
+                                                                                                        
         )
         payment_obj.temp_hire_booking = self.temp_booking
-        # For this specific test, driver_profile on payment_obj is initially None,
-        # and we expect convert_temp_to_hire_booking to populate it from the hire_booking.
+                                                                                  
+                                                                                          
         payment_obj.driver_profile = None
         payment_obj.save()
 
-        payment_obj_id = payment_obj.id # Use the UUID primary key
+        payment_obj_id = payment_obj.id                           
         temp_booking_id = self.temp_booking.id
         payment_method = 'online'
         booking_payment_status = 'paid'
@@ -196,13 +196,13 @@ class TestConvertTempToHireBooking(TestCase):
 
         self.assertIsNotNone(hire_booking)
 
-        # Assert Payment object is updated
+                                          
         updated_payment_obj = Payment.objects.get(id=payment_obj_id)
         self.assertEqual(updated_payment_obj.hire_booking, hire_booking)
         self.assertIsNone(updated_payment_obj.temp_hire_booking)
-        self.assertEqual(updated_payment_obj.driver_profile, hire_booking.driver_profile) # Check it's linked
+        self.assertEqual(updated_payment_obj.driver_profile, hire_booking.driver_profile)                    
 
-        # Assert TempHireBooking is deleted
+                                           
         with self.assertRaises(TempHireBooking.DoesNotExist):
             TempHireBooking.objects.get(id=temp_booking_id)
 
@@ -217,7 +217,7 @@ class TestConvertTempToHireBooking(TestCase):
             temp_booking=self.temp_booking,
             payment_method='online',
             booking_payment_status='paid',
-            amount_paid_on_booking=self.temp_booking.grand_total # grand_total is 200, deposit was None
+            amount_paid_on_booking=self.temp_booking.grand_total                                       
         )
         self.assertEqual(hire_booking.deposit_amount, Decimal('0.00'))
 
@@ -232,8 +232,8 @@ class TestConvertTempToHireBooking(TestCase):
         hire_booking = convert_temp_to_hire_booking(
             temp_booking=self.temp_booking,
             payment_method='online',
-            booking_payment_status='deposit_paid', # Match scenario
-            amount_paid_on_booking=expected_deposit # Amount paid is the deposit
+            booking_payment_status='deposit_paid',                 
+            amount_paid_on_booking=expected_deposit                             
         )
         self.assertEqual(hire_booking.deposit_amount, expected_deposit)
 
@@ -246,7 +246,7 @@ class TestConvertTempToHireBooking(TestCase):
         addon1 = create_addon(name="Faulty Addon")
         create_temp_booking_addon(temp_booking=self.temp_booking, addon=addon1, quantity=1)
 
-        # Expect an exception and verify its message
+                                                    
         with self.assertRaises(Exception) as cm:
             convert_temp_to_hire_booking(
                 temp_booking=self.temp_booking,
@@ -256,27 +256,27 @@ class TestConvertTempToHireBooking(TestCase):
             )
         self.assertEqual(str(cm.exception), "Simulated DB error")
 
-        # Assert TempHireBooking still exists (transaction rolled back)
+                                                                       
         self.assertTrue(TempHireBooking.objects.filter(id=temp_booking_id).exists())
 
-        # Assert no HireBooking was permanently created
+                                                       
         self.assertFalse(HireBooking.objects.filter(
             motorcycle=self.temp_booking.motorcycle,
             pickup_date=self.temp_booking.pickup_date
         ).exists())
 
-        # Assert TempBookingAddOns still exist
+                                              
         self.assertTrue(TempBookingAddOn.objects.filter(temp_booking_id=temp_booking_id).exists())
 
     def test_all_fields_copied_correctly(self):
         """
         A more comprehensive check that all relevant fields are copied.
         """
-        # Customize temp_booking with more specific non-default values
+                                                                      
         self.temp_booking.total_hire_price = Decimal('250.75')
         self.temp_booking.total_addons_price = Decimal('30.50')
         self.temp_booking.total_package_price = Decimal('50.25')
-        self.temp_booking.grand_total = Decimal('331.50') # 250.75 + 30.50 + 50.25
+        self.temp_booking.grand_total = Decimal('331.50')                         
         self.temp_booking.is_international_booking = True
         self.temp_booking.booked_daily_rate = Decimal('125.37')
         self.temp_booking.booked_hourly_rate = Decimal('25.15')
@@ -286,7 +286,7 @@ class TestConvertTempToHireBooking(TestCase):
 
         payment_method = 'card'
         booking_payment_status = 'deposit_paid'
-        amount_paid = self.temp_booking.deposit_amount # Amount paid is the deposit
+        amount_paid = self.temp_booking.deposit_amount                             
         stripe_id = "pi_anotherTest789"
 
         hire_booking = convert_temp_to_hire_booking(

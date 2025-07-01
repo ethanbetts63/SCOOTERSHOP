@@ -1,4 +1,4 @@
-# hire_booking_management.py
+                            
 import calendar
 from datetime import date, timedelta, datetime
 from django.shortcuts import render
@@ -50,7 +50,7 @@ def get_hire_bookings_json(request):
                 )
 
         except (ValueError, TypeError):
-            # Error during date parsing, continue without filtering
+                                                                   
             pass
 
     events = []

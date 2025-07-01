@@ -1,7 +1,7 @@
 from django.db import models
-from .page_content_base import PageContentBase # Import the base class
+from .page_content_base import PageContentBase                        
 
-# Content for About page
+                        
 class AboutPageContent(PageContentBase):
     intro_text = models.TextField(help_text="Introduction text at the top of the About page")
     sales_title = models.CharField(max_length=100, default="Sales")

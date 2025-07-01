@@ -1,4 +1,4 @@
-# hire/models/temp_hire_booking.py
+                                  
 
 import uuid
 from django.db import models
@@ -14,48 +14,48 @@ class TempHireBooking(models.Model):
     Temporarily stores booking details as the user progresses through the steps.
     Data is copied to HireBooking upon successful completion.
     """
-    # Link to the session using a UUID for security and uniqueness
+                                                                  
     session_uuid = models.UUIDField(default=uuid.uuid4, unique=True)
-    # Optional: Link to a registered user if they are logged in
-    # from django.conf import settings
-    # user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+                                                               
+                                      
+                                                                                                          
 
-    # --- Booking Details collected across steps ---
-    # Step 1: Dates, Times, License
+                                                    
+                                   
     pickup_date = models.DateField(null=True, blank=True)
     pickup_time = models.TimeField(null=True, blank=True)
     return_date = models.DateField(null=True, blank=True)
     return_time = models.TimeField(null=True, blank=True)
-    has_motorcycle_license = models.BooleanField(default=False) # Store license status here
+    has_motorcycle_license = models.BooleanField(default=False)                            
 
-    # Step 2: Selected Motorcycle
+                                 
     motorcycle = models.ForeignKey(
         Motorcycle,
-        on_delete=models.SET_NULL, # Use SET_NULL in case the motorcycle is deleted
+        on_delete=models.SET_NULL,                                                 
         related_name='temp_hire_bookings',
         null=True, blank=True
     )
 
-    # Step 3: Add-ons and Package
-    # Add-ons handled via TempBookingAddOn intermediate model below
+                                 
+                                                                   
     package = models.ForeignKey(
         Package,
-        on_delete=models.SET_NULL, # Use SET_NULL
+        on_delete=models.SET_NULL,               
         related_name='temp_hire_bookings',
         null=True, blank=True
     )
 
-    # Step 4: Driver Details
+                            
     driver_profile = models.ForeignKey(
         DriverProfile,
-        on_delete=models.SET_NULL, # Use SET_NULL
+        on_delete=models.SET_NULL,               
         related_name='temp_hire_bookings',
         null=True, blank=True
     )
-    # Need a way to track if this is an international booking based on driver profile
+                                                                                     
     is_international_booking = models.BooleanField(default=False)
 
-    # Choices for payment method
+                                
     PAYMENT_METHOD_CHOICES = [
         ('online_full', 'Full Payment Online'),
         ('online_deposit', 'Deposit Payment Online'),
@@ -69,14 +69,14 @@ class TempHireBooking(models.Model):
         help_text="The selected payment option for this booking."
     )
 
-    # --- Calculated / Booked Prices ---
-    # Store the rates and total price at the time the bike is selected/confirmed
+                                        
+                                                                                
     booked_hourly_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     booked_daily_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
 
     total_hire_price = models.DecimalField(
         max_digits=10, decimal_places=2,
-        null=True, blank=True, # Price might not be calculated until step 2 or later
+        null=True, blank=True,                                                      
         help_text="Calculated total price for the motorcycle hire duration only."
     )
     total_addons_price = models.DecimalField(
@@ -85,23 +85,23 @@ class TempHireBooking(models.Model):
          null=True, blank=True,
          help_text="Calculated total price for selected add-ons."
     )
-    # Store booked price of package at the time of selection
+                                                            
     total_package_price = models.DecimalField(
         max_digits=10, decimal_places=2,
         null=True, blank=True
     )
     grand_total = models.DecimalField(
          max_digits=10, decimal_places=2,
-         null=True, blank=True, # Calculated later
+         null=True, blank=True,                   
          help_text="Sum of total_hire_price, total_addons_price, and total_package_price."
     )
-    # Add deposit_amount field for online_deposit option
+                                                        
     deposit_amount = models.DecimalField(
         max_digits=10, decimal_places=2,
         null=True, blank=True,
         help_text="The deposit amount required for the booking."
     )
-    # Add currency field to TempHireBooking model
+                                                 
     currency = models.CharField(
         max_length=3,
         default='AUD', 
@@ -109,7 +109,7 @@ class TempHireBooking(models.Model):
     )
 
 
-    # --- Timestamps ---
+                        
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

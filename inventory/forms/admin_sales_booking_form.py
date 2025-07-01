@@ -1,4 +1,4 @@
-# SCOOTER_SHOP/inventory/forms/admin_sales_booking_form.py
+                                                          
 
 from django import forms
 from inventory.models import SalesBooking, Motorcycle, SalesProfile, InventorySettings
@@ -146,7 +146,7 @@ class AdminSalesBookingForm(forms.ModelForm):
             
             else:
                 if motorcycle.status in ['reserved', 'sold', 'unavailable']:
-                    # FIX: Compare by PK for robustness.
+                                                        
                     if not (instance_motorcycle and instance_motorcycle.pk == motorcycle.pk):
                         should_warn_about_motorcycle_status = True
                         warning_message_text = _(f"Warning: The selected motorcycle '{motorcycle.title}' is currently '{motorcycle.get_status_display()}'. Confirm this is acceptable.")

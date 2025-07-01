@@ -1,4 +1,4 @@
-# SCOOTER_SHOP/dashboard/views/blocked_service_dates_management.py
+                                                                  
 
 from django.shortcuts import render, redirect
 from django.views import View
@@ -15,9 +15,9 @@ class BlockedServiceDateManagementView(View):
     template_name = 'service/blocked_service_dates_management.html'
     form_class = BlockedServiceDateForm
 
-    # Temporarily skipping UserPassesTestMixin as per instructions
-    # def test_func(self):
-    #     return self.request.user.is_staff
+                                                                  
+                          
+                                           
 
     def get(self, request, *args, **kwargs):
         """
@@ -25,13 +25,13 @@ class BlockedServiceDateManagementView(View):
         and lists all existing blocked service dates.
         """
         form = self.form_class()
-        blocked_service_dates = BlockedServiceDate.objects.all() # Fetch all blocked dates
+        blocked_service_dates = BlockedServiceDate.objects.all()                          
 
         context = {
             'page_title': 'Blocked Service Dates Management',
             'form': form,
             'blocked_dates': blocked_service_dates,
-            'active_tab': 'service_booking' # Assuming this is for navigation highlighting
+            'active_tab': 'service_booking'                                               
         }
         return render(request, self.template_name, context)
 
@@ -44,11 +44,11 @@ class BlockedServiceDateManagementView(View):
         if form.is_valid():
             form.save()
             messages.success(request, 'Blocked service date added successfully!')
-            # Redirect to the same page to show the updated list and clear the form
+                                                                                   
             return redirect('service:blocked_service_dates_management')
         else:
             messages.error(request, 'Error adding blocked service date. Please check the form.')
-            # If form is invalid, re-render the page with errors and existing blocked dates
+                                                                                           
             blocked_service_dates = BlockedServiceDate.objects.all()
             context = {
                 'page_title': 'Blocked Service Dates Management',

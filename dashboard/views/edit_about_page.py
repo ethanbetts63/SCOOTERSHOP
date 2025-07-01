@@ -1,4 +1,4 @@
-# SCOOTER_SHOP/dashboard/views/edit_about_page.py
+                                                 
 
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -15,7 +15,7 @@ def edit_about_page(request):
         if form.is_valid():
             form.save()
             messages.success(request, "About page content updated successfully!")
-            return redirect('core:about') # Assuming 'core:about' exists
+            return redirect('core:about')                               
         else:
             messages.error(request, "Please correct the errors below.")
     else:

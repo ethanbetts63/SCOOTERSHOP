@@ -1,10 +1,10 @@
 from django.test import TestCase
-from django.db.utils import IntegrityError # For testing unique constraints
+from django.db.utils import IntegrityError                                 
 
-# Import the MotorcycleCondition model
+                                      
 from inventory.models import MotorcycleCondition
 
-# Import the MotorcycleConditionFactory from your factories file
+                                                                
 from ..test_helpers.model_factories import MotorcycleConditionFactory
 
 
@@ -47,7 +47,7 @@ class MotorcycleConditionModelTest(TestCase):
         self.assertFalse(field.blank)
         self.assertFalse(field.null)
 
-        # Test unique constraint for 'name'
+                                           
         with self.assertRaises(IntegrityError):
             MotorcycleCondition.objects.create(name='new', display_name='Another New')
 

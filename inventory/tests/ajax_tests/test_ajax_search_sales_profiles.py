@@ -1,4 +1,4 @@
-# inventory/tests/ajax_tests/test_ajax_search_sales_profiles.py
+                                                               
 
 import json
 from django.test import TestCase, RequestFactory
@@ -18,7 +18,7 @@ class AjaxSearchSalesProfilesTest(TestCase):
         cls.staff_user = UserFactory(is_staff=True)
         cls.non_staff_user = UserFactory(is_staff=False)
 
-        # FIX: Use more distinct data to prevent random test failures from coincidental matches.
+                                                                                                
         cls.profile1 = SalesProfileFactory(name='Johnathan Doe', email='john.doe@example.com', phone_number='111-222-3333')
         cls.profile2 = SalesProfileFactory(name='Alice Williams', email='alice.w@email.com', phone_number='444-555-6666')
         cls.profile3 = SalesProfileFactory(name='Peter Jones', email='peter.j@test.com', phone_number='777-888-9999', address_line_1='123 Test Street')
@@ -42,7 +42,7 @@ class AjaxSearchSalesProfilesTest(TestCase):
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertIn('profiles', data)
-        # Should only find 'Johnathan Doe'
+                                          
         self.assertEqual(len(data['profiles']), 1)
         
         profile_data = data['profiles'][0]
@@ -80,15 +80,15 @@ class AjaxSearchSalesProfilesTest(TestCase):
         self.assertEqual(len(data['profiles']), 0)
         
     def test_search_returns_distinct_results(self):
-        # A profile where name and email both contain 'Jones'
+                                                             
         SalesProfileFactory(name='Xavier Jones', email='x.jones@example.com')
         
         response = self._get_response(self.staff_user, {'query': 'Jones'})
         data = json.loads(response.content)
         
-        # We should get profile3 ('Peter Jones') and 'Xavier Jones'
+                                                                   
         self.assertEqual(len(data['profiles']), 2)
         
-        # Ensure 'Peter Jones' is not duplicated
+                                                
         ids = [p['id'] for p in data['profiles']]
         self.assertEqual(ids.count(self.profile3.pk), 1)

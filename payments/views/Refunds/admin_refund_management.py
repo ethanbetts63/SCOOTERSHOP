@@ -7,10 +7,10 @@ from datetime import timedelta
 from mailer.utils import send_templated_email
 from django.conf import settings
 
-# Import booking and profile models to access their specific fields and types
+                                                                             
 from hire.models import HireBooking, DriverProfile
 from service.models import ServiceBooking, ServiceProfile
-from inventory.models import SalesBooking, SalesProfile # Import SalesBooking and SalesProfile
+from inventory.models import SalesBooking, SalesProfile                                       
 
 
 @method_decorator(staff_member_required, name='dispatch')
@@ -21,7 +21,7 @@ class AdminRefundManagement(ListView):
     This view is generalized to handle HireBookings, ServiceBookings, and SalesBookings.
     """
     model = RefundRequest
-    template_name = 'payments/admin_refund_management.html' # Renamed to generic template name
+    template_name = 'payments/admin_refund_management.html'                                   
     context_object_name = 'refund_requests'
     paginate_by = 20
 
@@ -44,7 +44,7 @@ class AdminRefundManagement(ListView):
                 booking_object = None
                 customer_profile_object = None
                 booking_reference_for_email = "N/A"
-                email_template_name = 'emails/user_refund_request_expired_unverified.html' # Default template
+                email_template_name = 'emails/user_refund_request_expired_unverified.html'                   
 
                 if refund_request.hire_booking:
                     booking_object = refund_request.hire_booking
@@ -54,13 +54,13 @@ class AdminRefundManagement(ListView):
                     booking_object = refund_request.service_booking
                     customer_profile_object = refund_request.service_profile
                     booking_reference_for_email = refund_request.service_booking.service_booking_reference
-                elif refund_request.sales_booking: # Added SalesBooking
+                elif refund_request.sales_booking:                     
                     booking_object = refund_request.sales_booking
                     customer_profile_object = refund_request.sales_profile
                     booking_reference_for_email = refund_request.sales_booking.sales_booking_reference
 
 
-                # Fallback to user email from profile if request_email not set on RefundRequest
+                                                                                               
                 if not recipient_email and customer_profile_object and customer_profile_object.user:
                     recipient_email = customer_profile_object.user.email
 
@@ -76,20 +76,20 @@ class AdminRefundManagement(ListView):
                         subject=f"Important: Your Refund Request for Booking {booking_reference_for_email} Has Expired",
                         template_name=email_template_name,
                         context=admin_email_context,
-                        booking=booking_object, # Pass generic booking object
-                        # Conditionally pass driver/service/sales profile based on type
+                        booking=booking_object,                              
+                                                                                       
                         driver_profile=customer_profile_object if isinstance(customer_profile_object, DriverProfile) else None,
                         service_profile=customer_profile_object if isinstance(customer_profile_object, ServiceProfile) else None,
-                        sales_profile=customer_profile_object if isinstance(customer_profile_object, SalesProfile) else None, # Added SalesProfile
+                        sales_profile=customer_profile_object if isinstance(customer_profile_object, SalesProfile) else None,                     
                     )
                 else:
-                    # If no recipient email found, log or handle silently
+                                                                         
                     pass
 
                 refund_request.delete()
 
             except Exception as e:
-                pass # Fail silently as per previous requests if no explicit logging is needed
+                pass                                                                          
 
 
     def get_queryset(self):

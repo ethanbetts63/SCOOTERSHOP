@@ -22,7 +22,7 @@ from ..test_helpers.model_factories import (
     CustomerMotorcycleFactory,
 )
 
-# Set to True to send bookings to MechanicDesk for testing purposes
+                                                                   
 SEND_BOOKINGS_TO_MECHANICDESK = False
 
 @skipIf(not settings.STRIPE_SECRET_KEY, "Stripe API key not configured in settings")
@@ -49,7 +49,7 @@ class TestLoggedInOnlinePaymentFlow(TestCase):
         )
         self.user = UserFactory(username='onlineuser')
 
-        # Conditionally set user's first name for testing
+                                                         
         user_name = 'Online full account User'
         if not SEND_BOOKINGS_TO_MECHANICDESK:
             user_name = 'Test online full account User'

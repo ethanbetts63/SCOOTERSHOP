@@ -62,20 +62,20 @@ class AdminServiceProfileForm(forms.ModelForm):
         """
         user = self.cleaned_data.get('user')
 
-        # If a user is selected:
+                                
         if user:
-            # Check if this user is already linked to *any* ServiceProfile
+                                                                          
             existing_profile_for_user = ServiceProfile.objects.filter(user=user).first()
 
-            # If a profile is found for this user:
+                                                  
             if existing_profile_for_user:
-                # If we are UPDATING an instance (self.instance exists)
-                # AND the existing profile found is the *same* instance we are currently editing,
-                # then this is a valid re-submission of the existing link.
+                                                                       
+                                                                                                 
+                                                                          
                 if self.instance and existing_profile_for_user.pk == self.instance.pk:
-                    pass # It's the same profile being edited, so allow.
+                    pass                                                
                 else:
-                    # Otherwise, the user is linked to a *different* profile, which is an error.
+                                                                                                
                     raise forms.ValidationError(
                         f"This user ({user.username}) is already linked to another Service Profile."
                     )
@@ -91,7 +91,7 @@ class AdminServiceProfileForm(forms.ModelForm):
         email = cleaned_data.get('email')
         phone_number = cleaned_data.get('phone_number')
 
-        # If no user is selected, then name, email, and phone_number become mandatory.
+                                                                                      
         if not user:
             if not name:
                 self.add_error('name', "Full Name is required if no user account is linked.")

@@ -5,7 +5,7 @@ import datetime
 import json
 from unittest.mock import patch
 
-# Corrected import path for the view function
+                                             
 from service.ajax.ajax_get_available_dropoff_times_for_date import get_available_dropoff_times_for_date
 
 class AjaxGetAvailableDropoffTimesForDateTest(TestCase):
@@ -22,13 +22,13 @@ class AjaxGetAvailableDropoffTimesForDateTest(TestCase):
         """
         self.factory = RequestFactory()
 
-    # Corrected patch path: specify the module where get_available_dropoff_times is imported
+                                                                                            
     @patch('service.ajax.ajax_get_available_dropoff_times_for_date.get_available_dropoff_times')
     def test_missing_date_parameter(self, mock_get_available_dropoff_times):
         """
         Test that the view returns a 400 error if the 'date' parameter is missing.
         """
-        request = self.factory.get('/ajax/available-times/') # No 'date' parameter
+        request = self.factory.get('/ajax/available-times/')                      
         response = get_available_dropoff_times_for_date(request)
 
         self.assertEqual(response.status_code, 400)
@@ -38,31 +38,31 @@ class AjaxGetAvailableDropoffTimesForDateTest(TestCase):
         self.assertEqual(content['error'], 'Date parameter is missing.')
         mock_get_available_dropoff_times.assert_not_called()
 
-    # Corrected patch path
+                          
     @patch('service.ajax.ajax_get_available_dropoff_times_for_date.get_available_dropoff_times')
     def test_invalid_date_format(self, mock_get_available_dropoff_times):
         """
         Test that the view returns a 400 error for an invalid date format.
         """
-        request = self.factory.get('/ajax/available-times/?date=2025/06/15') # Invalid format
+        request = self.factory.get('/ajax/available-times/?date=2025/06/15')                 
         response = get_available_dropoff_times_for_date(request)
 
         self.assertEqual(response.status_code, 400)
         self.assertIsInstance(response, JsonResponse)
         content = json.loads(response.content)
         self.assertIn('error', content)
-        # Corrected expected error message to match the view's actual output
+                                                                            
         self.assertEqual(content['error'], 'Invalid date format. Use YYYY-MM-DD.')
         mock_get_available_dropoff_times.assert_not_called()
 
-    # Corrected patch path
+                          
     @patch('service.ajax.ajax_get_available_dropoff_times_for_date.get_available_dropoff_times')
     def test_valid_date_no_available_times(self, mock_get_available_dropoff_times):
         """
         Test that the view returns an empty list if get_available_dropoff_times
         returns an empty list (e.g., all slots are blocked or no settings).
         """
-        # Mock the utility function to return an empty list
+                                                           
         mock_get_available_dropoff_times.return_value = []
 
         test_date = datetime.date(2025, 6, 20)
@@ -74,16 +74,16 @@ class AjaxGetAvailableDropoffTimesForDateTest(TestCase):
         content = json.loads(response.content)
         self.assertIn('available_times', content)
         self.assertEqual(content['available_times'], [])
-        # Ensure the utility function was called with the correct date
+                                                                      
         mock_get_available_dropoff_times.assert_called_once_with(test_date)
 
-    # Corrected patch path
+                          
     @patch('service.ajax.ajax_get_available_dropoff_times_for_date.get_available_dropoff_times')
     def test_valid_date_with_available_times(self, mock_get_available_dropoff_times):
         """
         Test that the view correctly returns formatted available times.
         """
-        # Mock the utility function to return a list of times
+                                                             
         mock_times = ["09:00", "09:30", "10:00"]
         mock_get_available_dropoff_times.return_value = mock_times
 
@@ -104,7 +104,7 @@ class AjaxGetAvailableDropoffTimesForDateTest(TestCase):
         self.assertEqual(content['available_times'], expected_formatted_times)
         mock_get_available_dropoff_times.assert_called_once_with(test_date)
 
-    # Corrected patch path
+                          
     @patch('service.ajax.ajax_get_available_dropoff_times_for_date.get_available_dropoff_times')
     def test_only_get_requests_allowed(self, mock_get_available_dropoff_times):
         """
@@ -115,6 +115,6 @@ class AjaxGetAvailableDropoffTimesForDateTest(TestCase):
         request = self.factory.post(f'/ajax/available-times/?date={test_date.strftime("%Y-%m-%d")}')
         response = get_available_dropoff_times_for_date(request)
 
-        # @require_GET decorator returns 405 Method Not Allowed for non-GET requests
+                                                                                    
         self.assertEqual(response.status_code, 405)
         mock_get_available_dropoff_times.assert_not_called()

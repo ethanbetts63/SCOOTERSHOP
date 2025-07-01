@@ -3,7 +3,7 @@ from decimal import Decimal
 from unittest import mock
 
 from django.test import TestCase, override_settings
-from datetime import timezone as dt_timezone # Use standard library timezone for utc
+from datetime import timezone as dt_timezone                                        
 
 import stripe
 from payments.utils.extract_stripe_refund_data import extract_stripe_refund_data
@@ -22,9 +22,9 @@ class ExtractStripeRefundDataTestCase(TestCase):
         """
         Set up common data for tests.
         """
-        # Mock timezone.now for consistent 'created' timestamps in test data
-        # Use datetime.timezone.utc for setting tzinfo directly.
-        # This is the standard Python 3.2+ way for UTC.
+                                                                            
+                                                                
+                                                       
         self.mock_now = datetime.datetime(2023, 1, 15, 10, 0, 0, tzinfo=dt_timezone.utc)
         self.mock_now_patch = mock.patch('django.utils.timezone.now', return_value=self.mock_now)
         self.mock_now_patch.start()
@@ -40,7 +40,7 @@ class ExtractStripeRefundDataTestCase(TestCase):
         """
         Test extraction when the event object is a 'charge' with a full refund.
         """
-        # Create a mock for the charge object returned by stripe.Charge.retrieve
+                                                                                
         mock_retrieved_charge = mock.Mock()
         mock_retrieved_charge.id = 'ch_full_refund'
         mock_retrieved_charge.amount_refunded = 10000
@@ -50,13 +50,13 @@ class ExtractStripeRefundDataTestCase(TestCase):
             ]
         )
 
-        # Configure the 'get' method of the mock to return the correct attributes
+                                                                                 
         def mock_get_attribute(key, default=None):
             if key == 'id':
                 return mock_retrieved_charge.id
             elif key == 'amount_refunded':
                 return mock_retrieved_charge.amount_refunded
-            elif key == 'refunds': # Added for charge objects if refunds is accessed via get
+            elif key == 'refunds':                                                          
                 return mock_retrieved_charge.refunds
             return default
 
@@ -139,7 +139,7 @@ class ExtractStripeRefundDataTestCase(TestCase):
         result = extract_stripe_refund_data(event_object_data)
 
         self.assertEqual(result['refunded_amount_decimal'], Decimal('50.00'))
-        self.assertEqual(result['stripe_refund_id'], 're_partial_2')  # Should pick the latest refund
+        self.assertEqual(result['stripe_refund_id'], 're_partial_2')                                 
         self.assertEqual(result['refund_status'], 'succeeded')
         self.assertEqual(result['charge_id'], 'ch_partial_refund')
         self.assertTrue(result['is_charge_object'])
@@ -197,7 +197,7 @@ class ExtractStripeRefundDataTestCase(TestCase):
         Test extraction when the event object is a 'refund' and the associated
         charge can be retrieved successfully.
         """
-        # Create a mock for the charge object returned by stripe.Charge.retrieve
+                                                                                
         mock_retrieved_charge = mock.Mock()
         mock_retrieved_charge.id = 'ch_refunded_linked'
         mock_retrieved_charge.amount_refunded = 7500
@@ -207,7 +207,7 @@ class ExtractStripeRefundDataTestCase(TestCase):
             ]
         )
 
-        # Configure the 'get' method of the mock to return the correct attributes
+                                                                                 
         def mock_get_attribute(key, default=None):
             if key == 'id':
                 return mock_retrieved_charge.id
@@ -225,14 +225,14 @@ class ExtractStripeRefundDataTestCase(TestCase):
             'object': 'refund',
             'id': 're_linked_1',
             'status': 'succeeded',
-            'amount': 7500,  # This amount is for the specific refund
+            'amount': 7500,                                          
             'charge': 'ch_refunded_linked',
             'created': self.mock_now.timestamp()
         }
 
         result = extract_stripe_refund_data(event_object_data)
 
-        self.assertEqual(result['refunded_amount_decimal'], Decimal('75.00')) # Should come from amount_refunded on charge
+        self.assertEqual(result['refunded_amount_decimal'], Decimal('75.00'))                                             
         self.assertEqual(result['stripe_refund_id'], 're_linked_1')
         self.assertEqual(result['refund_status'], 'succeeded')
         self.assertEqual(result['charge_id'], 'ch_refunded_linked')
@@ -249,20 +249,20 @@ class ExtractStripeRefundDataTestCase(TestCase):
             'object': 'refund',
             'id': 're_failed_charge_lookup',
             'status': 'failed',
-            'amount': 2500,  # This amount should be used as fallback
+            'amount': 2500,                                          
             'charge': 'ch_missing',
             'created': self.mock_now.timestamp()
         }
 
         result = extract_stripe_refund_data(event_object_data)
 
-        self.assertEqual(result['refunded_amount_decimal'], Decimal('25.00')) # Falls back to refund object's amount
+        self.assertEqual(result['refunded_amount_decimal'], Decimal('25.00'))                                       
         self.assertEqual(result['stripe_refund_id'], 're_failed_charge_lookup')
         self.assertEqual(result['refund_status'], 'failed')
         self.assertEqual(result['charge_id'], 'ch_missing')
         self.assertFalse(result['is_charge_object'])
         self.assertTrue(result['is_refund_object'])
-        # Ensure retrieve was called even if it failed
+                                                      
         mock_stripe_charge_retrieve.assert_called_once_with('ch_missing')
 
     @mock.patch('stripe.Charge.retrieve')
@@ -276,7 +276,7 @@ class ExtractStripeRefundDataTestCase(TestCase):
             'id': 're_no_charge',
             'status': 'succeeded',
             'amount': 5000,
-            'charge': None,  # No charge ID
+            'charge': None,                
             'created': self.mock_now.timestamp()
         }
 
@@ -288,7 +288,7 @@ class ExtractStripeRefundDataTestCase(TestCase):
         self.assertIsNone(result['charge_id'])
         self.assertFalse(result['is_charge_object'])
         self.assertTrue(result['is_refund_object'])
-        mock_stripe_charge_retrieve.assert_not_called()  # Should not attempt to retrieve charge
+        mock_stripe_charge_retrieve.assert_not_called()                                         
 
     def test_extract_from_unknown_object_type(self):
         """
@@ -320,7 +320,7 @@ class ExtractStripeRefundDataTestCase(TestCase):
         latest_refund_time = self.mock_now + datetime.timedelta(minutes=5)
         mock_retrieved_charge = mock.Mock()
         mock_retrieved_charge.id = 'ch_amount_refunded_none'
-        mock_retrieved_charge.amount_refunded = None # Set to None
+        mock_retrieved_charge.amount_refunded = None              
         mock_retrieved_charge.refunds = mock.Mock(
             data=[
                 {'id': 're_none_amount_1', 'status': 'succeeded', 'amount': 3000, 'created': self.mock_now.timestamp()},
@@ -345,7 +345,7 @@ class ExtractStripeRefundDataTestCase(TestCase):
             'object': 'charge',
             'id': 'ch_amount_refunded_none',
             'amount': 10000,
-            'amount_refunded': None, # Simulate case where amount_refunded might be None
+            'amount_refunded': None,                                                    
             'refunds': {
                 'object': 'list',
                 'data': [
@@ -359,8 +359,8 @@ class ExtractStripeRefundDataTestCase(TestCase):
         }
 
         result = extract_stripe_refund_data(event_object_data)
-        # For charge objects, refunded_amount_decimal comes directly from amount_refunded in event_object_data
-        # If amount_refunded is None, it defaults to Decimal('0.00') as per the initial assignment
+                                                                                                              
+                                                                                                  
         self.assertEqual(result['refunded_amount_decimal'], Decimal('0.00'))
         self.assertEqual(result['stripe_refund_id'], 're_none_amount_2')
         self.assertEqual(result['refund_status'], 'succeeded')
@@ -374,8 +374,8 @@ class ExtractStripeRefundDataTestCase(TestCase):
         """
         mock_retrieved_charge = mock.Mock()
         mock_retrieved_charge.id = 'ch_refunded_amount_none'
-        mock_retrieved_charge.amount_refunded = None # Simulate amount_refunded being None on the charge
-        mock_retrieved_charge.refunds = mock.Mock(data=[]) # Refunds list might be empty or not relevant here
+        mock_retrieved_charge.amount_refunded = None                                                    
+        mock_retrieved_charge.refunds = mock.Mock(data=[])                                                   
 
         def mock_get_attribute(key, default=None):
             if key == 'id':
@@ -394,14 +394,14 @@ class ExtractStripeRefundDataTestCase(TestCase):
             'object': 'refund',
             'id': 're_charge_amount_none',
             'status': 'succeeded',
-            'amount': 6000,  # This amount should be used as fallback
+            'amount': 6000,                                          
             'charge': 'ch_refunded_amount_none',
             'created': self.mock_now.timestamp()
         }
 
         result = extract_stripe_refund_data(event_object_data)
 
-        self.assertEqual(result['refunded_amount_decimal'], Decimal('60.00')) # Falls back to refund object's amount
+        self.assertEqual(result['refunded_amount_decimal'], Decimal('60.00'))                                       
         self.assertEqual(result['stripe_refund_id'], 're_charge_amount_none')
         self.assertEqual(result['refund_status'], 'succeeded')
         self.assertEqual(result['charge_id'], 'ch_refunded_amount_none')
@@ -416,13 +416,13 @@ class ExtractStripeRefundDataTestCase(TestCase):
             'object': 'refund',
             'id': 're_amount_none',
             'status': 'succeeded',
-            'amount': None,  # Simulate amount being None
+            'amount': None,                              
             'charge': 'ch_some_charge',
             'created': self.mock_now.timestamp()
         }
 
-        # No need to mock stripe.Charge.retrieve here as we are testing a case where amount is None
-        # and the fallback should happen within the function without calling Stripe API.
+                                                                                                   
+                                                                                        
         result = extract_stripe_refund_data(event_object_data)
 
         self.assertEqual(result['refunded_amount_decimal'], Decimal('0.00'))

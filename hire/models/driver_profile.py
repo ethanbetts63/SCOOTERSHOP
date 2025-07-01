@@ -72,7 +72,7 @@ class DriverProfile(models.Model):
             try:
                 settings = HireSettings.objects.first()
                 if settings and settings.minimum_driver_age is not None:
-                    age = today.year - self.date_of_birth.year - \
+                    age = today.year - self.date_of_birth.year -\
                           ((today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day))
                     if age < settings.minimum_driver_age:
                         errors['date_of_birth'] = f"Driver must be at least {settings.minimum_driver_age} years old."

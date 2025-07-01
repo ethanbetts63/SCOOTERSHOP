@@ -1,4 +1,4 @@
-# inventory/tests/test_ajax/test_ajax_get_payment_status.py
+                                                           
 
 from django.test import TestCase, Client
 from django.urls import reverse
@@ -6,11 +6,11 @@ import json
 from decimal import Decimal
 import datetime
 
-# Import models from your app
+                             
 from inventory.models import SalesBooking
 from payments.models import Payment
 
-# Import your factories
+                       
 from ..test_helpers.model_factories import (
     MotorcycleFactory,
     SalesProfileFactory,
@@ -35,11 +35,11 @@ class AjaxGetPaymentStatusTest(TestCase):
         """
         cls.client = Client()
 
-        # Create a common motorcycle and sales profile
+                                                      
         cls.motorcycle = MotorcycleFactory()
         cls.sales_profile = SalesProfileFactory()
 
-        # Scenario 1: Successful SalesBooking and Payment
+                                                         
         cls.successful_payment = PaymentFactory(
             status='succeeded',
             amount=Decimal('100.00'),
@@ -57,15 +57,15 @@ class AjaxGetPaymentStatusTest(TestCase):
             appointment_time=datetime.time(10, 0, 0)
         )
 
-        # Scenario 2: Payment exists but SalesBooking is not yet created (simulates webhook processing)
+                                                                                                       
         cls.processing_payment = PaymentFactory(
             status='succeeded',
             amount=Decimal('50.00'),
             currency='AUD'
         )
-        # No SalesBooking associated with this processing_payment yet.
+                                                                      
 
-        # Scenario 3: Neither Payment nor SalesBooking exists for a given intent ID
+                                                                                   
         cls.non_existent_payment_intent_id = "pi_nonexistent12345"
 
     def test_successful_payment_status_check(self):
@@ -82,8 +82,8 @@ class AjaxGetPaymentStatusTest(TestCase):
 
         self.assertEqual(data['status'], 'ready')
         self.assertEqual(data['booking_reference'], self.successful_booking.sales_booking_reference)
-        self.assertEqual(data['booking_status'], 'Confirmed')  # Display name
-        self.assertEqual(data['payment_status'], 'paid')      # Display name
+        self.assertEqual(data['booking_status'], 'Confirmed')                
+        self.assertEqual(data['payment_status'], 'paid')                    
         self.assertEqual(Decimal(data['amount_paid']), self.successful_booking.amount_paid)
         self.assertEqual(data['currency'], self.successful_booking.currency)
         self.assertIn(str(self.motorcycle.year), data['motorcycle_details'])
@@ -93,7 +93,7 @@ class AjaxGetPaymentStatusTest(TestCase):
         self.assertEqual(data['appointment_date'], self.successful_booking.appointment_date.strftime('%d %b %Y'))
         self.assertEqual(data['appointment_time'], self.successful_booking.appointment_time.strftime('%I:%M %p'))
 
-        # Verify session change
+                               
         self.assertIn('sales_booking_reference', self.client.session)
         self.assertEqual(self.client.session['sales_booking_reference'], self.successful_booking.sales_booking_reference)
 
@@ -120,7 +120,7 @@ class AjaxGetPaymentStatusTest(TestCase):
             reverse('inventory:ajax_sales_payment_status_check'),
             {'payment_intent_id': self.non_existent_payment_intent_id}
         )
-        self.assertEqual(response.status_code, 500) # Should be 500 as per ajax_get_payment_status.py
+        self.assertEqual(response.status_code, 500)                                                  
         data = response.json()
 
         self.assertEqual(data['status'], 'error')

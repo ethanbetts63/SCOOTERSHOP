@@ -6,10 +6,10 @@ from decimal import Decimal
 import datetime
 from django.utils import timezone
 
-# Import the view function to be tested
+                                       
 from service.ajax.ajax_get_service_booking_details import get_service_booking_details_json
 
-# Import your factories
+                       
 from ..test_helpers.model_factories import (
     ServiceBookingFactory, 
     ServiceProfileFactory, 
@@ -19,7 +19,7 @@ from ..test_helpers.model_factories import (
     RefundPolicySettingsFactory, 
     UserFactory
 )
-# Assuming service.models.ServiceBooking is where ServiceBooking is defined
+                                                                           
 from service.models import ServiceBooking 
 
 
@@ -38,23 +38,23 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
         """
         self.factory = RequestFactory()
         
-        # Create a staff user for authorized requests
+                                                     
         self.staff_user = UserFactory(is_staff=True, username='staffuser', email='staff@example.com')
-        # Create a regular user for unauthorized requests
+                                                         
         self.regular_user = UserFactory(is_staff=False, username='regularuser', email='regular@example.com')
 
-        # Create a ServiceBooking instance with all necessary related objects
-        # Factory will automatically create linked ServiceProfile, ServiceType, CustomerMotorcycle, Payment
+                                                                             
+                                                                                                           
         self.service_booking = ServiceBookingFactory(
-            service_profile=ServiceProfileFactory(user=self.staff_user), # Link to staff user's profile
+            service_profile=ServiceProfileFactory(user=self.staff_user),                               
             service_type=ServiceTypeFactory(),
             customer_motorcycle=CustomerMotorcycleFactory(),
             payment=PaymentFactory(
                 amount=Decimal('150.00'),
                 status='paid',
-                refund_policy_snapshot={"some_policy_detail": "value"} # Ensure snapshot is a dict
+                refund_policy_snapshot={"some_policy_detail": "value"}                            
             ),
-            # Set specific dates/times for predictable refund calculation
+                                                                         
             dropoff_date=timezone.localdate() + datetime.timedelta(days=7),
             dropoff_time=datetime.time(10, 0),
             service_date=timezone.localdate() + datetime.timedelta(days=7),
@@ -63,9 +63,9 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
             customer_notes='Test notes for booking details.'
         )
 
-        # Ensure the payment links back to the service booking for full integrity, if needed
-        # self.service_booking.payment.service_booking = self.service_booking
-        # self.service_booking.payment.save()
+                                                                                            
+                                                                             
+                                             
 
     def test_get_service_booking_details_success(self):
         """
@@ -74,7 +74,7 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
         """
         url = reverse('service:admin_api_get_service_booking_details', args=[self.service_booking.pk])
         request = self.factory.get(url)
-        request.user = self.staff_user  # Authenticate as staff user
+        request.user = self.staff_user                              
 
         response = get_service_booking_details_json(request, pk=self.service_booking.pk)
 
@@ -82,7 +82,7 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
         self.assertIsInstance(response, JsonResponse)
         content = json.loads(response.content)
 
-        # Assertions for core booking details
+                                             
         self.assertEqual(content['id'], self.service_booking.id)
         self.assertEqual(content['service_booking_reference'], self.service_booking.service_booking_reference)
         self.assertEqual(content['customer_name'], self.service_booking.service_profile.user.get_full_name() or self.service_booking.service_profile.name)
@@ -93,43 +93,43 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
         self.assertEqual(content['booking_status'], self.service_booking.get_booking_status_display())
         self.assertEqual(content['customer_notes'], self.service_booking.customer_notes)
 
-        # Assertions for nested motorcycle details
+                                                  
         self.assertIn('motorcycle_details', content)
         self.assertEqual(content['motorcycle_details']['year'], int(self.service_booking.customer_motorcycle.year))
         self.assertEqual(content['motorcycle_details']['brand'], self.service_booking.customer_motorcycle.brand)
         self.assertEqual(content['motorcycle_details']['model'], self.service_booking.customer_motorcycle.model)
 
-        # Assertions for nested service type details
+                                                    
         self.assertIn('service_type_details', content)
         self.assertEqual(content['service_type_details']['name'], self.service_booking.service_type.name)
         self.assertEqual(content['service_type_details']['description'], self.service_booking.service_type.description)
         self.assertAlmostEqual(Decimal(str(content['service_type_details']['base_price'])), self.service_booking.service_type.base_price)
 
-        # Assertions for payment information
+                                            
         self.assertEqual(content['payment_method'], self.service_booking.get_payment_method_display())
         self.assertEqual(content['payment_date'], self.service_booking.payment.created_at.strftime('%Y-%m-%d %H:%M'))
         self.assertAlmostEqual(Decimal(str(content['payment_amount'])), self.service_booking.payment.amount)
         self.assertEqual(content['payment_status'], self.service_booking.get_payment_status_display())
 
-        # Assertions for refund information
+                                           
         self.assertIn('entitled_refund_amount', content)
         self.assertIn('refund_calculation_details', content)
         self.assertIn('refund_policy_applied', content)
         self.assertIn('refund_days_before_dropoff', content)
         self.assertIn('refund_request_status_for_booking', content)
         
-        # CORRECTED: Assert that 'refund_calculation_details' is a string, not a dict from JSON.loads
+                                                                                                     
         self.assertIsInstance(content['refund_calculation_details'], str)
 
     def test_get_service_booking_details_not_found(self):
         """
         Test that the view returns a 404 error if the ServiceBooking ID does not exist.
         """
-        invalid_pk = self.service_booking.pk + 100 # An ID that surely doesn't exist
+        invalid_pk = self.service_booking.pk + 100                                  
 
         url = reverse('service:admin_api_get_service_booking_details', args=[invalid_pk])
         request = self.factory.get(url)
-        request.user = self.staff_user # Authenticate as staff user
+        request.user = self.staff_user                             
 
         response = get_service_booking_details_json(request, pk=invalid_pk)
 
@@ -145,7 +145,7 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
         """
         url = reverse('service:admin_api_get_service_booking_details', args=[self.service_booking.pk])
         request = self.factory.get(url)
-        request.user = self.regular_user # Authenticate as a regular user
+        request.user = self.regular_user                                 
 
         response = get_service_booking_details_json(request, pk=self.service_booking.pk)
 
@@ -161,11 +161,11 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
         """
         url = reverse('service:admin_api_get_service_booking_details', args=[self.service_booking.pk])
         
-        # Try a POST request
+                            
         request = self.factory.post(url)
-        request.user = self.staff_user # Still needs a user for @login_required
+        request.user = self.staff_user                                         
 
         response = get_service_booking_details_json(request, pk=self.service_booking.pk)
 
-        self.assertEqual(response.status_code, 405) # Method Not Allowed
+        self.assertEqual(response.status_code, 405)                     
 

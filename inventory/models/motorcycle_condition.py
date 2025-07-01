@@ -1,4 +1,4 @@
-# inventory/models/motorcycle_condition.py
+                                          
 
 from django.db import models
 

@@ -50,7 +50,7 @@ class Step1SalesProfileView(View):
             'sales_profile_form': sales_profile_form,
             'temp_booking': temp_booking,
             'inventory_settings': inventory_settings,
-            'sales_faqs': get_faqs_for_step('step1'), # Add FAQs
+            'sales_faqs': get_faqs_for_step('step1'),           
             'faq_title': "Your Questions Answered",
         }
         return render(request, self.template_name, context)
@@ -104,7 +104,7 @@ class Step1SalesProfileView(View):
                 'sales_profile_form': sales_profile_form,
                 'temp_booking': temp_booking,
                 'inventory_settings': inventory_settings,
-                'sales_faqs': get_faqs_for_step('step1'), # Add FAQs on error
+                'sales_faqs': get_faqs_for_step('step1'),                    
                 'faq_title': "Your Questions Answered",
             }
             messages.error(request, "Please correct the errors below.")

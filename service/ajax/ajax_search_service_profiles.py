@@ -1,11 +1,11 @@
-# service/views.py
+                  
 
 from django.http import JsonResponse
-from django.db.models import Q # Import Q for complex lookups
+from django.db.models import Q                               
 from django.views.decorators.http import require_GET
-from service.models import ServiceProfile # Ensure ServiceProfile is imported
+from service.models import ServiceProfile                                    
 
-# ... (other imports and views you might have, including the motorcycle AJAX views) ...
+                                                                                       
 
 @require_GET
 def search_customer_profiles_ajax(request):
@@ -17,7 +17,7 @@ def search_customer_profiles_ajax(request):
     profiles_data = []
 
     if search_term:
-        # Use the same robust search logic from your ServiceProfileManagementView
+                                                                                 
         queryset = ServiceProfile.objects.filter(
             Q(name__icontains=search_term) |
             Q(email__icontains=search_term) |
@@ -30,17 +30,17 @@ def search_customer_profiles_ajax(request):
             Q(country__icontains=search_term) |
             Q(user__username__icontains=search_term) |
             Q(user__email__icontains=search_term)
-        ).distinct().order_by('name') # Order for consistent display
+        ).distinct().order_by('name')                               
 
-        # Limit results to prevent overwhelming the client, e.g., first 10-20
-        # You might want to make this configurable
+                                                                             
+                                                  
         for profile in queryset[:20]:
             profiles_data.append({
                 'id': profile.pk,
                 'name': profile.name,
                 'email': profile.email,
                 'phone_number': profile.phone_number,
-                # Add any other basic info you want to display in search results
+                                                                                
             })
 
     return JsonResponse({'profiles': profiles_data})

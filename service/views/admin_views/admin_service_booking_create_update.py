@@ -26,7 +26,7 @@ class AdminServiceBookingCreateUpdateView(LoginRequiredMixin, UserPassesTestMixi
             'create_profile_url': reverse_lazy('service:admin_create_service_profile'),
             'create_motorcycle_url': reverse_lazy('service:admin_create_customer_motorcycle'),
         }
-        # The kwargs will contain form, instance, selected_profile, etc.
+                                                                        
         context.update(kwargs)
         return context
 
@@ -37,7 +37,7 @@ class AdminServiceBookingCreateUpdateView(LoginRequiredMixin, UserPassesTestMixi
         a blank form for creation.
         """
         if pk:
-            # Edit mode: Fetch existing booking and populate the form
+                                                                     
             booking = get_object_or_404(ServiceBooking, pk=pk)
             booking_details_form = AdminBookingDetailsForm(instance=booking)
             selected_profile = booking.service_profile
@@ -46,10 +46,10 @@ class AdminServiceBookingCreateUpdateView(LoginRequiredMixin, UserPassesTestMixi
                 booking_details_form=booking_details_form,
                 selected_profile=selected_profile,
                 selected_motorcycle=selected_motorcycle,
-                instance=booking  # Pass instance to template for conditional rendering
+                instance=booking                                                       
             )
         else:
-            # Create mode: Present a blank form
+                                               
             booking_details_form = AdminBookingDetailsForm()
             context = self.get_context_data(
                 booking_details_form=booking_details_form,
@@ -65,13 +65,13 @@ class AdminServiceBookingCreateUpdateView(LoginRequiredMixin, UserPassesTestMixi
         """
         booking_instance = None
         if pk:
-            # Edit mode: get the existing instance
+                                                  
             booking_instance = get_object_or_404(ServiceBooking, pk=pk)
-            # In edit mode, the profile and motorcycle are fixed and come from the instance
+                                                                                           
             service_profile = booking_instance.service_profile
             customer_motorcycle = booking_instance.customer_motorcycle
         else:
-            # Create mode: validate the selected profile and motorcycle from the form
+                                                                                     
             selected_profile_id = request.POST.get('selected_profile_id')
             selected_motorcycle_id = request.POST.get('selected_motorcycle_id')
 
@@ -82,16 +82,16 @@ class AdminServiceBookingCreateUpdateView(LoginRequiredMixin, UserPassesTestMixi
                 messages.error(request, "A customer profile and motorcycle must be selected.")
             elif customer_motorcycle.service_profile != service_profile:
                 messages.error(request, "The selected motorcycle does not belong to the selected customer profile.")
-                customer_motorcycle = None # Invalidate to prevent processing
+                customer_motorcycle = None                                   
 
-        # Initialize the form with POST data, and with an instance if we are editing
+                                                                                    
         booking_details_form = AdminBookingDetailsForm(request.POST, instance=booking_instance)
 
         if service_profile and customer_motorcycle and booking_details_form.is_valid():
-            if pk:  # This is an update
+            if pk:                     
                 booking_details_form.save()
                 messages.success(request, f"Booking {booking_instance.service_booking_reference} updated successfully!")
-            else:  # This is a create action
+            else:                           
                 try:
                     booking = admin_create_service_booking(
                         admin_booking_form_data=booking_details_form.cleaned_data,
@@ -101,7 +101,7 @@ class AdminServiceBookingCreateUpdateView(LoginRequiredMixin, UserPassesTestMixi
                     messages.success(request, f"Booking {booking.service_booking_reference} created successfully!")
                 except Exception as e:
                     messages.error(request, f"An unexpected error occurred: {e}")
-                    # Re-render form on creation error
+                                                      
                     context = self.get_context_data(
                         booking_details_form=booking_details_form,
                         selected_profile=service_profile,
@@ -112,7 +112,7 @@ class AdminServiceBookingCreateUpdateView(LoginRequiredMixin, UserPassesTestMixi
             
             return redirect(reverse_lazy('service:service_booking_management'))
 
-        # If the form is invalid or initial checks failed, re-render with errors
+                                                                                
         if not (service_profile and customer_motorcycle):
              messages.error(request, "Please select a valid customer and motorcycle.")
 

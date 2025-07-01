@@ -1,7 +1,7 @@
 from django.db import models
-from django.core.exceptions import ValidationError # Import ValidationError
+from django.core.exceptions import ValidationError                         
 
-# New model for blocked dates
+                             
 class BlockedServiceDate(models.Model):
     """
     Model to store dates or date ranges when service bookings are not available.

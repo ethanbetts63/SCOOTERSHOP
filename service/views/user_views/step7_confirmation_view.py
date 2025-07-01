@@ -4,7 +4,7 @@ from django.contrib import messages
 
 from service.models import ServiceBooking
 from payments.models import Payment
-from service.utils.booking_protection import set_recent_booking_flag # NEW: Import the utility
+from service.utils.booking_protection import set_recent_booking_flag                          
 
 class Step7ConfirmationView(View):
     def get(self, request):
@@ -17,7 +17,7 @@ class Step7ConfirmationView(View):
                 service_booking = ServiceBooking.objects.get(service_booking_reference=booking_reference)
             except ServiceBooking.DoesNotExist:
                 del request.session['service_booking_reference']
-                pass # Continue to check payment_intent_id
+                pass                                      
 
         payment_intent_id = request.GET.get('payment_intent_id')
         if not service_booking and payment_intent_id:

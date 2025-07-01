@@ -19,7 +19,7 @@ def reject_sales_booking(sales_booking_id, requesting_user=None, form_data=None,
             
             refund_request_created = False
             refund_amount_initiated = None
-            refund_request_pk = None # Initialize to None
+            refund_request_pk = None                     
             
             initiate_refund_checkbox = form_data.get('initiate_refund', False)
             
@@ -38,13 +38,13 @@ def reject_sales_booking(sales_booking_id, requesting_user=None, form_data=None,
                         sales_profile=booking.sales_profile,
                         is_admin_initiated=True,
                         staff_notes=f"Admin rejected booking and initiated refund request for {booking.sales_booking_reference}. Amount: {refund_amount_value}" + (f" Admin message: {message}" if message else ""),
-                        initial_status='approved', # Set to approved for immediate processing by ProcessRefundView
+                        initial_status='approved',                                                                
                     )
 
                     if created_refund_req:
                         refund_request_created = True
                         refund_amount_initiated = refund_amount_value
-                        refund_request_pk = created_refund_req.pk # Store the PK
+                        refund_request_pk = created_refund_req.pk               
                         booking.booking_status = 'declined' 
                     else:
                         return {'success': False, 'message': 'Failed to create refund request for rejected booking.'}
@@ -107,7 +107,7 @@ def reject_sales_booking(sales_booking_id, requesting_user=None, form_data=None,
             if refund_request_created:
                 success_message += f" A refund request for {refund_amount_initiated} has been created and will be processed automatically."
                 
-            # Include refund_request_pk in the return dictionary if a refund was created
+                                                                                        
             return_data = {'success': True, 'message': success_message}
             if refund_request_created:
                 return_data['refund_request_pk'] = refund_request_pk

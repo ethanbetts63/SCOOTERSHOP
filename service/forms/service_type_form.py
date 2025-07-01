@@ -26,7 +26,7 @@ class AdminServiceTypeForm(forms.ModelForm):
         labels = {
             'name': 'Service Name',
             'description': 'Service Description',
-            'estimated_duration': 'Estimated Duration (Days)', # Explicitly states days
+            'estimated_duration': 'Estimated Duration (Days)',                         
             'base_price': 'Base Price',
             'is_active': 'Is Active?',
             'image': 'Service Icon/Image',

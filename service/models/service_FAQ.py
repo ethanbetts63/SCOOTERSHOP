@@ -1,4 +1,4 @@
-# service/models/service_faq.py
+                               
 
 from django.db import models
 

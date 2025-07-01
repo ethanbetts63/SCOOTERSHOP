@@ -1,4 +1,4 @@
-# hire/forms/step1_date_time_form.py
+                                    
 from django import forms
 import datetime
 
@@ -8,7 +8,7 @@ class Step1DateTimeForm(forms.Form):
         label="Pick Up Date"
     )
     pick_up_time = forms.TimeField(
-        widget=forms.Select(attrs={'class': 'form-control'}), # We'll populate options via JS or view
+        widget=forms.Select(attrs={'class': 'form-control'}),                                        
         label="Pick Up Time"
     )
     return_date = forms.DateField(
@@ -16,7 +16,7 @@ class Step1DateTimeForm(forms.Form):
         label="Return Date"
     )
     return_time = forms.TimeField(
-        widget=forms.Select(attrs={'class': 'form-control'}), # We'll populate options via JS or view
+        widget=forms.Select(attrs={'class': 'form-control'}),                                        
         label="Return Time"
     )
     has_motorcycle_license = forms.BooleanField(
@@ -39,7 +39,7 @@ class Step1DateTimeForm(forms.Form):
             if return_datetime <= pickup_datetime:
                 raise forms.ValidationError("Return date and time must be after pickup date and time.")
 
-            # You could add more validation here based on HireSettings if needed,
-            # but `HireMotorcycleListView` already does some of this on the resulting list page.
+                                                                                 
+                                                                                                
 
         return cleaned_data

@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from service.forms import AdminCustomerMotorcycleForm 
-from service.models import CustomerMotorcycle # Ensure CustomerMotorcycle and ServiceProfile are imported
+from service.models import CustomerMotorcycle                                                            
 
 
 
@@ -15,7 +15,7 @@ class CustomerMotorcycleCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin
     Handles GET for displaying the form and POST for processing submissions.
     Requires the user to be logged in and a staff member or superuser.
     """
-    template_name = 'service/admin_customer_motorcycle_create_update.html' # New template
+    template_name = 'service/admin_customer_motorcycle_create_update.html'               
     form_class = AdminCustomerMotorcycleForm
 
     def test_func(self):
@@ -31,17 +31,17 @@ class CustomerMotorcycleCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin
         """
         instance = None
         if pk:
-            # If a primary key (pk) is provided, retrieve the specific motorcycle to edit
+                                                                                         
             instance = get_object_or_404(CustomerMotorcycle, pk=pk)
-            form = self.form_class(instance=instance) # Pre-populate the form
+            form = self.form_class(instance=instance)                        
         else:
-            # If no pk, create a blank form for a new motorcycle
+                                                                
             form = self.form_class()
 
         context = {
             'form': form,
-            'is_edit_mode': bool(pk), # True if pk exists, False otherwise
-            'current_motorcycle': instance # The motorcycle being edited (None if creating new)
+            'is_edit_mode': bool(pk),                                     
+            'current_motorcycle': instance                                                     
         }
         return render(request, self.template_name, context)
 
@@ -53,10 +53,10 @@ class CustomerMotorcycleCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin
         instance = None
         if pk:
             instance = get_object_or_404(CustomerMotorcycle, pk=pk)
-            # Pass instance and request.FILES for file uploads
+                                                              
             form = self.form_class(request.POST, request.FILES, instance=instance)
         else:
-            # Pass request.FILES for new file uploads
+                                                     
             form = self.form_class(request.POST, request.FILES)
 
         if form.is_valid():
@@ -65,12 +65,12 @@ class CustomerMotorcycleCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin
                 messages.success(request, f"Motorcycle '{customer_motorcycle}' updated successfully.")
             else:
                 messages.success(request, f"Motorcycle '{customer_motorcycle}' created successfully.")
-            # Redirect back to the motorcycle list view after successful creation/update
+                                                                                        
             return redirect(reverse('service:admin_customer_motorcycle_management'))
         else:
             messages.error(request, "Please correct the errors below.")
             context = {
-                'form': form, # Pass the form with errors back
+                'form': form,                                 
                 'is_edit_mode': bool(pk),
                 'current_motorcycle': instance
             }

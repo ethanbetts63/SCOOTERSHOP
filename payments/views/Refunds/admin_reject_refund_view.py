@@ -12,10 +12,10 @@ from payments.models.RefundRequest import RefundRequest
 from users.views.auth import is_admin
 from mailer.utils import send_templated_email
 
-# Import booking models to access their specific fields and types
+                                                                 
 from hire.models import HireBooking, DriverProfile
 from service.models import ServiceBooking, ServiceProfile
-from inventory.models import SalesBooking, SalesProfile # Import SalesBooking and SalesProfile
+from inventory.models import SalesBooking, SalesProfile                                       
 
 
 @method_decorator(user_passes_test(is_admin), name='dispatch')
@@ -35,20 +35,20 @@ class AdminRejectRefundView(View):
         """
         refund_request = get_object_or_404(RefundRequest, pk=pk)
 
-        # Dynamically determine the booking reference for the title
+                                                                   
         booking_reference = "N/A"
         if refund_request.hire_booking:
             booking_reference = refund_request.hire_booking.booking_reference
         elif refund_request.service_booking:
             booking_reference = refund_request.service_booking.service_booking_reference
-        elif refund_request.sales_booking: # Added SalesBooking
+        elif refund_request.sales_booking:                     
             booking_reference = refund_request.sales_booking.sales_booking_reference
 
         form = AdminRejectRefundForm(instance=refund_request)
 
         context = {
             'form': form,
-            'refund_request': refund_request, # Use generic name
+            'refund_request': refund_request,                   
             'title': f"Reject Refund Request for Booking {booking_reference}",
         }
         return render(request, self.template_name, context)
@@ -62,12 +62,12 @@ class AdminRejectRefundView(View):
         refund_request_instance = get_object_or_404(RefundRequest, pk=pk)
         form = AdminRejectRefundForm(request.POST, instance=refund_request_instance)
 
-        # Determine booking reference and objects for emails/redirects dynamically
+                                                                                  
         booking_reference_for_email = "N/A"
         booking_object = None
         customer_profile_object = None
-        admin_management_redirect_url = 'payments:admin_refund_management' # Generic fallback
-        admin_edit_link_name = None # To store the name of the admin URL pattern
+        admin_management_redirect_url = 'payments:admin_refund_management'                   
+        admin_edit_link_name = None                                             
 
         if refund_request_instance.hire_booking:
             booking_reference_for_email = refund_request_instance.hire_booking.booking_reference
@@ -81,7 +81,7 @@ class AdminRejectRefundView(View):
             customer_profile_object = refund_request_instance.service_profile
             admin_management_redirect_url = 'payments:admin_refund_management'
             admin_edit_link_name = 'payments:edit_refund_request'
-        elif refund_request_instance.sales_booking: # Added SalesBooking
+        elif refund_request_instance.sales_booking:                     
             booking_reference_for_email = refund_request_instance.sales_booking.sales_booking_reference
             booking_object = refund_request_instance.sales_booking
             customer_profile_object = refund_request_instance.sales_profile
@@ -98,16 +98,16 @@ class AdminRejectRefundView(View):
 
             messages.success(request, f"Refund Request for booking '{booking_reference_for_email}' has been successfully rejected.")
 
-            # --- Send user rejection email ---
+                                               
             if form.cleaned_data.get('send_rejection_email'):
                 recipient_email = refund_request_instance.request_email
-                # Fallback to user email from profile if request_email not set
+                                                                              
                 if not recipient_email:
                     if isinstance(customer_profile_object, DriverProfile) and customer_profile_object.user:
                         recipient_email = customer_profile_object.user.email
                     elif isinstance(customer_profile_object, ServiceProfile) and customer_profile_object.user:
                         recipient_email = customer_profile_object.user.email
-                    elif isinstance(customer_profile_object, SalesProfile) and customer_profile_object.user: # Added SalesProfile
+                    elif isinstance(customer_profile_object, SalesProfile) and customer_profile_object.user:                     
                         recipient_email = customer_profile_object.user.email
 
                 if recipient_email:
@@ -122,10 +122,10 @@ class AdminRejectRefundView(View):
                             subject=f"Update: Your Refund Request for Booking {booking_reference_for_email} Has Been Rejected",
                             template_name='user_refund_request_rejected.html',
                             context=user_email_context,
-                            booking=booking_object, # Pass generic booking object
+                            booking=booking_object,                              
                             driver_profile=customer_profile_object if isinstance(customer_profile_object, DriverProfile) else None,
                             service_profile=customer_profile_object if isinstance(customer_profile_object, ServiceProfile) else None,
-                            sales_profile=customer_profile_object if isinstance(customer_profile_object, SalesProfile) else None, # Added SalesProfile
+                            sales_profile=customer_profile_object if isinstance(customer_profile_object, SalesProfile) else None,                     
                         )
                         messages.info(request, "Automated rejection email sent to the user.")
                     except Exception as e:
@@ -133,14 +133,14 @@ class AdminRejectRefundView(View):
                 else:
                     messages.warning(request, "Could not send automated rejection email to user: No recipient email found.")
 
-            # --- Send admin notification email ---
+                                                   
             admin_recipient_list = [settings.DEFAULT_FROM_EMAIL]
             if hasattr(settings, 'ADMINS') and settings.ADMINS:
                 for name, email in settings.ADMINS:
                     if email not in admin_recipient_list:
                         admin_recipient_list.append(email)
 
-            admin_refund_link = "#" # Default
+            admin_refund_link = "#"          
             if admin_edit_link_name:
                 admin_refund_link = request.build_absolute_uri(
                     reverse(admin_edit_link_name, args=[refund_request_instance.pk])
@@ -158,22 +158,22 @@ class AdminRejectRefundView(View):
                     subject=f"Refund Request {booking_reference_for_email} (ID: {refund_request_instance.pk}) Has Been Rejected",
                     template_name='admin_refund_request_rejected.html',
                     context=admin_email_context,
-                    booking=booking_object, # Pass generic booking object
+                    booking=booking_object,                              
                     driver_profile=customer_profile_object if isinstance(customer_profile_object, DriverProfile) else None,
                     service_profile=customer_profile_object if isinstance(customer_profile_object, ServiceProfile) else None,
-                    sales_profile=customer_profile_object if isinstance(customer_profile_object, SalesProfile) else None, # Added SalesProfile
+                    sales_profile=customer_profile_object if isinstance(customer_profile_object, SalesProfile) else None,                     
                 )
                 messages.info(request, "Admin notification email sent regarding the rejection.")
             except Exception as e:
                 messages.error(request, f"Failed to send admin rejection notification email: {e}")
 
 
-            return redirect(admin_management_redirect_url) # Redirect to appropriate admin list view
+            return redirect(admin_management_redirect_url)                                          
         else:
             messages.error(request, "Please correct the errors below.")
             context = {
                 'form': form,
-                'refund_request': refund_request_instance, # Use generic name
+                'refund_request': refund_request_instance,                   
                 'title': f"Reject Refund Request for Booking {booking_reference_for_email}",
             }
             return render(request, self.template_name, context)

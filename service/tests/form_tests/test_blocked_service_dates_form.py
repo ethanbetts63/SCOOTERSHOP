@@ -1,12 +1,12 @@
 from django.test import TestCase
 from datetime import date, timedelta
 
-# Import the form and model
+                           
 from service.forms import BlockedServiceDateForm
 from service.models import BlockedServiceDate
 
-# Import the factory for BlockedServiceDate
-# Assuming model_factories.py is in a 'test_helpers' directory relative to 'service'
+                                           
+                                                                                    
 from ..test_helpers.model_factories import BlockedServiceDateFactory
 
 class BlockedServiceDateFormTest(TestCase):
@@ -25,7 +25,7 @@ class BlockedServiceDateFormTest(TestCase):
         cls.tomorrow = cls.today + timedelta(days=1)
         cls.yesterday = cls.today - timedelta(days=1)
 
-        # Create a sample instance using the factory for tests that need an existing object
+                                                                                           
         cls.blocked_date_instance = BlockedServiceDateFactory()
 
     def test_form_valid_data_single_day(self):
@@ -70,7 +70,7 @@ class BlockedServiceDateFormTest(TestCase):
         }
         form = BlockedServiceDateForm(data=data)
         self.assertFalse(form.is_valid())
-        self.assertIn('__all__', form.errors) # Form-level error
+        self.assertIn('__all__', form.errors)                   
         self.assertIn("End date cannot be before the start date.", str(form.errors['__all__']))
 
     def test_form_missing_start_date(self):
@@ -107,11 +107,11 @@ class BlockedServiceDateFormTest(TestCase):
         data = {
             'start_date': self.today,
             'end_date': self.today,
-            'description': '', # Empty description
+            'description': '',                    
         }
         form = BlockedServiceDateForm(data=data)
         self.assertTrue(form.is_valid(), f"Form is not valid with empty description: {form.errors.as_data()}")
-        # Changed assertion: For CharField with null=True, empty string cleans to None
+                                                                                      
         self.assertIsNone(form.cleaned_data['description']) 
 
         data_no_description = {
@@ -120,13 +120,13 @@ class BlockedServiceDateFormTest(TestCase):
         }
         form_no_desc = BlockedServiceDateForm(data=data_no_description)
         self.assertTrue(form_no_desc.is_valid(), f"Form is not valid with no description field: {form_no_desc.errors.as_data()}")
-        self.assertIsNone(form_no_desc.cleaned_data['description']) # Should be None if not provided
+        self.assertIsNone(form_no_desc.cleaned_data['description'])                                 
 
     def test_form_initialization_with_instance(self):
         """
         Test that the form correctly loads data from an existing BlockedServiceDate instance.
         """
-        instance = self.blocked_date_instance # Use the instance created in setUpTestData
+        instance = self.blocked_date_instance                                            
         form = BlockedServiceDateForm(instance=instance)
 
         self.assertEqual(form.initial['start_date'], instance.start_date)
@@ -157,7 +157,7 @@ class BlockedServiceDateFormTest(TestCase):
         """
         Test that saving the form updates an existing BlockedServiceDate instance.
         """
-        instance = self.blocked_date_instance # Use the instance created in setUpTestData
+        instance = self.blocked_date_instance                                            
         original_start_date = instance.start_date
         original_end_date = instance.end_date
 
@@ -171,13 +171,13 @@ class BlockedServiceDateFormTest(TestCase):
         self.assertTrue(form.is_valid(), f"Form not valid for updating instance: {form.errors.as_data()}")
 
         updated_instance = form.save()
-        # Ensure it's the same instance
+                                       
         self.assertEqual(updated_instance.pk, instance.pk)
         self.assertEqual(updated_instance.start_date, updated_data['start_date'])
         self.assertEqual(updated_instance.end_date, updated_data['end_date'])
         self.assertEqual(updated_instance.description, updated_data['description'])
 
-        # Verify the database record is also updated
+                                                    
         refreshed_instance = BlockedServiceDate.objects.get(pk=instance.pk)
         self.assertEqual(refreshed_instance.start_date, updated_data['start_date'])
         self.assertEqual(refreshed_instance.end_date, updated_data['end_date'])

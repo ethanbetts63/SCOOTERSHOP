@@ -18,9 +18,9 @@ class ServiceBookingUserFormTest(TestCase):
             'email': 'john.doe@example.com',
             'phone_number': '+61412345678',
             'address_line_1': '123 Main St',
-            'address_line_2': '', # Explicitly set to empty string for testing form behavior
+            'address_line_2': '',                                                           
             'city': 'Sydney',
-            'state': '', # Explicitly set to empty string for testing form behavior
+            'state': '',                                                           
             'post_code': '2000',
             'country': 'AU',
         }
@@ -32,16 +32,16 @@ class ServiceBookingUserFormTest(TestCase):
         form = ServiceBookingUserForm(data=self.valid_service_profile_data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
 
-        # Ensure the cleaned data matches the input data
+                                                        
         cleaned_data = form.cleaned_data
         self.assertEqual(cleaned_data['name'], 'John Doe')
         self.assertEqual(cleaned_data['email'], 'john.doe@example.com')
         self.assertEqual(cleaned_data['phone_number'], '+61412345678')
         self.assertEqual(cleaned_data['address_line_1'], '123 Main St')
-        # For blank=True, null=True fields, Django's forms often clean empty strings to None
+                                                                                            
         self.assertIsNone(cleaned_data['address_line_2'])
         self.assertEqual(cleaned_data['city'], 'Sydney')
-        # For blank=True, null=True fields, Django's forms often clean empty strings to None
+                                                                                            
         self.assertIsNone(cleaned_data['state'])
         self.assertEqual(cleaned_data['post_code'], '2000')
         self.assertEqual(cleaned_data['country'], 'AU')
@@ -56,7 +56,7 @@ class ServiceBookingUserFormTest(TestCase):
         for field in required_fields:
             with self.subTest(f"Missing field: {field}"):
                 data = self.valid_service_profile_data.copy()
-                data[field] = ''  # Set required field to empty
+                data[field] = ''                               
                 form = ServiceBookingUserForm(data=data)
                 self.assertFalse(form.is_valid())
                 self.assertIn(field, form.errors)
@@ -67,13 +67,13 @@ class ServiceBookingUserFormTest(TestCase):
         Test that the form is invalid with an incorrectly formatted email address.
         """
         data = self.valid_service_profile_data.copy()
-        data['email'] = 'invalid-email'  # Invalid email format
+        data['email'] = 'invalid-email'                        
         form = ServiceBookingUserForm(data=data)
         self.assertFalse(form.is_valid())
         self.assertIn('email', form.errors)
         self.assertIn('Enter a valid email address.', form.errors['email'])
 
-        data['email'] = 'user@.com'  # Invalid email format
+        data['email'] = 'user@.com'                        
         form = ServiceBookingUserForm(data=data)
         self.assertFalse(form.is_valid())
         self.assertIn('email', form.errors)
@@ -86,25 +86,25 @@ class ServiceBookingUserFormTest(TestCase):
         """
         data = self.valid_service_profile_data.copy()
 
-        # Define the exact expected error message from the ServiceProfile model's clean method
+                                                                                              
         expected_error_message = "Phone number must contain only digits, spaces, hyphens, and an optional leading '+'. Example: '+61412345678' or '0412 345 678'."
 
-        # Test with non-digit characters (excluding +, spaces, hyphens)
+                                                                       
         data['phone_number'] = 'abc1234567'
         form = ServiceBookingUserForm(data=data)
         self.assertFalse(form.is_valid())
         self.assertIn('phone_number', form.errors)
         self.assertIn(expected_error_message, form.errors['phone_number'])
 
-        # Test with invalid characters
+                                      
         data['phone_number'] = '0412!345678'
         form = ServiceBookingUserForm(data=data)
         self.assertFalse(form.is_valid())
         self.assertIn('phone_number', form.errors)
         self.assertIn(expected_error_message, form.errors['phone_number'])
 
-        # Test with valid but unusual format (should pass due to regex)
-        data['phone_number'] = '0412 345-678' # Valid according to regex
+                                                                       
+        data['phone_number'] = '0412 345-678'                           
         form = ServiceBookingUserForm(data=data)
         self.assertTrue(form.is_valid(), f"Form is not valid with valid phone: {form.errors}")
         self.assertEqual(form.cleaned_data['phone_number'], '0412 345-678')
@@ -120,14 +120,14 @@ class ServiceBookingUserFormTest(TestCase):
             email='jane.doe@example.com',
             phone_number='+61498765432',
             address_line_1='456 Oak Ave',
-            address_line_2='Suite 100', # Ensure this is a string for the factory
+            address_line_2='Suite 100',                                          
             city='Melbourne',
-            state='VIC', # Ensure this is a string for the factory
+            state='VIC',                                          
             post_code='3000',
             country='AU'
         )
 
-        # Update some fields
+                            
         updated_data = {
             'name': 'Jane D. Smith',
             'email': 'jane.d.smith@example.com',
@@ -143,7 +143,7 @@ class ServiceBookingUserFormTest(TestCase):
         form = ServiceBookingUserForm(data=updated_data, instance=existing_profile)
         self.assertTrue(form.is_valid(), f"Form is not valid when updating instance: {form.errors}")
 
-        # Save the form and check if the instance was updated
+                                                             
         updated_profile = form.save()
         self.assertEqual(updated_profile.name, 'Jane D. Smith')
         self.assertEqual(updated_profile.email, 'jane.d.smith@example.com')
@@ -154,7 +154,7 @@ class ServiceBookingUserFormTest(TestCase):
         self.assertEqual(updated_profile.state, 'QLD')
         self.assertEqual(updated_profile.post_code, '4000')
         self.assertEqual(updated_profile.country, 'AU')
-        self.assertEqual(updated_profile.pk, existing_profile.pk) # Ensure it's the same instance
+        self.assertEqual(updated_profile.pk, existing_profile.pk)                                
 
 
     def test_form_optional_fields(self):
@@ -162,11 +162,11 @@ class ServiceBookingUserFormTest(TestCase):
         Test that optional fields (address_line_2, state) can be left blank.
         """
         data = self.valid_service_profile_data.copy()
-        data['address_line_2'] = '' # Ensure it's an empty string in the input data
-        data['state'] = '' # Ensure it's an empty string in the input data
+        data['address_line_2'] = ''                                                
+        data['state'] = ''                                                
         form = ServiceBookingUserForm(data=data)
         self.assertTrue(form.is_valid(), f"Form is not valid with empty optional fields: {form.errors}")
-        # When blank=True, null=True, Django forms will clean empty strings to None
+                                                                                   
         self.assertIsNone(form.cleaned_data['address_line_2'])
         self.assertIsNone(form.cleaned_data['state'])
 

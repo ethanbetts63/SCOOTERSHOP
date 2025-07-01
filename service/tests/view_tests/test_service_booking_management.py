@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.utils import timezone
 
-# Import models and factories
+                             
 from service.models import ServiceBooking, ServiceType, BlockedServiceDate
 from ..test_helpers.model_factories import UserFactory, ServiceBookingFactory, ServiceTypeFactory
 
@@ -22,11 +22,11 @@ class ServiceBookingManagementViewTest(TestCase):
         cls.superuser = UserFactory(username='superuser_booking', is_staff=True, is_superuser=True)
         cls.regular_user = UserFactory(username='regular_user_booking', is_staff=False, is_superuser=False)
 
-        # Create some service types
+                                   
         cls.service_type_a = ServiceTypeFactory(name="Oil Change")
         cls.service_type_b = ServiceTypeFactory(name="Tyre Replacement")
 
-        # Create multiple service bookings with distinct data for ordering
+                                                                          
         cls.booking1 = ServiceBookingFactory(
             service_type=cls.service_type_a,
             dropoff_date=timezone.now().date() - timezone.timedelta(days=5),
@@ -46,7 +46,7 @@ class ServiceBookingManagementViewTest(TestCase):
             booking_status='COMPLETED'
         )
 
-        # Define URL for convenience
+                                    
         cls.list_url = reverse('service:service_booking_management')
 
     def setUp(self):
@@ -71,7 +71,7 @@ class ServiceBookingManagementViewTest(TestCase):
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, 200)
 
-    # --- GET Request Tests (Listing) ---
+                                         
 
     def test_get_request_list_all_bookings(self):
         """
@@ -89,10 +89,10 @@ class ServiceBookingManagementViewTest(TestCase):
         self.assertEqual(response.context['page_title'], 'Manage Service Bookings')
         self.assertEqual(response.context['active_tab'], 'service_bookings')
 
-        # Check if all bookings are present and ordered correctly (by dropoff_date descending)
+                                                                                              
         bookings_in_context = list(response.context['bookings'])
-        # The view orders by '-dropoff_date', so the latest date should be first.
-        # booking3 (future date) -> booking2 (yesterday) -> booking1 (5 days ago)
+                                                                                 
+                                                                                 
         expected_bookings = [self.booking3, self.booking2, self.booking1]
         self.assertListEqual(bookings_in_context, expected_bookings)
         self.assertEqual(len(bookings_in_context), ServiceBooking.objects.count())
@@ -101,7 +101,7 @@ class ServiceBookingManagementViewTest(TestCase):
         """
         Test GET request when there are no service bookings.
         """
-        ServiceBooking.objects.all().delete() # Delete all existing bookings for this test
+        ServiceBooking.objects.all().delete()                                             
         self.client.force_login(self.staff_user)
         response = self.client.get(self.list_url)
 

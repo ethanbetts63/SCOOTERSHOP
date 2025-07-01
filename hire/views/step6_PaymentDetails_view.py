@@ -51,9 +51,9 @@ class PaymentDetailsView(View):
                 db_user = User.objects.get(id=request.user.id)
                 driver_profile, created = DriverProfile.objects.get_or_create(user=db_user)
             except User.DoesNotExist:
-                pass # Handle how you want to proceed if the user doesn't exist
+                pass                                                           
             except Exception as e:
-                pass # Handle other exceptions
+                pass                          
         else:
             pass
 
@@ -192,7 +192,7 @@ class PaymentDetailsView(View):
                     'message': 'Payment requires further action or is pending. Please follow prompts.'
                 })
 
-            else: # Covers 'failed' and other unexpected statuses
+            else:                                                
                 if payment_obj:
                     if payment_obj.status != intent.status:
                         payment_obj.status = intent.status

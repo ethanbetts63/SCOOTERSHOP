@@ -1,9 +1,9 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib import messages
-from django.utils import timezone # Import timezone for created_at ordering
+from django.utils import timezone                                          
 
-# Import models and forms
+                         
 from service.models import ServiceProfile
 from ..test_helpers.model_factories import UserFactory, ServiceProfileFactory
 
@@ -25,8 +25,8 @@ class ServiceProfileManagementViewTest(TestCase):
         cls.superuser = UserFactory(username='superuser', is_staff=True, is_superuser=True)
         cls.regular_user = UserFactory(username='regular_user', is_staff=False, is_superuser=False)
 
-        # Create multiple service profiles with varying data for testing
-        # Ensure distinct creation times for consistent ordering in tests
+                                                                        
+                                                                         
         cls.profile1 = ServiceProfileFactory(
             name="Alpha Profile", email="alpha@example.com", phone_number="1112223333",
             city="Springville",
@@ -43,7 +43,7 @@ class ServiceProfileManagementViewTest(TestCase):
             name="Gamma Profile", email="gamma@domain.net", phone_number="7778889999",
             address_line_1="123 Main St", country="US",
             created_at=timezone.now() - timezone.timedelta(days=10),
-            user=None # No linked user for this one
+            user=None                              
         )
         cls.profile_new = ServiceProfileFactory(
             name="Newest Profile", email="newest@domain.com", phone_number="0001112222",
@@ -51,14 +51,14 @@ class ServiceProfileManagementViewTest(TestCase):
             user=UserFactory(username='newest_user')
         )
 
-        # A user who is not linked to any service profile (for form submissions)
+                                                                                
         cls.unlinked_user = UserFactory(username='unlinked_user_for_form', email='unlinked_form@example.com')
 
 
-        # Define URLs for convenience from urls.py
+                                                  
         cls.list_url = reverse('service:admin_service_profiles')
-        # The edit URL is handled by ServiceProfileCreateUpdateView, but we need its name here
-        # for constructing the URL in tests that specifically open the edit form from the list page.
+                                                                                              
+                                                                                                    
         cls.edit_url_name = 'service:admin_edit_service_profile'
         cls.delete_url_name = 'service:admin_delete_service_profile'
 
@@ -69,12 +69,12 @@ class ServiceProfileManagementViewTest(TestCase):
         Initialize client and session.
         """
         self.client = Client()
-        # Ensure session is saved to allow messages to persist
+                                                              
         self.session = self.client.session
         self.session.save()
 
 
-    # --- Access Control Tests (UserPassesTestMixin, LoginRequiredMixin) ---
+                                                                            
 
     def test_view_redirects_anonymous_user(self):
         """
@@ -89,7 +89,7 @@ class ServiceProfileManagementViewTest(TestCase):
         """
         self.client.force_login(self.regular_user)
         response = self.client.get(self.list_url)
-        self.assertEqual(response.status_code, 403) # Forbidden
+        self.assertEqual(response.status_code, 403)            
 
     def test_view_grants_access_to_staff_user(self):
         """
@@ -108,7 +108,7 @@ class ServiceProfileManagementViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
-    # --- GET Request Tests (Listing & Pagination) ---
+                                                      
 
     def test_get_request_list_all_profiles_with_pagination(self):
         """
@@ -116,8 +116,8 @@ class ServiceProfileManagementViewTest(TestCase):
         The view should now always return paginated results for the full list.
         """
         self.client.force_login(self.staff_user)
-        # Create more profiles to ensure pagination kicks in
-        for i in range(15): # Assuming paginate_by is 10, this will create 2 pages
+                                                            
+        for i in range(15):                                                       
             ServiceProfileFactory(
                 name=f"Paginated Profile {i}",
                 created_at=timezone.now() - timezone.timedelta(minutes=i)
@@ -130,22 +130,22 @@ class ServiceProfileManagementViewTest(TestCase):
         
         self.assertIn('profiles', response.context)
         self.assertIn('page_obj', response.context)
-        self.assertTrue(response.context['is_paginated']) # Should be paginated now
-        self.assertEqual(response.context['page_obj'].number, 1) # First page by default
-        self.assertEqual(len(response.context['page_obj'].object_list), 10) # 10 items per page
+        self.assertTrue(response.context['is_paginated'])                          
+        self.assertEqual(response.context['page_obj'].number, 1)                        
+        self.assertEqual(len(response.context['page_obj'].object_list), 10)                    
 
-        # Verify the profiles are the first 10 when ordered by created_at descending
+                                                                                    
         expected_profiles = list(ServiceProfile.objects.all().order_by('-created_at'))
         self.assertListEqual(list(response.context['profiles']), expected_profiles[:10])
 
-        self.assertEqual(response.context['search_term'], '') # No search term expected from GET
+        self.assertEqual(response.context['search_term'], '')                                   
 
     def test_get_request_list_profiles_specific_page(self):
         """
         Test GET request to list service profiles on a specific page.
         """
         self.client.force_login(self.staff_user)
-        # Create enough profiles for multiple pages
+                                                   
         total_profiles = 25
         for i in range(total_profiles):
             ServiceProfileFactory(
@@ -153,13 +153,13 @@ class ServiceProfileManagementViewTest(TestCase):
                 created_at=timezone.now() - timezone.timedelta(minutes=i)
             )
 
-        # Request the second page
+                                 
         response = self.client.get(f"{self.list_url}?page=2")
 
         self.assertEqual(response.status_code, 200)
         self.assertIn('profiles', response.context)
         self.assertEqual(response.context['page_obj'].number, 2)
-        # If paginate_by is 10, there should be 10 items on the second page
+                                                                           
         self.assertEqual(len(response.context['page_obj'].object_list), 10)
 
         expected_profiles = list(ServiceProfile.objects.all().order_by('-created_at'))
@@ -175,19 +175,19 @@ class ServiceProfileManagementViewTest(TestCase):
         handled by ServiceProfileCreateUpdateView. This test focuses on the GET display.
         """
         self.client.force_login(self.staff_user)
-        # Construct the URL for editing, which should be the admin_edit_service_profile URL
+                                                                                           
         edit_url = reverse(self.edit_url_name, kwargs={'pk': self.profile1.pk})
-        response = self.client.get(edit_url) # This GET request will hit the ServiceProfileCreateUpdateView
+        response = self.client.get(edit_url)                                                               
 
         self.assertEqual(response.status_code, 200)
-        # The URL /admin/service-profiles/edit/<pk>/ renders admin_service_profile_form.html
-        # as per your urls.py mapping to ServiceProfileCreateUpdateView.
+                                                                                            
+                                                                        
         self.assertTemplateUsed(response, 'service/admin_service_profile_form.html')
         self.assertIn('form', response.context)
         self.assertTrue(response.context['is_edit_mode'])
         self.assertEqual(response.context['current_profile'], self.profile1)
         self.assertEqual(response.context['form'].instance, self.profile1)
-        self.assertFalse(response.context['form'].is_bound) # Form is populated, but not bound by POST data
+        self.assertFalse(response.context['form'].is_bound)                                                
 
 
     def test_get_request_edit_mode_non_existent_profile(self):
@@ -196,15 +196,15 @@ class ServiceProfileManagementViewTest(TestCase):
         """
         self.client.force_login(self.staff_user)
         non_existent_pk = self.profile1.pk + 9999
-        # Construct the URL for editing a non-existent profile
+                                                              
         edit_url = reverse(self.edit_url_name, kwargs={'pk': non_existent_pk})
         response = self.client.get(edit_url)
         self.assertEqual(response.status_code, 404)
 
 
-    # --- POST Request Tests (Create ONLY from Management View's Form) ---
-    # The management view handles creation of new profiles if the form
-    # on its page is submitted to its own URL (pk=None).
+                                                                          
+                                                                      
+                                                        
 
     def test_post_request_create_profile_valid(self):
         """
@@ -223,8 +223,8 @@ class ServiceProfileManagementViewTest(TestCase):
             'post_code': '12345',
             'country': 'US',
         }
-        # Post to the list URL (admin_service_profiles), which handles new creation
-        response = self.client.post(self.list_url, new_profile_data, follow=True) # Follow redirect
+                                                                                   
+        response = self.client.post(self.list_url, new_profile_data, follow=True)                  
 
         self.assertEqual(ServiceProfile.objects.count(), initial_count + 1)
         new_profile = ServiceProfile.objects.get(name='New Profile From Mgmt')
@@ -243,8 +243,8 @@ class ServiceProfileManagementViewTest(TestCase):
         self.client.force_login(self.staff_user)
         initial_count = ServiceProfile.objects.count()
         invalid_data = {
-            'user': '', # No user
-            'name': '', # Missing name (required if no user)
+            'user': '',          
+            'name': '',                                     
             'email': 'invalid@example.com',
             'phone_number': '1234567890',
             'address_line_1': '1 Invalid St',
@@ -253,11 +253,11 @@ class ServiceProfileManagementViewTest(TestCase):
             'post_code': '00000',
             'country': 'US',
         }
-        # Post to the list URL (admin_service_profiles)
+                                                       
         response = self.client.post(self.list_url, invalid_data)
 
-        self.assertEqual(ServiceProfile.objects.count(), initial_count) # No new profile
-        self.assertEqual(response.status_code, 200) # Should re-render with errors
+        self.assertEqual(ServiceProfile.objects.count(), initial_count)                 
+        self.assertEqual(response.status_code, 200)                               
         self.assertTemplateUsed(response, 'service/admin_service_profile_management.html')
         self.assertIn('form', response.context)
         self.assertFalse(response.context['form'].is_valid())
@@ -286,11 +286,11 @@ class ServiceProfileDeleteViewTest(TestCase):
 
     def setUp(self):
         self.client = Client()
-        # Ensure session is saved to allow messages to persist
+                                                              
         self.session = self.client.session
         self.session.save()
 
-    # --- Access Control Tests ---
+                                  
 
     def test_view_redirects_anonymous_user(self):
         """
@@ -315,13 +315,13 @@ class ServiceProfileDeleteViewTest(TestCase):
         (This test implicitly passes if the POST test below passes, as GET isn't typically used for delete).
         """
         self.client.force_login(self.staff_user)
-        # A simple get would give 405 Method Not Allowed, but we test the POST below
+                                                                                    
         delete_url = reverse(self.delete_url_name, kwargs={'pk': self.profile_to_delete.pk})
-        response = self.client.get(delete_url) # Test GET method explicitly, should be 405
-        self.assertEqual(response.status_code, 405) # Method Not Allowed for GET
+        response = self.client.get(delete_url)                                            
+        self.assertEqual(response.status_code, 405)                             
 
 
-    # --- POST Request Tests (Deletion) ---
+                                           
 
     def test_post_request_delete_profile_valid(self):
         """
@@ -333,7 +333,7 @@ class ServiceProfileDeleteViewTest(TestCase):
         initial_count = ServiceProfile.objects.count()
 
         delete_url = reverse(self.delete_url_name, kwargs={'pk': profile_pk})
-        response = self.client.post(delete_url, follow=True) # Follow redirect
+        response = self.client.post(delete_url, follow=True)                  
 
         self.assertEqual(ServiceProfile.objects.count(), initial_count - 1)
         self.assertFalse(ServiceProfile.objects.filter(pk=profile_pk).exists())

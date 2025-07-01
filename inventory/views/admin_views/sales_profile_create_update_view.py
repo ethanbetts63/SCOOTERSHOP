@@ -1,4 +1,4 @@
-# SCOOTER_SHOP/inventory/views/admin_views/sales_profile_create_update_view.py
+                                                                              
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View

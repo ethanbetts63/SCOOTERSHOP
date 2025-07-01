@@ -1,4 +1,4 @@
-# dashboard/views/__init__.py
+                             
 
 from .blocked_hire_dates_management import blocked_hire_dates_management
 from .delete_blocked_hire_date import delete_blocked_hire_date
@@ -14,12 +14,12 @@ from .settings_hire_packages import HirePackagesSettingsView
 from .add_edit_package_view import AddEditPackageView
 from .delete_package_view import DeletePackageView
 
-# Import the newly split hire booking views using relative imports
+                                                                  
 from .hire_booking_management import hire_bookings_view, get_hire_bookings_json
 from .hire_booking_details_view import hire_booking_details_view, delete_hire_booking_view
 from .hire_booking_search_view import hire_booking_search_view
 
-# Import booking views from the service_bookings.py file
+                                                        
 
 from .add_edit_driver_profile_view import *
 from .delete_driver_profile_view import *

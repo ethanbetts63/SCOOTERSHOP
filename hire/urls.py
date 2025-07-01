@@ -1,16 +1,16 @@
-# hire/urls.py
+              
 from django.urls import path
 from . import views
 
 app_name = 'hire'
 
 urlpatterns = [
-    # Admin Hire Booking URLs
+                             
     path('admin/hire/book/new/', views.AdminHireBookingView.as_view(), name='admin_hire_booking_create'),
-    # Changed <uuid:pk> to <int:pk> to match the default integer primary key of HireBooking
+                                                                                           
     path('admin/hire/book/edit/<int:pk>/', views.AdminHireBookingView.as_view(), name='admin_hire_booking_edit'),
 
-    # User multi-step booking URLs
+                                  
     path('book/step1/select-datetime/', views.SelectDateTimeView.as_view(), name='step1_select_datetime'),
     path('book/step2/choose-bike/', views.BikeChoiceView.as_view(), name='step2_choose_bike'),
     path('book/step3/<int:motorcycle_id>/', views.AddonPackageView.as_view(), name='step3_addons_and_packages'),

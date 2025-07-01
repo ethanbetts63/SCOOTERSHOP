@@ -1,8 +1,8 @@
-# service/views/admin_views/service_faq_management_view.py
+                                                          
 
 from django.views.generic import ListView
 from service.models import ServiceFAQ
-from inventory.mixins import AdminRequiredMixin  # Assuming a shared mixin
+from inventory.mixins import AdminRequiredMixin                           
 
 class ServiceFAQManagementView(AdminRequiredMixin, ListView):
     """

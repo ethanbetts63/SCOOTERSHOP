@@ -1,15 +1,15 @@
-# hire/forms/Admin_Hire_Booking_form.py
+                                       
 from django import forms
 from django.core.exceptions import ValidationError
 from django.forms import ModelChoiceField, RadioSelect
 import datetime
 
-# Import models
+               
 from inventory.models import Motorcycle
 from ..models import AddOn, Package, DriverProfile, BookingAddOn
 from ..models.hire_booking import STATUS_CHOICES, PAYMENT_STATUS_CHOICES, PAYMENT_METHOD_CHOICES, HireBooking
-# Import pricing utility
-from hire.hire_pricing import calculate_addon_price # Import the new pricing function
+                        
+from hire.hire_pricing import calculate_addon_price                                  
 
 class AdminHireBookingForm(forms.Form):
     """
@@ -17,13 +17,13 @@ class AdminHireBookingForm(forms.Form):
     Bypasses the multi-step customer booking flow and allows for overrides.
     """
 
-    # Section 1: Date & Time Selection
+                                      
     pick_up_date = forms.DateField(
         widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         label="Pick Up Date",
         required=True
     )
-    # Changed to TimeInput for native time picker
+                                                 
     pick_up_time = forms.TimeField(
         widget=forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
         label="Pick Up Time",
@@ -34,16 +34,16 @@ class AdminHireBookingForm(forms.Form):
         label="Return Date",
         required=True
     )
-    # Changed to TimeInput for native time picker
+                                                 
     return_time = forms.TimeField(
         widget=forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
         label="Return Time",
         required=True
     )
 
-    # Section 2: Motorcycle Selection & Rates
+                                             
     motorcycle = forms.ModelChoiceField(
-        queryset=Motorcycle.objects.none(), # Will be set in __init__
+        queryset=Motorcycle.objects.none(),                          
         label="Motorcycle",
         required=True,
         empty_label="--- Select a Motorcycle ---"
@@ -54,7 +54,7 @@ class AdminHireBookingForm(forms.Form):
         required=True,
         help_text="This will prefill from the motorcycle's default, or the general daily default, but can be overridden. (e.g., 150.00)"
     )
-    # NEW FIELD: Booked Hourly Rate
+                                   
     booked_hourly_rate = forms.DecimalField(
         max_digits=8, decimal_places=2,
         label="Booked Hourly Rate",
@@ -63,38 +63,38 @@ class AdminHireBookingForm(forms.Form):
     )
 
 
-    # Section 3: Add-ons & Packages
+                                   
     package = forms.ModelChoiceField(
-        queryset=Package.objects.none(), # Will be set in __init__
-        # Changed widget from RadioSelect to Select for dropdown
+        queryset=Package.objects.none(),                          
+                                                                
         widget=forms.Select(attrs={'class': 'form-control'}),
         required=False,
         label="Select a Package",
         empty_label="--- No Package ---"
     )
-    # Add-on fields will be dynamically added in __init__
+                                                         
 
-    # Section 4: Driver Profile Selection
+                                         
     driver_profile = forms.ModelChoiceField(
-        queryset=DriverProfile.objects.none(), # Will be set in __init__
+        queryset=DriverProfile.objects.none(),                          
         label="Driver Profile",
         required=True,
         empty_label="--- Select a Driver Profile ---"
     )
 
-    # Section 5: Financial Details & Status
+                                           
     currency = forms.CharField(
         max_length=3,
         initial='AUD',
         label="Currency Code (e.g., AUD, USD)",
         required=True
     )
-    # Renamed from total_price to grand_total
+                                             
     grand_total = forms.DecimalField(
         max_digits=10, decimal_places=2,
-        label="Admin Entered Grand Total", # Updated label
-        required=False, # Set to False to allow custom validation in clean()
-        help_text="Enter the final grand total price. An estimated total will be calculated dynamically on the page." # Updated help text
+        label="Admin Entered Grand Total",                
+        required=False,                                                     
+        help_text="Enter the final grand total price. An estimated total will be calculated dynamically on the page."                    
     )
     payment_method = forms.ChoiceField(
         choices=PAYMENT_METHOD_CHOICES,
@@ -115,7 +115,7 @@ class AdminHireBookingForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control'})
     )
 
-    # Section 6: Internal Notes
+                               
     internal_notes = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
         label="Internal Notes",
@@ -123,56 +123,56 @@ class AdminHireBookingForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
-        # Pop the instance if it exists
+                                       
         instance = kwargs.pop('instance', None)
-        # Pop hire_settings for pricing calculations
+                                                    
         self.hire_settings = kwargs.pop('hire_settings', None)
         super().__init__(*args, **kwargs)
 
-        # Set queryset and label for motorcycle
+                                               
         self.fields['motorcycle'].queryset = Motorcycle.objects.filter(is_available=True, conditions__name='hire').distinct()
         self.fields['motorcycle'].label_from_instance = lambda obj: f"ID: {obj.id} - {obj.brand} {obj.model} ({obj.year})"
 
-        # Set queryset for packages
+                                   
         self.available_packages = Package.objects.filter(is_available=True)
         self.fields['package'].queryset = self.available_packages
-        # Updated label_from_instance for package to show name and new pricing fields
+                                                                                     
         self.fields['package'].label_from_instance = lambda obj: f"{obj.name} (Daily: {obj.daily_cost:.2f}, Hourly: {obj.hourly_cost:.2f})"
 
 
-        # Dynamically create add-on fields
-        # Fetch ALL add-ons, not just available ones, for admin purposes
-        self.available_addons = AddOn.objects.all() # Changed from .filter(is_available=True)
-        self.display_addons = [] # This will hold addon info for rendering in the template
+                                          
+                                                                        
+        self.available_addons = AddOn.objects.all()                                          
+        self.display_addons = []                                                          
         
-        # Store selected add-ons and their quantities from the instance
+                                                                       
         selected_addons_from_instance = {}
         if instance:
-            # CORRECTED: Use the related_name 'booking_addons' instead of 'bookingaddon_set'
+                                                                                            
             for booking_addon in instance.booking_addons.all():
                 selected_addons_from_instance[booking_addon.addon.id] = booking_addon.quantity
 
         for addon in self.available_addons:
             is_selected = addon.id in selected_addons_from_instance
-            quantity = selected_addons_from_instance.get(addon.id, 1) # Default to 1 if selected but no quantity
+            quantity = selected_addons_from_instance.get(addon.id, 1)                                           
 
             self.display_addons.append({
                 'addon': addon,
-                'adjusted_max_quantity': addon.max_quantity, # For admin, no package-based adjustment needed
-                'is_included_in_package': False # Always false for admin form's display logic
+                'adjusted_max_quantity': addon.max_quantity,                                                
+                'is_included_in_package': False                                              
             })
 
-            # Create fields for each addon
+                                          
             self.fields[f'addon_{addon.id}_selected'] = forms.BooleanField(
                 required=False,
                 label=addon.name,
-                initial=is_selected, # Set initial based on instance
+                initial=is_selected,                                
                 widget=forms.CheckboxInput(attrs={
                     'class': 'addon-checkbox',
                     'data-addon-id': str(addon.id),
                     'data-original-max-quantity': str(addon.max_quantity),
                     'data-min-quantity': str(addon.min_quantity),
-                    'data-adjusted-max-quantity': str(addon.max_quantity), # Pass adjusted max to JS
+                    'data-adjusted-max-quantity': str(addon.max_quantity),                          
                     'data-daily-cost': str(addon.daily_cost),
                     'data-hourly-cost': str(addon.hourly_cost),
                 })
@@ -180,20 +180,20 @@ class AdminHireBookingForm(forms.Form):
             self.fields[f'addon_{addon.id}_quantity'] = forms.IntegerField(
                 min_value=addon.min_quantity,
                 max_value=addon.max_quantity,
-                initial=quantity, # Set initial based on instance
+                initial=quantity,                                
                 widget=forms.NumberInput(attrs={
                     'class': 'addon-quantity',
-                    # Show if selected, otherwise hidden by default
+                                                                   
                     'style': 'display: block;' if is_selected and addon.max_quantity > 1 else 'display: none;'
                 }),
                 required=False
             )
 
-        # Set queryset and label for driver profile
+                                                   
         self.fields['driver_profile'].queryset = DriverProfile.objects.all().order_by('name')
         self.fields['driver_profile'].label_from_instance = lambda obj: f"ID: {obj.id} - {obj.name} ({obj.email})"
 
-        # If an instance is provided, populate initial form data
+                                                                
         if instance:
             self.fields['pick_up_date'].initial = instance.pickup_date
             self.fields['pick_up_time'].initial = instance.pickup_time
@@ -205,7 +205,7 @@ class AdminHireBookingForm(forms.Form):
             self.fields['package'].initial = instance.package
             self.fields['driver_profile'].initial = instance.driver_profile
             self.fields['currency'].initial = instance.currency
-            # Changed from total_price to grand_total
+                                                     
             self.fields['grand_total'].initial = instance.grand_total
             self.fields['payment_method'].initial = instance.payment_method
             self.fields['payment_status'].initial = instance.payment_status
@@ -216,10 +216,10 @@ class AdminHireBookingForm(forms.Form):
     def clean(self):
         cleaned_data = super().clean()
 
-        # Initialize an errors dictionary to collect all validation errors
+                                                                          
         form_errors = {}
 
-        # --- Section 1: Date & Time Validation ---
+                                                   
         pickup_date = cleaned_data.get('pick_up_date')
         pickup_time = cleaned_data.get('pick_up_time')
         return_date = cleaned_data.get('return_date')
@@ -238,9 +238,9 @@ class AdminHireBookingForm(forms.Form):
                 form_errors['return_date'] = "Return date and time must be after pickup date and time."
                 form_errors['return_time'] = "Return date and time must be after pickup date and time."
 
-        # --- Section 3: Add-ons & Packages Processing ---
+                                                          
         selected_package_from_form = cleaned_data.get('package')
-        cleaned_data['selected_package_instance'] = selected_package_from_form # Store the package object for view/save
+        cleaned_data['selected_package_instance'] = selected_package_from_form                                         
 
         selected_addons_data = []
         for addon_info in self.display_addons:
@@ -249,85 +249,85 @@ class AdminHireBookingForm(forms.Form):
             quantity = cleaned_data.get(f'addon_{addon.id}_quantity', 0)
 
             if is_selected:
-                # Re-validate quantity based on adjusted_max_quantity (which is just max_quantity for admin form)
+                                                                                                                 
                 adjusted_max_quantity_for_validation = addon_info['adjusted_max_quantity']
                 if quantity < addon.min_quantity or quantity > adjusted_max_quantity_for_validation:
                     form_errors[f'addon_{addon.id}_quantity'] = (
                         f"Quantity for {addon.name} must be between {addon.min_quantity}-{adjusted_max_quantity_for_validation}."
                     )
                 else:
-                    # Calculate the actual price of the add-on using the new pricing logic
-                    # Ensure all necessary parameters for calculate_addon_price are available
+                                                                                          
+                                                                                             
                     if all([addon, quantity, pickup_date, return_date, pickup_time, return_time, self.hire_settings]):
-                        # Determine if it's a same-day booking for hourly vs. daily pricing
+                                                                                           
                         is_same_day_booking = (pickup_date == return_date)
 
                         calculated_addon_price_per_unit = calculate_addon_price(
                             addon_instance=addon,
-                            quantity=1, # Calculate for a single unit
+                            quantity=1,                              
                             pickup_date=pickup_date,
                             return_date=return_date,
                             pickup_time=pickup_time,
                             return_time=return_time,
                             hire_settings=self.hire_settings
                         )
-                        # Store the total calculated price for the quantity
+                                                                           
                         selected_addons_data.append({
                             'addon': addon,
                             'quantity': quantity,
-                            'price': calculated_addon_price_per_unit * quantity # Store the calculated total price for this addon
+                            'price': calculated_addon_price_per_unit * quantity                                                  
                         })
                     else:
-                        # If pricing parameters are missing, add an error
+                                                                         
                         form_errors[f'addon_{addon.id}_selected'] = "Cannot calculate add-on price due to missing booking details or hire settings."
 
-        cleaned_data['selected_addons_data'] = selected_addons_data # Store for view/save
+        cleaned_data['selected_addons_data'] = selected_addons_data                      
 
-        # --- Section 5: Financial Details Validation ---
+                                                         
         grand_total = cleaned_data.get('grand_total')
         payment_status = cleaned_data.get('payment_status')
 
-        # 1. Grand total cannot be negative
+                                           
         if grand_total is not None and grand_total < 0:
             form_errors['grand_total'] = "Grand total cannot be negative."
         
-        # 2. Grand total must be > 0 if payment status is 'Fully Paid'
-        # This covers both grand_total being None or grand_total being 0 or negative
-        # The previous separate check for grand_total is None and payment_status in ['paid', 'deposit_paid']
-        # is now subsumed by this more general check to ensure a single error message for these cases.
+                                                                      
+                                                                                    
+                                                                                                            
+                                                                                                      
         if payment_status == 'paid' and (grand_total is None or grand_total <= 0):
             form_errors['grand_total'] = "Grand total must be greater than 0 if payment status is 'Fully Paid'."
 
 
-        # --- Section 2: Booked Rates Validation ---
+                                                    
         booked_daily_rate = cleaned_data.get('booked_daily_rate')
         booked_hourly_rate = cleaned_data.get('booked_hourly_rate')
 
         if booked_daily_rate is not None and booked_daily_rate < 0:
             form_errors['booked_daily_rate'] = "Booked daily rate cannot be negative."
-        if booked_hourly_rate is not None and booked_hourly_rate < 0: # Added validation for hourly rate
+        if booked_hourly_rate is not None and booked_hourly_rate < 0:                                   
             form_errors['booked_hourly_rate'] = "Booked hourly rate cannot be negative."
 
 
-        # If any errors were collected, add them to the form's errors
+                                                                     
         if form_errors:
             for field, message in form_errors.items():
-                # For non-field errors, field will be None
+                                                          
                 if field is None:
                     self.add_error(None, ValidationError(message))
                 else:
                     self.add_error(field, ValidationError(message))
-            # Raise ValidationError to prevent saving if there are errors
+                                                                         
             raise ValidationError("Please correct the errors below.")
 
         return cleaned_data
 
     def get_addon_fields(self):
         """Helper to iterate through add-on fields for the template."""
-        # This helper is for the template to easily loop through addon fields
+                                                                             
         for addon_info in self.display_addons:
             addon = addon_info['addon']
-            # Ensure the fields were actually created for this addon
+                                                                    
             if f'addon_{addon.id}_selected' in self.fields:
                 yield {
                     'addon': addon,

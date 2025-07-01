@@ -1,4 +1,4 @@
-# payments/tests/util_tests/test_service_refund_calc.py
+                                                       
 
 from django.test import TestCase
 from decimal import Decimal
@@ -6,7 +6,7 @@ from datetime import datetime, date, time, timedelta
 from django.utils import timezone
 from unittest.mock import MagicMock
 
-# Corrected Imports
+                   
 from payments.utils.service_refund_calc import calculate_service_refund_amount
 from payments.tests.test_helpers.model_factories import ServiceBookingFactory, PaymentFactory, RefundPolicySettingsFactory
 
@@ -23,9 +23,9 @@ class ServiceRefundCalcTests(TestCase):
         """
         cls.refund_policy_settings = RefundPolicySettingsFactory()
 
-        # Define common refund policy snapshots for easier testing
-        # Convert Decimal values to strings for JSON serialization
-        # Note: Service refund policy uses 'cancellation_full_payment_' prefix, not 'cancellation_upfront_'
+                                                                  
+                                                                  
+                                                                                                           
         cls.full_payment_policy_snapshot = {
             'deposit_enabled': False,
             'cancellation_full_payment_full_refund_days': 7,
@@ -48,10 +48,10 @@ class ServiceRefundCalcTests(TestCase):
         """
         Helper to create a ServiceBooking and an associated Payment (if needed for context, though service_refund_calc uses booking.amount_paid).
         """
-        # Create a Payment instance (though calculate_service_refund_amount uses booking.amount_paid directly)
+                                                                                                              
         payment = PaymentFactory(amount=total_amount, status='succeeded')
 
-        # Attach the refund policy snapshot to the payment
+                                                          
         if refund_policy_snapshot:
             processed_snapshot = {k: str(v) if isinstance(v, Decimal) else v for k, v in refund_policy_snapshot.items()}
             payment.refund_policy_snapshot = processed_snapshot
@@ -59,37 +59,37 @@ class ServiceRefundCalcTests(TestCase):
             payment.refund_policy_snapshot = {}
         payment.save()
 
-        # Create a ServiceBooking instance
+                                          
         dropoff_date = timezone.now().date() + timedelta(days=dropoff_date_offset_days)
-        dropoff_time = time(10, 0) # Fixed dropoff time for consistency
+        dropoff_time = time(10, 0)                                     
 
         booking = ServiceBookingFactory(
-            payment=payment, # Link payment for completeness, though amount_paid is used
+            payment=payment,                                                            
             payment_method=payment_method,
             payment_status=payment_status if payment_status else 'paid' if payment_method == 'online_full' else 'deposit_paid',
-            calculated_total=total_amount, # Changed from total_price to calculated_total
-            amount_paid=total_amount, # This is the key field for calculation
+            calculated_total=total_amount,                                               
+            amount_paid=total_amount,                                        
             dropoff_date=dropoff_date,
             dropoff_time=dropoff_time,
-            estimated_pickup_date=dropoff_date + timedelta(days=1), # Changed from pickup_date to estimated_pickup_date
-            booking_status='confirmed', # Changed from status to booking_status
+            estimated_pickup_date=dropoff_date + timedelta(days=1),                                                    
+            booking_status='confirmed',                                        
         )
 
         return booking, payment
 
 
-    # --- Test Cases for Full Payments (online_full) ---
+                                                        
 
     def test_full_refund_full_payment(self):
         """
         Tests full refund for a full payment service booking when cancelled well in advance.
         """
         cancellation_datetime = timezone.now()
-        # Dropoff in 8 days, full refund policy threshold is 7 days
+                                                                   
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('500.00'),
             payment_method='online_full',
-            dropoff_date_offset_days=9, # Adjusted for 8 full days
+            dropoff_date_offset_days=9,                           
             refund_policy_snapshot=self.full_payment_policy_snapshot
         )
 
@@ -105,11 +105,11 @@ class ServiceRefundCalcTests(TestCase):
         Tests partial refund for a full payment service booking when cancelled within partial refund window.
         """
         cancellation_datetime = timezone.now()
-        # Dropoff in 4 days, partial refund policy threshold is 3 days
+                                                                      
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('500.00'),
             payment_method='online_full',
-            dropoff_date_offset_days=5, # Adjusted for 4 full days
+            dropoff_date_offset_days=5,                           
             refund_policy_snapshot=self.full_payment_policy_snapshot
         )
 
@@ -126,11 +126,11 @@ class ServiceRefundCalcTests(TestCase):
         Tests minimal refund for a full payment service booking when cancelled within minimal refund window.
         """
         cancellation_datetime = timezone.now()
-        # Dropoff in 2 days, minimal refund policy threshold is 1 day
+                                                                     
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('500.00'),
             payment_method='online_full',
-            dropoff_date_offset_days=3, # Adjusted for 2 full days
+            dropoff_date_offset_days=3,                           
             refund_policy_snapshot=self.full_payment_policy_snapshot
         )
 
@@ -147,11 +147,11 @@ class ServiceRefundCalcTests(TestCase):
         Tests no refund for a full payment service booking when cancelled too close to drop-off.
         """
         cancellation_datetime = timezone.now()
-        # Dropoff in 0 days (same day), minimal refund policy threshold is 1 day
+                                                                                
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('500.00'),
             payment_method='online_full',
-            dropoff_date_offset_days=1, # Adjusted for 0 full days
+            dropoff_date_offset_days=1,                           
             refund_policy_snapshot=self.full_payment_policy_snapshot
         )
 
@@ -172,7 +172,7 @@ class ServiceRefundCalcTests(TestCase):
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('500.00'),
             payment_method='online_full',
-            dropoff_date_offset_days=-1, # Initial setup, will be overwritten
+            dropoff_date_offset_days=-1,                                     
             refund_policy_snapshot=self.full_payment_policy_snapshot
         )
         booking.dropoff_date = dropoff_date
@@ -190,19 +190,19 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], days_in_advance)
 
 
-    # --- Test Cases for Deposit Payments (online_deposit) ---
+                                                              
 
     def test_full_refund_deposit_payment(self):
         """
         Tests full refund for a deposit payment service booking when cancelled well in advance.
         """
         cancellation_datetime = timezone.now()
-        # Dropoff in 11 days, full refund policy threshold for deposit is 10 days
+                                                                                 
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('100.00'),
             payment_method='online_deposit',
             payment_status='deposit_paid',
-            dropoff_date_offset_days=12, # Adjusted for 11 full days
+            dropoff_date_offset_days=12,                            
             refund_policy_snapshot=self.deposit_payment_policy_snapshot
         )
 
@@ -218,12 +218,12 @@ class ServiceRefundCalcTests(TestCase):
         Tests partial refund for a deposit payment service booking when cancelled within partial refund window.
         """
         cancellation_datetime = timezone.now()
-        # Dropoff in 6 days, partial refund policy threshold for deposit is 5 days
+                                                                                  
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('100.00'),
             payment_method='online_deposit',
             payment_status='deposit_paid',
-            dropoff_date_offset_days=7, # Adjusted for 6 full days
+            dropoff_date_offset_days=7,                           
             refund_policy_snapshot=self.deposit_payment_policy_snapshot
         )
 
@@ -240,12 +240,12 @@ class ServiceRefundCalcTests(TestCase):
         Tests minimal refund for a deposit payment service booking when cancelled within minimal refund window.
         """
         cancellation_datetime = timezone.now()
-        # Dropoff in 3 days, minimal refund policy threshold for deposit is 2 days
+                                                                                  
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('100.00'),
             payment_method='online_deposit',
             payment_status='deposit_paid',
-            dropoff_date_offset_days=4, # Adjusted for 3 full days
+            dropoff_date_offset_days=4,                           
             refund_policy_snapshot=self.deposit_payment_policy_snapshot
         )
 
@@ -262,12 +262,12 @@ class ServiceRefundCalcTests(TestCase):
         Tests no refund for a deposit payment service booking when cancelled too close to drop-off.
         """
         cancellation_datetime = timezone.now()
-        # Dropoff in 1 day, minimal refund policy threshold for deposit is 2 days
+                                                                                 
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('100.00'),
             payment_method='online_deposit',
             payment_status='deposit_paid',
-            dropoff_date_offset_days=2, # Adjusted for 1 full day
+            dropoff_date_offset_days=2,                          
             refund_policy_snapshot=self.deposit_payment_policy_snapshot
         )
 
@@ -279,7 +279,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 1)
 
 
-    # --- Edge Cases and Other Scenarios ---
+                                            
 
     def test_no_refund_policy_snapshot(self):
         """
@@ -323,11 +323,11 @@ class ServiceRefundCalcTests(TestCase):
         cancellation_datetime = timezone.now()
 
         mock_booking = MagicMock()
-        mock_booking.payment = None # No payment object linked
-        mock_booking.amount_paid = Decimal('250.00') # Explicitly set amount_paid
+        mock_booking.payment = None                           
+        mock_booking.amount_paid = Decimal('250.00')                             
         mock_booking.payment_method = 'online_full'
         mock_booking.payment_status = 'paid'
-        mock_booking.dropoff_date = timezone.now().date() + timedelta(days=9) # Adjusted for 8 full days
+        mock_booking.dropoff_date = timezone.now().date() + timedelta(days=9)                           
         mock_booking.dropoff_time = time(10, 0)
         mock_booking.get_payment_method_display.return_value = 'Online Full'
 
@@ -345,11 +345,11 @@ class ServiceRefundCalcTests(TestCase):
         cancellation_datetime = timezone.now()
 
         mock_booking = MagicMock()
-        mock_booking.payment = None # No payment object linked
-        mock_booking.amount_paid = Decimal('0.00') # Explicitly set amount_paid to zero
+        mock_booking.payment = None                           
+        mock_booking.amount_paid = Decimal('0.00')                                     
         mock_booking.payment_method = 'online_full'
         mock_booking.payment_status = 'paid'
-        mock_booking.dropoff_date = timezone.now().date() + timedelta(days=9) # Adjusted for 8 full days
+        mock_booking.dropoff_date = timezone.now().date() + timedelta(days=9)                           
         mock_booking.dropoff_time = time(10, 0)
         mock_booking.get_payment_method_display.return_value = 'Online Full'
 
@@ -366,12 +366,12 @@ class ServiceRefundCalcTests(TestCase):
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('500.00'),
             payment_method='online_full',
-            dropoff_date_offset_days=11, # To ensure 10 full days difference
+            dropoff_date_offset_days=11,                                    
             refund_policy_snapshot=self.full_payment_policy_snapshot
         )
 
         dropoff_datetime = timezone.make_aware(datetime.combine(booking.dropoff_date, booking.dropoff_time))
-        custom_cancellation_datetime = dropoff_datetime - timedelta(days=8, minutes=1) # Exactly 8 full days before
+        custom_cancellation_datetime = dropoff_datetime - timedelta(days=8, minutes=1)                             
 
         result = calculate_service_refund_amount(booking, payment.refund_policy_snapshot, custom_cancellation_datetime)
 
@@ -390,7 +390,7 @@ class ServiceRefundCalcTests(TestCase):
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('500.00'),
             payment_method='online_full',
-            dropoff_date_offset_days=0, # Overwritten
+            dropoff_date_offset_days=0,              
             refund_policy_snapshot=self.full_payment_policy_snapshot
         )
         booking.dropoff_date = dropoff_datetime_exact_boundary.date()
@@ -413,7 +413,7 @@ class ServiceRefundCalcTests(TestCase):
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('500.00'),
             payment_method='online_full',
-            dropoff_date_offset_days=0, # Overwritten
+            dropoff_date_offset_days=0,              
             refund_policy_snapshot=self.full_payment_policy_snapshot
         )
         booking.dropoff_date = dropoff_datetime_just_under.date()
@@ -437,7 +437,7 @@ class ServiceRefundCalcTests(TestCase):
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('500.00'),
             payment_method='online_full',
-            dropoff_date_offset_days=2, # Adjusted for 1 full day
+            dropoff_date_offset_days=2,                          
             refund_policy_snapshot=policy_with_zero_minimal
         )
 
@@ -463,7 +463,7 @@ class ServiceRefundCalcTests(TestCase):
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('100.00'),
             payment_method='online_full',
-            dropoff_date_offset_days=5, # Adjusted for 4 full days
+            dropoff_date_offset_days=5,                           
             refund_policy_snapshot=policy_snapshot
         )
 
@@ -480,7 +480,7 @@ class ServiceRefundCalcTests(TestCase):
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('123.45'),
             payment_method='online_full',
-            dropoff_date_offset_days=9, # Adjusted for 8 full days
+            dropoff_date_offset_days=9,                           
             refund_policy_snapshot=self.full_payment_policy_snapshot
         )
 

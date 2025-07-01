@@ -2,15 +2,15 @@ import datetime
 from django.test import TestCase
 from django.utils import timezone
 
-# Import model factories for easy test data creation
+                                                    
 from hire.tests.test_helpers.model_factories import (
     create_user,
     create_driver_profile,
     create_hire_booking,
-    create_email_log, # NEW: Import the EmailLog factory
+    create_email_log,                                   
 )
 
-# Import the EmailLog model directly for assertions
+                                                   
 from mailer.models import EmailLog
 
 
@@ -56,13 +56,13 @@ class EmailLogModelTest(TestCase):
         """
         Test that an EmailLog instance is created with 'PENDING' status by default.
         """
-        # Fix: Do not pass status=None. Let the model's default take effect.
+                                                                            
         email_log = create_email_log(
             sender="admin@example.com",
             recipient="customer@example.com",
             subject="Default Status Test",
             body="Test body.",
-            # Removed status=None to allow model default
+                                                        
         )
         self.assertEqual(email_log.status, 'PENDING')
 
@@ -159,26 +159,26 @@ class EmailLogModelTest(TestCase):
         """
         Test that the timestamp is automatically set upon creation when not provided.
         """
-        # Create an EmailLog and capture the time immediately after
+                                                                   
         before_creation = timezone.now()
         email_log = create_email_log(
             sender="t@t.com",
             recipient="r@r.com",
             subject="Timestamp Test",
             body="Body",
-            timestamp=None # Ensure it uses the default in the factory
+            timestamp=None                                            
         )
         after_creation = timezone.now()
 
         self.assertIsNotNone(email_log.timestamp)
-        # Check that the timestamp is within the expected range
+                                                               
         self.assertTrue(before_creation <= email_log.timestamp <= after_creation)
 
     def test_email_log_ordering(self):
         """
         Test that EmailLog instances are ordered by timestamp in descending order.
         """
-        # Create logs with different timestamps
+                                               
         log1 = create_email_log(
             sender="s1@e.com", recipient="r1@e.com", subject="Log 1",
             timestamp=timezone.now() - datetime.timedelta(minutes=10)
@@ -192,6 +192,6 @@ class EmailLogModelTest(TestCase):
             timestamp=timezone.now()
         )
 
-        # Retrieve all logs and check their order
+                                                 
         all_logs = EmailLog.objects.all()
         self.assertEqual(list(all_logs), [log3, log2, log1])

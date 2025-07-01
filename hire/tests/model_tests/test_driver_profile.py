@@ -1,17 +1,17 @@
-# hire/tests/model_tests/test_driver_profile.py
+                                               
 
 import datetime
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-#from unittest import mock # For mocking timezone.now() - Not currently used directly in failing tests
-from dateutil.relativedelta import relativedelta # For precise date calculations
+                                                                                                      
+from dateutil.relativedelta import relativedelta                                
 
-# Import model factories
+                        
 from hire.tests.test_helpers.model_factories import create_driver_profile, create_user, create_hire_settings
-# Import the DriverProfile model directly for specific tests if needed
+                                                                      
 from hire.models import DriverProfile
-from dashboard.models import HireSettings # To directly manipulate settings
+from dashboard.models import HireSettings                                  
 
 
 class DriverProfileModelTest(TestCase):
@@ -24,7 +24,7 @@ class DriverProfileModelTest(TestCase):
         """
         Set up non-modified objects used by all test methods.
         """
-        # Create a default HireSettings instance for age validation
+                                                                   
         cls.hire_settings = create_hire_settings(minimum_driver_age=21)
         cls.user = create_user(username="testuser")
 
@@ -39,11 +39,11 @@ class DriverProfileModelTest(TestCase):
             address_line_1="456 Oak Ave",
             city="Melbourne",
             country="Australia",
-            date_of_birth=datetime.date(2000, 1, 1), # Over 21
+            date_of_birth=datetime.date(2000, 1, 1),          
             is_australian_resident=True,
             license_number="AUS987654",
             license_expiry_date=timezone.now().date() + datetime.timedelta(days=365),
-            license_photo="dummy/path/license.jpg" # Added for basic creation
+            license_photo="dummy/path/license.jpg"                           
         )
         self.assertIsNotNone(driver_profile.pk)
         self.assertEqual(driver_profile.name, "Jane Doe")
@@ -56,14 +56,14 @@ class DriverProfileModelTest(TestCase):
         """
         Test the __str__ method when linked to a User.
         """
-        driver_profile = create_driver_profile(user=self.user, license_photo="dummy/path/license.jpg") # Added license_photo
+        driver_profile = create_driver_profile(user=self.user, license_photo="dummy/path/license.jpg")                      
         self.assertEqual(str(driver_profile), str(self.user))
 
     def test_str_method_without_user(self):
         """
         Test the __str__ method when not linked to a User, using name/email.
         """
-        driver_profile = create_driver_profile(user=None, name="Anonymous Driver", email="anon@example.com", license_photo="dummy/path/license.jpg") # Added license_photo
+        driver_profile = create_driver_profile(user=None, name="Anonymous Driver", email="anon@example.com", license_photo="dummy/path/license.jpg")                      
         self.assertEqual(str(driver_profile), "Anonymous Driver")
 
         driver_profile_no_name_email = create_driver_profile(
@@ -76,11 +76,11 @@ class DriverProfileModelTest(TestCase):
             country="Country",
             date_of_birth=datetime.date(1990,1,1),
             license_expiry_date=datetime.date(2030,1,1),
-            license_photo="dummy/path/license.jpg" # Added license_photo
+            license_photo="dummy/path/license.jpg"                      
         )
         self.assertEqual(str(driver_profile_no_name_email), "0498765432")
 
-    # --- clean() method tests ---
+                                  
 
     def test_clean_driver_under_minimum_age_raises_error(self):
         """
@@ -89,11 +89,11 @@ class DriverProfileModelTest(TestCase):
         self.hire_settings.minimum_driver_age = 21
         self.hire_settings.save()
 
-        # Driver is 20 years old
+                                
         date_of_birth = timezone.now().date() - relativedelta(years=20)
         driver_profile = create_driver_profile(
             date_of_birth=date_of_birth,
-            license_photo="dummy/path/license.jpg" # Australian resident needs this
+            license_photo="dummy/path/license.jpg"                                 
         )
 
         with self.assertRaises(ValidationError) as cm:
@@ -111,12 +111,12 @@ class DriverProfileModelTest(TestCase):
         self.hire_settings.minimum_driver_age = 21
         self.hire_settings.save()
 
-        # Driver is exactly 21 years old
+                                        
         date_of_birth = timezone.now().date() - relativedelta(years=21)
         driver_profile = create_driver_profile(
             date_of_birth=date_of_birth,
-            is_australian_resident=True, # Explicitly an Australian resident
-            license_photo="path/to/valid_license.jpg", # Provide required license photo
+            is_australian_resident=True,                                    
+            license_photo="path/to/valid_license.jpg",                                 
             license_number="VALID123",
             license_expiry_date=timezone.now().date() + datetime.timedelta(days=365)
         )
@@ -125,7 +125,7 @@ class DriverProfileModelTest(TestCase):
         except ValidationError as e:
             self.fail(f"ValidationError raised unexpectedly for driver exactly at minimum age: {e.message_dict}")
 
-    # --- Australian Resident Specific Validations ---
+                                                      
 
     def test_clean_australian_resident_missing_license_photo_raises_error(self):
         """
@@ -133,7 +133,7 @@ class DriverProfileModelTest(TestCase):
         """
         driver_profile = create_driver_profile(
             is_australian_resident=True,
-            license_photo=None # Missing
+            license_photo=None          
         )
         with self.assertRaises(ValidationError) as cm:
             driver_profile.clean()
@@ -149,7 +149,7 @@ class DriverProfileModelTest(TestCase):
         """
         driver_profile = create_driver_profile(
             is_australian_resident=True,
-            license_number="", # Missing
+            license_number="",          
             license_photo="dummy/path/license.jpg"
         )
         with self.assertRaises(ValidationError) as cm:
@@ -166,7 +166,7 @@ class DriverProfileModelTest(TestCase):
         """
         driver_profile = create_driver_profile(
             is_australian_resident=True,
-            license_expiry_date=timezone.now().date() - datetime.timedelta(days=1), # Expired yesterday
+            license_expiry_date=timezone.now().date() - datetime.timedelta(days=1),                    
             license_photo="dummy/path/license.jpg",
             license_number="EXPIREDLIC"
         )
@@ -178,7 +178,7 @@ class DriverProfileModelTest(TestCase):
             "Australian domestic driver's license must not be expired."
         )
 
-    # --- Foreigner Specific Validations ---
+                                            
 
     def test_clean_foreigner_missing_international_license_photo_raises_error(self):
         """
@@ -186,8 +186,8 @@ class DriverProfileModelTest(TestCase):
         """
         driver_profile = create_driver_profile(
             is_australian_resident=False,
-            international_license_photo=None, # Missing
-            passport_photo="dummy/path/passport.jpg", # Provide other required fields
+            international_license_photo=None,          
+            passport_photo="dummy/path/passport.jpg",                                
             international_license_issuing_country="USA",
             international_license_expiry_date=timezone.now().date() + datetime.timedelta(days=365),
             passport_number="P123",
@@ -207,8 +207,8 @@ class DriverProfileModelTest(TestCase):
         """
         driver_profile = create_driver_profile(
             is_australian_resident=False,
-            passport_photo=None, # Missing
-            international_license_photo="dummy/path/int_license.jpg", # Provide other required fields
+            passport_photo=None,          
+            international_license_photo="dummy/path/int_license.jpg",                                
             international_license_issuing_country="USA",
             international_license_expiry_date=timezone.now().date() + datetime.timedelta(days=365),
             passport_number="P123",
@@ -228,7 +228,7 @@ class DriverProfileModelTest(TestCase):
         """
         driver_profile = create_driver_profile(
             is_australian_resident=False,
-            international_license_issuing_country="", # Missing
+            international_license_issuing_country="",          
             international_license_photo="dummy/path/int_license.jpg",
             passport_photo="dummy/path/passport.jpg",
             international_license_expiry_date=timezone.now().date() + datetime.timedelta(days=365),
@@ -249,7 +249,7 @@ class DriverProfileModelTest(TestCase):
         """
         driver_profile = create_driver_profile(
             is_australian_resident=False,
-            international_license_expiry_date=timezone.now().date() - datetime.timedelta(days=1), # Expired
+            international_license_expiry_date=timezone.now().date() - datetime.timedelta(days=1),          
             international_license_photo="dummy/path/int_license.jpg",
             passport_photo="dummy/path/passport.jpg",
             international_license_issuing_country="USA",
@@ -270,7 +270,7 @@ class DriverProfileModelTest(TestCase):
         """
         driver_profile = create_driver_profile(
             is_australian_resident=False,
-            passport_number="", # Missing
+            passport_number="",          
             international_license_photo="dummy/path/int_license.jpg",
             passport_photo="dummy/path/passport.jpg",
             international_license_issuing_country="USA",
@@ -291,18 +291,18 @@ class DriverProfileModelTest(TestCase):
         """
         driver_profile = create_driver_profile(
             is_australian_resident=False,
-            passport_expiry_date=None, # Missing
-            # Provide other required fields for a foreigner to isolate this error
+            passport_expiry_date=None,          
+                                                                                 
             international_license_photo="path/to/int_license.jpg",
             international_license_issuing_country="Canada",
             international_license_expiry_date=timezone.now().date() + datetime.timedelta(days=365),
             passport_photo="path/to/passport.jpg",
             passport_number="CAN12345",
-            _set_default_expiry_dates=False # Crucial: Prevent factory from setting a default
+            _set_default_expiry_dates=False                                                  
         )
         with self.assertRaises(ValidationError) as cm:
             driver_profile.clean()
-        # Ensure the specific error for passport_expiry_date is present
+                                                                       
         self.assertIn('passport_expiry_date', cm.exception.message_dict)
         self.assertEqual(
             cm.exception.message_dict['passport_expiry_date'][0],
@@ -316,7 +316,7 @@ class DriverProfileModelTest(TestCase):
         """
         driver_profile = create_driver_profile(
             is_australian_resident=False,
-            passport_expiry_date=timezone.now().date() - datetime.timedelta(days=1), # Expired
+            passport_expiry_date=timezone.now().date() - datetime.timedelta(days=1),          
             international_license_photo="dummy/path/int_license.jpg",
             passport_photo="dummy/path/passport.jpg",
             international_license_issuing_country="USA",
@@ -340,7 +340,7 @@ class DriverProfileModelTest(TestCase):
             license_photo="path/to/aus_license.jpg",
             license_number="AUS123456",
             license_expiry_date=timezone.now().date() + datetime.timedelta(days=365),
-            date_of_birth=timezone.now().date() - relativedelta(years=25) # Ensure valid age
+            date_of_birth=timezone.now().date() - relativedelta(years=25)                   
         )
         try:
             driver_profile.clean()
@@ -359,7 +359,7 @@ class DriverProfileModelTest(TestCase):
             passport_photo="path/to/passport.jpg",
             passport_number="P1234567",
             passport_expiry_date=timezone.now().date() + datetime.timedelta(days=365),
-            date_of_birth=timezone.now().date() - relativedelta(years=25) # Ensure valid age
+            date_of_birth=timezone.now().date() - relativedelta(years=25)                   
         )
         try:
             driver_profile.clean()

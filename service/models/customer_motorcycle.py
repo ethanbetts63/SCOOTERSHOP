@@ -31,7 +31,7 @@ class CustomerMotorcycle(models.Model):
     engine_number = models.CharField(max_length=50, blank=True, null=True, help_text="(optional) Engine serial number.")
     image = models.ImageField(upload_to='motorcycle_images/', blank=True, null=True, help_text="(optional) Image of the motorcycle.")
 
-    # Timestamps
+                
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -42,7 +42,7 @@ class CustomerMotorcycle(models.Model):
     def clean(self):
         super().clean()
 
-        # Rule 1: Ensure required fields are not empty
+                                                      
         if not self.brand:
             raise ValidationError({'brand': "Motorcycle brand is required."})
         if not self.model:
@@ -51,7 +51,7 @@ class CustomerMotorcycle(models.Model):
             raise ValidationError({'year': "Motorcycle year is required."})
         if not self.rego:
             raise ValidationError({'rego': "Motorcycle registration is required."})
-        # Corrected condition for odometer: 0 is a valid value, only None should trigger 'required' error
+                                                                                                         
         if self.odometer is None:
             raise ValidationError({'odometer': "Motorcycle odometer is required."})
         if not self.transmission:
@@ -60,18 +60,18 @@ class CustomerMotorcycle(models.Model):
             raise ValidationError({'engine_size': "Motorcycle engine size is required."})
         
 
-        # Rule 2: Validate motorcycle year
+                                          
         current_year = date.today().year
         if self.year and self.year > current_year:
             raise ValidationError({'year': "Motorcycle year cannot be in the future."})
         if self.year and self.year < current_year - 100: 
             raise ValidationError({'year': "Motorcycle year seems too old. Please check the year."})
 
-        # Rule 3: Validate VIN number length if provided
+                                                        
         if self.vin_number and len(self.vin_number) != 17:
             raise ValidationError({'vin_number': "VIN number must be 17 characters long."})
         
-        # Rule 4: Ensure odometer reading is not negative if provided
+                                                                     
         if self.odometer is not None and self.odometer < 0:
             raise ValidationError({'odometer': "Odometer reading cannot be negative."})
 

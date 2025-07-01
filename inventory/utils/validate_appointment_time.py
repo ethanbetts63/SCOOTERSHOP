@@ -1,4 +1,4 @@
-# inventory/utils/validate_appointment_time.py
+                                              
 
 from datetime import date, datetime, time, timedelta
 from django.utils import timezone
@@ -28,7 +28,7 @@ def validate_appointment_time(appointment_date: date, appointment_time: time, in
             f"The selected time is too soon. Appointments require at least {min_advance_hours} hours notice from the current time."
         )
 
-    # Check for overlaps with existing booked times
+                                                   
     for booked_time_obj in existing_booked_times:
         booked_datetime_aware = timezone.make_aware(datetime.combine(appointment_date, booked_time_obj), timezone=timezone.get_current_timezone())
         blocked_interval_start = booked_datetime_aware - timedelta(minutes=spacing_minutes)
@@ -36,6 +36,6 @@ def validate_appointment_time(appointment_date: date, appointment_time: time, in
 
         if blocked_interval_start <= appointment_datetime_aware <= blocked_interval_end:
             errors.append(f"The selected time ({appointment_time.strftime('%H:%M')}) overlaps with an existing appointment.")
-            break # No need to check other booked times if one overlap is found
+            break                                                              
 
     return errors

@@ -1,7 +1,7 @@
-# dashboard/forms/add_addon_form.py
+                                   
 
 from django import forms
-from hire.models import AddOn # Import the AddOn model
+from hire.models import AddOn                         
 
 class AddAddOnForm(forms.ModelForm):
     """
@@ -9,12 +9,12 @@ class AddAddOnForm(forms.ModelForm):
     """
     class Meta:
         model = AddOn
-        # Changed 'cost' to 'hourly_cost' and 'daily_cost'
+                                                          
         fields = ['name', 'description', 'hourly_cost', 'daily_cost', 'min_quantity', 'max_quantity', 'is_available']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            # Updated widgets for hourly_cost and daily_cost
+                                                            
             'hourly_cost': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'daily_cost': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'min_quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
@@ -24,7 +24,7 @@ class AddAddOnForm(forms.ModelForm):
         help_texts = {
             'name': 'The name of the add-on (e.g., "Helmet", "GPS").',
             'description': 'A brief description of the add-on.',
-            # Updated help texts for hourly_cost and daily_cost
+                                                               
             'hourly_cost': 'The cost of the add-on per item per hour.',
             'daily_cost': 'The cost of the add-on per item per day.',
             'min_quantity': 'The minimum quantity a user can select for this add-on (must be at least 1).',
@@ -32,7 +32,7 @@ class AddAddOnForm(forms.ModelForm):
             'is_available': 'Check if this add-on is currently available for hire.',
         }
 
-    # Custom clean methods for new hourly_cost and daily_cost fields
+                                                                    
     def clean_hourly_cost(self):
         hourly_cost = self.cleaned_data.get('hourly_cost')
         if hourly_cost is not None and hourly_cost < 0:
@@ -59,7 +59,7 @@ class AddAddOnForm(forms.ModelForm):
         if min_quantity is not None and max_quantity is not None:
             if max_quantity < min_quantity:
                 self.add_error('max_quantity', "Maximum quantity cannot be less than minimum quantity.")
-            if max_quantity < 1: # Ensure max quantity is also at least 1
+            if max_quantity < 1:                                         
                 self.add_error('max_quantity', "Maximum quantity must be at least 1.")
 
         return cleaned_data

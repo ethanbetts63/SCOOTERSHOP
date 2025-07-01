@@ -1,11 +1,11 @@
-# inventory/ajax/get_motorcycle_list.py
+                                       
 
 from django.http import JsonResponse, HttpRequest
 from inventory.utils.get_motorcycles_by_criteria import get_motorcycles_by_criteria
 from inventory.utils.get_unique_makes_for_filter import get_unique_makes_for_filter
 import json
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from decimal import Decimal, InvalidOperation # Import InvalidOperation
+from decimal import Decimal, InvalidOperation                          
 
 def get_motorcycle_list(request: HttpRequest):
     """
@@ -21,11 +21,11 @@ def get_motorcycle_list(request: HttpRequest):
         price_min = request.GET.get('price_min')
         price_max = request.GET.get('price_max')
         brand_filter = request.GET.get('brand')
-        model_filter = request.GET.get('model') # <--- ADDED: Capture model filter
+        model_filter = request.GET.get('model')                                   
         page_number = request.GET.get('page', 1)
         order_by = request.GET.get('order')
 
-        # Convert numerical parameters to integers/Decimals if they exist
+                                                                         
         try:
             year_min = int(year_min) if year_min else None
             year_max = int(year_max) if year_max else None
@@ -33,15 +33,15 @@ def get_motorcycle_list(request: HttpRequest):
             engine_max_cc = int(engine_max_cc) if engine_max_cc else None
             price_min = Decimal(price_min) if price_min else None
             price_max = Decimal(price_max) if price_max else None
-        except (ValueError, InvalidOperation): # <--- MODIFIED: Catch InvalidOperation
+        except (ValueError, InvalidOperation):                                        
             return JsonResponse({'error': 'Invalid number format for filters'}, status=400)
 
 
-        # Use the utility to get the filtered queryset
+                                                      
         motorcycles_queryset = get_motorcycles_by_criteria(
             condition_slug=condition_slug,
             brand=brand_filter,
-            model=model_filter, # <--- ADDED: Pass model filter
+            model=model_filter,                                
             year_min=year_min,
             year_max=year_max,
             engine_min_cc=engine_min_cc,
@@ -51,7 +51,7 @@ def get_motorcycle_list(request: HttpRequest):
             order=order_by
         )
 
-        # Paginate the results
+                              
         paginator = Paginator(motorcycles_queryset, 10)
         try:
             page_obj = paginator.page(page_number)
@@ -60,7 +60,7 @@ def get_motorcycle_list(request: HttpRequest):
         except EmptyPage:
             page_obj = paginator.page(paginator.num_pages)
 
-        # Serialize the motorcycles data for the current page
+                                                             
         motorcycles_data = []
         for bike in page_obj:
             motorcycles_data.append({
@@ -82,9 +82,9 @@ def get_motorcycle_list(request: HttpRequest):
                 'daily_hire_rate': float(bike.daily_hire_rate) if bike.daily_hire_rate is not None else None,
             })
 
-        # Get unique makes relevant to the *initially filtered* set,
-        # which means re-calling the utility with only the `condition_slug`.
-        # This provides the full list of brands for the dropdown based on the category (new/used/all).
+                                                                    
+                                                                            
+                                                                                                      
         unique_makes_for_filter = get_unique_makes_for_filter(condition_slug=condition_slug)
 
 

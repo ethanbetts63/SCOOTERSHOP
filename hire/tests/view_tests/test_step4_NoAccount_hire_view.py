@@ -1,10 +1,10 @@
-# hire/tests/view_tests/test_step4_NoAccount_hire_view.py (Modified)
+                                                                    
 
 import datetime
 from decimal import Decimal
 from unittest.mock import patch, MagicMock
 from uuid import uuid4
-import os  # Import os for path manipulation
+import os                                   
 
 from django.test import TestCase, Client
 from django.urls import reverse
@@ -32,7 +32,7 @@ class NoAccountViewTest(TestCase):
         """
         self.client = Client()
         self.hire_settings = create_hire_settings(
-            hire_pricing_strategy='24_hour_customer_friendly',  # Example strategy
+            hire_pricing_strategy='24_hour_customer_friendly',                    
             excess_hours_margin=2,
             currency_code='AUD'
         )
@@ -42,13 +42,13 @@ class NoAccountViewTest(TestCase):
             motorcycle=self.motorcycle,
             pickup_date=timezone.now().date() + datetime.timedelta(days=2),
             pickup_time=datetime.time(10, 0),
-            return_date=timezone.now().date() + datetime.timedelta(days=4),  # 2 full days
+            return_date=timezone.now().date() + datetime.timedelta(days=4),               
             return_time=datetime.time(10, 0),
             booked_daily_rate=self.motorcycle.daily_hire_rate,
             booked_hourly_rate=self.motorcycle.hourly_hire_rate,
         )
 
-        # Set up session for the client
+                                       
         session = self.client.session
         session["temp_booking_id"] = self.temp_booking.id
         session["temp_booking_uuid"] = str(self.temp_booking.session_uuid)
@@ -58,7 +58,7 @@ class NoAccountViewTest(TestCase):
         self.step2_url = reverse("hire:step2_choose_bike")
         self.step5_url = reverse("hire:step5_summary_payment_options")
 
-        # Base data for an Australian resident - WITHOUT image fields
+                                                                     
         self.base_australian_data = {
             "name": "Test User",
             "email": "test@example.com",
@@ -75,7 +75,7 @@ class NoAccountViewTest(TestCase):
                                    datetime.timedelta(days=365)).strftime('%Y-%m-%d'),
         }
 
-        # Base data for a foreign resident - WITHOUT image fields
+                                                                 
         self.base_foreign_data = {
             "name": "Foreign User",
             "email": "foreign@example.com",
@@ -104,7 +104,7 @@ class NoAccountViewTest(TestCase):
         self.assertTemplateUsed(response, "hire/step4_no_account.html")
         self.assertIsInstance(response.context["form"], Step4NoAccountForm)
         self.assertEqual(response.context["temp_booking"], self.temp_booking)
-        # Check that the form is initialized with the temp_booking
+                                                                  
         self.assertEqual(response.context["form"].temp_booking, self.temp_booking)
 
     def test_get_no_account_view_session_expired(self):
@@ -128,7 +128,7 @@ class NoAccountViewTest(TestCase):
         Test GET request when temp_booking_id in session does not match any TempHireBooking.
         """
         session = self.client.session
-        session["temp_booking_id"] = 99999  # Non-existent ID
+        session["temp_booking_id"] = 99999                   
         session.save()
 
         response = self.client.get(self.step4_no_account_url)
@@ -144,29 +144,29 @@ class NoAccountViewTest(TestCase):
         Test POST request with invalid data.
         """
         invalid_data = self.base_australian_data.copy()
-        invalid_data["email"] = "not-an-email"  # Invalid email
+        invalid_data["email"] = "not-an-email"                 
 
         response = self.client.post(self.step4_no_account_url,
-                                    data=invalid_data)  # NO FILES
+                                    data=invalid_data)            
 
-        self.assertEqual(response.status_code, 200)  # Should re-render the form
+        self.assertEqual(response.status_code, 200)                             
         self.assertTemplateUsed(response, "hire/step4_no_account.html")
         self.assertIsInstance(response.context["form"], Step4NoAccountForm)
         self.assertTrue(response.context["form"].errors)
         self.assertIn("email", response.context["form"].errors)
-        # Assert that license_photo error is NOT present, as it should now be valid
-        # self.assertNotIn("license_photo", response.context["form"].errors)  # NO FILE CHECK
+                                                                                   
+                                                                                             
 
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
         self.assertEqual(
             str(messages[0]), "Please correct the errors below.")
 
-        # Ensure no DriverProfile was created
+                                             
         self.assertEqual(DriverProfile.objects.count(), 0)
         self.temp_booking.refresh_from_db()
         self.assertIsNone(
-            self.temp_booking.driver_profile)  # Assuming it was None initially or remains unchanged
+            self.temp_booking.driver_profile)                                                       
 
     def test_post_no_account_view_session_expired(self):
         """
@@ -177,7 +177,7 @@ class NoAccountViewTest(TestCase):
         session.save()
 
         response = self.client.post(self.step4_no_account_url,
-                                    data=self.base_australian_data)  # NO FILES
+                                    data=self.base_australian_data)            
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, self.step2_url)
         messages = list(get_messages(response.wsgi_request))
@@ -189,16 +189,16 @@ class NoAccountViewTest(TestCase):
         """
         Clean up any created files.
         """
-        # The test runner's temporary storage will handle cleanup for SimpleUploadedFile.
-        # If using actual file storage (e.g., S3, local media root), ensure deletion here.
+                                                                                         
+                                                                                          
         if DriverProfile.objects.exists():
             for dp in DriverProfile.objects.all():
-                # Django's FileField will manage the actual file deletion
-                # when the model instance is deleted, if storage is configured.
-                # For SimpleUploadedFile, they are in-memory and don't leave artifacts.
-                # If you were saving to actual disk, you'd need to delete the files.
+                                                                         
+                                                                               
+                                                                                       
+                                                                                    
                 pass
 
 
 
-# PLEASE Note that post is not being tested. I can not seem to figure out how to submit the testbooking instance without a lot of problems. 
+                                                                                                                                            

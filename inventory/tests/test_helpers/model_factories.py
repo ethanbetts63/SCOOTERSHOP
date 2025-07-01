@@ -88,7 +88,7 @@ class MotorcycleFactory(factory.django.DjangoModelFactory):
     model = factory.LazyAttribute(lambda o: fake.word().title())
     year = factory.Faker('year')
     price = factory.LazyFunction(lambda: fake.pydecimal(left_digits=5, right_digits=2, positive=True, min_value=5000))
-    quantity = 1 # Added quantity field with default value
+    quantity = 1                                          
 
     vin_number = factory.Faker('bothify', text='#################')
     engine_number = factory.Faker('bothify', text='######')
@@ -284,20 +284,20 @@ class RefundRequestFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = RefundRequest
 
-    # Ensure these are set to None if they are truly optional and not always present
+                                                                                    
     hire_booking = None
     service_booking = None
-    sales_booking = None # NEW: Added sales_booking
+    sales_booking = None                           
     service_profile = None
-    sales_profile = None # NEW: Added sales_profile
+    sales_profile = None                           
     driver_profile = None
     
-    payment = factory.SubFactory(PaymentFactory) # Ensure a Payment object is created for the refund
+    payment = factory.SubFactory(PaymentFactory)                                                    
 
     reason = factory.Faker('paragraph')
     rejection_reason = None
     requested_at = factory.LazyFunction(timezone.now)
-    status = factory.Faker('random_element', elements=['unverified', 'pending', 'reviewed_pending_approval', 'approved', 'rejected', 'partially_refunded', 'refunded', 'failed']) # Updated with new statuses
+    status = factory.Faker('random_element', elements=['unverified', 'pending', 'reviewed_pending_approval', 'approved', 'rejected', 'partially_refunded', 'refunded', 'failed'])                            
     amount_to_refund = factory.LazyFunction(lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True))
     processed_by = None
     processed_at = None
@@ -308,7 +308,7 @@ class RefundRequestFactory(factory.django.DjangoModelFactory):
         lambda: {
             'policy_version': '1.0',
             'refunded_amount': str(fake.pydecimal(left_digits=2, right_digits=2, positive=True)),
-            # You might want to add more specific calculation details here for sales refunds
+                                                                                            
             'sales_grace_period_applied': fake.boolean(),
             'sales_grace_period_hours': fake.random_int(min=12, max=72),
         }

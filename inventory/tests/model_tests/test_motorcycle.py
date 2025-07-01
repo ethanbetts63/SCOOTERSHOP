@@ -6,11 +6,11 @@ from django.db import IntegrityError
 from decimal import Decimal
 from django.db.models.deletion import SET_NULL
 
-# Import the Motorcycle, MotorcycleCondition, and User models
+                                                             
 from inventory.models import Motorcycle, MotorcycleCondition
-from django.contrib.auth import get_user_model # To get the User model
+from django.contrib.auth import get_user_model                        
 from django.db import models
-# Import factories
+                  
 from ..test_helpers.model_factories import (
     MotorcycleFactory,
     MotorcycleConditionFactory,
@@ -39,7 +39,7 @@ class MotorcycleModelTest(TestCase):
             model='CBR1000RR',
             year=2022,
             price=Decimal('15000.00'),
-            conditions=[cls.condition_new.name], # Pass name to post_generation
+            conditions=[cls.condition_new.name],                               
             is_available=True,
             daily_hire_rate=None,
             hourly_hire_rate=None,
@@ -147,12 +147,12 @@ class MotorcycleModelTest(TestCase):
         field = self.motorcycle_for_sale._meta.get_field('conditions')
         self.assertIsInstance(field, models.ManyToManyField)
         self.assertEqual(field.related_model, MotorcycleCondition)
-        # Access related_name through remote_field for consistency/robustness
+                                                                             
         self.assertEqual(field.remote_field.related_name, 'motorcycles')
         self.assertTrue(field.blank)
         self.assertEqual(field.help_text, "Select all applicable conditions (e.g., Used, Hire)")
 
-        # Test adding and retrieving conditions
+                                               
         motorcycle = MotorcycleFactory(conditions=['new', 'demo'])
         self.assertEqual(motorcycle.conditions.count(), 2)
         self.assertTrue(motorcycle.conditions.filter(name='new').exists())
@@ -244,11 +244,11 @@ class MotorcycleModelTest(TestCase):
         self.assertTrue(field.null)
         self.assertTrue(field.blank)
 
-        # Test unique constraint
+                                
         with self.assertRaises(IntegrityError):
             Motorcycle.objects.create(
                 brand='Test', model='Bike', year=2000, engine_size=100,
-                stock_number=self.motorcycle_for_sale.stock_number # Duplicate stock number
+                stock_number=self.motorcycle_for_sale.stock_number                         
             )
 
     def test_daily_hire_rate_field(self):
@@ -286,21 +286,21 @@ class MotorcycleModelTest(TestCase):
         """
         Test the get_conditions_display method.
         """
-        # Test with a single condition
+                                      
         self.assertEqual(self.motorcycle_for_sale.get_conditions_display(), 'New')
 
-        # Test with multiple conditions
+                                       
         expected_display = f"{self.condition_used.display_name}, {self.condition_hire.display_name}"
         self.assertEqual(self.motorcycle_for_hire.get_conditions_display(), expected_display)
 
-        # Test with no conditions (if possible, though factory adds 'used' by default)
-        # To truly test 'N/A', we'd need a motorcycle with no conditions.
-        # Let's create one explicitly and clear conditions.
-        moto_no_conditions = MotorcycleFactory(conditions=[]) # Create with no conditions initially
-        moto_no_conditions.conditions.clear() # Ensure no conditions are present
+                                                                                      
+                                                                         
+                                                           
+        moto_no_conditions = MotorcycleFactory(conditions=[])                                      
+        moto_no_conditions.conditions.clear()                                   
         self.assertEqual(moto_no_conditions.get_conditions_display(), 'N/A')
 
-        # Test with the old 'condition' charfield if set, and no ManyToMany conditions
+                                                                                      
         moto_old_condition = MotorcycleFactory(conditions=[], condition='demo')
         moto_old_condition.conditions.clear()
         self.assertEqual(moto_old_condition.get_conditions_display(), 'Demo')

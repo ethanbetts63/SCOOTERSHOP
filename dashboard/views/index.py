@@ -1,4 +1,4 @@
-# SCOOTER_SHOP/dashboard/views/index.py
+                                       
 
 from django.shortcuts import render
 from django.contrib.auth.decorators import user_passes_test
@@ -10,6 +10,6 @@ def dashboard_index(request):
     """
     context = {
         'page_title': 'Admin Dashboard',
-        # Add any data you want to display on the admin index here
+                                                                  
     }
     return render(request, 'dashboard/dashboard_index.html', context)

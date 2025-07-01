@@ -9,7 +9,7 @@ class BlockedHireDate(models.Model):
     description = models.CharField(max_length=255, blank=True, null=True, help_text="Optional description for the blocked period.")
 
     def __str__(self):
-        # Ensure start_date and end_date are not None before formatting
+                                                                       
         start_str = self.start_date.strftime('%Y-%m-%d') if self.start_date else 'N/A'
         end_str = self.end_date.strftime('%Y-%m-%d') if self.end_date else 'N/A'
 

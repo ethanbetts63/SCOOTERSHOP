@@ -1,4 +1,4 @@
-# service/admin.py
+                  
 
 from django.contrib import admin
 from service.models import (
@@ -23,7 +23,7 @@ class CustomerMotorcycleAdmin(admin.ModelAdmin):
     list_display = ('year', 'brand', 'model', 'service_profile_name', 'rego')
     list_filter = ('brand', 'year')
     search_fields = ('brand', 'model', 'rego', 'vin_number', 'service_profile__name', 'service_profile__email')
-    raw_id_fields = ('service_profile',) # Use if you have many service profiles for performance
+    raw_id_fields = ('service_profile',)                                                        
 
     def service_profile_name(self, obj):
         return obj.service_profile.name if obj.service_profile else "N/A"
@@ -34,15 +34,15 @@ class ServiceBookingAdmin(admin.ModelAdmin):
     list_display = (
         'service_booking_reference',
         'service_type',
-        'booking_status', # Corrected field name
-        'dropoff_date',   # Corrected field name
-        'dropoff_time',   # Corrected field name
+        'booking_status',                       
+        'dropoff_date',                         
+        'dropoff_time',                         
         'customer_name',
         'customer_email',
         'motorcycle_info',
-        'payment_status', # Added payment status
+        'payment_status',                       
     )
-    list_filter = ('booking_status', 'service_type', 'dropoff_date', 'payment_status') # Corrected field names
+    list_filter = ('booking_status', 'service_type', 'dropoff_date', 'payment_status')                        
     search_fields = (
         'booking_reference',
         'service_profile__name',
@@ -71,7 +71,7 @@ class ServiceProfileAdmin(admin.ModelAdmin):
     list_display = ('name', 'email', 'phone_number', 'city', 'country', 'user_link')
     list_filter = ('country', 'city')
     search_fields = ('name', 'email', 'phone_number', 'user__username', 'city', 'post_code')
-    raw_id_fields = ('user',) # Use if you have many users for performance
+    raw_id_fields = ('user',)                                             
 
     def user_link(self, obj):
         if obj.user:
@@ -92,11 +92,11 @@ class ServiceSettingsAdmin(admin.ModelAdmin):
         'enable_deposit',
         'currency_code',
     )
-    # Since there's only one instance, list_filter might not be as useful
-    # but you can add it if you have boolean fields you want to filter by.
+                                                                         
+                                                                          
     list_filter = ('enable_service_booking', 'allow_anonymous_bookings', 'enable_deposit')
 
-    # Prevent adding new instances from the admin (singleton pattern)
+                                                                     
     def has_add_permission(self, request):
         return not ServiceSettings.objects.exists()
 

@@ -1,4 +1,4 @@
-# SCOOTER_SHOP/inventory/views/user_views/step4_confirmation_view.py
+                                                                    
 
 from django.shortcuts import render, redirect
 from django.views import View
@@ -67,7 +67,7 @@ class Step4ConfirmationView(View):
                 'is_processing': False,
                 'motorcycle_price': sales_booking.motorcycle.price,
                 'amount_owing': amount_owing,
-                'sales_faqs': get_faqs_for_step('step4'), # Add FAQs
+                'sales_faqs': get_faqs_for_step('step4'),           
                 'faq_title': "What Happens Next?",
             }
             return render(request, 'inventory/step4_confirmation.html', context)

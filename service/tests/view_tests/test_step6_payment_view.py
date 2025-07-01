@@ -1,4 +1,4 @@
-# service/tests/test_step6_service_payment_details_view.py
+                                                          
 
 from django.test import TestCase, RequestFactory
 from django.urls import reverse
@@ -63,7 +63,7 @@ class Step6PaymentViewTest(TestCase):
             enable_online_deposit=True,
             enable_instore_full_payment=True,
             currency_code='AUD',
-            booking_open_days="Mon,Tue,Wed,Thu,Fri", # Explicitly set for tests
+            booking_open_days="Mon,Tue,Wed,Thu,Fri",                           
         )
         cls.service_type = ServiceTypeFactory(base_price=Decimal('250.00'))
         cls.base_url = reverse('service:service_book_step6')
@@ -82,7 +82,7 @@ class Step6PaymentViewTest(TestCase):
         )
         self.service_profile = ServiceProfileFactory(user=self.user, email="test@example.com")
 
-        # Find the next available date for the booking to make the test robust
+                                                                              
         start_date = datetime.date.today() + datetime.timedelta(days=5)
         open_days = [d.strip() for d in self.service_settings.booking_open_days.split(',')]
         available_date = get_next_available_weekday(start_date, open_days)
@@ -102,7 +102,7 @@ class Step6PaymentViewTest(TestCase):
         session['temp_service_booking_uuid'] = str(self.temp_booking.session_uuid)
         session.save()
 
-    # --- Dispatch Method Tests ---
+                                   
 
     def test_dispatch_no_temp_booking_uuid_in_session_redirects_to_service_home(self):
         """
@@ -176,7 +176,7 @@ class Step6PaymentViewTest(TestCase):
             self.assertTemplateUsed(response, 'service/step6_payment.html')
             mock_create.assert_called_once()
 
-    # --- GET Method Tests ---
+                              
 
     @patch('stripe.PaymentIntent.create')
     @patch('stripe.PaymentIntent.retrieve')
@@ -402,7 +402,7 @@ class Step6PaymentViewTest(TestCase):
         self.assertTrue(any("The amount to pay is invalid." in str(m) for m in messages))
 
 
-    # --- POST Method Tests ---
+                               
 
     @patch('stripe.PaymentIntent.retrieve')
     def test_post_payment_succeeded_json_response(self, mock_retrieve):

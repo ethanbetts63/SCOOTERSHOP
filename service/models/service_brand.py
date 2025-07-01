@@ -1,6 +1,6 @@
 from django.db import models
 
-# Model for brands that can be worked on
+                                        
 class ServiceBrand(models.Model):
     name = models.CharField(max_length=100, unique=True, help_text="Name of the service brand (e.g., 'Yamaha', 'Vespa').")
     image = models.ImageField(

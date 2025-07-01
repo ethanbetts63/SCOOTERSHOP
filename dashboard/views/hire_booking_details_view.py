@@ -1,7 +1,7 @@
-# hire_booking_details_view.py
+                              
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import user_passes_test
-from django.contrib import messages # Import messages
+from django.contrib import messages                  
 
 from hire.models import HireBooking
 
@@ -12,7 +12,7 @@ def hire_booking_details_view(request, pk):
     """
     booking = get_object_or_404(HireBooking, pk=pk)
 
-    # Retrieve the refund policy snapshot from the associated Payment object
+                                                                            
     refund_policy_snapshot = None
     if booking.payment:
         refund_policy_snapshot = booking.payment.refund_policy_snapshot
@@ -22,7 +22,7 @@ def hire_booking_details_view(request, pk):
     context = {
         'page_title': f'Hire Booking Details - {booking.booking_reference or booking.id}',
         'booking': booking,
-        'refund_policy_snapshot': refund_policy_snapshot, # Pass the snapshot to the template
+        'refund_policy_snapshot': refund_policy_snapshot,                                    
     }
     return render(request, 'dashboard/hire_booking_details.html', context)
 
@@ -34,14 +34,14 @@ def delete_hire_booking_view(request, pk):
     """
     if request.method == 'POST':
         booking = get_object_or_404(HireBooking, pk=pk)
-        booking_ref = booking.booking_reference or booking.id # Capture reference before deletion
+        booking_ref = booking.booking_reference or booking.id                                    
         try:
             booking.delete()
             messages.success(request, f"Hire Booking {booking_ref} deleted successfully.")
         except Exception as e:
             messages.error(request, f"Error deleting Hire Booking {booking_ref}: {e}")
-        return redirect('dashboard:hire_bookings') # Redirect to the calendar view after deletion
+        return redirect('dashboard:hire_bookings')                                               
     else:
-        # If not a POST request, redirect or show an error
+                                                          
         messages.error(request, "Invalid request method for deleting a booking.")
-        return redirect('dashboard:hire_bookings') # Or to the details page if you want to show error there
+        return redirect('dashboard:hire_bookings')                                                         

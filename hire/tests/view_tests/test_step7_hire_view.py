@@ -1,4 +1,4 @@
-# hire/tests/view_tests/test_step7_hire_view.py
+                                               
 
 from django.test import TestCase, Client
 from django.urls import reverse
@@ -9,11 +9,11 @@ import uuid
 from unittest.mock import patch
 import json
 
-# Import models
+               
 from hire.models import HireBooking
 from payments.models import Payment
 
-# Import model factories
+                        
 from hire.tests.test_helpers.model_factories import (
     create_motorcycle,
     create_hire_settings,
@@ -60,7 +60,7 @@ class BookingConfirmationViewTests(TestCase):
         self.payment_intent_id = f"pi_{uuid.uuid4().hex}"
         self.booking_reference = f"HIRE-{uuid.uuid4().hex[:8].upper()}"
 
-        # Basic HireBooking for many tests
+                                          
         self.hire_booking = create_hire_booking(
             motorcycle=self.motorcycle,
             driver_profile=self.driver_profile,
@@ -76,16 +76,16 @@ class BookingConfirmationViewTests(TestCase):
             status='confirmed',
             currency='AUD'
         )
-        # Add an addon to the booking for context testing
+                                                         
         self.addon1 = create_addon(name="GPS Navigation", daily_cost=Decimal("10.00"))
         self.booking_addon1 = create_booking_addon(
             booking=self.hire_booking,
             addon=self.addon1,
             quantity=1,
-            booked_addon_price=Decimal("20.00") # 2 days * 10.00
+            booked_addon_price=Decimal("20.00")                 
         )
         self.hire_booking.total_addons_price = Decimal("20.00")
-        self.hire_booking.grand_total = Decimal("260.00") # 240 (hire) + 20 (addon)
+        self.hire_booking.grand_total = Decimal("260.00")                          
         self.hire_booking.amount_paid = Decimal("260.00")
         self.hire_booking.save()
 
@@ -98,7 +98,7 @@ class BookingConfirmationViewTests(TestCase):
         """
         session = self.client.session
         session['final_booking_reference'] = self.hire_booking.booking_reference
-        session['temp_booking_id'] = 12345 # Dummy temp booking id to check clearance
+        session['temp_booking_id'] = 12345                                           
         session.save()
 
         response = self.client.get(self.step7_url)
@@ -110,12 +110,12 @@ class BookingConfirmationViewTests(TestCase):
         self.assertEqual(response.context.get('driver_name'), self.driver_profile.name)
         self.assertIn(self.addon1.name, [addon.addon.name for addon in response.context.get('addons')])
 
-        # IMPORTANT: Refresh the session after the request to get the latest state
+                                                                                  
         self.client.session.load()
 
-        # Check 'final_booking_reference' is now expected to be present
+                                                                       
         self.assertEqual(self.client.session.get('final_booking_reference'), self.hire_booking.booking_reference)
-        # 'temp_booking_id' should still be cleared
+                                                   
         self.assertNotIn('temp_booking_id', self.client.session)
 
     def test_get_confirmation_with_payment_intent_id_in_query(self):
@@ -123,10 +123,10 @@ class BookingConfirmationViewTests(TestCase):
         Test GET request when 'payment_intent_id' is in query parameters.
         """
         session = self.client.session
-        if 'final_booking_reference' in session: # Ensure it's not there initially
+        if 'final_booking_reference' in session:                                  
             del session['final_booking_reference']
-        session['temp_booking_id'] = 12345 # Dummy temp booking id
-        session.save() # Save the session state before making the request
+        session['temp_booking_id'] = 12345                        
+        session.save()                                                   
 
         response = self.client.get(self.step7_url, {'payment_intent_id': self.hire_booking.stripe_payment_intent_id})
 
@@ -135,10 +135,10 @@ class BookingConfirmationViewTests(TestCase):
         self.assertFalse(response.context.get('is_processing'))
         self.assertEqual(response.context.get('hire_booking'), self.hire_booking)
 
-        # IMPORTANT: Refresh the session after the request to get the latest state
+                                                                                  
         self.client.session.load()
 
-        # Check 'final_booking_reference' is added to session and 'temp_booking_id' is cleared
+                                                                                              
         self.assertEqual(self.client.session.get('final_booking_reference'), self.hire_booking.booking_reference)
         self.assertNotIn('temp_booking_id', self.client.session)
 
@@ -148,20 +148,20 @@ class BookingConfirmationViewTests(TestCase):
         but Payment object does, indicating processing.
         """
         new_payment_intent_id = f"pi_processing_{uuid.uuid4().hex}"
-        # Create a Payment record, but no HireBooking yet
+                                                         
         create_payment(
             stripe_payment_intent_id=new_payment_intent_id,
             amount=Decimal("100.00"),
-            status='succeeded' # Payment succeeded, but webhook might be slow
+            status='succeeded'                                               
         )
-        # Ensure HireBooking does not exist for this PI
+                                                       
         HireBooking.objects.filter(stripe_payment_intent_id=new_payment_intent_id).delete()
 
 
         response = self.client.get(self.step7_url, {'payment_intent_id': new_payment_intent_id})
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'hire/step7_booking_confirmation.html') # View uses this template for processing
+        self.assertTemplateUsed(response, 'hire/step7_booking_confirmation.html')                                         
         self.assertTrue(response.context.get('is_processing'))
         self.assertEqual(response.context.get('payment_intent_id'), new_payment_intent_id)
         self.assertIsNone(response.context.get('hire_booking'))
@@ -189,7 +189,7 @@ class BookingConfirmationViewTests(TestCase):
         session.save()
 
         response = self.client.get(self.step7_url)
-        # Since it tries PI next, and PI is not provided, it should redirect.
+                                                                             
         self.assertRedirects(response, self.step2_url)
 
     def test_get_confirmation_payment_intent_id_no_hirebooking_no_payment_redirects_to_step2(self):
@@ -208,12 +208,12 @@ class BookingConfirmationViewTests(TestCase):
         Payment.objects.filter(stripe_payment_intent_id=unknown_payment_intent_id).delete()
 
         response = self.client.get(self.step7_url, {'payment_intent_id': unknown_payment_intent_id})
-        # The view logic:
-        # 1. booking_reference from session: None
-        # 2. payment_intent_id from GET: unknown_payment_intent_id
-        #    - HireBooking.objects.get(stripe_payment_intent_id=...) -> DoesNotExist. is_processing = True.
-        # Then: if not hire_booking and is_processing: -> render processing template.
-        # This seems to be the expected path.
+                         
+                                                 
+                                                                  
+                                                                                                           
+                                                                                     
+                                             
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'hire/step7_booking_confirmation.html')
         self.assertTrue(response.context.get('is_processing'))
@@ -226,7 +226,7 @@ class BookingConfirmationViewTests(TestCase):
         """
         session = self.client.session
         session['final_booking_reference'] = self.hire_booking.booking_reference
-        session['temp_booking_id'] = 12345 # A dummy ID
+        session['temp_booking_id'] = 12345             
         session.save()
 
         self.client.get(self.step7_url)
@@ -288,10 +288,10 @@ class BookingStatusCheckViewTests(TestCase):
             booking=self.hire_booking,
             addon=self.addon,
             quantity=1,
-            booked_addon_price=Decimal("5.00") # 1 day * 5.00 (adjust if booking duration changes)
+            booked_addon_price=Decimal("5.00")                                                    
         )
-        # Re-calculate totals if needed, though factory should handle it.
-        # For this test, we assume the hire_booking details are correct.
+                                                                         
+                                                                        
 
     def test_ajax_status_check_booking_ready(self):
         """
@@ -313,7 +313,7 @@ class BookingStatusCheckViewTests(TestCase):
         Test AJAX status check when HireBooking not found, but Payment exists (status: processing).
         """
         processing_pi_id = f"pi_processing_ajax_{uuid.uuid4().hex}"
-        # Create Payment, but no HireBooking for this PI
+                                                        
         create_payment(stripe_payment_intent_id=processing_pi_id, status='succeeded')
         HireBooking.objects.filter(stripe_payment_intent_id=processing_pi_id).delete()
 
@@ -330,13 +330,13 @@ class BookingStatusCheckViewTests(TestCase):
         Test AJAX status check when neither HireBooking nor Payment found (status: error, finalization failed).
         """
         failed_pi_id = f"pi_failed_ajax_{uuid.uuid4().hex}"
-        # Ensure no HireBooking and no Payment exist for this PI
+                                                                
         HireBooking.objects.filter(stripe_payment_intent_id=failed_pi_id).delete()
         Payment.objects.filter(stripe_payment_intent_id=failed_pi_id).delete()
 
         response = self.client.get(self.status_check_url, {'payment_intent_id': failed_pi_id}, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
-        self.assertEqual(response.status_code, 500) # As per view logic
+        self.assertEqual(response.status_code, 500)                    
         json_response = response.json()
         self.assertEqual(json_response['status'], 'error')
         self.assertEqual(json_response['message'], 'Booking finalization failed. Please contact support.')

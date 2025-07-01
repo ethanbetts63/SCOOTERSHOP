@@ -5,7 +5,7 @@ from django.views import View
 from django.contrib import messages
 from dashboard.forms.add_package_form import AddPackageForm
 from hire.models.hire_packages import Package
-from hire.models.hire_addon import AddOn # Import AddOn model
+from hire.models.hire_addon import AddOn                     
 
 @method_decorator(login_required, name='dispatch')
 class AddEditPackageView(View):
@@ -21,14 +21,14 @@ class AddEditPackageView(View):
             form = AddPackageForm()
             title = "Add New Hire Package"
 
-        # Fetch all available add-ons to pass their costs to the template
+                                                                         
         available_addons = AddOn.objects.filter(is_available=True).order_by('name')
 
         context = {
             'form': form,
             'title': title,
             'package': package,
-            'available_addons': available_addons, # Pass available_addons to the context
+            'available_addons': available_addons,                                       
         }
         return render(request, self.template_name, context)
 
@@ -49,7 +49,7 @@ class AddEditPackageView(View):
         else:
             messages.error(request, "Please correct the errors below.")
             title = "Edit Hire Package" if pk else "Add New Hire Package"
-            # Re-fetch available add-ons if the form is not valid, to re-render the costs
+                                                                                         
             available_addons = AddOn.objects.filter(is_available=True).order_by('name')
             context = {
                 'form': form,

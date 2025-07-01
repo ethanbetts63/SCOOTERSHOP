@@ -1,4 +1,4 @@
-# payments/tests/view_tests/test_process_refund.py
+                                                  
 
 from django.test import TestCase, Client
 from django.urls import reverse
@@ -9,13 +9,13 @@ from decimal import Decimal
 from django.utils import timezone
 from datetime import time, timedelta
 import stripe
-# Import factories
+                  
 from payments.tests.test_helpers.model_factories import (
     RefundRequestFactory, HireBookingFactory, ServiceBookingFactory, SalesBookingFactory,
     PaymentFactory, UserFactory
 )
 
-# Set a dummy Stripe secret key for tests - crucial for Stripe module to not error out
+                                                                                      
 settings.STRIPE_SECRET_KEY = 'sk_test_dummykey'
 
 class ProcessRefundViewTests(TestCase):
@@ -70,7 +70,7 @@ class ProcessRefundViewTests(TestCase):
             service_booking=None,
             sales_booking=None,
             payment=hire_booking.payment,
-            status='pending', # Ensure this is an approvable status
+            status='pending',                                      
             amount_to_refund=Decimal('250.00'),
             stripe_refund_id=None,
             processed_by=None,
@@ -137,7 +137,7 @@ class ProcessRefundViewTests(TestCase):
             service_booking=service_booking,
             sales_booking=None,
             payment=service_booking.payment,
-            status='reviewed_pending_approval', # An approvable status
+            status='reviewed_pending_approval',                       
             amount_to_refund=Decimal('100.00'),
             stripe_refund_id=None,
             processed_by=None,
@@ -202,7 +202,7 @@ class ProcessRefundViewTests(TestCase):
             service_booking=None,
             sales_booking=sales_booking,
             payment=sales_booking.payment,
-            status='pending', # An approvable status
+            status='pending',                       
             amount_to_refund=Decimal('75.00'),
             stripe_refund_id=None,
             processed_by=None,
@@ -270,7 +270,7 @@ class ProcessRefundViewTests(TestCase):
             service_booking=None,
             sales_booking=None,
             payment=hire_booking.payment,
-            status='unverified', # Explicitly test 'unverified' status
+            status='unverified',                                      
             amount_to_refund=Decimal('250.00'),
             stripe_refund_id=None,
             processed_by=None,
@@ -313,7 +313,7 @@ class ProcessRefundViewTests(TestCase):
         Tests that a refund request with an invalid status is rejected.
         """
         refund_request = RefundRequestFactory(
-            status='failed', # An invalid status for direct processing
+            status='failed',                                          
             amount_to_refund=Decimal('50.00'),
             payment=PaymentFactory(stripe_payment_intent_id='pi_test')
         )
@@ -329,7 +329,7 @@ class ProcessRefundViewTests(TestCase):
         self.assertEqual(messages_list[0].tags, 'error')
 
         refund_request.refresh_from_db()
-        self.assertEqual(refund_request.status, 'failed') # Status should not change
+        self.assertEqual(refund_request.status, 'failed')                           
 
 
     @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
@@ -338,9 +338,9 @@ class ProcessRefundViewTests(TestCase):
         Tests that a refund request with no associated payment is rejected.
         """
         refund_request = RefundRequestFactory(
-            status='pending', # Use an approvable status to hit this check
+            status='pending',                                             
             amount_to_refund=Decimal('50.00'),
-            payment=None # No associated payment
+            payment=None                        
         )
         url = reverse('payments:process_refund', kwargs={'pk': refund_request.pk})
         response = self.client.post(url)
@@ -354,7 +354,7 @@ class ProcessRefundViewTests(TestCase):
         self.assertEqual(messages_list[0].tags, 'error')
 
         refund_request.refresh_from_db()
-        self.assertEqual(refund_request.status, 'pending') # Status should not change
+        self.assertEqual(refund_request.status, 'pending')                           
 
 
     @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
@@ -363,8 +363,8 @@ class ProcessRefundViewTests(TestCase):
         Tests that a refund request with invalid/zero amount_to_refund is rejected.
         """
         refund_request = RefundRequestFactory(
-            status='pending', # Changed to 'pending' to allow this test to proceed
-            amount_to_refund=Decimal('0.00'), # Invalid amount
+            status='pending',                                                     
+            amount_to_refund=Decimal('0.00'),                 
             payment=PaymentFactory(stripe_payment_intent_id='pi_test')
         )
         url = reverse('payments:process_refund', kwargs={'pk': refund_request.pk})
@@ -379,7 +379,7 @@ class ProcessRefundViewTests(TestCase):
         self.assertEqual(messages_list[0].tags, 'error')
 
         refund_request.refresh_from_db()
-        # Status should remain 'pending' as it's a validation error before Stripe call
+                                                                                      
         self.assertEqual(refund_request.status, 'pending') 
 
 
@@ -389,9 +389,9 @@ class ProcessRefundViewTests(TestCase):
         Tests that a refund request with no Stripe Payment Intent ID is rejected.
         """
         refund_request = RefundRequestFactory(
-            status='pending', # Changed to 'pending' to allow this test to proceed
+            status='pending',                                                     
             amount_to_refund=Decimal('50.00'),
-            payment=PaymentFactory(stripe_payment_intent_id=None) # No Stripe Intent ID
+            payment=PaymentFactory(stripe_payment_intent_id=None)                      
         )
         url = reverse('payments:process_refund', kwargs={'pk': refund_request.pk})
         response = self.client.post(url)
@@ -405,7 +405,7 @@ class ProcessRefundViewTests(TestCase):
         self.assertEqual(messages_list[0].tags, 'error')
 
         refund_request.refresh_from_db()
-        # Status should remain 'pending' as it's a validation error before Stripe call
+                                                                                      
         self.assertEqual(refund_request.status, 'pending')
 
 
@@ -418,7 +418,7 @@ class ProcessRefundViewTests(TestCase):
         Tests handling of a StripeError during refund creation.
         Ensures refund_request status becomes 'failed' and no Stripe ID is set.
         """
-        # Configure the mock to raise a StripeError immediately
+                                                               
         mock_stripe_refund_create.side_effect = stripe.error.StripeError(
             "Test Stripe Error Message", code='card_declined'
         )
@@ -441,7 +441,7 @@ class ProcessRefundViewTests(TestCase):
             service_booking=None,
             sales_booking=None,
             payment=hire_booking.payment,
-            status='pending', # Use an approvable status to hit this check
+            status='pending',                                             
             amount_to_refund=Decimal('250.00'),
             stripe_refund_id=None,
             processed_by=None,
@@ -478,7 +478,7 @@ class ProcessRefundViewTests(TestCase):
         Tests handling of a generic Exception during refund creation (e.g., unexpected Python error).
         Ensures refund_request status becomes 'failed' and no Stripe ID is set.
         """
-        # Configure the mock to raise a generic Exception immediately
+                                                                     
         mock_stripe_refund_create.side_effect = ValueError("Something went wrong internally")
 
         service_booking = ServiceBookingFactory(
@@ -498,7 +498,7 @@ class ProcessRefundViewTests(TestCase):
             service_booking=service_booking,
             sales_booking=None,
             payment=service_booking.payment,
-            status='reviewed_pending_approval', # Use an approvable status to hit this check
+            status='reviewed_pending_approval',                                             
             amount_to_refund=Decimal('50.00'),
             stripe_refund_id=None,
             processed_by=None,

@@ -1,4 +1,4 @@
-# payments/utils/stripe_data_extractor.py
+                                         
 
 from django.conf import settings
 from decimal import Decimal

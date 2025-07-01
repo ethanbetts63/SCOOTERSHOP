@@ -1,10 +1,10 @@
-# inventory/tests/form_tests/test_sales_profile_form.py
+                                                       
 
 from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 from datetime import date, timedelta
-from io import BytesIO # To simulate image file
-from PIL import Image # For creating dummy image files
+from io import BytesIO                         
+from PIL import Image                                 
 
 from inventory.forms import SalesProfileForm
 from ..test_helpers.model_factories import UserFactory, SalesProfileFactory, InventorySettingsFactory
@@ -20,36 +20,36 @@ class SalesProfileFormTest(TestCase):
         """
         Set up common data for all tests in this class.
         """
-        # Create a default InventorySettings instance (singleton pattern)
+                                                                         
         cls.inventory_settings_default = InventorySettingsFactory()
 
-        # Create an InventorySettings instance where address info is required
+                                                                             
         cls.inventory_settings_address_required = InventorySettingsFactory(
             require_address_info=True,
-            require_drivers_license=False, # Ensure only address is required
-            pk=2 # Use a different PK if default already exists with PK 1
+            require_drivers_license=False,                                  
+            pk=2                                                         
         )
-        # Manually ensure singleton constraint is not violated for testing purposes,
-        # or mock the InventorySettings.objects.first() call in the form's init
-        # For simplicity, we're assuming factories create unique instances for testing
-        # or that in tests, multiple instances are okay as long as `objects.first()`
-        # returns the intended one. For form init, we explicitly pass the desired settings.
+                                                                                    
+                                                                               
+                                                                                      
+                                                                                    
+                                                                                           
 
-        # Create an InventorySettings instance where driver's license info is required
+                                                                                      
         cls.inventory_settings_dl_required = InventorySettingsFactory(
-            require_address_info=False, # Ensure only DL is required
+            require_address_info=False,                             
             require_drivers_license=True,
             pk=3
         )
 
-        # Create an InventorySettings instance where both are required
+                                                                      
         cls.inventory_settings_all_required = InventorySettingsFactory(
             require_address_info=True,
             require_drivers_license=True,
             pk=4
         )
 
-        # Create a dummy image for drivers_license_image field
+                                                              
         cls.dummy_image_file = cls._create_dummy_image()
 
     @classmethod
@@ -57,7 +57,7 @@ class SalesProfileFormTest(TestCase):
         """
         Clean up after all tests in this class.
         """
-        # Close the dummy image file
+                                    
         cls.dummy_image_file.close()
         super().tearDownClass()
 
@@ -91,8 +91,8 @@ class SalesProfileFormTest(TestCase):
         if include_dl:
             data.update({
                 'drivers_license_number': 'DL1234567',
-                'drivers_license_expiry': (date.today() + timedelta(days=365)).isoformat(), # Future date
-                'date_of_birth': (date.today() - timedelta(days=365*20)).isoformat(), # 20 years ago
+                'drivers_license_expiry': (date.today() + timedelta(days=365)).isoformat(),              
+                'date_of_birth': (date.today() - timedelta(days=365*20)).isoformat(),               
             })
         return data
 
@@ -113,7 +113,7 @@ class SalesProfileFormTest(TestCase):
             country='CA',
         )
 
-        # CORRECTED: Pass the existing_profile as 'instance' to the form
+                                                                        
         form = SalesProfileForm(instance=existing_profile, user=user)
 
         self.assertEqual(form.initial['name'], existing_profile.name)
@@ -122,14 +122,14 @@ class SalesProfileFormTest(TestCase):
         self.assertEqual(form.initial['address_line_1'], existing_profile.address_line_1)
         self.assertEqual(form.initial['city'], existing_profile.city)
 
-        # Test with a bound form (initial should not override bound data)
-        # We need valid data here since clean() will be called internally by is_valid()
+                                                                         
+                                                                                       
         bound_data = self.get_valid_data(include_address=False, include_dl=False)
         bound_data.update({'name': 'New Name', 'email': 'new@example.com'})
 
         form_bound = SalesProfileForm(data=bound_data, user=user)
         
-        # IMPORTANT: Call is_valid() before accessing cleaned_data
+                                                                  
         self.assertTrue(form_bound.is_valid(), form_bound.errors.as_json())
         self.assertEqual(form_bound.cleaned_data.get('name'), 'New Name')
         self.assertEqual(form_bound.cleaned_data.get('email'), 'new@example.com')
@@ -146,10 +146,10 @@ class SalesProfileFormTest(TestCase):
         user = UserFactory()
         form = SalesProfileForm(user=user)
         self.assertIsNotNone(form.user)
-        self.assertIsNone(form.initial.get('name')) # Should not prefill if no profile
+        self.assertIsNone(form.initial.get('name'))                                   
 
 
-    # --- Test cases with default InventorySettings (no address/DL required) ---
+                                                                                
     def test_form_valid_data_default_settings(self):
         """
         Test form is valid when default required fields are met
@@ -163,7 +163,7 @@ class SalesProfileFormTest(TestCase):
         """
         Test form is invalid when basic required fields (name, email, phone) are missing.
         """
-        data = {} # No data
+        data = {}          
         form = SalesProfileForm(data=data, inventory_settings=self.inventory_settings_default)
         self.assertFalse(form.is_valid())
         self.assertIn('name', form.errors)
@@ -171,7 +171,7 @@ class SalesProfileFormTest(TestCase):
         self.assertIn('phone_number', form.errors)
 
 
-    # --- Test cases with require_address_info = True ---
+                                                         
     def test_form_valid_with_address_required(self):
         """
         Test form is valid when address info is required and provided.
@@ -191,11 +191,11 @@ class SalesProfileFormTest(TestCase):
         self.assertIn('city', form.errors)
         self.assertIn('post_code', form.errors)
         self.assertIn('country', form.errors)
-        self.assertIn('state', form.errors) # Added state to the check
-        self.assertNotIn('drivers_license_number', form.errors) # Should not be required
+        self.assertIn('state', form.errors)                           
+        self.assertNotIn('drivers_license_number', form.errors)                         
 
 
-    # --- Test cases with require_drivers_license = True ---
+                                                            
     def test_form_valid_with_dl_required(self):
         """
         Test form is valid when driver's license info is required and provided.
@@ -209,30 +209,30 @@ class SalesProfileFormTest(TestCase):
         """
         Test form is invalid when driver's license number is required but not provided.
         """
-        data = self.get_valid_data(include_address=False, include_dl=False) # Exclude DL data
+        data = self.get_valid_data(include_address=False, include_dl=False)                  
         files = {'drivers_license_image': self._create_dummy_image('test_license_3.png')}
         form = SalesProfileForm(data=data, files=files, inventory_settings=self.inventory_settings_dl_required)
         self.assertFalse(form.is_valid())
         self.assertIn('drivers_license_number', form.errors)
         self.assertIn('drivers_license_expiry', form.errors)
         self.assertIn('date_of_birth', form.errors)
-        self.assertNotIn('address_line_1', form.errors) # Should not be required
+        self.assertNotIn('address_line_1', form.errors)                         
 
     def test_form_invalid_missing_dl_image_when_required(self):
         """
         Test form is invalid when driver's license image is required but not provided.
         """
         data = self.get_valid_data(include_address=False, include_dl=True)
-        form = SalesProfileForm(data=data, inventory_settings=self.inventory_settings_dl_required) # No files
+        form = SalesProfileForm(data=data, inventory_settings=self.inventory_settings_dl_required)           
         self.assertFalse(form.is_valid())
         self.assertIn('drivers_license_image', form.errors)
-        # These should NOT be in errors if data was provided for them in get_valid_data(include_dl=True)
+                                                                                                        
         self.assertNotIn('drivers_license_number', form.errors)
         self.assertNotIn('drivers_license_expiry', form.errors)
         self.assertNotIn('date_of_birth', form.errors)
 
 
-    # --- Test cases with both address and DL required ---
+                                                          
     def test_form_valid_with_all_required(self):
         """
         Test form is valid when both address and DL info are required and provided.
@@ -247,7 +247,7 @@ class SalesProfileFormTest(TestCase):
         Test form is invalid when both address and DL info are required,
         but some fields are missing.
         """
-        data = { # Basic data, missing most address and DL
+        data = {                                          
             'name': 'Jane Doe',
             'email': 'jane.doe@example.com',
             'phone_number': '0987654321',
@@ -258,7 +258,7 @@ class SalesProfileFormTest(TestCase):
         self.assertIn('city', form.errors)
         self.assertIn('post_code', form.errors)
         self.assertIn('country', form.errors)
-        self.assertIn('state', form.errors) # Added state to the check
+        self.assertIn('state', form.errors)                           
         self.assertIn('drivers_license_number', form.errors)
         self.assertIn('drivers_license_expiry', form.errors)
         self.assertIn('drivers_license_image', form.errors)
@@ -270,15 +270,15 @@ class SalesProfileFormTest(TestCase):
         inventory_settings is not passed during initialization.
         """
         data = self.get_valid_data(include_address=False, include_dl=False)
-        form = SalesProfileForm(data=data) # No inventory_settings passed
+        form = SalesProfileForm(data=data)                               
         self.assertTrue(form.is_valid(), form.errors.as_json())
 
-        # Now, test with a partial data set that would be invalid if settings were present
+                                                                                          
         data_missing_address = {
             'name': 'Test', 'email': 'test@example.com', 'phone_number': '123'
         }
         form_no_settings_missing_address = SalesProfileForm(data=data_missing_address)
         self.assertTrue(form_no_settings_missing_address.is_valid(), form_no_settings_missing_address.errors.as_json())
-        # The clean method's conditional validation relies on self.inventory_settings being set.
-        # If it's None, those checks are skipped. This confirms the desired fallback.
+                                                                                                
+                                                                                     
 

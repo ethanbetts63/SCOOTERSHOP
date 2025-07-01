@@ -6,13 +6,13 @@ from django.conf import settings
 from django.utils import timezone
 import uuid
 
-# Import the generalized RefundRequestForm
+                                          
 from payments.forms.user_refund_request_form import RefundRequestForm
 from payments.models.RefundRequest import RefundRequest
 from mailer.utils import send_templated_email
 from service.models import ServiceProfile
 from hire.models import DriverProfile
-from inventory.models import SalesProfile # Import SalesProfile
+from inventory.models import SalesProfile                      
 
 
 class UserRefundRequestView(View):
@@ -23,13 +23,13 @@ class UserRefundRequestView(View):
     An email is then sent to the user for confirmation.
     This view is generalized to handle HireBookings, ServiceBookings, and SalesBookings.
     """
-    template_name = 'payments/user_refund_request.html' # Renamed template for generality
+    template_name = 'payments/user_refund_request.html'                                  
 
     def get(self, request, *args, **kwargs):
         """
         Displays the empty refund request form.
         """
-        form = RefundRequestForm() # Use the generalized form
+        form = RefundRequestForm()                           
         context = {
             'form': form,
             'page_title': 'Request a Refund',
@@ -43,12 +43,12 @@ class UserRefundRequestView(View):
         Validates the booking reference and email, creates the refund request,
         and triggers email notifications.
         """
-        form = RefundRequestForm(request.POST) # Use the generalized form
+        form = RefundRequestForm(request.POST)                           
 
         if form.is_valid():
             refund_request = form.save(commit=False)
 
-            # Ensure verification token and creation time are set
+                                                                 
             if not refund_request.verification_token:
                 refund_request.verification_token = uuid.uuid4()
             if not refund_request.token_created_at:
@@ -63,7 +63,7 @@ class UserRefundRequestView(View):
             refund_policy_link = request.build_absolute_uri(reverse('core:returns'))
             admin_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'admin@example.com')
 
-            # Determine booking reference for email subject dynamically
+                                                                       
             booking_reference_for_email = "N/A"
             booking_object = None
             customer_profile_object = None
@@ -76,7 +76,7 @@ class UserRefundRequestView(View):
                 booking_reference_for_email = refund_request.service_booking.service_booking_reference
                 booking_object = refund_request.service_booking
                 customer_profile_object = refund_request.service_profile
-            elif refund_request.sales_booking: # Added SalesBooking
+            elif refund_request.sales_booking:                     
                 booking_reference_for_email = refund_request.sales_booking.sales_booking_reference
                 booking_object = refund_request.sales_booking
                 customer_profile_object = refund_request.sales_profile
@@ -86,20 +86,20 @@ class UserRefundRequestView(View):
                 'verification_link': verification_link,
                 'refund_policy_link': refund_policy_link,
                 'admin_email': admin_email,
-                'booking_reference': booking_reference_for_email, # Pass the dynamic reference
+                'booking_reference': booking_reference_for_email,                             
             }
 
-            # Dynamically pass booking and profile to send_templated_email
+                                                                          
             send_templated_email(
                 recipient_list=[refund_request.request_email],
                 subject=f"Confirm Your Refund Request for Booking {booking_reference_for_email}",
                 template_name='user_refund_request_verification.html',
                 context=user_email_context,
-                # Pass the correct related objects for mailer's context processing
-                booking=booking_object, # Can be HireBooking, ServiceBooking, or SalesBooking instance
+                                                                                  
+                booking=booking_object,                                                               
                 driver_profile=customer_profile_object if isinstance(customer_profile_object, DriverProfile) else None,
                 service_profile=customer_profile_object if isinstance(customer_profile_object, ServiceProfile) else None,
-                sales_profile=customer_profile_object if isinstance(customer_profile_object, SalesProfile) else None, # Added SalesProfile
+                sales_profile=customer_profile_object if isinstance(customer_profile_object, SalesProfile) else None,                     
             )
 
             messages.success(request, 'Your refund request has been submitted. Please check your email to confirm your request.')

@@ -1,4 +1,4 @@
-# inventory/tests/test_utils/test_get_motorcycle_details.py
+                                                           
 
 from django.test import TestCase
 from inventory.models import Motorcycle, MotorcycleCondition
@@ -31,10 +31,10 @@ class GetMotorcycleDetailsUtilityTest(TestCase):
             engine_size=1000, price=Decimal('10000.00'),
             conditions=[cls.condition_used.name, cls.condition_demo.name]
         )
-        # Explicitly create a motorcycle with no conditions
+                                                           
         cls.moto_no_conditions = MotorcycleFactory(
             brand='NoCond', model='NoCond', year=2020, engine_size=300, price=Decimal('3000.00'),
-            conditions=[] # <--- ADDED THIS TO ENSURE NO CONDITIONS ARE SET
+            conditions=[]                                                  
         )
 
 
@@ -61,7 +61,7 @@ class GetMotorcycleDetailsUtilityTest(TestCase):
         """
         Test that prefetch_related reduces queries when accessing related conditions.
         """
-        # Test for a motorcycle with multiple conditions
+                                                        
         with self.assertNumQueries(2):
             motorcycle = get_motorcycle_details(self.moto_complex.pk)
             prefetched_condition_names = {c.name for c in motorcycle.conditions.all()}
@@ -69,10 +69,10 @@ class GetMotorcycleDetailsUtilityTest(TestCase):
             self.assertIn('used', prefetched_condition_names)
             self.assertIn('demo', prefetched_condition_names)
 
-        # Test for a motorcycle with no conditions
+                                                  
         with self.assertNumQueries(2):
-            motorcycle_no_cond = get_motorcycle_details(self.moto_no_conditions.pk) # Use the pre-created instance
-            self.assertEqual(motorcycle_no_cond.conditions.count(), 0) # This should now pass
+            motorcycle_no_cond = get_motorcycle_details(self.moto_no_conditions.pk)                               
+            self.assertEqual(motorcycle_no_cond.conditions.count(), 0)                       
 
 
     def test_get_motorcycle_details_invalid_pk_type(self):

@@ -1,16 +1,16 @@
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
-import re # Import the regular expression module
+import re                                       
 
-# Assuming 'User' model exists in 'users.models' as per your snippets
-# from users.models import User 
-# If User is not directly accessible or needs a custom import, adjust this line.
-# For demonstration, we'll assume a placeholder for User if not explicitly provided.
+                                                                     
+                                
+                                                                                
+                                                                                    
 try:
     from users.models import User
 except ImportError:
-    # Placeholder for User model if not available, adjust as per your project structure
+                                                                                       
     User = settings.AUTH_USER_MODEL 
 
 class ServiceProfile(models.Model):
@@ -24,20 +24,20 @@ class ServiceProfile(models.Model):
         null=True, blank=True
     )
 
-    # Contact Information
+                         
     name = models.CharField(max_length=100, blank=False, null=False, help_text="Full name of the customer.")
     email = models.EmailField(blank=False, null=False, help_text="Email address of the customer.")
     phone_number = models.CharField(max_length=20, blank=False, null=False, help_text="Phone number of the customer.")
     
-    # Address Information
+                         
     address_line_1 = models.CharField(max_length=100, blank=False, null=False, help_text="Address line 1.")
     address_line_2 = models.CharField(max_length=100, blank=True, null=True, help_text="Address line 2.")
     city = models.CharField(max_length=50, blank=False, null=False, help_text="City.")
-    state = models.CharField(max_length=50, blank=True, null=True, help_text="State/Province.") # Optional depending on region
-    post_code = models.CharField(max_length=20, blank=False, null=False, help_text="Postal code.") # Often required
+    state = models.CharField(max_length=50, blank=True, null=True, help_text="State/Province.")                               
+    post_code = models.CharField(max_length=20, blank=False, null=False, help_text="Postal code.")                 
     country = models.CharField(max_length=50, blank=False, null=False, help_text="Country.")
 
-    # Timestamps
+                
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -52,7 +52,7 @@ class ServiceProfile(models.Model):
         """
         super().clean()
         if self.phone_number:
-            # Remove spaces and hyphens for a cleaner check
+                                                           
             cleaned_phone_number = self.phone_number.replace(' ', '').replace('-', '')
             if not re.fullmatch(r'^\+?\d+$', cleaned_phone_number):
                 raise ValidationError({'phone_number': "Phone number must contain only digits, spaces, hyphens, and an optional leading '+'. "
@@ -60,7 +60,7 @@ class ServiceProfile(models.Model):
         
         if self.user:
             if self.email and self.user.email and self.email != self.user.email:
-                pass # For now, allow discrepancy, or raise ValidationError if strict.
+                pass                                                                  
 
     class Meta:
         verbose_name = "Service Customer Profile"

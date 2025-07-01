@@ -1,4 +1,4 @@
-# service/tests/test_step7_status_check_view.py
+                                               
 from django.test import TestCase
 from django.urls import reverse
 import uuid
@@ -21,7 +21,7 @@ class Step7StatusCheckViewTest(TestCase):
     def setUpTestData(cls):
         """Set up non-modified objects used by all test methods."""
         cls.user = UserFactory()
-        cls.base_url = reverse('service:service_booking_status_check') # Use the correct URL name
+        cls.base_url = reverse('service:service_booking_status_check')                           
 
     def setUp(self):
         """Set up for each test method."""
@@ -45,7 +45,7 @@ class Step7StatusCheckViewTest(TestCase):
         self.assertEqual(data['status'], 'ready')
         self.assertEqual(data['booking_reference'], booking.service_booking_reference)
         self.assertEqual(data['booking_status'], booking.get_booking_status_display())
-        # Check that the session is updated with the final reference
+                                                                    
         self.assertEqual(self.client.session.get('service_booking_reference'), booking.service_booking_reference)
 
     def test_get_status_processing(self):
@@ -53,7 +53,7 @@ class Step7StatusCheckViewTest(TestCase):
         Tests the endpoint when the ServiceBooking doesn't exist yet, but the Payment does.
         """
         payment_intent_id = f"pi_{uuid.uuid4().hex}"
-        # Create a Payment object, but no corresponding ServiceBooking
+                                                                      
         PaymentFactory(stripe_payment_intent_id=payment_intent_id)
 
         url = f"{self.base_url}?payment_intent_id={payment_intent_id}"
@@ -70,7 +70,7 @@ class Step7StatusCheckViewTest(TestCase):
         Tests the endpoint when both ServiceBooking and Payment are missing, indicating a failure.
         """
         payment_intent_id = f"pi_{uuid.uuid4().hex}"
-        # Ensure no records exist for this payment_intent_id
+                                                            
 
         url = f"{self.base_url}?payment_intent_id={payment_intent_id}"
         response = self.client.get(url)
@@ -85,7 +85,7 @@ class Step7StatusCheckViewTest(TestCase):
         """
         Tests that a 400 error is returned if payment_intent_id is not provided.
         """
-        response = self.client.get(self.base_url) # No query parameter
+        response = self.client.get(self.base_url)                     
 
         self.assertEqual(response.status_code, 400)
         data = response.json()
@@ -93,8 +93,8 @@ class Step7StatusCheckViewTest(TestCase):
         self.assertEqual(data['status'], 'error')
         self.assertEqual(data['message'], 'Payment Intent ID is required.')
 
-    # Correct the patch target to service.models as ServiceBooking is imported from there,
-    # and adjust the original patch error to correctly reference the view within its user_views submodule.
+                                                                                          
+                                                                                                          
     @patch('service.views.user_views.step7_status_check_view.ServiceBooking.objects.get')
     def test_get_generic_exception_returns_500(self, mock_get):
         """

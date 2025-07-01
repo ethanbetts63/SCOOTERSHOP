@@ -44,7 +44,7 @@ class Step4ConfirmationViewTest(TestCase):
         self.assertFalse(response.context['is_processing'])
         self.assertEqual(response.context['amount_owing'], Decimal('9800.00'))
 
-        # Check that the temporary booking UUID is cleared from the session
+                                                                           
         self.assertNotIn('temp_sales_booking_uuid', self.client.session)
 
     def test_confirmation_view_with_valid_payment_intent_id(self):
@@ -61,7 +61,7 @@ class Step4ConfirmationViewTest(TestCase):
         self.assertEqual(response.context['sales_booking'], self.sales_booking)
         self.assertFalse(response.context['is_processing'])
 
-        # Check that the booking reference is now in the session
+                                                                
         self.assertEqual(
             self.client.session['current_sales_booking_reference'],
             self.sales_booking.sales_booking_reference
@@ -124,7 +124,7 @@ class Step4ConfirmationViewTest(TestCase):
 
         response = self.client.get(self.base_url)
         
-        # It should delete the invalid session key and then redirect
+                                                                    
         self.assertNotIn('current_sales_booking_reference', self.client.session)
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('inventory:used'))

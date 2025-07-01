@@ -4,10 +4,10 @@ import datetime
 from django.utils import timezone
 from unittest.mock import patch, Mock
 
-# Import the form to be tested
+                              
 from service.forms import AdminBookingDetailsForm
 
-# Import factories for ServiceType (needed for ModelChoiceField queryset)
+                                                                         
 from ..test_helpers.model_factories import ServiceTypeFactory, ServiceBookingFactory
 
 class AdminBookingDetailsFormTest(TestCase):
@@ -37,7 +37,7 @@ class AdminBookingDetailsFormTest(TestCase):
             ('refunded', 'Refunded'),
         ]
 
-        # Patch the choices if they are fetched dynamically from the model
+                                                                          
         cls._patch_booking_status = patch('service.models.ServiceBooking.BOOKING_STATUS_CHOICES', new=cls.booking_status_choices)
         cls._patch_payment_status = patch('service.models.ServiceBooking.PAYMENT_STATUS_CHOICES', new=cls.payment_status_choices)
         cls._patch_booking_status.start()
@@ -58,7 +58,7 @@ class AdminBookingDetailsFormTest(TestCase):
         """
         today = date.today()
         future_date = today + timedelta(days=5)
-        # Ensure current_time is definitely in the future for today's date
+                                                                          
         current_time = (timezone.localtime(timezone.now()) + timedelta(minutes=10)).time()
 
         form_data = {
@@ -82,7 +82,7 @@ class AdminBookingDetailsFormTest(TestCase):
         """
         Test that required fields are correctly marked as required.
         """
-        form_data = {} # Empty data
+        form_data = {}             
         form = AdminBookingDetailsForm(data=form_data)
         self.assertFalse(form.is_valid())
         self.assertIn('service_type', form.errors)
@@ -91,7 +91,7 @@ class AdminBookingDetailsFormTest(TestCase):
         self.assertIn('dropoff_time', form.errors)
         self.assertIn('booking_status', form.errors)
         self.assertIn('payment_status', form.errors)
-        self.assertIn('estimated_pickup_date', form.errors) # Now required
+        self.assertIn('estimated_pickup_date', form.errors)               
 
 
     def test_dropoff_date_after_service_date_warning(self):
@@ -100,7 +100,7 @@ class AdminBookingDetailsFormTest(TestCase):
         """
         today = date.today()
         service_date = today + timedelta(days=2)
-        dropoff_date = today + timedelta(days=5) # Drop-off after service
+        dropoff_date = today + timedelta(days=5)                         
 
         form_data = {
             'service_type': self.service_type.pk,
@@ -109,20 +109,20 @@ class AdminBookingDetailsFormTest(TestCase):
             'dropoff_time': '09:00',
             'booking_status': 'pending',
             'payment_status': 'unpaid',
-            'estimated_pickup_date': (service_date + timedelta(days=1)).strftime('%Y-%m-%d'), # Added
+            'estimated_pickup_date': (service_date + timedelta(days=1)).strftime('%Y-%m-%d'),        
         }
         form = AdminBookingDetailsForm(data=form_data)
         self.assertTrue(form.is_valid())
         self.assertIn("Warning: Drop-off date is after the service date.", form.get_warnings())
 
-    @patch('service.forms.date') # Patch datetime.date in the form's module
+    @patch('service.forms.date')                                           
     def test_service_date_in_past_warning(self, mock_date):
         """
         Test warning: Service date is in the past.
         """
-        mock_date.today.return_value = date(2025, 1, 15) # Fix today's date for consistent test
+        mock_date.today.return_value = date(2025, 1, 15)                                       
         past_service_date = date(2025, 1, 10)
-        # Estimated pickup date should be after the service date
+                                                                
         estimated_pickup_date_val = (past_service_date + timedelta(days=1)).strftime('%Y-%m-%d')
 
         form_data = {
@@ -132,21 +132,21 @@ class AdminBookingDetailsFormTest(TestCase):
             'dropoff_time': '09:00',
             'booking_status': 'pending',
             'payment_status': 'unpaid',
-            'estimated_pickup_date': estimated_pickup_date_val, # Added
+            'estimated_pickup_date': estimated_pickup_date_val,        
         }
         form = AdminBookingDetailsForm(data=form_data)
         self.assertTrue(form.is_valid())
         self.assertIn("Warning: Service date is in the past.", form.get_warnings())
 
-    @patch('service.forms.date') # Patch datetime.date in the form's module
+    @patch('service.forms.date')                                           
     def test_dropoff_date_in_past_warning(self, mock_date):
         """
         Test warning: Drop-off date is in the past.
         """
-        mock_date.today.return_value = date(2025, 1, 15) # Fix today's date
+        mock_date.today.return_value = date(2025, 1, 15)                   
         past_dropoff_date = date(2025, 1, 10)
-        future_service_date = date(2025, 1, 20) # Future service date
-        # Estimated pickup date should be after the service date
+        future_service_date = date(2025, 1, 20)                      
+                                                                
         estimated_pickup_date_val = (future_service_date + timedelta(days=1)).strftime('%Y-%m-%d')
 
         form_data = {
@@ -156,7 +156,7 @@ class AdminBookingDetailsFormTest(TestCase):
             'dropoff_time': '09:00',
             'booking_status': 'pending',
             'payment_status': 'unpaid',
-            'estimated_pickup_date': estimated_pickup_date_val, # Added
+            'estimated_pickup_date': estimated_pickup_date_val,        
         }
         form = AdminBookingDetailsForm(data=form_data)
         self.assertTrue(form.is_valid())
@@ -172,7 +172,7 @@ class AdminBookingDetailsFormTest(TestCase):
         future_date = today + timedelta(days=5)
         current_time = (timezone.localtime(timezone.now()) + timedelta(minutes=10)).time()
         
-        # estimated_pickup_date is now required, so it must be included
+                                                                       
         estimated_pickup_date_val = (future_date + timedelta(days=1)).strftime('%Y-%m-%d')
 
         form_data = {
@@ -182,15 +182,15 @@ class AdminBookingDetailsFormTest(TestCase):
             'dropoff_time': current_time.strftime('%H:%M'),
             'booking_status': 'pending',
             'payment_status': 'unpaid',
-            'estimated_pickup_date': estimated_pickup_date_val, # Now explicitly included
-            # customer_notes, admin_notes are still omitted (blank)
+            'estimated_pickup_date': estimated_pickup_date_val,                          
+                                                                   
         }
 
         form = AdminBookingDetailsForm(data=form_data)
-        # The form should now be valid as estimated_pickup_date is provided
+                                                                           
         self.assertTrue(form.is_valid(), f"Form is not valid when optional fields are blank: {form.errors}")
         self.assertEqual(form.get_warnings(), [])
         self.assertEqual(form.cleaned_data.get('customer_notes'), '')
-        # estimated_pickup_date should now have a value, not None
+                                                                 
         self.assertEqual(form.cleaned_data.get('estimated_pickup_date'), date.fromisoformat(estimated_pickup_date_val))
 

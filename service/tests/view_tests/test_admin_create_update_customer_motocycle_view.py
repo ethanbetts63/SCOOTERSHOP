@@ -4,10 +4,10 @@ from django.contrib import messages
 from service.models import CustomerMotorcycle
 from service.forms import AdminCustomerMotorcycleForm
 
-# Import factories for setting up test data
+                                           
 from ..test_helpers.model_factories import UserFactory, CustomerMotorcycleFactory, ServiceProfileFactory
 
-# Removed os and shutil imports as temporary MEDIA_ROOT is not needed
+                                                                     
 
 class CustomerMotorcycleCreateUpdateViewTest(TestCase):
     """
@@ -32,10 +32,10 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
             service_profile=cls.service_profile
         )
 
-        # Define URLs for convenience
+                                     
         cls.create_url = reverse('service:admin_create_customer_motorcycle')
         cls.update_url = reverse('service:admin_edit_customer_motorcycle', kwargs={'pk': cls.existing_motorcycle.pk})
-        cls.list_management_url = reverse('service:admin_customer_motorcycle_management') # Assuming this URL exists for redirect
+        cls.list_management_url = reverse('service:admin_customer_motorcycle_management')                                        
 
     def setUp(self):
         """
@@ -46,13 +46,13 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         self.session = self.client.session
         self.session.save()
         
-        # Removed temporary media root setup as image tests are removed
+                                                                       
 
 
-    # Removed tearDown method as temporary media root cleanup is not needed
+                                                                           
 
 
-    # --- Access Control Tests ---
+                                  
 
     def test_view_redirects_anonymous_user(self):
         """
@@ -70,10 +70,10 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         """
         self.client.force_login(self.regular_user)
         response = self.client.get(self.create_url)
-        self.assertEqual(response.status_code, 403) # Forbidden
+        self.assertEqual(response.status_code, 403)            
 
         response = self.client.get(self.update_url)
-        self.assertEqual(response.status_code, 403) # Forbidden
+        self.assertEqual(response.status_code, 403)            
 
     def test_view_grants_access_to_staff_user(self):
         """
@@ -97,7 +97,7 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         response = self.client.get(self.update_url)
         self.assertEqual(response.status_code, 200)
 
-    # --- GET Request Tests ---
+                               
 
     def test_get_request_create_new_motorcycle(self):
         """
@@ -141,7 +141,7 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
 
-    # --- POST Request Tests (Create) ---
+                                         
 
     def test_post_request_create_new_motorcycle_valid(self):
         """
@@ -159,17 +159,17 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
             'odometer': 1000,
             'transmission': 'MANUAL',
             'engine_size': '500cc',
-            'vin_number': 'ABCDEF12345678901', # 17 chars
+            'vin_number': 'ABCDEF12345678901',           
             'engine_number': 'NEWENG123',
         }
-        # Removed files=files as image tests are removed
+                                                        
         response = self.client.post(self.create_url, data, follow=True)
 
         self.assertEqual(CustomerMotorcycle.objects.count(), initial_count + 1)
         new_motorcycle = CustomerMotorcycle.objects.get(brand='NewBrand')
         self.assertEqual(new_motorcycle.model, 'NewModel')
-        # Removed image assertion
-        self.assertRedirects(response, self.list_management_url) # Redirect to list view
+                                 
+        self.assertRedirects(response, self.list_management_url)                        
         
         messages_list = list(messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages_list), 1)
@@ -186,7 +186,7 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
 
         invalid_data = {
             'service_profile': self.service_profile.pk,
-            'brand': '', # Missing required field
+            'brand': '',                         
             'model': 'InvalidModel',
             'year': 2020,
             'rego': 'INVLD',
@@ -196,19 +196,19 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         }
         response = self.client.post(self.create_url, invalid_data)
 
-        self.assertEqual(CustomerMotorcycle.objects.count(), initial_count) # No new motorcycle created
-        self.assertEqual(response.status_code, 200) # Should render the form again with errors
+        self.assertEqual(CustomerMotorcycle.objects.count(), initial_count)                            
+        self.assertEqual(response.status_code, 200)                                           
         self.assertTemplateUsed(response, 'service/admin_customer_motorcycle_create_update.html')
         self.assertIn('form', response.context)
         self.assertFalse(response.context['form'].is_valid())
-        self.assertIn('brand', response.context['form'].errors) # Verify specific error
+        self.assertIn('brand', response.context['form'].errors)                        
 
         messages_list = list(messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages_list), 1)
         self.assertEqual(str(messages_list[0]), "Please correct the errors below.")
         self.assertEqual(messages_list[0].level, messages.ERROR)
 
-    # --- POST Request Tests (Update) ---
+                                         
 
     def test_post_request_update_existing_motorcycle_valid(self):
         """
@@ -220,7 +220,7 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
 
         data = {
             'service_profile': self.existing_motorcycle.service_profile.pk,
-            'brand': updated_brand, # Change the brand
+            'brand': updated_brand,                   
             'model': self.existing_motorcycle.model,
             'year': self.existing_motorcycle.year,
             'rego': self.existing_motorcycle.rego,
@@ -232,7 +232,7 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         }
         response = self.client.post(self.update_url, data, follow=True)
 
-        self.existing_motorcycle.refresh_from_db() # Reload the instance from the database
+        self.existing_motorcycle.refresh_from_db()                                        
         self.assertEqual(self.existing_motorcycle.brand, updated_brand)
         self.assertRedirects(response, self.list_management_url)
         
@@ -241,7 +241,7 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         self.assertEqual(str(messages_list[0]), f"Motorcycle '{self.existing_motorcycle}' updated successfully.")
         self.assertEqual(messages_list[0].level, messages.SUCCESS)
 
-    # Removed test_post_request_update_existing_motorcycle_with_new_image
+                                                                         
 
     def test_post_request_update_existing_motorcycle_invalid(self):
         """
@@ -254,7 +254,7 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         invalid_data = {
             'service_profile': self.existing_motorcycle.service_profile.pk,
             'brand': self.existing_motorcycle.brand,
-            'model': '', # Invalid: Missing required field
+            'model': '',                                  
             'year': self.existing_motorcycle.year,
             'rego': self.existing_motorcycle.rego,
             'odometer': self.existing_motorcycle.odometer,
@@ -263,11 +263,11 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         }
         response = self.client.post(self.update_url, invalid_data)
 
-        self.assertEqual(response.status_code, 200) # Should render the form again with errors
+        self.assertEqual(response.status_code, 200)                                           
         self.assertTemplateUsed(response, 'service/admin_customer_motorcycle_create_update.html')
         self.assertIn('form', response.context)
         self.assertFalse(response.context['form'].is_valid())
-        self.assertIn('model', response.context['form'].errors) # Verify specific error
+        self.assertIn('model', response.context['form'].errors)                        
 
         messages_list = list(messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages_list), 1)
@@ -275,7 +275,7 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         self.assertEqual(messages_list[0].level, messages.ERROR)
 
         self.existing_motorcycle.refresh_from_db()
-        self.assertEqual(self.existing_motorcycle.model, original_model) # Ensure no change occurred
+        self.assertEqual(self.existing_motorcycle.model, original_model)                            
 
 
     def test_post_request_update_non_existent_motorcycle(self):
@@ -287,7 +287,7 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         non_existent_pk = self.existing_motorcycle.pk + 9999
         non_existent_url = reverse('service:admin_edit_customer_motorcycle', kwargs={'pk': non_existent_pk})
 
-        data = { # Valid data, but target doesn't exist
+        data = {                                       
             'brand': 'NonExistent',
             'model': 'NonExistent',
             'year': 2020,

@@ -87,7 +87,7 @@ def send_booking_to_mechanicdesk(service_booking_instance):
             "model": customer_motorcycle.model or "",
             "year": str(customer_motorcycle.year) if customer_motorcycle.year is not None else "",
             "transmission": customer_motorcycle.transmission or "",
-            "vin": customer_motorcycle.vin_number or "", # <-- FIX: This now handles None values correctly
+            "vin": customer_motorcycle.vin_number or "",                                                  
             "engine_size": customer_motorcycle.engine_size or "",
             "odometer": str(customer_motorcycle.odometer) if customer_motorcycle.odometer is not None else "",
         })

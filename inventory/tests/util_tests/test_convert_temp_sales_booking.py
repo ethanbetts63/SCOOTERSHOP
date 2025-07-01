@@ -1,13 +1,13 @@
-# inventory/tests/test_utils/test_convert_temp_sales_booking.py
+                                                               
 
 from django.test import TestCase
 from django.db import transaction
 from decimal import Decimal
 import datetime
-from unittest import mock # For mocking objects if needed
+from unittest import mock                                
 
 from inventory.models import TempSalesBooking, SalesBooking, InventorySettings, Motorcycle
-from payments.models import Payment, RefundPolicySettings # Assuming payments app is set up
+from payments.models import Payment, RefundPolicySettings                                  
 from inventory.utils.convert_temp_sales_booking import convert_temp_sales_booking
 from ..test_helpers.model_factories import (
     TempSalesBookingFactory,
@@ -28,11 +28,11 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         """
         Set up common data for all tests in this class.
         """
-        # Ensure InventorySettings exists
+                                         
         cls.inventory_settings = InventorySettingsFactory(
             currency_code='USD',
         )
-        # Ensure RefundPolicySettings exists for snapshotting
+                                                             
         cls.refund_settings = RefundPolicySettingsFactory()
 
         cls.motorcycle = MotorcycleFactory(status='available', is_available=True)
@@ -73,7 +73,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
             amount_paid_on_booking=Decimal('0.00'),
         )
 
-        # Assertions for SalesBooking creation
+                                              
         self.assertIsNotNone(sales_booking)
         self.assertIsInstance(sales_booking, SalesBooking)
         self.assertEqual(SalesBooking.objects.count(), initial_sales_booking_count + 1)
@@ -88,11 +88,11 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         self.assertEqual(sales_booking.appointment_time, datetime.time(10, 0))
         self.assertEqual(sales_booking.customer_notes, "Initial enquiry")
 
-        # Assertions for TempSalesBooking deletion
+                                                  
         self.assertEqual(TempSalesBooking.objects.count(), initial_temp_booking_count - 1)
         self.assertFalse(TempSalesBooking.objects.filter(pk=temp_booking.pk).exists())
 
-        # Assert motorcycle status is unchanged for 'unpaid'
+                                                            
         self.motorcycle.refresh_from_db()
         self.assertEqual(self.motorcycle.status, 'available')
         self.assertTrue(self.motorcycle.is_available)
@@ -103,7 +103,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         and correctly linked to the new SalesBooking.
         """
         payment_obj = PaymentFactory(
-            temp_sales_booking=None, # Ensure it's not linked initially
+            temp_sales_booking=None,                                   
             amount=Decimal('0.00'),
             currency='AUD',
             status='unpaid',
@@ -113,7 +113,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
             sales_profile=self.sales_profile,
             amount_paid=Decimal('0.00'),
             payment_status='unpaid',
-            payment=payment_obj # Link temp_booking to payment_obj
+            payment=payment_obj                                   
         )
         
         amount_to_pay = Decimal('250.00')
@@ -128,11 +128,11 @@ class ConvertTempSalesBookingUtilTest(TestCase):
             payment_obj=payment_obj,
         )
 
-        # Assert SalesBooking is created
+                                        
         self.assertIsNotNone(sales_booking)
-        self.assertEqual(sales_booking.payment, payment_obj) # SalesBooking should link to Payment
+        self.assertEqual(sales_booking.payment, payment_obj)                                      
 
-        # Assert Payment object is updated
+                                          
         payment_obj.refresh_from_db()
         self.assertEqual(payment_obj.amount, amount_to_pay)
         self.assertEqual(payment_obj.currency, self.inventory_settings.currency_code)
@@ -140,18 +140,18 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         self.assertEqual(payment_obj.stripe_payment_intent_id, stripe_id)
         self.assertEqual(payment_obj.sales_booking, sales_booking)
         self.assertEqual(payment_obj.sales_customer_profile, sales_booking.sales_profile)
-        self.assertIsNone(payment_obj.temp_sales_booking) # Temp link should be cleared
+        self.assertIsNone(payment_obj.temp_sales_booking)                              
 
-        # Assert refund policy snapshot is captured and contains expected keys based on convert_temp_sales_booking.py
+                                                                                                                     
         self.assertIsInstance(payment_obj.refund_policy_snapshot, dict)
         self.assertGreater(len(payment_obj.refund_policy_snapshot), 0)
-        # Removed the assertion for 'cancellation_full_payment_full_refund_days'
-        # as it is not included in the refund_policy_snapshot by convert_temp_sales_booking utility.
+                                                                                
+                                                                                                    
         self.assertIn('refund_deducts_stripe_fee_policy', payment_obj.refund_policy_snapshot)
         self.assertIn('sales_enable_deposit_refund', payment_obj.refund_policy_snapshot)
 
 
-        # Assert TempSalesBooking is deleted
+                                            
         self.assertFalse(TempSalesBooking.objects.filter(pk=temp_booking.pk).exists())
     
     def test_conversion_with_payment_object_no_refund_settings(self):
@@ -159,7 +159,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         Test conversion with payment object but no RefundPolicySettings,
         ensuring refund_policy_snapshot is an empty dict.
         """
-        RefundPolicySettings.objects.all().delete() # Delete settings for this test
+        RefundPolicySettings.objects.all().delete()                                
         self.assertFalse(RefundPolicySettings.objects.exists())
 
         payment_obj = PaymentFactory(
@@ -182,14 +182,14 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         payment_obj.refresh_from_db()
         self.assertEqual(payment_obj.refund_policy_snapshot, {})
 
-        # Recreate settings for other tests
+                                           
         RefundPolicySettingsFactory()
 
     def test_conversion_no_inventory_settings(self):
         """
         Test conversion when no InventorySettings exist, ensuring default currency is used.
         """
-        InventorySettings.objects.all().delete() # Delete settings for this test
+        InventorySettings.objects.all().delete()                                
         self.assertFalse(InventorySettings.objects.exists())
 
         temp_booking = TempSalesBookingFactory(
@@ -203,8 +203,8 @@ class ConvertTempSalesBookingUtilTest(TestCase):
             amount_paid_on_booking=Decimal('0.00'),
         )
 
-        self.assertEqual(sales_booking.currency, 'AUD') # Default currency
-        # Recreate settings for other tests
+        self.assertEqual(sales_booking.currency, 'AUD')                   
+                                           
         self.inventory_settings = InventorySettingsFactory(pk=1)
 
 
@@ -216,8 +216,8 @@ class ConvertTempSalesBookingUtilTest(TestCase):
             motorcycle=self.motorcycle,
             sales_profile=self.sales_profile,
             request_viewing=False,
-            appointment_date=None, # Should be None
-            appointment_time=None, # Should be None
+            appointment_date=None,                 
+            appointment_time=None,                 
         )
         
         sales_booking = convert_temp_sales_booking(
@@ -240,7 +240,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
             sales_profile=self.sales_profile,
         )
 
-        # Mock the create method of SalesBooking to raise an exception
+                                                                      
         with mock.patch('inventory.models.SalesBooking.objects.create') as mock_create:
             mock_create.side_effect = Exception("Database error simulation")
             
@@ -251,7 +251,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
                     amount_paid_on_booking=Decimal('0.00'),
                 )
             
-            # Ensure no SalesBooking was created
+                                                
             self.assertEqual(SalesBooking.objects.count(), 0)
-            # Ensure TempSalesBooking was NOT deleted due to atomic transaction rollback
+                                                                                        
             self.assertTrue(TempSalesBooking.objects.filter(pk=temp_booking.pk).exists())

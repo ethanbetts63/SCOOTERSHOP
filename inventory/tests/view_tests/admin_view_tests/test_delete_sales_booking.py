@@ -29,7 +29,7 @@ class SalesBookingDeleteViewTest(TestCase):
         Test that deleting a booking for a 'reserved' motorcycle
         updates the motorcycle's status and shows the correct message.
         """
-        # Create a motorcycle that is explicitly 'reserved'
+                                                           
         reserved_motorcycle = MotorcycleFactory(status='reserved', is_available=False)
         sales_booking = SalesBookingFactory(motorcycle=reserved_motorcycle)
         delete_url = reverse('inventory:admin_sales_booking_delete', kwargs={'pk': sales_booking.pk})
@@ -37,20 +37,20 @@ class SalesBookingDeleteViewTest(TestCase):
         self.assertEqual(reserved_motorcycle.status, 'reserved')
         initial_count = SalesBooking.objects.count()
 
-        # Perform the delete action
+                                   
         response = self.client.post(delete_url, follow=True)
 
-        # Assertions for the booking
+                                    
         self.assertRedirects(response, reverse('inventory:sales_bookings_management'))
         self.assertEqual(SalesBooking.objects.count(), initial_count - 1)
         self.assertFalse(SalesBooking.objects.filter(pk=sales_booking.pk).exists())
 
-        # Assertions for the motorcycle
+                                       
         reserved_motorcycle.refresh_from_db()
         self.assertEqual(reserved_motorcycle.status, 'for_sale')
         self.assertTrue(reserved_motorcycle.is_available)
 
-        # Assert that the correct, detailed message is displayed
+                                                                
         messages_list = list(messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages_list), 1)
         expected_message = f'Sales booking {sales_booking.sales_booking_reference} deleted and motorcycle "{reserved_motorcycle}" is now available for sale.'
@@ -61,22 +61,22 @@ class SalesBookingDeleteViewTest(TestCase):
         Test that deleting a booking for a motorcycle that is not 'reserved'
         shows the simple success message.
         """
-        # Create a motorcycle with a status other than 'reserved'
+                                                                 
         available_motorcycle = MotorcycleFactory(status='for_sale')
         sales_booking = SalesBookingFactory(motorcycle=available_motorcycle)
         delete_url = reverse('inventory:admin_sales_booking_delete', kwargs={'pk': sales_booking.pk})
         
         initial_count = SalesBooking.objects.count()
 
-        # Perform the delete action
+                                   
         response = self.client.post(delete_url, follow=True)
 
-        # Assertions for the booking
+                                    
         self.assertRedirects(response, reverse('inventory:sales_bookings_management'))
         self.assertEqual(SalesBooking.objects.count(), initial_count - 1)
         self.assertFalse(SalesBooking.objects.filter(pk=sales_booking.pk).exists())
 
-        # Assert that the correct, simple message is displayed
+                                                              
         messages_list = list(messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages_list), 1)
         expected_message = f'Sales booking {sales_booking.sales_booking_reference} deleted successfully!'
@@ -105,7 +105,7 @@ class SalesBookingDeleteViewTest(TestCase):
         self.assertIn('DB error!', str(messages_list[0]))
 
     def test_delete_sales_booking_as_non_admin(self):
-        self.client.logout() # Ensure admin is logged out
+        self.client.logout()                             
         self.client.login(username='user', password='userpassword')
         
         sales_booking = SalesBookingFactory()
@@ -118,7 +118,7 @@ class SalesBookingDeleteViewTest(TestCase):
         self.assertEqual(SalesBooking.objects.count(), initial_count)
 
     def test_delete_sales_booking_unauthenticated(self):
-        self.client.logout() # Ensure no user is logged in
+        self.client.logout()                              
         
         sales_booking = SalesBookingFactory()
         delete_url = reverse('inventory:admin_sales_booking_delete', kwargs={'pk': sales_booking.pk})

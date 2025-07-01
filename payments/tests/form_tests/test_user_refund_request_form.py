@@ -1,4 +1,4 @@
-# payments/tests/form_tests/test_user_refund_request_form.py
+                                                            
 
 from django.test import TestCase
 from decimal import Decimal
@@ -24,13 +24,13 @@ class UserRefundRequestFormTests(TestCase):
 
     def setUp(self):
         """Set up test data for all tests."""
-        # Common user and profiles
+                                  
         self.user = UserFactory()
         self.driver_profile = DriverProfileFactory(email='hire.customer@example.com')
         self.service_profile = ServiceProfileFactory(email='service.customer@example.com', user=self.user)
         self.sales_profile = SalesProfileFactory(email='sales.customer@example.com', user=self.user)
 
-        # --- HIRE BOOKING SETUP ---
+                                    
         payment_hire = PaymentFactory(
             status='succeeded',
             driver_profile=self.driver_profile,
@@ -43,7 +43,7 @@ class UserRefundRequestFormTests(TestCase):
         payment_hire.hire_booking = self.hire_booking
         payment_hire.save()
 
-        # --- SERVICE BOOKING SETUP ---
+                                       
         payment_service = PaymentFactory(
             status='succeeded',
             service_customer_profile=self.service_profile,
@@ -56,7 +56,7 @@ class UserRefundRequestFormTests(TestCase):
         payment_service.service_booking = self.service_booking
         payment_service.save()
 
-        # --- SALES BOOKING SETUP ---
+                                     
         payment_sales = PaymentFactory(
             status='succeeded',
             sales_customer_profile=self.sales_profile,
@@ -88,7 +88,7 @@ class UserRefundRequestFormTests(TestCase):
         self.assertFalse(instance.is_admin_initiated)
         self.assertEqual(instance.reason, 'Test reason for hire refund.')
         self.assertEqual(instance.request_email, self.driver_profile.email.lower())
-        # Ensure other booking types are None
+                                             
         self.assertIsNone(instance.service_booking)
         self.assertIsNone(instance.sales_booking)
 
@@ -109,7 +109,7 @@ class UserRefundRequestFormTests(TestCase):
         self.assertEqual(instance.service_profile, self.service_profile)
         self.assertEqual(instance.status, 'unverified')
         self.assertFalse(instance.is_admin_initiated)
-        # Ensure other booking types are None
+                                             
         self.assertIsNone(instance.hire_booking)
         self.assertIsNone(instance.sales_booking)
 
@@ -130,7 +130,7 @@ class UserRefundRequestFormTests(TestCase):
         self.assertEqual(instance.sales_profile, self.sales_profile)
         self.assertEqual(instance.status, 'unverified')
         self.assertFalse(instance.is_admin_initiated)
-        # Ensure other booking types are None
+                                             
         self.assertIsNone(instance.hire_booking)
         self.assertIsNone(instance.service_booking)
         
@@ -162,7 +162,7 @@ class UserRefundRequestFormTests(TestCase):
         """Test email matching is case-insensitive."""
         form_data = {
             'booking_reference': self.hire_booking.booking_reference,
-            'email': self.driver_profile.email.upper(), # Submit email in uppercase
+            'email': self.driver_profile.email.upper(),                            
             'reason': 'Testing case insensitivity.'
         }
         form = RefundRequestForm(data=form_data)
@@ -200,7 +200,7 @@ class UserRefundRequestFormTests(TestCase):
 
     def test_invalid_existing_pending_refund_request(self):
         """Test submitting a new request when one is already pending."""
-        # Create an existing pending request
+                                            
         RefundRequestFactory(payment=self.hire_booking.payment, status='pending')
         
         form_data = {
@@ -215,7 +215,7 @@ class UserRefundRequestFormTests(TestCase):
         
     def test_valid_request_if_previous_is_rejected_or_failed(self):
         """Test a new request is allowed if a previous one was rejected or failed."""
-        # Create a rejected request
+                                   
         RefundRequestFactory(payment=self.hire_booking.payment, status='rejected')
         
         form_data = {
@@ -226,7 +226,7 @@ class UserRefundRequestFormTests(TestCase):
         form = RefundRequestForm(data=form_data)
         self.assertTrue(form.is_valid(), f"Form should be valid after a rejection but has errors: {form.errors.as_json()}")
         
-        # Create a failed request
+                                 
         payment_for_failed = PaymentFactory(status='succeeded')
         hire_booking_for_failed = HireBookingFactory(payment=payment_for_failed, driver_profile=self.driver_profile)
         RefundRequestFactory(payment=payment_for_failed, status='failed')
@@ -244,7 +244,7 @@ class UserRefundRequestFormTests(TestCase):
         form_data = {
             'booking_reference': self.hire_booking.booking_reference,
             'email': self.driver_profile.email,
-            'reason': '' # Empty reason
+            'reason': ''               
         }
         form = RefundRequestForm(data=form_data)
         self.assertTrue(form.is_valid(), f"Form should be valid with an empty reason but has errors: {form.errors.as_json()}")

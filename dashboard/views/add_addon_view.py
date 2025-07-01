@@ -1,24 +1,24 @@
-# dashboard/views/add_addon_view.py
+                                   
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin # Ensure only logged-in users can access
-from ..forms.add_addon_form import AddAddOnForm # Import the form
-from hire.models import AddOn # Import the AddOn model
+from django.contrib.auth.mixins import LoginRequiredMixin                                         
+from ..forms.add_addon_form import AddAddOnForm                  
+from hire.models import AddOn                         
 
 class AddEditAddOnView(LoginRequiredMixin, View):
-    template_name = 'dashboard/add_edit_addon.html' # We'll create this template
+    template_name = 'dashboard/add_edit_addon.html'                             
     form_class = AddAddOnForm
 
     def get(self, request, pk=None):
         if pk:
-            # Editing an existing add-on
+                                        
             addon = get_object_or_404(AddOn, pk=pk)
             form = self.form_class(instance=addon)
             title = f"Edit Add-On: {addon.name}"
         else:
-            # Adding a new add-on
+                                 
             form = self.form_class()
             title = "Add New Hire Add-On"
 
@@ -41,9 +41,9 @@ class AddEditAddOnView(LoginRequiredMixin, View):
         if form.is_valid():
             form.save()
             messages.success(request, success_message)
-            return redirect('dashboard:settings_hire_addons') # Redirect to the list view
+            return redirect('dashboard:settings_hire_addons')                            
         else:
-            # If form is not valid, re-render the template with errors
+                                                                      
             title = f"Edit Add-On: {addon.name}" if pk else "Add New Hire Add-On"
             messages.error(request, "Please correct the errors below.")
             context = {

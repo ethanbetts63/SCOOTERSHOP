@@ -1,4 +1,4 @@
-# SCOOTER_SHOP/dashboard/views/blocked_hire_dates_management.py
+                                                               
 
 from django.shortcuts import render, redirect
 from django.contrib import messages

@@ -1,4 +1,4 @@
-# inventory/utils/get_motorcycle_details.py
+                                           
 
 from inventory.models import Motorcycle
 from django.core.exceptions import ObjectDoesNotExist

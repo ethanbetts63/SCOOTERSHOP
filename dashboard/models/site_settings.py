@@ -2,12 +2,12 @@ from django.db import models
 from datetime import time
 from django.core.exceptions import ImproperlyConfigured
 
-# Model for storing site-wide settings and configuration options
+                                                                
 class SiteSettings(models.Model):
     """
     Model for storing site-wide settings and configuration options
     """
-    # Visibility Fields - control which features are enabled on the site
+                                                                        
     enable_sales_new = models.BooleanField(default=True, help_text="Enable new motorcycle sales")
     enable_sales_used = models.BooleanField(default=True, help_text="Enable used motorcycle sales")
     enable_hire = models.BooleanField(default=True, help_text="Enable motorcycle hire services")
@@ -23,13 +23,13 @@ class SiteSettings(models.Model):
     enable_terms_page = models.BooleanField(default=True, help_text="Enable the terms and conditions page")
     enable_google_places_reviews = models.BooleanField(default=True, help_text="Enable displaying Google Places reviews")
 
-    # Business Fields (General business contact info)
+                                                     
     phone_number = models.CharField(max_length=20, blank=True, null=True, default='(08) 9433 4613')
     email_address = models.EmailField(blank=True, null=True, default='admin@scootershop.com.au')
     storefront_address = models.TextField(blank=True, null=True, default='Unit 2/95 Queen Victoria St, Fremantle WA, Australia')
     google_places_place_id = models.CharField(max_length=255, blank=True, null=True, help_text="Google Places Place ID for the storefront location", default="ChIJy_zrHmGhMioRisz6mis0SpQ")
 
-    # Business Hours
+                    
     opening_hours_monday = models.CharField(max_length=100, blank=True, null=True, help_text="e.g. '9:00 AM - 5:00 PM' or 'Closed'", default='10:30am to 5:00pm')
     opening_hours_tuesday = models.CharField(max_length=100, blank=True, null=True, help_text="e.g. '9:00 AM - 5:00 PM' or 'Closed'", default='10:30am to 5:00pm')
     opening_hours_wednesday = models.CharField(max_length=100, blank=True, null=True, help_text="e.g. '9:00 AM - 5:00 PM' or 'Closed'", default='10:30am to 5:00pm')
@@ -38,7 +38,7 @@ class SiteSettings(models.Model):
     opening_hours_saturday = models.CharField(max_length=100, blank=True, null=True, help_text="e.g. '9:00 AM - 5:00 PM' or 'Closed'", default='10:30am to 1:00pm (By Appointment only)')
     opening_hours_sunday = models.CharField(max_length=100, blank=True, null=True, help_text="e.g. '9:00 AM - 5:00 PM' or 'Closed'", default='Closed')
 
-    # System fields
+                   
     last_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -52,10 +52,10 @@ class SiteSettings(models.Model):
         """
         Ensure there is only ever one instance of SiteSettings
         """
-        # If this is the first save and an instance already exists, don't save
+                                                                              
         if not self.pk and SiteSettings.objects.exists():
-             # Decide how to handle this - maybe raise an error or just return
-             # Raising an error is safer to prevent accidental duplicates
+                                                                              
+                                                                         
              raise ImproperlyConfigured("Only one SiteSettings instance is allowed.")
         return super(SiteSettings, self).save(*args, **kwargs)
 
@@ -66,16 +66,16 @@ class SiteSettings(models.Model):
         Use a try-except to handle the potential ImproperlyConfigured from save.
         """
         try:
-            # Try to get the existing instance
+                                              
             settings = cls.objects.get(pk=1)
         except cls.DoesNotExist:
-            # If it doesn't exist, create it
+                                            
             try:
                 settings = cls.objects.create(pk=1)
             except ImproperlyConfigured:
-                # If creating fails (shouldn't happen if pk=1 is unique and no instance existed)
-                # This is a fallback, the primary check is in the save method
-                settings = cls.objects.get(pk=1) # Attempt to get it again
+                                                                                                
+                                                                             
+                settings = cls.objects.get(pk=1)                          
         return settings
 
     @classmethod

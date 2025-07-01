@@ -13,7 +13,7 @@ class ServiceProfileDeleteView(LoginRequiredMixin, UserPassesTestMixin, View):
 
     def post(self, request, pk, *args, **kwargs):
         profile = get_object_or_404(ServiceProfile, pk=pk)
-        profile_name = profile.name # Store name before deletion for message
+        profile_name = profile.name                                         
         profile.delete()
         messages.success(request, f"Service Profile for '{profile_name}' deleted successfully.")
         return redirect(reverse('service:admin_service_profiles'))

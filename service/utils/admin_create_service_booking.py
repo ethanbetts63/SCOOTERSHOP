@@ -1,8 +1,8 @@
-# service/utils/booking_creator.py
+                                  
 from service.models import ServiceBooking
 from service.utils.send_booking_to_mechanicdesk import send_booking_to_mechanicdesk
 
-def admin_create_service_booking(admin_booking_form_data, service_profile, customer_motorcycle): # Removed created_by_user parameter
+def admin_create_service_booking(admin_booking_form_data, service_profile, customer_motorcycle):                                    
     """
     Creates and saves a new ServiceBooking instance.
     admin_booking_form_data should be the cleaned_data from AdminBookingDetailsForm.

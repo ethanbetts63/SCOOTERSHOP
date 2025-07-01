@@ -1,17 +1,17 @@
-# In payments/RefundRequest.py
+                              
 
 from django.db import models
-from django.conf import settings # To link to Django's User model
-from payments.models.PaymentModel import Payment # Import the Payment model
-import uuid # Import uuid for the token
-from django.utils import timezone # Import timezone for token_created_at
+from django.conf import settings                                 
+from payments.models.PaymentModel import Payment                           
+import uuid                            
+from django.utils import timezone                                       
 
-# The model class is renamed to be more generic for all refund types
+                                                                    
 class RefundRequest(models.Model):
     STATUS_CHOICES = [
         ('unverified', 'Unverified - Awaiting Email Confirmation'),
         ('pending', 'Pending Review'),
-        ('reviewed_pending_approval', 'Reviewed - Pending Approval'), # New status
+        ('reviewed_pending_approval', 'Reviewed - Pending Approval'),             
         ('approved', 'Approved - Awaiting Refund'),
         ('rejected', 'Rejected'),
         ('partially_refunded', 'Partially Refunded'),
@@ -19,29 +19,29 @@ class RefundRequest(models.Model):
         ('failed', 'Refund Failed'),
     ]
 
-    # Optional link to a HireBooking
+                                    
     hire_booking = models.ForeignKey(
-        'hire.HireBooking', # Use string reference to avoid circular import
-        on_delete=models.SET_NULL, # Changed to SET_NULL
+        'hire.HireBooking',                                                
+        on_delete=models.SET_NULL,                      
         related_name='refund_requests',
-        null=True, # Make it optional
-        blank=True, # Make it optional
+        null=True,                   
+        blank=True,                   
         help_text="The hire booking for which the refund is requested (if applicable)."
     )
 
-    # Optional link to a ServiceBooking
+                                       
     service_booking = models.ForeignKey(
-        'service.ServiceBooking', # Use string reference to avoid circular import
-        on_delete=models.SET_NULL, # Changed to SET_NULL
+        'service.ServiceBooking',                                                
+        on_delete=models.SET_NULL,                      
         related_name='refund_requests',
-        null=True, # Make it optional
-        blank=True, # Make it optional
+        null=True,                   
+        blank=True,                   
         help_text="The service booking for which the refund is requested (if applicable)."
     )
     
-    # Optional link to a SalesBooking
+                                     
     sales_booking = models.ForeignKey(
-        'inventory.SalesBooking', # Use string reference to avoid circular import
+        'inventory.SalesBooking',                                                
         on_delete=models.SET_NULL,
         related_name='refund_requests',
         null=True,
@@ -49,17 +49,17 @@ class RefundRequest(models.Model):
         help_text="The sales booking for which the refund is requested (if applicable)."
     )
 
-    # Optional link to a ServiceProfile (e.g., if no specific booking is linked but a customer profile is relevant)
+                                                                                                                   
     service_profile = models.ForeignKey(
-        'service.ServiceProfile', # Use string reference to avoid circular import
+        'service.ServiceProfile',                                                
         on_delete=models.SET_NULL,
         related_name='refund_requests_related_service_profile',
-        null=True, # Make it optional
-        blank=True, # Make it optional
+        null=True,                   
+        blank=True,                   
         help_text="The service profile associated with this refund request (if applicable)."
     )
     
-    # Optional link to a SalesProfile
+                                     
     sales_profile = models.ForeignKey(
         'inventory.SalesProfile',
         on_delete=models.SET_NULL,
@@ -101,7 +101,7 @@ class RefundRequest(models.Model):
         help_text="Timestamp when the request was submitted."
     )
     status = models.CharField(
-        max_length=30, # Increased max_length to accommodate new status
+        max_length=30,                                                 
         choices=STATUS_CHOICES,
         default='unverified',
         help_text="Current status of the refund request."
@@ -150,7 +150,7 @@ class RefundRequest(models.Model):
         null=True,
         help_text="Email address provided by the user for this refund request."
     )
-    # NEW FIELDS for email verification
+                                       
     verification_token = models.UUIDField(
         editable=False,
         unique=True,
@@ -164,24 +164,24 @@ class RefundRequest(models.Model):
 
 
     class Meta:
-        verbose_name = "Refund Request" # Generalised verbose name
-        verbose_name_plural = "Refund Requests" # Generalised verbose name plural
-        ordering = ['-requested_at', 'pk'] # Added 'pk' as a secondary sort
+        verbose_name = "Refund Request"                           
+        verbose_name_plural = "Refund Requests"                                  
+        ordering = ['-requested_at', 'pk']                                 
         
     def __str__(self):
         booking_ref = "N/A"
         if self.hire_booking:
-            # Changed to be more generic "Booking"
+                                                  
             booking_ref = f"Booking {self.hire_booking.booking_reference}"
         elif self.service_booking:
-            # Changed to be more generic "Booking"
+                                                  
             booking_ref = f"Booking {self.service_booking.service_booking_reference}"
-        elif self.sales_booking: # Added sales booking check
+        elif self.sales_booking:                            
             booking_ref = f"Sales Booking {self.sales_booking.sales_booking_reference}"
         return f"Refund Request for {booking_ref} - Status: {self.status}"
 
     def save(self, *args, **kwargs):
-        # Generate a UUID for verification_token if it's not already set
+                                                                        
         if not self.verification_token:
             self.verification_token = uuid.uuid4()
         super().save(*args, **kwargs)

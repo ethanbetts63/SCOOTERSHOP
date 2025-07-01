@@ -1,10 +1,10 @@
-# inventory/models/motorcycle_image.py
+                                      
 
 from django.db import models
 
 class MotorcycleImage(models.Model):
     motorcycle = models.ForeignKey(
-        'inventory.Motorcycle', # Using string reference for Motorcycle model
+        'inventory.Motorcycle',                                              
         on_delete=models.CASCADE,
         related_name='images'
     )

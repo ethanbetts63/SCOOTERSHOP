@@ -1,4 +1,4 @@
-# service/tests/view_tests/test_step5_payment_choice_and_terms_view.py
+                                                                      
 
 from django.test import TestCase, RequestFactory
 from django.urls import reverse
@@ -40,19 +40,19 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         """
         cls.factory = RequestFactory()
         cls.user_password = 'testpassword123'
-        cls.user = UserFactory(password=cls.user_password) # For authenticated tests
+        cls.user = UserFactory(password=cls.user_password)                          
         
-        # Ensure ServiceSettings exists and has expected values for dynamic form choices
+                                                                                        
         cls.service_settings = ServiceSettingsFactory(
             enable_online_full_payment=True,
             enable_online_deposit=True,
             enable_instore_full_payment=True,
-            enable_deposit=True, # Important for deposit option visibility
+            enable_deposit=True,                                          
             deposit_calc_method='FLAT_FEE',
             deposit_flat_fee_amount=Decimal('50.00'),
             currency_symbol='$',
-            max_advance_dropoff_days=10, # For testing date validations
-            latest_same_day_dropoff_time=time(12, 0), # 12:00 PM cutoff
+            max_advance_dropoff_days=10,                               
+            latest_same_day_dropoff_time=time(12, 0),                  
             drop_off_start_time=time(9, 0),
             drop_off_end_time=time(17, 0),
         )
@@ -68,30 +68,30 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         ServiceProfile.objects.all().delete()
         CustomerMotorcycle.objects.all().delete()
 
-        # Create necessary linked objects for temp_booking to be valid for step 5
+                                                                                 
         self.customer_motorcycle = CustomerMotorcycleFactory(
             brand="Honda", model="CBR", year=2020, rego="TESTMC"
         )
         self.service_profile = ServiceProfileFactory(user=self.user, email="test@example.com")
 
-        # Create a valid temporary service booking
+                                                  
         self.temp_booking = TempServiceBookingFactory(
             service_type=self.service_type,
-            service_date=datetime.date.today() + datetime.timedelta(days=10), # Service date in the future
-            customer_motorcycle=self.customer_motorcycle, # Linked from step 3
-            service_profile=self.service_profile, # Linked from step 4
-            dropoff_date=None, # Will be set in this step
-            dropoff_time=None, # Will be set in this step
-            payment_method=None, # Will be set in this step
-            calculated_deposit_amount=Decimal('50.00') # Example deposit
+            service_date=datetime.date.today() + datetime.timedelta(days=10),                             
+            customer_motorcycle=self.customer_motorcycle,                     
+            service_profile=self.service_profile,                     
+            dropoff_date=None,                           
+            dropoff_time=None,                           
+            payment_method=None,                           
+            calculated_deposit_amount=Decimal('50.00')                  
         )
 
-        # Set the UUID in the client's session
+                                              
         session = self.client.session
         session['temp_service_booking_uuid'] = str(self.temp_booking.session_uuid)
         session.save()
         
-        # Default valid data for POST requests (can be overridden in specific tests)
+                                                                                    
         self.valid_post_data = {
             'dropoff_date': (datetime.date.today() + datetime.timedelta(days=7)).strftime('%Y-%m-%d'),
             'dropoff_time': '10:30',
@@ -99,13 +99,13 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
             'service_terms_accepted': True,
         }
 
-    # --- Dispatch Method Tests ---
+                                   
 
     def test_dispatch_no_temp_booking_uuid_in_session_redirects_to_service_home(self):
         """
         Tests that dispatch redirects to service:service if no temp_service_booking_uuid is in session.
         """
-        self.client.logout() # Ensure clean session
+        self.client.logout()                       
         session = self.client.session
         if 'temp_service_booking_uuid' in session:
             del session['temp_service_booking_uuid']
@@ -122,7 +122,7 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         Tests that dispatch redirects to service:service if an invalid temp_service_booking_uuid is in session.
         """
         session = self.client.session
-        session['temp_service_booking_uuid'] = str(uuid.uuid4()) # Non-existent UUID
+        session['temp_service_booking_uuid'] = str(uuid.uuid4())                    
         session.save()
 
         response = self.client.get(self.base_url)
@@ -148,7 +148,7 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         """
         Tests that dispatch redirects to service:service if ServiceSettings are not configured.
         """
-        ServiceSettings.objects.all().delete() # Remove existing settings
+        ServiceSettings.objects.all().delete()                           
         
         response = self.client.get(self.base_url)
         self.assertEqual(response.status_code, 302)
@@ -161,16 +161,16 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         Tests that dispatch allows the request to proceed with a valid temporary booking.
         """
         response = self.client.get(self.base_url)
-        self.assertEqual(response.status_code, 200) # Should render the form
+        self.assertEqual(response.status_code, 200)                         
         self.assertTemplateUsed(response, 'service/step5_payment_dropoff_and_terms.html')
 
-    # --- GET Method Tests ---
+                              
 
     def test_get_renders_form_with_initial_data_from_temp_booking(self):
         """
         Tests that GET request renders the form with initial data if present in temp_booking.
         """
-        # Set some initial data on temp_booking
+                                               
         self.temp_booking.dropoff_date = datetime.date.today() + datetime.timedelta(days=5)
         self.temp_booking.dropoff_time = time(11, 0)
         self.temp_booking.payment_method = PAYMENT_OPTION_DEPOSIT
@@ -194,12 +194,12 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         response = self.client.get(self.base_url)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context['is_same_day_dropoff_only'])
-        # Also check initial dropoff_date is forced to service_date
+                                                                   
         form = response.context['form']
         self.assertEqual(form.initial['dropoff_date'], self.temp_booking.service_date)
 
 
-    # --- POST Method Tests ---
+                               
 
     def test_post_valid_data_updates_temp_booking_and_redirects_to_step6(self):
         """
@@ -212,8 +212,8 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         response = self.client.post(self.base_url, self.valid_post_data)
 
         self.assertEqual(response.status_code, 302)
-        # It redirects to step6, which then renders a page (200) or redirects further (302).
-        # We need to explicitly tell assertRedirects to NOT follow the redirect to check the first hop.
+                                                                                            
+                                                                                                       
         self.assertRedirects(response, reverse('service:service_book_step6'), fetch_redirect_response=False)
 
         self.temp_booking.refresh_from_db()
@@ -230,20 +230,20 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         Tests that invalid POST data re-renders the form with errors.
         """
         invalid_data = self.valid_post_data.copy()
-        invalid_data['dropoff_date'] = 'invalid-date' # Invalid date format
-        invalid_data['service_terms_accepted'] = False # Not accepted
+        invalid_data['dropoff_date'] = 'invalid-date'                      
+        invalid_data['service_terms_accepted'] = False               
 
         response = self.client.post(self.base_url, invalid_data)
 
-        self.assertEqual(response.status_code, 200) # Should re-render
+        self.assertEqual(response.status_code, 200)                   
         self.assertTemplateUsed(response, 'service/step5_payment_dropoff_and_terms.html')
         self.assertIn('form', response.context)
         form = response.context['form']
         self.assertFalse(form.is_valid())
         self.assertIn('dropoff_date', form.errors)
-        self.assertIn('service_terms_accepted', form.errors) # Error for not accepting terms
+        self.assertIn('service_terms_accepted', form.errors)                                
 
-        self.temp_booking.refresh_from_db() # Should not have saved invalid data
+        self.temp_booking.refresh_from_db()                                     
         self.assertIsNone(self.temp_booking.dropoff_date)
         self.assertIsNone(self.temp_booking.dropoff_time)
         self.assertIsNone(self.temp_booking.payment_method)
@@ -256,7 +256,7 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         Tests that drop-off date cannot be after the service date.
         """
         invalid_data = self.valid_post_data.copy()
-        # Set drop-off date one day AFTER the service_date
+                                                          
         invalid_data['dropoff_date'] = (self.temp_booking.service_date + datetime.timedelta(days=1)).strftime('%Y-%m-%d')
 
         response = self.client.post(self.base_url, invalid_data)
@@ -270,9 +270,9 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         """
         Tests that drop-off date cannot be too far in advance of the service date.
         """
-        # max_advance_dropoff_days is 10 in setUpTestData
+                                                         
         invalid_data = self.valid_post_data.copy()
-        # Set drop-off date 11 days before service date
+                                                       
         invalid_data['dropoff_date'] = (self.temp_booking.service_date - datetime.timedelta(days=11)).strftime('%Y-%m-%d')
 
         response = self.client.post(self.base_url, invalid_data)
@@ -286,26 +286,26 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         """
         Tests that for same-day drop-off, time cannot be in the past.
         """
-        # Set service_date to today, and max_advance_dropoff_days to allow same-day
+                                                                                   
         self.temp_booking.service_date = datetime.date.today()
         self.temp_booking.save()
-        self.service_settings.max_advance_dropoff_days = 0 # Force same-day drop-off
+        self.service_settings.max_advance_dropoff_days = 0                          
         self.service_settings.save()
 
-        # Mock timezone.localtime(timezone.now()).time() to a known future time
-        # so we can test selecting a time *before* it.
+                                                                               
+                                                      
         with self.settings(USE_TZ=True, TIME_ZONE='Australia/Perth'):
             with patch('django.utils.timezone.localtime') as mock_localtime:
-                # Configure the mock to return a datetime object with the desired time
+                                                                                      
                 mock_localtime.return_value = datetime.datetime.combine(
                     datetime.date.today(),
-                    time(11, 0), # Mock current time to 11:00 AM
-                    tzinfo=datetime.timezone.utc # Simplified for mock, use actual tz if needed
-                ).astimezone(datetime.timezone.utc) # Convert to UTC-aware datetime for comparison consistency
+                    time(11, 0),                                
+                    tzinfo=datetime.timezone.utc                                               
+                ).astimezone(datetime.timezone.utc)                                                           
 
                 invalid_data = self.valid_post_data.copy()
                 invalid_data['dropoff_date'] = datetime.date.today().strftime('%Y-%m-%d')
-                invalid_data['dropoff_time'] = '10:00' # Before mocked current time of 11:00 AM
+                invalid_data['dropoff_time'] = '10:00'                                         
 
                 response = self.client.post(self.base_url, invalid_data)
                 self.assertEqual(response.status_code, 200)
@@ -314,8 +314,8 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
                 self.assertIn('dropoff_time', form.errors)
                 self.assertIn("You cannot select a drop-off time that has already passed today.", form.errors['dropoff_time'][0])
 
-    # Test for payment option choices being populated correctly (implicitly covered by form rendering)
-    # but could be explicit if needed.
+                                                                                                      
+                                      
     def test_payment_method_choices_are_correctly_populated(self):
         response = self.client.get(self.base_url)
         self.assertEqual(response.status_code, 200)
@@ -336,16 +336,16 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         We mock Step6PaymentView.dispatch to prevent it from performing its own redirects
         during this test, ensuring we only assert the redirect from Step 5.
         """
-        # Simplest way to mock a successful response from the next view's dispatch
+                                                                                  
         mock_step6_dispatch.return_value = HttpResponse(status=200) 
 
         valid_data = self.valid_post_data.copy()
         valid_data['payment_method'] = PAYMENT_OPTION_DEPOSIT
         response = self.client.post(self.base_url, valid_data)
         
-        # Assert that Step5 redirected to Step6 (302 status)
+                                                            
         self.assertEqual(response.status_code, 302)
-        # assertRedirects follows redirects. If mock_step6_dispatch returns 200, it means the redirect was "successful".
+                                                                                                                        
         self.assertRedirects(response, reverse('service:service_book_step6')) 
         
         self.temp_booking.refresh_from_db()

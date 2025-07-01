@@ -1,4 +1,4 @@
-# payments/utils/service_refund_calc.py
+                                       
 
 from decimal import Decimal
 from datetime import datetime
@@ -34,7 +34,7 @@ def calculate_service_refund_amount(booking, refund_policy_snapshot, cancellatio
             'days_before_dropoff': 'N/A',
         }
 
-    # If payment method is not online, assume manual refund handling
+                                                                    
     if booking.payment_method not in ['online_full', 'online_deposit']:
         display_method = booking.get_payment_method_display() if booking.payment_method else 'None'
         return {
@@ -44,7 +44,7 @@ def calculate_service_refund_amount(booking, refund_policy_snapshot, cancellatio
             'days_before_dropoff': 'N/A',
         }
 
-    # For ServiceBooking, the relevant start time for refund calculation is typically drop-off
+                                                                                              
     dropoff_datetime = timezone.make_aware(datetime.combine(booking.dropoff_date, booking.dropoff_time))
     time_difference = dropoff_datetime - cancellation_datetime
     days_in_advance = time_difference.days
@@ -53,11 +53,11 @@ def calculate_service_refund_amount(booking, refund_policy_snapshot, cancellatio
     policy_applied = "No Refund"
     refund_percentage = Decimal('0.00')
 
-    # 'amount_paid' is on ServiceBooking itself, but 'payment.amount' is also valid for total payment.
-    # We use booking.amount_paid as it represents what the customer actually paid for the booking.
+                                                                                                      
+                                                                                                  
     total_paid_for_calculation = booking.amount_paid if booking.amount_paid else Decimal('0.00')
 
-    # The actual payment method used for the booking determines if it's a deposit payment
+                                                                                         
     is_deposit_payment = False
     if booking.payment_method == 'online_deposit' or booking.payment_status == 'deposit_paid':
         is_deposit_payment = True
@@ -72,22 +72,22 @@ def calculate_service_refund_amount(booking, refund_policy_snapshot, cancellatio
     if is_deposit_payment:
         full_refund_days = refund_policy_snapshot.get('cancellation_deposit_full_refund_days', 7)
         partial_refund_days = refund_policy_snapshot.get('cancellation_deposit_partial_refund_days', 3)
-        # Convert percentage from X.00 format (e.g., 50.00) to 0.XX (e.g., 0.50) for calculation
+                                                                                                
         partial_refund_percentage = Decimal(str(refund_policy_snapshot.get('cancellation_deposit_partial_refund_percentage', 50.0)))
         minimal_refund_days = refund_policy_snapshot.get('cancellation_deposit_minimal_refund_days', 1)
         minimal_refund_percentage = Decimal(str(refund_policy_snapshot.get('cancellation_deposit_minimal_refund_percentage', 0.0)))
         policy_prefix = "Deposit Payment Policy"
-    else: # Assumes full payment if not deposit payment
+    else:                                              
         full_refund_days = refund_policy_snapshot.get('cancellation_full_payment_full_refund_days', 7)
         partial_refund_days = refund_policy_snapshot.get('cancellation_full_payment_partial_refund_days', 3)
-        # Convert percentage from X.00 format (e.g., 50.00) to 0.XX (e.g., 0.50) for calculation
+                                                                                                
         partial_refund_percentage = Decimal(str(refund_policy_snapshot.get('cancellation_full_payment_partial_refund_percentage', 50.0)))
         minimal_refund_days = refund_policy_snapshot.get('cancellation_full_payment_minimal_refund_days', 1)
         minimal_refund_percentage = Decimal(str(refund_policy_snapshot.get('cancellation_full_payment_minimal_refund_percentage', 0.0)))
         policy_prefix = "Full Payment Policy"
 
-    # Convert percentage values from X.00 format (e.g., 50.00) to 0.XX for calculation
-    # This ensures consistency since our RefundPolicySettings now store them as 50.00, not 0.50
+                                                                                      
+                                                                                               
     partial_refund_percentage_calc = partial_refund_percentage / Decimal('100.00')
     minimal_refund_percentage_calc = minimal_refund_percentage / Decimal('100.00')
 
@@ -96,12 +96,12 @@ def calculate_service_refund_amount(booking, refund_policy_snapshot, cancellatio
         policy_applied = f"{policy_prefix}: Full Refund Policy"
         refund_percentage = Decimal('100.00')
     elif days_in_advance >= partial_refund_days:
-        refund_percentage = partial_refund_percentage # Keep original value for display
-        refund_amount = (total_paid_for_calculation * partial_refund_percentage_calc) # Use calculated percentage
+        refund_percentage = partial_refund_percentage                                  
+        refund_amount = (total_paid_for_calculation * partial_refund_percentage_calc)                            
         policy_applied = f"{policy_prefix}: Partial Refund Policy ({refund_percentage}%)"
     elif days_in_advance >= minimal_refund_days:
-        refund_percentage = minimal_refund_percentage # Keep original value for display
-        refund_amount = (total_paid_for_calculation * minimal_refund_percentage_calc) # Use calculated percentage
+        refund_percentage = minimal_refund_percentage                                  
+        refund_amount = (total_paid_for_calculation * minimal_refund_percentage_calc)                            
         policy_applied = f"{policy_prefix}: Minimal Refund Policy ({refund_percentage}%)"
     else:
         refund_amount = Decimal('0.00')

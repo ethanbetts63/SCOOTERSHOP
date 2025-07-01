@@ -1,8 +1,8 @@
-# service/ajax/admin_booking_precheck.py
+                                        
 import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from service.forms import AdminBookingDetailsForm # Assuming AdminBookingDetailsForm is here
+from service.forms import AdminBookingDetailsForm                                           
 
 @require_POST
 def admin_booking_precheck_ajax(request):
@@ -12,7 +12,7 @@ def admin_booking_precheck_ajax(request):
     """
     admin_form = AdminBookingDetailsForm(request.POST)
     response_data = {
-        'status': 'success', # default success
+        'status': 'success',                  
         'errors': {},
         'warnings': []
     }
@@ -21,7 +21,7 @@ def admin_booking_precheck_ajax(request):
         warnings = admin_form.get_warnings()
         if warnings:
             response_data['status'] = 'warnings'
-            response_data['warnings'] = [str(w) for w in warnings] # Convert lazy strings
+            response_data['warnings'] = [str(w) for w in warnings]                       
     else:
         response_data['status'] = 'errors'
         response_data['errors']['admin_booking_details'] = admin_form.errors.as_json()

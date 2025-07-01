@@ -1,4 +1,4 @@
-# payments/tests/view_tests/test_user_refund_request_view.py
+                                                            
 
 from django.test import TestCase, Client
 from django.urls import reverse
@@ -18,7 +18,7 @@ from payments.tests.test_helpers.model_factories import (
     UserFactory
 )
 
-# Correct path for patching the imported function
+                                                 
 PATCH_PATH = 'payments.views.Refunds.user_refund_request_view.send_templated_email'
 
 class UserRefundRequestViewTests(TestCase):
@@ -31,24 +31,24 @@ class UserRefundRequestViewTests(TestCase):
         self.client = Client()
         self.user = UserFactory()
 
-        # Profiles for different booking types
+                                              
         self.driver_profile = DriverProfileFactory(email='hire.customer@example.com')
         self.service_profile = ServiceProfileFactory(email='service.customer@example.com', user=self.user)
         self.sales_profile = SalesProfileFactory(email='sales.customer@example.com', user=self.user)
 
-        # HIRE BOOKING SETUP
+                            
         payment_hire = PaymentFactory(status='succeeded', driver_profile=self.driver_profile)
         self.hire_booking = HireBookingFactory(payment=payment_hire, driver_profile=self.driver_profile)
         payment_hire.hire_booking = self.hire_booking
         payment_hire.save()
 
-        # SERVICE BOOKING SETUP
+                               
         payment_service = PaymentFactory(status='succeeded', service_customer_profile=self.service_profile)
         self.service_booking = ServiceBookingFactory(payment=payment_service, service_profile=self.service_profile)
         payment_service.service_booking = self.service_booking
         payment_service.save()
 
-        # SALES BOOKING SETUP
+                             
         payment_sales = PaymentFactory(status='succeeded', sales_customer_profile=self.sales_profile)
         self.sales_booking = SalesBookingFactory(payment=payment_sales, sales_profile=self.sales_profile)
         payment_sales.sales_booking = self.sales_booking
@@ -75,17 +75,17 @@ class UserRefundRequestViewTests(TestCase):
         
         response = self.client.post(self.refund_request_url, form_data)
         
-        # Check for successful redirection
+                                          
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('payments:user_confirmation_refund_request'))
         
-        # Check that a RefundRequest object was created
+                                                       
         self.assertEqual(RefundRequest.objects.count(), 1)
         refund_request = RefundRequest.objects.first()
         self.assertEqual(refund_request.hire_booking, self.hire_booking)
         self.assertEqual(refund_request.status, 'unverified')
         
-        # Check that the email sending function was called
+                                                          
         mock_send_email.assert_called_once()
         args, kwargs = mock_send_email.call_args
         self.assertEqual(kwargs['recipient_list'], [self.driver_profile.email.lower()])
@@ -146,13 +146,13 @@ class UserRefundRequestViewTests(TestCase):
         
         response = self.client.post(self.refund_request_url, form_data)
         
-        # Check that the page is re-rendered with errors
+                                                        
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'payments/user_refund_request.html')
         self.assertIn('form', response.context)
         self.assertTrue(response.context['form'].errors)
         
-        # Check that no RefundRequest was created and no email was sent
+                                                                       
         self.assertEqual(RefundRequest.objects.count(), 0)
         mock_send_email.assert_not_called()
         
@@ -165,9 +165,9 @@ class UserRefundRequestViewTests(TestCase):
             'reason': 'Checking for success message'
         }
         
-        response = self.client.post(self.refund_request_url, form_data, follow=True) # follow=True to check the redirected page
+        response = self.client.post(self.refund_request_url, form_data, follow=True)                                           
         
-        # Check the final page after redirection
+                                                
         self.assertEqual(response.status_code, 200)
         messages = list(response.context['messages'])
         self.assertEqual(len(messages), 1)

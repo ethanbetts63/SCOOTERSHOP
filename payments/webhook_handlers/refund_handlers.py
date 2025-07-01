@@ -1,8 +1,8 @@
-# payments/webhook_handlers/refund_handlers.py
+                                              
 
 from django.db import transaction
 
-# Import the new utility functions
+                                  
 from ..utils.get_booking_from_payment import get_booking_from_payment
 from ..utils.extract_stripe_refund_data import extract_stripe_refund_data
 from ..utils.update_associated_bookings_and_payments import update_associated_bookings_and_payments
@@ -16,7 +16,7 @@ def handle_booking_refunded(payment_obj: Payment, event_object_data: dict):
         with transaction.atomic():
             extracted_data = extract_stripe_refund_data(event_object_data)
 
-            if extracted_data['refunded_amount_decimal'] <= 0 or \
+            if extracted_data['refunded_amount_decimal'] <= 0 or\
                (not extracted_data['is_charge_object'] and not extracted_data['is_refund_object'] and not extracted_data['is_payment_intent_object']):
                 return
 

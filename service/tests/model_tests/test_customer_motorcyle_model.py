@@ -1,13 +1,13 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError # Import IntegrityError for unique constraint tests
+from django.db import IntegrityError                                                    
 from datetime import date
 from django.db import models
 
-# Import the CustomerMotorcycle model
+                                     
 from service.models import CustomerMotorcycle
 
-# Import the CustomerMotorcycleFactory from your factories file
+                                                               
 from ..test_helpers.model_factories import CustomerMotorcycleFactory, ServiceProfileFactory
 
 class CustomerMotorcycleModelTest(TestCase):
@@ -23,9 +23,9 @@ class CustomerMotorcycleModelTest(TestCase):
         We need to ensure the factory provides all currently required fields.
         """
         cls.customer_motorcycle = CustomerMotorcycleFactory(
-            # Ensure all required fields are provided for the factory
+                                                                     
             brand="Honda",
-            model="CBR600RR", # Ensure model is provided for __str__ test
+            model="CBR600RR",                                            
             year=2020,
             rego="XYZ123",
             odometer=10000,
@@ -59,28 +59,28 @@ class CustomerMotorcycleModelTest(TestCase):
         """
         motorcycle = self.customer_motorcycle
 
-        # service_profile
+                         
         field = motorcycle._meta.get_field('service_profile')
         self.assertIsInstance(field, models.ForeignKey)
         self.assertEqual(field.related_model.__name__, 'ServiceProfile')
         self.assertEqual(field.remote_field.on_delete, models.CASCADE)
-        self.assertTrue(field.blank) # service_profile can be blank/null
+        self.assertTrue(field.blank)                                    
         self.assertTrue(field.null)
 
-        # brand, model, year, rego, odometer, transmission, engine_size (REQUIRED FIELDS)
+                                                                                         
         for field_name in ['brand', 'model', 'year', 'rego', 'odometer', 'transmission', 'engine_size']:
             field = motorcycle._meta.get_field(field_name)
-            # These fields are now required, so they should not be blank/null in the model definition
+                                                                                                     
             self.assertFalse(field.blank, f"{field_name} should not be blank.")
             self.assertFalse(field.null, f"{field_name} should not be null.")
             
-            # Specific type checks
+                                  
             if field_name in ['brand', 'model', 'rego', 'engine_size', 'transmission']:
                 self.assertIsInstance(field, models.CharField)
             elif field_name in ['year', 'odometer']:
                 self.assertIsInstance(field, models.PositiveIntegerField)
             
-            # Max length checks
+                               
             if field_name in ['brand', 'model']:
                 self.assertEqual(field.max_length, 100)
             elif field_name == 'rego':
@@ -89,9 +89,9 @@ class CustomerMotorcycleModelTest(TestCase):
                 self.assertEqual(field.max_length, 50)
             elif field_name == 'transmission':
                 self.assertEqual(field.max_length, 20)
-                self.assertGreater(len(field.choices), 0) # Ensure choices are present for transmission
+                self.assertGreater(len(field.choices), 0)                                              
 
-        # vin_number (OPTIONAL FIELD)
+                                     
         field = motorcycle._meta.get_field('vin_number')
         self.assertIsInstance(field, models.CharField)
         self.assertEqual(field.max_length, 17)
@@ -99,21 +99,21 @@ class CustomerMotorcycleModelTest(TestCase):
         self.assertTrue(field.null)
         self.assertTrue(field.unique)
 
-        # engine_number (OPTIONAL FIELD)
+                                        
         field = motorcycle._meta.get_field('engine_number')
         self.assertIsInstance(field, models.CharField)
         self.assertEqual(field.max_length, 50)
         self.assertTrue(field.blank)
         self.assertTrue(field.null)
 
-        # image (OPTIONAL FIELD)
+                                
         field = motorcycle._meta.get_field('image')
         self.assertIsInstance(field, models.ImageField)
         self.assertTrue(field.blank)
         self.assertTrue(field.null)
         self.assertEqual(field.upload_to, 'motorcycle_images/')
 
-        # created_at, updated_at
+                                
         field = motorcycle._meta.get_field('created_at')
         self.assertIsInstance(field, models.DateTimeField)
         self.assertTrue(field.auto_now_add)
@@ -128,7 +128,7 @@ class CustomerMotorcycleModelTest(TestCase):
         """
         service_profile = ServiceProfileFactory()
 
-        # Test missing brand
+                            
         motorcycle = CustomerMotorcycleFactory.build(
             service_profile=service_profile, brand="", model="600RR", year=2020,
             rego="ABC123", odometer=10000, transmission="MANUAL", engine_size="600cc"
@@ -137,7 +137,7 @@ class CustomerMotorcycleModelTest(TestCase):
             motorcycle.full_clean()
         self.assertIn('Motorcycle brand is required.', cm.exception.message_dict['brand'])
 
-        # Test missing model
+                            
         motorcycle = CustomerMotorcycleFactory.build(
             service_profile=service_profile, brand="Honda", model="", year=2020,
             rego="ABC123", odometer=10000, transmission="MANUAL", engine_size="600cc"
@@ -146,7 +146,7 @@ class CustomerMotorcycleModelTest(TestCase):
             motorcycle.full_clean()
         self.assertIn('Motorcycle model is required.', cm.exception.message_dict['model'])
 
-        # Test missing year
+                           
         motorcycle = CustomerMotorcycleFactory.build(
             service_profile=service_profile, brand="Honda", model="600RR", year=None,
             rego="ABC123", odometer=10000, transmission="MANUAL", engine_size="600cc"
@@ -155,20 +155,20 @@ class CustomerMotorcycleModelTest(TestCase):
             motorcycle.full_clean()
         self.assertIn('Motorcycle year is required.', cm.exception.message_dict['year'])
         
-        # Test missing rego
+                           
         motorcycle = CustomerMotorcycleFactory.build(
             service_profile=service_profile, brand="Honda", model="600RR", year=2020,
             rego="", odometer=10000, transmission="MANUAL", engine_size="600cc"
         )
         with self.assertRaises(ValidationError) as cm:
             motorcycle.full_clean()
-        # Check for either the custom message or Django's default blank message
+                                                                               
         self.assertTrue(
             'Motorcycle registration is required.' in cm.exception.message_dict['rego'] or
             'This field cannot be blank.' in cm.exception.message_dict['rego']
         )
 
-        # Test missing odometer
+                               
         motorcycle = CustomerMotorcycleFactory.build(
             service_profile=service_profile, brand="Honda", model="600RR", year=2020,
             rego="ABC123", odometer=None, transmission="MANUAL", engine_size="600cc"
@@ -177,7 +177,7 @@ class CustomerMotorcycleModelTest(TestCase):
             motorcycle.full_clean()
         self.assertIn('Motorcycle odometer is required.', cm.exception.message_dict['odometer'])
 
-        # Test missing transmission
+                                   
         motorcycle = CustomerMotorcycleFactory.build(
             service_profile=service_profile, brand="Honda", model="600RR", year=2020,
             rego="ABC123", odometer=10000, transmission="", engine_size="600cc"
@@ -186,7 +186,7 @@ class CustomerMotorcycleModelTest(TestCase):
             motorcycle.full_clean()
         self.assertIn('Motorcycle transmission type is required.', cm.exception.message_dict['transmission'])
 
-        # Test missing engine_size
+                                  
         motorcycle = CustomerMotorcycleFactory.build(
             service_profile=service_profile, brand="Honda", model="600RR", year=2020,
             rego="ABC123", odometer=10000, transmission="MANUAL", engine_size=""
@@ -195,7 +195,7 @@ class CustomerMotorcycleModelTest(TestCase):
             motorcycle.full_clean()
         self.assertIn('Motorcycle engine size is required.', cm.exception.message_dict['engine_size'])
 
-        # Test all required fields present (should pass)
+                                                        
         motorcycle = CustomerMotorcycleFactory.build(
             service_profile=service_profile, brand="Honda", model="600RR", year=2020,
             rego="ABC123", odometer=10000, transmission="MANUAL", engine_size="600cc"
@@ -213,7 +213,7 @@ class CustomerMotorcycleModelTest(TestCase):
         service_profile = ServiceProfileFactory()
         current_year = date.today().year
 
-        # Test year in the future
+                                 
         motorcycle = CustomerMotorcycleFactory.build(
             service_profile=service_profile, year=current_year + 1,
             brand="Honda", model="600RR", rego="ABC123", odometer=10000,
@@ -223,7 +223,7 @@ class CustomerMotorcycleModelTest(TestCase):
             motorcycle.full_clean()
         self.assertIn('Motorcycle year cannot be in the future.', cm.exception.message_dict['year'])
 
-        # Test year too old (more than 100 years ago)
+                                                     
         motorcycle = CustomerMotorcycleFactory.build(
             service_profile=service_profile, year=current_year - 101,
             brand="Honda", model="600RR", rego="ABC123", odometer=10000,
@@ -233,7 +233,7 @@ class CustomerMotorcycleModelTest(TestCase):
             motorcycle.full_clean()
         self.assertIn('Motorcycle year seems too old. Please check the year.', cm.exception.message_dict['year'])
 
-        # Test valid year (current year)
+                                        
         motorcycle = CustomerMotorcycleFactory.build(
             service_profile=service_profile, year=current_year,
             brand="Honda", model="600RR", rego="ABC123", odometer=10000,
@@ -244,7 +244,7 @@ class CustomerMotorcycleModelTest(TestCase):
         except ValidationError as e:
             self.fail(f"full_clean raised ValidationError unexpectedly for current year: {e.message_dict}")
 
-        # Test valid year (100 years ago)
+                                         
         motorcycle = CustomerMotorcycleFactory.build(
             service_profile=service_profile, year=current_year - 100,
             brand="Honda", model="600RR", rego="ABC123", odometer=10000,
@@ -262,7 +262,7 @@ class CustomerMotorcycleModelTest(TestCase):
         """
         service_profile = ServiceProfileFactory()
 
-        # Test VIN number too short
+                                   
         motorcycle = CustomerMotorcycleFactory.build(
             service_profile=service_profile, vin_number="SHORTVIN",
             brand="Honda", model="600RR", year=2020, rego="ABC123", odometer=10000,
@@ -272,7 +272,7 @@ class CustomerMotorcycleModelTest(TestCase):
             motorcycle.full_clean()
         self.assertIn('VIN number must be 17 characters long.', cm.exception.message_dict['vin_number'])
 
-        # Test VIN number too long
+                                  
         motorcycle = CustomerMotorcycleFactory.build(
             service_profile=service_profile, vin_number="TOOLONGVINNUMBER123",
             brand="Honda", model="600RR", year=2020, rego="ABC123", odometer=10000,
@@ -280,16 +280,16 @@ class CustomerMotorcycleModelTest(TestCase):
         )
         with self.assertRaises(ValidationError) as cm:
             motorcycle.full_clean()
-        # Check for either the custom message or Django's default max_length message
+                                                                                    
         self.assertTrue(
             'VIN number must be 17 characters long.' in cm.exception.message_dict['vin_number'] or
             'Ensure this value has at most 17 characters' in cm.exception.message_dict['vin_number'][0]
         )
 
 
-        # Correct the valid VIN number to be exactly 17 characters
+                                                                  
         motorcycle = CustomerMotorcycleFactory.build(
-            service_profile=service_profile, vin_number="VALIDVINNUMB12345", # 17 characters
+            service_profile=service_profile, vin_number="VALIDVINNUMB12345",                
             brand="Honda", model="600RR", year=2020, rego="ABC123", odometer=10000,
             transmission="MANUAL", engine_size="600cc"
         )
@@ -298,7 +298,7 @@ class CustomerMotorcycleModelTest(TestCase):
         except ValidationError as e:
             self.fail(f"full_clean raised ValidationError unexpectedly for valid VIN: {e.message_dict}")
 
-        # Test VIN number as None (should pass for optional field)
+                                                                  
         motorcycle = CustomerMotorcycleFactory.build(
             service_profile=service_profile, vin_number=None,
             brand="Honda", model="600RR", year=2020, rego="ABC123", odometer=10000,
@@ -316,7 +316,7 @@ class CustomerMotorcycleModelTest(TestCase):
         """
         service_profile = ServiceProfileFactory()
 
-        # Test negative odometer
+                                
         motorcycle = CustomerMotorcycleFactory.build(
             service_profile=service_profile, odometer=-100,
             brand="Honda", model="600RR", year=2020, rego="ABC123",
@@ -324,14 +324,14 @@ class CustomerMotorcycleModelTest(TestCase):
         )
         with self.assertRaises(ValidationError) as cm:
             motorcycle.full_clean()
-        # Check for either the custom message or Django's default min_value message
+                                                                                   
         self.assertTrue(
             'Odometer reading cannot be negative.' in cm.exception.message_dict['odometer'] or
             'Ensure this value is greater than or equal to 0.' in cm.exception.message_dict['odometer']
         )
 
 
-        # Test zero odometer (should pass as it's a valid positive integer)
+                                                                           
         motorcycle = CustomerMotorcycleFactory.build(
             service_profile=service_profile, odometer=0,
             brand="Honda", model="600RR", year=2020, rego="ABC123",
@@ -342,7 +342,7 @@ class CustomerMotorcycleModelTest(TestCase):
         except ValidationError as e:
             self.fail(f"full_clean raised ValidationError unexpectedly for zero odometer: {e.message_dict}")
 
-        # Test positive odometer (should pass)
+                                              
         motorcycle = CustomerMotorcycleFactory.build(
             service_profile=service_profile, odometer=50000,
             brand="Honda", model="600RR", year=2020, rego="ABC123",
@@ -357,14 +357,14 @@ class CustomerMotorcycleModelTest(TestCase):
         """
         Test that vin_number enforces uniqueness for non-null values.
         """
-        # Create a motorcycle with a specific VIN, providing all required fields
+                                                                                
         existing_motorcycle = CustomerMotorcycleFactory(
             vin_number="UNIQUEVIN123456789",
             brand="Honda", model="CBR600RR", year=2020, rego="ABC123", odometer=10000,
             transmission="MANUAL", engine_size="600cc"
         )
         
-        # Attempt to create another motorcycle with the same VIN, providing all required fields
+                                                                                               
         with self.assertRaises(IntegrityError) as cm:
             CustomerMotorcycleFactory(
                 vin_number="UNIQUEVIN123456789",
@@ -378,7 +378,7 @@ class CustomerMotorcycleModelTest(TestCase):
         Test that multiple null vin_number values are allowed.
         Ensure all required fields are provided.
         """
-        # Test that None VINs are allowed (unique=True allows multiple NULLs in SQLite/PostgreSQL)
+                                                                                                  
         CustomerMotorcycleFactory(
             vin_number=None,
             brand="Honda", model="CBR600RR", year=2020, rego="ABC123", odometer=10000,
@@ -388,7 +388,7 @@ class CustomerMotorcycleModelTest(TestCase):
             vin_number=None,
             brand="Yamaha", model="YZF-R1", year=2021, rego="DEF456", odometer=12000,
             transmission="AUTOMATIC", engine_size="1000cc"
-        ) # Should not raise error
+        )                         
         self.assertEqual(CustomerMotorcycle.objects.filter(vin_number=None).count(), 2)
 
 
@@ -404,19 +404,19 @@ class CustomerMotorcycleModelTest(TestCase):
         initial_created_at = motorcycle.created_at
         initial_updated_at = motorcycle.updated_at
 
-        # created_at should be set on creation
+                                              
         self.assertIsNotNone(initial_created_at)
         self.assertIsNotNone(initial_updated_at)
         self.assertLessEqual(initial_created_at, initial_updated_at)
 
-        # Update the motorcycle and save
+                                        
         import time
-        time.sleep(0.01) # Ensure a slight time difference for updated_at to change
+        time.sleep(0.01)                                                           
         motorcycle.rego = "NEWREG"
         motorcycle.save()
 
-        # updated_at should be greater than its initial value
+                                                             
         self.assertGreater(motorcycle.updated_at, initial_updated_at)
-        # created_at should remain the same
+                                           
         self.assertEqual(motorcycle.created_at, initial_created_at)
 

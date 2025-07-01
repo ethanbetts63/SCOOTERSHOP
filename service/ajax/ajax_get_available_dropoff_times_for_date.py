@@ -20,17 +20,17 @@ def get_available_dropoff_times_for_date(request):
     try:
         selected_date = datetime.datetime.strptime(selected_date_str, '%Y-%m-%d').date()
     except ValueError:
-        # This error indicates a malformed date string, which the frontend should prevent.
+                                                                                          
         return JsonResponse({'error': 'Invalid date format. Use YYYY-MM-DD.'}, status=400)
 
-    # Call the utility function to get available times based on settings and existing bookings.
-    # The utility function itself handles the logic of start/end times and spacing.
+                                                                                               
+                                                                                   
     available_times = get_available_dropoff_times(selected_date)
 
-    # Format times for the frontend (e.g., "09:00", "09:30")
-    # The 'value' and 'text' fields are standard for populating select dropdowns in JS.
+                                                            
+                                                                                       
     formatted_times = [{"value": time_str, "text": time_str} for time_str in available_times]
 
-    # Return the available times as a JSON response.
+                                                    
     return JsonResponse({'available_times': formatted_times})
 

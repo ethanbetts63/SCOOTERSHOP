@@ -4,11 +4,11 @@ import datetime
 import uuid
 from unittest.mock import patch
 
-# Import the view to be tested
+                              
 from service.views.user_views.step2_motorcycle_selection_view import Step2MotorcycleSelectionView
 from service.forms import MotorcycleSelectionForm, ADD_NEW_MOTORCYCLE_OPTION
 
-# Import models and factories
+                             
 from service.models import TempServiceBooking, CustomerMotorcycle
 from ..test_helpers.model_factories import (
     UserFactory,
@@ -42,28 +42,28 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         TempServiceBooking.objects.all().delete()
         CustomerMotorcycle.objects.all().delete()
 
-        # Use self.client for tests that render templates or access context
-        self.client.force_login(self.user) # Ensure user is logged in for most tests
+                                                                           
+        self.client.force_login(self.user)                                          
 
-        # Create a valid TempServiceBooking. Crucially, set customer_motorcycle to None
-        # if the test expects it to be initially unset or to remain unset.
-        # TempServiceBookingFactory's default creates one, so we override it here.
+                                                                                       
+                                                                          
+                                                                                  
         self.temp_booking = TempServiceBookingFactory(
             service_type=self.service_type,
             service_profile=self.service_profile,
-            service_date=datetime.date.today() + datetime.timedelta(days=7), # A valid date
-            customer_motorcycle=None # Ensure it starts as None for tests that expect it
+            service_date=datetime.date.today() + datetime.timedelta(days=7),               
+            customer_motorcycle=None                                                    
         )
-        # Set the UUID in the client's session using the correct key
+                                                                    
         session = self.client.session
         session['temp_service_booking_uuid'] = str(self.temp_booking.session_uuid)
         session.save()
 
-        # Ensure there's at least one motorcycle for the user by default, for tests that use it.
-        # This one is *not* linked to temp_booking by default setUp.
+                                                                                                
+                                                                    
         self.customer_motorcycle = CustomerMotorcycleFactory(service_profile=self.service_profile)
 
-    # --- Dispatch Method Tests (using RequestFactory for specific pre-rendering checks) ---
+                                                                                            
 
     def test_dispatch_no_temp_booking_uuid_in_session(self):
         """
@@ -71,24 +71,24 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         Uses RequestFactory because we are testing the dispatch logic before template rendering.
         """
         request = self.factory.get(self.base_url)
-        request.session = {} # No UUID in session
-        request.user = self.user # Ensure user is logged in for this dispatch
+        request.session = {}                     
+        request.user = self.user                                             
         response = Step2MotorcycleSelectionView().dispatch(request)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('service:service')) # Expecting redirect to base service page
+        self.assertEqual(response.url, reverse('service:service'))                                          
 
     def test_dispatch_invalid_temp_booking_uuid_in_session(self):
         """
         Test dispatch redirects to service:service if 'temp_service_booking_uuid' in session is invalid (not in DB).
         """
         request = self.factory.get(self.base_url)
-        # Use the correct session key
-        request.session = {'temp_service_booking_uuid': str(uuid.uuid4())} # A valid UUID format, but not in DB
+                                     
+        request.session = {'temp_service_booking_uuid': str(uuid.uuid4())}                                     
         request.user = self.user
         response = Step2MotorcycleSelectionView().dispatch(request)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('service:service')) # Expecting redirect to base service page
-        # Assert the correct session key is removed
+        self.assertEqual(response.url, reverse('service:service'))                                          
+                                                   
         self.assertNotIn('temp_service_booking_uuid', request.session)
 
     def test_dispatch_temp_booking_missing_service_profile(self):
@@ -98,62 +98,62 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         self.temp_booking.service_profile = None
         self.temp_booking.save()
         request = self.factory.get(self.base_url)
-        # Use the correct session key
+                                     
         request.session = {'temp_service_booking_uuid': str(self.temp_booking.session_uuid)}
         request.user = self.user
         response = Step2MotorcycleSelectionView().dispatch(request)
         self.assertEqual(response.status_code, 302)
-        # Expecting redirect to step3
+                                     
         self.assertEqual(response.url, reverse('service:service_book_step3'))
 
     def test_dispatch_no_motorcycles_redirects_to_step3(self):
         """
         Test dispatch redirects to step3 if the user has no existing motorcycles.
         """
-        CustomerMotorcycle.objects.all().delete()  # Ensure no motorcycles exist for the user
+        CustomerMotorcycle.objects.all().delete()                                            
         request = self.factory.get(self.base_url)
-        # Use the correct session key
+                                     
         request.session = {'temp_service_booking_uuid': str(self.temp_booking.session_uuid)}
         request.user = self.user
         response = Step2MotorcycleSelectionView().dispatch(request)
         self.assertEqual(response.status_code, 302)
-        # Expecting redirect to step3
+                                     
         self.assertEqual(response.url, reverse('service:service_book_step3'))
 
 
-    # --- GET Method Tests (using self.client) ---
+                                                  
 
     def test_get_renders_form_with_motorcycles(self):
         """
         Test GET request renders the form correctly with existing motorcycles.
         Uses self.client to get a response that includes context and template info.
         """
-        # Ensure there is a motorcycle for this user before GETting the page
-        # (Already done in setUp, but explicit for clarity if setUp changes)
+                                                                            
+                                                                            
         CustomerMotorcycleFactory(service_profile=self.service_profile) 
         
-        # Ensure temp_booking's service_profile is correctly set and exists, and it has motorcycles.
-        # This implicitly uses the self.temp_booking and self.customer_motorcycle from setUp.
+                                                                                                    
+                                                                                             
         response = self.client.get(self.base_url)
         
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'service/step2_motorcycle_selection.html')
         self.assertIsInstance(response.context['form'], MotorcycleSelectionForm)
         self.assertEqual(response.context['temp_booking'], self.temp_booking)
-        # Check that the form's choices include the existing motorcycle
+                                                                       
         form_choices = [choice[0] for choice in response.context['form'].fields['selected_motorcycle'].choices]
         self.assertIn(str(self.customer_motorcycle.pk), form_choices)
         self.assertIn(ADD_NEW_MOTORCYCLE_OPTION, form_choices)
 
 
-    # --- POST Method Tests (using self.client) ---
+                                                   
 
     @patch('service.views.user_views.step2_motorcycle_selection_view.MotorcycleSelectionForm')
     def test_post_select_new_motorcycle_redirects_to_step3(self, MockMotorcycleSelectionForm):
         """
         Test POST request redirects to Step 3 when 'Add New Motorcycle' is selected.
         """
-        # Configure the mock form instance's behavior
+                                                     
         mock_form_instance = MockMotorcycleSelectionForm.return_value
         mock_form_instance.is_valid.return_value = True
         mock_form_instance.cleaned_data = {'selected_motorcycle': ADD_NEW_MOTORCYCLE_OPTION}
@@ -161,10 +161,10 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         response = self.client.post(self.base_url, {'selected_motorcycle': ADD_NEW_MOTORCYCLE_OPTION})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse('service:service_book_step3'))
-        # Ensure temp_booking's customer_motorcycle remains None (as set in setUp)
+                                                                                  
         self.temp_booking.refresh_from_db()
         self.assertIsNone(self.temp_booking.customer_motorcycle)
-        # Verify the form was instantiated
+                                          
         MockMotorcycleSelectionForm.assert_called_once()
 
 
@@ -181,7 +181,7 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse('service:service_book_step4'))
 
-        # Verify temp_booking was updated with the correct motorcycle
+                                                                     
         self.temp_booking.refresh_from_db()
         self.assertEqual(self.temp_booking.customer_motorcycle, self.customer_motorcycle)
         MockMotorcycleSelectionForm.assert_called_once()
@@ -193,23 +193,23 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         Test POST with an invalid motorcycle ID (e.g., non-existent or not belonging to user).
         """
         mock_form_instance = MockMotorcycleSelectionForm.return_value
-        mock_form_instance.is_valid.return_value = True # Form says it's valid, but get_object_or_404 will fail
-        mock_form_instance.cleaned_data = {'selected_motorcycle': '9999'} # Non-existent ID
-        # Crucially, set the errors property on the mock instance
+        mock_form_instance.is_valid.return_value = True                                                        
+        mock_form_instance.cleaned_data = {'selected_motorcycle': '9999'}                  
+                                                                 
         mock_form_instance.errors = {'selected_motorcycle': ["Invalid motorcycle selection."]}
 
 
-        # Patch get_object_or_404 to raise DoesNotExist when called by the view
+                                                                               
         with patch('service.views.user_views.step2_motorcycle_selection_view.get_object_or_404', side_effect=CustomerMotorcycle.DoesNotExist):
             response = self.client.post(self.base_url, {'selected_motorcycle': '9999'})
-            self.assertEqual(response.status_code, 200) # Should re-render the form
+            self.assertEqual(response.status_code, 200)                            
             self.assertTemplateUsed(response, 'service/step2_motorcycle_selection.html')
             self.assertIn('form', response.context)
-            # Check for error in the form
+                                         
             self.assertIn('selected_motorcycle', response.context['form'].errors)
             self.assertIn("Invalid motorcycle selection.", response.context['form'].errors['selected_motorcycle'])
 
-            # Ensure temp_booking was NOT updated
+                                                 
             self.temp_booking.refresh_from_db()
             self.assertIsNone(self.temp_booking.customer_motorcycle)
         MockMotorcycleSelectionForm.assert_called_once()
@@ -222,18 +222,18 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         """
         mock_form_instance = MockMotorcycleSelectionForm.return_value
         mock_form_instance.is_valid.return_value = False
-        # Set the errors property on the mock instance
+                                                      
         mock_form_instance.errors = {'selected_motorcycle': ['This field is required.']}
 
-        response = self.client.post(self.base_url, {}) # Empty POST data, which will make form invalid
-        self.assertEqual(response.status_code, 200) # Should re-render the form
+        response = self.client.post(self.base_url, {})                                                
+        self.assertEqual(response.status_code, 200)                            
         self.assertTemplateUsed(response, 'service/step2_motorcycle_selection.html')
         self.assertIn('form', response.context)
-        # Check for error in the form
+                                     
         self.assertIn('selected_motorcycle', response.context['form'].errors)
         self.assertIn("This field is required.", response.context['form'].errors['selected_motorcycle'])
 
-        # Ensure temp_booking's customer_motorcycle remains None (as set in setUp)
+                                                                                  
         self.temp_booking.refresh_from_db()
         self.assertIsNone(self.temp_booking.customer_motorcycle)
         MockMotorcycleSelectionForm.assert_called_once()
@@ -244,13 +244,13 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         Test that if a user has no motorcycles, even on POST, they are redirected to Step 3.
         This tests the dispatch method's re-evaluation.
         """
-        CustomerMotorcycle.objects.all().delete()  # Ensure no motorcycles exist for the user
+        CustomerMotorcycle.objects.all().delete()                                            
 
-        # The client will send the POST request, and dispatch will handle the redirection.
+                                                                                          
         response = self.client.post(self.base_url, {'selected_motorcycle': ADD_NEW_MOTORCYCLE_OPTION})
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse('service:service_book_step3'))
         self.temp_booking.refresh_from_db()
-        self.assertIsNone(self.temp_booking.customer_motorcycle) # Still no motorcycle linked
+        self.assertIsNone(self.temp_booking.customer_motorcycle)                             
 

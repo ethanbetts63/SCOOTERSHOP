@@ -1,4 +1,4 @@
-# payments/utils/ajax_get_service_booking_details.py
+                                                    
 
 from django.http import JsonResponse, Http404 
 from django.shortcuts import get_object_or_404
@@ -31,7 +31,7 @@ def get_service_booking_details_json(request, pk):
             elif service_booking.service_profile.name:
                 customer_name = service_booking.service_profile.name
 
-        # It's possible for service_booking.payment to be None if the booking didn't involve a payment yet
+                                                                                                          
         payment_date = service_booking.payment.created_at.strftime('%Y-%m-%d %H:%M') if service_booking.payment and service_booking.payment.created_at else 'N/A'
         payment_amount = float(service_booking.payment.amount) if service_booking.payment and service_booking.payment.amount is not None else 'N/A'
 
@@ -52,7 +52,7 @@ def get_service_booking_details_json(request, pk):
         if latest_refund_request:
             refund_status_for_booking = latest_refund_request.get_status_display()
 
-        # Handle cases where service_booking.payment might be None or refund_policy_snapshot is missing
+                                                                                                       
         refund_policy_snapshot_for_calc = {}
         if service_booking.payment and service_booking.payment.refund_policy_snapshot:
             refund_policy_snapshot_for_calc = service_booking.payment.refund_policy_snapshot

@@ -1,12 +1,12 @@
 from django.test import TestCase
-from django.core.files.uploadedfile import SimpleUploadedFile # Still needed for image field properties, even if not testing content
+from django.core.files.uploadedfile import SimpleUploadedFile                                                                       
 from django.db import IntegrityError
 from datetime import datetime
 
-# Import the ServiceBrand model
+                               
 from service.models import ServiceBrand
 
-# Import the ServiceBrandFactory from your factories file
+                                                         
 from ..test_helpers.model_factories import ServiceBrandFactory
 
 class ServiceBrandModelTest(TestCase):
@@ -20,7 +20,7 @@ class ServiceBrandModelTest(TestCase):
         Set up non-modified objects used by all test methods.
         We'll create a single ServiceBrand instance using the factory.
         """
-        # Create a brand without an image for default testing
+                                                             
         cls.service_brand = ServiceBrandFactory(image=None)
 
     def test_service_brand_creation(self):
@@ -28,7 +28,7 @@ class ServiceBrandModelTest(TestCase):
         Test that a ServiceBrand instance can be created successfully using the factory.
         """
         self.assertIsInstance(self.service_brand, ServiceBrand)
-        self.assertIsNotNone(self.service_brand.pk) # Check if it has a primary key (saved to DB)
+        self.assertIsNotNone(self.service_brand.pk)                                              
 
     def test_name_field(self):
         """
@@ -41,7 +41,7 @@ class ServiceBrandModelTest(TestCase):
         self.assertIsNotNone(service_brand.name)
         self.assertEqual(service_brand._meta.get_field('name').help_text, "Name of the service brand (e.g., 'Yamaha', 'Vespa').")
 
-    # Removed: test_is_primary_field
+                                    
 
     def test_image_field(self):
         """
@@ -52,16 +52,16 @@ class ServiceBrandModelTest(TestCase):
         self.assertTrue(image_field.null)
         self.assertTrue(image_field.blank)
         self.assertEqual(image_field.upload_to, 'brands/')
-        # Updated help_text to reflect removal of 'is_primary' dependency
+                                                                         
         self.assertEqual(image_field.help_text, "Optional image for this brand.")
 
-        # Test saving with a dummy image (only to ensure it can be assigned, not its content)
-        # Using a minimal SimpleUploadedFile, as we're not testing image validity/processing
+                                                                                             
+                                                                                            
         dummy_image = SimpleUploadedFile("test_image.jpg", b"dummy_content", content_type="image/jpeg")
         brand_with_image = ServiceBrandFactory(name="Brand with Image", image=dummy_image)
         self.assertIsNotNone(brand_with_image.image)
-        self.assertIn('brands/', brand_with_image.image.name) # Check if path is correct
-        # Ensure image can be set to None
+        self.assertIn('brands/', brand_with_image.image.name)                           
+                                         
         brand_with_image.image = None
         brand_with_image.save()
         self.assertIsNone(brand_with_image.image.name if brand_with_image.image else None)
@@ -73,7 +73,7 @@ class ServiceBrandModelTest(TestCase):
         """
         service_brand = self.service_brand
         self.assertIsInstance(service_brand.last_updated, datetime)
-        # Check that auto_now updates the field on save
+                                                       
         old_last_updated = service_brand.last_updated
         service_brand.name = "Updated Name"
         service_brand.save()
@@ -98,15 +98,15 @@ class ServiceBrandModelTest(TestCase):
         Test that the 'name' field is unique.
         Attempting to create a brand with an existing name should raise an IntegrityError.
         """
-        # Create an initial brand
+                                 
         initial_brand = ServiceBrandFactory()
         existing_name = initial_brand.name
 
-        # Attempt to create another brand with the exact same name directly using the model
-        # This will force a database insert attempt, triggering the IntegrityError
+                                                                                           
+                                                                                  
         with self.assertRaises(IntegrityError):
-            # No 'is_primary' needed now
+                                        
             ServiceBrand.objects.create(name=existing_name)
 
-    # Removed: test_primary_brand_limit (as 'is_primary' is removed)
+                                                                    
 

@@ -1,6 +1,6 @@
 
 from django.http import JsonResponse
-from service.models import ServiceProfile, CustomerMotorcycle # Ensure these are imported
+from service.models import ServiceProfile, CustomerMotorcycle                            
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET
 
@@ -16,8 +16,8 @@ def get_motorcycle_details_ajax(request, motorcycle_id):
     except Exception as e:
         return JsonResponse({'error': f'Motorcycle not found or invalid ID: {e}'}, status=404)
 
-    # Serialize all relevant fields from the CustomerMotorcycle instance
-    # This should match the fields expected by your CustomerMotorcycleForm
+                                                                        
+                                                                          
     motorcycle_details = {
         'id': motorcycle.pk,
         'brand': motorcycle.brand,

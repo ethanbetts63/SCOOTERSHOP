@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.views import View
 
-from service.models import ServiceBooking, ServiceType, BlockedServiceDate # Ensure your model path is correct
+from service.models import ServiceBooking, ServiceType, BlockedServiceDate                                    
 
 class ServiceBookingManagementView(View):
     """
@@ -14,15 +14,15 @@ class ServiceBookingManagementView(View):
         """
         Handles GET requests: retrieves all ServiceBooking objects and renders them.
         """
-        # The bookings are fetched here, but this view renders the HTML,
-        # not the JSON data for FullCalendar.
-        # The FullCalendar will make a separate AJAX call to get its data.
+                                                                        
+                                             
+                                                                          
         bookings = ServiceBooking.objects.all().order_by('-dropoff_date')
 
         context = {
             'page_title': 'Manage Service Bookings',
-            'bookings': bookings, # This 'bookings' context variable is not used by FullCalendar directly
-            'active_tab': 'service_bookings' # Assuming this is for navigation highlighting
+            'bookings': bookings,                                                                        
+            'active_tab': 'service_bookings'                                               
         }
         return render(request, self.template_name, context)
 

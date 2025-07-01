@@ -4,7 +4,7 @@ from django.contrib.messages import get_messages
 from django.core.files.uploadedfile import SimpleUploadedFile
 from unittest import mock
 import tempfile
-from PIL import Image # Required for creating dummy image files
+from PIL import Image                                          
 from inventory.models import SalesProfile, InventorySettings
 from ...test_helpers.model_factories import (
     TempSalesBookingFactory,
@@ -27,16 +27,16 @@ class Step1SalesProfileViewTest(TestCase):
         cls.client = Client()
         cls.url = reverse('inventory:step1_sales_profile')
 
-        # Ensure a singleton InventorySettings instance exists
+                                                              
         cls.inventory_settings = InventorySettingsFactory(
-            require_drivers_license=False, # Default to False for most tests
-            require_address_info=False,    # Default to False for most tests
+            require_drivers_license=False,                                  
+            require_address_info=False,                                     
         )
 
-        # Create a dummy motorcycle for TempSalesBookingFactory
+                                                               
         cls.motorcycle = MotorcycleFactory()
 
-        # Create a user for authenticated tests
+                                               
         cls.user = UserFactory(username='testuser', email='test@example.com')
         cls.user.set_password('password123')
         cls.user.save()
@@ -49,10 +49,10 @@ class Step1SalesProfileViewTest(TestCase):
         temp_booking = TempSalesBookingFactory(
             motorcycle=self.motorcycle,
             sales_profile=sales_profile,
-            booking_status='pending_details' # Initial status for Step 1
+            booking_status='pending_details'                            
         )
         session = client.session
-        # Store the session_uuid as a string, matching how initiate_sales_booking_process_view sets it.
+                                                                                                       
         session['temp_sales_booking_uuid'] = str(temp_booking.session_uuid)
         session.save()
         return temp_booking
@@ -65,7 +65,7 @@ class Step1SalesProfileViewTest(TestCase):
         file.close()
         return SimpleUploadedFile(name, open(file.name, 'rb').read(), content_type='image/jpeg')
 
-    # --- GET Request Tests ---
+                               
 
     def test_get_no_temp_booking_id_in_session(self):
         """
@@ -84,10 +84,10 @@ class Step1SalesProfileViewTest(TestCase):
         Should redirect to inventory:all with an error message.
         """
         session = self.client.session
-        session['temp_sales_booking_uuid'] = 'a2b3c4d5-e6f7-8901-2345-67890abcdef0' # Invalid UUID format or non-existent
+        session['temp_sales_booking_uuid'] = 'a2b3c4d5-e6f7-8901-2345-67890abcdef0'                                      
         session.save()
 
-        response = self.client.get(self.url, follow=True) # Follow redirect
+        response = self.client.get(self.url, follow=True)                  
         self.assertRedirects(response, reverse('inventory:all'))
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
@@ -99,11 +99,11 @@ class Step1SalesProfileViewTest(TestCase):
         Test GET request when no InventorySettings exist.
         Should redirect to inventory:all with an error message.
         """
-        # Need a valid temp booking ID for the view to run and reach the settings check
+                                                                                       
         self._create_temp_booking_in_session(self.client)
-        # Delete existing settings AFTER creating the temp booking
+                                                                  
         InventorySettings.objects.all().delete()
-        self.assertFalse(InventorySettings.objects.exists()) # Verify deletion
+        self.assertFalse(InventorySettings.objects.exists())                  
 
         response = self.client.get(self.url, follow=True)
         self.assertRedirects(response, reverse('inventory:all'))
@@ -111,8 +111,8 @@ class Step1SalesProfileViewTest(TestCase):
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), "Inventory settings are not configured. Please contact support.")
 
-        # Recreate settings for other tests
-        self.inventory_settings = InventorySettingsFactory(pk=1) # Recreate as singleton
+                                           
+        self.inventory_settings = InventorySettingsFactory(pk=1)                        
 
     def test_get_success_unauthenticated_user(self):
         """
@@ -126,8 +126,8 @@ class Step1SalesProfileViewTest(TestCase):
         self.assertTemplateUsed(response, 'inventory/step1_sales_profile.html')
         self.assertIn('sales_profile_form', response.context)
         self.assertIn('temp_booking', response.context)
-        self.assertEqual(response.context['temp_booking'].session_uuid, temp_booking.session_uuid) # Compare UUID objects
-        self.assertIsNone(response.context['sales_profile_form'].instance.pk) # Should be an unsaved instance
+        self.assertEqual(response.context['temp_booking'].session_uuid, temp_booking.session_uuid)                       
+        self.assertIsNone(response.context['sales_profile_form'].instance.pk)                                
 
     def test_get_success_authenticated_user_no_profile(self):
         """
@@ -140,7 +140,7 @@ class Step1SalesProfileViewTest(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertIn('sales_profile_form', response.context)
-        self.assertIsNone(response.context['sales_profile_form'].instance.pk) # Still unsaved instance
+        self.assertIsNone(response.context['sales_profile_form'].instance.pk)                         
 
     def test_get_success_authenticated_user_with_profile(self):
         """
@@ -155,7 +155,7 @@ class Step1SalesProfileViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('sales_profile_form', response.context)
         self.assertEqual(response.context['sales_profile_form'].instance, existing_profile)
-        # Check initial data directly, which is what the form provides
+                                                                      
         self.assertEqual(response.context['sales_profile_form']['name'].value(), 'Existing Name')
         self.assertEqual(response.context['sales_profile_form']['email'].value(), 'existing@example.com')
 
@@ -168,7 +168,7 @@ class Step1SalesProfileViewTest(TestCase):
         existing_profile_for_temp = SalesProfileFactory(name='Temp Linked Name', email='temp_linked@example.com')
         temp_booking = self._create_temp_booking_in_session(self.client, sales_profile=existing_profile_for_temp)
 
-        # Log in a different user, who has their own profile, to ensure temp_booking's profile takes precedence
+                                                                                                               
         another_user = UserFactory(username='anotheruser', email='another@example.com')
         another_user.set_password('password123')
         another_user.save()
@@ -178,14 +178,14 @@ class Step1SalesProfileViewTest(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertIn('sales_profile_form', response.context)
-        # Should use the profile linked to temp_booking, not the logged-in user's profile
+                                                                                         
         self.assertEqual(response.context['sales_profile_form'].instance, existing_profile_for_temp)
-        # Check initial data from the form's bound fields
+                                                         
         self.assertEqual(response.context['sales_profile_form']['name'].value(), 'Temp Linked Name')
         self.assertEqual(response.context['sales_profile_form']['email'].value(), 'temp_linked@example.com')
 
 
-    # --- POST Request Tests ---
+                                
 
     @mock.patch('django.contrib.messages.success')
     @mock.patch('django.contrib.messages.error')
@@ -207,12 +207,12 @@ class Step1SalesProfileViewTest(TestCase):
         Should redirect with an error message.
         """
         session = self.client.session
-        session['temp_sales_booking_uuid'] = 'a2b3c4d5-e6f7-8901-2345-67890abcdef0' # Invalid UUID format or non-existent
+        session['temp_sales_booking_uuid'] = 'a2b3c4d5-e6f7-8901-2345-67890abcdef0'                                      
         session.save()
 
-        response = self.client.post(self.url, data={'name': 'Test User'}, follow=True) # Follow redirect
+        response = self.client.post(self.url, data={'name': 'Test User'}, follow=True)                  
         self.assertRedirects(response, reverse('inventory:all'))
-        mock_error.assert_called_once() # Check if error was called at all
+        mock_error.assert_called_once()                                   
         self.assertIn("Your booking session could not be found or is invalid.", str(mock_error.call_args[0][1]))
         mock_success.assert_not_called()
 
@@ -223,15 +223,15 @@ class Step1SalesProfileViewTest(TestCase):
         Test POST request when no InventorySettings exist.
         Should redirect to inventory:all with an error message.
         """
-        self._create_temp_booking_in_session(self.client) # Need a valid temp booking ID
-        InventorySettings.objects.all().delete() # Delete settings AFTER temp booking is in session
+        self._create_temp_booking_in_session(self.client)                               
+        InventorySettings.objects.all().delete()                                                   
 
         response = self.client.post(self.url, data={'name': 'Test User'}, follow=True)
         self.assertRedirects(response, reverse('inventory:all'))
         mock_error.assert_called_once_with(mock.ANY, "Inventory settings are not configured. Please contact support.")
         mock_success.assert_not_called()
 
-        # Recreate settings for other tests
+                                           
         self.inventory_settings = InventorySettingsFactory(pk=1)
 
 
@@ -248,7 +248,7 @@ class Step1SalesProfileViewTest(TestCase):
             'name': 'New Customer',
             'email': 'new@example.com',
             'phone_number': '0412345678',
-            'date_of_birth': '1990-01-01', # String format is fine for DateInput
+            'date_of_birth': '1990-01-01',                                      
         }
         response = self.client.post(self.url, data=post_data, follow=True)
 
@@ -257,12 +257,12 @@ class Step1SalesProfileViewTest(TestCase):
         mock_error.assert_not_called()
 
         self.assertEqual(SalesProfile.objects.count(), initial_profile_count + 1)
-        new_profile = SalesProfile.objects.latest('created_at') # Get the newly created profile
+        new_profile = SalesProfile.objects.latest('created_at')                                
         self.assertEqual(new_profile.name, 'New Customer')
         self.assertEqual(new_profile.email, 'new@example.com')
-        self.assertIsNone(new_profile.user) # Should not be linked to a user
+        self.assertIsNone(new_profile.user)                                 
 
-        # Verify TempSalesBooking is updated
+                                            
         temp_booking.refresh_from_db()
         self.assertEqual(temp_booking.sales_profile, new_profile)
 
@@ -281,7 +281,7 @@ class Step1SalesProfileViewTest(TestCase):
             'name': 'Updated Name',
             'email': 'updated@example.com',
             'phone_number': '0498765432',
-            'date_of_birth': '1985-05-05', # String format is fine
+            'date_of_birth': '1985-05-05',                        
         }
         response = self.client.post(self.url, data=post_data, follow=True)
 
@@ -289,14 +289,14 @@ class Step1SalesProfileViewTest(TestCase):
         mock_success.assert_called_once_with(mock.ANY, "Personal details saved. Proceed to booking details and appointment.")
         mock_error.assert_not_called()
 
-        self.assertEqual(SalesProfile.objects.count(), initial_profile_count) # No new profile created
+        self.assertEqual(SalesProfile.objects.count(), initial_profile_count)                         
         existing_profile.refresh_from_db()
         self.assertEqual(existing_profile.name, 'Updated Name')
         self.assertEqual(existing_profile.email, 'updated@example.com')
-        self.assertEqual(existing_profile.user, self.user) # Should still be linked
+        self.assertEqual(existing_profile.user, self.user)                         
 
         temp_booking.refresh_from_db()
-        self.assertEqual(temp_booking.sales_profile, existing_profile) # TempBooking still linked to updated profile
+        self.assertEqual(temp_booking.sales_profile, existing_profile)                                              
 
     @mock.patch('django.contrib.messages.success')
     @mock.patch('django.contrib.messages.error')
@@ -308,23 +308,23 @@ class Step1SalesProfileViewTest(TestCase):
         temp_booking = self._create_temp_booking_in_session(self.client)
         initial_profile_count = SalesProfile.objects.count()
 
-        # Invalid data: missing required 'name' and invalid email format
+                                                                        
         post_data = {
-            'name': '', # Missing name
+            'name': '',               
             'email': 'invalid-email',
-            'phone_number': '0412345678', # Provide required base fields
+            'phone_number': '0412345678',                               
             'date_of_birth': '1990-01-01',
         }
         response = self.client.post(self.url, data=post_data)
 
-        self.assertEqual(response.status_code, 200) # Should re-render the page
+        self.assertEqual(response.status_code, 200)                            
         self.assertTemplateUsed(response, 'inventory/step1_sales_profile.html')
         mock_error.assert_called_once_with(mock.ANY, "Please correct the errors below.")
         mock_success.assert_not_called()
 
-        self.assertEqual(SalesProfile.objects.count(), initial_profile_count) # No new profile should be created
+        self.assertEqual(SalesProfile.objects.count(), initial_profile_count)                                   
 
-        # Check if form errors are present in the context
+                                                         
         self.assertIn('sales_profile_form', response.context)
         form = response.context['sales_profile_form']
         self.assertIn('name', form.errors)
@@ -341,23 +341,23 @@ class Step1SalesProfileViewTest(TestCase):
 
         temp_booking = self._create_temp_booking_in_session(self.client)
 
-        # First, test missing required license fields
+                                                     
         post_data_missing_license = {
             'name': 'License Required',
             'email': 'license@example.com',
             'phone_number': '0412345678',
-            'date_of_birth': '', # Explicitly empty to trigger error
-            'drivers_license_number': '', # Explicitly empty
-            'drivers_license_expiry': '', # Explicitly empty
-            # No image file
+            'date_of_birth': '',                                    
+            'drivers_license_number': '',                   
+            'drivers_license_expiry': '',                   
+                           
         }
         response = self.client.post(self.url, data=post_data_missing_license)
-        self.assertEqual(response.status_code, 200) # Should re-render with errors
+        self.assertEqual(response.status_code, 200)                               
         form = response.context['sales_profile_form']
         self.assertIn('drivers_license_number', form.errors)
         self.assertIn('drivers_license_expiry', form.errors)
         self.assertIn('drivers_license_image', form.errors)
-        self.assertIn('date_of_birth', form.errors) # DOB is required with DL
+        self.assertIn('date_of_birth', form.errors)                          
 
 
     @mock.patch('django.contrib.messages.success')
@@ -371,31 +371,31 @@ class Step1SalesProfileViewTest(TestCase):
 
         temp_booking = self._create_temp_booking_in_session(self.client)
 
-        # First, test missing required address fields (ensure fields are explicitly empty)
+                                                                                          
         post_data_missing_address = {
             'name': 'Address Required',
             'email': 'address@example.com',
             'phone_number': '0412345678',
-            'date_of_birth': '1990-01-01', # Provide if not conditionally required
-            'address_line_1': '', # Explicitly empty
-            'city': '',           # Explicitly empty
-            'state': '',          # Explicitly empty
-            'post_code': '',      # Explicitly empty
-            'country': '',        # Explicitly empty
+            'date_of_birth': '1990-01-01',                                        
+            'address_line_1': '',                   
+            'city': '',                             
+            'state': '',                            
+            'post_code': '',                        
+            'country': '',                          
         }
         response = self.client.post(self.url, data=post_data_missing_address)
         self.assertEqual(response.status_code, 200)
         form = response.context['sales_profile_form']
         self.assertIn('address_line_1', form.errors)
         self.assertIn('city', form.errors)
-        self.assertIn('state', form.errors) # Verify this assertion is still valid
+        self.assertIn('state', form.errors)                                       
         self.assertIn('post_code', form.errors)
         self.assertIn('country', form.errors)
-        # Ensure error message is called for this invalid submission
+                                                                    
         mock_error.assert_called_once_with(mock.ANY, "Please correct the errors below.")
-        mock_error.reset_mock() # Reset mock for the next assertion in this test method
+        mock_error.reset_mock()                                                        
 
-        # Second, test valid data with address info
+                                                   
         post_data_with_address = {
             'name': 'Address Provided',
             'email': 'address_ok@example.com',
@@ -411,7 +411,7 @@ class Step1SalesProfileViewTest(TestCase):
 
         self.assertRedirects(response, reverse('inventory:step2_booking_details_and_appointment'))
         mock_success.assert_called_once_with(mock.ANY, "Personal details saved. Proceed to booking details and appointment.")
-        mock_error.assert_not_called() # Ensure no error message for this valid submission
+        mock_error.assert_not_called()                                                    
 
         new_profile = SalesProfile.objects.latest('created_at')
         self.assertEqual(new_profile.address_line_1, '123 Main St')

@@ -1,4 +1,4 @@
-# inventory/models/motorcycle.py
+                                
 
 from django.db import models
 from django.urls import reverse
@@ -42,7 +42,7 @@ class Motorcycle(models.Model):
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES, blank=True)
 
     conditions = models.ManyToManyField(
-        'inventory.MotorcycleCondition', # Using string reference for MotorcycleCondition
+        'inventory.MotorcycleCondition',                                                 
         related_name='motorcycles',
         blank=True,
         help_text="Select all applicable conditions (e.g., Used, Hire)",
@@ -50,7 +50,7 @@ class Motorcycle(models.Model):
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default='for_sale', # Or another appropriate default
+        default='for_sale',                                 
         help_text="The sales/hire status of the motorcycle."
     )
     odometer = models.IntegerField(default=0)

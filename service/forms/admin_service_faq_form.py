@@ -1,4 +1,4 @@
-# service/forms/admin_service_faq_form.py
+                                         
 
 from django import forms
 from service.models import ServiceFAQ
@@ -50,5 +50,5 @@ class AdminServiceFAQForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Add a custom class to the answer field's label for more specific styling if needed
+                                                                                            
         self.fields['answer'].label_attrs = {'class': 'align-top'}

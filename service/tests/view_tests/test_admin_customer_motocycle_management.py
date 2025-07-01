@@ -1,8 +1,8 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.utils import timezone # For precise ordering of created_at
+from django.utils import timezone                                     
 
-# Import models and factories
+                             
 from service.models import CustomerMotorcycle
 from ..test_helpers.model_factories import UserFactory, CustomerMotorcycleFactory, ServiceProfileFactory
 
@@ -22,11 +22,11 @@ class CustomerMotorcycleManagementViewTest(TestCase):
         cls.superuser = UserFactory(username='superuser_moto', is_staff=True, is_superuser=True)
         cls.regular_user = UserFactory(username='regular_user_moto', is_staff=False, is_superuser=False)
 
-        # Create service profiles for linking to motorcycles
+                                                            
         cls.profile_john = ServiceProfileFactory(name="John Doe", email="john@example.com")
         cls.profile_jane = ServiceProfileFactory(name="Jane Smith", email="jane@example.com")
 
-        # Create multiple customer motorcycles with distinct data for searching and ordering
+                                                                                            
         cls.moto1 = CustomerMotorcycleFactory(
             brand="Honda", model="CBR600RR", rego="ABC123", vin_number="VIN1234567890ABCDE1", engine_number="ENG1",
             service_profile=cls.profile_john,
@@ -39,16 +39,16 @@ class CustomerMotorcycleManagementViewTest(TestCase):
         )
         cls.moto3 = CustomerMotorcycleFactory(
             brand="Kawasaki", model="Ninja 400", rego="GHI789", vin_number="VIN1234567890ABCDE3", engine_number="ENG3",
-            service_profile=cls.profile_john, # Link another to John
+            service_profile=cls.profile_john,                       
             created_at=timezone.now() - timezone.timedelta(days=10)
         )
         cls.moto_no_profile = CustomerMotorcycleFactory(
             brand="Suzuki", model="GSX-R750", rego="JKL012", vin_number="VIN1234567890ABCDE4", engine_number="ENG4",
-            service_profile=None, # No linked profile
+            service_profile=None,                    
             created_at=timezone.now()
         )
 
-        # Define URL for convenience
+                                    
         cls.list_url = reverse('service:admin_customer_motorcycle_management')
 
     def setUp(self):
@@ -57,7 +57,7 @@ class CustomerMotorcycleManagementViewTest(TestCase):
         """
         self.client = Client()
 
-    # --- Access Control Tests ---
+                                  
 
     def test_view_redirects_anonymous_user(self):
         """
@@ -72,7 +72,7 @@ class CustomerMotorcycleManagementViewTest(TestCase):
         """
         self.client.force_login(self.regular_user)
         response = self.client.get(self.list_url)
-        self.assertEqual(response.status_code, 403) # Forbidden
+        self.assertEqual(response.status_code, 403)            
 
     def test_view_grants_access_to_staff_user(self):
         """
@@ -90,7 +90,7 @@ class CustomerMotorcycleManagementViewTest(TestCase):
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, 200)
 
-    # --- GET Request Tests (Listing & Search) ---
+                                                  
 
     def test_get_request_list_all_motorcycles(self):
         """
@@ -102,11 +102,11 @@ class CustomerMotorcycleManagementViewTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'service/admin_customer_motorcycle_management.html')
-        self.assertIn('motorcycles', response.context) # context_object_name
+        self.assertIn('motorcycles', response.context)                      
         self.assertIn('search_term', response.context)
         self.assertEqual(response.context['search_term'], '')
 
-        # Check if all motorcycles are present and ordered correctly (by created_at descending)
+                                                                                               
         motorcycles_in_context = list(response.context['motorcycles'])
         expected_motorcycles = list(CustomerMotorcycle.objects.all().order_by('-created_at'))
         self.assertListEqual(motorcycles_in_context, expected_motorcycles)
@@ -156,7 +156,7 @@ class CustomerMotorcycleManagementViewTest(TestCase):
         Test search functionality by VIN number.
         """
         self.client.force_login(self.staff_user)
-        search_term = "ABCDE4" # Partial match for moto_no_profile
+        search_term = "ABCDE4"                                    
         response = self.client.get(f"{self.list_url}?q={search_term}")
         motorcycles_in_context = list(response.context['motorcycles'])
         self.assertEqual(len(motorcycles_in_context), 1)
@@ -182,7 +182,7 @@ class CustomerMotorcycleManagementViewTest(TestCase):
         search_term = "John Doe"
         response = self.client.get(f"{self.list_url}?q={search_term}")
         motorcycles_in_context = list(response.context['motorcycles'])
-        # John Doe has moto1 and moto3. moto3 is newer, so it should come first.
+                                                                                
         self.assertEqual(len(motorcycles_in_context), 2)
         self.assertEqual(motorcycles_in_context[0], self.moto3)
         self.assertEqual(motorcycles_in_context[1], self.moto1)
@@ -220,7 +220,7 @@ class CustomerMotorcycleManagementViewTest(TestCase):
         The view has paginate_by = 10, so if we have fewer than 10, all should show.
         If we increase moto count beyond 10, it should paginate.
         """
-        # Create more motorcycles to exceed paginate_by limit (currently 4, so add 7 more)
+                                                                                          
         for i in range(7):
             CustomerMotorcycleFactory(created_at=timezone.now() - timezone.timedelta(days=i+40))
 
@@ -230,12 +230,12 @@ class CustomerMotorcycleManagementViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('is_paginated', response.context)
         self.assertTrue(response.context['is_paginated'])
-        self.assertEqual(len(response.context['motorcycles']), 10) # Should show 10 per page
-        self.assertEqual(response.context['paginator'].num_pages, (CustomerMotorcycle.objects.count() + 9) // 10) # Total pages
+        self.assertEqual(len(response.context['motorcycles']), 10)                          
+        self.assertEqual(response.context['paginator'].num_pages, (CustomerMotorcycle.objects.count() + 9) // 10)              
 
-        # Test access to a second page
+                                      
         response_page2 = self.client.get(f"{self.list_url}?page=2")
         self.assertEqual(response_page2.status_code, 200)
         self.assertIn('motorcycles', response_page2.context)
-        # Check that there's at least one motorcycle on the second page if total > 10
+                                                                                     
         self.assertGreater(len(response_page2.context['motorcycles']), 0)

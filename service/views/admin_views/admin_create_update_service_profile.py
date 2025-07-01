@@ -3,7 +3,7 @@ from django.views import View
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-# Assuming AdminServiceProfileForm is in service.forms
+                                                      
 from service.forms import AdminServiceProfileForm
 from service.models import ServiceProfile
 
@@ -13,7 +13,7 @@ class ServiceProfileCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, Vi
     Admin view for creating a new ServiceProfile or updating an existing one.
     Requires the user to be logged in and a staff member or superuser.
     """
-    template_name = 'service/admin_service_profile_form.html' # New template name for form
+    template_name = 'service/admin_service_profile_form.html'                             
     form_class = AdminServiceProfileForm
 
     def test_func(self):
@@ -29,17 +29,17 @@ class ServiceProfileCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, Vi
         """
         instance = None
         if pk:
-            # If a primary key (pk) is provided, retrieve the specific profile to edit
+                                                                                      
             instance = get_object_or_404(ServiceProfile, pk=pk)
-            form = self.form_class(instance=instance) # Pre-populate the form
+            form = self.form_class(instance=instance)                        
         else:
-            # If no pk, create a blank form for new profile
+                                                           
             form = self.form_class()
 
         context = {
             'form': form,
-            'is_edit_mode': bool(pk), # True if pk exists, False otherwise
-            'current_profile': instance # The profile being edited (None if creating new)
+            'is_edit_mode': bool(pk),                                     
+            'current_profile': instance                                                  
         }
         return render(request, self.template_name, context)
 
@@ -60,12 +60,12 @@ class ServiceProfileCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, Vi
                 messages.success(request, f"Service Profile for '{service_profile.name}' updated successfully.")
             else:
                 messages.success(request, f"Service Profile for '{service_profile.name}' created successfully.")
-            # Redirect back to the list view after successful creation/update
+                                                                             
             return redirect(reverse('service:admin_service_profiles'))
         else:
             messages.error(request, "Please correct the errors below.")
             context = {
-                'form': form, # Pass the form with errors back
+                'form': form,                                 
                 'is_edit_mode': bool(pk),
                 'current_profile': instance
             }

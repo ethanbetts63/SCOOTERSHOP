@@ -1,4 +1,4 @@
-# SCOOTER_SHOP/inventory/forms/admin_sales_profile_form.py
+                                                          
 
 from django import forms
 from inventory.models import SalesProfile

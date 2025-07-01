@@ -1,4 +1,4 @@
-# SCOOTER_SHOP/inventory/views/admin_views/sales_bookings_management_view.py
+                                                                            
 
 from django.db.models import Q
 from django.views.generic import ListView

@@ -1,4 +1,4 @@
-# sales/models/blocked_sales_date.py
+                                    
 
 from django.db import models
 from django.core.exceptions import ValidationError
@@ -34,7 +34,7 @@ class BlockedSalesDate(models.Model):
             })
 
     class Meta:
-        ordering = ['start_date'] # Order blocked dates by their start date
+        ordering = ['start_date']                                          
         verbose_name = "Blocked Sales Date"
         verbose_name_plural = "Blocked Sales Dates"
 

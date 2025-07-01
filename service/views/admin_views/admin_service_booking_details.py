@@ -1,4 +1,4 @@
-# service/views.py (or a suitable views.py file in your service app)
+                                                                    
 
 from django.views.generic import DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -11,7 +11,7 @@ class AdminServiceBookingDetailView(LoginRequiredMixin, UserPassesTestMixin, Det
     """
     model = ServiceBooking
     template_name = 'service/admin_service_booking_detail.html'
-    context_object_name = 'service_booking' # This will be the ServiceBooking object
+    context_object_name = 'service_booking'                                         
 
     def test_func(self):
         """
@@ -24,7 +24,7 @@ class AdminServiceBookingDetailView(LoginRequiredMixin, UserPassesTestMixin, Det
         Adds the booking's primary key to the context for the template.
         """
         context = super().get_context_data(**kwargs)
-        # The pk is already available via self.object.pk because DetailView fetches the object
+                                                                                              
         context['booking_pk'] = self.object.pk 
         return context
 

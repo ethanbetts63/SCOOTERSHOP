@@ -5,8 +5,8 @@ from hire.models import HireBooking
 from hire.models.driver_profile import DriverProfile
 from service.models import ServiceBooking
 from service.models import ServiceProfile
-from inventory.models import SalesBooking # Import SalesBooking
-from inventory.models import SalesProfile # Import SalesProfile
+from inventory.models import SalesBooking                      
+from inventory.models import SalesProfile                      
 
 
 class EmailLog(models.Model):

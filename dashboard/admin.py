@@ -1,16 +1,16 @@
-# dashboard/admin.py
+                    
 
 from django.contrib import admin
 
-# Import models from the dashboard app
+                                      
 from .models import AboutPageContent, SiteSettings
 
-# Register your models here.
+                            
 
 @admin.register(AboutPageContent)
 class AboutPageContentAdmin(admin.ModelAdmin):
-    # Copy the fieldsets or fields from your old AboutPageContentAdmin
-    # Use fieldsets for better organization in the admin change form
+                                                                      
+                                                                    
     fieldsets = (
         ('Introduction', {
             'fields': ('intro_text',)
@@ -28,20 +28,20 @@ class AboutPageContentAdmin(admin.ModelAdmin):
             'fields': ('cta_text',)
         }),
     )
-    # If you only want one instance, prevent adding more
+                                                        
     def has_add_permission(self, request):
-        # Check if there's already an instance (assuming you only want one AboutPageContent)
+                                                                                            
         return AboutPageContent.objects.count() == 0
 
-    # If you only want one instance, prevent deleting the existing one
+                                                                      
     def has_delete_permission(self, request, obj=None):
-        # Allow deletion only if there's more than one instance, or prevent entirely
-        return AboutPageContent.objects.count() > 1 # Or return False to prevent all deletion
+                                                                                    
+        return AboutPageContent.objects.count() > 1                                          
 
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
-    # Use fieldsets to organize the many settings fields
+                                                        
     fieldsets = (
         ('Business Information', {
             'fields': ('phone_number', 'email_address', 'storefront_address', 'google_places_place_id')
@@ -78,15 +78,15 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         }),
         ('Miscellaneous Settings', {
              'fields': (
-                 # Add any other miscellaneous fields from SiteSettings model here
-                 #'enable_random_featured_ordering', # Example field
+                                                                                  
+                                                                    
              )
         }),
     )
-    # Assuming only one instance of SiteSettings
+                                                
     def has_add_permission(self, request):
         return SiteSettings.objects.count() == 0
 
-    # Prevent deleting the single instance of SiteSettings
+                                                          
     def has_delete_permission(self, request, obj=None):
         return False

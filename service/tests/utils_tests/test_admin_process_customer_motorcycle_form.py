@@ -1,5 +1,5 @@
 from django.test import TestCase
-from service.models import CustomerMotorcycle, ServiceProfile # Import ServiceProfile
+from service.models import CustomerMotorcycle, ServiceProfile                        
 from service.utils.admin_process_customer_motorcycle_form import admin_process_customer_motorcycle_form
 from ..test_helpers.model_factories import ServiceProfileFactory, CustomerMotorcycleFactory, ServiceBrandFactory
 
@@ -17,7 +17,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
         Create necessary related objects using factories.
         """
         cls.service_profile = ServiceProfileFactory()
-        cls.another_service_profile = ServiceProfileFactory() # For testing linking
+        cls.another_service_profile = ServiceProfileFactory()                      
         cls.service_brand_honda = ServiceBrandFactory(name='Honda')
         cls.service_brand_yamaha = ServiceBrandFactory(name='Yamaha')
 
@@ -27,7 +27,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
         This brand should exist in ServiceBrand, but the form simply takes a string.
         """
         post_data = {
-            'service_profile': self.service_profile.pk, # Explicitly link a profile
+            'service_profile': self.service_profile.pk,                            
             'brand': self.service_brand_honda.name,
             'model': 'CBR500R',
             'year': 2022,
@@ -43,7 +43,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
         form, motorcycle_instance = admin_process_customer_motorcycle_form(
             request_post_data=post_data,
             request_files=files_data,
-            profile_instance=self.service_profile # This is used as fallback, but form's value takes precedence
+            profile_instance=self.service_profile                                                              
         )
 
         self.assertTrue(form.is_valid())
@@ -62,7 +62,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
         """
         post_data = {
             'service_profile': self.service_profile.pk,
-            'brand': 'Custom Chopper Brand', # Admin types this directly
+            'brand': 'Custom Chopper Brand',                            
             'model': 'Custom Build 1',
             'year': 2023,
             'engine_size': '1800cc',
@@ -83,7 +83,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
         self.assertTrue(form.is_valid())
         self.assertIsNotNone(motorcycle_instance)
         self.assertEqual(motorcycle_instance.service_profile, self.service_profile)
-        # Assert that the brand is exactly what was typed in
+                                                            
         self.assertEqual(motorcycle_instance.brand, post_data['brand'])
         self.assertEqual(CustomerMotorcycle.objects.count(), 1)
 
@@ -103,9 +103,9 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
         )
         self.assertEqual(CustomerMotorcycle.objects.count(), 1)
 
-        # Prepare update data to change brand to 'Yamaha' (from ServiceBrand)
+                                                                             
         updated_post_data = {
-            'service_profile': self.service_profile.pk, # Keep linked to same profile
+            'service_profile': self.service_profile.pk,                              
             'brand': self.service_brand_yamaha.name,
             'model': 'FZ-07',
             'year': 2018,
@@ -148,8 +148,8 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
         self.assertEqual(CustomerMotorcycle.objects.count(), 1)
 
         updated_post_data = {
-            'service_profile': self.another_service_profile.pk, # Change linked profile
-            'brand': 'Kawasaki', # Keep brand same
+            'service_profile': self.another_service_profile.pk,                        
+            'brand': 'Kawasaki',                  
             'model': 'Ninja',
             'year': 2020,
             'engine_size': '600cc',
@@ -164,7 +164,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
         form, updated_motorcycle_instance = admin_process_customer_motorcycle_form(
             request_post_data=updated_post_data,
             request_files=files_data,
-            profile_instance=self.service_profile, # Original profile, but form value takes precedence
+            profile_instance=self.service_profile,                                                    
             motorcycle_id=initial_motorcycle.pk
         )
 
@@ -182,7 +182,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
         post_data = {
             'service_profile': self.service_profile.pk,
             'brand': self.service_brand_honda.name,
-            # 'model' is missing
+                                
             'year': 2022,
             'engine_size': '500cc',
             'rego': 'ABC123',
@@ -198,7 +198,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
         )
 
         self.assertFalse(form.is_valid())
-        self.assertIn('model', form.errors) # Expect 'model' to be a required field error
+        self.assertIn('model', form.errors)                                              
         self.assertIsNone(motorcycle_instance)
         self.assertEqual(CustomerMotorcycle.objects.count(), 0)
 
@@ -213,7 +213,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
             'service_profile': self.service_profile.pk,
             'brand': self.service_brand_honda.name,
             'model': 'Time Machine',
-            'year': future_year, # Future year
+            'year': future_year,              
             'engine_size': '1000cc',
             'rego': 'FUTURA',
             'odometer': 0,
@@ -244,7 +244,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
             'rego': 'SHORTY',
             'odometer': 1000,
             'transmission': 'MANUAL',
-            'vin_number': 'TOO_SHORT', # Less than 17 chars
+            'vin_number': 'TOO_SHORT',                     
         }
         files_data = {}
 
@@ -269,7 +269,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
             'year': 2020,
             'engine_size': '500cc',
             'rego': 'NEGATIV',
-            'odometer': -100, # Negative odometer
+            'odometer': -100,                    
             'transmission': 'MANUAL',
         }
         files_data = {}
@@ -302,18 +302,18 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
         }
         files_data = {}
 
-        # Try to update a non-existent motorcycle
+                                                 
         form, motorcycle_instance = admin_process_customer_motorcycle_form(
             request_post_data=post_data,
             request_files=files_data,
             profile_instance=self.service_profile,
-            motorcycle_id=99999 # A non-existent ID
+            motorcycle_id=99999                    
         )
 
-        # The form should now be invalid because the utility function adds an error
+                                                                                   
         self.assertFalse(form.is_valid())
         self.assertIn('Selected motorcycle not found.', form.non_field_errors())
         self.assertIsNone(motorcycle_instance)
-        # Verify no new motorcycle was created
+                                              
         self.assertEqual(CustomerMotorcycle.objects.count(), 0)
 

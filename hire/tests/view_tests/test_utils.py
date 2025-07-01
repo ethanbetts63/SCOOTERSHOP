@@ -1,36 +1,36 @@
-# hire/tests/view_tests/test_utils.py
+                                     
 
 import datetime
 from decimal import Decimal
 from django.test import TestCase
 from django.utils import timezone
-# inventory.models.Motorcycle is not directly used in tests, but create_motorcycle factory is.
-# from inventory.models import Motorcycle
-# hire.models.HireBooking is not directly used in tests, but create_hire_booking factory is.
-# from hire.models import HireBooking
-# from dashboard.models import HireSettings # HireSettings is used via create_hire_settings
+                                                                                              
+                                         
+                                                                                            
+                                     
+                                                                                           
 
-from hire.utils import (  # New
+from hire.utils import (       
     get_overlapping_motorcycle_bookings
 )
 from hire.hire_pricing import (
-    calculate_motorcycle_hire_price, # Updated
-    calculate_package_price,         # New
-    calculate_addon_price,           # New
-    calculate_total_addons_price,    # New
+    calculate_motorcycle_hire_price,          
+    calculate_package_price,              
+    calculate_addon_price,                
+    calculate_total_addons_price,         
     calculate_booking_grand_total
 )
 from hire.tests.test_helpers.model_factories import (
     create_motorcycle,
     create_hire_settings,
-    create_hire_booking, # For overlap tests
-    create_driver_profile, # For overlap tests
-    create_addon,            # New
-    create_package,          # New
-    create_temp_hire_booking, # New
-    create_temp_booking_addon # New
+    create_hire_booking,                    
+    create_driver_profile,                    
+    create_addon,                 
+    create_package,               
+    create_temp_hire_booking,      
+    create_temp_booking_addon      
 )
-from hire.models import AddOn, Package, TempHireBooking, TempBookingAddOn # For type hinting or direct use
+from hire.models import AddOn, Package, TempHireBooking, TempBookingAddOn                                 
 
 
 
@@ -44,7 +44,7 @@ from hire.models import AddOn, Package, TempHireBooking, TempBookingAddOn # For 
 
 
 
-# --- Tests for get_overlapping_motorcycle_bookings --- 
+                                                        
 class OverlapUtilsTests(TestCase):
     def setUp(self):
         self.motorcycle = create_motorcycle()

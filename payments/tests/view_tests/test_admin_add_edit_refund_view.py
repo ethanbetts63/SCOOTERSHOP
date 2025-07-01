@@ -6,10 +6,10 @@ from django.utils import timezone
 from decimal import Decimal
 from unittest.mock import patch
 
-# Updated imports to use the factory classes directly from payments.tests.test_helpers.model_factories
+                                                                                                      
 from payments.tests.test_helpers.model_factories import (
-    RefundRequestFactory, HireBookingFactory, ServiceBookingFactory, SalesBookingFactory, # Added SalesBookingFactory
-    PaymentFactory, UserFactory, SalesProfileFactory, MotorcycleFactory # Added SalesProfileFactory, MotorcycleFactory
+    RefundRequestFactory, HireBookingFactory, ServiceBookingFactory, SalesBookingFactory,                            
+    PaymentFactory, UserFactory, SalesProfileFactory, MotorcycleFactory                                               
 )
 from payments.models import RefundRequest
 ADMIN_REFUND_MANAGEMENT_URL = reverse('payments:admin_refund_management')
@@ -32,28 +32,28 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         cls.client = Client()
         cls.admin_user = UserFactory(is_staff=True, is_superuser=True)
         cls.regular_user = UserFactory(is_staff=False, is_superuser=False)
-        cls.motorcycle_gen = MotorcycleFactory() # Generic motorcycle for bookings
+        cls.motorcycle_gen = MotorcycleFactory()                                  
 
-        # Create some common objects for testing
+                                                
         cls.hire_booking_paid = HireBookingFactory(
             payment_status='paid',
             amount_paid=Decimal('500.00'),
             payment=PaymentFactory(amount=Decimal('500.00')),
-            motorcycle=cls.motorcycle_gen # Ensure motorcycle is linked
+            motorcycle=cls.motorcycle_gen                              
         )
         cls.service_booking_deposit = ServiceBookingFactory(
             payment_status='deposit_paid',
             amount_paid=Decimal('100.00'),
             payment=PaymentFactory(amount=Decimal('100.00'))
         )
-        # NEW: Sales Booking setup
+                                  
         cls.sales_profile_obj = SalesProfileFactory(user=cls.admin_user)
         cls.sales_booking_deposit = SalesBookingFactory(
             payment_status='deposit_paid',
             amount_paid=Decimal('150.00'),
             payment=PaymentFactory(amount=Decimal('150.00')),
-            sales_profile=cls.sales_profile_obj, # Link sales profile
-            motorcycle=cls.motorcycle_gen # Link motorcycle
+            sales_profile=cls.sales_profile_obj,                     
+            motorcycle=cls.motorcycle_gen                  
         )
 
 
@@ -63,8 +63,8 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         Ensure admin user is logged in by default for most tests.
         """
         self.client.force_login(self.admin_user)
-        # Patch the `is_admin` utility to always return True for admin_user
-        # and False for others during these tests to control access.
+                                                                           
+                                                                    
         self.patcher = patch('users.views.auth.is_admin')
         self.mock_is_admin = self.patcher.start()
         self.mock_is_admin.return_value = True
@@ -76,7 +76,7 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         """
         self.patcher.stop()
 
-    # --- GET Request Tests ---
+                               
 
     def test_get_create_new_refund_request_form_as_admin(self):
         """
@@ -151,14 +151,14 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         to the custom login page.
         """
         self.client.force_login(self.regular_user)
-        self.mock_is_admin.return_value = False # Ensure is_admin returns False for this user
+        self.mock_is_admin.return_value = False                                              
         response = self.client.get(reverse('payments:add_refund_request'))
         self.assertEqual(response.status_code, 302)
-        # Redirects to your custom login view, using 'add_refund_request'
+                                                                         
         self.assertRedirects(response, f"{LOGIN_URL}?next={reverse('payments:add_refund_request')}")
 
 
-    # --- POST Request Tests ---
+                                
 
     def test_post_create_hire_refund_request_success(self):
         """
@@ -167,8 +167,8 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         initial_refund_count = RefundRequest.objects.count()
         data = {
             'hire_booking': self.hire_booking_paid.pk,
-            'service_booking': '', # Ensure empty
-            'sales_booking': '', # Ensure empty
+            'service_booking': '',               
+            'sales_booking': '',               
             'reason': 'Customer changed mind',
             'staff_notes': 'Refund processed by admin.',
             'amount_to_refund': '500.00',
@@ -182,7 +182,7 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         new_refund_request = RefundRequest.objects.latest('pk') 
         self.assertEqual(new_refund_request.hire_booking, self.hire_booking_paid)
         self.assertIsNone(new_refund_request.service_booking) 
-        self.assertIsNone(new_refund_request.sales_booking) # Should be None
+        self.assertIsNone(new_refund_request.sales_booking)                 
         self.assertEqual(new_refund_request.reason, 'Customer changed mind')
         self.assertEqual(new_refund_request.staff_notes, 'Refund processed by admin.')
         self.assertEqual(new_refund_request.amount_to_refund, Decimal('500.00'))
@@ -204,9 +204,9 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         """
         initial_refund_count = RefundRequest.objects.count()
         data = {
-            'hire_booking': '', # Ensure empty
+            'hire_booking': '',               
             'service_booking': self.service_booking_deposit.pk,
-            'sales_booking': '', # Ensure empty
+            'sales_booking': '',               
             'reason': 'Service issue, full refund.',
             'staff_notes': 'Refund for poor service experience.',
             'amount_to_refund': '100.00',
@@ -220,7 +220,7 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         new_refund_request = RefundRequest.objects.latest('pk')
         self.assertIsNone(new_refund_request.hire_booking) 
         self.assertEqual(new_refund_request.service_booking, self.service_booking_deposit)
-        self.assertIsNone(new_refund_request.sales_booking) # Should be None
+        self.assertIsNone(new_refund_request.sales_booking)                 
         self.assertEqual(new_refund_request.reason, 'Service issue, full refund.')
         self.assertEqual(new_refund_request.staff_notes, 'Refund for poor service experience.')
         self.assertEqual(new_refund_request.amount_to_refund, Decimal('100.00'))
@@ -241,8 +241,8 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         """
         initial_refund_count = RefundRequest.objects.count()
         data = {
-            'hire_booking': '', # Ensure empty
-            'service_booking': '', # Ensure empty
+            'hire_booking': '',               
+            'service_booking': '',               
             'sales_booking': self.sales_booking_deposit.pk,
             'reason': 'Customer cancelled purchase.',
             'staff_notes': 'Sales refund initiated by admin.',
@@ -280,9 +280,9 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         """
         refund_request = RefundRequestFactory(
             hire_booking=self.hire_booking_paid,
-            service_booking=None, # Ensure this is explicitly None
-            sales_booking=None, # Ensure this is explicitly None
-            status='pending', # Start as pending
+            service_booking=None,                                 
+            sales_booking=None,                                 
+            status='pending',                   
             amount_to_refund=Decimal('0.00'),
             staff_notes='',
             is_admin_initiated=False,
@@ -293,9 +293,9 @@ class AdminAddEditRefundRequestViewTests(TestCase):
             'hire_booking': self.hire_booking_paid.pk,
             'service_booking': '',
             'sales_booking': '',
-            'reason': refund_request.reason, # Keep existing reason
+            'reason': refund_request.reason,                       
             'staff_notes': 'Updated staff notes, request approved.',
-            'amount_to_refund': '450.00', # Partial refund
+            'amount_to_refund': '450.00',                 
         }
         response = self.client.post(reverse('payments:edit_refund_request', args=[refund_request.pk]), data)
 
@@ -305,8 +305,8 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         refund_request.refresh_from_db()
         self.assertEqual(refund_request.amount_to_refund, Decimal('450.00'))
         self.assertEqual(refund_request.staff_notes, 'Updated staff notes, request approved.')
-        self.assertTrue(refund_request.is_admin_initiated) # Should be set to True if admin modifies
-        self.assertEqual(refund_request.status, 'reviewed_pending_approval') # Should transition to this if was 'pending'
+        self.assertTrue(refund_request.is_admin_initiated)                                          
+        self.assertEqual(refund_request.status, 'reviewed_pending_approval')                                             
         self.assertIsNone(refund_request.processed_by)
         self.assertIsNone(refund_request.processed_at)
 
@@ -323,8 +323,8 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         """
         refund_request = RefundRequestFactory(
             service_booking=self.service_booking_deposit, 
-            hire_booking=None, # Ensure this is explicitly None
-            sales_booking=None, # Ensure this is explicitly None
+            hire_booking=None,                                 
+            sales_booking=None,                                 
             status='pending',
             amount_to_refund=Decimal('0.00'),
             staff_notes='',
@@ -365,8 +365,8 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         """
         refund_request = RefundRequestFactory(
             sales_booking=self.sales_booking_deposit, 
-            hire_booking=None, # Ensure this is explicitly None
-            service_booking=None, # Ensure this is explicitly None
+            hire_booking=None,                                 
+            service_booking=None,                                 
             status='pending',
             amount_to_refund=Decimal('0.00'),
             staff_notes='',
@@ -416,14 +416,14 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         data = {
             'hire_booking': hire_booking.pk,
             'service_booking': '',
-            'sales_booking': '', # Ensure sales_booking is empty
+            'sales_booking': '',                                
             'reason': 'Test Reason',
             'staff_notes': 'Test Notes',
-            'amount_to_refund': '2000.00', # Invalid amount, much higher than payment.amount
+            'amount_to_refund': '2000.00',                                                  
         }
         response = self.client.post(reverse('payments:edit_refund_request', args=[refund_request.pk]), data)
 
-        self.assertEqual(response.status_code, 200) # Should re-render the form
+        self.assertEqual(response.status_code, 200)                            
         self.assertTemplateUsed(response, 'payments/admin_refund_form.html')
         self.assertIn('form', response.context)
         self.assertTrue(response.context['form'].errors)
@@ -435,9 +435,9 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         self.assertEqual(messages_list[0].tags, 'error')
 
         refund_request.refresh_from_db()
-        self.assertEqual(refund_request.status, 'pending') # Status should not change on invalid form
-        self.assertIsNone(refund_request.processed_by) # Should not be set
-        self.assertIsNone(refund_request.processed_at) # Should not be set
+        self.assertEqual(refund_request.status, 'pending')                                           
+        self.assertIsNone(refund_request.processed_by)                    
+        self.assertIsNone(refund_request.processed_at)                    
 
 
     def test_post_amount_exceeds_paid_amount_validation(self):
@@ -452,10 +452,10 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         data = {
             'hire_booking': hire_booking.pk,
             'service_booking': '',
-            'sales_booking': '', # Ensure sales_booking is empty
+            'sales_booking': '',                                
             'reason': 'Test Reason',
             'staff_notes': 'Test Notes',
-            'amount_to_refund': '200.01', # Just slightly over
+            'amount_to_refund': '200.01',                     
         }
         response = self.client.post(reverse('payments:add_refund_request'), data)
 
@@ -477,10 +477,10 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         data = {
             'hire_booking': hire_booking.pk,
             'service_booking': '',
-            'sales_booking': '', # Ensure sales_booking is empty
+            'sales_booking': '',                                
             'reason': 'Test Reason',
             'staff_notes': 'Test Notes',
-            'amount_to_refund': '-10.00', # Negative amount
+            'amount_to_refund': '-10.00',                  
         }
         response = self.client.post(reverse('payments:add_refund_request'), data)
 
@@ -497,7 +497,7 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         data = {
             'hire_booking': self.hire_booking_paid.pk,
             'service_booking': self.service_booking_deposit.pk,
-            'sales_booking': '', # Ensure empty
+            'sales_booking': '',               
             'reason': 'Test Reason',
             'staff_notes': 'Test Notes',
             'amount_to_refund': '50.00',
@@ -517,7 +517,7 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         data = {
             'hire_booking': '',
             'service_booking': '',
-            'sales_booking': '', # Ensure empty
+            'sales_booking': '',               
             'reason': 'Test Reason',
             'staff_notes': 'Test Notes',
             'amount_to_refund': '50.00',
@@ -538,8 +538,8 @@ class AdminAddEditRefundRequestViewTests(TestCase):
             hire_booking=self.hire_booking_paid,
             service_booking=None,
             sales_booking=None,
-            status='pending', # User submitted, now admin reviews
-            is_admin_initiated=False, # Should be False initially for user-submitted
+            status='pending',                                    
+            is_admin_initiated=False,                                               
             processed_by=None,
             processed_at=None
         )
@@ -564,14 +564,14 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         Tests that if a refund request is already in an approved/refunded status,
         and `processed_by` is already set, it's not overwritten when edited.
         """
-        original_processor = UserFactory() # A different user, simulating prior processing
+        original_processor = UserFactory()                                                
         original_processed_at = timezone.now() - timezone.timedelta(days=1)
 
         refund_request = RefundRequestFactory(
             hire_booking=self.hire_booking_paid,
             service_booking=None,
             sales_booking=None,
-            status='approved', # Already approved
+            status='approved',                   
             processed_by=original_processor,
             processed_at=original_processed_at,
             amount_to_refund=Decimal('500.00')
@@ -582,14 +582,14 @@ class AdminAddEditRefundRequestViewTests(TestCase):
             'sales_booking': '',
             'reason': refund_request.reason,
             'staff_notes': 'Just adding more notes, no status change.',
-            'amount_to_refund': '500.00', # Keep same amount
+            'amount_to_refund': '500.00',                   
         }
         response = self.client.post(reverse('payments:edit_refund_request', args=[refund_request.pk]), data)
         self.assertEqual(response.status_code, 302)
         refund_request.refresh_from_db()
-        self.assertEqual(refund_request.status, 'approved') # Status remains
-        self.assertEqual(refund_request.processed_by, original_processor) # Should NOT change
-        self.assertEqual(refund_request.processed_at.date(), original_processed_at.date()) # Date part should match
+        self.assertEqual(refund_request.status, 'approved')                 
+        self.assertEqual(refund_request.processed_by, original_processor)                    
+        self.assertEqual(refund_request.processed_at.date(), original_processed_at.date())                         
 
 
     def test_post_no_admin_redirects(self):
@@ -598,19 +598,19 @@ class AdminAddEditRefundRequestViewTests(TestCase):
         to the custom login page.
         """
         self.client.force_login(self.regular_user)
-        self.mock_is_admin.return_value = False # Ensure is_admin returns False for this user
+        self.mock_is_admin.return_value = False                                              
 
         data = {
             'hire_booking': self.hire_booking_paid.pk,
             'service_booking': '',
-            'sales_booking': '', # Ensure sales_booking is empty
+            'sales_booking': '',                                
             'reason': 'Attempt by non-admin',
             'staff_notes': 'Unauthorized access',
             'amount_to_refund': '10.00',
         }
         response = self.client.post(reverse('payments:add_refund_request'), data)
         self.assertEqual(response.status_code, 302)
-        # Redirects to your custom login view, using 'add_refund_request'
+                                                                         
         self.assertRedirects(response, f"{LOGIN_URL}?next={reverse('payments:add_refund_request')}")
-        self.assertEqual(RefundRequest.objects.count(), 0) # No refund request should be created
+        self.assertEqual(RefundRequest.objects.count(), 0)                                      
 

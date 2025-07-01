@@ -1,4 +1,4 @@
-# SCOOTER_SHOP/dashboard/views/toggle_service_type_active_status.py
+                                                                   
 
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404

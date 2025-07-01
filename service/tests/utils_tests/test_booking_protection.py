@@ -1,10 +1,10 @@
-# service/tests/utils/test_booking_protection.py
+                                                
 
 from django.test import TestCase, RequestFactory
 from django.urls import reverse
 from django.contrib.messages import get_messages
 from django.utils import timezone
-import datetime # Import datetime to use datetime.timezone.utc
+import datetime                                               
 from unittest.mock import patch
 
 from service.utils.booking_protection import (
@@ -16,10 +16,10 @@ class BookingProtectionUtilTests(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.request = self.factory.get('/')
-        # Attach a session to the request object, required by Django's messages and session system
+                                                                                                  
         self.request.session = self.client.session
-        # Initialize messages middleware for the request for testing messages
-        # (Needed because RequestFactory doesn't run full middleware stack)
+                                                                             
+                                                                           
         messages_middleware = 'django.contrib.messages.middleware.MessageMiddleware'
         self.middleware = __import__(messages_middleware.rsplit('.', 1)[0], fromlist=[messages_middleware.rsplit('.', 1)[1]])
         self.middleware.MessageMiddleware(lambda r: None).process_request(self.request)
@@ -30,7 +30,7 @@ class BookingProtectionUtilTests(TestCase):
         Tests that set_recent_booking_flag correctly stores the current timestamp in the session.
         """
         with patch('django.utils.timezone.now') as mock_now:
-            # Use datetime.timezone.utc as per your existing tests
+                                                                  
             test_time = datetime.datetime(2025, 1, 1, 10, 0, 0, tzinfo=datetime.timezone.utc)
             mock_now.return_value = test_time
             
@@ -45,7 +45,7 @@ class BookingProtectionUtilTests(TestCase):
         self.assertNotIn('last_booking_successful_timestamp', self.request.session)
         response = check_and_manage_recent_booking_flag(self.request)
         self.assertIsNone(response)
-        self.assertFalse(list(get_messages(self.request))) # No messages should be added
+        self.assertFalse(list(get_messages(self.request)))                              
 
     def test_check_and_manage_recent_booking_flag_within_cooling_period(self):
         """
@@ -53,11 +53,11 @@ class BookingProtectionUtilTests(TestCase):
         if the flag is within the cooling-off period.
         """
         with patch('django.utils.timezone.now') as mock_now:
-            # Set a timestamp 1 minute ago
+                                          
             initial_time = datetime.datetime(2025, 1, 1, 10, 0, 0, tzinfo=datetime.timezone.utc)
             self.request.session['last_booking_successful_timestamp'] = initial_time.isoformat()
             
-            # Simulate current time being 1 minute after initial_time
+                                                                     
             mock_now.return_value = initial_time + datetime.timedelta(minutes=1)
 
             response = check_and_manage_recent_booking_flag(self.request)
@@ -70,7 +70,7 @@ class BookingProtectionUtilTests(TestCase):
             self.assertEqual(len(messages), 1)
             self.assertIn("You recently completed a booking.", str(messages[0]))
             
-            # Flag should still exist in the session
+                                                    
             self.assertIn('last_booking_successful_timestamp', self.request.session)
             self.assertEqual(self.request.session['last_booking_successful_timestamp'], initial_time.isoformat())
 
@@ -80,18 +80,18 @@ class BookingProtectionUtilTests(TestCase):
         if the flag is older than the cooling-off period.
         """
         with patch('django.utils.timezone.now') as mock_now:
-            # Set a timestamp 3 minutes ago
+                                           
             initial_time = datetime.datetime(2025, 1, 1, 10, 0, 0, tzinfo=datetime.timezone.utc)
             self.request.session['last_booking_successful_timestamp'] = initial_time.isoformat()
             
-            # Simulate current time being 3 minutes after initial_time
+                                                                      
             mock_now.return_value = initial_time + datetime.timedelta(minutes=3)
 
             response = check_and_manage_recent_booking_flag(self.request)
             
             self.assertIsNone(response)
-            self.assertNotIn('last_booking_successful_timestamp', self.request.session) # Flag should be cleared
-            self.assertFalse(list(get_messages(self.request))) # No messages should be added
+            self.assertNotIn('last_booking_successful_timestamp', self.request.session)                         
+            self.assertFalse(list(get_messages(self.request)))                              
 
     def test_check_and_manage_recent_booking_flag_malformed_timestamp(self):
         """
@@ -102,6 +102,6 @@ class BookingProtectionUtilTests(TestCase):
         response = check_and_manage_recent_booking_flag(self.request)
         
         self.assertIsNone(response)
-        self.assertNotIn('last_booking_successful_timestamp', self.request.session) # Flag should be cleared
-        self.assertFalse(list(get_messages(self.request))) # No messages should be added
+        self.assertNotIn('last_booking_successful_timestamp', self.request.session)                         
+        self.assertFalse(list(get_messages(self.request)))                              
 

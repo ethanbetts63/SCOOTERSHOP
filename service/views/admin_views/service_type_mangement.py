@@ -1,10 +1,10 @@
-# service/views/admin_service_type_management.py
+                                                
 
 from django.shortcuts import render
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
-from service.models import ServiceType # Import the ServiceType model
+from service.models import ServiceType                               
 
 class ServiceTypeManagementView(LoginRequiredMixin, UserPassesTestMixin, View):
     """
@@ -24,7 +24,7 @@ class ServiceTypeManagementView(LoginRequiredMixin, UserPassesTestMixin, View):
         Builds the queryset for ServiceType instances for display.
         This method now simply returns all profiles ordered by name, as pagination is removed.
         """
-        return ServiceType.objects.all().order_by('name') # Order by name for consistency
+        return ServiceType.objects.all().order_by('name')                                
 
     def get(self, request, *args, **kwargs):
         """
@@ -33,8 +33,8 @@ class ServiceTypeManagementView(LoginRequiredMixin, UserPassesTestMixin, View):
         service_types = self.get_service_types_for_display()
 
         context = {
-            'service_types': service_types, # Pass all service types directly
-            # No 'page_obj' or 'is_paginated' needed as pagination is removed
+            'service_types': service_types,                                  
+                                                                             
         }
         return render(request, self.template_name, context)
 

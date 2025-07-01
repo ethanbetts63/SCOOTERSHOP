@@ -19,7 +19,7 @@ from ..test_helpers.model_factories import (
     ServiceBrandFactory,
 )
 
-# Set to True to send bookings to MechanicDesk for testing purposes
+                                                                   
 SEND_BOOKINGS_TO_MECHANICDESK = False
 
 @skipIf(not settings.STRIPE_SECRET_KEY, "Stripe API key not configured in settings")
@@ -142,7 +142,7 @@ class TestAnonymousFullOnlinePaymentFlow(TestCase):
         
         self.assertIn('last_booking_successful_timestamp', self.client.session)
 
-        # Test that immediate re-booking is blocked
+                                                   
         response = self.client.post(step1_url, {'service_type': self.service_type.id, 'service_date': valid_future_date.strftime('%Y-%m-%d')}, follow=True)
         
         self.assertRedirects(response, service_page_url)
@@ -151,19 +151,19 @@ class TestAnonymousFullOnlinePaymentFlow(TestCase):
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), "You recently completed a booking. If you wish to make another, please ensure your previous booking was processed successfully or wait a few moments.")
 
-        # Simulate waiting for the cooldown period to expire by modifying the session
+                                                                                     
         session = self.client.session
-        # Set the timestamp to 5 minutes in the past
+                                                    
         session['last_booking_successful_timestamp'] = time.time() - 300 
         session.save()
 
-        # Attempt to book again after the simulated wait
+                                                        
         response = self.client.post(step1_url, {'service_type': self.service_type.id, 'service_date': valid_future_date.strftime('%Y-%m-%d')}, follow=True)
 
-        # This time, the booking should be allowed to proceed to the next step (Step 3 for anon users)
+                                                                                                      
         self.assertRedirects(response, step3_url + f'?temp_booking_uuid={self.client.session["temp_service_booking_uuid"]}')
         
-        # Verify that there are no error messages this time, only the success message
+                                                                                     
         messages = list(response.context['messages'])
         self.assertEqual(len(messages), 1)
         self.assertIn("Service details selected", str(messages[0]))

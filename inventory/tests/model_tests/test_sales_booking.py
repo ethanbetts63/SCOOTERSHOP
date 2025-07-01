@@ -4,13 +4,13 @@ from datetime import date, time
 from decimal import Decimal
 import datetime
 import uuid
-from django.db import models # Import models module
+from django.db import models                       
 
-# Import the SalesBooking model and its choices
+                                               
 from inventory.models import SalesBooking
 from inventory.models.sales_booking import PAYMENT_STATUS_CHOICES, BOOKING_STATUS_CHOICES
 
-# Import factories
+                  
 from ..test_helpers.model_factories import (
     SalesBookingFactory,
     MotorcycleFactory,
@@ -29,14 +29,14 @@ class SalesBookingModelTest(TestCase):
         """
         Set up non-modified objects for all test methods to use.
         """
-        # Create related instances using factories
+                                                  
         cls.motorcycle = MotorcycleFactory()
         cls.sales_profile = SalesProfileFactory()
         cls.payment = PaymentFactory()
 
-        # Create a SalesBooking instance using the factory
-        # For tests that rely on factory-generated values, we use this instance.
-        # For tests that specifically check model defaults, we'll create new instances.
+                                                          
+                                                                                
+                                                                                       
         cls.sales_booking = SalesBookingFactory(
             motorcycle=cls.motorcycle,
             sales_profile=cls.sales_profile,
@@ -49,7 +49,7 @@ class SalesBookingModelTest(TestCase):
         """
         self.assertIsInstance(self.sales_booking, SalesBooking)
         self.assertIsNotNone(self.sales_booking.pk)
-        self.assertEqual(SalesBooking.objects.count(), 1) # Ensure only one created for this test
+        self.assertEqual(SalesBooking.objects.count(), 1)                                        
 
     def test_motorcycle_foreign_key(self):
         """
@@ -57,7 +57,7 @@ class SalesBookingModelTest(TestCase):
         """
         field = self.sales_booking._meta.get_field('motorcycle')
         self.assertEqual(field.related_model, self.motorcycle.__class__)
-        # Corrected: Access on_delete from remote_field
+                                                       
         self.assertEqual(field.remote_field.on_delete, models.PROTECT)
         self.assertEqual(self.sales_booking.motorcycle, self.motorcycle)
         self.assertEqual(field.help_text, "The motorcycle associated with this sales booking.")
@@ -68,7 +68,7 @@ class SalesBookingModelTest(TestCase):
         """
         field = self.sales_booking._meta.get_field('sales_profile')
         self.assertEqual(field.related_model, self.sales_profile.__class__)
-        # Corrected: Access on_delete from remote_field
+                                                       
         self.assertEqual(field.remote_field.on_delete, models.PROTECT)
         self.assertEqual(self.sales_booking.sales_profile, self.sales_profile)
         self.assertEqual(field.help_text, "The customer's sales profile for this booking.")
@@ -79,14 +79,14 @@ class SalesBookingModelTest(TestCase):
         """
         field = self.sales_booking._meta.get_field('payment')
         self.assertEqual(field.related_model, self.payment.__class__)
-        # Corrected: Access on_delete from remote_field
+                                                       
         self.assertEqual(field.remote_field.on_delete, models.SET_NULL)
         self.assertTrue(field.null)
         self.assertTrue(field.blank)
         self.assertEqual(self.sales_booking.payment, self.payment)
         self.assertEqual(field.help_text, "Link to the associated payment record, if any (e.g., for deposit).")
 
-        # Test setting payment to None
+                                      
         self.sales_booking.payment = None
         self.sales_booking.save()
         self.assertIsNone(self.sales_booking.payment)
@@ -103,39 +103,39 @@ class SalesBookingModelTest(TestCase):
         self.assertTrue(field.null)
         self.assertEqual(field.help_text, "A unique reference code for the sales booking.")
 
-        # Test auto-generation on save if not provided
-        # Create a new instance specifically for this test to ensure it hits the default logic
+                                                      
+                                                                                              
         new_booking = SalesBooking(
             motorcycle=self.motorcycle,
             sales_profile=self.sales_profile,
-            appointment_date=date.today(), # Required fields
-            appointment_time=time(9,0) # Required fields
+            appointment_date=date.today(),                  
+            appointment_time=time(9,0)                  
         )
-        new_booking.save() # This should trigger the auto-generation
+        new_booking.save()                                          
         self.assertIsNotNone(new_booking.sales_booking_reference)
         self.assertTrue(new_booking.sales_booking_reference.startswith('SBK-'))
-        # Corrected assertion for the length of the generated reference
-        self.assertEqual(len(new_booking.sales_booking_reference), 12) # SBK- + 8 hex chars = 12
+                                                                       
+        self.assertEqual(len(new_booking.sales_booking_reference), 12)                          
 
     def test_amount_paid_field(self):
         """
         Test the 'amount_paid' field properties.
         This test specifically checks the model's default value.
         """
-        # Create a new SalesBooking instance without setting 'amount_paid' to test the default
+                                                                                              
         new_booking_default_amount = SalesBooking(
             motorcycle=self.motorcycle,
             sales_profile=self.sales_profile,
             appointment_date=date.today(),
             appointment_time=time(10,0)
         )
-        new_booking_default_amount.save() # Save to ensure default is applied
+        new_booking_default_amount.save()                                    
 
         field = new_booking_default_amount._meta.get_field('amount_paid')
         self.assertIsInstance(new_booking_default_amount.amount_paid, Decimal)
         self.assertEqual(field.max_digits, 10)
         self.assertEqual(field.decimal_places, 2)
-        # Corrected assertion: Check for the model's default value
+                                                                  
         self.assertEqual(new_booking_default_amount.amount_paid, Decimal('0.00'))
         self.assertEqual(field.help_text, "The total amount paid for this booking (e.g., deposit or full payment).")
 
@@ -173,20 +173,20 @@ class SalesBookingModelTest(TestCase):
         self.assertTrue(field.null)
         self.assertEqual(field.help_text, "The ID of the Stripe Payment Intent associated with this booking, if applicable.")
 
-        # Test uniqueness - create a new booking with a generated ID from the factory
-        # Then try to create another with the same ID, expecting an IntegrityError
-        # (or a broader Exception in a general test context)
+                                                                                     
+                                                                                  
+                                                            
         unique_id = f"pi_{uuid.uuid4().hex[:24]}"
         SalesBookingFactory(
             motorcycle=self.motorcycle,
             sales_profile=self.sales_profile,
-            stripe_payment_intent_id=unique_id # Set a specific unique ID
+            stripe_payment_intent_id=unique_id                           
         )
-        with self.assertRaises(Exception): # Expecting IntegrityError or similar
+        with self.assertRaises(Exception):                                      
             SalesBookingFactory(
                 motorcycle=self.motorcycle,
                 sales_profile=self.sales_profile,
-                stripe_payment_intent_id=unique_id # Attempt to use the same ID
+                stripe_payment_intent_id=unique_id                             
             )
 
     def test_appointment_date_field(self):
@@ -249,7 +249,7 @@ class SalesBookingModelTest(TestCase):
         self.assertTrue(field.auto_now)
         self.assertEqual(field.help_text, "The date and time when this sales booking was last updated.")
 
-        # Test that updated_at changes on save
+                                              
         old_updated_at = self.sales_booking.updated_at
         self.sales_booking.customer_notes = "Updated notes"
         self.sales_booking.save()
@@ -278,15 +278,15 @@ class SalesBookingModelTest(TestCase):
         """
         Test that sales_booking_reference is unique.
         """
-        # Create a new booking with a generated reference
+                                                         
         booking1 = SalesBookingFactory(
             motorcycle=self.motorcycle,
             sales_profile=self.sales_profile
         )
 
-        # Attempt to create another with the same reference (should fail due to unique=True)
-        # We catch the IntegrityError that Django raises when a unique constraint is violated
-        with self.assertRaises(Exception): # Using a general Exception to catch various DB errors
+                                                                                            
+                                                                                             
+        with self.assertRaises(Exception):                                                       
             SalesBookingFactory(
                 motorcycle=self.motorcycle,
                 sales_profile=self.sales_profile,

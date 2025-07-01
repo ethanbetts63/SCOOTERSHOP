@@ -1,4 +1,4 @@
-# SCOOTER_SHOP/inventory/views/admin_views/blocked_sales_date_management_view.py
+                                                                                
 
 from django.views.generic import ListView
 from inventory.models import BlockedSalesDate

@@ -242,11 +242,11 @@ class CreateUpdateSalesPaymentIntentTest(TestCase):
         )
         mock_modify.side_effect = Exception("Should not be called")
 
-        # FIX: Provide a NEW TempSalesBooking for the NEW Payment object that will be created
+                                                                                             
         new_temp_booking_for_new_payment = TempSalesBookingFactory()
 
         stripe_intent, django_payment = create_or_update_sales_payment_intent(
-            new_temp_booking_for_new_payment, # Use the NEW temp booking here
+            new_temp_booking_for_new_payment,                                
             self.sales_profile,
             amount_to_pay,
             currency,
@@ -297,11 +297,11 @@ class CreateUpdateSalesPaymentIntentTest(TestCase):
         )
         mock_modify.side_effect = Exception("Should not be called")
 
-        # FIX: Provide a NEW TempSalesBooking for the NEW Payment object that will be created
+                                                                                             
         new_temp_booking_for_new_payment = TempSalesBookingFactory()
 
         stripe_intent, django_payment = create_or_update_sales_payment_intent(
-            new_temp_booking_for_new_payment, # Use the NEW temp booking here
+            new_temp_booking_for_new_payment,                                
             self.sales_profile,
             amount_to_pay=current_amount,
             currency=current_currency,
@@ -351,11 +351,11 @@ class CreateUpdateSalesPaymentIntentTest(TestCase):
         )
         mock_modify.side_effect = Exception("Should not be called")
 
-        # FIX: Provide a NEW TempSalesBooking for the NEW Payment object that will be created
+                                                                                             
         new_temp_booking_for_new_payment = TempSalesBookingFactory()
 
         stripe_intent, django_payment = create_or_update_sales_payment_intent(
-            new_temp_booking_for_new_payment, # Use the NEW temp booking here
+            new_temp_booking_for_new_payment,                                
             self.sales_profile,
             amount_to_pay=current_amount,
             currency=current_currency,

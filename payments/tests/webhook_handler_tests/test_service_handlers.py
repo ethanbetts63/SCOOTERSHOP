@@ -3,11 +3,11 @@ from django.test import TestCase, override_settings
 from unittest import mock
 from django.conf import settings
 
-# Import models
-from inventory.models import SalesBooking, TempSalesBooking, MotorcycleCondition # Import MotorcycleCondition
+               
+from inventory.models import SalesBooking, TempSalesBooking, MotorcycleCondition                             
 from payments.webhook_handlers.sales_handlers import handle_sales_booking_succeeded
 
-# Import factories
+                  
 from ..test_helpers.model_factories import (
     UserFactory,
     SalesProfileFactory,
@@ -15,7 +15,7 @@ from ..test_helpers.model_factories import (
     TempSalesBookingFactory,
     PaymentFactory,
     SalesBookingFactory,
-    MotorcycleConditionFactory, # Import MotorcycleConditionFactory
+    MotorcycleConditionFactory,                                    
 )
 
 @override_settings(ADMIN_EMAIL='admin-sales@example.com')
@@ -24,22 +24,22 @@ class SalesWebhookHandlerTest(TestCase):
     def setUpTestData(cls):
         cls.user = UserFactory(email="salesuser@example.com")
         cls.sales_profile = SalesProfileFactory(user=cls.user)
-        # Create a 'new' condition for tests
+                                            
         cls.condition_new = MotorcycleConditionFactory(name='new', display_name='New')
-        cls.condition_used = MotorcycleConditionFactory(name='used', display_name='Used') # For explicit used bike tests
+        cls.condition_used = MotorcycleConditionFactory(name='used', display_name='Used')                               
 
-        # Default motorcycle for general tests (e.g., used bike behavior)
+                                                                         
         cls.motorcycle = MotorcycleFactory(
             price=Decimal('10000.00'), 
             status='for_sale', 
             is_available=True,
-            conditions=[cls.condition_used] # Explicitly set as 'used' for default
+            conditions=[cls.condition_used]                                       
         )
 
     def test_handle_sales_booking_succeeded_deposit_flow(self):
         deposit_amount = Decimal('500.00')
         temp_booking = TempSalesBookingFactory(
-            motorcycle=self.motorcycle, # This is a 'used' bike by default setup
+            motorcycle=self.motorcycle,                                         
             sales_profile=self.sales_profile,
             amount_paid=deposit_amount,
             deposit_required_for_flow=True,
@@ -70,19 +70,19 @@ class SalesWebhookHandlerTest(TestCase):
             self.assertEqual(sales_booking.booking_status, 'pending_confirmation')
             self.assertEqual(sales_booking.amount_paid, deposit_amount)
             
-            # Assertions for 'used' bike behavior
+                                                 
             motorcycle_after_booking = sales_booking.motorcycle
-            motorcycle_after_booking.refresh_from_db() # Ensure we have the latest state
+            motorcycle_after_booking.refresh_from_db()                                  
             self.assertEqual(motorcycle_after_booking.status, 'reserved')
             self.assertFalse(motorcycle_after_booking.is_available)
-            self.assertEqual(motorcycle_after_booking.quantity, 1) # Quantity remains 1 for used bike
+            self.assertEqual(motorcycle_after_booking.quantity, 1)                                   
 
             payment_obj.refresh_from_db()
             self.assertEqual(payment_obj.status, 'succeeded')
             self.assertEqual(payment_obj.sales_booking, sales_booking)
 
             self.assertEqual(mock_send_email.call_count, 2)
-            # Verifying the call to send email to the user, now including the profile argument.
+                                                                                               
             mock_send_email.assert_any_call(
                 recipient_list=[self.user.email],
                 subject=f"Your Sales Booking Confirmation - {sales_booking.sales_booking_reference}",
@@ -91,7 +91,7 @@ class SalesWebhookHandlerTest(TestCase):
                 booking=sales_booking,
                 profile=self.sales_profile
             )
-            # Verifying the call to send email to the admin, now including the profile argument.
+                                                                                                
             mock_send_email.assert_any_call(
                 recipient_list=[settings.ADMIN_EMAIL],
                 subject=f"New Sales Booking (Online) - {sales_booking.sales_booking_reference}",
@@ -153,13 +153,13 @@ class SalesWebhookHandlerTest(TestCase):
                 self.assertEqual(mock_send_email.call_count, 0)
 
     def test_handle_sales_booking_succeeded_new_bike_decrements_quantity(self):
-        # Create a new motorcycle with quantity > 1 and 'new' condition
+                                                                       
         new_motorcycle = MotorcycleFactory(
             price=Decimal('15000.00'),
             status='for_sale',
             is_available=True,
-            quantity=5, # Initial quantity
-            conditions=[self.condition_new] # Assign 'new' condition
+            quantity=5,                   
+            conditions=[self.condition_new]                         
         )
         initial_quantity = new_motorcycle.quantity
 
@@ -184,25 +184,25 @@ class SalesWebhookHandlerTest(TestCase):
             'currency': 'AUD'
         }
 
-        with mock.patch('payments.webhook_handlers.sales_handlers.send_templated_email'): # Mock email sending
+        with mock.patch('payments.webhook_handlers.sales_handlers.send_templated_email'):                     
             handle_sales_booking_succeeded(payment_obj, payment_intent_data)
 
-            new_motorcycle.refresh_from_db() # Refresh to get the updated quantity
+            new_motorcycle.refresh_from_db()                                      
             self.assertEqual(new_motorcycle.quantity, initial_quantity - 1)
-            self.assertTrue(new_motorcycle.is_available) # Should still be available if quantity > 0
-            self.assertEqual(new_motorcycle.status, 'for_sale') # Status doesn't change unless quantity hits 0
+            self.assertTrue(new_motorcycle.is_available)                                            
+            self.assertEqual(new_motorcycle.status, 'for_sale')                                               
 
             sales_booking = SalesBooking.objects.get(stripe_payment_intent_id=payment_obj.stripe_payment_intent_id)
             self.assertEqual(sales_booking.payment_status, 'deposit_paid')
 
     def test_handle_sales_booking_succeeded_new_bike_quantity_to_zero(self):
-        # Create a new motorcycle with quantity = 1 and 'new' condition
+                                                                       
         new_motorcycle = MotorcycleFactory(
             price=Decimal('12000.00'),
             status='for_sale',
             is_available=True,
-            quantity=1, # Initial quantity is 1
-            conditions=[self.condition_new] # Assign 'new' condition
+            quantity=1,                        
+            conditions=[self.condition_new]                         
         )
         initial_quantity = new_motorcycle.quantity
 
@@ -227,13 +227,13 @@ class SalesWebhookHandlerTest(TestCase):
             'currency': 'AUD'
         }
 
-        with mock.patch('payments.webhook_handlers.sales_handlers.send_templated_email'): # Mock email sending
+        with mock.patch('payments.webhook_handlers.sales_handlers.send_templated_email'):                     
             handle_sales_booking_succeeded(payment_obj, payment_intent_data)
 
-            new_motorcycle.refresh_from_db() # Refresh to get the updated quantity and status
-            self.assertEqual(new_motorcycle.quantity, 0) # Quantity should be 0
-            self.assertFalse(new_motorcycle.is_available) # Should become unavailable
-            self.assertEqual(new_motorcycle.status, 'sold') # Status should change to 'sold'
+            new_motorcycle.refresh_from_db()                                                 
+            self.assertEqual(new_motorcycle.quantity, 0)                       
+            self.assertFalse(new_motorcycle.is_available)                            
+            self.assertEqual(new_motorcycle.status, 'sold')                                 
 
             sales_booking = SalesBooking.objects.get(stripe_payment_intent_id=payment_obj.stripe_payment_intent_id)
             self.assertEqual(sales_booking.payment_status, 'deposit_paid')

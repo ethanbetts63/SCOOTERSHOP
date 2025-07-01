@@ -18,7 +18,7 @@ class MotorcycleFormTest(TestCase):
 
     def test_init_method_required_fields(self):
         form = MotorcycleForm()
-        self.assertTrue(form.fields['status'].required) # Check that status is required
+        self.assertTrue(form.fields['status'].required)                                
         self.assertFalse(form.fields['price'].required)
         self.assertFalse(form.fields['daily_hire_rate'].required)
         self.assertFalse(form.fields['hourly_hire_rate'].required)
@@ -37,7 +37,7 @@ class MotorcycleFormTest(TestCase):
 
     def test_clean_method_brand_and_model_capitalization(self):
         data = {
-            'status': 'for_sale', # FIXED: Added status
+            'status': 'for_sale',                      
             'brand': 'honda',
             'model': 'cbr500r',
             'year': 2020,
@@ -58,7 +58,7 @@ class MotorcycleFormTest(TestCase):
         current_year = datetime.date.today().year
 
         base_data = {
-            'status': 'for_sale', # FIXED: Added status
+            'status': 'for_sale',                      
             'brand': 'Honda', 'model': 'CBR',
             'engine_size': 500, 'odometer': 1000, 'is_available': True,
             'transmission': 'automatic', 'stock_number': 'STK001',
@@ -86,7 +86,7 @@ class MotorcycleFormTest(TestCase):
 
     def test_clean_method_rego_uppercase(self):
         data_rego = {
-            'status': 'for_sale', # FIXED: Added status
+            'status': 'for_sale',                      
             'brand': 'Honda', 'model': 'CBR', 'year': 2020,
             'engine_size': 500, 'odometer': 1000, 'is_available': True,
             'transmission': 'automatic', 'stock_number': 'STK001',
@@ -100,7 +100,7 @@ class MotorcycleFormTest(TestCase):
 
     def test_clean_method_conditions_new_exclusive(self):
         data_new_and_used = {
-            'status': 'for_sale', # FIXED: Added status
+            'status': 'for_sale',                      
             'brand': 'Honda', 'model': 'CBR', 'year': 2020,
             'engine_size': 500, 'odometer': 1000, 'is_available': True,
             'transmission': 'automatic', 'stock_number': 'STK001',
@@ -114,7 +114,7 @@ class MotorcycleFormTest(TestCase):
 
     def test_clean_method_conditions_demo_exclusive(self):
         data_demo_and_used = {
-            'status': 'for_sale', # FIXED: Added status
+            'status': 'for_sale',                      
             'brand': 'Honda', 'model': 'CBR', 'year': 2020,
             'engine_size': 500, 'odometer': 1000, 'is_available': True,
             'transmission': 'automatic', 'stock_number': 'STK001',
@@ -128,7 +128,7 @@ class MotorcycleFormTest(TestCase):
 
     def test_clean_method_conditions_multiple_valid(self):
         data_multiple_valid = {
-            'status': 'for_sale', # FIXED: Added status
+            'status': 'for_sale',                      
             'brand': 'Honda', 'model': 'CBR', 'year': 2020,
             'engine_size': 500, 'odometer': 1000, 'is_available': True,
             'transmission': 'automatic', 'stock_number': 'STK001',
@@ -140,7 +140,7 @@ class MotorcycleFormTest(TestCase):
 
     def test_save_method_title_generation(self):
         data_full = {
-            'status': 'for_sale', # FIXED: Added status
+            'status': 'for_sale',                      
             'brand': 'Yamaha',
             'model': 'MT-07',
             'year': 2023,
@@ -163,7 +163,7 @@ class MotorcycleFormTest(TestCase):
         self.assertEqual(motorcycle_instance.title, '2023 Yamaha Mt-07')
 
         data_no_details = {
-            'status': 'for_sale', # FIXED: Added status
+            'status': 'for_sale',                      
             'brand': 'Generic',
             'model': 'Bike',
             'year': 2000,
@@ -185,7 +185,7 @@ class MotorcycleFormTest(TestCase):
 
     def test_form_with_valid_data(self):
         data = {
-            'status': 'for_sale', # FIXED: Added status
+            'status': 'for_sale',                      
             'conditions': [self.condition_new.pk],
             'brand': 'Kawasaki',
             'model': 'Ninja 400',
@@ -219,11 +219,11 @@ class MotorcycleFormTest(TestCase):
         self.assertEqual(motorcycle.engine_number, 'ENG456')
         self.assertEqual(motorcycle.quantity, 1)
 
-    # --- NEW TESTS START HERE ---
+                                  
 
     def test_form_saves_is_available_correctly(self):
         """Tests that the 'is_available' field is correctly saved."""
-        # Test case for when is_available is True
+                                                 
         data_available = {
             'status': 'for_sale',
             'brand': 'Test', 'model': 'Available', 'year': 2022,
@@ -238,22 +238,22 @@ class MotorcycleFormTest(TestCase):
         self.assertEqual(instance_available.status, 'for_sale')
 
 
-        # Test case for when is_available is False.
-        # This will likely fail with the current code because the form field is required.
-        # In a real POST request, an unchecked checkbox for 'is_available'
-        # would mean the key is not in the POST data. Django handles this by setting
-        # the field to False, but only if the field is not required.
+                                                   
+                                                                                         
+                                                                          
+                                                                                    
+                                                                    
         data_unavailable = {
             'status': 'unavailable',
             'brand': 'Test', 'model': 'Unavailable', 'year': 2022,
             'engine_size': 500, 'odometer': 100, 'transmission': 'manual',
             'stock_number': 'UN-001', 'conditions': [self.condition_used.pk],
-        } # 'is_available' key is omitted, simulating an unchecked checkbox.
+        }                                                                   
 
         form_unavailable = MotorcycleForm(data=data_unavailable)
 
-        # This assertion is expected to fail with the current implementation,
-        # revealing that the form is invalid because 'is_available' is a required field.
+                                                                             
+                                                                                        
         self.assertTrue(form_unavailable.is_valid(),
                         f"Form should be valid when 'is_available' is unchecked. Errors: {form_unavailable.errors.as_json()}")
         
@@ -271,19 +271,19 @@ class MotorcycleFormTest(TestCase):
             'is_available': True,
         }
 
-        # Test 'sold' status
+                            
         sold_data = base_data.copy()
         sold_data['status'] = 'sold'
-        sold_data['stock_number'] = 'ST-002' # Unique stock number is required
+        sold_data['stock_number'] = 'ST-002'                                  
         form_sold = MotorcycleForm(data=sold_data)
         self.assertTrue(form_sold.is_valid(), form_sold.errors.as_json())
         instance_sold = form_sold.save()
         self.assertEqual(instance_sold.status, 'sold')
 
-        # Test 'reserved' status
+                                
         reserved_data = base_data.copy()
         reserved_data['status'] = 'reserved'
-        reserved_data['stock_number'] = 'ST-003' # Unique stock number
+        reserved_data['stock_number'] = 'ST-003'                      
         form_reserved = MotorcycleForm(data=reserved_data)
         self.assertTrue(form_reserved.is_valid(), form_reserved.errors.as_json())
         instance_reserved = form_reserved.save()

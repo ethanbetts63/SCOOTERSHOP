@@ -1,4 +1,4 @@
-# hire/tests/model_tests/test_temp_hire_booking.py
+                                                  
 
 import datetime
 import uuid
@@ -7,15 +7,15 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.utils import timezone
 from django.db import IntegrityError
-import time # Import the time module
+import time                         
 
-# Import models
+               
 from hire.models import TempHireBooking, TempBookingAddOn
 from inventory.models import Motorcycle
-from payments.models import Payment # Although not directly linked, useful for context
+from payments.models import Payment                                                   
 from dashboard.models import HireSettings
 
-# Import model factories
+                        
 from hire.tests.test_helpers.model_factories import (
     create_motorcycle,
     create_driver_profile,
@@ -43,7 +43,7 @@ class TempHireBookingModelTest(TestCase):
         cls.package = create_package()
         cls.addon1 = create_addon(name="GPS", hourly_cost=Decimal('2.00'), daily_cost=Decimal('15.00'))
         cls.addon2 = create_addon(name="Extra Helmet", hourly_cost=Decimal('5.00'), daily_cost=Decimal('20.00'))
-        cls.hire_settings = create_hire_settings() # Ensure settings exist
+        cls.hire_settings = create_hire_settings()                        
 
     def test_create_basic_temp_hire_booking(self):
         """
@@ -59,13 +59,13 @@ class TempHireBookingModelTest(TestCase):
         self.assertEqual(temp_booking.driver_profile, self.driver_profile)
         self.assertEqual(temp_booking.grand_total, Decimal('150.00'))
         self.assertIsNotNone(temp_booking.session_uuid)
-        self.assertFalse(temp_booking.has_motorcycle_license) # Default value
+        self.assertFalse(temp_booking.has_motorcycle_license)                
 
     def test_session_uuid_uniqueness(self):
         """
         Test that session_uuid is unique.
         """
-        # Create one temp booking
+                                 
         create_temp_hire_booking(
             session_uuid=uuid.UUID('12345678-1234-5678-1234-567812345678'),
             motorcycle=self.motorcycle,
@@ -73,7 +73,7 @@ class TempHireBookingModelTest(TestCase):
             grand_total=Decimal('100.00')
         )
 
-        # Attempt to create another with the same UUID
+                                                      
         with self.assertRaises(IntegrityError):
             create_temp_hire_booking(
                 session_uuid=uuid.UUID('12345678-1234-5678-1234-567812345678'),
@@ -95,7 +95,7 @@ class TempHireBookingModelTest(TestCase):
         expected_str = f"Temp Booking (aaaaaaaa): {self.motorcycle.model} (2025-07-01 to 2025-07-03)"
         self.assertEqual(str(temp_booking), expected_str)
 
-        # Test with no motorcycle
+                                 
         temp_booking_no_bike = create_temp_hire_booking(
             motorcycle=None,
             pickup_date=datetime.date(2025, 8, 1),
@@ -131,7 +131,7 @@ class TempHireBookingModelTest(TestCase):
         self.assertEqual(temp_booking.total_addons_price, Decimal('0.00'))
         self.assertEqual(temp_booking.total_package_price, Decimal('0.00'))
         self.assertEqual(temp_booking.currency, 'AUD')
-        self.assertEqual(temp_booking.payment_option, 'online_full') # Default from factory
+        self.assertEqual(temp_booking.payment_option, 'online_full')                       
 
     def test_nullable_fields(self):
         """
@@ -139,8 +139,8 @@ class TempHireBookingModelTest(TestCase):
         """
         temp_booking = TempHireBooking.objects.create(
             session_uuid=uuid.uuid4(),
-            has_motorcycle_license=True, # Minimal required fields
-            currency='USD' # Override default
+            has_motorcycle_license=True,                          
+            currency='USD'                   
         )
         self.assertIsNone(temp_booking.pickup_date)
         self.assertIsNone(temp_booking.motorcycle)
@@ -163,7 +163,7 @@ class TempHireBookingModelTest(TestCase):
         self.assertEqual(temp_addon1.temp_booking, temp_booking)
         self.assertEqual(temp_addon1.addon, self.addon1)
         self.assertEqual(temp_addon1.quantity, 2)
-        # The default for booked_addon_price in factory is addon.daily_cost * quantity
+                                                                                      
         self.assertEqual(temp_addon1.booked_addon_price, self.addon1.daily_cost * 2)
 
         self.assertIsNotNone(temp_addon2.pk)
@@ -172,7 +172,7 @@ class TempHireBookingModelTest(TestCase):
         self.assertEqual(temp_addon2.quantity, 1)
         self.assertEqual(temp_addon2.booked_addon_price, Decimal('22.00'))
 
-        # Check reverse relationship
+                                    
         linked_addons = temp_booking.temp_booking_addons.all()
         self.assertEqual(linked_addons.count(), 2)
         self.assertIn(temp_addon1, linked_addons)
@@ -209,7 +209,7 @@ class TempHireBookingModelTest(TestCase):
             has_motorcycle_license=False
         )
 
-        # Introduce a small delay to ensure updated_at is greater than created_at
+                                                                                 
         time.sleep(0.001)
 
         new_total = Decimal('250.00')

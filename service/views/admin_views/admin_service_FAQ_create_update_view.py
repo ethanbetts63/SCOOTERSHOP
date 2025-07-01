@@ -1,10 +1,10 @@
-# service/views/admin_views/service_faq_create_update_view.py
+                                                             
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.urls import reverse
 from django.contrib import messages
-from inventory.mixins import AdminRequiredMixin # Assuming a shared mixin
+from inventory.mixins import AdminRequiredMixin                          
 from service.forms import AdminServiceFAQForm
 from service.models import ServiceFAQ
 

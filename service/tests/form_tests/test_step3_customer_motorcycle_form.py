@@ -22,9 +22,9 @@ class CustomerMotorcycleFormTest(TestCase):
 
         cls.honda_brand = ServiceBrandFactory(name="Honda")
         cls.yamaha_brand = ServiceBrandFactory(name="Yamaha")
-        # Ensure 'Other' option exists in the form choices, though it's not a ServiceBrand model instance
-        # It's handled by the form's __init__ adding it to choices.
-        # We don't need a ServiceBrandFactory(name="Other") here if 'Other' is always a form choice.
+                                                                                                         
+                                                                   
+                                                                                                    
 
     def _get_valid_data(self, brand_name="Honda", include_other_brand_name=False, other_brand_value=""):
         valid_transmission_choice = random.choice([choice[0] for choice in CustomerMotorcycle.transmission_choices])
@@ -61,7 +61,7 @@ class CustomerMotorcycleFormTest(TestCase):
         self.assertEqual(motorcycle.service_profile, self.service_profile)
 
     def test_form_valid_data_new_motorcycle_other_brand_provided(self):
-        # Pass 'Other' as the brand name, and the custom value in other_brand_value
+                                                                                   
         data = self._get_valid_data(brand_name='Other', include_other_brand_name=True, other_brand_value="MyCustomBrand")
         form = CustomerMotorcycleForm(data=data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
@@ -93,7 +93,7 @@ class CustomerMotorcycleFormTest(TestCase):
     def test_form_initialization_with_instance(self):
         existing_motorcycle = CustomerMotorcycleFactory(
             service_profile=self.service_profile,
-            brand=self.honda_brand.name, # Ensure this brand exists as a ServiceBrand
+            brand=self.honda_brand.name,                                             
             model='600RR',
             year=2018,
             odometer=25000
@@ -104,18 +104,18 @@ class CustomerMotorcycleFormTest(TestCase):
         self.assertEqual(form.initial['model'], existing_motorcycle.model)
         self.assertEqual(form.initial['year'], existing_motorcycle.year)
         self.assertEqual(form.initial['odometer'], existing_motorcycle.odometer)
-        self.assertEqual(form.initial.get('other_brand_name', ''), '') # Should be empty for a known brand
+        self.assertEqual(form.initial.get('other_brand_name', ''), '')                                    
 
     def test_form_initialization_with_instance_other_brand(self):
         """
         Test that the form correctly pre-populates fields when initialized with an existing
         CustomerMotorcycle instance where the brand was originally 'Other' and a custom name was saved.
         """
-        # Create an instance with a brand that is NOT in the predefined ServiceBrands
+                                                                                     
         custom_brand_name = "MyPreviouslyEnteredOtherBrand"
         existing_motorcycle = CustomerMotorcycleFactory(
             service_profile=self.service_profile,
-            brand=custom_brand_name, # This brand does not exist as a ServiceBrand object
+            brand=custom_brand_name,                                                     
             model='Bike',
             year=2021,
             odometer=1000
@@ -123,7 +123,7 @@ class CustomerMotorcycleFormTest(TestCase):
         
         form = CustomerMotorcycleForm(instance=existing_motorcycle)
 
-        # Expected: 'brand' dropdown should show 'Other', 'other_brand_name' should show the custom text
+                                                                                                        
         self.assertEqual(form.initial['brand'], 'Other')
         self.assertEqual(form.initial['other_brand_name'], custom_brand_name)
 

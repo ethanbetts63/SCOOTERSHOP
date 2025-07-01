@@ -3,8 +3,8 @@ from django.views import View
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.contrib import messages
-from django.db.models import ProtectedError # Import ProtectedError
-from hire.models.hire_packages import Package # Make sure this import path is correct
+from django.db.models import ProtectedError                        
+from hire.models.hire_packages import Package                                        
 
 @method_decorator(login_required, name='dispatch')
 class DeletePackageView(View):

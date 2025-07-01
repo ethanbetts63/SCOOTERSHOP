@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-# Import the utility function to be tested
+                                          
 from service.utils.admin_parse_booking_request_flags import admin_parse_booking_request_flags
 
 class AdminParseBookingRequestFlagsTest(TestCase):
@@ -39,8 +39,8 @@ class AdminParseBookingRequestFlagsTest(TestCase):
         request_data = {
             'selected_profile_id': '789',
             'selected_motorcycle_id': '101',
-            'create_new_profile': 'false', # explicit false
-            'create_new_motorcycle': '0',   # non-'true' string
+            'create_new_profile': 'false',                 
+            'create_new_motorcycle': '0',                      
         }
         parsed_flags = admin_parse_booking_request_flags(request_data)
 
@@ -58,10 +58,10 @@ class AdminParseBookingRequestFlagsTest(TestCase):
         They should default to None for IDs and False for booleans.
         """
         request_data = {
-            'selected_profile_id': '', # Empty string should result in None
-            # selected_motorcycle_id is missing
+            'selected_profile_id': '',                                     
+                                               
             'create_new_profile': 'false',
-            # create_new_motorcycle is missing
+                                              
         }
         parsed_flags = admin_parse_booking_request_flags(request_data)
 
@@ -95,7 +95,7 @@ class AdminParseBookingRequestFlagsTest(TestCase):
         (Though POST data is usually strings, good to check robustness).
         """
         request_data = {
-            'selected_profile_id': 123,  # int instead of string
+            'selected_profile_id': 123,                         
             'selected_motorcycle_id': 456,
             'create_new_profile': 'true',
             'create_new_motorcycle': 'false',
@@ -116,7 +116,7 @@ class AdminParseBookingRequestFlagsTest(TestCase):
         This should raise a ValueError due to int() conversion.
         """
         request_data = {
-            'selected_profile_id': 'invalid_id', # Non-integer string
+            'selected_profile_id': 'invalid_id',                     
             'selected_motorcycle_id': '456',
             'create_new_profile': 'true',
             'create_new_motorcycle': 'true',

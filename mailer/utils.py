@@ -19,7 +19,7 @@ def send_templated_email(
     template_name,
     context,
     booking,
-    profile, # The profile object is now a primary argument
+    profile,                                               
     from_email=None,
 ):
     if not recipient_list:
@@ -27,8 +27,8 @@ def send_templated_email(
 
     sender_email = from_email if from_email else settings.DEFAULT_FROM_EMAIL
 
-    # --- New Simplified Logic ---
-    # Intelligently determine user and specific profile/booking types from the generic objects passed in.
+                                  
+                                                                                                         
     user = getattr(profile, 'user', None)
 
     driver_profile = profile if isinstance(profile, DriverProfile) else None
@@ -39,11 +39,11 @@ def send_templated_email(
     service_booking_obj = booking if isinstance(booking, ServiceBooking) else None
     sales_booking_obj = booking if isinstance(booking, SalesBooking) else None
     
-    # Ensure context has all necessary objects for the template to render correctly.
+                                                                                    
     context['booking'] = booking
     context['profile'] = profile
     context['user'] = user
-    # --- End of New Logic ---
+                              
 
     try:
         html_content = render_to_string(template_name, context)

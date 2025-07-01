@@ -1,4 +1,4 @@
-# SCOOTER_SHOP/inventory/views/admin_views/motorcycle_delete_view.py
+                                                                    
 
 from django.shortcuts import redirect, get_object_or_404
 from django.views import View

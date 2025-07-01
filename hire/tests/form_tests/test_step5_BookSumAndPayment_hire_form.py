@@ -1,12 +1,12 @@
-# hire/tests/form_tests/test_step5_BookSumAndPayment_hire_form.py
+                                                                 
 
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from decimal import Decimal
 
 from hire.forms.step5_BookSumAndPaymentOptions_form import PaymentOptionForm
-from dashboard.models import HireSettings # Import actual model
-from hire.models import TempHireBooking # Import actual model
+from dashboard.models import HireSettings                      
+from hire.models import TempHireBooking                      
 from hire.tests.test_helpers.model_factories import create_hire_settings, create_temp_hire_booking
 
 class PaymentOptionFormTests(TestCase):
@@ -19,10 +19,10 @@ class PaymentOptionFormTests(TestCase):
         """
         Set up common HireSettings and TempHireBooking instances for tests.
         """
-        # Ensure a clean slate for HireSettings for each test
+                                                             
         HireSettings.objects.all().delete()
 
-        # Default settings with all payment options disabled
+                                                            
         self.default_hire_settings = create_hire_settings(
             enable_online_full_payment=False,
             enable_online_deposit_payment=False,
@@ -33,7 +33,7 @@ class PaymentOptionFormTests(TestCase):
         self.temp_booking_zero_total = create_temp_hire_booking(grand_total=Decimal('0.00'))
 
 
-    # --- _set_payment_choices method tests (via __init__) ---
+                                                              
 
     def test_init_no_payment_options_enabled(self):
         """
@@ -44,7 +44,7 @@ class PaymentOptionFormTests(TestCase):
             hire_settings=self.default_hire_settings
         )
         self.assertEqual(form.fields['payment_method'].choices, [])
-        self.assertFalse(form.fields['payment_method'].required) # Should not be required if no choices
+        self.assertFalse(form.fields['payment_method'].required)                                       
 
     def test_init_online_full_payment_enabled(self):
         """
@@ -80,10 +80,10 @@ class PaymentOptionFormTests(TestCase):
             enable_online_deposit_payment=True,
             deposit_enabled=True,
             default_deposit_calculation_method='percentage',
-            deposit_percentage=Decimal('20.00') # 20% of 150 = 30
+            deposit_percentage=Decimal('20.00')                  
         )
         form = PaymentOptionForm(
-            temp_booking=self.temp_booking_positive_total, # grand_total = 150
+            temp_booking=self.temp_booking_positive_total,                    
             hire_settings=settings
         )
         expected_deposit_amount = Decimal('30.00')
@@ -104,7 +104,7 @@ class PaymentOptionFormTests(TestCase):
             deposit_amount=Decimal('50.00')
         )
         form = PaymentOptionForm(
-            temp_booking=self.temp_booking_positive_total, # grand_total = 150
+            temp_booking=self.temp_booking_positive_total,                    
             hire_settings=settings
         )
         expected_deposit_amount = Decimal('50.00')
@@ -125,7 +125,7 @@ class PaymentOptionFormTests(TestCase):
             deposit_percentage=Decimal('20.00')
         )
         form = PaymentOptionForm(
-            temp_booking=self.temp_booking_zero_total, # grand_total = 0
+            temp_booking=self.temp_booking_zero_total,                  
             hire_settings=settings
         )
         self.assertEqual(form.fields['payment_method'].choices, [])
@@ -140,13 +140,13 @@ class PaymentOptionFormTests(TestCase):
             enable_online_deposit_payment=True,
             deposit_enabled=True,
             default_deposit_calculation_method='fixed',
-            deposit_amount=Decimal('200.00') # More than grand_total of 150
+            deposit_amount=Decimal('200.00')                               
         )
         form = PaymentOptionForm(
-            temp_booking=self.temp_booking_positive_total, # grand_total = 150
+            temp_booking=self.temp_booking_positive_total,                    
             hire_settings=settings
         )
-        expected_deposit_amount = Decimal('150.00') # Should be capped at grand_total
+        expected_deposit_amount = Decimal('150.00')                                  
         expected_choices = [
             ('online_deposit', f'Pay Deposit Online Now ({settings.currency_symbol}{expected_deposit_amount:.2f} due now, remaining at pickup)')
         ]
@@ -178,7 +178,7 @@ class PaymentOptionFormTests(TestCase):
         self.assertTrue(form.fields['payment_method'].required)
 
 
-    # --- clean method tests ---
+                                
 
     def test_clean_valid_selection(self):
         """
@@ -199,7 +199,7 @@ class PaymentOptionFormTests(TestCase):
         Test that the form is invalid when no selection is made but choices exist.
         """
         settings = create_hire_settings(enable_online_full_payment=True)
-        form_data = {} # No payment method selected
+        form_data = {}                             
         form = PaymentOptionForm(
             data=form_data,
             temp_booking=self.temp_booking_positive_total,
@@ -227,6 +227,6 @@ class PaymentOptionFormTests(TestCase):
             hire_settings=settings
         )
         self.assertTrue(form.is_valid())
-        # Changed assertion to expect an empty string, as Django's ChoiceField returns '' for non-required fields with no selection
+                                                                                                                                   
         self.assertEqual(form.cleaned_data.get('payment_method'), '') 
-        self.assertFalse(form.fields['payment_method'].required) # Should not be required
+        self.assertFalse(form.fields['payment_method'].required)                         

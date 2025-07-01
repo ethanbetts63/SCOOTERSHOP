@@ -7,17 +7,17 @@ class AdminCustomerMotorcycleForm(forms.ModelForm):
     Includes a field to link an existing ServiceProfile.
     """
     service_profile = forms.ModelChoiceField(
-        queryset=ServiceProfile.objects.all().order_by('name', 'email'), # Order by name and email for easy selection
-        required=False, # Make linking to a profile optional for creation, but can be set by admin
-        empty_label="-- No Service Profile --", # Option to select no service profile
+        queryset=ServiceProfile.objects.all().order_by('name', 'email'),                                             
+        required=False,                                                                           
+        empty_label="-- No Service Profile --",                                      
         help_text="Optionally link this motorcycle to an existing Service Profile.",
-        widget=forms.Select(attrs={'class': 'form-control'}) # Apply basic Bootstrap styling
+        widget=forms.Select(attrs={'class': 'form-control'})                                
     )
 
     class Meta:
         model = CustomerMotorcycle
         fields = [
-            'service_profile', # Link to ServiceProfile
+            'service_profile',                         
             'brand',
             'model',
             'year',
@@ -27,14 +27,14 @@ class AdminCustomerMotorcycleForm(forms.ModelForm):
             'engine_size',
             'vin_number',
             'engine_number',
-            'image', # Include image field
+            'image',                      
         ]
         widgets = {
             'brand': forms.TextInput(attrs={'class': 'form-control'}),
             'model': forms.TextInput(attrs={'class': 'form-control'}),
-            'year': forms.NumberInput(attrs={'class': 'form-control', 'min': 1900}), # Add min year for better UX
+            'year': forms.NumberInput(attrs={'class': 'form-control', 'min': 1900}),                             
             'rego': forms.TextInput(attrs={'class': 'form-control'}),
-            'odometer': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}), # Add min odometer for better UX
+            'odometer': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),                                 
             'transmission': forms.Select(attrs={'class': 'form-control'}),
             'engine_size': forms.TextInput(attrs={'class': 'form-control'}),
             'vin_number': forms.TextInput(attrs={'class': 'form-control'}),

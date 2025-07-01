@@ -19,7 +19,7 @@ from ..test_helpers.model_factories import (
     ServiceBrandFactory,
 )
 
-# Set to True to send bookings to MechanicDesk for testing purposes
+                                                                   
 SEND_BOOKINGS_TO_MECHANICDESK = False
 
 @skipIf(not settings.STRIPE_SECRET_KEY, "Stripe API key not configured in settings")

@@ -3,10 +3,10 @@ from django.core.exceptions import ValidationError
 from datetime import time, date
 from decimal import Decimal
 import datetime
-# Import the InventorySettings model
+                                    
 from inventory.models import InventorySettings
 
-# Import the InventorySettingsFactory from your factories file
+                                                              
 from ..test_helpers.model_factories import InventorySettingsFactory
 
 
@@ -20,10 +20,10 @@ class InventorySettingsModelTest(TestCase):
         """
         Set up the single instance of InventorySettings used by all test methods.
         """
-        # Ensure the database is clean before creating test data for this specific test class
+                                                                                             
         InventorySettings.objects.all().delete()
 
-        # Create the single instance of InventorySettings using the factory
+                                                                           
         cls.settings = InventorySettingsFactory()
 
     def test_inventory_settings_creation(self):
@@ -32,17 +32,17 @@ class InventorySettingsModelTest(TestCase):
         and that it is indeed a singleton (only one exists).
         """
         self.assertIsInstance(self.settings, InventorySettings)
-        self.assertIsNotNone(self.settings.pk) # Check if it has a primary key (saved to DB)
+        self.assertIsNotNone(self.settings.pk)                                              
 
-        # Verify that only one instance exists in the database
+                                                              
         self.assertEqual(InventorySettings.objects.count(), 1)
 
-        # IMPORTANT CORRECTION:
-        # Attempt to create a *new* instance directly (without a pk) and save it.
-        # This should correctly trigger the ValidationError in the model's save method.
+                               
+                                                                                 
+                                                                                       
         with self.assertRaisesMessage(ValidationError, "Only one instance of InventorySettings can be created. Please edit the existing one."):
             new_settings_attempt = InventorySettings()
-            new_settings_attempt.save() # This call should raise the ValidationError
+            new_settings_attempt.save()                                             
 
     def test_enable_sales_system_field(self):
         """
@@ -82,8 +82,8 @@ class InventorySettingsModelTest(TestCase):
         self.assertEqual(field.default, Decimal('100.00'))
         self.assertEqual(field.help_text, "The fixed amount required for a motorcycle reservation deposit.")
 
-        # Test validation: negative deposit amount
-        # Retrieve the instance to modify, ensure it's not the class-level 'settings' to avoid conflicts
+                                                  
+                                                                                                        
         settings_invalid = InventorySettings.objects.get(pk=self.settings.pk)
         settings_invalid.deposit_amount = Decimal('-50.00')
         with self.assertRaisesMessage(ValidationError, "Deposit amount cannot be negative.") as cm:
@@ -99,7 +99,7 @@ class InventorySettingsModelTest(TestCase):
         self.assertEqual(field.default, 5)
         self.assertEqual(field.help_text, "Number of days a deposit holds a motorcycle reservation. After this period, the reservation may expire.")
 
-        # Test validation: negative deposit lifespan days
+                                                         
         settings_invalid = InventorySettings.objects.get(pk=self.settings.pk)
         settings_invalid.deposit_lifespan_days = -1
         with self.assertRaisesMessage(ValidationError, "Deposit lifespan days cannot be negative.") as cm:
@@ -139,7 +139,7 @@ class InventorySettingsModelTest(TestCase):
         self.assertEqual(start_field.help_text, "The earliest time a sales appointment can be scheduled.")
         self.assertEqual(end_field.help_text, "The latest time a sales appointment can be scheduled.")
 
-        # Test validation: start_time >= end_time
+                                                 
         settings_invalid = InventorySettings.objects.get(pk=self.settings.pk)
         settings_invalid.sales_appointment_start_time = time(10, 0)
         settings_invalid.sales_appointment_end_time = time(9, 0)
@@ -148,7 +148,7 @@ class InventorySettingsModelTest(TestCase):
         self.assertIn('sales_appointment_start_time', cm.exception.message_dict)
         self.assertIn('sales_appointment_end_time', cm.exception.message_dict)
 
-        # Test validation: start_time == end_time
+                                                 
         settings_invalid = InventorySettings.objects.get(pk=self.settings.pk)
         settings_invalid.sales_appointment_start_time = time(10, 0)
         settings_invalid.sales_appointment_end_time = time(10, 0)
@@ -166,14 +166,14 @@ class InventorySettingsModelTest(TestCase):
         self.assertEqual(field.default, 30)
         self.assertEqual(field.help_text, "The minimum interval in minutes between two sales appointments on the same day.")
 
-        # Test validation: non-positive spacing
+                                               
         settings_invalid = InventorySettings.objects.get(pk=self.settings.pk)
         settings_invalid.sales_appointment_spacing_mins = 0
         with self.assertRaisesMessage(ValidationError, "Appointment spacing must be a positive integer.") as cm:
             settings_invalid.full_clean()
         self.assertIn('sales_appointment_spacing_mins', cm.exception.message_dict)
 
-        settings_invalid = InventorySettings.objects.get(pk=self.settings.pk) # Re-fetch to reset
+        settings_invalid = InventorySettings.objects.get(pk=self.settings.pk)                    
         settings_invalid.sales_appointment_spacing_mins = -10
         with self.assertRaisesMessage(ValidationError, "Appointment spacing must be a positive integer.") as cm:
             settings_invalid.full_clean()
@@ -189,7 +189,7 @@ class InventorySettingsModelTest(TestCase):
         self.assertEqual(field.default, 90)
         self.assertEqual(field.help_text, "Maximum number of days in advance a customer can book a sales appointment.")
 
-        # Test validation: negative max advance booking days
+                                                            
         settings_invalid = InventorySettings.objects.get(pk=self.settings.pk)
         settings_invalid.max_advance_booking_days = -5
         with self.assertRaisesMessage(ValidationError, "Maximum advance booking days cannot be negative.") as cm:
@@ -205,7 +205,7 @@ class InventorySettingsModelTest(TestCase):
         self.assertEqual(field.default, 24)
         self.assertEqual(field.help_text, "Minimum number of hours notice required for a sales appointment.")
 
-        # Test validation: negative min advance booking hours
+                                                             
         settings_invalid = InventorySettings.objects.get(pk=self.settings.pk)
         settings_invalid.min_advance_booking_hours = -1
         with self.assertRaisesMessage(ValidationError, "Minimum advance booking hours cannot be negative.") as cm:
@@ -284,7 +284,7 @@ class InventorySettingsModelTest(TestCase):
         """
         field = self.settings._meta.get_field('require_drivers_license')
         self.assertIsInstance(self.settings.require_drivers_license, bool)
-        self.assertFalse(field.default) # Default is False
+        self.assertFalse(field.default)                   
         self.assertEqual(field.help_text, "Require customers to provide driver's license details.")
 
     def test_require_address_info_field(self):
@@ -293,6 +293,6 @@ class InventorySettingsModelTest(TestCase):
         """
         field = self.settings._meta.get_field('require_address_info')
         self.assertIsInstance(self.settings.require_address_info, bool)
-        self.assertFalse(field.default) # Default is False
+        self.assertFalse(field.default)                   
         self.assertEqual(field.help_text, "Require customers to provide address details.")
 

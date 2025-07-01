@@ -1,4 +1,4 @@
-# payments/tests/util_tests/test_ajax_get_hire_booking_details.py
+                                                                 
 
 from django.test import TestCase, Client
 from django.urls import reverse
@@ -7,7 +7,7 @@ from datetime import time, timedelta
 from unittest.mock import patch
 from django.utils import timezone
 
-# Import factories
+                  
 from payments.tests.test_helpers.model_factories import (
     HireBookingFactory, PaymentFactory, RefundRequestFactory,
     DriverProfileFactory, MotorcycleFactory, UserFactory,
@@ -26,8 +26,8 @@ class AjaxGetHireBookingDetailsTests(TestCase):
         Set up non-modified data for all test methods.
         """
         cls.client = Client()
-        cls.user = UserFactory(is_staff=True, is_active=True) # Staff user for testing access
-        cls.regular_user = UserFactory(is_staff=False, is_active=True) # Non-staff user
+        cls.user = UserFactory(is_staff=True, is_active=True)                                
+        cls.regular_user = UserFactory(is_staff=False, is_active=True)                 
 
         cls.refund_policy_settings = RefundPolicySettingsFactory()
         cls.full_payment_policy_snapshot = {
@@ -58,7 +58,7 @@ class AjaxGetHireBookingDetailsTests(TestCase):
         """
         Tests successful retrieval of hire booking details for a full payment.
         """
-        # Mock the refund calculation result
+                                            
         mock_calculate_refund.return_value = {
             'entitled_amount': Decimal('150.00'),
             'details': "Cancellation 4 days before pickup. Policy: Full Payment Policy: Partial Refund (50%).",
@@ -66,7 +66,7 @@ class AjaxGetHireBookingDetailsTests(TestCase):
             'days_before_pickup': 4,
         }
 
-        # Create a specific user with the desired name
+                                                      
         user_john_doe = UserFactory(first_name="John", last_name="Doe")
         driver_profile = DriverProfileFactory(user=user_john_doe, name="Fallback Name")
         motorcycle = MotorcycleFactory(brand="Harley", model="Sportster", year=2020)
@@ -77,7 +77,7 @@ class AjaxGetHireBookingDetailsTests(TestCase):
             refund_policy_snapshot=self.full_payment_policy_snapshot
         )
 
-        pickup_date_in_future = timezone.now().date() + timedelta(days=5) # Adjusted for 4 full days
+        pickup_date_in_future = timezone.now().date() + timedelta(days=5)                           
         booking = HireBookingFactory(
             motorcycle=motorcycle,
             driver_profile=driver_profile,
@@ -146,12 +146,12 @@ class AjaxGetHireBookingDetailsTests(TestCase):
             refund_policy_snapshot=self.deposit_payment_policy_snapshot
         )
 
-        pickup_date_in_future = timezone.now().date() + timedelta(days=7) # Adjusted for 6 full days
+        pickup_date_in_future = timezone.now().date() + timedelta(days=7)                           
         booking = HireBookingFactory(
             motorcycle=motorcycle,
             driver_profile=driver_profile,
             payment=payment,
-            payment_method='online_deposit', # Explicitly set
+            payment_method='online_deposit',                 
             payment_status='deposit_paid',
             grand_total=Decimal('500.00'),
             amount_paid=Decimal('100.00'),
@@ -162,7 +162,7 @@ class AjaxGetHireBookingDetailsTests(TestCase):
             status='confirmed',
         )
 
-        # Create a refund request for this booking
+                                                  
         refund_request = RefundRequestFactory(
             hire_booking=booking,
             status='pending',
@@ -193,11 +193,11 @@ class AjaxGetHireBookingDetailsTests(TestCase):
             'days_before_pickup': 'N/A',
         }
 
-        # Create a booking with no linked payment. Ensure motorcycle and driver_profile are provided.
+                                                                                                     
         booking = HireBookingFactory(
             payment=None,
             amount_paid=Decimal('0.00'),
-            payment_method='in_store_full', # Explicitly set
+            payment_method='in_store_full',                 
             payment_status='unpaid',
             pickup_date=timezone.now().date() + timedelta(days=5),
             pickup_time=time(10, 0),
@@ -219,7 +219,7 @@ class AjaxGetHireBookingDetailsTests(TestCase):
         self.assertEqual(json_response['refund_request_status_for_booking'], 'No Refund Request Yet')
         self.assertEqual(json_response['payment_method'], booking.get_payment_method_display())
 
-        # Ensure calculate_hire_refund_amount was called with an empty snapshot
+                                                                               
         args, kwargs = mock_calculate_refund.call_args
         self.assertEqual(kwargs['refund_policy_snapshot'], {})
         mock_calculate_refund.assert_called_once()
@@ -265,7 +265,7 @@ class AjaxGetHireBookingDetailsTests(TestCase):
         booking = HireBookingFactory()
         url = reverse('payments:api_hire_booking_details', kwargs={'pk': booking.pk})
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 403) # Expect 403 Forbidden
+        self.assertEqual(response.status_code, 403)                       
 
     @patch('payments.utils.ajax_get_hire_booking_details.calculate_hire_refund_amount')
     def test_customer_name_from_profile_name_only(self, mock_calculate_refund):
@@ -312,7 +312,7 @@ class AjaxGetHireBookingDetailsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['customer_name'], "Test User")
 
-    # Removed test_motorcycle_details_n_a as motorcycle is a required field.
+                                                                            
 
     @patch('payments.utils.ajax_get_hire_booking_details.calculate_hire_refund_amount')
     def test_refund_policy_snapshot_none_on_payment(self, mock_calculate_refund):
@@ -328,7 +328,7 @@ class AjaxGetHireBookingDetailsTests(TestCase):
         }
 
         payment_with_none_snapshot = PaymentFactory(
-            refund_policy_snapshot=None # Explicitly set to None
+            refund_policy_snapshot=None                         
         )
         booking = HireBookingFactory(
             payment=payment_with_none_snapshot,
@@ -347,7 +347,7 @@ class AjaxGetHireBookingDetailsTests(TestCase):
         self.assertEqual(json_response['entitled_refund_amount'], 0.00)
         self.assertEqual(json_response['refund_calculation_details'], "No refund policy snapshot available for this booking's payment.")
 
-        # Ensure calculate_hire_refund_amount was called with an empty dictionary
+                                                                                 
         args, kwargs = mock_calculate_refund.call_args
         self.assertEqual(kwargs['refund_policy_snapshot'], {})
         mock_calculate_refund.assert_called_once()

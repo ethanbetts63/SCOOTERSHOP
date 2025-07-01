@@ -1,12 +1,12 @@
-# SCOOTER_SHOP/service/views/service_brands_management.py
+                                                         
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.contrib import messages
 from django.db import transaction
 
-from service.models import ServiceBrand # Assuming ServiceBrand model exists
-from service.forms import ServiceBrandForm # Assuming ServiceBrandForm exists
+from service.models import ServiceBrand                                     
+from service.forms import ServiceBrandForm                                   
 
 class ServiceBrandManagementView(View):
     """
@@ -18,10 +18,10 @@ class ServiceBrandManagementView(View):
 
     def get_context_data(self, form=None, edit_brand=None):
         """Helper method to get context data for rendering the template."""
-        # Order service brands alphabetically by name
+                                                     
         service_brands = ServiceBrand.objects.all().order_by('name')
 
-        # Removed primary_brands_count and max_primary_brands as they are no longer needed
+                                                                                          
 
         if form is None:
             form = self.form_class(instance=edit_brand)
@@ -56,7 +56,7 @@ class ServiceBrandManagementView(View):
         edit_brand = None
 
         if 'add_brand_submit' in request.POST:
-            brand_id = request.POST.get('brand_id') # Hidden input for editing existing brand
+            brand_id = request.POST.get('brand_id')                                          
             if brand_id:
                 edit_brand = get_object_or_404(ServiceBrand, pk=brand_id)
                 form = self.form_class(request.POST, request.FILES, instance=edit_brand)
@@ -78,7 +78,7 @@ class ServiceBrandManagementView(View):
             else:
                 messages.error(self.request, "Please correct the errors below.")
 
-        # If form is invalid or another action was attempted (e.g., direct edit click)
-        # re-render the page with appropriate context
+                                                                                      
+                                                     
         context = self.get_context_data(form=form, edit_brand=edit_brand)
         return render(request, self.template_name, context)

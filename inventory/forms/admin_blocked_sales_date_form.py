@@ -1,4 +1,4 @@
-# SCOOTER_SHOP/inventory/forms/admin_blocked_sales_date_form.py
+                                                               
 
 from django import forms
 from inventory.models import BlockedSalesDate

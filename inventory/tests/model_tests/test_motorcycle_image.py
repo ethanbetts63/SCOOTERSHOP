@@ -1,11 +1,11 @@
 from django.test import TestCase
-from django.core.files.uploadedfile import SimpleUploadedFile # For testing FileField
-import os # For file path operations
+from django.core.files.uploadedfile import SimpleUploadedFile                        
+import os                           
 
-# Import the MotorcycleImage and Motorcycle models
+                                                  
 from inventory.models import Motorcycle, MotorcycleImage
 from django.db import models
-# Import the MotorcycleFactory and MotorcycleImageFactory from your factories file
+                                                                                  
 from ..test_helpers.model_factories import MotorcycleFactory, MotorcycleImageFactory
 
 
@@ -28,9 +28,9 @@ class MotorcycleImageModelTest(TestCase):
         Test that a MotorcycleImage instance can be created successfully using the factory.
         """
         self.assertIsInstance(self.motorcycle_image, MotorcycleImage)
-        self.assertIsNotNone(self.motorcycle_image.pk) # Check if it has a primary key (saved to DB)
+        self.assertIsNotNone(self.motorcycle_image.pk)                                              
 
-        # Verify the foreign key relationship
+                                             
         self.assertEqual(self.motorcycle_image.motorcycle, self.motorcycle)
 
     def test_motorcycle_field(self):
@@ -38,19 +38,19 @@ class MotorcycleImageModelTest(TestCase):
         Test the 'motorcycle' ForeignKey field properties.
         """
         field = self.motorcycle_image._meta.get_field('motorcycle')
-        self.assertIsInstance(field, type(MotorcycleImage._meta.get_field('motorcycle'))) # Ensure it's a ForeignKey
-        self.assertEqual(field.related_model, Motorcycle) # Check related model
-        self.assertEqual(field._related_name, 'images') # Check related_name
+        self.assertIsInstance(field, type(MotorcycleImage._meta.get_field('motorcycle')))                           
+        self.assertEqual(field.related_model, Motorcycle)                      
+        self.assertEqual(field._related_name, 'images')                     
 
     def test_image_field(self):
         """
         Test the 'image' FileField properties.
         """
         field = self.motorcycle_image._meta.get_field('image')
-        self.assertIsInstance(field, models.FileField) # Ensure it's a FileField
-        self.assertEqual(field.upload_to, 'motorcycles/additional/') # Check upload_to path
+        self.assertIsInstance(field, models.FileField)                          
+        self.assertEqual(field.upload_to, 'motorcycles/additional/')                       
 
-        # Test that the image file exists and has content
+                                                         
         self.assertTrue(self.motorcycle_image.image)
         self.assertGreater(self.motorcycle_image.image.size, 0)
         

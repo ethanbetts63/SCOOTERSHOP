@@ -1,17 +1,17 @@
-# dashboard/forms/driver_profile_form.py
+                                        
 
 from django import forms
 from hire.models.driver_profile import DriverProfile
-from users.models import User # Import the User model
+from users.models import User                        
 
 class DriverProfileForm(forms.ModelForm):
     """
     Form for creating and updating DriverProfile instances.
     """
-    # Custom field for 'user' to display full name and phone number
+                                                                   
     user = forms.ModelChoiceField(
-        queryset=User.objects.all().order_by('first_name', 'last_name'), # Order for consistent display
-        required=False, # User link is optional as per model
+        queryset=User.objects.all().order_by('first_name', 'last_name'),                               
+        required=False,                                     
         empty_label="-- Select an existing user (optional) --",
         widget=forms.Select(attrs={'class': 'form-control'}),
         help_text="Link this driver profile to an existing user account."
@@ -19,9 +19,9 @@ class DriverProfileForm(forms.ModelForm):
 
     class Meta:
         model = DriverProfile
-        # Include all fields from the DriverProfile model, including 'user'
+                                                                           
         fields = '__all__'
-        # Exclude 'created_at', 'updated_at' as they are managed automatically
+                                                                              
         exclude = ['created_at', 'updated_at']
 
         widgets = {
@@ -42,7 +42,7 @@ class DriverProfileForm(forms.ModelForm):
             'license_number': forms.TextInput(attrs={'class': 'form-control'}),
             'international_license_issuing_country': forms.TextInput(attrs={'class': 'form-control'}),
             'passport_number': forms.TextInput(attrs={'class': 'form-control'}),
-            # File fields don't need 'class': 'form-control' directly, but can be styled via CSS
+                                                                                                
             'id_image': forms.FileInput(attrs={'class': 'form-control-file'}),
             'international_id_image': forms.FileInput(attrs={'class': 'form-control-file'}),
             'license_photo': forms.FileInput(attrs={'class': 'form-control-file'}),
@@ -50,7 +50,7 @@ class DriverProfileForm(forms.ModelForm):
             'passport_photo': forms.FileInput(attrs={'class': 'form-control-file'}),
         }
         labels = {
-            'user': "Link to Existing User", # Custom label for the user field
+            'user': "Link to Existing User",                                  
             'phone_number': "Phone Number",
             'address_line_1': "Address Line 1",
             'address_line_2': "Address Line 2",
@@ -91,7 +91,7 @@ class DriverProfileForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Add Bootstrap form-control class to all fields
+                                                        
         for field_name, field in self.fields.items():
             if isinstance(field.widget, (forms.TextInput, forms.EmailInput, forms.DateInput, forms.Textarea, forms.Select)):
                 field.widget.attrs.update({'class': 'form-control'})
@@ -100,29 +100,29 @@ class DriverProfileForm(forms.ModelForm):
             elif isinstance(field.widget, forms.FileInput):
                 field.widget.attrs.update({'class': 'form-control-file'})
 
-        # Set custom choices for the 'user' field
-        # This is done here to ensure it uses the custom label_from_instance
+                                                 
+                                                                            
         self.fields['user'].label_from_instance = lambda obj: f"{obj.get_full_name() or obj.username} ({obj.phone_number or 'N/A'})"
 
 
-        # Initial state for conditional fields based on is_australian_resident
-        # These fields are initially hidden/disabled and will be controlled by JS
-        # The 'required' attribute is handled by the clean method in the model
+                                                                              
+                                                                                 
+                                                                              
         if 'is_australian_resident' in self.initial and not self.initial['is_australian_resident']:
-            # If not Australian resident, make Australian-specific fields not required in form (model clean handles actual validation)
+                                                                                                                                      
             self.fields['license_number'].required = False
             self.fields['license_photo'].required = False
-            self.fields['license_expiry_date'].required = False # This field is always required by model, but we can set to False in form for conditional display
+            self.fields['license_expiry_date'].required = False                                                                                                  
         elif 'is_australian_resident' in self.initial and self.initial['is_australian_resident']:
-            # If Australian resident, make international/passport fields not required in form
+                                                                                             
             self.fields['international_license_issuing_country'].required = False
             self.fields['international_license_expiry_date'].required = False
             self.fields['international_license_photo'].required = False
             self.fields['passport_number'].required = False
             self.fields['passport_expiry_date'].required = False
             self.fields['passport_photo'].required = False
-        else: # For new forms (no initial data)
-            # By default, assume Australian resident for initial display, or handle with JS
-            # For simplicity, we'll let JS manage initial visibility based on checkbox state
+        else:                                  
+                                                                                           
+                                                                                            
             pass
 

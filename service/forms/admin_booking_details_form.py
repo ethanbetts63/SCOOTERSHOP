@@ -1,4 +1,4 @@
-# service/forms.py (or service/admin_forms.py)
+                                              
 
 from django import forms
 from service.models import ServiceBooking, ServiceType
@@ -11,12 +11,12 @@ class AdminBookingDetailsForm(forms.ModelForm):
     Form for admins to create and update service booking details.
     This is now a ModelForm to handle both creation and editing of ServiceBooking instances.
     """
-    # Explicitly define estimated_pickup_date to make it required at the form level
+                                                                                   
     estimated_pickup_date = forms.DateField(
         widget=forms.DateInput(attrs={'class': 'form-control flatpickr-admin-date-input', 'placeholder': 'Estimated pickup date'}),
         label=_("Estimated Pickup Date"),
         help_text=_("Estimated date when the customer can pick up the motorcycle. Prefilled based on service type duration."),
-        required=True # Explicitly set as required
+        required=True                             
     )
 
     class Meta:
@@ -29,7 +29,7 @@ class AdminBookingDetailsForm(forms.ModelForm):
             'booking_status',
             'payment_status',
             'customer_notes',
-            'estimated_pickup_date', # Keep it in fields
+            'estimated_pickup_date',                    
         ]
         widgets = {
             'service_type': forms.Select(attrs={'class': 'form-control'}),
@@ -39,7 +39,7 @@ class AdminBookingDetailsForm(forms.ModelForm):
             'booking_status': forms.Select(attrs={'class': 'form-control'}),
             'payment_status': forms.Select(attrs={'class': 'form-control'}),
             'customer_notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            # 'estimated_pickup_date' widget is now defined above, so removed from here
+                                                                                       
         }
         labels = {
             'service_type': _("Service Type"),
@@ -49,7 +49,7 @@ class AdminBookingDetailsForm(forms.ModelForm):
             'booking_status': _("Booking Status"),
             'payment_status': _("Payment Status"),
             'customer_notes': _("Customer Notes (Optional)"),
-            # 'estimated_pickup_date' label is now defined above, so removed from here
+                                                                                      
         }
         help_texts = {
             'service_date': _("The requested date for the service to be performed."),
@@ -58,7 +58,7 @@ class AdminBookingDetailsForm(forms.ModelForm):
             'booking_status': _("Set the status of this booking."),
             'payment_status': _("Set the payment status for this booking."),
             'customer_notes': _("Any additional notes or requests from the customer."),
-            # 'estimated_pickup_date' help_text is now defined above, so removed from here
+                                                                                          
         }
 
     def __init__(self, *args, **kwargs):
@@ -75,31 +75,31 @@ class AdminBookingDetailsForm(forms.ModelForm):
         dropoff_date = cleaned_data.get('dropoff_date')
         dropoff_time = cleaned_data.get('dropoff_time')
 
-        # This list will store non-blocking warning messages for the admin
+                                                                          
         self._warnings = []
 
-        # Check if any required date/time fields are missing before proceeding with warnings.
-        # This will allow Django's default required field validation to occur first.
-        # We only proceed with warnings if the core date/time fields are present and not None.
+                                                                                             
+                                                                                    
+                                                                                              
         if not all([service_date, dropoff_date, dropoff_time]):
             return cleaned_data
 
 
-        # --- Validation as Warnings for Admin ---
+                                                  
 
-        # Warning 1: Drop-off date after service date
+                                                     
         if dropoff_date > service_date:
             self._warnings.append(_("Warning: Drop-off date is after the service date."))
 
-        # Warning 2: Service date in the past
+                                             
         if service_date < date.today():
             self._warnings.append(_("Warning: Service date is in the past."))
 
-        # Warning 3: Drop-off date in the past
+                                              
         if dropoff_date < date.today():
             self._warnings.append(_("Warning: Drop-off date is in the past."))
 
-        # Warning 4: Drop-off time in the past for today's drop-off
+                                                                   
         if dropoff_date == date.today() and hasattr(dropoff_time, 'hour') and dropoff_time < timezone.localtime(timezone.now()).time():
             self._warnings.append(_("Warning: Drop-off time for today is in the past."))
 

@@ -1,4 +1,4 @@
-# SCOOTER_SHOP/inventory/views/admin_views/sales_booking_details_view.py
+                                                                        
 
 from django.views.generic import DetailView
 from inventory.mixins import AdminRequiredMixin

@@ -3,12 +3,12 @@ from decimal import Decimal
 from unittest import mock
 
 from django.test import TestCase
-from datetime import timezone as dt_timezone # Use standard library timezone for utc
+from datetime import timezone as dt_timezone                                        
 
-# Import the utility function to be tested
+                                          
 from payments.utils.process_refund_request_entry import process_refund_request_entry
 
-# Import the model factories as per your specified path
+                                                       
 from payments.tests.test_helpers.model_factories import (
     PaymentFactory,
     HireBookingFactory,
@@ -28,8 +28,8 @@ class ProcessRefundRequestEntryTestCase(TestCase):
         """
         Set up common data and mock for consistent timestamps.
         """
-        # Mock timezone.now for consistent timestamps in created_at, requested_at, processed_at
-        # Use datetime.timezone.utc for setting tzinfo directly.
+                                                                                               
+                                                                
         self.mock_now = datetime.datetime(2023, 1, 15, 12, 0, 0, tzinfo=dt_timezone.utc)
         self.mock_now_patch = mock.patch('django.utils.timezone.now', return_value=self.mock_now)
         self.mock_now_patch.start()
@@ -53,25 +53,25 @@ class ProcessRefundRequestEntryTestCase(TestCase):
             'refunded_amount_decimal': Decimal('50.00'),
         }
 
-        # Ensure no RefundRequest exists initially for this payment
+                                                                   
         self.assertEqual(hire_booking.refund_requests.count(), 0)
         self.assertEqual(payment.refund_requests.count(), 0)
 
         refund_request = process_refund_request_entry(payment, hire_booking, 'hire_booking', extracted_data)
 
-        # Assertions for the newly created RefundRequest
+                                                        
         self.assertIsNotNone(refund_request)
         self.assertEqual(refund_request.payment, payment)
         self.assertEqual(refund_request.hire_booking, hire_booking)
-        self.assertIsNone(refund_request.service_booking) # Should be None for hire booking
+        self.assertIsNone(refund_request.service_booking)                                  
         self.assertEqual(refund_request.stripe_refund_id, 're_new_hire_123')
         self.assertEqual(refund_request.amount_to_refund, Decimal('50.00'))
-        self.assertEqual(refund_request.status, 'partially_refunded') # Payment status 'succeeded' -> 'partially_refunded'
+        self.assertEqual(refund_request.status, 'partially_refunded')                                                     
         self.assertTrue(refund_request.is_admin_initiated)
         self.assertEqual(refund_request.processed_at, self.mock_now)
         self.assertIn("initial creation", refund_request.staff_notes)
 
-        # Verify it was added to the database
+                                             
         self.assertEqual(hire_booking.refund_requests.count(), 1)
         self.assertEqual(payment.refund_requests.count(), 1)
 
@@ -89,17 +89,17 @@ class ProcessRefundRequestEntryTestCase(TestCase):
             'refunded_amount_decimal': Decimal('75.00'),
         }
 
-        # Ensure no RefundRequest exists initially for this payment
+                                                                   
         self.assertEqual(service_booking.refund_requests.count(), 0)
         self.assertEqual(payment.refund_requests.count(), 0)
 
 
         refund_request = process_refund_request_entry(payment, service_booking, 'service_booking', extracted_data)
 
-        # Assertions for the newly created RefundRequest
+                                                        
         self.assertIsNotNone(refund_request)
         self.assertEqual(refund_request.payment, payment)
-        self.assertIsNone(refund_request.hire_booking) # Should be None for service booking
+        self.assertIsNone(refund_request.hire_booking)                                     
         self.assertEqual(refund_request.service_booking, service_booking)
         self.assertEqual(refund_request.stripe_refund_id, 're_new_service_456')
         self.assertEqual(refund_request.amount_to_refund, Decimal('75.00'))
@@ -108,7 +108,7 @@ class ProcessRefundRequestEntryTestCase(TestCase):
         self.assertEqual(refund_request.processed_at, self.mock_now)
         self.assertIn("initial creation", refund_request.staff_notes)
 
-        # Verify it was added to the database
+                                             
         self.assertEqual(service_booking.refund_requests.count(), 1)
         self.assertEqual(payment.refund_requests.count(), 1)
 
@@ -120,17 +120,17 @@ class ProcessRefundRequestEntryTestCase(TestCase):
         hire_booking = HireBookingFactory()
         payment = PaymentFactory(hire_booking=hire_booking, status='succeeded')
         
-        # Create an existing RefundRequest in 'pending' status
+                                                              
         existing_refund_request = RefundRequestFactory(
             payment=payment,
             hire_booking=hire_booking,
             service_booking=None,
             status='pending',
-            amount_to_refund=Decimal('0.00'), # Initial amount
-            stripe_refund_id=None, # No Stripe ID yet
+            amount_to_refund=Decimal('0.00'),                 
+            stripe_refund_id=None,                   
             processed_at=None,
             staff_notes="User requested refund via frontend.",
-            requested_at=self.mock_now - datetime.timedelta(days=1) # Older timestamp
+            requested_at=self.mock_now - datetime.timedelta(days=1)                  
         )
         initial_notes = existing_refund_request.staff_notes
 
@@ -141,17 +141,17 @@ class ProcessRefundRequestEntryTestCase(TestCase):
 
         updated_refund_request = process_refund_request_entry(payment, hire_booking, 'hire_booking', extracted_data)
 
-        # Reload the object from DB to ensure changes are persisted and reflect
+                                                                               
         updated_refund_request.refresh_from_db()
 
-        # Assertions for the updated RefundRequest
-        self.assertEqual(updated_refund_request.id, existing_refund_request.id) # Should be the same object
+                                                  
+        self.assertEqual(updated_refund_request.id, existing_refund_request.id)                            
         self.assertEqual(updated_refund_request.stripe_refund_id, 're_updated_123')
         self.assertEqual(updated_refund_request.amount_to_refund, Decimal('60.00'))
-        self.assertEqual(updated_refund_request.status, 'partially_refunded') # Payment status 'succeeded' -> 'partially_refunded'
+        self.assertEqual(updated_refund_request.status, 'partially_refunded')                                                     
         self.assertEqual(updated_refund_request.processed_at, self.mock_now)
         self.assertIn("updated existing request", updated_refund_request.staff_notes)
-        self.assertTrue(updated_refund_request.staff_notes.startswith(initial_notes)) # Notes should be appended
+        self.assertTrue(updated_refund_request.staff_notes.startswith(initial_notes))                           
 
 
     def test_update_existing_unverified_refund_request(self):
@@ -197,7 +197,7 @@ class ProcessRefundRequestEntryTestCase(TestCase):
         status is set to 'refunded'.
         """
         hire_booking = HireBookingFactory()
-        # Simulate payment status as 'refunded' (full refund processed by Stripe)
+                                                                                 
         payment = PaymentFactory(hire_booking=hire_booking, status='refunded')
         
         extracted_data = {
@@ -217,13 +217,13 @@ class ProcessRefundRequestEntryTestCase(TestCase):
         status is updated to 'refunded'.
         """
         service_booking = ServiceBookingFactory()
-        # Simulate payment status as 'refunded'
+                                               
         payment = PaymentFactory(service_booking=service_booking, status='refunded')
         
         existing_refund_request = RefundRequestFactory(
             payment=payment,
             service_booking=service_booking,
-            status='pending', # Start with pending status
+            status='pending',                            
             amount_to_refund=Decimal('0.00'),
         )
 
@@ -257,7 +257,7 @@ class ProcessRefundRequestEntryTestCase(TestCase):
         self.assertEqual(refund_request.payment, payment)
         self.assertIsNone(refund_request.hire_booking)
         self.assertIsNone(refund_request.service_booking)
-        self.assertEqual(refund_request.status, 'partially_refunded') # Payment status 'succeeded' -> 'partially_refunded'
+        self.assertEqual(refund_request.status, 'partially_refunded')                                                     
         self.assertIn("initial creation", refund_request.staff_notes)
 
     def test_existing_refund_request_with_different_status_not_updated(self):
@@ -269,12 +269,12 @@ class ProcessRefundRequestEntryTestCase(TestCase):
         hire_booking = HireBookingFactory()
         payment = PaymentFactory(hire_booking=hire_booking, status='succeeded')
         
-        # Create an existing RefundRequest that is already 'refunded'
-        # This one should NOT be picked up by the filter in process_refund_request_entry
+                                                                     
+                                                                                        
         RefundRequestFactory(
             payment=payment,
             hire_booking=hire_booking,
-            status='refunded', # This status is NOT in the filter list for updating
+            status='refunded',                                                     
             amount_to_refund=Decimal('100.00'),
             stripe_refund_id='re_old_refunded',
             processed_at=self.mock_now - datetime.timedelta(days=2),
@@ -287,13 +287,13 @@ class ProcessRefundRequestEntryTestCase(TestCase):
             'refunded_amount_decimal': Decimal('50.00'),
         }
 
-        # The function should create a NEW refund request here
+                                                              
         new_refund_request = process_refund_request_entry(payment, hire_booking, 'hire_booking', extracted_data)
 
-        # Assertions for the NEWLY created RefundRequest
+                                                        
         self.assertIsNotNone(new_refund_request)
-        # Verify it's a new object by checking its ID against the initial count
-        self.assertEqual(payment.refund_requests.count(), 2) # Original + New
+                                                                               
+        self.assertEqual(payment.refund_requests.count(), 2)                 
         self.assertEqual(new_refund_request.stripe_refund_id, 're_new_due_to_old_status')
         self.assertEqual(new_refund_request.amount_to_refund, Decimal('50.00'))
         self.assertEqual(new_refund_request.status, 'partially_refunded')
@@ -307,13 +307,13 @@ class ProcessRefundRequestEntryTestCase(TestCase):
         hire_booking = HireBookingFactory()
         payment = PaymentFactory(hire_booking=hire_booking, status='succeeded')
         
-        # Create an existing RefundRequest in 'failed' status
+                                                             
         existing_refund_request = RefundRequestFactory(
             payment=payment,
             hire_booking=hire_booking,
             service_booking=None,
             status='failed',
-            amount_to_refund=Decimal('0.00'), # Initial amount
+            amount_to_refund=Decimal('0.00'),                 
             stripe_refund_id='re_failed_initial',
             processed_at=self.mock_now - datetime.timedelta(days=1),
             staff_notes="Refund failed previously.",
@@ -333,9 +333,9 @@ class ProcessRefundRequestEntryTestCase(TestCase):
         self.assertEqual(updated_refund_request.id, existing_refund_request.id)
         self.assertEqual(updated_refund_request.stripe_refund_id, 're_failed_updated_success')
         self.assertEqual(updated_refund_request.amount_to_refund, Decimal('80.00'))
-        self.assertEqual(updated_refund_request.status, 'partially_refunded') # Payment status 'succeeded' -> 'partially_refunded'
+        self.assertEqual(updated_refund_request.status, 'partially_refunded')                                                     
         self.assertEqual(updated_refund_request.processed_at, self.mock_now)
         self.assertIn("updated existing request", updated_refund_request.staff_notes)
         self.assertTrue(updated_refund_request.staff_notes.startswith(initial_notes))
-        # Ensure the count is still 1 (updated, not created new)
+                                                                
         self.assertEqual(payment.refund_requests.count(), 1)

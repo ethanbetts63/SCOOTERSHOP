@@ -1,4 +1,4 @@
-# service/views/admin_delete_service_type.py
+                                            
 
 from django.shortcuts import redirect, get_object_or_404
 from django.views import View
@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
-from service.models import ServiceType # Import the ServiceType model
+from service.models import ServiceType                               
 
 class ServiceTypeDeleteView(LoginRequiredMixin, UserPassesTestMixin, View):
     """

@@ -1,4 +1,4 @@
-# hire/tests/view_tests/test_step6_hire_view.py
+                                               
 
 from django.test import TestCase, Client
 from django.urls import reverse
@@ -9,23 +9,23 @@ import uuid
 from unittest.mock import patch, MagicMock
 import json
 import stripe
-from django.utils import timezone  # For timezone
-from datetime import timedelta     # For timedelta
-from django.conf import settings  # For settings
-from django.contrib.auth import get_user_model # Import get_user_model
+from django.utils import timezone                
+from datetime import timedelta                    
+from django.conf import settings                
+from django.contrib.auth import get_user_model                        
 
-# Import models
+               
 from hire.models import TempHireBooking, HireBooking
 from payments.models import Payment
 from dashboard.models import HireSettings
 
-# Import model factories
+                        
 from hire.tests.test_helpers.model_factories import (
     create_motorcycle,
     create_hire_settings,
     create_temp_hire_booking,
     create_driver_profile,
-    create_user, # Import create_user
+    create_user,                     
 )
 
 class PaymentDetailsViewTest(TestCase):
@@ -44,17 +44,17 @@ class PaymentDetailsViewTest(TestCase):
         self.step5_url = reverse('hire:step5_summary_payment_options')
         self.step7_url_base = reverse('hire:step7_confirmation')
 
-        # Ensure HireSettings exists and payment options are enabled for testing
+                                                                                
         self.hire_settings = create_hire_settings(
             deposit_enabled=True,
             deposit_percentage=Decimal('20.00'),
             enable_online_full_payment=True,
             enable_online_deposit_payment=True,
-            enable_in_store_full_payment=True, # Though not used in step6, keep consistent
+            enable_in_store_full_payment=True,                                            
             hire_pricing_strategy='24_hour_customer_friendly'
         )
 
-        # Create a motorcycle for default bookings
+                                                  
         self.motorcycle = create_motorcycle(
             daily_hire_rate=Decimal('100.00'),
             hourly_hire_rate=Decimal('20.00'),
@@ -62,18 +62,18 @@ class PaymentDetailsViewTest(TestCase):
             engine_size=125
         )
         
-        # Create a user and driver profile to associate with bookings
-        # The user needs to be created first, then the driver profile linked to this user.
+                                                                     
+                                                                                          
         User = get_user_model()
         self.user = create_user(username='testuser_step6', password='password123')
         self.driver_profile = create_driver_profile(user=self.user)
 
 
-        # Log in the client as the created user
+                                               
         self.client.login(username='testuser_step6', password='password123')
 
 
-        # Common booking dates/times
+                                    
         self.pickup_date = datetime.date.today() + datetime.timedelta(days=1)
         self.return_date = self.pickup_date + datetime.timedelta(days=2)
         self.pickup_time = datetime.time(9, 0)
@@ -96,7 +96,7 @@ class PaymentDetailsViewTest(TestCase):
         if return_time is None:
             return_time = self.return_time
         
-        # Use the logged-in user's driver profile by default
+                                                            
         if driver_profile is None:
             driver_profile = self.driver_profile
 
@@ -112,16 +112,16 @@ class PaymentDetailsViewTest(TestCase):
             deposit_amount=deposit_amount,
             has_motorcycle_license=has_motorcycle_license,
             driver_profile=driver_profile,
-            payment_option=payment_option, # Set payment option for the test
-            currency='AUD' # Default currency for tests
+            payment_option=payment_option,                                  
+            currency='AUD'                             
         )
         session = self.client.session
         session['temp_booking_id'] = temp_booking.id
-        # session['temp_booking_uuid'] = str(temp_booking.session_uuid) # session_uuid might not be used/relevant here
+                                                                                                                      
         session.save()
         return temp_booking
 
-    # --- GET Request Tests ---
+                               
 
     @patch('stripe.PaymentIntent.create')
     @patch('stripe.PaymentIntent.retrieve')
@@ -132,7 +132,7 @@ class PaymentDetailsViewTest(TestCase):
         """
         temp_booking = self._create_and_set_temp_booking_in_session(payment_option='online_full')
 
-        # Mock Stripe PaymentIntent.create
+                                          
         mock_stripe_create.return_value = MagicMock(
             id='pi_test_full',
             client_secret='cs_test_full',
@@ -140,7 +140,7 @@ class PaymentDetailsViewTest(TestCase):
             currency='aud',
             status='requires_payment_method'
         )
-        # Mock Stripe PaymentIntent.retrieve (should not be called on first GET for new PI)
+                                                                                           
         mock_stripe_retrieve.side_effect = stripe.error.InvalidRequestError("No such payment_intent", "id")
 
         response = self.client.get(self.step6_url)
@@ -154,12 +154,12 @@ class PaymentDetailsViewTest(TestCase):
         self.assertEqual(response.context['temp_booking'].id, temp_booking.id)
         self.assertIn('stripe_publishable_key', response.context)
 
-        # Verify a Payment object was created in the DB
+                                                       
         payment = Payment.objects.get(temp_hire_booking=temp_booking)
         self.assertEqual(payment.stripe_payment_intent_id, 'pi_test_full')
         self.assertEqual(payment.amount, temp_booking.grand_total)
         self.assertEqual(payment.status, 'requires_payment_method')
-        # Verify driver_profile is associated
+                                             
         self.assertEqual(payment.driver_profile, self.driver_profile)
 
 
@@ -172,7 +172,7 @@ class PaymentDetailsViewTest(TestCase):
         """
         temp_booking = self._create_and_set_temp_booking_in_session(payment_option='online_deposit')
 
-        # Mock Stripe PaymentIntent.create
+                                          
         mock_stripe_create.return_value = MagicMock(
             id='pi_test_deposit',
             client_secret='cs_test_deposit',
@@ -193,12 +193,12 @@ class PaymentDetailsViewTest(TestCase):
         self.assertEqual(response.context['currency'], 'AUD')
         self.assertEqual(response.context['temp_booking'].id, temp_booking.id)
 
-        # Verify a Payment object was created in the DB
+                                                       
         payment = Payment.objects.get(temp_hire_booking=temp_booking)
         self.assertEqual(payment.stripe_payment_intent_id, 'pi_test_deposit')
         self.assertEqual(payment.amount, temp_booking.deposit_amount)
         self.assertEqual(payment.status, 'requires_payment_method')
-        # Verify driver_profile is associated
+                                             
         self.assertEqual(payment.driver_profile, self.driver_profile)
 
 
@@ -209,7 +209,7 @@ class PaymentDetailsViewTest(TestCase):
         Test GET request without temp_booking_id in session.
         Should redirect to step 2.
         """
-        # Ensure no temp_booking_id in session
+                                              
         session = self.client.session
         if 'temp_booking_id' in session:
             del session['temp_booking_id']
@@ -226,7 +226,7 @@ class PaymentDetailsViewTest(TestCase):
         Should redirect to step 2.
         """
         session = self.client.session
-        session['temp_booking_id'] = 99999 # Non-existent ID
+        session['temp_booking_id'] = 99999                  
         session.save()
 
         response = self.client.get(self.step6_url)
@@ -239,12 +239,12 @@ class PaymentDetailsViewTest(TestCase):
         Test GET request when temp_booking has an invalid payment_option (e.g., 'in_store_full').
         Should redirect to step 5.
         """
-        self._create_and_set_temp_booking_in_session(payment_option='in_store_full') # Invalid for step 6
+        self._create_and_set_temp_booking_in_session(payment_option='in_store_full')                     
 
         response = self.client.get(self.step6_url)
-        # self.assertRedirects(response, self.step5_url) # Original assertion causing failure
-        self.assertEqual(response.status_code, 302) # Check that Step 6 view issues a redirect
-        self.assertEqual(response.url, self.step5_url) # Check that the redirect is to Step 5
+                                                                                             
+        self.assertEqual(response.status_code, 302)                                           
+        self.assertEqual(response.url, self.step5_url)                                       
 
     @patch('stripe.PaymentIntent.create')
     @patch('stripe.PaymentIntent.retrieve')
@@ -254,10 +254,10 @@ class PaymentDetailsViewTest(TestCase):
         Should retrieve and reuse the existing PaymentIntent.
         """
         temp_booking = self._create_and_set_temp_booking_in_session(payment_option='online_full')
-        # Create an existing Payment object
+                                           
         existing_payment = Payment.objects.create(
             temp_hire_booking=temp_booking,
-            driver_profile=self.driver_profile, # Use the logged-in user's profile
+            driver_profile=self.driver_profile,                                   
             stripe_payment_intent_id='pi_existing_test',
             amount=temp_booking.grand_total,
             currency='AUD',
@@ -265,7 +265,7 @@ class PaymentDetailsViewTest(TestCase):
             description='Existing booking payment'
         )
 
-        # Mock Stripe PaymentIntent.retrieve to return the existing PI
+                                                                      
         mock_stripe_retrieve.return_value = MagicMock(
             id='pi_existing_test',
             client_secret='cs_existing_test',
@@ -273,8 +273,8 @@ class PaymentDetailsViewTest(TestCase):
             currency='aud',
             status='requires_payment_method'
         )
-        # Ensure create is not called
-        # mock_stripe_create.assert_not_called() # This assertion might be too early or cause issues if called before the request
+                                     
+                                                                                                                                 
 
         response = self.client.get(self.step6_url)
 
@@ -284,7 +284,7 @@ class PaymentDetailsViewTest(TestCase):
         self.assertEqual(response.context['amount'], temp_booking.grand_total)
 
         mock_stripe_retrieve.assert_called_once_with('pi_existing_test')
-        mock_stripe_create.assert_not_called() # Should not create a new one
+        mock_stripe_create.assert_not_called()                              
 
     @patch('stripe.PaymentIntent.create')
     @patch('stripe.PaymentIntent.retrieve')
@@ -295,30 +295,30 @@ class PaymentDetailsViewTest(TestCase):
         Should modify the existing PaymentIntent.
         """
         temp_booking = self._create_and_set_temp_booking_in_session(payment_option='online_full', grand_total=Decimal('300.00'))
-        # Create an existing Payment object with a different amount
+                                                                   
         existing_payment = Payment.objects.create(
             temp_hire_booking=temp_booking,
-            driver_profile=self.driver_profile, # Use the logged-in user's profile
+            driver_profile=self.driver_profile,                                   
             stripe_payment_intent_id='pi_existing_test_modify',
-            amount=Decimal('200.00'), # Old amount
+            amount=Decimal('200.00'),             
             currency='AUD',
             status='requires_payment_method',
             description='Existing booking payment'
         )
 
-        # Mock Stripe PaymentIntent.retrieve to return the existing PI (with old amount)
+                                                                                        
         mock_stripe_retrieve.return_value = MagicMock(
             id='pi_existing_test_modify',
             client_secret='cs_existing_test_modify',
-            amount=int(Decimal('200.00') * 100), # Old amount in cents
+            amount=int(Decimal('200.00') * 100),                      
             currency='aud',
             status='requires_payment_method'
         )
-        # Mock Stripe PaymentIntent.modify to return the updated PI
+                                                                   
         mock_stripe_modify.return_value = MagicMock(
             id='pi_existing_test_modify',
-            client_secret='cs_existing_test_modify_returned', # Ensure a distinct client secret if it's re-fetched
-            amount=int(temp_booking.grand_total * 100), # New amount in cents
+            client_secret='cs_existing_test_modify_returned',                                                     
+            amount=int(temp_booking.grand_total * 100),                      
             currency='aud',
             status='requires_payment_method'
         )
@@ -327,14 +327,14 @@ class PaymentDetailsViewTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'hire/step6_payment_details.html')
-        # The client_secret in context should be from the modified intent if it's re-fetched and used.
-        # If the view uses the client_secret from the retrieved intent before modify, it would be 'cs_existing_test_modify'.
-        # If it uses the one from the result of modify, it would be 'cs_existing_test_modify_returned'.
-        # The current view logic reuses the retrieved intent object and updates it, 
-        # so the client_secret in the context might be the one from the *initial* retrieve if not explicitly updated from modify's result.
-        # For simplicity, let's assume the view correctly passes the client_secret of the *final* intent object.
-        # The view code does: intent = stripe.PaymentIntent.modify(...)
-        # So, response.context['client_secret'] should be from the *modified* intent.
+                                                                                                      
+                                                                                                                            
+                                                                                                       
+                                                                                    
+                                                                                                                                          
+                                                                                                                
+                                                                       
+                                                                                     
         self.assertEqual(response.context['client_secret'], 'cs_existing_test_modify_returned')
         self.assertEqual(response.context['amount'], temp_booking.grand_total)
 
@@ -346,16 +346,16 @@ class PaymentDetailsViewTest(TestCase):
             description=f"Motorcycle hire booking for {temp_booking.motorcycle.year} {temp_booking.motorcycle.brand} {temp_booking.motorcycle.model}",
             metadata={
                 'temp_booking_id': str(temp_booking.id),
-                'user_id': str(self.driver_profile.id), # Check against the logged-in user's driver_profile.id
+                'user_id': str(self.driver_profile.id),                                                       
                 'booking_type': 'hire_booking',
             }
         )
-        mock_stripe_create.assert_not_called() # Should not create a new one
+        mock_stripe_create.assert_not_called()                              
 
-        # Verify local Payment object was updated
+                                                 
         existing_payment.refresh_from_db()
         self.assertEqual(existing_payment.amount, temp_booking.grand_total)
-        self.assertEqual(existing_payment.status, 'requires_payment_method') # Assuming modify returns this status
+        self.assertEqual(existing_payment.status, 'requires_payment_method')                                      
 
     @patch('stripe.PaymentIntent.create')
     @patch('stripe.PaymentIntent.retrieve')
@@ -368,14 +368,14 @@ class PaymentDetailsViewTest(TestCase):
         existing_payment = Payment.objects.create(
             temp_hire_booking=temp_booking,
             driver_profile=self.driver_profile,
-            stripe_payment_intent_id='pi_canceled_original', # Unique PI ID for this test
+            stripe_payment_intent_id='pi_canceled_original',                             
             amount=temp_booking.grand_total,
             currency='AUD',
-            status='canceled', # Initial status
+            status='canceled',                 
             description='Existing booking payment - canceled'
         )
 
-        # Mock Stripe PaymentIntent.retrieve to return the canceled PI
+                                                                      
         mock_stripe_retrieve.return_value = MagicMock(
             id='pi_canceled_original',
             client_secret='cs_canceled_original',
@@ -383,9 +383,9 @@ class PaymentDetailsViewTest(TestCase):
             currency='aud',
             status='canceled'
         )
-        # Mock Stripe PaymentIntent.create to return a new PI
+                                                             
         mock_stripe_create.return_value = MagicMock(
-            id='pi_new_after_canceled', # New PI ID
+            id='pi_new_after_canceled',            
             client_secret='cs_new_after_canceled',
             amount=int(temp_booking.grand_total * 100),
             currency='aud',
@@ -396,7 +396,7 @@ class PaymentDetailsViewTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'hire/step6_payment_details.html')
-        self.assertEqual(response.context['client_secret'], 'cs_new_after_canceled') # Should use the new PI's secret
+        self.assertEqual(response.context['client_secret'], 'cs_new_after_canceled')                                 
 
         mock_stripe_retrieve.assert_called_once_with('pi_canceled_original')
         mock_stripe_create.assert_called_once_with(
@@ -410,7 +410,7 @@ class PaymentDetailsViewTest(TestCase):
             description=f"Motorcycle hire booking for {temp_booking.motorcycle.year} {temp_booking.motorcycle.brand} {temp_booking.motorcycle.model}"
         )
 
-        # Verify local Payment object was updated with the new PI ID and status
+                                                                               
         existing_payment.refresh_from_db()
         self.assertEqual(existing_payment.stripe_payment_intent_id, 'pi_new_after_canceled')
         self.assertEqual(existing_payment.status, 'requires_payment_method')
@@ -427,14 +427,14 @@ class PaymentDetailsViewTest(TestCase):
         existing_payment = Payment.objects.create(
             temp_hire_booking=temp_booking,
             driver_profile=self.driver_profile,
-            stripe_payment_intent_id='pi_failed_original', # Unique PI ID
+            stripe_payment_intent_id='pi_failed_original',               
             amount=temp_booking.grand_total,
             currency='AUD',
-            status='failed', # Initial status
+            status='failed',                 
             description='Existing booking payment - failed'
         )
 
-        # Mock Stripe PaymentIntent.retrieve to return the failed PI
+                                                                    
         mock_stripe_retrieve.return_value = MagicMock(
             id='pi_failed_original',
             client_secret='cs_failed_original',
@@ -442,9 +442,9 @@ class PaymentDetailsViewTest(TestCase):
             currency='aud',
             status='failed'
         )
-        # Mock Stripe PaymentIntent.create to return a new PI
+                                                             
         mock_stripe_create.return_value = MagicMock(
-            id='pi_new_after_failed', # New PI ID
+            id='pi_new_after_failed',            
             client_secret='cs_new_after_failed',
             amount=int(temp_booking.grand_total * 100),
             currency='aud',
@@ -455,7 +455,7 @@ class PaymentDetailsViewTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'hire/step6_payment_details.html')
-        self.assertEqual(response.context['client_secret'], 'cs_new_after_failed') # Should use the new PI's secret
+        self.assertEqual(response.context['client_secret'], 'cs_new_after_failed')                                 
 
         mock_stripe_retrieve.assert_called_once_with('pi_failed_original')
         mock_stripe_create.assert_called_once_with(
@@ -469,13 +469,13 @@ class PaymentDetailsViewTest(TestCase):
             description=f"Motorcycle hire booking for {temp_booking.motorcycle.year} {temp_booking.motorcycle.brand} {temp_booking.motorcycle.model}"
         )
 
-        # Verify local Payment object was updated with the new PI ID and status
+                                                                               
         existing_payment.refresh_from_db()
         self.assertEqual(existing_payment.stripe_payment_intent_id, 'pi_new_after_failed')
         self.assertEqual(existing_payment.status, 'requires_payment_method')
 
 
-    # --- POST Request Tests ---
+                                
 
     @patch('stripe.PaymentIntent.retrieve')
     def test_post_request_payment_succeeded(self, mock_stripe_retrieve):
@@ -490,11 +490,11 @@ class PaymentDetailsViewTest(TestCase):
             stripe_payment_intent_id='pi_succeeded',
             amount=temp_booking.grand_total,
             currency='AUD',
-            status='requires_confirmation', # Initial status before POST
+            status='requires_confirmation',                             
             description='Test payment'
         )
 
-        # Mock Stripe PaymentIntent.retrieve to return succeeded status
+                                                                       
         mock_stripe_retrieve.return_value = MagicMock(
             id='pi_succeeded',
             status='succeeded'
@@ -509,13 +509,13 @@ class PaymentDetailsViewTest(TestCase):
         self.assertIn(self.step7_url_base, json_response['redirect_url'])
         self.assertIn('payment_intent_id=pi_succeeded', json_response['redirect_url'])
 
-        # Verify Payment object status (should NOT be updated by POST, webhook does it for 'succeeded')
+                                                                                                       
         payment.refresh_from_db()
-        # The view's POST method does NOT update the status for 'succeeded' as it expects a webhook.
-        # However, if the intent.status is 'succeeded', the view logic *does* update payment_obj.status.
-        # Let's re-check the view logic:
-        # The view's POST logic for 'succeeded' directly returns JsonResponse WITHOUT saving payment_obj.
-        # So, the original status 'requires_confirmation' should remain.
+                                                                                                    
+                                                                                                        
+                                        
+                                                                                                         
+                                                                        
         self.assertEqual(payment.status, 'requires_confirmation')
 
 
@@ -532,11 +532,11 @@ class PaymentDetailsViewTest(TestCase):
             stripe_payment_intent_id='pi_requires_action',
             amount=temp_booking.grand_total,
             currency='AUD',
-            status='requires_payment_method', # Initial status
+            status='requires_payment_method',                 
             description='Test payment'
         )
 
-        # Mock Stripe PaymentIntent.retrieve to return requires_action status
+                                                                             
         mock_stripe_retrieve.return_value = MagicMock(
             id='pi_requires_action',
             status='requires_action'
@@ -548,10 +548,10 @@ class PaymentDetailsViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         json_response = response.json()
         self.assertEqual(json_response['status'], 'requires_action')
-        # Assert redirect_url is NOT present
+                                            
         self.assertNotIn('redirect_url', json_response)
 
-        # Verify Payment object status is updated by the POST handler
+                                                                     
         payment.refresh_from_db()
         self.assertEqual(payment.status, 'requires_action')
 
@@ -565,14 +565,14 @@ class PaymentDetailsViewTest(TestCase):
         payment = Payment.objects.create(
             temp_hire_booking=temp_booking,
             driver_profile=self.driver_profile,
-            stripe_payment_intent_id='pi_failed_post', # Unique PI ID
+            stripe_payment_intent_id='pi_failed_post',               
             amount=temp_booking.grand_total,
             currency='AUD',
-            status='requires_confirmation', # Initial status
+            status='requires_confirmation',                 
             description='Test payment for failure post'
         )
 
-        # Mock Stripe PaymentIntent.retrieve to return failed status
+                                                                    
         mock_stripe_retrieve.return_value = MagicMock(
             id='pi_failed_post',
             status='failed'
@@ -584,10 +584,10 @@ class PaymentDetailsViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         json_response = response.json()
         self.assertEqual(json_response['status'], 'failed')
-        # Assert redirect_url is NOT present
+                                            
         self.assertNotIn('redirect_url', json_response)
 
-        # Verify Payment object status is updated by the POST handler
+                                                                     
         payment.refresh_from_db()
         self.assertEqual(payment.status, 'failed')
 
@@ -639,25 +639,25 @@ class PaymentDetailsViewTest(TestCase):
         """
         Test GET request when an existing Payment object exists and its PI is succeeded.
         """
-        # Arrange
-        # Using the helper to create TempHireBooking and set session
-        # driver_profile is already set up and user logged in via setUp
+                 
+                                                                    
+                                                                       
         temp_booking = self._create_and_set_temp_booking_in_session(
             grand_total=Decimal('300.00'),
             payment_option='online_full'
         )
         Payment.objects.create(
             temp_hire_booking=temp_booking,
-            driver_profile=self.driver_profile, # Ensure it's linked
+            driver_profile=self.driver_profile,                     
             stripe_payment_intent_id='pi_succeeded_test',
-            amount=Decimal('300.00'), # Use Decimal for consistency
+            amount=Decimal('300.00'),                              
             currency='AUD',
             status='succeeded'
         )
         mock_stripe_retrieve.return_value = MagicMock(
             id='pi_succeeded_test',
             client_secret='cs_succeeded_test',
-            amount=30000, # Stripe returns amount in cents
+            amount=30000,                                 
             currency='aud',
             status='succeeded',
             metadata={
@@ -667,14 +667,14 @@ class PaymentDetailsViewTest(TestCase):
             }
         )
 
-        # Act
+             
         response = self.client.get(self.step6_url)
 
-        # Assert
+                
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context.get('payment_already_succeeded'))
-        self.assertIsNone(response.context.get('client_secret')) # No client secret if already succeeded
-        self.assertEqual(response.context.get('amount'), Decimal('300.00')) # Compare with Decimal
+        self.assertIsNone(response.context.get('client_secret'))                                        
+        self.assertEqual(response.context.get('amount'), Decimal('300.00'))                       
         self.assertEqual(response.context.get('currency'), 'AUD')
         self.assertEqual(response.context.get('temp_booking').id, temp_booking.id)
         self.assertEqual(response.context.get('stripe_publishable_key'), settings.STRIPE_PUBLISHABLE_KEY)

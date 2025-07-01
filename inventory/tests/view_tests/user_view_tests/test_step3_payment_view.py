@@ -1,4 +1,4 @@
-# inventory/tests/view_tests/user_view_tests/test_step3_payment_view.py
+                                                                       
 
 from django.test import TestCase
 from django.urls import reverse
@@ -12,7 +12,7 @@ import stripe
 
 from payments.models import Payment
 from inventory.models import TempSalesBooking, SalesProfile, Motorcycle, InventorySettings
-# Corrected import path for model factories
+                                           
 from inventory.tests.test_helpers.model_factories import (
     UserFactory,
     SalesProfileFactory,
@@ -24,7 +24,7 @@ from inventory.tests.test_helpers.model_factories import (
 
 User = get_user_model()
 
-# Global patch for Stripe API key
+                                 
 @patch('stripe.api_key', 'sk_test_mock_key')
 class Step3PaymentViewTest(TestCase):
     """
@@ -66,7 +66,7 @@ class Step3PaymentViewTest(TestCase):
         session['temp_sales_booking_uuid'] = str(self.temp_booking.session_uuid)
         session.save()
 
-    # --- Dispatch Method Tests ---
+                                   
 
     def test_dispatch_no_temp_booking_uuid_in_session_redirects(self):
         """
@@ -134,7 +134,7 @@ class Step3PaymentViewTest(TestCase):
         messages = list(get_messages(response.wsgi_request))
         self.assertTrue(any("Payment is not required for this type of booking." in str(m) for m in messages))
 
-    # --- GET Method Tests ---
+                              
 
     @patch('inventory.views.user_views.step3_payment_view.create_or_update_sales_payment_intent')
     def test_get_creates_new_intent_and_payment_obj(self, mock_create_update):
@@ -142,7 +142,7 @@ class Step3PaymentViewTest(TestCase):
         Tests GET request creates a new Stripe PaymentIntent and local Payment object.
         """
         mock_intent = MagicMock(client_secret='new_client_secret', id='pi_new_123')
-        # Here we simulate that the function saves the payment object and returns it
+                                                                                    
         mock_payment = PaymentFactory.build(stripe_payment_intent_id=mock_intent.id, temp_sales_booking=self.temp_booking)
         mock_create_update.return_value = (mock_intent, mock_payment)
 
@@ -183,7 +183,7 @@ class Step3PaymentViewTest(TestCase):
         messages = list(get_messages(response.wsgi_request))
         self.assertTrue(any("Payment system error:" in str(m) for m in messages))
 
-    # --- POST Method Tests ---
+                               
 
     @patch('stripe.PaymentIntent.retrieve')
     def test_post_payment_succeeded(self, mock_retrieve):
@@ -191,8 +191,8 @@ class Step3PaymentViewTest(TestCase):
         Tests POST when Stripe reports payment succeeded.
         """
         payment_intent_id = 'pi_test_succeeded'
-        # We create a payment object, but its status will not be directly changed by the POST view
-        # Instead, it's expected to be updated by the webhook.
+                                                                                                  
+                                                              
         PaymentFactory(
             temp_sales_booking=self.temp_booking,
             stripe_payment_intent_id=payment_intent_id,
@@ -218,8 +218,8 @@ class Step3PaymentViewTest(TestCase):
         The local Payment object's status is expected to be updated by the webhook.
         """
         payment_intent_id = 'pi_test_requires_action'
-        # We create a payment object, but its status will not be directly changed by the POST view
-        # Instead, it's expected to be updated by the webhook.
+                                                                                                  
+                                                              
         PaymentFactory(
             temp_sales_booking=self.temp_booking,
             stripe_payment_intent_id=payment_intent_id,
@@ -236,9 +236,9 @@ class Step3PaymentViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         json_response = response.json()
         self.assertEqual(json_response['status'], 'requires_action')
-        # Removed assertion on payment_obj.status as it's handled by webhook
-        # payment_obj.refresh_from_db()
-        # self.assertEqual(payment_obj.status, 'requires_action')
+                                                                            
+                                       
+                                                                 
 
     @patch('stripe.PaymentIntent.retrieve')
     def test_post_payment_failed(self, mock_retrieve):
@@ -247,8 +247,8 @@ class Step3PaymentViewTest(TestCase):
         The local Payment object's status is expected to be updated by the webhook.
         """
         payment_intent_id = 'pi_test_failed'
-        # We create a payment object, but its status will not be directly changed by the POST view
-        # Instead, it's expected to be updated by the webhook.
+                                                                                                  
+                                                              
         PaymentFactory(
             temp_sales_booking=self.temp_booking,
             stripe_payment_intent_id=payment_intent_id,
@@ -265,9 +265,9 @@ class Step3PaymentViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         json_response = response.json()
         self.assertEqual(json_response['status'], 'failed')
-        # Removed assertion on payment_obj.status as it's handled by webhook
-        # payment_obj.refresh_from_db()
-        # self.assertEqual(payment_obj.status, 'failed')
+                                                                            
+                                       
+                                                        
 
     def test_post_invalid_json_returns_400(self):
         """

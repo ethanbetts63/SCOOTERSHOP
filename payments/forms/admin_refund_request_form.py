@@ -1,11 +1,11 @@
-# payments/forms/admin_refund_request_form.py
+                                             
 
 from django import forms
 from django.core.exceptions import ValidationError
 from payments.models.RefundRequest import RefundRequest
 from hire.models import HireBooking
 from service.models import ServiceBooking
-from inventory.models import SalesBooking # Import SalesBooking
+from inventory.models import SalesBooking                      
 from decimal import Decimal
 
 class AdminRefundRequestForm(forms.ModelForm):
@@ -16,7 +16,7 @@ class AdminRefundRequestForm(forms.ModelForm):
     Customer profiles and payment are automatically linked
     from the selected booking.
     """
-    # Fields for selecting a booking type
+                                         
     hire_booking = forms.ModelChoiceField(
         queryset=HireBooking.objects.filter(payment_status__in=['paid', 'deposit_paid', 'refunded']),
         label="Select Hire Booking",
@@ -30,7 +30,7 @@ class AdminRefundRequestForm(forms.ModelForm):
         required=False
     )
     sales_booking = forms.ModelChoiceField(
-        queryset=SalesBooking.objects.filter(payment_status__in=['deposit_paid', 'refunded']), # Sales only has deposit_paid
+        queryset=SalesBooking.objects.filter(payment_status__in=['deposit_paid', 'refunded']),                              
         label="Select Sales Booking",
         help_text="Choose a Sales Booking (Deposit Paid or Refunded status).",
         required=False
@@ -41,7 +41,7 @@ class AdminRefundRequestForm(forms.ModelForm):
         fields = [
             'hire_booking',
             'service_booking',
-            'sales_booking', # Add sales_booking to fields
+            'sales_booking',                              
             'reason',
             'staff_notes',
             'amount_to_refund',
@@ -60,18 +60,18 @@ class AdminRefundRequestForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Make reason and staff_notes not required by default for admin form
+                                                                            
         self.fields['reason'].required = False
         self.fields['staff_notes'].required = False
         self.fields['amount_to_refund'].required = True
 
-        # When editing an existing RefundRequest, set the initial value for the correct booking type
+                                                                                                    
         if self.instance.pk:
             if self.instance.hire_booking:
                 self.initial['hire_booking'] = self.instance.hire_booking
             elif self.instance.service_booking:
                 self.initial['service_booking'] = self.instance.service_booking
-            elif self.instance.sales_booking: # Set initial for sales booking
+            elif self.instance.sales_booking:                                
                 self.initial['sales_booking'] = self.instance.sales_booking
 
     def clean(self):
@@ -84,10 +84,10 @@ class AdminRefundRequestForm(forms.ModelForm):
         cleaned_data = super().clean()
         hire_booking = cleaned_data.get('hire_booking')
         service_booking = cleaned_data.get('service_booking')
-        sales_booking = cleaned_data.get('sales_booking') # Get sales_booking
+        sales_booking = cleaned_data.get('sales_booking')                    
         amount_to_refund = cleaned_data.get('amount_to_refund')
 
-        # Ensure only one booking type is selected
+                                                  
         selected_bookings = [b for b in [hire_booking, service_booking, sales_booking] if b is not None]
         if len(selected_bookings) > 1:
             raise ValidationError("Please select only one type of booking (Hire, Service, or Sales).")
@@ -97,15 +97,15 @@ class AdminRefundRequestForm(forms.ModelForm):
         selected_booking = selected_bookings[0]
         max_refund_amount = Decimal('0.00')
 
-        # Link payment and customer profile to the RefundRequest instance based on selected booking type
-        # Clear all booking and profile links first for consistency
+                                                                                                        
+                                                                   
         self.instance.hire_booking = None
         self.instance.driver_profile = None
         self.instance.service_booking = None
         self.instance.service_profile = None
         self.instance.sales_booking = None
         self.instance.sales_profile = None
-        self.instance.payment = None # Clear payment too, will be set below
+        self.instance.payment = None                                       
 
         if hire_booking:
             if not hire_booking.payment:
@@ -125,7 +125,7 @@ class AdminRefundRequestForm(forms.ModelForm):
             self.instance.service_profile = service_booking.service_profile
             max_refund_amount = service_booking.payment.amount
         
-        elif sales_booking: # Handle sales booking
+        elif sales_booking:                       
             if not sales_booking.payment:
                 self.add_error('sales_booking', "Selected Sales Booking does not have an associated payment record.")
                 return cleaned_data
@@ -135,7 +135,7 @@ class AdminRefundRequestForm(forms.ModelForm):
             max_refund_amount = sales_booking.payment.amount
 
 
-        # Validate amount_to_refund against the actual amount paid for the selected booking
+                                                                                           
         if selected_booking and amount_to_refund is not None:
             if amount_to_refund < 0:
                 self.add_error('amount_to_refund', "Amount to refund cannot be a negative value.")
@@ -151,10 +151,10 @@ class AdminRefundRequestForm(forms.ModelForm):
         """
         refund_request = super().save(commit=False)
 
-        # The clean method should have already set these based on the selected booking,
-        # but ensure for safety and explicitness.
-        # No need for explicit `if refund_request.hire_booking` etc. blocks here
-        # as `clean` already sets the correct fields and clears others.
+                                                                                       
+                                                 
+                                                                                
+                                                                       
 
         if commit:
             refund_request.save()

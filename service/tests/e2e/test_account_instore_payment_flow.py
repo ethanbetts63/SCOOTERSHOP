@@ -16,7 +16,7 @@ from ..test_helpers.model_factories import (
     CustomerMotorcycleFactory,
 )
 
-# Set to True to send bookings to MechanicDesk for testing purposes
+                                                                   
 SEND_BOOKINGS_TO_MECHANICDESK = False
 
 @override_settings(ADMIN_EMAIL='admin@example.com')
@@ -42,7 +42,7 @@ class TestLoggedInUserInStorePaymentFlow(TestCase):
         )
         self.user = UserFactory(username='testuser')
         
-        # Conditionally set user's first name for testing
+                                                         
         user_name = 'Account In-Store User'
         if not SEND_BOOKINGS_TO_MECHANICDESK:
             user_name = 'Test Account In-Store User'

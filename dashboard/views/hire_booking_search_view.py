@@ -1,4 +1,4 @@
-# hire_booking_search_view.py
+                             
 from django.shortcuts import render
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test

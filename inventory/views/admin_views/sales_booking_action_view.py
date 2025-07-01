@@ -1,7 +1,7 @@
-# SCOOTER_SHOP/inventory/views/admin_views/sales_booking_action_view.py
+                                                                       
 
 from django.views.generic.edit import FormView
-from django.urls import reverse_lazy, reverse # Import reverse
+from django.urls import reverse_lazy, reverse                 
 from django.contrib import messages
 from inventory.models import SalesBooking
 from inventory.forms import SalesBookingActionForm
@@ -100,10 +100,10 @@ class SalesBookingActionView(LoginRequiredMixin, FormView):
                 form_data=form_data_for_utility,
                 send_notification=form_data_for_utility['send_notification']
             )
-            # If reject and a refund request was successfully created, redirect to intermediary processing page
+                                                                                                               
             if result['success'] and 'refund_request_pk' in result:
                 messages.success(self.request, result['message'])
-                # Redirect to the intermediary view to perform the POST
+                                                                       
                 self.success_url = reverse_lazy('payments:initiate_refund_process', kwargs={'pk': result['refund_request_pk']})
                 return super().form_valid(form)
             else:

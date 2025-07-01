@@ -1,4 +1,4 @@
-# inventory/ajax/ajax_sales_booking_precheck.py
+                                               
 
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
@@ -28,12 +28,12 @@ def sales_booking_precheck_ajax(request):
         warnings = form.get_warnings()
         if warnings:
             response_data['status'] = 'warnings'
-            response_data['warnings'] = [str(w) for w in warnings] # Convert lazy strings
+            response_data['warnings'] = [str(w) for w in warnings]                       
     else:
         response_data['status'] = 'errors'
         errors_dict = {}
         for field, errors in form.errors.items():
-            errors_dict[field] = [str(e) for e in errors] # Convert lazy strings
+            errors_dict[field] = [str(e) for e in errors]                       
         
         if forms.NON_FIELD_ERRORS in form.errors:
             errors_dict[forms.NON_FIELD_ERRORS] = [str(e) for e in form.errors[forms.NON_FIELD_ERRORS]]

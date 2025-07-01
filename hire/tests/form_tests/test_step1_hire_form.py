@@ -1,4 +1,4 @@
-# hire/tests/form_tests/test_step1_hire_form.py
+                                               
 
 from django.test import TestCase
 from django.core.exceptions import ValidationError
@@ -24,7 +24,7 @@ class Step1DateTimeFormTests(TestCase):
         }
         form = Step1DateTimeForm(data=form_data)
         self.assertTrue(form.is_valid())
-        # Ensure no validation errors were added to specific fields
+                                                                   
         self.assertNotIn('__all__', form.errors)
 
     def test_return_datetime_before_pickup_datetime(self):
@@ -73,7 +73,7 @@ class Step1DateTimeFormTests(TestCase):
         }
         form = Step1DateTimeForm(data=form_data)
         self.assertFalse(form.is_valid())
-        self.assertIn('pick_up_date', form.errors) # Django's default 'required' error
+        self.assertIn('pick_up_date', form.errors)                                    
 
     def test_missing_return_time(self):
         """
@@ -87,7 +87,7 @@ class Step1DateTimeFormTests(TestCase):
         }
         form = Step1DateTimeForm(data=form_data)
         self.assertFalse(form.is_valid())
-        self.assertIn('return_time', form.errors) # Django's default 'required' error
+        self.assertIn('return_time', form.errors)                                    
 
     def test_only_has_motorcycle_license_provided(self):
         """
@@ -102,4 +102,4 @@ class Step1DateTimeFormTests(TestCase):
         self.assertIn('pick_up_time', form.errors)
         self.assertIn('return_date', form.errors)
         self.assertIn('return_time', form.errors)
-        self.assertNotIn('__all__', form.errors) # No custom clean error yet as datetime fields are missing
+        self.assertNotIn('__all__', form.errors)                                                           

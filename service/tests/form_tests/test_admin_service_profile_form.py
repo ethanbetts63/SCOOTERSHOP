@@ -1,10 +1,10 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
-# Import the form to be tested
+                              
 from service.forms import AdminServiceProfileForm
 
-# Import factories for creating test data
+                                         
 from ..test_helpers.model_factories import UserFactory, ServiceProfileFactory
 
 User = get_user_model()
@@ -20,13 +20,13 @@ class AdminServiceProfileFormTest(TestCase):
         Set up non-modified objects used by all test methods.
         We'll create various user and service profile scenarios.
         """
-        # A user who is not linked to any service profile
+                                                         
         cls.unlinked_user = UserFactory(username='unlinked_user', email='unlinked@example.com')
 
-        # A user who is already linked to an existing service profile
-        cls.linked_user_existing_profile = ServiceProfileFactory().user # Creates a user and links a profile
+                                                                     
+        cls.linked_user_existing_profile = ServiceProfileFactory().user                                     
 
-        # An existing service profile instance for testing updates
+                                                                  
         cls.existing_service_profile = ServiceProfileFactory(
             name="Existing Profile",
             email="existing@example.com",
@@ -42,8 +42,8 @@ class AdminServiceProfileFormTest(TestCase):
         and linking it to an unlinked user.
         """
         data = {
-            'user': self.unlinked_user.pk, # Link an unlinked user
-            'name': 'Test User Name', # These should be ignored if user is selected
+            'user': self.unlinked_user.pk,                        
+            'name': 'Test User Name',                                              
             'email': 'test@example.com',
             'phone_number': '1234567890',
             'address_line_1': '123 Main St',
@@ -55,9 +55,9 @@ class AdminServiceProfileFormTest(TestCase):
         form = AdminServiceProfileForm(data=data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
         self.assertEqual(form.cleaned_data['user'], self.unlinked_user)
-        self.assertEqual(form.cleaned_data['name'], data['name']) # Name field still processed
-        self.assertEqual(form.cleaned_data['email'], data['email']) # Email still processed
-        self.assertEqual(form.cleaned_data['phone_number'], data['phone_number']) # Phone still processed
+        self.assertEqual(form.cleaned_data['name'], data['name'])                             
+        self.assertEqual(form.cleaned_data['email'], data['email'])                        
+        self.assertEqual(form.cleaned_data['phone_number'], data['phone_number'])                        
 
 
     def test_form_valid_data_without_user_link(self):
@@ -66,7 +66,7 @@ class AdminServiceProfileFormTest(TestCase):
         without linking a user, but providing required contact details.
         """
         data = {
-            'user': '', # No user linked
+            'user': '',                 
             'name': 'Standalone Profile Name',
             'email': 'standalone@example.com',
             'phone_number': '0987654321',
@@ -78,7 +78,7 @@ class AdminServiceProfileFormTest(TestCase):
         }
         form = AdminServiceProfileForm(data=data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
-        self.assertIsNone(form.cleaned_data['user']) # Ensure user is None
+        self.assertIsNone(form.cleaned_data['user'])                      
         self.assertEqual(form.cleaned_data['name'], data['name'])
 
 
@@ -87,7 +87,7 @@ class AdminServiceProfileFormTest(TestCase):
         Test that the form is invalid if no user is linked and
         name, email, or phone_number are missing.
         """
-        # Test missing name
+                           
         data_missing_name = {
             'user': '',
             'email': 'missingname@example.com',
@@ -103,7 +103,7 @@ class AdminServiceProfileFormTest(TestCase):
         self.assertIn('name', form.errors)
         self.assertIn("Full Name is required if no user account is linked.", form.errors['name'])
 
-        # Test missing email
+                            
         data_missing_email = {
             'user': '',
             'name': 'Name Present',
@@ -119,7 +119,7 @@ class AdminServiceProfileFormTest(TestCase):
         self.assertIn('email', form.errors)
         self.assertIn("Email Address is required if no user account is linked.", form.errors['email'])
 
-        # Test missing phone_number
+                                   
         data_missing_phone = {
             'user': '',
             'name': 'Name Present',
@@ -140,7 +140,7 @@ class AdminServiceProfileFormTest(TestCase):
         Test that `clean_user` raises a ValidationError if a user already linked
         to a *different* ServiceProfile is attempted to be linked to a NEW profile.
         """
-        # Attempt to create a new profile using an already linked user
+                                                                      
         data = {
             'user': self.linked_user_existing_profile.pk,
             'name': 'New Profile Name',
@@ -165,10 +165,10 @@ class AdminServiceProfileFormTest(TestCase):
         Test that `clean_user` allows an existing ServiceProfile to be updated
         even if its linked user is the same as the existing profile.
         """
-        # Create data for updating the existing_service_profile
+                                                               
         data = {
             'user': self.existing_service_profile_user.pk,
-            'name': 'Updated Profile Name', # Change some other field
+            'name': 'Updated Profile Name',                          
             'email': 'updated@example.com',
             'phone_number': '111222333',
             'address_line_1': '123 Main St',
@@ -177,12 +177,12 @@ class AdminServiceProfileFormTest(TestCase):
             'post_code': '12345',
             'country': 'US',
         }
-        # Pass the instance to the form for an update scenario
+                                                              
         form = AdminServiceProfileForm(data=data, instance=self.existing_service_profile)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
-        # Verify that the user is still the same
+                                                
         self.assertEqual(form.cleaned_data['user'], self.existing_service_profile_user)
-        # Verify that other fields are updated
+                                              
         self.assertEqual(form.cleaned_data['name'], 'Updated Profile Name')
 
     def test_initial_data_for_existing_instance(self):
@@ -195,7 +195,7 @@ class AdminServiceProfileFormTest(TestCase):
         self.assertEqual(form.initial['name'], self.existing_service_profile.name)
         self.assertEqual(form.initial['email'], self.existing_service_profile.email)
         self.assertEqual(form.initial['phone_number'], self.existing_service_profile.phone_number)
-        # Check other fields as necessary
+                                         
         self.assertEqual(form.initial['city'], self.existing_service_profile.city)
 
     def test_user_field_queryset(self):
@@ -205,13 +205,13 @@ class AdminServiceProfileFormTest(TestCase):
         """
         form = AdminServiceProfileForm()
         queryset = form.fields['user'].queryset
-        # Ensure all users created by factories are in the queryset
+                                                                   
         self.assertIn(self.unlinked_user, queryset)
         self.assertIn(self.linked_user_existing_profile, queryset)
         self.assertIn(self.existing_service_profile_user, queryset)
 
-        # Check ordering (this is more an integration test, but good to verify)
-        # Get all users and check their order in the queryset based on username
+                                                                               
+                                                                               
         all_users = list(User.objects.all().order_by('username'))
         retrieved_users = list(queryset)
         self.assertEqual(retrieved_users, all_users)

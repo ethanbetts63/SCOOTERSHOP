@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views import View
-from hire.models.hire_packages import Package # Make sure this import path is correct
+from hire.models.hire_packages import Package                                        
 
 @method_decorator(login_required, name='dispatch')
 class HirePackagesSettingsView(View):

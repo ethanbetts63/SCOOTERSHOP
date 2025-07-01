@@ -1,4 +1,4 @@
-# SCOOTER_SHOP/inventory/views/admin_views/sales_faq_management_view.py
+                                                                       
 
 from django.views.generic import ListView
 from inventory.models import SalesFAQ

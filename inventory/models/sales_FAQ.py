@@ -1,4 +1,4 @@
-# SCOOTER_SHOP/inventory/models/sales_faq.py
+                                            
 
 from django.db import models
 

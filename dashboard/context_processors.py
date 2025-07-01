@@ -1,10 +1,10 @@
-# dashboard/context_processors.py
+                                 
 
 from .models import SiteSettings
 from django.conf import settings
 from service.models import ServiceType
-# Import your HireSettings model
-from dashboard.models import HireSettings # Assuming HireSettings is in dashboard.models
+                                
+from dashboard.models import HireSettings                                               
 
 def site_settings(request):
     settings_object = None
@@ -16,8 +16,8 @@ def site_settings(request):
         if settings_object:
             service_types_list = ServiceType.objects.all()
     except Exception:
-        # Handle exception for SiteSettings if necessary
-        pass # Or log the error
+                                                        
+        pass                   
 
     try:
         hire_settings_object = HireSettings.objects.first()

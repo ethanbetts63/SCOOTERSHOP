@@ -20,7 +20,7 @@ class ServiceBrandFormTest(TestCase):
         )
 
 
-    # Test form is valid with all fields properly filled.
+                                                         
     def test_form_valid_with_all_fields(self):
         form_data = {
             'name': 'Test Brand',
@@ -33,7 +33,7 @@ class ServiceBrandFormTest(TestCase):
         form = ServiceBrandForm(data=form_data, files=form_files)
         self.assertTrue(form.is_valid(), form.errors)
 
-    # Test form is valid for non-primary brand without image.
+                                                             
     def test_form_valid_non_primary_without_image(self):
         form_data = {
             'name': 'Test Brand',
@@ -43,7 +43,7 @@ class ServiceBrandFormTest(TestCase):
         form = ServiceBrandForm(data=form_data)
         self.assertTrue(form.is_valid())
 
-    # Test form is invalid when primary brand has no image.
+                                                           
     def test_form_invalid_primary_without_image(self):
         form_data = {
             'name': 'Test Brand',
@@ -55,7 +55,7 @@ class ServiceBrandFormTest(TestCase):
         self.assertIn('image', form.errors)
         self.assertEqual(form.errors['image'][0], "Primary brands require an image.")
 
-    # Test form requires name field.
+                                    
     def test_form_requires_name(self):
         form_data = {
             'is_primary': False,
@@ -65,7 +65,7 @@ class ServiceBrandFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('name', form.errors)
 
-    # Test form initializes correctly with instance.
+                                                    
     def test_form_instance_initialization(self):
         brand = ServiceBrand.objects.create(
             name='Existing Brand',
@@ -77,7 +77,7 @@ class ServiceBrandFormTest(TestCase):
         self.assertEqual(form.initial['name'], 'Existing Brand')
         self.assertEqual(form.initial['is_primary'], False)
 
-    # Test form is valid when editing an instance with an image but no new image provided.
+                                                                                          
     def test_form_valid_with_instance_no_new_image(self):
         image_file = io.BytesIO()
         Image.new('RGB', (10, 10), color = 'green').save(image_file, 'PNG')
@@ -102,7 +102,7 @@ class ServiceBrandFormTest(TestCase):
         self.assertTrue(form.is_valid(), form.errors)
 
 
-    # Test form is valid when editing an instance and providing a new image.
+                                                                            
     def test_form_valid_with_instance_new_image(self):
         image_file_old = io.BytesIO()
         Image.new('RGB', (10, 10), color = 'orange').save(image_file_old, 'GIF')

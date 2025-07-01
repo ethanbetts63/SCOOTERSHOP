@@ -1,4 +1,4 @@
-# payments/views/Refunds/admin_refund_policy_settings_view.py
+                                                             
 
 from django.urls import reverse_lazy
 from django.views.generic import UpdateView
@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import user_passes_test
 
 from payments.models import RefundPolicySettings
 from payments.forms.refund_settings_form import RefundSettingsForm
-from users.views.auth import is_admin # Assuming this utility exists for admin check
+from users.views.auth import is_admin                                               
 
 
 @method_decorator(user_passes_test(is_admin), name='dispatch')
@@ -22,7 +22,7 @@ class AdminRefundSettingsView(UpdateView):
     model = RefundPolicySettings
     form_class = RefundSettingsForm
     template_name = 'payments/admin_refund_settings.html'
-    # CORRECTED: Use the correct app_name and URL name from payments/urls.py
+                                                                            
     success_url = reverse_lazy('payments:admin_refund_settings')
 
     def get_object(self, queryset=None):
@@ -30,7 +30,7 @@ class AdminRefundSettingsView(UpdateView):
         Retrieves the single instance of RefundPolicySettings (pk=1).
         If no instance exists, it creates one.
         """
-        # This line ensures the instance is created if it doesn't exist.
+                                                                        
         obj, created = RefundPolicySettings.objects.get_or_create(pk=1)
         return obj
 
@@ -44,7 +44,7 @@ class AdminRefundSettingsView(UpdateView):
             messages.success(self.request, "Refund Policy settings updated successfully!")
             return response
         except ValidationError as e:
-            # Add form-level errors from the model's clean method (if not already added by form.clean)
+                                                                                                      
             form.add_error(None, e)
             return self.form_invalid(form)
 
@@ -61,10 +61,10 @@ class AdminRefundSettingsView(UpdateView):
         Overrides the post method to only handle submissions from the main RefundPolicySettings form.
         """
         if 'refund_policy_settings_submit' in request.POST:
-            self.object = self.get_object() # Ensure self.object is set for form_valid/invalid
+            self.object = self.get_object()                                                   
             form = self.get_form()
             if form.is_valid():
                 return self.form_valid(form)
             else:
                 return self.form_invalid(form)
-        return super().post(request, *args, **kwargs) # Fallback for other POST requests, though unlikely here
+        return super().post(request, *args, **kwargs)                                                         

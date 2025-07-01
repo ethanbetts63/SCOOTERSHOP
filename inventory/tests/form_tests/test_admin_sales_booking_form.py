@@ -1,4 +1,4 @@
-# inventory/tests/test_admin_sales_booking_form.py
+                                                  
 
 from django.test import TestCase
 from django.utils import timezone
@@ -27,14 +27,14 @@ class AdminSalesBookingFormTest(TestCase):
         Set up non-modified objects used by all test methods.
         This includes creating singleton settings and common model instances.
         """
-        # Create the essential singleton InventorySettings instance with a known deposit amount.
+                                                                                                
         cls.inventory_settings = InventorySettingsFactory(deposit_amount=Decimal('100.00'))
         
-        # Create a standard sales profile and a motorcycle to be used in most tests.
+                                                                                    
         cls.sales_profile = SalesProfileFactory()
         cls.motorcycle_available = MotorcycleFactory(condition='used', status='for_sale')
         
-        # Define a base set of valid data for reuse in warning tests
+                                                                    
         cls.base_valid_data = {
             'booking_status': 'confirmed',
             'payment_status': 'deposit_paid',
@@ -63,14 +63,14 @@ class AdminSalesBookingFormTest(TestCase):
         form = AdminSalesBookingForm(data=form_data)
         self.assertTrue(form.is_valid(), f"Form should be valid, but got errors: {form.errors.as_json()}")
 
-    # --- Tests for Validation Errors (form.is_valid() -> False) ---
+                                                                    
 
     def test_form_is_invalid_if_profile_id_is_missing(self):
         """
         Tests that form validation fails if the 'selected_profile_id' is not provided.
         """
         form_data = {
-            # 'selected_profile_id' is intentionally omitted.
+                                                             
             'selected_motorcycle_id': self.motorcycle_available.pk,
             'booking_status': 'pending_confirmation',
         }
@@ -84,7 +84,7 @@ class AdminSalesBookingFormTest(TestCase):
         Tests that form validation fails if the 'selected_profile_id' points to a non-existent SalesProfile.
         """
         form_data = {
-            'selected_profile_id': 99999,  # An ID that is guaranteed not to exist.
+            'selected_profile_id': 99999,                                          
             'selected_motorcycle_id': self.motorcycle_available.pk,
             'booking_status': 'pending_confirmation',
         }
@@ -99,7 +99,7 @@ class AdminSalesBookingFormTest(TestCase):
         """
         form_data = {
             'selected_profile_id': self.sales_profile.pk,
-            # 'selected_motorcycle_id' is intentionally omitted.
+                                                                
             'booking_status': 'pending_confirmation',
         }
         form = AdminSalesBookingForm(data=form_data)
@@ -113,7 +113,7 @@ class AdminSalesBookingFormTest(TestCase):
         """
         form_data = {
             'selected_profile_id': self.sales_profile.pk,
-            'selected_motorcycle_id': 99999,  # An ID that is guaranteed not to exist.
+            'selected_motorcycle_id': 99999,                                          
             'booking_status': 'pending_confirmation',
         }
         form = AdminSalesBookingForm(data=form_data)
@@ -121,7 +121,7 @@ class AdminSalesBookingFormTest(TestCase):
         self.assertIn('selected_motorcycle_id', form.errors)
         self.assertEqual(form.errors['selected_motorcycle_id'][0], 'Selected motorcycle does not exist.')
 
-    # --- Tests for Non-Blocking Warnings (form.is_valid() -> True, but form.get_warnings() has content) ---
+                                                                                                            
 
     def test_warning_is_generated_for_past_appointment_date(self):
         """
@@ -280,7 +280,7 @@ class AdminSalesBookingFormTest(TestCase):
         self.assertTrue(form.is_valid(), f"Form should have been valid but had errors: {form.errors.as_json()}")
         self.assertIn("Warning: 'Requested Viewing/Test Drive' is checked, but no appointment date or time is set.", form.get_warnings())
 
-    # --- Test Form Initialization ---
+                                      
 
     def test_form_initializes_correctly_from_instance(self):
         """
@@ -293,10 +293,10 @@ class AdminSalesBookingFormTest(TestCase):
         )
         form = AdminSalesBookingForm(instance=booking_instance)
         
-        # Check that the initial values for the custom hidden fields are set correctly on the fields themselves.
+                                                                                                                
         self.assertEqual(form.fields['selected_profile_id'].initial, self.sales_profile.pk)
         self.assertEqual(form.fields['selected_motorcycle_id'].initial, self.motorcycle_available.pk)
         
-        # Check a regular form field via the `initial` dict to ensure the rest of the instance data is loaded.
+                                                                                                              
         self.assertEqual(form.initial.get('booking_status'), booking_instance.booking_status)
         self.assertEqual(form.initial.get('customer_notes'), booking_instance.customer_notes)

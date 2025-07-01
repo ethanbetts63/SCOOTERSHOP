@@ -11,11 +11,11 @@ from django.http import Http404
 from payments.models.RefundRequest import RefundRequest
 from payments.utils.hire_refund_calc import calculate_hire_refund_amount
 from payments.utils.service_refund_calc import calculate_service_refund_amount
-from payments.utils.sales_refund_calc import calculate_sales_refund_amount # Import the new sales refund calculator
+from payments.utils.sales_refund_calc import calculate_sales_refund_amount                                         
 from mailer.utils import send_templated_email
 from hire.models import DriverProfile
 from service.models import ServiceProfile
-from inventory.models import SalesProfile # Import SalesProfile
+from inventory.models import SalesProfile                      
 
 
 def _convert_decimals_to_float(obj):
@@ -89,7 +89,7 @@ class UserVerifyRefundView(View):
                 booking_object = refund_request.service_booking
                 customer_profile_object = refund_request.service_profile
                 booking_type_for_details = 'service'
-            elif refund_request.sales_booking: # Added SalesBooking
+            elif refund_request.sales_booking:                     
                 calculated_refund_result = calculate_sales_refund_amount(
                     booking=refund_request.sales_booking,
                     refund_policy_snapshot=refund_policy_snapshot,
@@ -111,7 +111,7 @@ class UserVerifyRefundView(View):
                 'calculated_amount': float(calculated_refund_amount),
                 'policy_snapshot_used': refund_policy_snapshot,
                 'cancellation_datetime': refund_request.requested_at.isoformat(),
-                'booking_type': booking_type_for_details, # Use the determined type
+                'booking_type': booking_type_for_details,                          
                 'full_calculation_details': json_compatible_calculation_details
             }
             refund_request.amount_to_refund = calculated_refund_amount
@@ -140,7 +140,7 @@ class UserVerifyRefundView(View):
                 booking=booking_object,
                 driver_profile=customer_profile_object if isinstance(customer_profile_object, DriverProfile) else None,
                 service_profile=customer_profile_object if isinstance(customer_profile_object, ServiceProfile) else None,
-                sales_profile=customer_profile_object if isinstance(customer_profile_object, SalesProfile) else None, # Added SalesProfile
+                sales_profile=customer_profile_object if isinstance(customer_profile_object, SalesProfile) else None,                     
             )
 
             messages.success(request, "Your refund request has been successfully verified!")

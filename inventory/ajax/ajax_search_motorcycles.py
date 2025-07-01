@@ -1,4 +1,4 @@
-# inventory/ajax/ajax_search_motorcycles.py
+                                           
 
 from django.http import JsonResponse
 from django.db.models import Q
@@ -37,8 +37,8 @@ def search_motorcycles_ajax(request):
         queryset = Motorcycle.objects.filter(search_query)
 
         if not include_unavailable:
-            # FIX: The filter logic is now more precise. It correctly includes only
-            # motorcycles with a status of 'for_sale' or 'reserved'.
+                                                                                   
+                                                                    
             queryset = queryset.filter(status__in=['for_sale', 'reserved'])
         
         queryset = queryset.distinct().order_by('brand', 'model', 'year')
@@ -50,10 +50,10 @@ def search_motorcycles_ajax(request):
                 'brand': motorcycle.brand,
                 'model': motorcycle.model,
                 'year': motorcycle.year,
-                'status': motorcycle.get_status_display(), # Use display name for clarity
+                'status': motorcycle.get_status_display(),                               
                 'is_available': motorcycle.is_available,
                 'quantity': motorcycle.quantity,
-                'condition': motorcycle.get_condition_display(), # Use display name
+                'condition': motorcycle.get_condition_display(),                   
                 'price': str(motorcycle.price) if motorcycle.price else None,
                 'rego': motorcycle.rego,
                 'stock_number': motorcycle.stock_number,

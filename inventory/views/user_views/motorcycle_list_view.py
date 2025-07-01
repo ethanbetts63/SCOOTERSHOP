@@ -1,4 +1,4 @@
-# SCOOTER_SHOP/inventory/views/user_views/motorcycle_list_view.py
+                                                                 
 
 from django.views.generic import ListView
 from inventory.models import Motorcycle
@@ -31,7 +31,7 @@ class MotorcycleListView(ListView):
         context['years'] = list(range(2000, current_year + 1))
         context['years'].reverse()
 
-        # Add FAQs to context
+                             
         context['sales_faqs'] = get_faqs_for_step('general')
         context['faq_title'] = "Frequently Asked Questions"
 

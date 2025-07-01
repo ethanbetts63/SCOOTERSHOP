@@ -1,13 +1,13 @@
-# hire/tests/model_tests/hire_addon_tests.py
+                                            
 
 from decimal import Decimal
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 
-# Import model factory
+                      
 from hire.tests.test_helpers.model_factories import create_addon
-# Import the AddOn model directly to test its defaults
+                                                      
 from hire.models import AddOn
 
 
@@ -24,8 +24,8 @@ class AddOnModelTest(TestCase):
         addon = create_addon(
             name="GPS Device",
             description="Portable GPS navigation system.",
-            hourly_cost=Decimal('2.50'),  # Changed from 'cost'
-            daily_cost=Decimal('12.50'),  # New field
+            hourly_cost=Decimal('2.50'),                       
+            daily_cost=Decimal('12.50'),             
             min_quantity=1,
             max_quantity=3,
             is_available=True
@@ -33,8 +33,8 @@ class AddOnModelTest(TestCase):
         self.assertIsNotNone(addon.pk)
         self.assertEqual(addon.name, "GPS Device")
         self.assertEqual(addon.description, "Portable GPS navigation system.")
-        self.assertEqual(addon.hourly_cost, Decimal('2.50')) # Assert new field
-        self.assertEqual(addon.daily_cost, Decimal('12.50')) # Assert new field
+        self.assertEqual(addon.hourly_cost, Decimal('2.50'))                   
+        self.assertEqual(addon.daily_cost, Decimal('12.50'))                   
         self.assertEqual(addon.min_quantity, 1)
         self.assertEqual(addon.max_quantity, 3)
         self.assertTrue(addon.is_available)
@@ -48,7 +48,7 @@ class AddOnModelTest(TestCase):
         addon = create_addon(name="Riding Jacket")
         self.assertEqual(str(addon), "Riding Jacket")
 
-    # --- clean() method tests ---
+                                  
 
     def test_clean_negative_cost_raises_error(self):
         """
@@ -91,11 +91,11 @@ class AddOnModelTest(TestCase):
         """
         addon = create_addon(
             name="Valid AddOn",
-            hourly_cost=Decimal('5.00'),  # Changed from 'cost'
-            daily_cost=Decimal('25.00'),  # New field
+            hourly_cost=Decimal('5.00'),                       
+            daily_cost=Decimal('25.00'),             
             min_quantity=1,
             max_quantity=10,
-            is_available=False # Availability doesn't affect clean() for AddOn itself
+            is_available=False                                                       
         )
         try:
             addon.clean()

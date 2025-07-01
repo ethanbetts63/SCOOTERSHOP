@@ -1,4 +1,4 @@
-# SCOOTER_SHOP/inventory/forms/admin_sales_faq_form.py
+                                                      
 
 from django import forms
 from inventory.models import SalesFAQ
@@ -33,7 +33,7 @@ class AdminSalesFAQForm(forms.ModelForm):
                 'class': 'form-control'
             }),
             'is_active': forms.CheckboxInput(attrs={
-                'class': 'form-checkbox' # Using a class for potential custom styling
+                'class': 'form-checkbox'                                             
             }),
         }
         labels = {
@@ -50,6 +50,6 @@ class AdminSalesFAQForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Add a custom class to the answer field's label for more specific styling if needed
+                                                                                            
         self.fields['answer'].label_attrs = {'class': 'align-top'}
 

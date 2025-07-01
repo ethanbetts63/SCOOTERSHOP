@@ -22,7 +22,7 @@ class ServiceTypeModelTest(TestCase):
         Test that a ServiceType instance can be created successfully using the factory.
         """
         self.assertIsInstance(self.service_type, ServiceType)
-        self.assertIsNotNone(self.service_type.pk) # Check if it has a primary key (saved to DB)
+        self.assertIsNotNone(self.service_type.pk)                                              
 
     def test_name_field(self):
         """
@@ -46,10 +46,10 @@ class ServiceTypeModelTest(TestCase):
         Test the 'estimated_duration' field properties and help text.
         """
         service_type = self.service_type
-        # Assert that it's an integer, not timedelta
+                                                    
         self.assertIsInstance(service_type.estimated_duration, int)
         self.assertIsNotNone(service_type.estimated_duration)
-        # Updated help text assertion to match the model's new help text
+                                                                        
         self.assertEqual(service_type._meta.get_field('estimated_duration').help_text, "Estimated number of days to complete this service")
 
 
@@ -62,13 +62,13 @@ class ServiceTypeModelTest(TestCase):
         self.assertIsNotNone(service_type.base_price)
         self.assertEqual(service_type._meta.get_field('base_price').max_digits, 8)
         self.assertEqual(service_type._meta.get_field('base_price').decimal_places, 2)
-        # Check if a newly created instance (without factory override) has the default
+                                                                                      
         new_service_type = ServiceType.objects.create(
             name="New Service",
             description="A new service description",
-            # Pass an integer for estimated_duration
+                                                    
             estimated_duration=1,
-            # base_price will default to 0.00
+                                             
         )
         self.assertEqual(new_service_type.base_price, Decimal('0.00'))
 
@@ -78,16 +78,16 @@ class ServiceTypeModelTest(TestCase):
         """
         service_type = self.service_type
         self.assertIsInstance(service_type.is_active, bool)
-        self.assertEqual(service_type.is_active, True) # Factory sets it to True by default
+        self.assertEqual(service_type.is_active, True)                                     
         self.assertEqual(service_type._meta.get_field('is_active').help_text, "Whether this service is currently offered")
-        # Check if a newly created instance (without factory override) has the default
+                                                                                      
         new_service_type = ServiceType.objects.create(
             name="Another Service",
             description="Another service description",
-            # Pass an integer for estimated_duration
+                                                    
             estimated_duration=2,
             base_price=Decimal('50.00')
-            # is_active will default to True
+                                            
         )
         self.assertEqual(new_service_type.is_active, True)
 
@@ -111,7 +111,7 @@ class ServiceTypeModelTest(TestCase):
         If you later add unique=True to the name field, this test would fail.
         """
         ServiceTypeFactory(name="Unique Service Name")
-        # Should be able to create another with the same name if unique=False
+                                                                             
         try:
             ServiceTypeFactory(name="Unique Service Name")
         except Exception as e:

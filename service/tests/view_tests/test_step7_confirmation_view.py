@@ -1,4 +1,4 @@
-# service/tests/test_step7_confirmation_view.py
+                                               
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.messages import get_messages
@@ -27,16 +27,16 @@ class ServiceBookingConfirmationViewTest(TestCase):
     def setUp(self):
         """Set up for each test method."""
         self.client.force_login(self.user)
-        # Clean up models to ensure isolation between tests
+                                                           
         TempServiceBooking.objects.all().delete()
         ServiceBooking.objects.all().delete()
         Payment.objects.all().delete()
 
-    # Removed tests related to temp_booking_uuid and convert_temp_service_booking
-    # as these scenarios should now be handled before reaching Step7ConfirmationView.
-    # test_get_in_store_payment_flow_success is removed.
-    # test_get_in_store_flow_temp_booking_not_found is removed.
-    # test_get_in_store_flow_conversion_fails is removed.
+                                                                                 
+                                                                                     
+                                                        
+                                                               
+                                                         
 
 
     def test_get_booking_found_by_session_reference(self):
@@ -53,7 +53,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
         self.assertTemplateUsed(response, 'service/step7_confirmation.html')
         self.assertEqual(response.context['service_booking'].id, final_booking.id)
         self.assertFalse(response.context['is_processing'])
-        # Ensure temp_service_booking_uuid is cleared if it was somehow present
+                                                                               
         self.assertNotIn('temp_service_booking_uuid', self.client.session)
 
 
@@ -72,7 +72,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
         self.assertEqual(response.context['service_booking'].id, final_booking.id)
         self.assertFalse(response.context['is_processing'])
         self.assertEqual(self.client.session.get('service_booking_reference'), final_booking.service_booking_reference)
-        # Ensure temp_service_booking_uuid is cleared if it was somehow present
+                                                                               
         self.assertNotIn('temp_service_booking_uuid', self.client.session)
 
 
@@ -82,7 +82,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
         but a Payment object exists for the given payment_intent_id.
         """
         payment_intent_id = f"pi_{uuid.uuid4().hex}"
-        # Create a Payment record, but no associated ServiceBooking yet
+                                                                       
         PaymentFactory(stripe_payment_intent_id=payment_intent_id)
 
         url = f"{self.base_url}?payment_intent_id={payment_intent_id}"
@@ -93,7 +93,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
         self.assertTrue(response.context['is_processing'])
         self.assertEqual(response.context['payment_intent_id'], payment_intent_id)
         self.assertNotIn('service_booking', response.context)
-        # Ensure temp_service_booking_uuid is cleared if it was somehow present
+                                                                               
         self.assertNotIn('temp_service_booking_uuid', self.client.session)
 
 
@@ -124,7 +124,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
         self.assertRedirects(response, reverse('service:service'))
         messages = list(get_messages(response.wsgi_request))
         self.assertTrue(any("Could not find a booking confirmation" in str(m) for m in messages))
-        self.assertNotIn('service_booking_reference', self.client.session) # Should be cleared
+        self.assertNotIn('service_booking_reference', self.client.session)                    
 
     def test_get_payment_intent_id_invalid_no_payment_or_booking_redirects_to_home(self):
         """
@@ -133,7 +133,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
         This covers cases where the webhook might have totally failed.
         """
         payment_intent_id = f"pi_{uuid.uuid4().hex}"
-        # Ensure no payment or service booking exists for this ID
+                                                                 
 
         url = f"{self.base_url}?payment_intent_id={payment_intent_id}"
         response = self.client.get(url)

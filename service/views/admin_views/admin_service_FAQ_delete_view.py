@@ -1,10 +1,10 @@
-# service/views/admin_views/service_faq_delete_view.py
+                                                      
 
 from django.views.generic.edit import DeleteView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from service.models import ServiceFAQ
-from inventory.mixins import AdminRequiredMixin # Assuming a shared mixin
+from inventory.mixins import AdminRequiredMixin                          
 
 class ServiceFAQDeleteView(AdminRequiredMixin, DeleteView):
     """
@@ -12,8 +12,8 @@ class ServiceFAQDeleteView(AdminRequiredMixin, DeleteView):
     """
     model = ServiceFAQ
     success_url = reverse_lazy('service:service_faq_management')
-    # A generic confirmation template can be reused from another app
-    # or you can create one at 'service/admin_confirm_delete.html'
+                                                                    
+                                                                  
     template_name = 'service/admin_confirm_delete.html' 
 
     def get_context_data(self, **kwargs):

@@ -1,4 +1,4 @@
-# payments/webhook_handlers/__init__.py
+                                       
 
 from .hire_handlers import (
     handle_hire_booking_succeeded,

@@ -1,11 +1,11 @@
-# dashboard/views/delete_driver_profile_view.py
+                                               
 
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.contrib import messages
-from hire.models.driver_profile import DriverProfile # Import the DriverProfile model
+from hire.models.driver_profile import DriverProfile                                 
 
 @method_decorator(login_required, name='dispatch')
 class DeleteDriverProfileView(View):
@@ -14,7 +14,7 @@ class DeleteDriverProfileView(View):
     """
     def post(self, request, pk, *args, **kwargs):
         driver_profile = get_object_or_404(DriverProfile, pk=pk)
-        profile_name = driver_profile.name # Get name before deleting for message
+        profile_name = driver_profile.name                                       
 
         try:
             driver_profile.delete()

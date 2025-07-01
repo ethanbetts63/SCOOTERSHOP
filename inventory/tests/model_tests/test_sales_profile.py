@@ -2,7 +2,7 @@ from django.test import TestCase
 from datetime import date
 import datetime
 from django.db import models
-from django.db.models.fields.files import FieldFile # Import FieldFile
+from django.db.models.fields.files import FieldFile                   
 
 from inventory.models import SalesProfile
 
@@ -75,7 +75,7 @@ class SalesProfileModelTest(TestCase):
 
     def test_drivers_license_image_field(self):
         field = self.sales_profile_with_user._meta.get_field('drivers_license_image')
-        # Corrected assertion to include FieldFile type
+                                                       
         self.assertIsInstance(self.sales_profile_with_user.drivers_license_image, (FieldFile, type(None)))
         self.assertTrue(field.blank)
         self.assertTrue(field.null)

@@ -30,7 +30,7 @@ class MotorcycleCreateUpdateView(AdminRequiredMixin, UpdateView):
             )
 
         if self.request.POST:
-            # Pass FILES to the formset on a POST request
+                                                         
             context['image_formset'] = MotorcycleImageFormSet(self.request.POST, self.request.FILES, instance=self.object)
         else:
             context['image_formset'] = MotorcycleImageFormSet(instance=self.object)
@@ -42,8 +42,8 @@ class MotorcycleCreateUpdateView(AdminRequiredMixin, UpdateView):
         self.object = self.get_object()
         form = self.get_form()
         
-        # FIXED: You must pass request.FILES to the formset constructor
-        # so it can see and validate uploaded files.
+                                                                       
+                                                    
         image_formset = MotorcycleImageFormSet(self.request.POST, self.request.FILES, instance=self.object)
 
         if form.is_valid() and image_formset.is_valid():
@@ -57,7 +57,7 @@ class MotorcycleCreateUpdateView(AdminRequiredMixin, UpdateView):
             return redirect(self.get_success_url())
         else:
             messages.error(self.request, "Please correct the errors below.")
-            # Pass the invalid forms back to the context to display errors
+                                                                          
             return self.render_to_response(self.get_context_data(form=form, image_formset=image_formset))
 
     def get_success_url(self):

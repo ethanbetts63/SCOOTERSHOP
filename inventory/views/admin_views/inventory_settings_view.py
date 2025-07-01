@@ -1,10 +1,10 @@
-# inventory/views/admin_views/inventory_settings_view.py
+                                                        
 
 from django.urls import reverse_lazy
 from django.views.generic import UpdateView
 from django.contrib import messages
 from django.forms import ValidationError
-from inventory.mixins import AdminRequiredMixin # Assuming AdminRequiredMixin is appropriate here
+from inventory.mixins import AdminRequiredMixin                                                  
 
 from inventory.models import InventorySettings
 from inventory.forms.admin_inventory_settings_form import InventorySettingsForm

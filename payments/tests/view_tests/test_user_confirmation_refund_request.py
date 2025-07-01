@@ -1,4 +1,4 @@
-# payments/tests/test_user_confirmation_refund_request_view.py
+                                                              
 
 from django.test import TestCase, Client
 from django.urls import reverse
@@ -24,10 +24,10 @@ class UserConfirmationRefundRequestViewTests(TestCase):
         """
         response = self.client.get(self.confirmation_url)
 
-        # Assert that the response status code is 200 (OK)
+                                                          
         self.assertEqual(response.status_code, 200)
 
-        # Assert that the correct template is used
+                                                  
         self.assertTemplateUsed(response, 'payments/user_confirmation_refund_request.html')
 
     def test_context_data_is_correct(self):
@@ -36,7 +36,7 @@ class UserConfirmationRefundRequestViewTests(TestCase):
         """
         response = self.client.get(self.confirmation_url)
 
-        # Check if the context variables exist and have the expected values
+                                                                           
         self.assertIn('page_title', response.context)
         self.assertEqual(response.context['page_title'], 'Refund Request Submitted')
 
@@ -58,10 +58,10 @@ class UserConfirmationRefundRequestViewTests(TestCase):
         """
         response = self.client.get(self.confirmation_url)
 
-        # Decode the response content to a string for assertion
+                                                               
         content = response.content.decode('utf-8')
 
-        # Assert that key pieces of text are present in the rendered HTML
+                                                                         
         self.assertIn("Refund Request Submitted", content)
         self.assertIn("Your refund request has been submitted successfully.", content)
         self.assertIn("A confirmation email has been sent to your inbox.", content)

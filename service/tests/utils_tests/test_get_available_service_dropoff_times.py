@@ -3,10 +3,10 @@ from django.utils import timezone
 import datetime
 from unittest.mock import patch
 
-# Import the function to be tested
+                                  
 from service.utils.get_available_service_dropoff_times import get_available_dropoff_times
 
-# Import models and factories
+                             
 from service.models import ServiceSettings, ServiceBooking
 from ..test_helpers.model_factories import (
     ServiceSettingsFactory,
@@ -24,24 +24,24 @@ class GetAvailableDropoffTimesTest(TestCase):
         Set up common data for all tests in this class.
         Patch timezone.now() and timezone.localdate() for consistent date tests.
         """
-        # Fixed point in time for testing: June 15, 2025, 10:00:00 AM UTC
+                                                                         
         cls.fixed_now_utc = datetime.datetime(2025, 6, 15, 10, 0, 0, tzinfo=datetime.timezone.utc)
-        # Assuming local timezone offset for Copenhagen (CEST) is +02:00
-        # So, 10:00 UTC is 12:00 PM CEST local time.
+                                                                        
+                                                    
         cls.fixed_now_local_datetime = datetime.datetime(2025, 6, 15, 12, 0, 0)
-        cls.fixed_local_date = datetime.date(2025, 6, 15) # Sunday, June 15, 2025
+        cls.fixed_local_date = datetime.date(2025, 6, 15)                        
 
-        # Patch timezone.now() to return a fixed, timezone-aware datetime
+                                                                         
         cls.patcher_now = patch('django.utils.timezone.now', return_value=cls.fixed_now_utc)
-        # Patch timezone.localdate directly to return the fixed local date
-        # This simplifies mocking as it bypasses the internal call to localtime.
+                                                                          
+                                                                                
         cls.patcher_localdate = patch('django.utils.timezone.localdate', return_value=cls.fixed_local_date)
         
         cls.mock_now = cls.patcher_now.start()
         cls.mock_localdate = cls.patcher_localdate.start()
 
-        # Set default timezone for tests to Copenhagen's timezone
-        # This will affect how timezone.make_aware behaves
+                                                                 
+                                                          
         timezone.activate('Europe/Copenhagen')
 
 
@@ -51,8 +51,8 @@ class GetAvailableDropoffTimesTest(TestCase):
         Clean up mocks after all tests are done.
         """
         cls.patcher_now.stop()
-        cls.patcher_localdate.stop() # Stop the new patcher
-        timezone.deactivate() # Deactivate test timezone
+        cls.patcher_localdate.stop()                       
+        timezone.deactivate()                           
         super().tearDownClass()
 
     def setUp(self):
@@ -62,25 +62,25 @@ class GetAvailableDropoffTimesTest(TestCase):
         ServiceSettings.objects.all().delete()
         ServiceBooking.objects.all().delete()
 
-        # Create default service settings for most tests
-        # latest_same_day_dropoff_time is set to match drop_off_end_time initially
-        # to avoid validation issues with the default factory settings.
+                                                        
+                                                                                  
+                                                                       
         self.service_settings = ServiceSettingsFactory(
             enable_service_booking=True,
             drop_off_start_time=datetime.time(9, 0),
             drop_off_end_time=datetime.time(17, 0),
             drop_off_spacing_mins=30,
-            latest_same_day_dropoff_time=datetime.time(17, 0), # Default to end_time
+            latest_same_day_dropoff_time=datetime.time(17, 0),                      
             allow_after_hours_dropoff=False,
         )
-        # Ensure the mock for timezone.now is reset for each test if necessary,
-        # though setUpTestData ensures it's consistently fixed.
+                                                                               
+                                                               
 
     def test_no_service_settings(self):
         """
         Test that an empty list is returned if no ServiceSettings exist.
         """
-        ServiceSettings.objects.all().delete() # Remove any existing settings
+        ServiceSettings.objects.all().delete()                               
         available_times = get_available_dropoff_times(self.fixed_local_date)
         self.assertEqual(available_times, [])
 
@@ -97,24 +97,24 @@ class GetAvailableDropoffTimesTest(TestCase):
         Adjusting fixed_now_utc to 09:30 AM (meaning 11:30 AM local)
         and latest_same_day_dropoff_time to 17:00 (5 PM).
         """
-        # Re-patch timezone.now for this specific test
-        # Adjusting the patched time by 1 second to ensure current 11:30 slot is skipped.
-        # 09:30:01 UTC will become 11:30:01 local.
-        # This makes the condition `current_slot_datetime <= now_local` evaluate True for 11:30:00,
-        # correctly skipping it.
+                                                      
+                                                                                         
+                                                  
+                                                                                                   
+                                
         with patch('django.utils.timezone.now', return_value=datetime.datetime(2025, 6, 15, 9, 30, 1, tzinfo=datetime.timezone.utc)):
             self.service_settings.drop_off_start_time = datetime.time(9, 0)
             self.service_settings.drop_off_end_time = datetime.time(17, 0)
             self.service_settings.drop_off_spacing_mins = 30
-            self.service_settings.latest_same_day_dropoff_time = datetime.time(17, 0) # Allow till end time for today
+            self.service_settings.latest_same_day_dropoff_time = datetime.time(17, 0)                                
             self.service_settings.save()
 
-            # Current time (local): 11:30 AM (09:30 UTC + 2 hours offset)
-            # Available slots should start from 11:30 (current time) for today,
-            # but the function will advance to the next valid slot which is 12:00.
-            # Potential slots: 09:00, 09:30, 10:00, 10:30, 11:00, 11:30, 12:00, ..., 17:00
-            # Times before 11:30 should be skipped.
-            # So, expected starts from 12:00
+                                                                         
+                                                                               
+                                                                                  
+                                                                                          
+                                                   
+                                            
             expected_times = [
                 '12:00', '12:30', '13:00', '13:30', '14:00',
                 '14:30', '15:00', '15:30', '16:00', '16:30', '17:00'
@@ -126,10 +126,10 @@ class GetAvailableDropoffTimesTest(TestCase):
         """
         Test basic slot generation for a future date (no current time restrictions).
         """
-        future_date = self.fixed_local_date + datetime.timedelta(days=7) # Next Sunday
+        future_date = self.fixed_local_date + datetime.timedelta(days=7)              
         self.service_settings.drop_off_start_time = datetime.time(9, 0)
         self.service_settings.drop_off_end_time = datetime.time(17, 0)
-        self.service_settings.drop_off_spacing_mins = 60 # Hourly slots
+        self.service_settings.drop_off_spacing_mins = 60               
         self.service_settings.save()
 
         expected_times = [
@@ -144,22 +144,22 @@ class GetAvailableDropoffTimesTest(TestCase):
         Test that slots are blocked by existing bookings within the spacing window.
         Booking at 10:00 with 30 min spacing blocks 09:30, 10:00, 10:30.
         """
-        test_date = self.fixed_local_date + datetime.timedelta(days=1) # Monday
+        test_date = self.fixed_local_date + datetime.timedelta(days=1)         
         self.service_settings.drop_off_start_time = datetime.time(9, 0)
         self.service_settings.drop_off_end_time = datetime.time(12, 0)
         self.service_settings.drop_off_spacing_mins = 30
-        # Fix: Update latest_same_day_dropoff_time to be within the new end_time
+                                                                                
         self.service_settings.latest_same_day_dropoff_time = datetime.time(12, 0) 
         self.service_settings.save()
 
-        # Create a booking at 10:00
+                                   
         ServiceBookingFactory(
             dropoff_date=test_date,
             dropoff_time=datetime.time(10, 0)
         )
 
-        # Expected initial slots (9:00, 9:30, 10:00, 10:30, 11:00, 11:30, 12:00)
-        # Booking at 10:00 with 30 min spacing should block 9:30, 10:00, 10:30
+                                                                                
+                                                                              
         expected_times = [
             '09:00', '11:00', '11:30', '12:00'
         ]
@@ -173,20 +173,20 @@ class GetAvailableDropoffTimesTest(TestCase):
         09:30 blocks 09:00, 09:30, 10:00
         11:00 blocks 10:30, 11:00, 11:30
         """
-        test_date = self.fixed_local_date + datetime.timedelta(days=1) # Monday
+        test_date = self.fixed_local_date + datetime.timedelta(days=1)         
         self.service_settings.drop_off_start_time = datetime.time(9, 0)
         self.service_settings.drop_off_end_time = datetime.time(12, 0)
         self.service_settings.drop_off_spacing_mins = 30
-        # Fix: Update latest_same_day_dropoff_time to be within the new end_time
+                                                                                
         self.service_settings.latest_same_day_dropoff_time = datetime.time(12, 0) 
         self.service_settings.save()
 
         ServiceBookingFactory(dropoff_date=test_date, dropoff_time=datetime.time(9, 30))
         ServiceBookingFactory(dropoff_date=test_date, dropoff_time=datetime.time(11, 0))
 
-        # Initial slots: 09:00, 09:30, 10:00, 10:30, 11:00, 11:30, 12:00
-        # Blocked: 09:00, 09:30, 10:00 (due to 09:30 booking)
-        # Blocked: 10:30, 11:00, 11:30 (due to 11:00 booking)
+                                                                        
+                                                             
+                                                             
         expected_times = ['12:00']
         available_times = get_available_dropoff_times(test_date)
         self.assertEqual(available_times, expected_times)
@@ -197,15 +197,15 @@ class GetAvailableDropoffTimesTest(TestCase):
         and current time/latest_same_day_dropoff_time do not restrict.
         """
         self.service_settings.allow_after_hours_dropoff = True
-        self.service_settings.drop_off_spacing_mins = 60 # Hourly for simplicity
-        # When after-hours is true, latest_same_day_dropoff_time constraint is bypassed in function logic,
-        # but the model validation still applies, so set it to a valid time within the full 24h range.
+        self.service_settings.drop_off_spacing_mins = 60                        
+                                                                                                          
+                                                                                                      
         self.service_settings.drop_off_start_time = datetime.time(0, 0)
         self.service_settings.drop_off_end_time = datetime.time(23, 59)
-        self.service_settings.latest_same_day_dropoff_time = datetime.time(23, 59) # Set to match end time for valid save
+        self.service_settings.latest_same_day_dropoff_time = datetime.time(23, 59)                                       
         self.service_settings.save()
 
-        # Should generate slots from 00:00 to 23:00 (hourly)
+                                                            
         expected_times = [f"{h:02d}:00" for h in range(24)]
         available_times = get_available_dropoff_times(self.fixed_local_date)
         self.assertEqual(available_times, expected_times)
@@ -215,10 +215,10 @@ class GetAvailableDropoffTimesTest(TestCase):
         Test that even with after-hours allowed, existing bookings still block slots.
         Booking at 01:00 with 60 min spacing blocks 00:00, 01:00, 02:00.
         """
-        test_date = self.fixed_local_date + datetime.timedelta(days=1) # Monday
+        test_date = self.fixed_local_date + datetime.timedelta(days=1)         
         self.service_settings.allow_after_hours_dropoff = True
         self.service_settings.drop_off_spacing_mins = 60
-        # Adjust times to fit 24h range for valid save
+                                                      
         self.service_settings.drop_off_start_time = datetime.time(0, 0)
         self.service_settings.drop_off_end_time = datetime.time(23, 59)
         self.service_settings.latest_same_day_dropoff_time = datetime.time(23, 59)
@@ -234,10 +234,10 @@ class GetAvailableDropoffTimesTest(TestCase):
         """
         Test with drop_off_spacing_mins set to 60.
         """
-        test_date = self.fixed_local_date + datetime.timedelta(days=1) # Monday
+        test_date = self.fixed_local_date + datetime.timedelta(days=1)         
         self.service_settings.drop_off_start_time = datetime.time(9, 0)
         self.service_settings.drop_off_end_time = datetime.time(12, 0)
-        # Update latest_same_day_dropoff_time to be within the new end_time
+                                                                           
         self.service_settings.latest_same_day_dropoff_time = datetime.time(12, 0)
         self.service_settings.drop_off_spacing_mins = 60
         self.service_settings.save()
@@ -250,10 +250,10 @@ class GetAvailableDropoffTimesTest(TestCase):
         """
         Test with drop_off_spacing_mins set to 15.
         """
-        test_date = self.fixed_local_date + datetime.timedelta(days=1) # Monday
+        test_date = self.fixed_local_date + datetime.timedelta(days=1)         
         self.service_settings.drop_off_start_time = datetime.time(9, 0)
-        self.service_settings.drop_off_end_time = datetime.time(9, 45) # Keep it short for 15min interval
-        # Update latest_same_day_dropoff_time to be within the new end_time
+        self.service_settings.drop_off_end_time = datetime.time(9, 45)                                   
+                                                                           
         self.service_settings.latest_same_day_dropoff_time = datetime.time(9, 45)
         self.service_settings.drop_off_spacing_mins = 15
         self.service_settings.save()
@@ -267,32 +267,32 @@ class GetAvailableDropoffTimesTest(TestCase):
         Test that if selected_date is in the past and after-hours is not allowed,
         no slots are returned because all potential slots would be "passed".
         """
-        past_date = self.fixed_local_date - datetime.timedelta(days=7) # Last Sunday
+        past_date = self.fixed_local_date - datetime.timedelta(days=7)              
         self.service_settings.allow_after_hours_dropoff = False
-        self.service_settings.save() # No change to end time, so current latest_same_day_dropoff_time (17:00) is fine.
+        self.service_settings.save()                                                                                  
 
         available_times = get_available_dropoff_times(past_date)
         self.assertEqual(available_times, [])
 
-    # Removed the test_booking_without_dropoff_time_does_not_block as it violates the
-    # NOT NULL constraint on ServiceBooking.dropoff_time, which is intended.
+                                                                                     
+                                                                            
 
     def test_current_time_boundary(self):
         """
         Test that current time correctly restricts available slots.
         If current time is 10:15 and spacing is 30, next slot is 10:30.
         """
-        # Set current time to 10:15 AM local (08:15 UTC + 2 hours offset)
+                                                                         
         with patch('django.utils.timezone.now', return_value=datetime.datetime(2025, 6, 15, 8, 15, 0, tzinfo=datetime.timezone.utc)):
             self.service_settings.drop_off_start_time = datetime.time(9, 0)
             self.service_settings.drop_off_end_time = datetime.time(12, 0)
             self.service_settings.drop_off_spacing_mins = 30
-            # Update latest_same_day_dropoff_time to be within the new end_time
+                                                                               
             self.service_settings.latest_same_day_dropoff_time = datetime.time(12, 0)
             self.service_settings.save()
 
-            # For today's date, slots before 10:15 AM (local) should be skipped.
-            # The next potential slot is 10:30.
+                                                                                
+                                               
             expected_times = ['10:30', '11:00', '11:30', '12:00']
             available_times = get_available_dropoff_times(self.fixed_local_date)
             self.assertEqual(available_times, expected_times)
@@ -302,12 +302,12 @@ class GetAvailableDropoffTimesTest(TestCase):
         Test that latest_same_day_dropoff_time correctly caps slots for today.
         Current time 09:00. Latest same day 10:00.
         """
-        # Set current time to 07:00 AM local (05:00 UTC + 2 hours offset) so it doesn't interfere
+                                                                                                 
         with patch('django.utils.timezone.now', return_value=datetime.datetime(2025, 6, 15, 5, 0, 0, tzinfo=datetime.timezone.utc)):
             self.service_settings.drop_off_start_time = datetime.time(9, 0)
-            self.service_settings.drop_off_end_time = datetime.time(17, 0) # Normal end time
+            self.service_settings.drop_off_end_time = datetime.time(17, 0)                  
             self.service_settings.drop_off_spacing_mins = 30
-            self.service_settings.latest_same_day_dropoff_time = datetime.time(10, 0) # Early cut-off for today
+            self.service_settings.latest_same_day_dropoff_time = datetime.time(10, 0)                          
             self.service_settings.save()
 
             expected_times = ['09:00', '09:30', '10:00']
@@ -320,17 +320,17 @@ class GetAvailableDropoffTimesTest(TestCase):
         Booking at 9:00 and 30 min spacing blocks 8:30, 9:00, 9:30.
         If start is 9:00, end 9:30, spacing 30, and booking at 9:00, then all are blocked.
         """
-        test_date = self.fixed_local_date + datetime.timedelta(days=1) # Monday
+        test_date = self.fixed_local_date + datetime.timedelta(days=1)         
         self.service_settings.drop_off_start_time = datetime.time(9, 0)
         self.service_settings.drop_off_end_time = datetime.time(9, 30)
-        # Update latest_same_day_dropoff_time to be within the new end_time
+                                                                           
         self.service_settings.latest_same_day_dropoff_time = datetime.time(9, 30)
         self.service_settings.drop_off_spacing_mins = 30
         self.service_settings.save()
 
         ServiceBookingFactory(dropoff_date=test_date, dropoff_time=datetime.time(9, 0))
 
-        expected_times = [] # No available slots
+        expected_times = []                     
         available_times = get_available_dropoff_times(test_date)
         self.assertEqual(available_times, expected_times)
 
@@ -344,14 +344,14 @@ class GetAvailableDropoffTimesTest(TestCase):
         test_date = self.fixed_local_date + datetime.timedelta(days=1)
         self.service_settings.drop_off_start_time = datetime.time(9, 0)
         self.service_settings.drop_off_end_time = datetime.time(9, 30)
-        # Update latest_same_day_dropoff_time to be within the new end_time
+                                                                           
         self.service_settings.latest_same_day_dropoff_time = datetime.time(9, 30)
         self.service_settings.drop_off_spacing_mins = 30
         self.service_settings.save()
 
-        # Should run without TypeErrors related to timezone
+                                                           
         available_times = get_available_dropoff_times(test_date)
-        # Just check that it returns a list, specific content is covered by other tests
+                                                                                       
         self.assertIsInstance(available_times, list)
         self.assertGreater(len(available_times), 0)
 

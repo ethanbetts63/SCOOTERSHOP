@@ -3,10 +3,10 @@ from django.urls import reverse
 from django.http import JsonResponse
 import json
 
-# Corrected import path for your factories
+                                          
 from ..test_helpers.model_factories import ServiceProfileFactory, UserFactory
 
-# Import the view function to be tested
+                                       
 from service.ajax.ajax_search_service_profiles import search_customer_profiles_ajax
 
 class AjaxSearchCustomerProfilesTest(TestCase):
@@ -23,7 +23,7 @@ class AjaxSearchCustomerProfilesTest(TestCase):
         """
         self.factory = RequestFactory()
 
-        # Create multiple ServiceProfile instances for testing search
+                                                                     
         self.user1 = UserFactory(username='johndoe', email='john.doe@example.com')
         self.profile1 = ServiceProfileFactory(
             user=self.user1,
@@ -44,10 +44,10 @@ class AjaxSearchCustomerProfilesTest(TestCase):
             address_line_1='123 Main St'
         )
 
-        self.user3 = UserFactory(username='bobjohnson', email='bob.j@other.com') # Changed username to avoid 'john'
+        self.user3 = UserFactory(username='bobjohnson', email='bob.j@other.com')                                   
         self.profile3 = ServiceProfileFactory(
             user=self.user3,
-            name='Bob Johnson', # This name contains 'john', which caused the previous failure
+            name='Bob Johnson',                                                               
             email='bob.j@other.com',
             phone_number='0455551111',
             city='Sydney',
@@ -55,7 +55,7 @@ class AjaxSearchCustomerProfilesTest(TestCase):
         )
 
         self.user4 = UserFactory(username='alice', email='alice@unique.com')
-        self.profile4 = ServiceProfileFactory( # This one should not match common queries
+        self.profile4 = ServiceProfileFactory(                                           
             user=self.user4,
             name='Alice Wonderland',
             email='alice@unique.com',
@@ -68,7 +68,7 @@ class AjaxSearchCustomerProfilesTest(TestCase):
         Test searching for customer profiles by name.
         Uses a specific name to ensure only one match.
         """
-        search_term = "John Doe" # Changed search term to be more specific
+        search_term = "John Doe"                                          
         url = reverse('service:admin_api_search_customer') + f'?query={search_term}'
         request = self.factory.get(url)
         response = search_customer_profiles_ajax(request)
@@ -87,7 +87,7 @@ class AjaxSearchCustomerProfilesTest(TestCase):
         """
         Test searching for customer profiles by email.
         """
-        search_term = "jane.doe@test.com" # User's email, not profile's email
+        search_term = "jane.doe@test.com"                                    
         url = reverse('service:admin_api_search_customer') + f'?query={search_term}'
         request = self.factory.get(url)
         response = search_customer_profiles_ajax(request)
@@ -121,7 +121,7 @@ class AjaxSearchCustomerProfilesTest(TestCase):
         """
         Test searching where multiple profiles match, ensuring correct ordering (by name).
         """
-        search_term = "Sydney" # Both profile1 and profile3 are in Sydney
+        search_term = "Sydney"                                           
         url = reverse('service:admin_api_search_customer') + f'?query={search_term}'
         request = self.factory.get(url)
         response = search_customer_profiles_ajax(request)
@@ -133,9 +133,9 @@ class AjaxSearchCustomerProfilesTest(TestCase):
         self.assertIn('profiles', content)
         self.assertEqual(len(content['profiles']), 2)
 
-        # Expect profiles to be ordered by name: Bob Johnson, then John Doe
-        self.assertEqual(content['profiles'][0]['name'], self.profile3.name) # Bob Johnson
-        self.assertEqual(content['profiles'][1]['name'], self.profile1.name) # John Doe
+                                                                           
+        self.assertEqual(content['profiles'][0]['name'], self.profile3.name)              
+        self.assertEqual(content['profiles'][1]['name'], self.profile1.name)           
 
     def test_search_customer_profiles_no_matches(self):
         """
@@ -180,7 +180,7 @@ class AjaxSearchCustomerProfilesTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response, JsonResponse)
-        content = json.loads(response.content) # Corrected line
+        content = json.loads(response.content)                 
 
         self.assertIn('profiles', content)
         self.assertEqual(len(content['profiles']), 0)
@@ -192,10 +192,10 @@ class AjaxSearchCustomerProfilesTest(TestCase):
         (The @require_GET decorator handles this).
         """
         url = reverse('service:admin_api_search_customer')
-        request = self.factory.post(url) # Send a POST request
+        request = self.factory.post(url)                      
 
         response = search_customer_profiles_ajax(request)
 
-        # @require_GET decorator returns 405 Method Not Allowed for non-GET requests
+                                                                                    
         self.assertEqual(response.status_code, 405)
 

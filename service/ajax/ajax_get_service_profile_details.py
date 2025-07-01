@@ -15,11 +15,11 @@ def get_service_profile_details_ajax(request, profile_id):
     try:
         profile = get_object_or_404(ServiceProfile, pk=profile_id)
     except Exception as e:
-        # Return a 404 response if the profile is not found
+                                                           
         return JsonResponse({'error': f'ServiceProfile not found or invalid ID: {e}'}, status=404)
 
-    # Serialize all relevant fields from the ServiceProfile instance
-    # Ensure these fields match those expected by your ServiceBookingUserForm
+                                                                    
+                                                                             
     profile_details = {
         'id': profile.pk,
         'name': profile.name,

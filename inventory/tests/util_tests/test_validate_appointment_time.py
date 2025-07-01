@@ -1,4 +1,4 @@
-# inventory/tests/utils/test_validate_appointment_time.py
+                                                         
 
 from django.test import TestCase
 from datetime import date, datetime, time
@@ -125,17 +125,17 @@ class ValidateAppointmentTimeUtilTest(TestCase):
         
         existing_booked_times = [time(10, 0)]
 
-        # Test a direct overlap
+                               
         errors = validate_appointment_time(selected_date, time(10, 0), self.inventory_settings, existing_booked_times)
         self.assertIn("The selected time (10:00) overlaps with an existing appointment.", errors)
         self.assertEqual(len(errors), 1)
 
-        # Test an overlap at the start of the blocked interval
+                                                              
         errors = validate_appointment_time(selected_date, time(9, 30), self.inventory_settings, existing_booked_times)
         self.assertIn("The selected time (09:30) overlaps with an existing appointment.", errors)
         self.assertEqual(len(errors), 1)
 
-        # Test an overlap at the end of the blocked interval
+                                                            
         errors = validate_appointment_time(selected_date, time(10, 30), self.inventory_settings, existing_booked_times)
         self.assertIn("The selected time (10:30) overlaps with an existing appointment.", errors)
         self.assertEqual(len(errors), 1)
@@ -150,11 +150,11 @@ class ValidateAppointmentTimeUtilTest(TestCase):
         
         existing_booked_times = [time(10, 0)]
 
-        # Test a time well before the blocked interval
+                                                      
         errors = validate_appointment_time(selected_date, time(9, 0), self.inventory_settings, existing_booked_times)
         self.assertEqual(errors, [])
 
-        # Test a time well after the blocked interval
+                                                     
         errors = validate_appointment_time(selected_date, time(11, 0), self.inventory_settings, existing_booked_times)
         self.assertEqual(errors, [])
 
@@ -167,11 +167,11 @@ class ValidateAppointmentTimeUtilTest(TestCase):
         selected_date = date(2025, 7, 1)
         existing_booked_times = [time(10, 0), time(11, 0)]
 
-        # This time overlaps with both the 10:00 and 11:00 booking intervals
+                                                                            
         errors = validate_appointment_time(selected_date, time(10, 30), self.inventory_settings, existing_booked_times)
         self.assertIn("The selected time (10:30) overlaps with an existing appointment.", errors)
         self.assertEqual(len(errors), 1)
 
-        # This time should be valid
+                                   
         errors = validate_appointment_time(selected_date, time(12, 0), self.inventory_settings, existing_booked_times)
         self.assertEqual(errors, [])

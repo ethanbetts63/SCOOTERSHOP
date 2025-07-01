@@ -1,4 +1,4 @@
-# SCOOTER_SHOP/inventory/views/admin_views/delete_sales_faq.py
+                                                              
 
 from django.views.generic.edit import DeleteView
 from django.urls import reverse_lazy
@@ -12,7 +12,7 @@ class SalesFAQDeleteView(AdminRequiredMixin, DeleteView):
     """
     model = SalesFAQ
     success_url = reverse_lazy('inventory:sales_faq_management')
-    template_name = 'inventory/admin_confirm_delete.html' # A generic confirmation template
+    template_name = 'inventory/admin_confirm_delete.html'                                  
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

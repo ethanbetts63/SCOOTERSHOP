@@ -20,7 +20,7 @@ class AjaxGetSalesBookingDetailsTest(TestCase):
         self.client = Client()
         self.admin_user = UserFactory(is_staff=True, is_superuser=True)
         self.regular_user = UserFactory(is_staff=False)
-        self.ajax_url_name = 'inventory:api_sales_booking_details' # Assuming this URL name exists in your inventory.urls
+        self.ajax_url_name = 'inventory:api_sales_booking_details'                                                       
 
     def test_permission_denied_for_non_staff_user(self):
         self.client.force_login(self.regular_user)
@@ -32,7 +32,7 @@ class AjaxGetSalesBookingDetailsTest(TestCase):
 
     def test_sales_booking_not_found(self):
         self.client.force_login(self.admin_user)
-        url = reverse(self.ajax_url_name, args=[99999]) # Non-existent PK
+        url = reverse(self.ajax_url_name, args=[99999])                  
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
         self.assertJSONEqual(response.content, {'error': 'Sales Booking not found'})
@@ -47,20 +47,20 @@ class AjaxGetSalesBookingDetailsTest(TestCase):
         }
 
         user = UserFactory(email='customer@example.com', first_name='John', last_name='Doe')
-        # SalesProfile name and email are non-nullable, so provide them
+                                                                       
         sales_profile = SalesProfileFactory(user=user, name=f"{user.first_name} {user.last_name}", email=user.email)
         motorcycle = MotorcycleFactory(vin_number='VIN1234567890ABCDEF')
         payment = PaymentFactory(amount=Decimal('200.00'), status='succeeded')
         sales_booking = SalesBookingFactory(
             sales_profile=sales_profile,
-            motorcycle=motorcycle, # Motorcycle is non-nullable, so always provide one
+            motorcycle=motorcycle,                                                    
             payment=payment,
             customer_notes='Test notes',
             request_viewing=True,
             appointment_date=datetime.date(2025, 1, 15),
             appointment_time=datetime.time(10, 0)
         )
-        # Ensure the payment created_at is in the past for time_since_booking_creation_hours
+                                                                                            
         payment.created_at = timezone.now() - datetime.timedelta(hours=10)
         payment.save()
 
@@ -72,7 +72,7 @@ class AjaxGetSalesBookingDetailsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         json_response = response.json()
 
-        # Corrected assertion: id is an integer in the JSON response
+                                                                    
         self.assertEqual(json_response['id'], sales_booking.id)
         self.assertEqual(json_response['sales_booking_reference'], sales_booking.sales_booking_reference)
         self.assertEqual(json_response['customer_name'], 'John Doe')
@@ -99,13 +99,13 @@ class AjaxGetSalesBookingDetailsTest(TestCase):
             'time_since_booking_creation_hours': 24.0,
         }
 
-        # SalesProfile name and email are non-nullable, so provide them
+                                                                       
         sales_profile = SalesProfileFactory(user=None, name='Anonymous Customer', email='anon@example.com')
         motorcycle = MotorcycleFactory(vin_number='VINANON1234567890')
         payment = PaymentFactory(amount=Decimal('150.00'), status='succeeded')
         sales_booking = SalesBookingFactory(
             sales_profile=sales_profile,
-            motorcycle=motorcycle, # Motorcycle is non-nullable, so always provide one
+            motorcycle=motorcycle,                                                    
             payment=payment
         )
 
@@ -119,9 +119,9 @@ class AjaxGetSalesBookingDetailsTest(TestCase):
         self.assertEqual(json_response['customer_email'], 'anon@example.com')
         self.assertEqual(json_response['entitled_refund_amount'], 50.00)
 
-    # Removed test_successful_retrieval_without_user_profile_no_email
-    # because SalesProfile.name and .email are non-nullable,
-    # making it impossible to create such a SalesProfile instance.
+                                                                     
+                                                            
+                                                                  
 
     @mock.patch('inventory.ajax.ajax_get_sales_booking_details.calculate_sales_refund_amount')
     def test_refund_request_status_display(self, mock_calculate_sales_refund_amount):
@@ -133,7 +133,7 @@ class AjaxGetSalesBookingDetailsTest(TestCase):
         }
 
         sales_booking = SalesBookingFactory()
-        # Create a refund request for the sales booking
+                                                       
         RefundRequestFactory(sales_booking=sales_booking, status='approved')
 
         self.client.force_login(self.admin_user)
@@ -144,9 +144,9 @@ class AjaxGetSalesBookingDetailsTest(TestCase):
         json_response = response.json()
         self.assertEqual(json_response['refund_request_status_for_booking'], 'Approved - Awaiting Refund')
 
-    # Removed test_motorcycle_details_n_a_if_no_motorcycle
-    # because SalesBooking.motorcycle is non-nullable,
-    # making it impossible to create such a SalesBooking instance.
+                                                          
+                                                      
+                                                                  
 
     @mock.patch('inventory.ajax.ajax_get_sales_booking_details.calculate_sales_refund_amount')
     def test_payment_details_n_a_if_no_payment(self, mock_calculate_sales_refund_amount):
@@ -156,7 +156,7 @@ class AjaxGetSalesBookingDetailsTest(TestCase):
             'policy_applied': 'No Refund Policy',
             'time_since_booking_creation_hours': 0.0,
         }
-        # Create a sales booking with no associated payment
+                                                           
         sales_booking = SalesBookingFactory(payment=None)
 
         self.client.force_login(self.admin_user)
@@ -179,8 +179,8 @@ class AjaxGetSalesBookingDetailsTest(TestCase):
         sales_booking = SalesBookingFactory(
             appointment_date=None,
             appointment_time=None,
-            customer_notes=None, # Also test None for customer_notes
-            request_viewing=False # Test false for request_viewing
+            customer_notes=None,                                    
+            request_viewing=False                                 
         )
 
         self.client.force_login(self.admin_user)
@@ -190,7 +190,7 @@ class AjaxGetSalesBookingDetailsTest(TestCase):
 
         self.assertEqual(json_response['appointment_date'], 'N/A')
         self.assertEqual(json_response['appointment_time'], 'N/A')
-        self.assertEqual(json_response['customer_notes'], '') # Should default to empty string
+        self.assertEqual(json_response['customer_notes'], '')                                 
         self.assertFalse(json_response['request_viewing'])
 
     @mock.patch('inventory.ajax.ajax_get_sales_booking_details.calculate_sales_refund_amount')

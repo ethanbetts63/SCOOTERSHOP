@@ -1,4 +1,4 @@
-# payments/tests/view_tests/test_user_verify_refund.py
+                                                      
 
 from django.test import TestCase, Client
 from django.urls import reverse
@@ -9,13 +9,13 @@ from unittest.mock import patch
 import uuid
 from decimal import Decimal
 
-# Import factories, including for SalesBookings
+                                               
 from payments.tests.test_helpers.model_factories import (
     RefundRequestFactory, HireBookingFactory, ServiceBookingFactory, SalesBookingFactory,
     PaymentFactory, SalesProfileFactory
 )
 
-# Define patch paths for all three calculation functions
+                                                        
 HIRE_CALC_PATH = 'payments.views.Refunds.user_verify_refund_view.calculate_hire_refund_amount'
 SERVICE_CALC_PATH = 'payments.views.Refunds.user_verify_refund_view.calculate_service_refund_amount'
 SALES_CALC_PATH = 'payments.views.Refunds.user_verify_refund_view.calculate_sales_refund_amount'
@@ -50,7 +50,7 @@ class UserVerifyRefundViewTests(TestCase):
         """
         Tests successful verification of a refund request for a HireBooking.
         """
-        # Setup mock return values for refund calculation
+                                                         
         mock_calc_hire.return_value = {
             'entitled_amount': Decimal('150.00'),
             'details': 'Hire refund calculated successfully.',
@@ -246,7 +246,7 @@ class UserVerifyRefundViewTests(TestCase):
         """
         Tests behavior when the refund request has already been verified.
         """
-        refund_request = RefundRequestFactory(status='pending') # Already 'pending'
+        refund_request = RefundRequestFactory(status='pending')                    
         url = reverse('payments:user_verify_refund') + f'?token={refund_request.verification_token}'
         response = self.client.get(url)
 

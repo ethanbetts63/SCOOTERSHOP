@@ -1,4 +1,4 @@
-# dashboard/views/driver_profiles_settings_view.py
+                                                  
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -29,7 +29,7 @@ class DeleteDriverProfileView(View):
     """
     def post(self, request, pk, *args, **kwargs):
         driver_profile = get_object_or_404(DriverProfile, pk=pk)
-        driver_profile_name = driver_profile.name # Store name before deletion
+        driver_profile_name = driver_profile.name                             
         driver_profile.delete()
         messages.success(request, f"Driver Profile for '{driver_profile_name}' deleted successfully!")
         return redirect('dashboard:settings_driver_profiles')

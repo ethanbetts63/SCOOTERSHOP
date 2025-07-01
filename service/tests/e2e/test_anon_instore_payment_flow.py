@@ -14,7 +14,7 @@ from ..test_helpers.model_factories import (
     ServiceBrandFactory,
 )
 
-# Set to True to send bookings to MechanicDesk for testing purposes
+                                                                   
 SEND_BOOKINGS_TO_MECHANICDESK = False
 
 @override_settings(ADMIN_EMAIL='admin@example.com')

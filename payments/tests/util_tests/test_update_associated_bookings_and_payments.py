@@ -2,15 +2,15 @@ from decimal import Decimal
 
 from django.test import TestCase
 
-# Import the utility function to be tested
+                                          
 from payments.utils.update_associated_bookings_and_payments import update_associated_bookings_and_payments
 
-# Import the model factories
+                            
 from payments.tests.test_helpers.model_factories import (
     PaymentFactory,
     HireBookingFactory,
     ServiceBookingFactory,
-    SalesBookingFactory, # Added SalesBookingFactory
+    SalesBookingFactory,                            
 )
 
 
@@ -35,25 +35,25 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
         payment = PaymentFactory(
             hire_booking=hire_booking,
             service_booking=None,
-            sales_booking=None, # Ensure other links are None
+            sales_booking=None,                              
             amount=initial_amount,
             status='succeeded',
             refunded_amount=Decimal('0.00')
         )
-        total_refunded_amount = initial_amount # Full refund
+        total_refunded_amount = initial_amount              
 
         update_associated_bookings_and_payments(payment, hire_booking, 'hire_booking', total_refunded_amount)
 
-        # Refresh objects from DB to get updated values
+                                                       
         hire_booking.refresh_from_db()
         payment.refresh_from_db()
 
-        # Assertions for HireBooking
+                                    
         self.assertEqual(hire_booking.amount_paid, Decimal('0.00'))
         self.assertEqual(hire_booking.payment_status, 'refunded')
-        self.assertEqual(hire_booking.status, 'cancelled') # Specific to hire booking full refund
+        self.assertEqual(hire_booking.status, 'cancelled')                                       
 
-        # Assertions for Payment
+                                
         self.assertEqual(payment.refunded_amount, total_refunded_amount)
         self.assertEqual(payment.status, 'refunded')
 
@@ -72,7 +72,7 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
         payment = PaymentFactory(
             hire_booking=hire_booking,
             service_booking=None,
-            sales_booking=None, # Ensure other links are None
+            sales_booking=None,                              
             amount=initial_amount,
             status='succeeded',
             refunded_amount=Decimal('0.00')
@@ -84,12 +84,12 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
         hire_booking.refresh_from_db()
         payment.refresh_from_db()
 
-        # Assertions for HireBooking
+                                    
         self.assertEqual(hire_booking.amount_paid, initial_amount - refund_amount)
         self.assertEqual(hire_booking.payment_status, 'partially_refunded')
-        self.assertEqual(hire_booking.status, 'confirmed') # Should not be cancelled for partial refund
+        self.assertEqual(hire_booking.status, 'confirmed')                                             
 
-        # Assertions for Payment
+                                
         self.assertEqual(payment.refunded_amount, total_refunded_amount)
         self.assertEqual(payment.status, 'partially_refunded')
 
@@ -102,7 +102,7 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
         payment = PaymentFactory(
             hire_booking=hire_booking,
             service_booking=None,
-            sales_booking=None, # Ensure other links are None
+            sales_booking=None,                              
             amount=initial_amount,
             status='succeeded',
             refunded_amount=Decimal('0.00')
@@ -114,12 +114,12 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
         hire_booking.refresh_from_db()
         payment.refresh_from_db()
 
-        # Assertions for HireBooking
+                                    
         self.assertEqual(hire_booking.amount_paid, initial_amount)
         self.assertEqual(hire_booking.payment_status, 'paid')
         self.assertEqual(hire_booking.status, 'confirmed')
 
-        # Assertions for Payment
+                                
         self.assertEqual(payment.refunded_amount, total_refunded_amount)
         self.assertEqual(payment.status, 'succeeded')
 
@@ -138,7 +138,7 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
         payment = PaymentFactory(
             hire_booking=None,
             service_booking=service_booking,
-            sales_booking=None, # Ensure other links are None
+            sales_booking=None,                              
             amount=initial_amount,
             status='succeeded',
             refunded_amount=Decimal('0.00')
@@ -150,12 +150,12 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
         service_booking.refresh_from_db()
         payment.refresh_from_db()
 
-        # Assertions for ServiceBooking
+                                       
         self.assertEqual(service_booking.amount_paid, Decimal('0.00'))
         self.assertEqual(service_booking.payment_status, 'refunded')
-        self.assertEqual(service_booking.booking_status, 'pending') # Should not change unless declined
+        self.assertEqual(service_booking.booking_status, 'pending')                                    
 
-        # Assertions for Payment
+                                
         self.assertEqual(payment.refunded_amount, total_refunded_amount)
         self.assertEqual(payment.status, 'refunded')
 
@@ -174,7 +174,7 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
         payment = PaymentFactory(
             hire_booking=None,
             service_booking=service_booking,
-            sales_booking=None, # Ensure other links are None
+            sales_booking=None,                              
             amount=initial_amount,
             status='succeeded',
             refunded_amount=Decimal('0.00')
@@ -186,12 +186,12 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
         service_booking.refresh_from_db()
         payment.refresh_from_db()
 
-        # Assertions for ServiceBooking
+                                       
         self.assertEqual(service_booking.amount_paid, initial_amount - refund_amount)
         self.assertEqual(service_booking.payment_status, 'partially_refunded')
         self.assertEqual(service_booking.booking_status, 'accepted')
 
-        # Assertions for Payment
+                                
         self.assertEqual(payment.refunded_amount, total_refunded_amount)
         self.assertEqual(payment.status, 'partially_refunded')
 
@@ -206,28 +206,28 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
         payment = PaymentFactory(
             hire_booking=None,
             service_booking=service_booking,
-            sales_booking=None, # Ensure other links are None
+            sales_booking=None,                              
             amount=initial_amount,
             status='succeeded',
             refunded_amount=Decimal('0.00')
         )
-        total_refunded_amount = initial_amount # Full refund
+        total_refunded_amount = initial_amount              
 
         update_associated_bookings_and_payments(payment, service_booking, 'service_booking', total_refunded_amount)
 
         service_booking.refresh_from_db()
         payment.refresh_from_db()
 
-        # Assertions for ServiceBooking
+                                       
         self.assertEqual(service_booking.amount_paid, Decimal('0.00'))
         self.assertEqual(service_booking.payment_status, 'refunded')
-        self.assertEqual(service_booking.booking_status, 'DECLINED_REFUNDED') # Specific expected change
+        self.assertEqual(service_booking.booking_status, 'DECLINED_REFUNDED')                           
 
-        # Assertions for Payment
+                                
         self.assertEqual(payment.refunded_amount, total_refunded_amount)
         self.assertEqual(payment.status, 'refunded')
 
-    # --- New Tests for SalesBooking ---
+                                        
 
     def test_full_refund_sales_booking_from_initial_status(self):
         """
@@ -236,7 +236,7 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
         Booking status should transition to 'declined_refunded'.
         """
         initial_amount = Decimal('300.00')
-        # Test with 'pending_confirmation'
+                                          
         sales_booking = SalesBookingFactory(amount_paid=initial_amount, payment_status='deposit_paid', booking_status='pending_confirmation')
         payment = PaymentFactory(
             sales_booking=sales_booking,
@@ -246,7 +246,7 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
             status='succeeded',
             refunded_amount=Decimal('0.00')
         )
-        total_refunded_amount = initial_amount # Full refund
+        total_refunded_amount = initial_amount              
 
         update_associated_bookings_and_payments(payment, sales_booking, 'sales_booking', total_refunded_amount)
 
@@ -255,12 +255,12 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
 
         self.assertEqual(sales_booking.amount_paid, Decimal('0.00'))
         self.assertEqual(sales_booking.payment_status, 'refunded')
-        self.assertEqual(sales_booking.booking_status, 'declined_refunded') # Expected change
+        self.assertEqual(sales_booking.booking_status, 'declined_refunded')                  
 
         self.assertEqual(payment.refunded_amount, total_refunded_amount)
         self.assertEqual(payment.status, 'refunded')
 
-        # Test with 'confirmed' (reset and re-run)
+                                                  
         sales_booking_2 = SalesBookingFactory(amount_paid=initial_amount, payment_status='deposit_paid', booking_status='confirmed')
         payment_2 = PaymentFactory(
             sales_booking=sales_booking_2,
@@ -274,24 +274,24 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
         sales_booking_2.refresh_from_db()
         self.assertEqual(sales_booking_2.booking_status, 'declined_refunded')
 
-        # Test with 'enquired' (reset and re-run)
-        sales_booking_3 = SalesBookingFactory(amount_paid=initial_amount, payment_status='unpaid', booking_status='enquired') # Can be unpaid with enquired
+                                                 
+        sales_booking_3 = SalesBookingFactory(amount_paid=initial_amount, payment_status='unpaid', booking_status='enquired')                              
         payment_3 = PaymentFactory(
             sales_booking=sales_booking_3,
             hire_booking=None,
             service_booking=None,
-            amount=initial_amount, # Payment amount is total amount
-            status='succeeded', # Even if 'unpaid' in booking, payment can be succeeded if it was a zero-dollar inquiry
+            amount=initial_amount,                                 
+            status='succeeded',                                                                                        
             refunded_amount=Decimal('0.00')
         )
-        # Assuming the 'enquired' booking eventually had a payment, or we're testing the payment status changing to refunded.
-        # For an 'enquired' booking with no actual 'amount_paid' on the booking, the refund will be 0.
-        # Let's adjust this test to reflect a scenario where 'enquired' implies a payment that is now being refunded.
-        sales_booking_3.amount_paid = initial_amount # Simulate payment made for an enquired booking
+                                                                                                                             
+                                                                                                      
+                                                                                                                     
+        sales_booking_3.amount_paid = initial_amount                                                
         sales_booking_3.payment_status = 'paid'
         sales_booking_3.save()
 
-        update_associated_bookings_and_payments(payment_3, sales_booking_3, 'sales_booking', initial_amount) # Full refund
+        update_associated_bookings_and_payments(payment_3, sales_booking_3, 'sales_booking', initial_amount)              
         sales_booking_3.refresh_from_db()
         self.assertEqual(sales_booking_3.booking_status, 'declined_refunded')
 
@@ -303,7 +303,7 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
         Booking status should still transition to 'declined_refunded'.
         """
         initial_amount = Decimal('250.00')
-        # Test with 'cancelled'
+                               
         sales_booking = SalesBookingFactory(amount_paid=initial_amount, payment_status='paid', booking_status='cancelled')
         payment = PaymentFactory(
             sales_booking=sales_booking,
@@ -313,7 +313,7 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
             status='succeeded',
             refunded_amount=Decimal('0.00')
         )
-        total_refunded_amount = initial_amount # Full refund
+        total_refunded_amount = initial_amount              
 
         update_associated_bookings_and_payments(payment, sales_booking, 'sales_booking', total_refunded_amount)
 
@@ -322,12 +322,12 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
 
         self.assertEqual(sales_booking.amount_paid, Decimal('0.00'))
         self.assertEqual(sales_booking.payment_status, 'refunded')
-        self.assertEqual(sales_booking.booking_status, 'declined_refunded') # Expected transition
+        self.assertEqual(sales_booking.booking_status, 'declined_refunded')                      
 
         self.assertEqual(payment.refunded_amount, total_refunded_amount)
         self.assertEqual(payment.status, 'refunded')
 
-        # Test with 'declined' (reset and re-run)
+                                                 
         sales_booking_2 = SalesBookingFactory(amount_paid=initial_amount, payment_status='paid', booking_status='declined')
         payment_2 = PaymentFactory(
             sales_booking=sales_booking_2,
@@ -341,7 +341,7 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
         sales_booking_2.refresh_from_db()
         self.assertEqual(sales_booking_2.booking_status, 'declined_refunded')
 
-        # Test with 'no_show' (reset and re-run)
+                                                
         sales_booking_3 = SalesBookingFactory(amount_paid=initial_amount, payment_status='paid', booking_status='no_show')
         payment_3 = PaymentFactory(
             sales_booking=sales_booking_3,
@@ -385,7 +385,7 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
 
         self.assertEqual(sales_booking.amount_paid, initial_amount - refund_amount)
         self.assertEqual(sales_booking.payment_status, 'partially_refunded')
-        self.assertEqual(sales_booking.booking_status, 'confirmed') # Should remain unchanged
+        self.assertEqual(sales_booking.booking_status, 'confirmed')                          
 
         self.assertEqual(payment.refunded_amount, total_refunded_amount)
         self.assertEqual(payment.status, 'partially_refunded')
@@ -428,23 +428,23 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
         payment = PaymentFactory(
             hire_booking=None,
             service_booking=None,
-            sales_booking=None, # Ensure other links are None
+            sales_booking=None,                              
             amount=initial_amount,
             status='succeeded',
             refunded_amount=Decimal('0.00')
         )
         total_refunded_amount = Decimal('25.00')
 
-        # Pass None for booking_obj and 'unknown' for booking_type_str
+                                                                      
         update_associated_bookings_and_payments(payment, None, 'unknown', total_refunded_amount)
 
         payment.refresh_from_db()
 
-        # Assertions for Payment
+                                
         self.assertEqual(payment.refunded_amount, total_refunded_amount)
         self.assertEqual(payment.status, 'partially_refunded')
         
-        # Ensure no errors occur and function completes gracefully without booking_obj
+                                                                                      
 
 
     def test_payment_status_updates_from_partially_refunded_to_refunded(self):
@@ -507,15 +507,15 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
         initial_amount = Decimal('50.00')
         hire_booking = HireBookingFactory(amount_paid=initial_amount, payment_status='paid')
         payment = PaymentFactory(hire_booking=hire_booking, amount=initial_amount, status='succeeded')
-        total_refunded_amount = Decimal('60.00') # Over-refund
+        total_refunded_amount = Decimal('60.00')              
 
         update_associated_bookings_and_payments(payment, hire_booking, 'hire_booking', total_refunded_amount)
         hire_booking.refresh_from_db()
         payment.refresh_from_db()
 
-        self.assertEqual(hire_booking.amount_paid, Decimal('0.00')) # Should not be negative
+        self.assertEqual(hire_booking.amount_paid, Decimal('0.00'))                         
         self.assertEqual(hire_booking.payment_status, 'refunded')
-        self.assertEqual(payment.refunded_amount, total_refunded_amount) # Refunded amount reflects actual
+        self.assertEqual(payment.refunded_amount, total_refunded_amount)                                  
         self.assertEqual(payment.status, 'refunded')
 
 
@@ -525,21 +525,21 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
         if its initial status is not 'declined', even on full refund.
         """
         initial_amount = Decimal('100.00')
-        service_booking = ServiceBookingFactory(amount_paid=initial_amount, payment_status='paid', booking_status='confirmed') # Not 'declined'
+        service_booking = ServiceBookingFactory(amount_paid=initial_amount, payment_status='paid', booking_status='confirmed')                 
         payment = PaymentFactory(
             hire_booking=None,
             service_booking=service_booking,
-            sales_booking=None, # Ensure other links are None
+            sales_booking=None,                              
             amount=initial_amount,
             status='succeeded',
             refunded_amount=Decimal('0.00')
         )
-        total_refunded_amount = initial_amount # Full refund
+        total_refunded_amount = initial_amount              
 
         update_associated_bookings_and_payments(payment, service_booking, 'service_booking', total_refunded_amount)
 
         service_booking.refresh_from_db()
-        self.assertEqual(service_booking.booking_status, 'confirmed') # Should remain 'confirmed'
+        self.assertEqual(service_booking.booking_status, 'confirmed')                            
         self.assertEqual(service_booking.payment_status, 'refunded')
 
 
@@ -549,20 +549,20 @@ class UpdateAssociatedBookingsAndPaymentsTestCase(TestCase):
         If it was already cancelled, it should remain cancelled.
         """
         initial_amount = Decimal('100.00')
-        hire_booking = HireBookingFactory(amount_paid=initial_amount, payment_status='paid', status='pending_approval') # Not 'confirmed'
+        hire_booking = HireBookingFactory(amount_paid=initial_amount, payment_status='paid', status='pending_approval')                  
         payment = PaymentFactory(
             hire_booking=hire_booking,
-            service_booking=None, # Ensure other links are None
-            sales_booking=None, # Ensure other links are None
+            service_booking=None,                              
+            sales_booking=None,                              
             amount=initial_amount,
             status='succeeded',
             refunded_amount=Decimal('0.00')
         )
-        total_refunded_amount = initial_amount # Full refund
+        total_refunded_amount = initial_amount              
 
         update_associated_bookings_and_payments(payment, hire_booking, 'hire_booking', total_refunded_amount)
 
         hire_booking.refresh_from_db()
-        self.assertEqual(hire_booking.status, 'cancelled') # Should still go to cancelled
+        self.assertEqual(hire_booking.status, 'cancelled')                               
         self.assertEqual(hire_booking.payment_status, 'refunded')
 

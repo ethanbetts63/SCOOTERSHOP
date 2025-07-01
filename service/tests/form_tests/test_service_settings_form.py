@@ -20,7 +20,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         """
         cls.service_settings = ServiceSettingsFactory()
 
-        # Define a set of valid data for the form, excluding removed fields
+                                                                           
         cls.valid_data = {
             'enable_service_booking': True,
             'booking_advance_notice': 1,
@@ -40,7 +40,7 @@ class ServiceBookingSettingsFormTest(TestCase):
             'enable_deposit': True,
             'deposit_calc_method': 'FLAT_FEE',
             'deposit_flat_fee_amount': Decimal('25.00'),
-            'deposit_percentage': Decimal('0.00'), # Should be 0 if flat fee, or relevant percentage if method is 'PERCENTAGE'
+            'deposit_percentage': Decimal('0.00'),                                                                            
             'enable_online_full_payment': True,
             'enable_online_deposit': True,
             'enable_instore_full_payment': True,
@@ -54,10 +54,10 @@ class ServiceBookingSettingsFormTest(TestCase):
         """
         form = ServiceBookingSettingsForm(data=self.valid_data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
-        # Verify cleaned data types for Decimal fields
+                                                      
         self.assertIsInstance(form.cleaned_data['deposit_flat_fee_amount'], Decimal)
         self.assertIsInstance(form.cleaned_data['deposit_percentage'], Decimal)
-        # Verify cleaned data types for Time fields
+                                                   
         self.assertIsInstance(form.cleaned_data['drop_off_start_time'], time)
         self.assertIsInstance(form.cleaned_data['drop_off_end_time'], time)
         self.assertIsInstance(form.cleaned_data['latest_same_day_dropoff_time'], time)
@@ -66,20 +66,20 @@ class ServiceBookingSettingsFormTest(TestCase):
         """
         Test that the form correctly loads data from an existing instance.
         """
-        # Update the existing singleton instance with specific values
+                                                                     
         self.service_settings.enable_service_booking = False
         self.service_settings.booking_advance_notice = 5
         self.service_settings.deposit_flat_fee_amount = Decimal('100.00')
         self.service_settings.drop_off_start_time = time(8, 0)
         self.service_settings.drop_off_end_time = time(18, 0)
-        # Set new fields for the instance to match the updated model
+                                                                    
         self.service_settings.drop_off_spacing_mins = 60
         self.service_settings.max_advance_dropoff_days = 10
         self.service_settings.latest_same_day_dropoff_time = time(13, 0)
         self.service_settings.allow_after_hours_dropoff = True
         self.service_settings.after_hours_dropoff_disclaimer = 'Test disclaimer.'
 
-        self.service_settings.save() # Save changes to the instance
+        self.service_settings.save()                               
 
         form = ServiceBookingSettingsForm(instance=self.service_settings)
         self.assertEqual(form.initial['enable_service_booking'], False)
@@ -87,7 +87,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertEqual(form.initial['deposit_flat_fee_amount'], Decimal('100.00'))
         self.assertEqual(form.initial['drop_off_start_time'], time(8, 0))
         self.assertEqual(form.initial['drop_off_end_time'], time(18, 0))
-        # Assert new fields are loaded correctly
+                                                
         self.assertEqual(form.initial['drop_off_spacing_mins'], 60)
         self.assertEqual(form.initial['max_advance_dropoff_days'], 10)
         self.assertEqual(form.initial['latest_same_day_dropoff_time'], time(13, 0))
@@ -104,7 +104,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         data['deposit_flat_fee_amount'] = Decimal('75.00')
         data['drop_off_start_time'] = time(7, 30)
         data['drop_off_end_time'] = time(19, 0)
-        # Update new fields for saving
+                                      
         data['drop_off_spacing_mins'] = 45
         data['max_advance_dropoff_days'] = 15
         data['latest_same_day_dropoff_time'] = time(14, 0)
@@ -120,17 +120,17 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertEqual(saved_settings.deposit_flat_fee_amount, Decimal('75.00'))
         self.assertEqual(saved_settings.drop_off_start_time, time(7, 30))
         self.assertEqual(saved_settings.drop_off_end_time, time(19, 0))
-        # Assert new fields are updated correctly
+                                                 
         self.assertEqual(saved_settings.drop_off_spacing_mins, 45)
         self.assertEqual(saved_settings.max_advance_dropoff_days, 15)
         self.assertEqual(saved_settings.latest_same_day_dropoff_time, time(14, 0))
         self.assertEqual(saved_settings.allow_after_hours_dropoff, True)
         self.assertEqual(saved_settings.after_hours_dropoff_disclaimer, 'Updated disclaimer text.')
 
-        # Ensure it's the same singleton instance
+                                                 
         self.assertEqual(saved_settings.pk, self.service_settings.pk)
 
-    # --- New Tests for drop_off_start_time and drop_off_end_time ---
+                                                                     
     def test_form_valid_drop_off_times(self):
         """
         Test that the form is valid with correct drop-off start and end times.
@@ -171,7 +171,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertIn('drop_off_end_time', form.errors)
         self.assertIn('Booking end time must be earlier than start time.', form.errors['drop_off_end_time'])
 
-    # --- Conditional Validation Tests ---
+                                          
     def test_deposit_calc_method_flat_fee_requires_amount(self):
         """
         Test that if deposit_calc_method is FLAT_FEE, deposit_flat_fee_amount is required.
@@ -179,10 +179,10 @@ class ServiceBookingSettingsFormTest(TestCase):
         data = self.valid_data.copy()
         data['enable_deposit'] = True
         data['deposit_calc_method'] = 'FLAT_FEE'
-        data['deposit_flat_fee_amount'] = '' # Empty flat fee amount, should cause "required" error
+        data['deposit_flat_fee_amount'] = ''                                                       
 
         form = ServiceBookingSettingsForm(data=data)
-        self.assertFalse(form.is_valid()) # Expecting form to be invalid
+        self.assertFalse(form.is_valid())                               
         self.assertIn('deposit_flat_fee_amount', form.errors)
         self.assertIn('This field is required.', form.errors['deposit_flat_fee_amount'])
 
@@ -194,10 +194,10 @@ class ServiceBookingSettingsFormTest(TestCase):
         data = self.valid_data.copy()
         data['enable_deposit'] = True
         data['deposit_calc_method'] = 'PERCENTAGE'
-        data['deposit_percentage'] = '' # Empty percentage, should cause "required" error
+        data['deposit_percentage'] = ''                                                  
 
         form = ServiceBookingSettingsForm(data=data)
-        self.assertFalse(form.is_valid()) # Expecting form to be invalid
+        self.assertFalse(form.is_valid())                               
         self.assertIn('deposit_percentage', form.errors)
         self.assertIn('This field is required.', form.errors['deposit_percentage'])
 
@@ -216,12 +216,12 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
         self.assertEqual(form.cleaned_data['booking_open_days'], 'Mon, Tue, Wed, Thu, Fri, Sat, Sun')
 
-        # No specific format validation is in the model, so any string should pass form validation
+                                                                                                  
         data['booking_open_days'] = 'invalid-format'
         form = ServiceBookingSettingsForm(data=data)
         self.assertTrue(form.is_valid(), f"Form is not valid with invalid format: {form.errors}")
 
-    # New tests for drop_off_spacing_mins
+                                         
     def test_drop_off_spacing_mins_valid(self):
         """Test valid values for drop_off_spacing_mins."""
         data = self.valid_data.copy()
@@ -248,7 +248,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertIn('drop_off_spacing_mins', form.errors)
         self.assertIn("Drop-off spacing must be a positive integer, typically between 1 and 60 minutes.", form.errors['drop_off_spacing_mins'])
 
-    # New tests for max_advance_dropoff_days
+                                            
     def test_max_advance_dropoff_days_valid(self):
         """Test valid values for max_advance_dropoff_days."""
         data = self.valid_data.copy()
@@ -266,7 +266,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertIn('max_advance_dropoff_days', form.errors)
         self.assertIn("Maximum advance drop-off days cannot be negative.", form.errors['max_advance_dropoff_days'])
 
-    # New test for latest_same_day_dropoff_time validation
+                                                          
     def test_latest_same_day_dropoff_time_valid(self):
         """
         Test that latest_same_day_dropoff_time is valid when within the drop-off time range.
@@ -274,7 +274,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         data = self.valid_data.copy()
         data['drop_off_start_time'] = time(9, 0)
         data['drop_off_end_time'] = time(17, 0)
-        data['latest_same_day_dropoff_time'] = time(12, 0) # Within range
+        data['latest_same_day_dropoff_time'] = time(12, 0)               
         form = ServiceBookingSettingsForm(data=data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
 
@@ -285,7 +285,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         data = self.valid_data.copy()
         data['drop_off_start_time'] = time(9, 0)
         data['drop_off_end_time'] = time(17, 0)
-        data['latest_same_day_dropoff_time'] = time(8, 0) # Before start time
+        data['latest_same_day_dropoff_time'] = time(8, 0)                    
         form = ServiceBookingSettingsForm(data=data)
         self.assertFalse(form.is_valid())
         self.assertIn('latest_same_day_dropoff_time', form.errors)
@@ -298,7 +298,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         data = self.valid_data.copy()
         data['drop_off_start_time'] = time(9, 0)
         data['drop_off_end_time'] = time(17, 0)
-        data['latest_same_day_dropoff_time'] = time(18, 0) # After end time
+        data['latest_same_day_dropoff_time'] = time(18, 0)                 
         form = ServiceBookingSettingsForm(data=data)
         self.assertFalse(form.is_valid())
         self.assertIn('latest_same_day_dropoff_time', form.errors)

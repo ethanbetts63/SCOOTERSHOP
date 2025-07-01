@@ -15,23 +15,23 @@ from service.models import ServiceBooking, ServiceProfile, TempServiceBooking, C
 from inventory.models import Motorcycle, MotorcycleCondition, SalesBooking, TempSalesBooking, SalesProfile
 
 from inventory.models.temp_sales_booking import PAYMENT_STATUS_CHOICES as TEMP_PAYMENT_STATUS_CHOICES
-from inventory.models.temp_sales_booking import BOOKING_STATUS_CHOICES as TEMP_BOOKING_STATUS_CHOICES # Added this import
+from inventory.models.temp_sales_booking import BOOKING_STATUS_CHOICES as TEMP_BOOKING_STATUS_CHOICES                    
 from inventory.models.sales_booking import PAYMENT_STATUS_CHOICES as SALES_PAYMENT_STATUS_CHOICES
 from inventory.models.sales_booking import BOOKING_STATUS_CHOICES as SALES_BOOKING_STATUS_CHOICES
 
 User = get_user_model()
 
 
-# Helper function to get model choices safely - Keeping for other models, but not for the problematic ones
+                                                                                                          
 def get_model_choices(app_label, model_name, choices_attribute):
     """Safely retrieves choices from a Django model's attribute."""
-    # Ensure Django's app registry is ready
+                                           
     django.apps.apps.check_apps_ready()
     model = django.apps.apps.get_model(app_label, model_name)
     return [choice[0] for choice in getattr(model, choices_attribute)]
 
 
-# --- Factories for Requested Models (Ordered by Dependency) ---
+                                                                
 
 class MotorcycleConditionFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -138,7 +138,7 @@ class PaymentFactory(factory.django.DjangoModelFactory):
     stripe_payment_method_id = factory.Faker('md5')
     amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True))
     currency = 'AUD'
-    # Directly specify common Stripe payment intent statuses
+                                                            
     status = factory.Faker('random_element', elements=[
         'requires_payment_method',
         'requires_confirmation',
@@ -149,13 +149,13 @@ class PaymentFactory(factory.django.DjangoModelFactory):
         'failed',
     ])
     description = factory.Faker('sentence')
-    # Changed metadata to use factory.LazyFunction(dict) to default to an empty dictionary
+                                                                                          
     metadata = factory.LazyFunction(dict)
     
-    # UPDATED: Populate refund_policy_snapshot with sales-specific settings
+                                                                           
     refund_policy_snapshot = factory.LazyFunction(lambda: {
         'policy_version': '1.0', 
-        'deduct_fees': True, # Keep this general setting
+        'deduct_fees': True,                            
         'sales_enable_deposit_refund_grace_period': fake.boolean(),
         'sales_deposit_refund_grace_period_hours': fake.random_int(min=12, max=72),
         'sales_enable_deposit_refund': fake.boolean(),
@@ -225,7 +225,7 @@ class TempHireBookingFactory(factory.django.DjangoModelFactory):
     package = factory.SubFactory(PackageFactory)
     driver_profile = factory.SubFactory(DriverProfileFactory)
     is_international_booking = factory.Faker('boolean')
-    # Replaced get_model_choices with a hardcoded list for payment_option
+                                                                         
     payment_option = factory.Faker('random_element', elements=['credit_card', 'bank_transfer', 'cash', 'stripe'])
 
     booked_hourly_rate = factory.LazyAttribute(lambda o: getattr(o.motorcycle, 'hourly_hire_rate', fake.pydecimal(left_digits=2, right_digits=2, positive=True)))
@@ -300,20 +300,20 @@ class RefundRequestFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = RefundRequest
 
-    # Ensure these are set to None if they are truly optional and not always present
+                                                                                    
     hire_booking = None
     service_booking = None
-    sales_booking = None # NEW: Added sales_booking
+    sales_booking = None                           
     service_profile = None
-    sales_profile = None # NEW: Added sales_profile
+    sales_profile = None                           
     driver_profile = None
     
-    payment = factory.SubFactory(PaymentFactory) # Ensure a Payment object is created for the refund
+    payment = factory.SubFactory(PaymentFactory)                                                    
 
     reason = factory.Faker('paragraph')
     rejection_reason = None
     requested_at = factory.LazyFunction(timezone.now)
-    status = factory.Faker('random_element', elements=['unverified', 'pending', 'reviewed_pending_approval', 'approved', 'rejected', 'partially_refunded', 'refunded', 'failed']) # Updated with new statuses
+    status = factory.Faker('random_element', elements=['unverified', 'pending', 'reviewed_pending_approval', 'approved', 'rejected', 'partially_refunded', 'refunded', 'failed'])                            
     amount_to_refund = factory.LazyFunction(lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True))
     processed_by = None
     processed_at = None
@@ -324,7 +324,7 @@ class RefundRequestFactory(factory.django.DjangoModelFactory):
         lambda: {
             'policy_version': '1.0',
             'refunded_amount': str(fake.pydecimal(left_digits=2, right_digits=2, positive=True)),
-            # You might want to add more specific calculation details here for sales refunds
+                                                                                            
             'sales_grace_period_applied': fake.boolean(),
             'sales_grace_period_hours': fake.random_int(min=12, max=72),
         }
@@ -452,7 +452,7 @@ class ServiceSettingsFactory(factory.django.DjangoModelFactory):
         if not created:
             for k, v in kwargs.items():
                 setattr(obj, k, v)
-            obj.save() # Use obj.save() to trigger model's clean/save.
+            obj.save()                                                
         return obj
 
 
@@ -518,7 +518,7 @@ class TempBookingAddOnFactory(factory.django.DjangoModelFactory):
     addon = factory.SubFactory(AddOnFactory)
     quantity = factory.Faker('random_int', min=1, max=3)
     
-    # Calculate the price based on the addon's cost and quantity
+                                                                
     booked_addon_price = factory.LazyAttribute(
         lambda o: (o.addon.daily_cost * o.quantity) if o.addon else Decimal('0.00')
     )
@@ -526,29 +526,29 @@ class TempBookingAddOnFactory(factory.django.DjangoModelFactory):
 class RefundPolicySettingsFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = RefundPolicySettings
-        # Do NOT use django_get_or_create = ('pk',) here, it conflicts with custom _create
-        # instead, handle the get_or_create logic directly in _create method.
+                                                                                          
+                                                                             
 
-    # Full Payment Cancellation Policy
+                                      
     cancellation_full_payment_full_refund_days = factory.Faker('random_int', min=5, max=10)
     cancellation_full_payment_partial_refund_days = factory.Faker('random_int', min=2, max=4)
     cancellation_full_payment_partial_refund_percentage = factory.LazyFunction(lambda: Decimal(fake.random_element([25.00, 50.00, 75.00])))
     cancellation_full_payment_minimal_refund_days = factory.Faker('random_int', min=0, max=1)
     cancellation_full_payment_minimal_refund_percentage = factory.LazyFunction(lambda: Decimal(fake.random_element([0.00, 10.00, 20.00])))
 
-    # Deposit Cancellation Policy
+                                 
     cancellation_deposit_full_refund_days = factory.Faker('random_int', min=5, max=10)
     cancellation_deposit_partial_refund_days = factory.Faker('random_int', min=2, max=4)
     cancellation_deposit_partial_refund_percentage = factory.LazyFunction(lambda: Decimal(fake.random_element([25.00, 50.00, 75.00])))
     cancellation_deposit_minimal_refund_days = factory.Faker('random_int', min=0, max=1)
     cancellation_deposit_minimal_refund_percentage = factory.LazyFunction(lambda: Decimal(fake.random_element([0.00, 10.00, 20.00])))
 
-    # Inventory app refund settings - These are the fields that are now snapshotted
+                                                                                   
     sales_enable_deposit_refund_grace_period = factory.Faker('boolean')
     sales_deposit_refund_grace_period_hours = factory.Faker('random_int', min=12, max=72)
     sales_enable_deposit_refund = factory.Faker('boolean')
 
-    # Stripe Fee Settings
+                         
     refund_deducts_stripe_fee_policy = factory.Faker('boolean')
     stripe_fee_percentage_domestic = factory.LazyFunction(lambda: Decimal(fake.random_element(['0.0170', '0.0180'])))
     stripe_fee_fixed_domestic = factory.LazyFunction(lambda: Decimal(fake.random_element(['0.30', '0.40'])))
@@ -561,7 +561,7 @@ class RefundPolicySettingsFactory(factory.django.DjangoModelFactory):
         if not created:
             for k, v in kwargs.items():
                 setattr(obj, k, v)
-            obj.save() # Use obj.save() to trigger model's clean/save.
+            obj.save()                                                
         return obj
 
 
@@ -605,7 +605,7 @@ class TempSalesBookingFactory(factory.django.DjangoModelFactory):
     appointment_time = factory.Faker('time_object')
     
     customer_notes = factory.Faker('paragraph')
-    # Added new fields as per the request
+                                         
     booking_status = factory.Faker('random_element', elements=[choice[0] for choice in TEMP_BOOKING_STATUS_CHOICES])
     deposit_required_for_flow = factory.Faker('boolean')
     request_viewing = factory.Faker('boolean')

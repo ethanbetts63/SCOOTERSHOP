@@ -3,8 +3,8 @@ from django.views.generic import UpdateView
 from django.contrib import messages
 from django.forms import ValidationError
 
-from service.models import ServiceSettings # Removed BlockedServiceDate
-from service.forms import ServiceBookingSettingsForm # Removed BlockedServiceDateForm
+from service.models import ServiceSettings                             
+from service.forms import ServiceBookingSettingsForm                                 
 
 class ServiceSettingsView(UpdateView):
     """
@@ -15,16 +15,16 @@ class ServiceSettingsView(UpdateView):
     model = ServiceSettings
     form_class = ServiceBookingSettingsForm
     template_name = 'service/service_settings.html'
-    success_url = reverse_lazy('service:service_settings') # Redirects to the same page on success
+    success_url = reverse_lazy('service:service_settings')                                        
 
     def get_object(self, queryset=None):
         """
         Retrieves the single instance of ServiceSettings.
         If no instance exists, it creates one.
         """
-        # Ensure only one instance of ServiceSettings exists.
-        # This is a common pattern for singleton models.
-        obj, created = ServiceSettings.objects.get_or_create(pk=1) # Assuming PK 1 for the singleton
+                                                             
+                                                        
+        obj, created = ServiceSettings.objects.get_or_create(pk=1)                                  
         return obj
 
     def get_context_data(self, **kwargs):
@@ -32,8 +32,8 @@ class ServiceSettingsView(UpdateView):
         No longer adds context for BlockedServiceDate forms or existing dates.
         """
         context = super().get_context_data(**kwargs)
-        # Removed: context['blocked_service_date_form'] = BlockedServiceDateForm()
-        # Removed: context['blocked_service_dates'] = BlockedServiceDate.objects.all().order_by('start_date')
+                                                                                  
+                                                                                                             
         return context
 
     def form_valid(self, form):
@@ -46,7 +46,7 @@ class ServiceSettingsView(UpdateView):
             messages.success(self.request, "Service settings updated successfully!")
             return response
         except ValidationError as e:
-            # Add form-level errors from the model's clean method
+                                                                 
             form.add_error(None, e)
             return self.form_invalid(form)
 
@@ -64,7 +64,7 @@ class ServiceSettingsView(UpdateView):
         Overrides the post method to only handle submissions from the main ServiceSettings form.
         Removed logic for BlockedServiceDate forms.
         """
-        # Handle the ServiceSettings form submission
+                                                    
         if 'service_settings_submit' in request.POST:
             self.object = self.get_object()
             form = self.get_form()
@@ -73,8 +73,8 @@ class ServiceSettingsView(UpdateView):
             else:
                 return self.form_invalid(form)
 
-        # Removed: Handling for 'add_blocked_service_date_submit' and 'delete_blocked_service_date'
-        # These actions are now assumed to be handled on a separate page.
+                                                                                                   
+                                                                         
 
-        return super().post(request, *args, **kwargs) # Fallback for other POST requests
+        return super().post(request, *args, **kwargs)                                   
 

@@ -15,13 +15,13 @@ class InitiateBookingProcessViewTest(TestCase):
         """
         cls.client = Client()
 
-        # Ensure a singleton InventorySettings instance exists as it influences view logic
+                                                                                          
         cls.inventory_settings = InventorySettingsFactory()
 
-        # Create a test motorcycle
+                                  
         cls.motorcycle = MotorcycleFactory(is_available=True)
 
-        # URL for initiating a booking for the test motorcycle
+                                                              
         cls.initiate_booking_url = reverse('inventory:initiate_booking', kwargs={'pk': cls.motorcycle.pk})
 
     def test_post_request_creates_temp_booking_deposit_flow(self):
@@ -33,28 +33,28 @@ class InitiateBookingProcessViewTest(TestCase):
 
         data = {
             'deposit_required_for_flow': 'true',
-            'request_viewing': 'false', # Default for this test
+            'request_viewing': 'false',                        
         }
         response = self.client.post(self.initiate_booking_url, data)
 
-        # Assert a new TempSalesBooking object was created
+                                                          
         self.assertEqual(TempSalesBooking.objects.count(), initial_temp_booking_count + 1)
 
-        # Retrieve the newly created temp booking
+                                                 
         temp_booking = TempSalesBooking.objects.latest('created_at')
 
-        # Assert correct attributes of the temp booking
+                                                       
         self.assertEqual(temp_booking.motorcycle, self.motorcycle)
         self.assertTrue(temp_booking.deposit_required_for_flow)
         self.assertFalse(temp_booking.request_viewing)
         self.assertEqual(temp_booking.booking_status, 'pending_details')
 
-        # Assert redirect to step1_sales_profile
+                                                
         self.assertRedirects(response, reverse('inventory:step1_sales_profile'))
 
-        # Assert temp_booking ID is stored in session and matches the temp_booking's session_uuid (as a string)
+                                                                                                               
         self.assertIn('temp_sales_booking_uuid', self.client.session)
-        # The session stores the UUID as a string, so compare with the string representation of session_uuid
+                                                                                                            
         self.assertEqual(self.client.session['temp_sales_booking_uuid'], str(temp_booking.session_uuid))
 
 
@@ -67,7 +67,7 @@ class InitiateBookingProcessViewTest(TestCase):
 
         data = {
             'deposit_required_for_flow': 'false',
-            'request_viewing': 'false', # Default for this test
+            'request_viewing': 'false',                        
         }
         response = self.client.post(self.initiate_booking_url, data)
 
@@ -81,7 +81,7 @@ class InitiateBookingProcessViewTest(TestCase):
 
         self.assertRedirects(response, reverse('inventory:step1_sales_profile'))
         self.assertIn('temp_sales_booking_uuid', self.client.session)
-        # The session stores the UUID as a string, so compare with the string representation of session_uuid
+                                                                                                            
         self.assertEqual(self.client.session['temp_sales_booking_uuid'], str(temp_booking.session_uuid))
 
     def test_post_request_creates_temp_booking_with_viewing_request(self):
@@ -92,7 +92,7 @@ class InitiateBookingProcessViewTest(TestCase):
         initial_temp_booking_count = TempSalesBooking.objects.count()
 
         data = {
-            'deposit_required_for_flow': 'false', # Viewing usually implies deposit-less enquiry
+            'deposit_required_for_flow': 'false',                                               
             'request_viewing': 'true',
         }
         response = self.client.post(self.initiate_booking_url, data)
@@ -107,7 +107,7 @@ class InitiateBookingProcessViewTest(TestCase):
 
         self.assertRedirects(response, reverse('inventory:step1_sales_profile'))
         self.assertIn('temp_sales_booking_uuid', self.client.session)
-        # The session stores the UUID as a string, so compare with the string representation of session_uuid
+                                                                                                            
         self.assertEqual(self.client.session['temp_sales_booking_uuid'], str(temp_booking.session_uuid))
 
 
@@ -124,7 +124,7 @@ class InitiateBookingProcessViewTest(TestCase):
         }
         response = self.client.post(url, data)
 
-        # Assert status code is 404
+                                   
         self.assertEqual(response.status_code, 404)
-        # Optionally, check the content of the 404 page if your custom 404 page has specific text
-        # self.assertContains(response, "Motorcycle not found", status_code=404) # Or use assertIn for byte content
+                                                                                                 
+                                                                                                                   
