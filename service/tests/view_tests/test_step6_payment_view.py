@@ -11,7 +11,7 @@ from unittest.mock import patch, MagicMock
 from decimal import Decimal
 import stripe
 from payments.models import Payment
-from service.models import TempServiceBooking, ServiceProfile, CustomerMotorcycle
+from service.models import TempServiceBooking, ServiceProfile, CustomerMotorcycle, ServiceSettings
 from ..test_helpers.model_factories import (
     UserFactory,
     ServiceProfileFactory,
@@ -19,19 +19,34 @@ from ..test_helpers.model_factories import (
     CustomerMotorcycleFactory,
     ServiceTypeFactory,
     ServiceSettingsFactory,
-    PaymentFactory, # Use this factory if you need to create Payment instances directly
+    PaymentFactory,
 )
 
 User = get_user_model()
 
-# Mock Stripe's API key to prevent actual network calls during tests
-# This is a global patch for the entire test class to ensure no real Stripe calls are made
+def get_next_available_weekday(start_date, open_days):
+    """
+    Finds the next available weekday starting from a given date.
+    
+    Args:
+        start_date (datetime.date): The date to start searching from.
+        open_days (list): A list of short day names (e.g., ['Mon', 'Tue']).
+    
+    Returns:
+        datetime.date: The first date that is an open weekday.
+    """
+    day_map = {'Mon': 0, 'Tue': 1, 'Wed': 2, 'Thu': 3, 'Fri': 4, 'Sat': 5, 'Sun': 6}
+    open_weekdays = {day_map[day] for day in open_days}
+    
+    current_date = start_date
+    while current_date.weekday() not in open_weekdays:
+        current_date += datetime.timedelta(days=1)
+    return current_date
+
 @patch('stripe.api_key', 'sk_test_mock_key')
 class Step6PaymentViewTest(TestCase):
     """
     Tests for the Step6PaymentView (dispatch, GET, and POST methods).
-    This class specifically tests the Stripe payment integration logic without
-    making actual network requests to Stripe.
     """
 
     @classmethod
@@ -41,16 +56,14 @@ class Step6PaymentViewTest(TestCase):
         """
         cls.factory = RequestFactory()
         cls.user_password = 'testpassword123'
-        cls.user = UserFactory(password=cls.user_password) # For authenticated tests
+        cls.user = UserFactory(password=cls.user_password)
         
-        # Ensure ServiceSettings exists and has expected values
-        # Removed stripe_fee_percentage_domestic and stripe_fee_fixed_domestic
-        # as they are no longer part of ServiceSettings model.
         cls.service_settings = ServiceSettingsFactory(
             enable_online_full_payment=True,
             enable_online_deposit=True,
             enable_instore_full_payment=True,
             currency_code='AUD',
+            booking_open_days="Mon,Tue,Wed,Thu,Fri", # Explicitly set for tests
         )
         cls.service_type = ServiceTypeFactory(base_price=Decimal('250.00'))
         cls.base_url = reverse('service:service_book_step6')
@@ -58,32 +71,33 @@ class Step6PaymentViewTest(TestCase):
     def setUp(self):
         """
         Set up for each test method.
-        Ensure a clean state for temporary bookings, payments, etc.
         """
         TempServiceBooking.objects.all().delete()
         Payment.objects.all().delete()
         ServiceProfile.objects.all().delete()
         CustomerMotorcycle.objects.all().delete()
 
-        # Create necessary linked objects for temp_booking to be valid for step 6
         self.customer_motorcycle = CustomerMotorcycleFactory(
             brand="TestBrand", model="TestModel", year=2020, rego="TESTMC"
         )
         self.service_profile = ServiceProfileFactory(user=self.user, email="test@example.com")
 
-        # Create a valid temporary service booking with a service_profile and customer_motorcycle
+        # Find the next available date for the booking to make the test robust
+        start_date = datetime.date.today() + datetime.timedelta(days=5)
+        open_days = [d.strip() for d in self.service_settings.booking_open_days.split(',')]
+        available_date = get_next_available_weekday(start_date, open_days)
+
         self.temp_booking = TempServiceBookingFactory(
             service_type=self.service_type,
-            service_date=datetime.date.today() + datetime.timedelta(days=10),
-            dropoff_date=datetime.date.today() + datetime.timedelta(days=5),
+            service_date=available_date,
+            dropoff_date=available_date,
             dropoff_time=datetime.time(10, 0),
             customer_motorcycle=self.customer_motorcycle,
             service_profile=self.service_profile,
-            payment_method='online_full', # Default to full payment for most tests. Changed from 'full_online'
-            calculated_deposit_amount=Decimal('50.00') # Example deposit
+            payment_method='online_full',
+            calculated_deposit_amount=Decimal('50.00')
         )
 
-        # Set the UUID in the client's session
         session = self.client.session
         session['temp_service_booking_uuid'] = str(self.temp_booking.session_uuid)
         session.save()
@@ -94,7 +108,7 @@ class Step6PaymentViewTest(TestCase):
         """
         Tests that dispatch redirects to service:service if no temp_booking_uuid is in session.
         """
-        self.client.logout() # Ensure clean session
+        self.client.logout()
         session = self.client.session
         if 'temp_service_booking_uuid' in session:
             del session['temp_service_booking_uuid']
@@ -102,7 +116,7 @@ class Step6PaymentViewTest(TestCase):
 
         response = self.client.get(self.base_url)
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('service:service'), fetch_redirect_response=False) # Use fetch_redirect_response=False
+        self.assertRedirects(response, reverse('service:service'), fetch_redirect_response=False)
         messages = list(get_messages(response.wsgi_request))
         self.assertTrue(any("Your booking session has expired or is invalid." in str(m) for m in messages))
 
@@ -111,12 +125,12 @@ class Step6PaymentViewTest(TestCase):
         Tests that dispatch redirects to service:service if an invalid temp_booking_uuid is in session.
         """
         session = self.client.session
-        session['temp_service_booking_uuid'] = str(uuid.uuid4()) # Non-existent UUID
+        session['temp_service_booking_uuid'] = str(uuid.uuid4())
         session.save()
 
         response = self.client.get(self.base_url)
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('service:service'), fetch_redirect_response=False) # Use fetch_redirect_response=False
+        self.assertRedirects(response, reverse('service:service'), fetch_redirect_response=False)
         messages = list(get_messages(response.wsgi_request))
         self.assertTrue(any("Your booking session could not be found." in str(m) for m in messages))
 
@@ -146,7 +160,8 @@ class Step6PaymentViewTest(TestCase):
         messages = list(get_messages(response.wsgi_request))
         self.assertTrue(any("Please provide your contact details first (Step 4)." in str(m) for m in messages))
 
-    def test_dispatch_valid_temp_booking_proceeds(self):
+    @patch('service.views.step6_payment_view.get_service_date_availability', return_value=(datetime.date.today(), '[]'))
+    def test_dispatch_valid_temp_booking_proceeds(self, mock_availability):
         """
         Tests that dispatch allows the request to proceed with a valid temporary booking.
         """
@@ -154,12 +169,12 @@ class Step6PaymentViewTest(TestCase):
             mock_create.return_value = MagicMock(
                 client_secret='test_client_secret', 
                 id='pi_new_123',
-                status='requires_payment_method' # Explicitly set status as a string
+                status='requires_payment_method'
             )
             response = self.client.get(self.base_url)
-            self.assertEqual(response.status_code, 200) # Should render the form
+            self.assertEqual(response.status_code, 200)
             self.assertTemplateUsed(response, 'service/step6_payment.html')
-            mock_create.assert_called_once() # Verify a new intent was created
+            mock_create.assert_called_once()
 
     # --- GET Method Tests ---
 
@@ -170,13 +185,13 @@ class Step6PaymentViewTest(TestCase):
         """
         Tests GET request for online full payment, creating a new Stripe PaymentIntent and local Payment.
         """
-        self.temp_booking.payment_method = 'online_full' # Corrected payment_method
+        self.temp_booking.payment_method = 'online_full'
         self.temp_booking.save()
 
         mock_create.return_value = MagicMock(
             client_secret='new_client_secret', 
             id='pi_new_full_123',
-            status='requires_payment_method' # Explicitly set status as a string
+            status='requires_payment_method'
         )
         mock_retrieve.side_effect = stripe.error.InvalidRequestError("No such payment intent", "id")
 
@@ -193,7 +208,7 @@ class Step6PaymentViewTest(TestCase):
             amount=int(self.service_type.base_price * 100),
             currency='AUD',
             metadata={
-                'temp_service_booking_uuid': str(self.temp_booking.session_uuid), # Corrected key
+                'temp_service_booking_uuid': str(self.temp_booking.session_uuid),
                 'service_profile_id': str(self.service_profile.id),
                 'booking_type': 'service_booking',
             },
@@ -204,7 +219,7 @@ class Step6PaymentViewTest(TestCase):
         self.assertEqual(payment.stripe_payment_intent_id, 'pi_new_full_123')
         self.assertEqual(payment.amount, self.service_type.base_price)
         self.assertEqual(payment.currency, 'AUD')
-        self.assertEqual(payment.status, 'requires_payment_method') # Assert the string status
+        self.assertEqual(payment.status, 'requires_payment_method')
         self.assertEqual(payment.service_customer_profile, self.service_profile)
         self.assertEqual(Payment.objects.count(), 1)
 
@@ -221,7 +236,7 @@ class Step6PaymentViewTest(TestCase):
         mock_create.return_value = MagicMock(
             client_secret='new_deposit_secret', 
             id='pi_new_deposit_456',
-            status='requires_payment_method' # Explicitly set status as a string
+            status='requires_payment_method'
         )
         mock_retrieve.side_effect = stripe.error.InvalidRequestError("No such payment intent", "id")
 
@@ -236,7 +251,7 @@ class Step6PaymentViewTest(TestCase):
             amount=int(self.temp_booking.calculated_deposit_amount * 100),
             currency='AUD',
             metadata={
-                'temp_service_booking_uuid': str(self.temp_booking.session_uuid), # Corrected key
+                'temp_service_booking_uuid': str(self.temp_booking.session_uuid),
                 'service_profile_id': str(self.service_profile.id),
                 'booking_type': 'service_booking',
             },
@@ -246,19 +261,19 @@ class Step6PaymentViewTest(TestCase):
         payment = Payment.objects.get(temp_service_booking=self.temp_booking)
         self.assertEqual(payment.stripe_payment_intent_id, 'pi_new_deposit_456')
         self.assertEqual(payment.amount, self.temp_booking.calculated_deposit_amount)
-        self.assertEqual(payment.status, 'requires_payment_method') # Assert the string status
+        self.assertEqual(payment.status, 'requires_payment_method')
 
     @patch('stripe.PaymentIntent.create')
     @patch('stripe.PaymentIntent.retrieve')
     @patch('stripe.PaymentIntent.modify')
     def test_get_existing_intent_modified_if_amount_changed(self, mock_modify, mock_retrieve, mock_create):
         """
-        Tests that an existing PaymentIntent is modified if the amount changes and it's in a modifiable status.
+        Tests that an existing PaymentIntent is modified if the amount changes.
         """
         existing_amount = Decimal('100.00')
         new_amount = Decimal('150.00')
         self.temp_booking.payment_method = 'online_full'
-        self.temp_booking.service_type.base_price = new_amount # Update base price for new amount
+        self.temp_booking.service_type.base_price = new_amount
         self.temp_booking.service_type.save()
         self.temp_booking.save()
 
@@ -283,7 +298,7 @@ class Step6PaymentViewTest(TestCase):
             amount=int(new_amount * 100),
             currency='aud',
             client_secret='new_client_secret_modified',
-            status='requires_action' # Status might change after modification
+            status='requires_action'
         )
 
         response = self.client.get(self.base_url)
@@ -299,7 +314,7 @@ class Step6PaymentViewTest(TestCase):
             currency='AUD',
             description=f"Motorcycle service booking for {self.customer_motorcycle.year} {self.customer_motorcycle.brand} {self.customer_motorcycle.model} ({self.service_type.name})",
             metadata={
-                'temp_service_booking_uuid': str(self.temp_booking.session_uuid), # Corrected key
+                'temp_service_booking_uuid': str(self.temp_booking.session_uuid),
                 'service_profile_id': str(self.service_profile.id),
                 'booking_type': 'service_booking',
             }
@@ -315,7 +330,7 @@ class Step6PaymentViewTest(TestCase):
     @patch('stripe.PaymentIntent.modify')
     def test_get_existing_intent_succeeded_renders_with_flag(self, mock_modify, mock_retrieve, mock_create):
         """
-        Tests that if an existing PaymentIntent has already succeeded, the view renders with payment_already_succeeded flag.
+        Tests that if an existing PaymentIntent has already succeeded, the view renders with a flag.
         """
         initial_payment = PaymentFactory(
             temp_service_booking=self.temp_booking,
@@ -371,7 +386,7 @@ class Step6PaymentViewTest(TestCase):
         Tests that if the amount to pay is zero or None, the view redirects to step 5.
         """
         self.temp_booking.payment_method = 'online_full'
-        self.temp_booking.service_type.base_price = Decimal('0.00') # Zero amount
+        self.temp_booking.service_type.base_price = Decimal('0.00')
         self.temp_booking.service_type.save()
         self.temp_booking.save()
 
@@ -393,14 +408,12 @@ class Step6PaymentViewTest(TestCase):
     def test_post_payment_succeeded_json_response(self, mock_retrieve):
         """
         Tests POST request when Stripe reports the payment intent has succeeded.
-        The local Payment object's status should NOT be updated by this POST,
-        as that's handled by the webhook.
         """
         payment_intent_id = 'pi_test_succeeded'
         payment_obj = PaymentFactory(
             temp_service_booking=self.temp_booking,
             stripe_payment_intent_id=payment_intent_id,
-            status='requires_action', # Initial status before POST
+            status='requires_action',
             amount=self.service_type.base_price,
             currency='AUD',
             service_customer_profile=self.service_profile
@@ -420,21 +433,19 @@ class Step6PaymentViewTest(TestCase):
         self.assertIn('redirect_url', json_response)
         self.assertTrue(json_response['redirect_url'].endswith(f'?payment_intent_id={payment_intent_id}'))
 
-        # Verify local Payment object status is NOT updated by the POST method for 'succeeded'
-        payment_obj.refresh_from_db() # Refresh to get the latest status from the database
-        self.assertEqual(payment_obj.status, 'requires_action') # Should remain its initial status
+        payment_obj.refresh_from_db()
+        self.assertEqual(payment_obj.status, 'requires_action')
 
     @patch('stripe.PaymentIntent.retrieve')
     def test_post_payment_requires_action_json_response(self, mock_retrieve):
         """
         Tests POST request when Stripe reports the payment intent requires action.
-        The local Payment object's status should NOT be updated by this POST.
         """
         payment_intent_id = 'pi_test_requires_action'
         payment_obj = PaymentFactory(
             temp_service_booking=self.temp_booking,
             stripe_payment_intent_id=payment_intent_id,
-            status='requires_payment_method', # Initial status before POST
+            status='requires_payment_method',
             amount=self.service_type.base_price,
             currency='AUD',
             service_customer_profile=self.service_profile
@@ -454,21 +465,19 @@ class Step6PaymentViewTest(TestCase):
         self.assertIn('message', json_response)
         self.assertNotIn('redirect_url', json_response)
 
-        # Verify local Payment object status is NOT updated by the POST method
         payment_obj.refresh_from_db()
-        self.assertEqual(payment_obj.status, 'requires_payment_method') # Should remain its initial status
+        self.assertEqual(payment_obj.status, 'requires_payment_method')
 
     @patch('stripe.PaymentIntent.retrieve')
     def test_post_payment_failed_json_response(self, mock_retrieve):
         """
         Tests POST request when Stripe reports the payment intent has failed.
-        The local Payment object's status should NOT be updated by this POST.
         """
         payment_intent_id = 'pi_test_failed'
         payment_obj = PaymentFactory(
             temp_service_booking=self.temp_booking,
             stripe_payment_intent_id=payment_intent_id,
-            status='requires_payment_method', # Initial status before POST
+            status='requires_payment_method',
             amount=self.service_type.base_price,
             currency='AUD',
             service_customer_profile=self.service_profile
@@ -488,9 +497,8 @@ class Step6PaymentViewTest(TestCase):
         self.assertIn('message', json_response)
         self.assertNotIn('redirect_url', json_response)
 
-        # Verify local Payment object status is NOT updated by the POST method
         payment_obj.refresh_from_db()
-        self.assertEqual(payment_obj.status, 'requires_payment_method') # Should remain its initial status
+        self.assertEqual(payment_obj.status, 'requires_payment_method')
 
     def test_post_invalid_json_returns_400(self):
         """
@@ -498,7 +506,7 @@ class Step6PaymentViewTest(TestCase):
         """
         response = self.client.post(
             self.base_url,
-            '{"payment_intent_id": "pi_invalid"', # Malformed JSON
+            '{"payment_intent_id": "pi_invalid"',
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 400)
