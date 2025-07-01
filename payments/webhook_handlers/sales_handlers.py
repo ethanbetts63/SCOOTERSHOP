@@ -54,21 +54,23 @@ def handle_sales_booking_succeeded(payment_obj: Payment, payment_intent_data: di
             
             motorcycle.save()
 
+        sales_profile = sales_booking.sales_profile
         email_context = {
             'sales_booking': sales_booking,
-            'user': sales_booking.sales_profile.user if sales_booking.sales_profile and sales_booking.sales_profile.user else None,
-            'sales_profile': sales_booking.sales_profile,
+            'user': sales_profile.user if sales_profile and sales_profile.user else None,
+            'sales_profile': sales_profile,
             'is_deposit_confirmed': sales_booking.payment_status == 'deposit_paid',
         }
 
-        user_email = sales_booking.sales_profile.user.email if sales_booking.sales_profile.user else sales_booking.sales_profile.email
+        user_email = sales_profile.user.email if sales_profile.user else sales_profile.email
         if user_email:
             send_templated_email(
                 recipient_list=[user_email],
                 subject=f"Your Sales Booking Confirmation - {sales_booking.sales_booking_reference}",
                 template_name='sales_booking_confirmation_user.html',
                 context=email_context,
-                booking=sales_booking
+                booking=sales_booking,
+                profile=sales_profile
             )
 
         if settings.ADMIN_EMAIL:
@@ -77,7 +79,8 @@ def handle_sales_booking_succeeded(payment_obj: Payment, payment_intent_data: di
                 subject=f"New Sales Booking (Online) - {sales_booking.sales_booking_reference}",
                 template_name='sales_booking_confirmation_admin.html',
                 context=email_context,
-                booking=sales_booking
+                booking=sales_booking,
+                profile=sales_profile
             )
 
     except TempSalesBooking.DoesNotExist as e:

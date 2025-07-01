@@ -142,6 +142,8 @@ class Step2BookingDetailsView(View):
                             subject=subject,
                             template_name=template_name,
                             context=email_context,
+                            booking=converted_sales_booking,
+                            profile=converted_sales_booking.sales_profile,
                         )
                     except Exception as e:
                         pass
@@ -153,6 +155,8 @@ class Step2BookingDetailsView(View):
                                 subject=f"New Sales Enquiry (Online) - {converted_sales_booking.sales_booking_reference}",
                                 template_name='sales_booking_confirmation_admin.html',
                                 context=email_context,
+                                booking=converted_sales_booking,
+                                profile=converted_sales_booking.sales_profile,
                             )
                         except Exception as e:
                             pass
