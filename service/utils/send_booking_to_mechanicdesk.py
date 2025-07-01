@@ -14,6 +14,10 @@ def send_booking_to_mechanicdesk(service_booking_instance):
     except ObjectDoesNotExist:
         return False
 
+    first_name = service_profile.name.split(' ')[0] if service_profile.name else ""
+    if first_name.lower() == 'test':
+        return True
+    
     customer_motorcycle = None
     try:
         customer_motorcycle = service_booking_instance.customer_motorcycle

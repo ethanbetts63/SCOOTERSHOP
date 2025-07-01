@@ -16,6 +16,9 @@ from ..test_helpers.model_factories import (
     CustomerMotorcycleFactory,
 )
 
+# Set to True to send bookings to MechanicDesk for testing purposes
+SEND_BOOKINGS_TO_MECHANICDESK = False
+
 @override_settings(ADMIN_EMAIL='admin@example.com')
 class TestLoggedInUserInStorePaymentFlow(TestCase):
 
@@ -38,7 +41,13 @@ class TestLoggedInUserInStorePaymentFlow(TestCase):
             is_active=True
         )
         self.user = UserFactory(username='testuser')
-        self.service_profile = ServiceProfileFactory(user=self.user, name='Account In-Store User', email='test@user.com', country='AU')
+        
+        # Conditionally set user's first name for testing
+        user_name = 'Account In-Store User'
+        if not SEND_BOOKINGS_TO_MECHANICDESK:
+            user_name = 'Test Account In-Store User'
+
+        self.service_profile = ServiceProfileFactory(user=self.user, name=user_name, email='test@user.com', country='AU')
         self.motorcycle = CustomerMotorcycleFactory(service_profile=self.service_profile, brand='Kawasaki', model='Ninja 400')
         ServiceBrandFactory(name='Kawasaki')
         self.client.force_login(self.user)

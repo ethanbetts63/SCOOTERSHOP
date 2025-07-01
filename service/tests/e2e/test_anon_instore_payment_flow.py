@@ -14,6 +14,9 @@ from ..test_helpers.model_factories import (
     ServiceBrandFactory,
 )
 
+# Set to True to send bookings to MechanicDesk for testing purposes
+SEND_BOOKINGS_TO_MECHANICDESK = False
+
 @override_settings(ADMIN_EMAIL='admin@example.com')
 class TestAnonymousInStorePaymentFlow(TestCase):
 
@@ -69,8 +72,12 @@ class TestAnonymousInStorePaymentFlow(TestCase):
         response = self.client.post(step3_url, motorcycle_data)
         self.assertRedirects(response, step4_url)
 
+        user_name = 'Anonymous In-Store User'
+        if not SEND_BOOKINGS_TO_MECHANICDESK:
+            user_name = 'Test Anonymous In-Store User'
+
         profile_data = {
-            'name': 'Anonymous In-Store User', 'email': 'anon.instore@user.com', 'phone_number': '0487654321',
+            'name': user_name, 'email': 'anon.instore@user.com', 'phone_number': '0487654321',
             'address_line_1': '456 Anon St', 'address_line_2': '',
             'city': 'Melbourne', 'state': 'VIC', 'post_code': '3000',
             'country': 'AU',

@@ -19,6 +19,9 @@ from ..test_helpers.model_factories import (
     ServiceBrandFactory,
 )
 
+# Set to True to send bookings to MechanicDesk for testing purposes
+SEND_BOOKINGS_TO_MECHANICDESK = False
+
 @skipIf(not settings.STRIPE_SECRET_KEY, "Stripe API key not configured in settings")
 @override_settings(ADMIN_EMAIL='admin@example.com')
 class TestAnonymousFullOnlinePaymentFlow(TestCase):
@@ -72,8 +75,12 @@ class TestAnonymousFullOnlinePaymentFlow(TestCase):
         response = self.client.post(step3_url, motorcycle_data)
         self.assertRedirects(response, step4_url)
 
+        user_name = 'Anon Online User'
+        if not SEND_BOOKINGS_TO_MECHANICDESK:
+            user_name = 'Test Anon Online User'
+
         profile_data = {
-            'name': 'Anon Online User', 'email': 'anon.online@user.com', 'phone_number': '0411223344',
+            'name': user_name, 'email': 'anon.online@user.com', 'phone_number': '0411223344',
             'address_line_1': '789 Online Ave', 'address_line_2': '',
             'city': 'Perth', 'state': 'WA', 'post_code': '6000',
             'country': 'AU',

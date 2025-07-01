@@ -22,6 +22,9 @@ from ..test_helpers.model_factories import (
     CustomerMotorcycleFactory,
 )
 
+# Set to True to send bookings to MechanicDesk for testing purposes
+SEND_BOOKINGS_TO_MECHANICDESK = False
+
 @skipIf(not settings.STRIPE_SECRET_KEY, "Stripe API key not configured in settings")
 @override_settings(ADMIN_EMAIL='admin@example.com')
 class TestLoggedInOnlinePaymentFlow(TestCase):
@@ -45,7 +48,13 @@ class TestLoggedInOnlinePaymentFlow(TestCase):
             is_active=True
         )
         self.user = UserFactory(username='onlineuser')
-        self.service_profile = ServiceProfileFactory(user=self.user, name='Online full account Test User', email='online.test@user.com', country='AU')
+
+        # Conditionally set user's first name for testing
+        user_name = 'Online full account User'
+        if not SEND_BOOKINGS_TO_MECHANICDESK:
+            user_name = 'Test online full account User'
+
+        self.service_profile = ServiceProfileFactory(user=self.user, name=user_name, email='online.test@user.com', country='AU')
         self.motorcycle = CustomerMotorcycleFactory(service_profile=self.service_profile, brand='Ducati', model='Monster')
         ServiceBrandFactory(name='Ducati')
         self.client.force_login(self.user)
