@@ -20,9 +20,14 @@ from ..test_helpers.model_factories import (
 
 @skipIf(not settings.STRIPE_SECRET_KEY, "Stripe API key not configured in settings")
 @override_settings(ADMIN_EMAIL='admin@example.com')
-class TestAnonymousOnlinePaymentFlow(TestCase):
+class TestAnonymousFullOnlinePaymentFlow(TestCase):
 
     def setUp(self):
+        """
+        Set up the necessary objects for the test case.
+        This includes creating site settings, service settings for anonymous online payments,
+        a service type, a service brand, and initializing the Stripe API.
+        """
         self.client = Client()
         SiteSettings.objects.create(enable_service_booking=True)
         self.service_settings = ServiceSettingsFactory(
@@ -36,14 +41,19 @@ class TestAnonymousOnlinePaymentFlow(TestCase):
             currency_code='AUD'
         )
         self.service_type = ServiceTypeFactory(
-            name='Full Online Payment Service',
-            base_price=Decimal('300.00'),
+            name='Anonymous Online Special',
+            base_price=Decimal('350.00'),
             is_active=True
         )
         ServiceBrandFactory(name='Yamaha')
         stripe.api_key = settings.STRIPE_SECRET_KEY
 
-    def test_anonymous_user_online_payment_flow(self):
+    def test_anonymous_user_full_online_payment_flow(self):
+        """
+        Test the complete booking and payment flow for an anonymous user
+        who chooses to pay the full amount online using Stripe.
+        """
+        # Define URLs for each step in the booking process
         step1_url = reverse('service:service_book_step1')
         step3_url = reverse('service:service_book_step3')
         step4_url = reverse('service:service_book_step4')
@@ -51,71 +61,78 @@ class TestAnonymousOnlinePaymentFlow(TestCase):
         step6_url = reverse('service:service_book_step6')
         step7_url = reverse('service:service_book_step7')
 
+        # Calculate a valid future date for the service booking
         valid_future_date = timezone.now().date() + datetime.timedelta(days=self.service_settings.booking_advance_notice + 5)
         
+        # Step 1: Select service and date
         self.client.post(step1_url, {'service_type': self.service_type.id, 'service_date': valid_future_date.strftime('%Y-%m-%d')}, follow=True)
         
+        # Step 3: Enter motorcycle details
         motorcycle_data = {
-            'brand': 'Yamaha', 'model': 'MT-07', 'year': '2021', 
-            'engine_size': '689cc', 'rego': 'ONLINE1', 'odometer': 8000, 
-            'transmission': 'MANUAL', 'vin_number': '98765432109876543',
+            'brand': 'Yamaha', 'model': 'MT-07', 'year': '2020', 
+            'engine_size': '689cc', 'rego': 'ANONONL', 'odometer': 8000, 
+            'transmission': 'MANUAL', 'vin_number': 'VINANONONLINE1234', # FIX: Changed to 17 characters
         }
-        self.client.post(step3_url, motorcycle_data)
+        response = self.client.post(step3_url, motorcycle_data)
+        self.assertRedirects(response, step4_url, msg_prefix="Redirect from Step 3 to 4 failed, the motorcycle form is likely invalid.")
 
+
+        # Step 4: Enter personal details
         profile_data = {
-            'name': 'Anon Online Payer', 'email': 'anononline.payer@example.com', 'phone_number': '0411222333',
-            'address_line_1': '456 Online Ave', 'address_line_2': '',
-            'city': 'Webville', 'state': 'NSW', 'post_code': '5678', 
+            'name': 'Anon Online User', 'email': 'anon.online@user.com', 'phone_number': '0411223344',
+            'address_line_1': '789 Online Ave', 'address_line_2': '',
+            'city': 'Perth', 'state': 'WA', 'post_code': '6000',
             'country': 'AU',
         }
         response = self.client.post(step4_url, profile_data)
         self.assertRedirects(response, step5_url)
 
-        # Verify that the temp booking has the correct data before proceeding
-        temp_booking_uuid = self.client.session.get('temp_service_booking_uuid')
-        self.assertIsNotNone(temp_booking_uuid)
-        temp_booking = TempServiceBooking.objects.get(session_uuid=temp_booking_uuid)
-        self.assertIsNotNone(temp_booking.service_profile)
-        self.assertEqual(temp_booking.service_profile.email, profile_data['email'])
-        self.assertIsNotNone(temp_booking.customer_motorcycle)
-        self.assertEqual(temp_booking.customer_motorcycle.rego, motorcycle_data['rego'])
-
+        # Step 5: Select online payment method
         response = self.client.post(step5_url, {
             'dropoff_date': valid_future_date.strftime('%Y-%m-%d'), 'dropoff_time': '14:00',
             'payment_method': 'online_full', 'service_terms_accepted': 'on',
         })
         self.assertRedirects(response, step6_url)
 
+        # Step 6: Load payment page, which creates the Stripe PaymentIntent
         self.client.get(step6_url)
         self.assertEqual(Payment.objects.count(), 1)
         payment_obj = Payment.objects.first()
         payment_intent_id = payment_obj.stripe_payment_intent_id
+        self.assertEqual(payment_obj.amount, self.service_type.base_price)
 
+        # Simulate a successful payment confirmation via the Stripe API
         try:
             confirmation_url_path = reverse('service:service_book_step7')
             full_return_url = f"http://testserver{confirmation_url_path}"
             stripe.PaymentIntent.confirm(
                 payment_intent_id,
-                payment_method="pm_card_visa",
+                payment_method="pm_card_visa", # Use a test card
                 return_url=full_return_url
             )
         except stripe.error.StripeError as e:
             self.fail(f"Stripe API call failed during test: {e}")
 
+        # Simulate the webhook by calling the handler directly with the updated intent
         updated_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
         handle_service_booking_succeeded(payment_obj, updated_intent)
 
+        # Final Assertions
+        # Check that the booking was finalized correctly
         self.assertEqual(ServiceBooking.objects.count(), 1)
         self.assertEqual(TempServiceBooking.objects.count(), 0)
+        
         final_booking = ServiceBooking.objects.first()
         self.assertEqual(final_booking.payment_status, 'paid')
         self.assertEqual(final_booking.amount_paid, self.service_type.base_price)
-        
         self.assertEqual(final_booking.service_profile.email, profile_data['email'])
         self.assertEqual(final_booking.customer_motorcycle.rego, motorcycle_data['rego'])
 
+        # Check the confirmation page
         confirmation_url_with_param = f"{step7_url}?payment_intent_id={payment_intent_id}"
         confirmation_response = self.client.get(confirmation_url_with_param)
         self.assertEqual(confirmation_response.status_code, 200)
         self.assertContains(confirmation_response, final_booking.service_booking_reference)
+        
+        # Check that the session flag for a recent successful booking is set
         self.assertIn('last_booking_successful_timestamp', self.client.session)
