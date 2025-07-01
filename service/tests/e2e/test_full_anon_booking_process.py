@@ -74,7 +74,6 @@ class TestAnonymousInStorePaymentFlow(TestCase):
         temp_booking.refresh_from_db()
         self.assertEqual(temp_booking.customer_motorcycle, motorcycle)
 
-        # FIX: Added the required 'country' field.
         step4_data = {
             'name': 'Anonymous User',
             'email': 'anon.user@example.com',
@@ -95,6 +94,7 @@ class TestAnonymousInStorePaymentFlow(TestCase):
         self.assertEqual(temp_booking.service_profile, profile)
         self.assertIsNone(profile.user)
 
+        # FIX: Corrected 'terms_accepted' to 'service_terms_accepted' to match the form field name.
         step5_data = {
             'dropoff_date': valid_future_date.strftime('%Y-%m-%d'),
             'dropoff_time': '10:00',
