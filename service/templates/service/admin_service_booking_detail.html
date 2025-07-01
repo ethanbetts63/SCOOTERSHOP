@@ -100,13 +100,13 @@
 
 {% block admin_main_content %}
 <div class="booking-details-container">
-    <!-- Action Buttons -->
+    
     <div class="action-buttons">
         <a href="{% url 'service:admin_edit_service_booking' pk=booking_pk %}" class="btn btn-primary">Edit Booking</a>
         <button id="deleteButton" class="btn btn-danger">Delete Booking</button>
     </div>
 
-    <!-- Hidden form for deletion -->
+    
     <form id="deleteForm" action="{% url 'service:admin_delete_service_booking' pk=booking_pk %}" method="post" style="display: none;">
         {% csrf_token %}
     </form>

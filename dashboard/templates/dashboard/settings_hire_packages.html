@@ -2,7 +2,7 @@
 
 {% block admin_main_content %}
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/service_type_styles.css' %}"> {# Re-using this CSS for general table/list styling #}
+    <link rel="stylesheet" href="{% static 'css/service_type_styles.css' %}"> 
 
     <div class="service-booking-container">
         <div class="booking-progress">
@@ -53,7 +53,7 @@
                                 <a href="{% url 'dashboard:edit_hire_package' package.pk %}" class="btn btn-info btn-sm">
                                     <i class="fas fa-edit"></i> Edit
                                 </a>
-                                {# Mirroring delete strategy from service_brands_management.html #}
+                                
                                 <form method="post" action="{% url 'dashboard:delete_hire_package' pk=package.pk %}" class="inline-form" style="display:inline;">
                                      {% csrf_token %}
                                      <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete the package \'{{ package.name }}\'?');">

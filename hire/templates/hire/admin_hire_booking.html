@@ -30,7 +30,7 @@
                         <form method="post" action="" id="adminBookingForm">
                             {% csrf_token %}
 
-                            {# Section 1: Date & Time Selection #}
+                            
                             <h3 class="mb-4 mt-4 text-primary">Section 1: Date & Time</h3>
                             <div class="row mb-3">
                                 <div class="col-md-6">
@@ -43,7 +43,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group mb-3">
                                         <label for="{{ form.pick_up_time.id_for_label }}" class="form-label">{{ form.pick_up_time.label }}<span class="required-indicator">*</span></label>
-                                        {# This will now render as <input type="time"> due to widget change in form #}
+                                        
                                         {{ form.pick_up_time }}
                                         {% if form.pick_up_time.errors %}<div class="text-danger small">{{ form.pick_up_time.errors }}</div>{% endif %}
                                     </div>
@@ -60,16 +60,16 @@
                                 <div class="col-md-6">
                                     <div class="form-group mb-3">
                                         <label for="{{ form.return_time.id_for_label }}" class="form-label">{{ form.return_time.label }}<span class="required-indicator">*</span></label>
-                                        {# This will now render as <input type="time"> due to widget change in form #}
+                                        
                                         {{ form.return_time }}
-                                        {# Added a div for displaying time validation errors #}
+                                        
                                         <div id="returnTimeError" class="text-danger small"></div>
                                         {% if form.return_time.errors %}<div class="text-danger small">{{ form.return_time.errors }}</div>{% endif %}
                                     </div>
                                 </div>
                             </div>
 
-                            {# Section 2: Motorcycle Selection & Rates #}
+                            
                             <h3 class="mb-4 mt-4 text-primary">Section 2: Motorcycle & Daily Rate</h3>
                             <div class="form-group mb-4">
                                 <label for="{{ form.motorcycle.id_for_label }}" class="form-label">{{ form.motorcycle.label }}<span class="required-indicator">*</span></label>
@@ -82,7 +82,7 @@
                                 <div class="form-text text-muted">{{ form.booked_daily_rate.help_text }}</div>
                                 {% if form.booked_daily_rate.errors %}<div class="text-danger small">{{ form.booked_daily_rate.errors }}</div>{% endif %}
                             </div>
-                            {# NEW FIELD: Booked Hourly Rate #}
+                            
                             <div class="form-group mb-4">
                                 <label for="{{ form.booked_hourly_rate.id_for_label }}" class="form-label">{{ form.booked_hourly_rate.label }}<span class="required-indicator">*</span></label>
                                 {{ form.booked_hourly_rate }}
@@ -90,15 +90,15 @@
                                 {% if form.booked_hourly_rate.errors %}<div class="text-danger small">{{ form.booked_hourly_rate.errors }}</div>{% endif %}
                             </div>
 
-                            {# Section 3: Add-ons & Packages #}
+                            
                             <h3 class="mb-4 mt-4 text-primary">Section 3: Packages & Add-ons</h3>
                             <div class="form-group mb-3">
                                 <label for="{{ form.package.id_for_label }}" class="form-label">{{ form.package.label }}</label>
-                                {# Changed from radio buttons to a select dropdown #}
+                                
                                 {{ form.package }}
                                 {% if form.package.errors %}<div class="text-danger small">{{ form.package.errors }}</div>{% endif %}
                                 <div class="form-text text-muted" id="package-price-display">
-                                    {# Initial display will be updated by JS #}
+                                    
                                     Selected Package Price: {{ hire_settings.currency_symbol }}0.00
                                 </div>
                             </div>
@@ -114,7 +114,7 @@
                                                         <h5 class="card-title">{{ addon.name }}</h5>
                                                         <p class="card-text">{{ addon.description }}</p>
                                                         <p class="card-text">
-                                                            {# Updated to show both daily and hourly costs #}
+                                                            
                                                             <strong>Cost: {{ hire_settings.currency_symbol }}<span class="addon-daily-cost" data-addon-daily-cost="{{ addon.daily_cost|floatformat:2 }}">{{ addon.daily_cost|floatformat:2 }}</span> per day / {{ hire_settings.currency_symbol }}<span class="addon-hourly-cost" data-addon-hourly-cost="{{ addon.hourly_cost|floatformat:2 }}">{{ addon.hourly_cost|floatformat:2 }}</span> per hour</strong>
                                                         </p>
                                                         <div class="form-check mt-3">
@@ -153,7 +153,7 @@
                             {% endif %}
 
 
-                            {# Section 4: Driver Profile #}
+                            
                             <h3 class="mb-4 mt-4 text-primary">Section 4: Driver Profile</h3>
                             <div class="form-group mb-3">
                                 <label for="{{ form.driver_profile.id_for_label }}" class="form-label">{{ form.driver_profile.label }}<span class="required-indicator">*</span></label>
@@ -165,7 +165,7 @@
                                 <small class="form-text text-muted ms-2">Create, edit, or delete driver profiles.</small>
                             </div>
 
-                            {# Section 5: Financial Details & Status #}
+                            
                             <h3 class="mb-4 mt-4 text-primary">Section 5: Financial Details & Status</h3>
                             <div class="form-group mb-3">
                                 <label for="{{ form.currency.id_for_label }}" class="form-label">{{ form.currency.label }}<span class="required-indicator">*</span></label>
@@ -173,11 +173,11 @@
                                 {% if form.currency.errors %}<div class="text-danger small">{{ form.currency.errors }}</div>{% endif %}
                             </div>
                             <div class="mb-3">
-                                {# Changed label from "Estimated Total Price" to "Recommended Price" #}
+                                
                                 <p class="mb-1"><strong>Recommended Price: <span id="recommendedTotalPriceDisplay">{{ hire_settings.currency_symbol }}0.00</span></strong></p>
                             </div>
                             <div class="form-group mb-3">
-                                {# Updated id, name, and label for grand_total #}
+                                
                                 <label for="{{ form.grand_total.id_for_label }}" class="form-label">{{ form.grand_total.label }}<span class="required-indicator">*</span></label>
                                 {{ form.grand_total }}
                                 <div class="form-text text-muted">{{ form.grand_total.help_text }}</div>
@@ -229,17 +229,17 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-{# Safely embed JSON data for JavaScript using json_script #}
+
 {{ motorcycles_data|json_script:"motorcycles-data" }}
 {{ default_daily_rate|json_script:"default-daily-rate" }}
 {{ hire_settings.minimum_hire_duration_days|json_script:"min-hire-days" }}
 {{ hire_settings.maximum_hire_duration_days|json_script:"max-hire-days" }}
 {{ hire_settings.booking_lead_time_hours|json_script:"booking-lead-time-hours" }}
-{# Pass packages_data to JS #}
+
 {{ packages_data|json_script:"packages-data" }}
-{# NEW: Pass default_hourly_rate to JS #}
+
 {{ default_hourly_rate|json_script:"default-hourly-rate" }}
-{# Pass addons_data to JS #}
+
 {{ addons_data|json_script:"addons-data" }}
 
 

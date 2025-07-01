@@ -1,9 +1,9 @@
-{# core/includes/map.html #}
+
 {% load static %}
 
-{# Check if map display is enabled in site settings #}
+
 {% if settings.enable_map_display %}
-    <div class="container">{# This container was likely around the include in index.html #}
+    <div class="container">
         <div id="map-container" style="width: 100%; height: 400px;">
             <iframe
                 width="100%"
@@ -12,7 +12,7 @@
                 loading="lazy"
                 allowfullscreen
                 referrerpolicy="no-referrer-when-downgrade"
-                data-src="https://www.google.com/maps/embed/v1/place"> {# Correct base embed URL #}
+                data-src="https://www.google.com/maps/embed/v1/place"> 
             </iframe>
         </div>
     </div>

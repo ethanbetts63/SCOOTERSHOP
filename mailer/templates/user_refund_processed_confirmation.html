@@ -1,4 +1,4 @@
-{# payments/templates/emails/user_refund_processed_confirmation.html #}
+
 {% load static %}
 
 <!DOCTYPE html>
@@ -43,7 +43,7 @@
                 <p>A refund of <strong>{{ refunded_amount }} AUD</strong> has been issued to your original payment method.</p>
             </div>
 
-            {# Display admin message if available #}
+            
             {% if admin_message_from_refund %}
             <div class="section-title">Message from Our Team</div>
             <p style="white-space: pre-wrap;">{{ admin_message_from_refund }}</p>

@@ -42,8 +42,8 @@
 {% endblock %}
 
 {% block admin_main_content %}
-    {% load static %}{# Load static files for CSS #}
-    <link rel="stylesheet" href="{% static 'css/service_type_styles.css' %}"> {# Re-using this CSS for general form styling #}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/service_type_styles.css' %}"> 
 
     <div class="service-booking-container">
         <div class="booking-progress">
@@ -79,7 +79,7 @@
                             <input class="form-check-input" type="radio" name="booking_type_selector" id="serviceBookingRadio" value="service" {% if refund_request.service_booking %}checked{% endif %}>
                             <label class="form-check-label" for="serviceBookingRadio">Service Booking</label>
                         </div>
-                        {# Added Sales Booking Radio Button #}
+                        
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="radio" name="booking_type_selector" id="salesBookingRadio" value="sales" {% if refund_request.sales_booking %}checked{% endif %}>
                             <label class="form-check-label" for="salesBookingRadio">Sales Booking</label>
@@ -107,7 +107,7 @@
                     <small class="form-text text-muted">{{ form.service_booking.help_text }}</small>
                 </div>
                 
-                {# Added Sales Booking Section #}
+                
                 <div id="salesBookingSection" class="form-group mb-3 {% if not refund_request.sales_booking %}hidden{% endif %}">
                     <label for="{{ form.sales_booking.id_for_label }}">
                         {{ form.sales_booking.label }}
@@ -118,19 +118,19 @@
                     <small class="form-text text-muted">{{ form.sales_booking.help_text }}</small>
                 </div>
                 
-                <!-- AJAX Loader -->
+                
                 <div id="loader" class="loader hidden"></div>
 
-                <!-- Error Message Container -->
+                
                 <div id="ajaxError" class="error-message hidden"></div>
 
-                <!-- Hire Booking Details Container -->
+                
                 <div id="hireBookingDetails" class="booking-details-box hidden"></div>
                 
-                <!-- Service Booking Details Container -->
+                
                 <div id="serviceBookingDetails" class="booking-details-box hidden"></div>
 
-                {# Added Sales Booking Details Container #}
+                
                 <div id="salesBookingDetails" class="booking-details-box hidden"></div>
 
 

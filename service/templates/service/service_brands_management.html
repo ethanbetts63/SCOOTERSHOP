@@ -63,17 +63,17 @@
     <hr>
     <div>
         <p>Adding a brand to this list will allow a user to book a service with a bike of that brand. If the brand is not on this list it can not be serviced.</p>
-        {# Removed primary brand specific explanation #}
+        
     </div>
 
-    {# Section for adding a new brand #}
+    
     <div class="form-field">
         <h3 class="booking-section-title">Add New Service Brand</h3>
 
-        {# Form for adding a new brand - MUST include enctype for file uploads #}
+        
         <form method="post" enctype="multipart/form-data" id="addBrandForm">
             {% csrf_token %}
-            {# Hidden input for brand_id when editing #}
+            
             {% if edit_brand %}
                 <input type="hidden" name="brand_id" value="{{ edit_brand.pk }}">
             {% endif %}
@@ -104,7 +104,7 @@
                  {% endif %}
             </div>
 
-            {# Non-field errors for the form #}
+            
             {% if form.non_field_errors %}
                 <div class="form-field">
                     {% for error in form.non_field_errors %}
@@ -119,15 +119,15 @@
 
     <hr>
 
-    {# Section for listing existing brands #}
+    
     <div class="form-field">
         <h3 class="booking-section-title">Existing Service Brands ({{ service_brands.count }})</h3>
-        {# Removed primary brand warning #}
+        
 
         {% if service_brands %}
             <ul class="brands-list">
                 {% for brand in service_brands %}
-                    <li class="brand-item"> {# Removed {% if brand.is_primary %}primary{% endif %} #}
+                    <li class="brand-item"> 
                         {% if brand.image %}
                             <div class="brand-image">
                                 <img src="{{ brand.image.url }}" alt="{{ brand.name }} image">
@@ -135,11 +135,11 @@
                         {% endif %}
                         <div class="brand-info">
                             <h4>{{ brand.name }}</h4>
-                            {# Removed primary status display #}
-                            {# Removed missing image error for primary brands #}
+                            
+                            
                         </div>
                         <div class="brand-actions">
-                             {# Form for deleting a brand - now uses a custom modal #}
+                             
                              <form method="post" class="inline-form delete-form" data-delete-url="{% url 'service:delete_service_brand' pk=brand.pk %}">
                                  {% csrf_token %}
                                  <button type="button" class="btn-delete delete-button">Delete</button>
@@ -156,7 +156,7 @@
 
 </div>
 
-{# Custom Confirmation Modal #}
+
 <div id="confirmationModal" class="modal">
   <div class="modal-content">
     <p id="modalMessage">Are you sure you want to delete this service brand?</p>

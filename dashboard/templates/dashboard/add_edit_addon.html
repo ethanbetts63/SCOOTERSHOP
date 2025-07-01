@@ -2,17 +2,17 @@
 
 {% block admin_main_content %}
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/service_type_styles.css' %}"> {# Re-using CSS for consistency #}
+    <link rel="stylesheet" href="{% static 'css/service_type_styles.css' %}"> 
 
     <div class="service-booking-container">
         <div class="booking-progress">
-            <h2>{{ title }}</h2> {# This is correct, as 'title' is already conditionally set in the view #}
+            <h2>{{ title }}</h2> 
         </div>
         <p class="mb-4">Use this form to {% if is_edit %}edit{% else %}add a new{% endif %} hire add-on.</p>
 
         <form method="post">
             {% csrf_token %}
-            {# Render name and description first #}
+            
             <div class="form-group {% if form.name.errors %}has-error{% endif %}">
                 <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
                 {{ form.name }}
@@ -43,7 +43,7 @@
                 {% endif %}
             </div>
 
-            {# Custom rendering for hourly_cost and daily_cost #}
+            
             <div class="form-group mt-3 {% if form.hourly_cost.errors %}has-error{% endif %}">
                 <label for="{{ form.hourly_cost.id_for_label }}">{{ form.hourly_cost.label }}</label>
                 {{ form.hourly_cost }}
@@ -70,7 +70,7 @@
                 {% endif %}
             </div>
 
-            {# Custom rendering for min_quantity and max_quantity #}
+            
             <div class="form-group mt-3 {% if form.min_quantity.errors %}has-error{% endif %}">
                 <label for="{{ form.min_quantity.id_for_label }}">{{ form.min_quantity.label }}</label>
                 {{ form.min_quantity }}
@@ -100,7 +100,7 @@
                 </small>
             </div>
 
-            {# Custom rendering for is_available checkbox #}
+            
             <div class="form-group form-check mt-3">
                 {{ form.is_available }}
                 <label class="form-check-label" for="{{ form.is_available.id_for_label }}">

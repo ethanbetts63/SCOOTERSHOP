@@ -1,4 +1,3 @@
-{# core/templates/core/layout.html #}
 {% load static %}
 
 <!DOCTYPE html>
@@ -27,7 +26,7 @@
                     <li>
                         <a class="nav-item" href="{% url 'inventory:new' %}"
                            {% if not settings.enable_sales_new and user.is_staff %}
-                               style="color: #08E5D1;" {# Bright turquoise color #}
+                               style="color: #08E5D1;"
                            {% endif %}
                         >
                             New Bikes
@@ -39,7 +38,7 @@
                     <li>
                         <a class="nav-item" href="{% url 'inventory:used' %}"
                            {% if not settings.enable_sales_used and user.is_staff %}
-                               style="color: #08E5D1;" {# Bright turquoise color #}
+                               style="color: #08E5D1;"
                            {% endif %}
                         >
                             Used Bikes
@@ -51,7 +50,7 @@
                     <li>
                         <a class="nav-item" href="{% url 'service:service' %}"
                            {% if not settings.enable_service_booking and user.is_staff %}
-                               style="color: #08E5D1;" {# Bright turquoise color #}
+                               style="color: #08E5D1;"
                            {% endif %}
                         >
                             Service Booking
@@ -63,7 +62,7 @@
                     <li>
                         <a href="{% url 'core:contact' %}"
                          {% if not settings.enable_contact_page and not settings.enable_about_page and user.is_staff %}
-                             style="color: #08E5D1;" {# Bright turquoise color #}
+                             style="color: #08E5D1;"
                          {% endif %}
                         >
                             {% if not settings.enable_contact_page and settings.enable_about_page %}
@@ -75,16 +74,13 @@
                     </li>
                 {% endif %}
 
-                {# Login/Logout Toggle #}
                 {% if settings.enable_user_accounts or user.is_staff %}
                     <li>
                         {% if user.is_authenticated %}
-                            {# If user is authenticated, show Logout link #}
                             <a class="nav-item" href="{% url 'users:logout' %}">
                                 Logout
                             </a>
                         {% else %}
-                            {# If user is not authenticated, show Login/Register link #}
                             <a class="nav-item" href="{% url 'users:login' %}"
                                 {% if not settings.enable_user_accounts and user.is_staff %}
                                 style="color: #08E5D1;"
@@ -95,7 +91,6 @@
                         {% endif %}
                     </li>
                 {% endif %}
-                {# End Login/Logout Toggle #}
 
             </ul>
 
@@ -106,7 +101,6 @@
                 <a href="https://www.instagram.com/scootershop_australia/" target="_blank" rel="noopener">
                     <img src="{% static 'images/svgs/instagram.svg' %}" alt="Instagram">
                 </a>
-                 {# Apply visibility check to the contact SVG link #}
                 {% if settings.enable_contact_page or settings.enable_about_page or user.is_staff %}
                     <a href="{% url 'core:contact' %}">
                         <img src="{% static 'images/svgs/mail.svg' %}" alt="Contact Us">
@@ -115,7 +109,6 @@
             </div>
         </nav>
 
-        {# Messages Display Block #}
         {% if messages %}
             <div class="messages-container px-4 py-3 max-w-7xl mx-auto mt-4">
                 {% for message in messages %}
@@ -131,7 +124,6 @@
                 {% endfor %}
             </div>
         {% endif %}
-        {# End Messages Display Block #}
 
         <div>
             {% block content %}{% endblock %}
@@ -179,7 +171,7 @@
                             <li>
                                 <a href="{% url 'core:contact' %}"
                                 {% if not settings.enable_contact_page and not settings.enable_about_page and user.is_staff %}
-                                    style="color: #08E5D1;" {# Bright turquoise color #}
+                                    style="color: #08E5D1;"
                                 {% endif %}
                                 >
                                     {% if not settings.enable_contact_page and settings.enable_about_page %}
@@ -204,7 +196,7 @@
                             <li>
                                 <a href="{% url 'core:terms' %}"
                                    {% if not settings.enable_terms_page and user.is_staff %}
-                                        style="color: #08E5D1;" {# Bright turquoise color #}
+                                        style="color: #08E5D1;"
                                    {% endif %}
                                 >
                                     Terms of Use
@@ -216,7 +208,7 @@
                             <li>
                                 <a href="{% url 'core:privacy' %}"
                                    {% if not settings.enable_privacy_policy_page and user.is_staff %}
-                                        style="color: #08E5D1;" {# Bright turquoise color #}
+                                        style="color: #08E5D1;"
                                    {% endif %}
                                 >
                                     Privacy Policy
@@ -228,7 +220,7 @@
                             <li>
                                 <a href="{% url 'core:returns' %}"
                                     {% if not settings.enable_returns_page and user.is_staff %}
-                                        style="color: #08E5D1;" {# Bright turquoise color #}
+                                        style="color: #08E5D1;"
                                     {% endif %}
                                 >
                                     Returns Policy
@@ -240,7 +232,7 @@
                             <li>
                                 <a href="{% url 'core:security' %}"
                                    {% if not settings.enable_security_page and user.is_staff %}
-                                        style="color: #08E5D1;" {# Bright turquoise color #}
+                                        style="color: #08E5D1;"
                                    {% endif %}
                                 >
                                     Security Policy
@@ -307,7 +299,6 @@
                         <a href="https://www.instagram.com/scootershop_australia/" target="_blank" rel="noopener">
                             <img src="{% static 'images/svgs/instagram.svg' %}" alt="Instagram">
                         </a>
-                        {# Apply visibility check to the contact SVG link #}
                         {% if settings.enable_contact_page or settings.enable_about_page or user.is_staff %}
                             <a href="{% url 'core:contact' %}">
                                 <img src="{% static 'images/svgs/mail.svg' %}" alt="Contact Us">

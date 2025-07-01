@@ -1,4 +1,4 @@
-{# hire/templates/hire/step1_date_time_include.html #}
+
 {% load static %}
 
 <div class="container book-service-container">
@@ -36,7 +36,7 @@
                                     class="form-control"
                                    placeholder="Select return date"
                                    data-min-hire-duration-hours="{{ hire_settings.minimum_hire_duration_hours|default:1 }}"
-                                   data-max-hire-duration-days="{{ hire_settings.maximum_hire_duration_days|default:30 }}"> {# Added max hire duration #}
+                                   data-max-hire-duration-days="{{ hire_settings.maximum_hire_duration_days|default:30 }}"> 
                         </div>
                          <div class="form-field">
                             <label for="id_return_time">Return Time</label>
@@ -62,7 +62,7 @@
                     <label class="checkbox-label" for="id_has_motorcycle_license" title="Under australian law you are able to ride up to a 50cc without a motorcycle license provided you have a car license.">I have a motorcycle license</label>
                 </div>
 
-                {# Hidden fields for GET parameters to persist filters/sorting #}
+                
                 {% if request.GET %}
                     {% for key, value in request.GET.items %}
                         {% if key not in 'pick_up_date,pick_up_time,return_date,return_time,has_motorcycle_license' %}
@@ -77,7 +77,7 @@
     </div>
 </div>
 
-{# Flatpickr CSS and JS are now self-contained within this include #}
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>

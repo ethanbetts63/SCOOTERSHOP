@@ -3,34 +3,34 @@
 
 {% block admin_main_content %}
 
-{# Link to shared booking styles, or create a new one if needed #}
-<link rel="stylesheet" href="{% static 'css/service_booking_styles.css' %}"> {# Assuming shared styles for now #}
 
-{# Include FullCalendar's core CSS #}
+<link rel="stylesheet" href="{% static 'css/service_booking_styles.css' %}"> 
+
+
 <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css' rel='stylesheet' />
 
 <h2>Hire Bookings Calendar</h2>
 
 <div class="card shadow mb-4">
     <div class="card-header">
-        <div class="button-group-spaced mb-4"> {# Using existing class for spacing, added margin-bottom #}
-            {# Single button to create new hire booking for admin #}
-            <a href="{% url 'hire:" class="btn-primary"> {# Using existing button primary style #}
+        <div class="button-group-spaced mb-4"> 
+            
+            <a href="{% url 'hire:" class="btn-primary"> 
                 Create New Hire Booking
             </a>
-            {# Link to search hire bookings - keeping the existing search button, just moving it #}
-            <a href="{% url 'dashboard:hire_booking_search' %}" class="btn-primary"> {# Using existing button primary style #}
+            
+            <a href="{% url 'dashboard:hire_booking_search' %}" class="btn-primary"> 
                  Search bookings
             </a>
         </div>
     </div>
     <div class="card-body">
         <div id='fullcalendar'>
-            {# FullCalendar will build the calendar inside this div #}
+            
         </div>
 
-        {# Color Key for Statuses (temporarily placed here, will be moved by JS) #}
-        {# Adjust statuses and colors to match your HireBooking model's status choices #}
+        
+        
         <div class="color-key" id="status-color-key" style="display: none;">
             <div class="color-key-item">
                 <span class="color-box status-pending"></span> Pending
@@ -55,13 +55,13 @@
             </div>
         </div>
 
-    </div> {# End of card-body #}
-</div> {# End of card #}
+    </div> 
+</div> 
 
-{# Include FullCalendar's core JavaScript file #}
+
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
 
-{# Include the interaction plugin if you plan to use features like clicking dates/events #}
+
 <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.11/index.global.min.js'></script>
 
 <script>

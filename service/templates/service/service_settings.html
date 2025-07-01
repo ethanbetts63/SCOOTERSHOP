@@ -14,23 +14,23 @@
 
     <hr>
 
-    {# Start of the first form for general service settings #}
-    <form method="post" name="service_settings_form"> {# Added name attribute for easier JS targeting #}
+    
+    <form method="post" name="service_settings_form"> 
         {% csrf_token %}
 
-        {# Added buttons here, within the first form #}
+        
         <div class="form-field" style="flex-direction: row; justify-content: flex-end; margin-bottom: 20px;">
             <button type="button" class="btn-secondary" id="editButton" style="margin-right: 10px;">Edit</button>
-            <button type="submit" id="saveButton" name="service_settings_submit">Save Changes</button> {# Keep the name for submission #}
+            <button type="submit" id="saveButton" name="service_settings_submit">Save Changes</button> 
             <button type="button" class="btn-secondary" id="resetButton" style="margin-left: 10px;">Reset</button>
         </div>
-        {# End added buttons #}
+        
 
-        {# Checkbox fields section #}
+        
         <h3>General Settings</h3>
         {% for field in form %}
             {% if field.field.widget.input_type == 'checkbox' %}
-                <div class="form-field checkbox-field"> {# Added checkbox-field class for potential styling #}
+                <div class="form-field checkbox-field"> 
                     {{ field }}
                     <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {% if field.help_text %}
@@ -45,7 +45,7 @@
             {% endif %}
         {% endfor %}
 
-        {# Other fields section #}
+        
         <h3 style="margin-top: 30px;">Details</h3>
         {% for field in form %}
             {% if field.field.widget.input_type != 'checkbox' %}
@@ -64,7 +64,7 @@
             {% endif %}
         {% endfor %}
 
-        {# Display non-field errors (e.g., from clean method in form or model) #}
+        
         {% if form.non_field_errors %}
             <div class="form-field">
                 {% for error in form.non_field_errors %}
@@ -73,9 +73,9 @@
             </div>
         {% endif %}
     </form>
-    {# End of the first form #}
+    
 
-    {# Removed Blocked Service Dates section entirely #}
+    
 
 </div>
 

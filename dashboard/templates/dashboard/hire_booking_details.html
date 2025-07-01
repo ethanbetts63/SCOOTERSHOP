@@ -54,7 +54,7 @@
                             </div>
                         </div>
 
-                        {# NEW SECTION: Refund Policy at Booking #}
+                        
                         <h4 class="text-primary mt-4">Refund Policy at Booking</h4>
                         {% if refund_policy_snapshot %}
                             <div class="row">
@@ -79,7 +79,7 @@
                         <div class="d-flex justify-content-start mt-5">
                             <a href="{% url 'hire:admin_hire_booking_edit' pk=booking.pk %}" class="btn btn-warning me-2">Edit Booking</a>
 
-                            {# Delete Button: Uses a form with a simple JavaScript confirm dialog #}
+                            
                             <form method="post" action="{% url 'dashboard:delete_hire_booking' pk=booking.pk %}" class="inline-form" style="display:inline;">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this hire booking (Reference: {{ booking.booking_reference|default:booking.id }})? This action cannot be undone.');">

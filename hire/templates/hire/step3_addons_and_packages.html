@@ -54,13 +54,13 @@
                                 </li>
                             </ul>
 
-                            {# Packages Section #}
+                            
                             {% if hire_settings and hire_settings.packages_enabled %}
                                 <h3 class="mt-5 mb-3">Choose a Package:</h3>
                                 {% if available_packages %}
                                     <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
                                         {{ form.package.errors }}
-                                        {# Iterate directly over available_packages for details #}
+                                        
                                         {% for package_obj in available_packages %}
                                             <div class="col">
                                                 <div class="card h-100 package-tile {% if temp_booking.package.id == package_obj.id %}border-primary{% endif %}" id="package-{{ package_obj.id }}">
@@ -68,7 +68,7 @@
                                                         <h5 class="card-title">{{ package_obj.name }}</h5>
                                                         <p class="card-text">{{ package_obj.description }}</p>
                                                         <p class="card-text">
-                                                            {# Display daily cost for clarity, but data-package-price holds total for JS calculation #}
+                                                            
                                                             <strong>Price: {{ hire_settings.currency_symbol }}<span class="package-price" data-package-price="{{ package_obj.package_price|floatformat:2 }}">{{ package_obj.package_price|floatformat:2 }}</span> for hire period</strong>
                                                         </p>
                                                         {% if package_obj.add_ons.all %}
@@ -80,7 +80,7 @@
                                                             </ul>
                                                         {% endif %}
                                                         <div class="form-check mt-3">
-                                                            {# Find the specific radio input for this package_obj #}
+                                                            
                                                             <input type="radio" name="{{ form.package.name }}" id="{{ form.package.id_for_label }}_{{ forloop.counter0 }}" value="{{ package_obj.id }}" {% if form.package.value|add:"0" == package_obj.id %}checked{% endif %} data-package-name="{{ package_obj.name }}">
                                                             <label class="form-check-label" for="{{ form.package.id_for_label }}_{{ forloop.counter0 }}">Select this package</label>
                                                         </div>
@@ -96,10 +96,10 @@
                                 <div class="alert alert-info mt-5">Package selection is currently disabled by the administrator.</div>
                             {% endif %}
 
-                            {# Add-ons Section #}
+                            
                             {% if hire_settings and hire_settings.add_ons_enabled %}
-                                <h3 class="mt-5 mb-3">Select Additional Add-ons:</h3> {# Changed heading #}
-                                {% if form.get_addon_fields %} {# Check if there are any add-ons to display #}
+                                <h3 class="mt-5 mb-3">Select Additional Add-ons:</h3> 
+                                {% if form.get_addon_fields %} 
                                     <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
                                         {% for field_info in form.get_addon_fields %}
                                             {% with addon=field_info.addon %}
@@ -109,12 +109,12 @@
                                                             <h5 class="card-title" data-original-title="{{ addon.name }}">{{ addon.name }}</h5>
                                                             <p class="card-text">{{ addon.description }}</p>
                                                             <p class="card-text">
-                                                                {# MODIFIED: Changed "per day" to "for hire period" #}
+                                                                
                                                                 <strong>Price: {{ hire_settings.currency_symbol }}<span class="addon-cost" data-addon-cost="{{ addon.cost|floatformat:2 }}">{{ addon.cost|floatformat:2 }}</span> for hire period</strong>
                                                             </p>
                                                             <div class="form-check mt-3">
                                                                 {{ field_info.selected_field.errors }}
-                                                                {# Manually render checkbox to include value attribute and addon cost #}
+                                                                
                                                                 <input type="checkbox"
                                                                        name="{{ field_info.selected_field.name }}"
                                                                        id="{{ field_info.selected_field.id_for_label }}"
@@ -122,24 +122,24 @@
                                                                        class="form-check-input addon-checkbox"
                                                                        {% if field_info.selected_field.value %}checked{% endif %}
                                                                        data-addon-id="{{ addon.id }}"
-                                                                       data-max-quantity="{{ field_info.quantity_field.field.max_value }}" {# Use the adjusted max_value from the form field #}
-                                                                       data-min-quantity="{{ field_info.quantity_field.field.min_value }}" {# Use the min_value from the form field #}
+                                                                       data-max-quantity="{{ field_info.quantity_field.field.max_value }}" 
+                                                                       data-min-quantity="{{ field_info.quantity_field.field.min_value }}" 
                                                                        data-addon-cost="{{ addon.cost|floatformat:2 }}">
                                                                 <label class="form-check-label" for="{{ field_info.selected_field.id_for_label }}">Add to booking</label>
                                                             </div>
-                                                            {# Conditionally display quantity input based on max_quantity #}
-                                                            {# The form field's max_value is already adjusted #}
+                                                            
+                                                            
                                                             <div class="mt-2 quantity-input-group {% if field_info.quantity_field.field.max_value > 1 and field_info.selected_field.value %}d-block{% else %}d-none{% endif %}" id="quantityDiv{{ addon.id }}">
                                                                 <label for="{{ field_info.quantity_field.id_for_label }}" class="form-label">Quantity ({{ field_info.quantity_field.field.min_value }}-{{ field_info.quantity_field.field.max_value }}):</label>
                                                                 {{ field_info.quantity_field.errors }}
-                                                                {# Manually render quantity input to set min/max attributes #}
+                                                                
                                                                 <input type="number"
                                                                        name="{{ field_info.quantity_field.name }}"
                                                                        id="{{ field_info.quantity_field.id_for_label }}"
                                                                        class="form-control addon-quantity"
                                                                        value="{{ field_info.quantity_field.value|default:1 }}"
-                                                                       min="{{ field_info.quantity_field.field.min_value }}" {# Set min attribute #}
-                                                                       max="{{ field_info.quantity_field.field.max_value }}" {# Set max attribute #}
+                                                                       min="{{ field_info.quantity_field.field.min_value }}" 
+                                                                       max="{{ field_info.quantity_field.field.max_value }}" 
                                                                        data-addon-id="{{ addon.id }}">
                                                             </div>
                                                         </div>

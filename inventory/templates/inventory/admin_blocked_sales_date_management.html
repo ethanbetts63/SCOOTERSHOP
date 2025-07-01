@@ -54,13 +54,13 @@
 <div class="p-4">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">{{ page_title|default:"Blocked Sales Dates Management" }}</h1>
-        {# FIXED: Changed URL name to 'blocked_sales_date_create' #}
+        
         <a href="{% url 'inventory:blocked_sales_date_create' %}" class="action-button btn-create">
             Add New Blocked Date
         </a>
     </div>
 
-    <!-- Blocked Sales Dates Table -->
+    
     {% if blocked_sales_dates %}
         <div class="bg-white shadow-md rounded-lg overflow-hidden">
             <table class="min-w-full divide-y divide-gray-200">
@@ -84,7 +84,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ blocked_date.description|default:"N/A" }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium table-cell-padding">
                                 <div class="flex space-x-2">
-                                    {# FIXED: Changed URL name to 'blocked_sales_date_update' #}
+                                    
                                     <a href="{% url 'inventory:blocked_sales_date_update' pk=blocked_date.pk %}" class="action-button btn-edit">Edit</a>
                                     <form action="{% url 'inventory:admin_blocked_sales_date_delete' pk=blocked_date.pk %}" method="post" class="inline">
                                         {% csrf_token %}
@@ -100,7 +100,7 @@
             </table>
         </div>
 
-        <!-- Pagination -->
+        
         {% if is_paginated %}
             <div class="pagination mt-6 flex justify-center items-center space-x-2">
                 <span class="step-links">
@@ -123,7 +123,7 @@
     {% else %}
          <div class="text-center py-10">
             <p class="text-gray-600 font-semibold">No blocked sales dates found.</p>
-            {# Removed search term reference here #}
+            
             <p class="text-gray-500 mt-2">There are currently no blocked sales dates in the system.</p>
         </div>
     {% endif %}

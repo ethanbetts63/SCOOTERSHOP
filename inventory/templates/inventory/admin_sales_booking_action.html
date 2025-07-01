@@ -1,4 +1,4 @@
-{# inventory/templates/inventory/admin_sales_booking_action.html #}
+
 {% extends "dashboard/admin_layout.html" %}
 {% load static %}
 
@@ -123,7 +123,7 @@
                 <form method="post" novalidate>
                     {% csrf_token %}
                     
-                    {# Render hidden fields #}
+                    
                     {{ form.sales_booking_id }}
                     {{ form.action }}
 
@@ -134,7 +134,7 @@
                             <label for="{{ form.message.id_for_label }}">
                                 {{ form.message.label }}
                             </label>
-                            {# Manually render the textarea for the message field #}
+                            
                             <textarea name="{{ form.message.name }}" id="{{ form.message.id_for_label }}" 
                                       rows="4" class="form-control"
                                       placeholder="{{ form.message.field.widget.attrs.placeholder|default:'' }}"
@@ -148,7 +148,7 @@
                         </div>
 
                         <div class="form-group form-check mb-4">
-                            {# Manually render the checkbox for send_notification #}
+                            
                             <input type="checkbox" name="{{ form.send_notification.name }}" id="{{ form.send_notification.id_for_label }}" 
                                    class="form-check-input"
                                    {% if form.send_notification.value %}checked{% endif %}>
@@ -163,7 +163,7 @@
                             {% endif %}
                         </div>
 
-                        {# Conditionally display refund options for rejection and if deposit paid #}
+                        
                         {% if action_type == 'reject' and booking.payment_status == 'deposit_paid' %}
                             <hr class="my-4">
                             <h3 class="text-lg font-semibold mb-3">Refund Options</h3>

@@ -1,4 +1,4 @@
-{# service/templates/service/step1_service_details_include.html #}
+
 {% load static %}
 
 <div class="container book-service-container">
@@ -12,18 +12,18 @@
                 <div class="date-time-rows-group">
                     <div class="form-field service-type-field">
                         <label for="id_service_type">Service Type</label>
-                        {{ form.service_type }} {# This will render the ModelChoiceField for ServiceType #}
+                        {{ form.service_type }} 
                     </div>
 
                     <div class="date-time-row">
                         <div class="form-field">
-                            <label for="id_service_date">Service Date</label> {# Updated label #}
-                            <input type="text" id="id_service_date" name="service_date" {# Updated id and name #}
+                            <label for="id_service_date">Service Date</label> 
+                            <input type="text" id="id_service_date" name="service_date" 
                                    class="form-control"
-                                   placeholder="Select service date" {# Updated placeholder #}
+                                   placeholder="Select service date" 
                                    data-min-date-flatpickr="{{ min_service_date_flatpickr|default:'' }}">
                         </div>
-                        {# Removed drop-off time field #}
+                        
                     </div>
 
                     <div class="search-button-column">
@@ -33,10 +33,10 @@
                     </div>
                 </div>
 
-                {# Hidden fields for GET parameters to persist filters/sorting #}
+                
                 {% if request.GET %}
                     {% for key, value in request.GET.items %}
-                        {% if key not in 'service_date,service_type' %} {# Updated for service booking fields #}
+                        {% if key not in 'service_date,service_type' %} 
                             <input type="hidden" name="{{ key }}" value="{{ value }}">
                         {% endif %}
                     {% endfor %}
@@ -46,7 +46,7 @@
     </div>
 </div>
 
-{# Flatpickr CSS and JS are now self-contained within this include #}
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>

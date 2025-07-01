@@ -1,4 +1,4 @@
-{# mailer/templates/emails/sales_booking_confirmation_admin.html #}
+
 {% load static %}
 
 <!DOCTYPE html>
@@ -100,7 +100,7 @@
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="container">
                     <tr>
                         <td class="header">
-                            <!-- Header changes based on whether it's a paid booking or just an enquiry -->
+                            
                             {% if booking.amount_paid > 0 %}
                                 <h1>New Confirmed Sales Booking!</h1>
                             {% else %}
@@ -113,7 +113,7 @@
                             <p>Dear Administrator,</p>
                             <p>A new motorcycle sales action has occurred. Please find the full details below:</p>
                             
-                            <!-- Section for prominent customer notes -->
+                            
                             {% if booking.customer_notes %}
                             <div class="customer-notes-section">
                                 <h3 style="margin-top:0; font-weight:bold; color:#c29600;">Important Customer Message</h3>
@@ -131,14 +131,14 @@
                                     <th>Status:</th>
                                     <td>{{ booking.get_booking_status_display|default:"N/A" }}</td>
                                 </tr>
-                                <!-- Payment status now only shows if relevant -->
+                                
                                 {% if booking.amount_paid > 0 %}
                                 <tr>
                                     <th>Payment Status:</th>
                                     <td>{{ booking.get_payment_status_display|default:"N/A" }}</td>
                                 </tr>
                                 {% endif %}
-                                <!-- Appointment details now only show if they exist -->
+                                
                                 {% if booking.appointment_date %}
                                 <tr>
                                     <th>Requested Appointment:</th>
@@ -195,7 +195,7 @@
                             <p>No customer profile details available.</p>
                             {% endif %}
 
-                            <!-- Financial details section now only shows if a payment was made -->
+                            
                             {% if booking.amount_paid > 0 %}
                             <div class="section-title">Financial Details</div>
                             <table>
@@ -210,7 +210,7 @@
                             </table>
                             {% endif %}
                             
-                            <!-- Original customer notes section removed to avoid duplication, as it's now at the top -->
+                            
 
                         </td>
                     </tr>

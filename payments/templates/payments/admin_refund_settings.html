@@ -3,7 +3,7 @@
 
 {% block extra_css %}
 {{ block.super }}
-    <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}"> {# Assuming a general booking_styles.css or similar for form layout #}
+    <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}"> 
     <style>
         /* Specific styles for refund policy settings if needed */
         .form-section-title {
@@ -42,7 +42,7 @@
 {% endblock %}
 
 {% block admin_main_content %}
-<div class="service-booking-container"> {# Re-using this container class for consistent styling #}
+<div class="service-booking-container"> 
     <div class="booking-progress">
         <h2>Refund Policy Settings</h2>
     </div>
@@ -58,7 +58,7 @@
             <button type="button" class="btn-secondary" id="resetButton" style="margin-left: 10px;">Reset</button>
         </div>
 
-        {# Display non-field errors (e.g., from clean method in form or model) #}
+        
         {% if form.non_field_errors %}
             <div class="form-field">
                 {% for error in form.non_field_errors %}
@@ -68,7 +68,7 @@
         {% endif %}
 
         <h3 class="form-section-title">Full Payment Cancellation Policy</h3>
-        {# Use 'in' operator to check for field name substrings #}
+        
         {% for field in form %}
             {% if 'cancellation_full_payment' in field.name %}
                 <div class="form-field">
@@ -88,7 +88,7 @@
 
         <h3 class="form-section-title">Deposit Cancellation Policy</h3>
         {% for field in form %}
-            {% if 'cancellation_deposit' in field.name and 'sales_enable_deposit_refund' not in field.name %} {# Exclude new sales fields #}
+            {% if 'cancellation_deposit' in field.name and 'sales_enable_deposit_refund' not in field.name %} 
                 <div class="form-field">
                     <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
@@ -139,7 +139,7 @@
 
         <h3 class="form-section-title">Stripe Fee Settings</h3>
         {% for field in form %}
-            {# Check if the field name contains 'stripe_fee' or is exactly 'refund_deducts_stripe_fee_policy' #}
+            
             {% if 'stripe_fee' in field.name or field.name == 'refund_deducts_stripe_fee_policy' %}
                 {% if field.field.widget.input_type == 'checkbox' %}
                     <div class="form-field checkbox-field">

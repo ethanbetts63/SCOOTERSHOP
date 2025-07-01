@@ -1,4 +1,4 @@
-{# payments/templates/emails/admin_refund_processed_notification.html #}
+
 {% load static %}
 
 <!DOCTYPE html>
@@ -54,7 +54,7 @@
                 <p><strong>Event Type:</strong> {{ event_type }}</p>
             </div>
 
-            {# Display refund request reason/notes #}
+            
             {% if refund_request_reason %}
             <div class="section-title">Refund Request Reason</div>
             <p style="white-space: pre-wrap;">{{ refund_request_reason }}</p>

@@ -1,4 +1,4 @@
-{# hire/templates/hire/step2_choose_bike.html #}
+
 {% extends "core/layout.html" %}
 {% load static %}
 {% load mathfilters %}
@@ -6,12 +6,12 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/motorcycle_list_styles.css' %}">
 <link rel="stylesheet" href="{% static 'core/css/book_include_styles.css' %}">
-{# Flatpickr CSS is now in the include, can be removed here if not used elsewhere #}
+
 {% endblock %}
 
 {% block content %}
 
-{# The include now contains its own Flatpickr JS and CSS #}
+
 {% include 'hire/step1_date_time_include.html' %}
 
     <div class="hire-section">    
@@ -181,7 +181,7 @@
 {% endblock %}
 
 {% block extra_js %}
-{# Flatpickr JS is now in the include, can be removed here if not used elsewhere #}
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

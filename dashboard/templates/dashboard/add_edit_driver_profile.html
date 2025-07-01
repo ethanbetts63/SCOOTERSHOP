@@ -12,7 +12,7 @@
 
 {% block admin_main_content %}
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/service_type_styles.css' %}"> {# Re-using this CSS for general form styling #}
+    <link rel="stylesheet" href="{% static 'css/service_type_styles.css' %}"> 
 
     <div class="service-booking-container">
         <div class="booking-progress">
@@ -23,10 +23,10 @@
         <form method="post" class="needs-validation" novalidate enctype="multipart/form-data">
             {% csrf_token %}
 
-            {# General Contact Information #}
+            
             <fieldset class="form-group border p-3 mb-4 rounded">
                 <legend class="w-auto px-2">Contact & Personal Information</legend>
-                {# New field for linking to an existing user #}
+                
                 <div class="form-group mb-3">
                     <label for="{{ form.user.id_for_label }}">{{ form.user.label }}</label>
                     {{ form.user }}
@@ -101,7 +101,7 @@
                 </div>
             </fieldset>
 
-            {# Residency and Documentation #}
+            
             <fieldset class="form-group border p-3 mb-4 rounded">
                 <legend class="w-auto px-2">Residency & Documentation</legend>
                 <div class="form-group form-check mb-3">
@@ -113,7 +113,7 @@
                     <small class="form-text text-muted">{{ form.is_australian_resident.help_text }}</small>
                 </div>
 
-                {# Australian Resident Fields #}
+                
                 <div id="australian-fields" style="display: none;">
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -138,7 +138,7 @@
                     </div>
                 </div>
 
-                {# Foreigner Fields #}
+                
                 <div id="foreigner-fields" style="display: none;">
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -184,7 +184,7 @@
                     </div>
                 </div>
 
-                {# General ID Images (apply to both) #}
+                
                 <div class="form-group mb-3">
                     <label for="{{ form.id_image.id_for_label }}">ID Image</label>
                     {% if driver_profile and driver_profile.id_image %}<p>Current: <a href="{{ driver_profile.id_image.url }}" target="_blank">View Photo</a></p>{% endif %}

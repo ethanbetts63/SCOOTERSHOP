@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block extra_css %}
-{{ block.super }} {# Include CSS from the parent template #}
+{{ block.super }} 
 <style>
 </style>
 {% endblock %}
@@ -18,12 +18,12 @@
             Back to Motorcycles List
         </a>
     </div>
-    {# Form for creating/editing a Customer Motorcycle #}
+    
     <div class="mb-6 bg-white p-6 rounded-lg shadow-md">
         <form method="post" action="{% if is_edit_mode %}{% url 'service:admin_edit_customer_motorcycle' pk=current_motorcycle.pk %}{% else %}{% url 'service:admin_create_customer_motorcycle' %}{% endif %}" enctype="multipart/form-data">
             {% csrf_token %}
             
-            {# Manually render form fields #}
+            
             {% for field in form %}
                 <div class="form-group">
                     <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
@@ -32,7 +32,7 @@
                             <span class="text-red-500">*</span>
                         {% endif %}
                     </label>
-                    {{ field }} {# This renders the input/select/textarea element with its current value #}
+                    {{ field }} 
                     {% if field.help_text %}
                         <p class="helptext">{{ field.help_text }}</p>
                     {% endif %}

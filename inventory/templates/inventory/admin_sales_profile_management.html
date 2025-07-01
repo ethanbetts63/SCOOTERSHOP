@@ -55,13 +55,13 @@
 <div class="p-4">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">{{ page_title|default:"Sales Profiles Management" }}</h1>
-        {# FIXED: Changed URL name to 'sales_profile_create' #}
+        
         <a href="{% url 'inventory:sales_profile_create' %}" class="action-button btn-create">
             Create New Sales Profile
         </a>
     </div>
 
-    <!-- Search Bar -->
+    
     <div class="mb-6 bg-white p-4 rounded-lg shadow-md">
         <form method="get" class="flex items-center space-x-4">
             <label for="search_query" class="font-medium text-gray-700">Search Profiles:</label>
@@ -82,7 +82,7 @@
         </form>
     </div>
 
-    <!-- Sales Profiles Table -->
+    
     {% if sales_profiles %}
         <div class="bg-white shadow-md rounded-lg overflow-hidden">
             <table class="min-w-full divide-y divide-gray-200">
@@ -112,7 +112,7 @@
                                 {% if profile.state %}, {{ profile.state }}{% endif %}
                                 {% if profile.post_code %}, {{ profile.post_code }}{% endif %}
                                 {% if profile.country %}, {{ profile.country }}{% endif %}
-                                {% comment %} Handle case where address is entirely empty {% endcomment %}
+                                
                                 {% if not profile.address_line_1 and not profile.address_line_2 and not profile.city and not profile.state and not profile.post_code and not profile.country %}
                                     N/A
                                 {% endif %}
@@ -120,7 +120,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ profile.created_at|date:"M d, Y H:i" }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium table-cell-padding">
                                 <div class="flex space-x-2">
-                                    {# FIXED: Changed URL name to 'sales_profile_update' #}
+                                    
                                     <a href="{% url 'inventory:sales_profile_update' pk=profile.pk %}" class="action-button btn-edit">Edit</a>
                                     <form action="{% url 'inventory:admin_sales_profile_delete' pk=profile.pk %}" method="post" class="inline">
                                         {% csrf_token %}
@@ -136,7 +136,7 @@
             </table>
         </div>
 
-        <!-- Pagination -->
+        
         {% if is_paginated %}
             <div class="pagination mt-6 flex justify-center items-center space-x-2">
                 <span class="step-links">

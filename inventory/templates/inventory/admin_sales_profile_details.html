@@ -54,8 +54,8 @@
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">{{ page_title|default:"Sales Profile Details" }}</h1>
         <div class="flex space-x-2">
-            {# Original: <a href="{% url 'inventory:sales_profile_create_update' pk=sales_profile.pk %}" class="action-button btn-edit">Edit Profile</a> #}
-            {# FIXED: Changed URL name to 'sales_profile_update' as it's an existing profile being edited #}
+            
+            
             <a href="{% url 'inventory:sales_profile_update' pk=sales_profile.pk %}" class="action-button btn-edit">Edit Profile</a>
             <form action="{% url 'inventory:admin_sales_profile_delete' pk=sales_profile.pk %}" method="post" class="inline">
                 {% csrf_token %}

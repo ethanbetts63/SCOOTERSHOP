@@ -19,13 +19,13 @@
         <form method="post">
             {% csrf_token %}
 
-            {# Added buttons here #}
+            
             <div class="form-field" style="flex-direction: row; justify-content: flex-end; margin-bottom: 20px;">
                 <button type="button" class="btn-secondary" id="editButton" style="margin-right: 10px;">Edit</button>
                 <button type="submit" id="saveButton">Save Changes</button>
                 <button type="button" class="btn-secondary" id="resetButton" style="margin-left: 10px;">Reset</button>
             </div>
-            {# End added buttons #}
+            
 
             <div class="form-field">
                 <h3 class="booking-section-title">Feature Visibility</h3>
@@ -141,12 +141,12 @@
                 </div>
             </div>
 
-            {# Original Save Changes button is replaced by the one in the added div #}
-            {# <button type="submit">Save Changes</button> #}
+            
+            
         </form>
     </div>
 
-{# Added extra_js block #}
+
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -223,6 +223,6 @@
     });
 </script>
 {% endblock %}
-{# End added extra_js block #}
+
 
 {% endblock %}

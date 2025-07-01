@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block extra_css %}
-{{ block.super }} {# Include CSS from the parent template #}
+{{ block.super }} 
 <style>
     /* Basic styling for table cells and actions */
     .table-cell-padding {
@@ -67,7 +67,7 @@
             Add New Service Profile
         </a>
     </div>
-    {# Search bar - Now powered by AJAX #}
+    
     <div class="mb-6 bg-white p-4 rounded-lg shadow-md">
         <div class="flex items-center space-x-4">
             <label for="id_search_query" class="font-medium text-gray-700">Search Service Profiles:</label>
@@ -81,7 +81,7 @@
             </button>
             <button type="button" id="clear_search_button"
                    class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                   {% if not search_term %}style="display: none;"{% endif %}> {# Hide if no search term initially #}
+                   {% if not search_term %}style="display: none;"{% endif %}> 
                 Clear Search
             </button>
         </div>
@@ -90,7 +90,7 @@
     </div>
 
 
-    {# List of existing Service Profiles #}
+    
     <div class="bg-white shadow-md rounded-lg overflow-hidden">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
@@ -160,7 +160,7 @@
         </table>
     </div>
 
-    {# Pagination - Now conditionally displayed based on AJAX search #}
+    
     <div id="pagination-container">
         {% if is_paginated and not search_term %}
             <div class="pagination mt-6 flex justify-center items-center space-x-2">

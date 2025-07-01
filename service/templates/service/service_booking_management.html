@@ -5,9 +5,9 @@
 
 <link rel="stylesheet" href="{% static 'css/service_booking_styles.css' %}">
 
-{# Include FullCalendar's core CSS #}
+
 <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css' rel='stylesheet' />
-{# Add Tailwind CSS for new elements only #}
+
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -76,7 +76,7 @@
 
 <div class="card shadow mb-4">
     <div class="card-header">
-        {# NEW: Search Bar for Bookings #}
+        
         <div class="relative-position-container mb-4">
             <label for="bookingSearch" class="block text-gray-700 text-sm font-medium mb-1">Search Bookings</label>
             <input type="text" id="bookingSearch" placeholder="Search by name, reference, motorcycle, status..."
@@ -84,7 +84,7 @@
             <div id="bookingSearchResults" class="booking-search-results hidden"></div>
         </div>
 
-        {# ORIGINAL BUTTON GROUP (with "Search bookings" removed) #}
+        
         <div class="button-group-spaced mb-4">
             <a href="{% url 'service:admin_create_service_booking' %}" class="btn-primary">
                 Create booking
@@ -93,10 +93,10 @@
     </div>
     <div class="card-body">
         <div id='fullcalendar'>
-            {# FullCalendar will build the calendar inside this div #}
+            
         </div>
 
-        {# Color Key for Statuses (temporarily placed here, will be moved by JS) #}
+        
         <div class="color-key" id="status-color-key" style="display: none;">
             <div class="color-key-item">
                 <span class="color-box status-confirmed"></span> Confirmed
@@ -107,7 +107,7 @@
             <div class="color-key-item">
                 <span class="color-box status-completed"></span> Completed
             </div>
-            {# Added more status colors as per common Django choices #}
+            
             <div class="color-key-item">
                 <span class="color-box status-blocked"></span> Blocked
             </div>
@@ -128,13 +128,13 @@
             </div>
         </div>
 
-    </div> {# End of card-body #}
-</div> {# End of card #}
+    </div> 
+</div> 
 
-{# Include FullCalendar's core JavaScript file #}
+
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
 
-{# Include the interaction plugin if you plan to use features like clicking dates/events #}
+
 <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.11/index.global.min.js'></script>
 
 <script>

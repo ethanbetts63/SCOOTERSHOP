@@ -1,6 +1,6 @@
 {% extends "dashboard/admin_layout.html" %}
 {% load static %}
-{% load i18n %} {# Add this if you use Django's translation #}
+{% load i18n %} 
 
 {% block extra_css %}
 {{ block.super }}
@@ -8,26 +8,26 @@
 {% endblock %}
 
 {% block admin_main_content %}
-<div class="service-booking-container"> {# Keeping the class name for consistent styling #}
+<div class="service-booking-container"> 
     <div class="booking-progress">
-        <h2>{% translate "Hire Settings" %}</h2> {# Updated title #}
+        <h2>{% translate "Hire Settings" %}</h2> 
     </div>
 
     <hr>
 
-    {# Start of the form for Hire Settings #}
+    
     <form method="post">
         {% csrf_token %}
 
-        {# Added buttons here, within the form #}
+        
         <div class="form-field" style="flex-direction: row; justify-content: flex-end; margin-bottom: 20px;">
             <button type="button" class="btn-secondary" id="editButton" style="margin-right: 10px;">{% translate "Edit" %}</button>
             <button type="submit" id="saveButton">{% translate "Save Changes" %}</button>
             <button type="button" class="btn-secondary" id="resetButton" style="margin-left: 10px;">{% translate "Reset" %}</button>
         </div>
-        {# End added buttons #}
+        
 
-        {# Add non-field errors if any #}
+        
         {% if form.non_field_errors %}
             <div class="form-field">
                 {% for error in form.non_field_errors %}
@@ -36,10 +36,10 @@
             </div>
         {% endif %}
 
-        {# --- Rate Defaults --- #}
+        
         <div class="form-field">
-            <h3 class="booking-section-title">{% translate "Rate Defaults and Discounts" %}</h3> {# Updated section title #}
-            {# Add the new hourly rate field here #}
+            <h3 class="booking-section-title">{% translate "Rate Defaults and Discounts" %}</h3> 
+            
              <div class="form-field">
                  {{ form.default_hourly_rate.label_tag }}
                  {{ form.default_hourly_rate }}
@@ -53,7 +53,7 @@
                  {% for error in form.default_daily_rate.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
              </div>
 
-            {# Added new discount percentage fields #}
+            
             <div class="form-field">
                  {{ form.weekly_discount_percentage.label_tag }}
                  {{ form.weekly_discount_percentage }}
@@ -68,7 +68,7 @@
              </div>
         </div>
 
-        {# --- Hire Pricing Strategy --- #}
+        
         <div class="form-field">
             <h3 class="booking-section-title">{% translate "Hire Pricing Strategy" %}</h3>
             <div class="form-field">
@@ -85,7 +85,7 @@
             </div>
         </div>
 
-        {# --- Payment Options --- #}
+        
         <div class="form-field">
             <h3 class="booking-section-title">{% translate "Payment Options" %}</h3>
             <div class="form-field">
@@ -108,7 +108,7 @@
              </div>
         </div>
 
-        {# --- Deposit Defaults --- #}
+        
          <div class="form-field">
              <h3 class="booking-section-title">{% translate "Deposit Settings" %}</h3>
              <div class="form-field">
@@ -137,7 +137,7 @@
               </div>
          </div>
 
-        {# --- Feature Toggles --- #}
+        
         <div class="form-field">
             <h3 class="booking-section-title">{% translate "Feature Toggles" %}</h3>
              <div class="form-field">
@@ -154,7 +154,7 @@
              </div>
         </div>
 
-        {# --- Hire Duration and Timing Rules --- #}
+        
          <div class="form-field">
              <h3 class="booking-section-title">{% translate "Duration and Timing" %}</h3>
              <div class="form-field">
@@ -182,7 +182,7 @@
                   {% for error in form.grace_period_minutes.errors %}<small class="errorlist">{{ error }}</small>{% endfor %}
               </div>
 
-             {# Added time fields for pickup and return #}
+             
              <div class="form-field">
                  {{ form.pick_up_start_time.label_tag }}
                  {{ form.pick_up_start_time }}
@@ -210,7 +210,7 @@
          </div>
 
 
-        {# --- Notification Settings --- #}
+        
          <div class="form-field">
              <h3 class="booking-section-title">{% translate "Notification Settings" %}</h3>
              <div class="form-field">
@@ -227,7 +227,7 @@
               </div>
          </div>
          
-         {# --- Late Fees and Charges --- #}
+         
         <div class="form-field">
             <h3 class="booking-section-title">{% translate "Late Fees and Charges" %}</h3>
              <div class="form-field">
@@ -250,7 +250,7 @@
              </div>
         </div>
 
-        {# --- Driver Requirements --- #}
+        
         <div class="form-field">
             <h3 class="booking-section-title">{% translate "Driver Requirements" %}</h3>
             <div class="form-field">
@@ -273,7 +273,7 @@
              </div>
         </div>
 
-        {# --- Currency Settings --- #}
+        
         <div class="form-field">
             <h3 class="booking-section-title">{% translate "Currency Settings" %}</h3>
             <div class="form-field">
@@ -290,7 +290,7 @@
              </div>
         </div>
 
-        {# --- Upfront Cancellation Policy --- #}
+        
         <div class="form-field">
             <h3 class="booking-section-title">{% translate "Upfront Payment Cancellation Policy" %}</h3>
             <div class="form-field">
@@ -325,7 +325,7 @@
              </div>
         </div>
 
-        {# --- Deposit Cancellation Policy --- #}
+        
         <div class="form-field">
             <h3 class="booking-section-title">{% translate "Deposit Cancellation Policy" %}</h3>
             <div class="form-field">

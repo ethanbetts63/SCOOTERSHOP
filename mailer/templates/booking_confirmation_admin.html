@@ -1,5 +1,5 @@
-{# mailer/templates/emails/booking_confirmation_admin.html #}
-{% load static %} {# If you were to use any static assets like logos, though generally avoided for emails #}
+
+{% load static %} 
 
 <!DOCTYPE html>
 <html lang="en">
@@ -255,7 +255,7 @@
                                     <td>{{ booking.driver_profile.passport_expiry_date|date:"M d, Y"|default:"N/A" }}</td>
                                 </tr>
                                 {% endif %}
-                                {# Note: FileField URLs for images are not included here for brevity and security, but could be if necessary #}
+                                
                             </table>
                             {% else %}
                             <p>No driver profile details available.</p>
@@ -379,11 +379,11 @@
 
                             <p>Please log in to the admin panel for further management:</p>
                             <p style="text-align: center;">
-                                {# This URL assumes your admin site is at /admin/ #}
+                                
                                 <a href="{% url 'admin:index' %}" class="admin-link">Go to Admin Panel</a>
-                                {# If you want to link directly to the booking: #}
-                                {# <a href="{{ request.scheme }}://{{ request.get_host }}{% url 'admin:hire_hirebooking_change' booking.id %}" class="admin-link">View Booking in Admin</a> #}
-                                {# Note: 'request' context processor needed for request.scheme/get_host #}
+                                
+                                
+                                
                             </p>
                         </td>
                     </tr>

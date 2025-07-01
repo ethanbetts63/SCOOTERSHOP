@@ -1,5 +1,5 @@
-{# mailer/templates/emails/booking_confirmation_user.html #}
-{% load static %} {# If you were to use any static assets like logos, though generally avoided for emails #}
+
+{% load static %} 
 
 <!DOCTYPE html>
 <html lang="en">
@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Motorcycle Hire Booking Confirmation</title>
-    {# Basic inline styles for better rendering across email clients #}
+    
     <style type="text/css">
         body {
             font-family: Arial, sans-serif;
@@ -162,7 +162,7 @@
                             <p>Best regards,</p>
                             <p>The SCOOTER_SHOP Team</p>
 
-                            {# Example button - link to your site's booking management or contact page #}
+                            
                             <p style="text-align: center;">
                                 <a href="{% url 'core:index' %}" class="button">Visit Our Website</a>
                             </p>

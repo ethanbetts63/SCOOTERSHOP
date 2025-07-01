@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block extra_css %}
-{{ block.super }} {# Include CSS from the parent template #}
+{{ block.super }} 
 <style>
 
 </style>
@@ -20,12 +20,12 @@
         </a>
     </div>
 
-    {# Form for creating/editing a Service Profile #}
+    
     <div class="mb-6 bg-white p-6 rounded-lg shadow-md">
         <form method="post" action="{% if is_edit_mode %}{% url 'service:admin_edit_service_profile' pk=current_profile.pk %}{% else %}{% url 'service:admin_create_service_profile' %}{% endif %}">
             {% csrf_token %}
             
-            {# Manually render form fields #}
+            
             {% for field in form %}
                 <div class="form-group">
                     <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
@@ -34,7 +34,7 @@
                             <span class="text-red-500">*</span>
                         {% endif %}
                     </label>
-                    {{ field }} {# This renders the input/select element with its current value #}
+                    {{ field }} 
                     {% if field.help_text %}
                         <p class="helptext">{{ field.help_text }}</p>
                     {% endif %}

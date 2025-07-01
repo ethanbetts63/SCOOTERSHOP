@@ -47,10 +47,7 @@
                             {{ checkbox.tag }}
                             <label class="form-check-label" for="{{ checkbox.id_for_label }}">
                                 {{ checkbox.choice_label }}
-                                {% comment %}
-                                    The data-cost attribute now uses addon.daily_cost
-                                    as per the new pricing structure.
-                                {% endcomment %}
+                                
                                 {% for addon in available_addons %}
                                     {% if addon.name == checkbox.choice_label %}
                                         <span class="addon-cost" data-cost="{{ addon.daily_cost }}">${{ addon.daily_cost }} (Daily)</span>
@@ -70,7 +67,7 @@
                 <small class="form-text text-muted">{{ form.add_ons.help_text }}</small>
             </div>
 
-            {# New fields for hourly_cost and daily_cost for the package #}
+            
             <div class="form-group">
                 <label for="{{ form.hourly_cost.id_for_label }}">Package Hourly Price ($)</label>
                 {{ form.hourly_cost }}

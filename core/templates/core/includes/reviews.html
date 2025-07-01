@@ -1,7 +1,7 @@
-{# core/includes/reviews.html #}
+
 {% load static %}
 
-{# Check if Google Places reviews are enabled in site settings #}
+
 {% if settings.enable_google_places_reviews %}
     <div id="reviews-section" class="reviews-section">
         <div class="container index-section">
@@ -10,7 +10,7 @@
                 <button class="carousel-arrow prev-arrow" aria-label="Previous review"><</button>
 
                 <div class="reviews-container">
-                    {% if reviews %} {# Check if reviews data was passed from the view #}
+                    {% if reviews %} 
                         <div class="reviews-list">
                             {% for review in reviews %}
                                 <div class="review-item card card-border">
@@ -35,21 +35,21 @@
                                             <div class="review-date">{{ review.relative_time_description }}</div>
                                         </div>
                                     </div>
-                                    {# Assuming 'review.text' is the full review text #}
+                                    
                                     <div class="review-text" data-full-text="{{ review.text }}">{{ review.text }}</div>
-                                    {# Link to the full review on Google, using the Place ID #}
+                                    
                                     {% if settings.google_places_place_id %}
-                                        {# The 'review.author_url' often links to the specific review, which is better #}
-                                        {# If review.author_url is not available or not suitable, you can link to the general reviews page #}
+                                        
+                                        
                                         <a href="{{ review.author_url|default:'https://search.google.com/local/reviews?placeid='|add:settings.google_places_place_id }}" target="_blank" class="read-more-link" style="display: none;">Read more...</a>
                                     {% endif %}
                                 </div>
                             {% endfor %}
 
-                            {# Add the "See all reviews" box as another review item #}
+                            
                             <div class="review-item see-all-review-item card card-border">
                                 <div class="see-all-content">
-                                    <p>Check out our Google reviews:</p> {# Removed "No reviews found" as this box shows even with reviews #}
+                                    <p>Check out our Google reviews:</p> 
                                      {% if settings.google_places_place_id %}
                                         <a href="https://search.google.com/local/reviews?placeid={{ settings.google_places_place_id }}" target="_blank" class="btn-primary">See All Reviews</a>
                                      {% else %}
@@ -59,7 +59,7 @@
                             </div>
                         </div>
                     {% else %}
-                         {# Display the "See all reviews" box if reviews are enabled but none are fetched or available #}
+                         
                          <div class="reviews-list">
                             <div class="review-item see-all-review-item card card-border">
                                 <div class="see-all-content">
@@ -79,7 +79,7 @@
             </div>
 
             <div class="carousel-dots">
-                {# Dots will be added via JavaScript based on number of slides #}
+                
             </div>
         </div>
     </div>

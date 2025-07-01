@@ -62,14 +62,14 @@
 
     <hr>
 
-    {# Blocked Service Dates section #}
+    
     <div class="form-field">
         <h3 class="booking-section-title">Manage Blocked Service Dates</h3>
 
         <div class="form-field">
             <h4 class="sub-section-title">Add New Blocked Date or Range:</h4>
 
-            {# Form for adding blocked service dates #}
+            
             <form method="post">
                 {% csrf_token %}
 
@@ -141,7 +141,7 @@
                                     - {{ date.description }}
                                 {% endif %}
                             </div>
-                            {# Form for deleting a blocked date - now uses a custom modal #}
+                            
                             <form method="post" class="inline-form delete-form" data-delete-url="{% url 'service:delete_blocked_service_date' date.pk %}">
                                 {% csrf_token %}
                                 <button type="button" class="btn-delete delete-button">Delete</button>
@@ -154,11 +154,11 @@
             {% endif %}
         </div>
     </div>
-    {# End of Blocked Service Dates section #}
+    
 
 </div>
 
-{# Custom Confirmation Modal #}
+
 <div id="confirmationModal" class="modal">
   <div class="modal-content">
     <p>Are you sure you want to delete this blocked date entry?</p>

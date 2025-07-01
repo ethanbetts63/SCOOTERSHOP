@@ -50,7 +50,7 @@
             <form method="post">
                 {% csrf_token %}
 
-                {# This loop iterates through the form fields and renders them directly #}
+                
                 {% for field in form %}
                     <div class="mb-4">
                         <label for="{{ field.id_for_label }}" class="block text-gray-700 text-sm font-medium mb-2 {% if field.label_attrs %}{{ field.label_attrs.class }}{% endif %}">
@@ -73,7 +73,7 @@
                     <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md">
                         {% if is_edit_mode %}Update FAQ{% else %}Create FAQ{% endif %}
                     </button>
-                    {# Ensure the URL here points to the service FAQ management page #}
+                    
                     <a href="{% url 'service:service_faq_management' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                         Cancel
                     </a>

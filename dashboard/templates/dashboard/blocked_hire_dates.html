@@ -3,7 +3,7 @@
 
 {% block extra_css %}
 {{ block.super }}
-    <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}"> {# Assuming you still want the booking styles #}
+    <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}"> 
 {% endblock %}
 
 {% block admin_main_content %}
@@ -14,14 +14,14 @@
 
     <hr>
 
-    {# Blocked Hire Dates section #}
+    
     <div class="form-field">
         <h3 class="booking-section-title">Manage Blocked Hire Dates</h3>
 
         <div class="form-field">
             <h4 class="sub-section-title">Add New Blocked Date or Range:</h4>
 
-            {# Form for adding blocked hire dates #}
+            
             <form method="post">
                 {% csrf_token %}
 
@@ -93,8 +93,8 @@
                                     - {{ date.description }}
                                 {% endif %}
                             </div>
-                            {# Form for deleting a blocked date #}
-                            <form method="post" class="inline-form" action="{% url 'dashboard:delete_blocked_hire_date' date.pk %}"> {# Assuming a URL name 'delete_blocked_hire_date' #}
+                            
+                            <form method="post" class="inline-form" action="{% url 'dashboard:delete_blocked_hire_date' date.pk %}"> 
                                 {% csrf_token %}
                                 <button type="submit" class="btn-delete" onclick="return confirm('Are you sure you want to delete this blocked date entry?');">Delete</button>
                             </form>
@@ -106,7 +106,7 @@
             {% endif %}
         </div>
     </div>
-    {# End of Blocked Hire Dates section #}
+    
 
 </div>
 {% endblock %}

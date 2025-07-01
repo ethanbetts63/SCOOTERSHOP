@@ -81,8 +81,8 @@
 {% block admin_main_content %}
 <div class="p-4">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Refund Requests Management</h1> {# Generalized title #}
-        {# Button to add a new refund request, now generic #}
+        <h1 class="text-2xl font-bold text-gray-800">Refund Requests Management</h1> 
+        
         <a href="{% url 'payments:add_refund_request' %}"
            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
             Add New Refund Request
@@ -146,24 +146,24 @@
                                 {{ request.id }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
-                                {# Display Booking Type #}
+                                
                                 {% if request.hire_booking %}Hire
                                 {% elif request.service_booking %}Service
-                                {% elif request.sales_booking %}Sales{# Added Sales Booking Type #}
+                                {% elif request.sales_booking %}Sales
                                 {% else %}N/A{% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
-                                {# Display Booking Reference #}
+                                
                                 {% if request.hire_booking %}{{ request.hire_booking.booking_reference }}
                                 {% elif request.service_booking %}{{ request.service_booking.service_booking_reference }}
-                                {% elif request.sales_booking %}{{ request.sales_booking.sales_booking_reference }}{# Added Sales Booking Reference #}
+                                {% elif request.sales_booking %}{{ request.sales_booking.sales_booking_reference }}
                                 {% else %}N/A{% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
-                                {# Display Requested By Email #}
+                                
                                 {% if request.driver_profile %}{{ request.driver_profile.email|default:"N/A" }}
                                 {% elif request.service_profile %}{{ request.service_profile.email|default:"N/A" }}
-                                {% elif request.sales_profile %}{{ request.sales_profile.email|default:"N/A" }}{# Added Sales Profile Email #}
+                                {% elif request.sales_profile %}{{ request.sales_profile.email|default:"N/A" }}
                                 {% elif request.request_email %}{{ request.request_email }}
                                 {% else %}N/A{% endif %}
                             </td>
@@ -186,12 +186,12 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium table-cell-padding">
                                 <div class="flex space-x-2">
-                                    {# Link to the edit page for the specific refund request #}
+                                    
                                     {% if request.status not in 'partially_refunded,refunded,rejected' %}
                                         <a href="{% url 'payments:edit_refund_request' pk=request.pk %}" class="action-button btn-review">Review/Edit</a>
                                     {% endif %}
 
-                                    {# Approve button, only shown if status is 'reviewed_pending_approval' #}
+                                    
                                     {% if request.status == 'reviewed_pending_approval' %}
                                         <form action="{% url 'payments:process_refund' pk=request.pk %}" method="post" style="display:inline;">
                                             {% csrf_token %}
@@ -202,9 +202,9 @@
                                         </form>
                                     {% endif %}
 
-                                    {# Reject button, always appears unless status is approved, rejected, partially_refunded, refunded, or failed #}
+                                    
                                     {% if request.status not in 'approved,rejected,partially_refunded,refunded,failed' %}
-                                        {# Link to the reject refund form #}
+                                        
                                         <a href="{% url 'payments:reject_refund_request' pk=request.pk %}" class="action-button btn-reject">
                                             Reject
                                         </a>

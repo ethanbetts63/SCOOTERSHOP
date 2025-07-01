@@ -7,7 +7,7 @@
 <div class="bg-gray-50 min-h-screen font-sans">
     <div class="container mx-auto px-4 py-8">
         
-        <!-- Header -->
+        
         <div class="text-center mb-8">
             <h1 class="text-4xl font-extrabold text-gray-800 tracking-tight">{{ page_title }}</h1>
             <p class="text-lg text-gray-600 mt-2">Browse our collection of premium motorcycles.</p>
@@ -15,12 +15,12 @@
 
         <div class="flex flex-col lg:flex-row gap-8">
 
-            <!-- Filter Menu -->
+            
             <aside class="w-full lg:w-1/4">
                 <div class="bg-white p-6 rounded-2xl shadow-lg sticky top-8">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-3">Filters</h2>
                     <form id="filter-form">
-                        <!-- Brand Filter -->
+                        
                         <div class="mb-6">
                             <label for="brand-select" class="block text-sm font-semibold text-gray-700 mb-2">Brand</label>
                             <select id="brand-select" name="brand" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-blue-500 transition-all">
@@ -31,7 +31,7 @@
                             </select>
                         </div>
 
-                        <!-- Year Range Filter -->
+                        
                         <div class="mb-6">
                              <label class="block text-sm font-semibold text-gray-700 mb-2">Year</label>
                             <div class="flex items-center space-x-2">
@@ -51,7 +51,7 @@
                             </div>
                         </div>
 
-                        <!-- Price Range Filter -->
+                        
                         <div class="mb-6">
                             <label for="price-range" class="block text-sm font-semibold text-gray-700 mb-2">Price Range</label>
                             <div class="flex items-center space-x-2">
@@ -61,7 +61,7 @@
                             </div>
                         </div>
                         
-                        <!-- Engine Size Filter -->
+                        
                         <div class="mb-6">
                             <label for="engine-size-range" class="block text-sm font-semibold text-gray-700 mb-2">Engine (cc)</label>
                             <div class="flex items-center space-x-2">
@@ -79,9 +79,9 @@
                 </div>
             </aside>
 
-            <!-- Main Content: Motorcycle List -->
+            
             <main class="w-full lg:w-3/4">
-                <!-- Sort Dropdown -->
+                
                 <div class="mb-6 flex justify-end">
                     <select id="sort-by" name="order" class="bg-white border-2 border-gray-300 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:border-blue-500 transition-all shadow-sm">
                         <option value="">Sort by...</option>
@@ -92,9 +92,9 @@
                     </select>
                 </div>
 
-                <!-- Motorcycle Grid -->
+                
                 <div id="motorcycle-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                    <!-- Initial motorcycles loaded by Django, will be replaced by JS -->
+                    
                     {% for motorcycle in motorcycles %}
                         <div class="bg-white rounded-2xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 ease-in-out group">
                             <a href="{% url 'inventory:motorcycle-detail' pk=motorcycle.pk %}" class="block">
@@ -139,7 +139,7 @@
                     {% endfor %}
                 </div>
 
-                <!-- Pagination -->
+                
                 <div id="pagination-controls" class="mt-12 flex justify-center items-center space-x-2">
                     {% if page_obj.has_previous %}
                     <a href="#" data-page="{{ page_obj.previous_page_number }}" class="pagination-link rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 shadow-sm">Previous</a>
@@ -166,10 +166,10 @@
 </div>
 
 
-<!-- JS Template for dynamic loading. This is NOT displayed initially. -->
+
 <template id="motorcycle-tile-template">
     <div class="bg-white rounded-2xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 ease-in-out group relative">
-        <!-- New: Status Badge for 'Reserved' or 'Out of Stock' -->
+        
         <div class="motorcycle-status-badge absolute top-4 left-4 text-sm font-bold px-4 py-2 rounded-full z-20 hidden"></div>
         
         <a href="#" class="block motorcycle-link">
