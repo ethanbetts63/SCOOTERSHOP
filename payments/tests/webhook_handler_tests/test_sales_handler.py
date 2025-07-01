@@ -82,19 +82,23 @@ class SalesWebhookHandlerTest(TestCase):
             self.assertEqual(payment_obj.sales_booking, sales_booking)
 
             self.assertEqual(mock_send_email.call_count, 2)
+            # Verifying the call to send email to the user, now including the profile argument.
             mock_send_email.assert_any_call(
                 recipient_list=[self.user.email],
                 subject=f"Your Sales Booking Confirmation - {sales_booking.sales_booking_reference}",
                 template_name='sales_booking_confirmation_user.html',
                 context=mock.ANY,
-                booking=sales_booking
+                booking=sales_booking,
+                profile=self.sales_profile
             )
+            # Verifying the call to send email to the admin, now including the profile argument.
             mock_send_email.assert_any_call(
                 recipient_list=[settings.ADMIN_EMAIL],
                 subject=f"New Sales Booking (Online) - {sales_booking.sales_booking_reference}",
                 template_name='sales_booking_confirmation_admin.html',
                 context=mock.ANY,
-                booking=sales_booking
+                booking=sales_booking,
+                profile=self.sales_profile
             )
 
     def test_handle_sales_booking_succeeded_temp_booking_missing(self):
@@ -233,4 +237,3 @@ class SalesWebhookHandlerTest(TestCase):
 
             sales_booking = SalesBooking.objects.get(stripe_payment_intent_id=payment_obj.stripe_payment_intent_id)
             self.assertEqual(sales_booking.payment_status, 'deposit_paid')
-
