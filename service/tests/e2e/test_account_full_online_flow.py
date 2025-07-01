@@ -1,6 +1,7 @@
 import datetime
 from decimal import Decimal
 import stripe
+import time
 from unittest import skipIf
 
 from django.test import TestCase, Client, override_settings
@@ -43,18 +44,15 @@ class TestLoggedInOnlinePaymentFlow(TestCase):
             base_price=Decimal('450.00'),
             is_active=True
         )
-        # Create a user, profile, and motorcycle for the test
         self.user = UserFactory(username='onlineuser')
         self.service_profile = ServiceProfileFactory(user=self.user, name='Online full account Test User', email='online.test@user.com', country='AU')
         self.motorcycle = CustomerMotorcycleFactory(service_profile=self.service_profile, brand='Ducati', model='Monster')
-        # Ensure the brand exists for form validation
         ServiceBrandFactory(name='Ducati')
-        # Log the user in for the test
         self.client.force_login(self.user)
         stripe.api_key = settings.STRIPE_SECRET_KEY
 
     def test_logged_in_user_online_payment_flow(self):
-        # Define URLs for the booking flow
+        service_page_url = reverse('service:service')
         step1_url = reverse('service:service_book_step1')
         step2_url = reverse('service:service_book_step2')
         step4_url = reverse('service:service_book_step4')
@@ -64,34 +62,52 @@ class TestLoggedInOnlinePaymentFlow(TestCase):
 
         valid_future_date = timezone.now().date() + datetime.timedelta(days=self.service_settings.booking_advance_notice + 5)
         
-        # Step 1: Select service and date
         self.client.post(step1_url, {'service_type': self.service_type.id, 'service_date': valid_future_date.strftime('%Y-%m-%d')}, follow=True)
         
-        # Step 2: Select the existing motorcycle
-        self.client.post(step2_url, {'selected_motorcycle': self.motorcycle.id})
+        response = self.client.post(step2_url, {'selected_motorcycle': self.motorcycle.id})
+        self.assertRedirects(response, step4_url)
 
-        # Step 4: Confirm personal details
-        self.client.post(step4_url, {
+        response = self.client.get(step2_url)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(step2_url, {'selected_motorcycle': self.motorcycle.id})
+        self.assertRedirects(response, step4_url)
+
+        profile_data = {
             'name': self.service_profile.name, 'email': self.service_profile.email, 'phone_number': self.service_profile.phone_number,
             'address_line_1': self.service_profile.address_line_1, 'address_line_2': self.service_profile.address_line_2,
             'city': self.service_profile.city, 'state': self.service_profile.state, 'post_code': self.service_profile.post_code,
             'country': self.service_profile.country,
-        })
+        }
+        response = self.client.post(step4_url, profile_data)
+        self.assertRedirects(response, step5_url)
 
-        # Step 5: Select online payment method
-        response = self.client.post(step5_url, {
+        response = self.client.get(step4_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['form'].initial['email'], profile_data['email'])
+
+        response = self.client.post(step4_url, profile_data)
+        self.assertRedirects(response, step5_url)
+
+        step5_data = {
             'dropoff_date': valid_future_date.strftime('%Y-%m-%d'), 'dropoff_time': '14:30',
             'payment_method': 'online_full', 'service_terms_accepted': 'on',
-        })
+        }
+        response = self.client.post(step5_url, step5_data)
         self.assertRedirects(response, step6_url)
 
-        # Step 6: Load payment page to create the Stripe PaymentIntent
+        response = self.client.get(step5_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['form'].initial['payment_method'], step5_data['payment_method'])
+
+        response = self.client.post(step5_url, step5_data)
+        self.assertRedirects(response, step6_url)
+
         self.client.get(step6_url)
         self.assertEqual(Payment.objects.count(), 1)
         payment_obj = Payment.objects.first()
         payment_intent_id = payment_obj.stripe_payment_intent_id
 
-        # Simulate a successful payment via the Stripe API
         try:
             confirmation_url_path = reverse('service:service_book_step7')
             full_return_url = f"http://testserver{confirmation_url_path}"
@@ -103,11 +119,9 @@ class TestLoggedInOnlinePaymentFlow(TestCase):
         except stripe.error.StripeError as e:
             self.fail(f"Stripe API call failed during test: {e}")
 
-        # Simulate the webhook by calling the handler directly
         updated_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
         handle_service_booking_succeeded(payment_obj, updated_intent)
 
-        # Assert that the booking was finalized correctly
         self.assertEqual(ServiceBooking.objects.count(), 1)
         self.assertEqual(TempServiceBooking.objects.count(), 0)
         final_booking = ServiceBooking.objects.first()
@@ -116,9 +130,24 @@ class TestLoggedInOnlinePaymentFlow(TestCase):
         self.assertEqual(final_booking.service_profile, self.service_profile)
         self.assertEqual(final_booking.customer_motorcycle, self.motorcycle)
 
-        # Check the confirmation page
         confirmation_url_with_param = f"{step7_url}?payment_intent_id={payment_intent_id}"
         confirmation_response = self.client.get(confirmation_url_with_param)
         self.assertEqual(confirmation_response.status_code, 200)
         self.assertContains(confirmation_response, final_booking.service_booking_reference)
         self.assertIn('last_booking_successful_timestamp', self.client.session)
+
+        response = self.client.post(step1_url, {'service_type': self.service_type.id, 'service_date': valid_future_date.strftime('%Y-%m-%d')}, follow=True)
+        self.assertRedirects(response, service_page_url)
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), "You recently completed a booking. If you wish to make another, please ensure your previous booking was processed successfully or wait a few moments.")
+
+        session = self.client.session
+        session['last_booking_successful_timestamp'] = time.time() - 300
+        session.save()
+
+        response = self.client.post(step1_url, {'service_type': self.service_type.id, 'service_date': valid_future_date.strftime('%Y-%m-%d')}, follow=True)
+        self.assertRedirects(response, step2_url + f'?temp_booking_uuid={self.client.session["temp_service_booking_uuid"]}')
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertIn("Service details selected", str(messages[0]))

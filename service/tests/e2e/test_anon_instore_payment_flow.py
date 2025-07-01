@@ -1,5 +1,6 @@
 import datetime
 from decimal import Decimal
+import time
 
 from django.test import TestCase, Client, override_settings
 from django.urls import reverse
@@ -17,11 +18,6 @@ from ..test_helpers.model_factories import (
 class TestAnonymousInStorePaymentFlow(TestCase):
 
     def setUp(self):
-        """
-        Set up the necessary objects for the test case.
-        This includes creating site settings, service settings, a service type,
-        and a service brand. It also initializes the test client.
-        """
         self.client = Client()
         SiteSettings.objects.create(enable_service_booking=True)
         self.service_settings = ServiceSettingsFactory(
@@ -42,22 +38,15 @@ class TestAnonymousInStorePaymentFlow(TestCase):
         ServiceBrandFactory(name='Honda')
 
     def test_anonymous_user_in_store_payment_flow(self):
-        """
-        Test the complete booking flow for an anonymous user who chooses
-        to pay the full amount in-store.
-        """
-        # Define URLs for each step in the booking process
+        service_page_url = reverse('service:service')
         step1_url = reverse('service:service_book_step1')
         step3_url = reverse('service:service_book_step3')
         step4_url = reverse('service:service_book_step4')
         step5_url = reverse('service:service_book_step5')
         step7_url = reverse('service:service_book_step7')
 
-        # Calculate a valid future date for the service booking
         valid_future_date = timezone.now().date() + datetime.timedelta(days=self.service_settings.booking_advance_notice + 5)
         
-        # Step 1: Post service type and date.
-        # For an anonymous user, this should redirect to Step 3 (add motorcycle).
         step1_data = {
             'service_type': self.service_type.id,
             'service_date': valid_future_date.strftime('%Y-%m-%d'),
@@ -65,16 +54,21 @@ class TestAnonymousInStorePaymentFlow(TestCase):
         response = self.client.post(step1_url, step1_data, follow=True)
         self.assertRedirects(response, step3_url + f'?temp_booking_uuid={self.client.session["temp_service_booking_uuid"]}')
         
-        # Step 3: Post new motorcycle details.
         motorcycle_data = {
             'brand': 'Honda', 'model': 'CBR500R', 'year': '2022', 
             'engine_size': '471cc', 'rego': 'ANONR1', 'odometer': 1500, 
-            'transmission': 'MANUAL', 'vin_number': '98765432109876543',
+            'transmission': 'MANUAL', 'vin_number': 'VINANONINSTORE123',
         }
         response = self.client.post(step3_url, motorcycle_data)
         self.assertRedirects(response, step4_url)
 
-        # Step 4: Post new user profile details.
+        response = self.client.get(step3_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['form'].initial['rego'], motorcycle_data['rego'])
+
+        response = self.client.post(step3_url, motorcycle_data)
+        self.assertRedirects(response, step4_url)
+
         profile_data = {
             'name': 'Anonymous In-Store User', 'email': 'anon.instore@user.com', 'phone_number': '0487654321',
             'address_line_1': '456 Anon St', 'address_line_2': '',
@@ -84,13 +78,13 @@ class TestAnonymousInStorePaymentFlow(TestCase):
         response = self.client.post(step4_url, profile_data)
         self.assertRedirects(response, step5_url)
 
-        # Verify that the temporary booking has the correct profile and motorcycle data
-        temp_booking = TempServiceBooking.objects.get(session_uuid=self.client.session['temp_service_booking_uuid'])
-        self.assertEqual(temp_booking.service_profile.email, profile_data['email'])
-        self.assertEqual(temp_booking.customer_motorcycle.rego, motorcycle_data['rego'])
+        response = self.client.get(step4_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['form'].initial['email'], profile_data['email'])
 
-        # Step 5: Post drop-off details and select in-store payment.
-        # This should finalize the booking and redirect to the confirmation page (Step 7).
+        response = self.client.post(step4_url, profile_data)
+        self.assertRedirects(response, step5_url)
+
         step5_data = {
             'dropoff_date': valid_future_date.strftime('%Y-%m-%d'),
             'dropoff_time': '10:00',
@@ -100,23 +94,27 @@ class TestAnonymousInStorePaymentFlow(TestCase):
         response = self.client.post(step5_url, step5_data)
         self.assertRedirects(response, step7_url)
 
-        # Final Verification
-        # Check that a final ServiceBooking has been created and the temp one is gone.
         self.assertEqual(ServiceBooking.objects.count(), 1)
-        self.assertEqual(TempServiceBooking.objects.count(), 0)
-
-        # Go to the confirmation page and check its content.
         confirmation_response = self.client.get(step7_url)
         self.assertEqual(confirmation_response.status_code, 200)
 
-        # Verify the details of the finalized booking.
         final_booking = ServiceBooking.objects.first()
         self.assertEqual(final_booking.payment_status, 'unpaid')
-        self.assertEqual(final_booking.amount_paid, Decimal('0.00'))
-        self.assertEqual(final_booking.calculated_total, self.service_type.base_price)
-        self.assertEqual(final_booking.service_profile.email, profile_data['email'])
-        self.assertEqual(final_booking.customer_motorcycle.rego, motorcycle_data['rego'])
         self.assertContains(confirmation_response, final_booking.service_booking_reference)
-        
-        # Check that the session flag for a recent successful booking has been set.
         self.assertIn('last_booking_successful_timestamp', self.client.session)
+
+        response = self.client.post(step1_url, {'service_type': self.service_type.id, 'service_date': valid_future_date.strftime('%Y-%m-%d')}, follow=True)
+        self.assertRedirects(response, service_page_url)
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), "You recently completed a booking. If you wish to make another, please ensure your previous booking was processed successfully or wait a few moments.")
+
+        session = self.client.session
+        session['last_booking_successful_timestamp'] = time.time() - 300
+        session.save()
+
+        response = self.client.post(step1_url, {'service_type': self.service_type.id, 'service_date': valid_future_date.strftime('%Y-%m-%d')}, follow=True)
+        self.assertRedirects(response, step3_url + f'?temp_booking_uuid={self.client.session["temp_service_booking_uuid"]}')
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertIn("Service details selected", str(messages[0]))

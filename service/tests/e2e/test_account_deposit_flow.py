@@ -1,6 +1,7 @@
 import datetime
 from decimal import Decimal
 import stripe
+import time
 from unittest import skipIf
 
 from django.test import TestCase, Client, override_settings
@@ -55,6 +56,7 @@ class TestLoggedInDepositPaymentFlow(TestCase):
         stripe.api_key = settings.STRIPE_SECRET_KEY
 
     def test_logged_in_user_deposit_payment_flow(self):
+        service_page_url = reverse('service:service')
         step1_url = reverse('service:service_book_step1')
         step2_url = reverse('service:service_book_step2')
         step4_url = reverse('service:service_book_step4')
@@ -66,19 +68,43 @@ class TestLoggedInDepositPaymentFlow(TestCase):
         
         self.client.post(step1_url, {'service_type': self.service_type.id, 'service_date': valid_future_date.strftime('%Y-%m-%d')}, follow=True)
         
-        self.client.post(step2_url, {'selected_motorcycle': self.motorcycle.id})
+        response = self.client.post(step2_url, {'selected_motorcycle': self.motorcycle.id})
+        self.assertRedirects(response, step4_url)
 
-        self.client.post(step4_url, {
+        response = self.client.get(step2_url)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(step2_url, {'selected_motorcycle': self.motorcycle.id})
+        self.assertRedirects(response, step4_url)
+
+        profile_data = {
             'name': self.service_profile.name, 'email': self.service_profile.email, 'phone_number': self.service_profile.phone_number,
             'address_line_1': self.service_profile.address_line_1, 'address_line_2': self.service_profile.address_line_2,
             'city': self.service_profile.city, 'state': self.service_profile.state, 'post_code': self.service_profile.post_code,
             'country': self.service_profile.country,
-        })
+        }
+        response = self.client.post(step4_url, profile_data)
+        self.assertRedirects(response, step5_url)
 
-        response = self.client.post(step5_url, {
+        response = self.client.get(step4_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['form'].initial['email'], profile_data['email'])
+
+        response = self.client.post(step4_url, profile_data)
+        self.assertRedirects(response, step5_url)
+
+        step5_data = {
             'dropoff_date': valid_future_date.strftime('%Y-%m-%d'), 'dropoff_time': '15:00',
             'payment_method': 'online_deposit', 'service_terms_accepted': 'on',
-        })
+        }
+        response = self.client.post(step5_url, step5_data)
+        self.assertRedirects(response, step6_url)
+
+        response = self.client.get(step5_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['form'].initial['payment_method'], step5_data['payment_method'])
+
+        response = self.client.post(step5_url, step5_data)
         self.assertRedirects(response, step6_url)
 
         self.client.get(step6_url)
@@ -115,3 +141,19 @@ class TestLoggedInDepositPaymentFlow(TestCase):
         self.assertEqual(confirmation_response.status_code, 200)
         self.assertContains(confirmation_response, final_booking.service_booking_reference)
         self.assertIn('last_booking_successful_timestamp', self.client.session)
+
+        response = self.client.post(step1_url, {'service_type': self.service_type.id, 'service_date': valid_future_date.strftime('%Y-%m-%d')}, follow=True)
+        self.assertRedirects(response, service_page_url)
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), "You recently completed a booking. If you wish to make another, please ensure your previous booking was processed successfully or wait a few moments.")
+
+        session = self.client.session
+        session['last_booking_successful_timestamp'] = time.time() - 300 
+        session.save()
+
+        response = self.client.post(step1_url, {'service_type': self.service_type.id, 'service_date': valid_future_date.strftime('%Y-%m-%d')}, follow=True)
+        self.assertRedirects(response, step2_url + f'?temp_booking_uuid={self.client.session["temp_service_booking_uuid"]}')
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertIn("Service details selected", str(messages[0]))

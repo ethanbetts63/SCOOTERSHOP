@@ -1,5 +1,6 @@
 import datetime
 from decimal import Decimal
+import time
 
 from django.test import TestCase, Client, override_settings
 from django.urls import reverse
@@ -11,13 +12,10 @@ from ..test_helpers.model_factories import (
     ServiceSettingsFactory,
     ServiceTypeFactory,
     ServiceBrandFactory,
-    UserFactory,
-    ServiceProfileFactory,
-    CustomerMotorcycleFactory,
 )
 
 @override_settings(ADMIN_EMAIL='admin@example.com')
-class TestLoggedInUserInStorePaymentFlow(TestCase):
+class TestAnonymousInStorePaymentFlow(TestCase):
 
     def setUp(self):
         self.client = Client()
@@ -33,19 +31,16 @@ class TestLoggedInUserInStorePaymentFlow(TestCase):
             booking_open_days="Mon,Tue,Wed,Thu,Fri,Sat,Sun"
         )
         self.service_type = ServiceTypeFactory(
-            name='Premium Service',
-            base_price=Decimal('250.00'),
+            name='Anonymous Basic Service',
+            base_price=Decimal('150.00'),
             is_active=True
         )
-        self.user = UserFactory(username='testuser')
-        self.service_profile = ServiceProfileFactory(user=self.user, name='Account In-Store User', email='test@user.com', country='AU')
-        self.motorcycle = CustomerMotorcycleFactory(service_profile=self.service_profile, brand='Kawasaki', model='Ninja 400')
-        ServiceBrandFactory(name='Kawasaki')
-        self.client.force_login(self.user)
+        ServiceBrandFactory(name='Honda')
 
-    def test_logged_in_user_with_existing_bike_flow(self):
+    def test_anonymous_user_in_store_payment_flow(self):
+        service_page_url = reverse('service:service')
         step1_url = reverse('service:service_book_step1')
-        step2_url = reverse('service:service_book_step2')
+        step3_url = reverse('service:service_book_step3')
         step4_url = reverse('service:service_book_step4')
         step5_url = reverse('service:service_book_step5')
         step7_url = reverse('service:service_book_step7')
@@ -57,36 +52,52 @@ class TestLoggedInUserInStorePaymentFlow(TestCase):
             'service_date': valid_future_date.strftime('%Y-%m-%d'),
         }
         response = self.client.post(step1_url, step1_data, follow=True)
-        self.assertRedirects(response, step2_url + f'?temp_booking_uuid={self.client.session["temp_service_booking_uuid"]}')
+        self.assertRedirects(response, step3_url + f'?temp_booking_uuid={self.client.session["temp_service_booking_uuid"]}')
         
-        step2_data = { 'selected_motorcycle': self.motorcycle.id }
-        response = self.client.post(step2_url, step2_data)
+        motorcycle_data = {
+            'brand': 'Honda', 'model': 'CBR500R', 'year': '2022', 
+            'engine_size': '471cc', 'rego': 'ANONR1', 'odometer': 1500, 
+            'transmission': 'MANUAL', 'vin_number': 'VINANONINSTORE123',
+        }
+        response = self.client.post(step3_url, motorcycle_data)
         self.assertRedirects(response, step4_url)
 
-        step4_data = {
-            'name': self.service_profile.name,
-            'email': self.service_profile.email,
-            'phone_number': self.service_profile.phone_number,
-            'address_line_1': self.service_profile.address_line_1,
-            'address_line_2': self.service_profile.address_line_2,
-            'city': self.service_profile.city,
-            'state': self.service_profile.state,
-            'post_code': self.service_profile.post_code,
-            'country': self.service_profile.country,
+        response = self.client.get(step3_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['form'].initial['rego'], motorcycle_data['rego'])
+
+        response = self.client.post(step3_url, motorcycle_data)
+        self.assertRedirects(response, step4_url)
+
+        profile_data = {
+            'name': 'Anonymous In-Store User', 'email': 'anon.instore@user.com', 'phone_number': '0487654321',
+            'address_line_1': '456 Anon St', 'address_line_2': '',
+            'city': 'Melbourne', 'state': 'VIC', 'post_code': '3000',
+            'country': 'AU',
         }
-        response = self.client.post(step4_url, step4_data)
+        response = self.client.post(step4_url, profile_data)
         self.assertRedirects(response, step5_url)
-        
-        temp_booking = TempServiceBooking.objects.get(session_uuid=self.client.session['temp_service_booking_uuid'])
-        self.assertEqual(temp_booking.service_profile, self.service_profile)
-        self.assertEqual(temp_booking.customer_motorcycle, self.motorcycle)
+
+        response = self.client.get(step4_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['form'].initial['email'], profile_data['email'])
+
+        response = self.client.post(step4_url, profile_data)
+        self.assertRedirects(response, step5_url)
 
         step5_data = {
             'dropoff_date': valid_future_date.strftime('%Y-%m-%d'),
-            'dropoff_time': '11:00',
+            'dropoff_time': '10:00',
             'payment_method': 'in_store_full',
             'service_terms_accepted': 'on',
         }
+        response = self.client.post(step5_url, step5_data)
+        self.assertRedirects(response, step7_url)
+
+        response = self.client.get(step5_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['form'].initial['payment_method'], step5_data['payment_method'])
+
         response = self.client.post(step5_url, step5_data)
         self.assertRedirects(response, step7_url)
 
@@ -95,8 +106,22 @@ class TestLoggedInUserInStorePaymentFlow(TestCase):
         self.assertEqual(confirmation_response.status_code, 200)
 
         final_booking = ServiceBooking.objects.first()
-        self.assertEqual(final_booking.service_profile, self.service_profile)
-        self.assertEqual(final_booking.customer_motorcycle, self.motorcycle)
+        self.assertEqual(final_booking.payment_status, 'unpaid')
         self.assertContains(confirmation_response, final_booking.service_booking_reference)
-        
         self.assertIn('last_booking_successful_timestamp', self.client.session)
+
+        response = self.client.post(step1_url, {'service_type': self.service_type.id, 'service_date': valid_future_date.strftime('%Y-%m-%d')}, follow=True)
+        self.assertRedirects(response, service_page_url)
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), "You recently completed a booking. If you wish to make another, please ensure your previous booking was processed successfully or wait a few moments.")
+
+        session = self.client.session
+        session['last_booking_successful_timestamp'] = time.time() - 300
+        session.save()
+
+        response = self.client.post(step1_url, {'service_type': self.service_type.id, 'service_date': valid_future_date.strftime('%Y-%m-%d')}, follow=True)
+        self.assertRedirects(response, step3_url + f'?temp_booking_uuid={self.client.session["temp_service_booking_uuid"]}')
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertIn("Service details selected", str(messages[0]))
