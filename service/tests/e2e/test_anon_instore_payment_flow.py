@@ -76,7 +76,7 @@ class TestAnonymousInStorePaymentFlow(TestCase):
 
         step4_data = {
             'name': 'instore Anonymous User',
-            'email': 'instoreanon.user@example.com',
+            'email': 'anon.user@example.com',
             'phone_number': '0412345678',
             'address_line_1': '123 Test St',
             'city': 'Testville',
