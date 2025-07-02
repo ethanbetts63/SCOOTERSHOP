@@ -23,7 +23,7 @@
                 <div class="featured-card flex-shrink-0 w-60 bg-white rounded-xl shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-300 ease-in-out group">
                     <a href="{{ featured.motorcycle.get_absolute_url }}" class="block">
                         <div class="relative">
-                            <img src="{% if featured.motorcycle.image %}{{ featured.motorcycle.image.url }}{% else %}https://placehold.co/600x400/e2e8f0/333?text=No+Image{% endif %}" alt="{{ featured.motorcycle.title }}" class="w-full h-24 object-cover">
+                            <img src="{% if featured.motorcycle.image %}{{ featured.motorcycle.image.url }}{% else %}https://placehold.co/600x400/e2e8f0/333?text=No+Image{% endif %}" alt="{{ featured.motorcycle.title }}" class="w-full h-28 object-cover">
                         </div>
                         <div class="p-3">
                             <h4 class="text-md font-bold text-gray-800 truncate group-hover:text-blue-600 transition-colors">{{ featured.motorcycle.title }}</h4>
