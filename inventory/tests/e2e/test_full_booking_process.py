@@ -210,6 +210,7 @@ class TestDepositFlows(TestCase):
 
         self.client.get(step3_url)
         payment_obj = Payment.objects.first()
+        payment_obj.refresh_from_db()
         payment_intent_id = payment_obj.stripe_payment_intent_id
 
         try:
@@ -300,6 +301,7 @@ class TestDepositFlows(TestCase):
             session_uuid=self.client.session["temp_sales_booking_uuid"]
         )
         payment_obj = Payment.objects.get(temp_sales_booking=temp_booking)
+        payment_obj.refresh_from_db()
         payment_intent_id = payment_obj.stripe_payment_intent_id
 
         try:
@@ -389,6 +391,7 @@ class TestDepositFlows(TestCase):
 
         anon_client.get(step3_url)
         payment_obj = Payment.objects.first()
+        payment_obj.refresh_from_db()
         payment_intent_id = payment_obj.stripe_payment_intent_id
 
         try:
