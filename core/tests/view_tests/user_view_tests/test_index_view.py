@@ -13,7 +13,6 @@ class IndexViewTest(TestCase):
         self.client = Client()
         self.url = reverse('core:index')
 
-        # Mock SiteSettings and ServiceSettings
         self.mock_site_settings = MagicMock(spec=SiteSettings)
         self.mock_site_settings.enable_google_places_reviews = False
         self.mock_site_settings.google_places_place_id = "test_place_id"
@@ -29,7 +28,6 @@ class IndexViewTest(TestCase):
         self.addCleanup(patch_site_settings.stop)
         self.addCleanup(patch_service_settings.stop)
 
-        # Mock get_service_date_availability
         self.mock_get_service_date_availability_patch = patch('core.views.user_views.index.get_service_date_availability')
         self.mock_get_service_date_availability = self.mock_get_service_date_availability_patch.start()
         self.mock_get_service_date_availability.return_value = (date.today(), '[]')

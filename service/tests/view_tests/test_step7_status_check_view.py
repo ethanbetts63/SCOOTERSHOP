@@ -13,18 +13,13 @@ from ..test_helpers.model_factories import (
 )
 
 class Step7StatusCheckViewTest(TestCase):
-    """
-    Tests for the ServiceBookingStatusCheckView (AJAX endpoint).
-    """
 
     @classmethod
     def setUpTestData(cls):
-        """Set up non-modified objects used by all test methods."""
         cls.user = UserFactory()
         cls.base_url = reverse('service:service_booking_status_check')                           
 
     def setUp(self):
-        """Set up for each test method."""
         self.client.force_login(self.user)
         ServiceBooking.objects.all().delete()
         Payment.objects.all().delete()

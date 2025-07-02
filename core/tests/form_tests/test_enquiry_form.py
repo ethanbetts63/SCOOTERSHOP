@@ -3,14 +3,8 @@ from core.forms.enquiry_form import EnquiryForm
 from ..test_helpers.model_factories import EnquiryFactory
 
 class EnquiryFormTest(TestCase):
-    """
-    Tests for the EnquiryForm.
-    """
 
     def test_form_valid_data(self):
-        """
-        Test that the form is valid with correct data.
-        """
         data = {
             'name': 'John Doe',
             'email': 'john.doe@example.com',
@@ -21,9 +15,6 @@ class EnquiryFormTest(TestCase):
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
 
     def test_form_invalid_data_missing_required_fields(self):
-        """
-        Test that the form is invalid if required fields are missing.
-        """
         data = {
             'name': '',
             'email': '',
@@ -39,9 +30,6 @@ class EnquiryFormTest(TestCase):
         self.assertIn('This field is required.', form.errors['message'])
 
     def test_form_invalid_data_invalid_email(self):
-        """
-        Test that the form is invalid with an invalid email format.
-        """
         data = {
             'name': 'John Doe',
             'email': 'invalid-email',
@@ -54,9 +42,6 @@ class EnquiryFormTest(TestCase):
         self.assertIn('Enter a valid email address.', form.errors['email'])
 
     def test_form_phone_number_optional(self):
-        """
-        Test that the form is valid when phone_number is omitted.
-        """
         data = {
             'name': 'Jane Doe',
             'email': 'jane.doe@example.com',

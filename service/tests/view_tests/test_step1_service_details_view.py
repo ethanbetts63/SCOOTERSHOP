@@ -24,15 +24,9 @@ from ..test_helpers.model_factories import (
 )
 
 class Step1ServiceDetailsViewTest(TestCase):
-    """
-    Tests for the Step1ServiceDetailsView (POST method).
-    """
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up common data for all tests in this class.
-        """
         cls.factory = RequestFactory()
                                                        
         cls.user = UserFactory()
@@ -51,17 +45,11 @@ class Step1ServiceDetailsViewTest(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        """
-        Clean up mocks after all tests are done.
-        """
         cls.patcher_now.stop()
         cls.patcher_localtime.stop()
         super().tearDownClass()
 
     def setUp(self):
-        """
-        Set up for each test method. Ensure a clean state.
-        """
         ServiceSettings.objects.all().delete()
         TempServiceBooking.objects.all().delete()
         BlockedServiceDate.objects.all().delete()
@@ -87,9 +75,6 @@ class Step1ServiceDetailsViewTest(TestCase):
 
     @patch('service.views.user_views.step1_service_details_view.ServiceDetailsForm')
     def test_invalid_form_submission(self, MockServiceDetailsForm):
-        """
-        Test that invalid form submission leads to error messages and redirection to index.
-        """
         mock_form_instance = MockServiceDetailsForm.return_value
         mock_form_instance.is_valid.return_value = False
         mock_form_instance.errors = {'service_type': ['This field is required.']}
@@ -108,9 +93,6 @@ class Step1ServiceDetailsViewTest(TestCase):
 
     @patch('service.views.user_views.step1_service_details_view.ServiceDetailsForm')
     def test_service_booking_disabled(self, MockServiceDetailsForm):
-        """
-        Test that if service booking is disabled in settings, an error is shown.
-        """
         self.service_settings.enable_service_booking = False
         self.service_settings.save()
 
@@ -134,9 +116,6 @@ class Step1ServiceDetailsViewTest(TestCase):
 
     @patch('service.views.user_views.step1_service_details_view.ServiceDetailsForm')
     def test_anonymous_bookings_not_allowed(self, MockServiceDetailsForm):
-        """
-        Test that if anonymous bookings are not allowed, unauthenticated users get an error.
-        """
         self.service_settings.allow_anonymous_bookings = False
         self.service_settings.save()
 
@@ -161,11 +140,6 @@ class Step1ServiceDetailsViewTest(TestCase):
 
     @patch('service.views.user_views.step1_service_details_view.ServiceDetailsForm')
     def test_service_date_too_early(self, MockServiceDetailsForm):
-        """
-        Test that if the service date is earlier than booking_advance_notice, an error is shown.
-        fixed_local_date is June 15 (Sunday). advance_notice is 1 day.
-        Min allowed date is June 16 (Monday).
-        """
         self.service_settings.booking_advance_notice = 1                         
         self.service_settings.save()
 
@@ -189,10 +163,6 @@ class Step1ServiceDetailsViewTest(TestCase):
 
     @patch('service.views.user_views.step1_service_details_view.ServiceDetailsForm')
     def test_service_date_on_closed_day(self, MockServiceDetailsForm):
-        """
-        Test that if the service date falls on a non-open day, an error is shown.
-        fixed_local_date is June 15 (Sunday). Set open days to Mon-Fri.
-        """
         self.service_settings.booking_open_days = "Mon,Tue,Wed,Thu,Fri"
         self.service_settings.booking_advance_notice = 0                                  
         self.service_settings.save()
@@ -217,9 +187,6 @@ class Step1ServiceDetailsViewTest(TestCase):
 
     @patch('service.views.user_views.step1_service_details_view.ServiceDetailsForm')
     def test_service_date_blocked(self, MockServiceDetailsForm):
-        """
-        Test that if the service date is within a blocked period, an error is shown.
-        """
         blocked_date = self.fixed_local_date + datetime.timedelta(days=2)         
         BlockedServiceDateFactory(start_date=blocked_date, end_date=blocked_date)
 
@@ -249,10 +216,6 @@ class Step1ServiceDetailsViewTest(TestCase):
         'core:index': '/index/'                                     
     }.get(args[0], reverse(*args, **kwargs)))                                          
     def test_new_temp_booking_anonymous_no_motorcycles_redirect_step3(self, mock_reverse, MockServiceDetailsForm):
-        """
-        Test successful new TempServiceBooking creation for anonymous user,
-        redirects to step 3.
-        """
         mock_form_instance = MockServiceDetailsForm.return_value
         mock_form_instance.is_valid.return_value = True
         mock_form_instance.cleaned_data = {
@@ -292,10 +255,6 @@ class Step1ServiceDetailsViewTest(TestCase):
         'core:index': '/index/'
     }.get(args[0], reverse(*args, **kwargs)))
     def test_new_temp_booking_authenticated_no_motorcycles_redirect_step3(self, mock_reverse, MockServiceDetailsForm):
-        """
-        Test successful new TempServiceBooking creation for authenticated user with no motorcycles,
-        redirects to step 3.
-        """
         mock_form_instance = MockServiceDetailsForm.return_value
         mock_form_instance.is_valid.return_value = True
         mock_form_instance.cleaned_data = {
@@ -334,10 +293,6 @@ class Step1ServiceDetailsViewTest(TestCase):
         'core:index': '/index/'
     }.get(args[0], reverse(*args, **kwargs)))
     def test_new_temp_booking_authenticated_with_motorcycles_redirect_step2(self, mock_reverse, MockServiceDetailsForm):
-        """
-        Test successful new TempServiceBooking creation for authenticated user with motorcycles,
-        redirects to step 2.
-        """
         CustomerMotorcycleFactory(service_profile=self.service_profile)                                   
 
         mock_form_instance = MockServiceDetailsForm.return_value
@@ -378,9 +333,6 @@ class Step1ServiceDetailsViewTest(TestCase):
         'core:index': '/index/'
     }.get(args[0], reverse(*args, **kwargs)))
     def test_update_existing_temp_booking(self, mock_reverse, MockServiceDetailsForm):
-        """
-        Test that an existing TempServiceBooking is updated if session_uuid is present.
-        """
         existing_temp_booking = TempServiceBookingFactory(
             service_type=ServiceTypeFactory(),                                   
             service_date=self.fixed_local_date + datetime.timedelta(days=5),                           
@@ -420,9 +372,6 @@ class Step1ServiceDetailsViewTest(TestCase):
 
     @patch('service.views.user_views.step1_service_details_view.ServiceDetailsForm')
     def test_exception_during_save(self, MockServiceDetailsForm):
-        """
-        Test handling of unexpected exceptions during TempServiceBooking save.
-        """
         mock_form_instance = MockServiceDetailsForm.return_value
         mock_form_instance.is_valid.return_value = True
         mock_form_instance.cleaned_data = {
@@ -450,9 +399,6 @@ class Step1ServiceDetailsViewTest(TestCase):
 
     @patch('service.views.user_views.step1_service_details_view.ServiceDetailsForm')
     def test_session_reference_cleared(self, MockServiceDetailsForm):
-        """
-        Test that 'service_booking_reference' is cleared from session on POST.
-        """
         mock_form_instance = MockServiceDetailsForm.return_value
         mock_form_instance.is_valid.return_value = True
         mock_form_instance.cleaned_data = {

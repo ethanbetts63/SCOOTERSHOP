@@ -13,14 +13,9 @@ from ..test_helpers.model_factories import (
 )
 
 class ServiceBookingConfirmationViewTest(TestCase):
-    """
-    Tests for the ServiceBookingConfirmationView (Step 7).
-    Updated to reflect that temp booking conversion happens BEFORE this view.
-    """
 
     @classmethod
     def setUpTestData(cls):
-        """Set up non-modified objects used by all test methods."""
         cls.user = UserFactory()
         cls.base_url = reverse('service:service_book_step7')
 
@@ -32,11 +27,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
         ServiceBooking.objects.all().delete()
         Payment.objects.all().delete()
 
-                                                                                 
-                                                                                     
-                                                        
-                                                               
-                                                         
+
 
 
     def test_get_booking_found_by_session_reference(self):

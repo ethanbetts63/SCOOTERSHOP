@@ -25,16 +25,6 @@ from ..test_helpers.model_factories import (
 User = get_user_model()
 
 def get_next_available_weekday(start_date, open_days):
-    """
-    Finds the next available weekday starting from a given date.
-    
-    Args:
-        start_date (datetime.date): The date to start searching from.
-        open_days (list): A list of short day names (e.g., ['Mon', 'Tue']).
-    
-    Returns:
-        datetime.date: The first date that is an open weekday.
-    """
     day_map = {'Mon': 0, 'Tue': 1, 'Wed': 2, 'Thu': 3, 'Fri': 4, 'Sat': 5, 'Sun': 6}
     open_weekdays = {day_map[day] for day in open_days}
     
@@ -45,15 +35,9 @@ def get_next_available_weekday(start_date, open_days):
 
 @patch('stripe.api_key', 'sk_test_mock_key')
 class Step6PaymentViewTest(TestCase):
-    """
-    Tests for the Step6PaymentView (dispatch, GET, and POST methods).
-    """
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up common data for all tests in this class.
-        """
         cls.factory = RequestFactory()
         cls.user_password = 'testpassword123'
         cls.user = UserFactory(password=cls.user_password)
@@ -69,9 +53,6 @@ class Step6PaymentViewTest(TestCase):
         cls.base_url = reverse('service:service_book_step6')
 
     def setUp(self):
-        """
-        Set up for each test method.
-        """
         TempServiceBooking.objects.all().delete()
         Payment.objects.all().delete()
         ServiceProfile.objects.all().delete()

@@ -12,7 +12,6 @@ class ContactViewTest(TestCase):
         self.url = reverse('core:contact')
         self.template_name = 'core/information/contact.html'
 
-        # Mock SiteSettings
         self.mock_site_settings = MagicMock(spec=SiteSettings)
         self.mock_site_settings.enable_about_page = False
         self.mock_site_settings.google_places_place_id = "test_place_id"
@@ -26,24 +25,20 @@ class ContactViewTest(TestCase):
         self.mock_get_settings = patch_site_settings.start()
         self.addCleanup(patch_site_settings.stop)
 
-        # Mock AboutPageContent
         self.mock_about_content = MagicMock(spec=AboutPageContent)
         patch_about_content_get = patch('dashboard.models.AboutPageContent.objects.get', return_value=self.mock_about_content)
         self.mock_about_content_get = patch_about_content_get.start()
         self.addCleanup(patch_about_content_get.stop)
 
-        # Mock EnquiryForm
         self.mock_enquiry_form_instance = MagicMock(spec=EnquiryForm)
         patch_enquiry_form = patch('core.views.user_views.contact_view.EnquiryForm', return_value=self.mock_enquiry_form_instance)
         self.mock_enquiry_form_class = patch_enquiry_form.start()
         self.addCleanup(patch_enquiry_form.stop)
 
-        # Mock ADMIN_EMAIL
         patch_admin_email = patch('django.conf.settings.ADMIN_EMAIL', "admin@example.com")
         self.mock_admin_email = patch_admin_email.start()
         self.addCleanup(patch_admin_email.stop)
 
-        # Mock send_mail
         patch_send_mail = patch('core.views.user_views.contact_view.send_mail')
         self.mock_send_mail = patch_send_mail.start()
         self.addCleanup(patch_send_mail.stop)

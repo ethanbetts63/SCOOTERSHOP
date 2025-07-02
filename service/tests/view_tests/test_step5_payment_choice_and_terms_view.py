@@ -282,17 +282,11 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
         self.assertIn('dropoff_date', form.errors)
         self.assertIn(f"Drop-off cannot be scheduled more than {self.service_settings.max_advance_dropoff_days} days in advance of the service.", form.errors['dropoff_date'][0])
 
-    def test_post_same_day_dropoff_time_in_past_is_invalid(self):
-        """
-        Tests that for same-day drop-off, time cannot be in the past.
-        """
-                                                                                   
+    def test_post_same_day_dropoff_time_in_past_is_invalid(self):                                                              
         self.temp_booking.service_date = datetime.date.today()
         self.temp_booking.save()
         self.service_settings.max_advance_dropoff_days = 0                          
-        self.service_settings.save()
-
-                                                                               
+        self.service_settings.save()                                                                        
                                                       
         with self.settings(USE_TZ=True, TIME_ZONE='Australia/Perth'):
             with patch('django.utils.timezone.localtime') as mock_localtime:
@@ -312,9 +306,7 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
                 form = response.context['form']
                 self.assertFalse(form.is_valid())
                 self.assertIn('dropoff_time', form.errors)
-                self.assertIn("You cannot select a drop-off time that has already passed today.", form.errors['dropoff_time'][0])
-
-                                                                                                      
+                self.assertIn("You cannot select a drop-off time that has already passed today.", form.errors['dropoff_time'][0])                                                                                                   
                                       
     def test_payment_method_choices_are_correctly_populated(self):
         response = self.client.get(self.base_url)
@@ -330,13 +322,7 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
 
 
     @patch('service.views.user_views.Step6PaymentView.dispatch')
-    def test_post_payment_method_deposit_online(self, mock_step6_dispatch):
-        """
-        Tests that submitting with deposit_online option works and correctly triggers redirect to Step 6.
-        We mock Step6PaymentView.dispatch to prevent it from performing its own redirects
-        during this test, ensuring we only assert the redirect from Step 5.
-        """
-                                                                                  
+    def test_post_payment_method_deposit_online(self, mock_step6_dispatch):                                                                 
         mock_step6_dispatch.return_value = HttpResponse(status=200) 
 
         valid_data = self.valid_post_data.copy()

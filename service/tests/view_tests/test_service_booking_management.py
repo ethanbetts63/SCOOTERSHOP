@@ -7,22 +7,12 @@ from service.models import ServiceBooking, ServiceType, BlockedServiceDate
 from ..test_helpers.model_factories import UserFactory, ServiceBookingFactory, ServiceTypeFactory
 
 class ServiceBookingManagementViewTest(TestCase):
-    """
-    Tests for the ServiceBookingManagementView.
-    Covers access control and listing of service bookings.
-    """
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up non-modified objects used by all test methods.
-        Create various users and service bookings for testing different scenarios.
-        """
         cls.staff_user = UserFactory(username='staff_user_booking', is_staff=True, is_superuser=False)
         cls.superuser = UserFactory(username='superuser_booking', is_staff=True, is_superuser=True)
         cls.regular_user = UserFactory(username='regular_user_booking', is_staff=False, is_superuser=False)
-
-                                   
         cls.service_type_a = ServiceTypeFactory(name="Oil Change")
         cls.service_type_b = ServiceTypeFactory(name="Tyre Replacement")
 
@@ -50,23 +40,15 @@ class ServiceBookingManagementViewTest(TestCase):
         cls.list_url = reverse('service:service_booking_management')
 
     def setUp(self):
-        """
-        Set up for each test method.
-        """
+        
         self.client = Client()
 
     def test_view_grants_access_to_staff_user(self):
-        """
-        Ensure staff users can access the view.
-        """
         self.client.force_login(self.staff_user)
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, 200)
 
     def test_view_grants_access_to_superuser(self):
-        """
-        Ensure superusers can access the view.
-        """
         self.client.force_login(self.superuser)
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, 200)
@@ -74,10 +56,6 @@ class ServiceBookingManagementViewTest(TestCase):
                                          
 
     def test_get_request_list_all_bookings(self):
-        """
-        Test GET request to list all service bookings.
-        Ensures correct template, context variables, and ordering.
-        """
         self.client.force_login(self.staff_user)
         response = self.client.get(self.list_url)
 
@@ -98,9 +76,6 @@ class ServiceBookingManagementViewTest(TestCase):
         self.assertEqual(len(bookings_in_context), ServiceBooking.objects.count())
 
     def test_get_request_no_bookings(self):
-        """
-        Test GET request when there are no service bookings.
-        """
         ServiceBooking.objects.all().delete()                                             
         self.client.force_login(self.staff_user)
         response = self.client.get(self.list_url)
