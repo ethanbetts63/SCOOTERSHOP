@@ -2,7 +2,7 @@ from django.views.generic import CreateView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from inventory.models import FeaturedMotorcycle
-from dashboard.forms.featured_motorcycle_form import FeaturedMotorcycleForm
+from inventory.forms.admin_featured_motorcycle_form import FeaturedMotorcycleForm
 
 class FeaturedMotorcycleCreateView(CreateView):
     model = FeaturedMotorcycle
