@@ -11,4 +11,5 @@ urlpatterns = [
     path('returns', ReturnsPolicyView.as_view(), name='returns'),
     path('security', SecurityPolicyView.as_view(), name='security'),
     path('terms', TermsOfUseView.as_view(), name='terms'),
+    path('dashboard/enquiries/', EnquiryManagementView.as_view(), name='enquiry_management'),
 ]
