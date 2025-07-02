@@ -195,16 +195,6 @@
                 {% include 'inventory/_featured_include.html' %}
             </div>
         {% endif %}
-
-        {% else %}
-        <div class="text-center py-20 bg-white rounded-2xl shadow-xl">
-            <h2 class="text-3xl font-bold text-gray-800 mb-4">Motorcycle Not Found</h2>
-            <p class="text-lg text-gray-600">The motorcycle you are looking for does not exist or is unavailable.</p>
-            <a href="{% url 'inventory:all' %}" class="mt-8 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all">
-                <i class="fas fa-arrow-left mr-2"></i> Back to Motorcycles
-            </a>
-        </div>
-        {% endif %}
 </div>
 
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
