@@ -9,7 +9,6 @@ from core.forms.enquiry_form import EnquiryForm
 from django.core.mail import send_mail
 
 
-@method_decorator(user_passes_test(lambda u: u.is_staff, login_url='core:index'), name='dispatch')
 class ContactView(TemplateView):
     template_name = 'core/information/contact.html'
 
