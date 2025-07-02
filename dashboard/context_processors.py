@@ -1,5 +1,3 @@
-                                 
-
 from .models import SiteSettings
 from django.conf import settings
 from service.models import ServiceType

@@ -1,4 +1,5 @@
 from django.views.generic import TemplateView
+from django.views.decorators.http import require_http_methods
 from django.shortcuts import redirect
 from dashboard.models import SiteSettings
 from django.contrib.auth.decorators import user_passes_test
