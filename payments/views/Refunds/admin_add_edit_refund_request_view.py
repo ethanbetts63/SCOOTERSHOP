@@ -10,19 +10,9 @@ from payments.forms.admin_refund_request_form import AdminRefundRequestForm
 from payments.models.RefundRequest import RefundRequest
 from users.views.auth import is_admin                                               
 
-                                                       
-from hire.models import HireBooking
-from service.models import ServiceBooking
-from inventory.models import SalesBooking                      
-
 
 @method_decorator(user_passes_test(is_admin), name='dispatch')
 class AdminAddEditRefundRequestView(View):
-    """
-    View for administrators to create or edit RefundRequest instances for
-    HireBookings, ServiceBookings, and SalesBookings.
-    This view handles both GET (displaying the form) and POST (processing form submission) requests.
-    """
     template_name = 'payments/admin_refund_form.html'                                     
 
     def get(self, request, pk=None, *args, **kwargs):
@@ -39,10 +29,7 @@ class AdminAddEditRefundRequestView(View):
             form = AdminRefundRequestForm(instance=refund_request)
             title = "Edit Refund Request"
 
-            if refund_request.hire_booking:
-                booking_reference = refund_request.hire_booking.booking_reference
-                title = f"Edit Hire Refund Request for Booking {booking_reference}"
-            elif refund_request.service_booking:
+            if refund_request.service_booking:
                 booking_reference = refund_request.service_booking.service_booking_reference
                 title = f"Edit Service Refund Request for Booking {booking_reference}"
             elif refund_request.sales_booking:                      
@@ -101,9 +88,7 @@ class AdminAddEditRefundRequestView(View):
 
                                                                           
             booking_reference_for_msg = "N/A"
-            if refund_request_instance.hire_booking:
-                booking_reference_for_msg = refund_request_instance.hire_booking.booking_reference
-            elif refund_request_instance.service_booking:
+            if refund_request_instance.service_booking:
                 booking_reference_for_msg = refund_request_instance.service_booking.service_booking_reference
             elif refund_request_instance.sales_booking:                      
                 booking_reference_for_msg = refund_request_instance.sales_booking.sales_booking_reference
@@ -115,9 +100,7 @@ class AdminAddEditRefundRequestView(View):
             messages.error(request, "Please correct the errors below.")
             title = "Edit Refund Request" if pk else "Create New Refund Request"
             booking_reference_for_display = "N/A"
-            if refund_request_instance and refund_request_instance.hire_booking:
-                 booking_reference_for_display = refund_request_instance.hire_booking.booking_reference
-            elif refund_request_instance and refund_request_instance.service_booking:
+            if refund_request_instance and refund_request_instance.service_booking:
                  booking_reference_for_display = refund_request_instance.service_booking.service_booking_reference
             elif refund_request_instance and refund_request_instance.sales_booking:                      
                  booking_reference_for_display = refund_request_instance.sales_booking.sales_booking_reference

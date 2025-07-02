@@ -18,11 +18,11 @@ class Migration(migrations.Migration):
                     ("for_sale", "For Sale"),
                     ("sold", "Sold"),
                     ("reserved", "Reserved"),
-                    ("for_hire", "For Hire"),
+                    
                     ("unavailable", "Unavailable"),
                 ],
                 default="for_sale",
-                help_text="The sales/hire status of the motorcycle.",
+                help_text="The sales status of the motorcycle.",
                 max_length=20,
             ),
         ),

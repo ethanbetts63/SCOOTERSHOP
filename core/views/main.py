@@ -2,16 +2,14 @@ from django.shortcuts import render
 from django.conf import settings
 import requests
 import sys
-from dashboard.models import SiteSettings, HireSettings
+from dashboard.models import SiteSettings
 from service.models import ServiceSettings, TempServiceBooking
 from service.forms import ServiceDetailsForm
-from hire.models import TempHireBooking
 from service.utils import get_service_date_availability
 
 
 def index(request):
     site_settings = SiteSettings.get_settings()
-    hire_settings = HireSettings.objects.first()
     service_settings = ServiceSettings.objects.first()
 
     place_id = site_settings.google_places_place_id
@@ -39,20 +37,6 @@ def index(request):
         except Exception as e:
             pass
 
-    temp_hire_booking = None
-    temp_hire_booking_id = request.session.get('temp_booking_id')
-    temp_hire_booking_uuid = request.session.get('temp_booking_uuid')
-
-    if temp_hire_booking_id and temp_hire_booking_uuid:
-        try:
-            temp_hire_booking = TempHireBooking.objects.get(id=temp_hire_booking_id, session_uuid=temp_hire_booking_uuid)
-        except TempHireBooking.DoesNotExist:
-            if 'temp_booking_id' in request.session:
-                del request.session['temp_booking_id']
-            if 'temp_booking_uuid' in request.session:
-                del request.session['temp_booking_uuid']
-            temp_hire_booking = None
-
     service_form = ServiceDetailsForm()
 
     temp_service_booking = None
@@ -75,8 +59,6 @@ def index(request):
     context = {
         'reviews': five_star_reviews,
         'google_api_key': settings.GOOGLE_API_KEY,
-        'hire_settings': hire_settings,
-        'temp_booking': temp_hire_booking,
 
         'form': service_form,
         'service_settings': service_settings,

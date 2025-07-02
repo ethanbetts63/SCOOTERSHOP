@@ -2,16 +2,12 @@
 from django.urls import path
 from . import views
 from .views import Refunds                                               
-from .utils import ajax_get_hire_booking_details
 
 
 app_name = 'payments'
 
 urlpatterns = [
-    path('stripe-webhook/', views.stripe_webhook, name='stripe_webhook'),
-                                                        
-    path('api/hire-booking-details/<int:pk>/', ajax_get_hire_booking_details.get_hire_booking_details_json, name='api_hire_booking_details'),
-    
+    path('stripe-webhook/', views.stripe_webhook, name='stripe_webhook'),                                                  
     
     path('refund/request/', Refunds.UserRefundRequestView.as_view(), name='user_refund_request'),
     path('refund/request/confirmation/', Refunds.UserConfirmationRefundRequestView.as_view(), name='user_confirmation_refund_request'),

@@ -6,7 +6,6 @@ from django.db import IntegrityError
 from decimal import Decimal
 from django.db.models.deletion import SET_NULL
 
-                                                             
 from inventory.models import Motorcycle, MotorcycleCondition
 from django.contrib.auth import get_user_model                        
 from django.db import models
@@ -32,7 +31,7 @@ class MotorcycleModelTest(TestCase):
         cls.user = UserFactory()
         cls.condition_new = MotorcycleConditionFactory(name='new', display_name='New')
         cls.condition_used = MotorcycleConditionFactory(name='used', display_name='Used')
-        cls.condition_hire = MotorcycleConditionFactory(name='hire', display_name='For Hire')
+        
 
         cls.motorcycle_for_sale = MotorcycleFactory(
             brand='Honda',
@@ -41,19 +40,8 @@ class MotorcycleModelTest(TestCase):
             price=Decimal('15000.00'),
             conditions=[cls.condition_new.name],                               
             is_available=True,
-            daily_hire_rate=None,
-            hourly_hire_rate=None,
         )
-        cls.motorcycle_for_hire = MotorcycleFactory(
-            brand='Yamaha',
-            model='MT-07',
-            year=2020,
-            price=None,
-            conditions=[cls.condition_used.name, cls.condition_hire.name],
-            is_available=True,
-            daily_hire_rate=Decimal('100.00'),
-            hourly_hire_rate=Decimal('20.00'),
-        )
+
         cls.motorcycle_unavailable = MotorcycleFactory(
             brand='Kawasaki',
             model='Ninja 400',
@@ -61,8 +49,6 @@ class MotorcycleModelTest(TestCase):
             price=Decimal('8000.00'),
             conditions=[cls.condition_used.name],
             is_available=False,
-            daily_hire_rate=None,
-            hourly_hire_rate=None,
         )
 
     def test_motorcycle_creation(self):
@@ -78,17 +64,6 @@ class MotorcycleModelTest(TestCase):
         self.assertTrue(self.motorcycle_for_sale.is_available)
         self.assertEqual(self.motorcycle_for_sale.conditions.count(), 1)
         self.assertTrue(self.motorcycle_for_sale.conditions.filter(name='new').exists())
-        self.assertFalse(self.motorcycle_for_sale.conditions.filter(name='hire').exists())
-
-
-        self.assertIsInstance(self.motorcycle_for_hire, Motorcycle)
-        self.assertEqual(self.motorcycle_for_hire.brand, 'Yamaha')
-        self.assertIsNone(self.motorcycle_for_hire.price)
-        self.assertEqual(self.motorcycle_for_hire.daily_hire_rate, Decimal('100.00'))
-        self.assertEqual(self.motorcycle_for_hire.hourly_hire_rate, Decimal('20.00'))
-        self.assertEqual(self.motorcycle_for_hire.conditions.count(), 2)
-        self.assertTrue(self.motorcycle_for_hire.conditions.filter(name='used').exists())
-        self.assertTrue(self.motorcycle_for_hire.conditions.filter(name='hire').exists())
 
     def test_title_field(self):
         """Test the 'title' field."""
@@ -150,7 +125,7 @@ class MotorcycleModelTest(TestCase):
                                                                              
         self.assertEqual(field.remote_field.related_name, 'motorcycles')
         self.assertTrue(field.blank)
-        self.assertEqual(field.help_text, "Select all applicable conditions (e.g., Used, Hire)")
+        self.assertEqual(field.help_text, "Select all applicable conditions (e.g., Used)")
 
                                                
         motorcycle = MotorcycleFactory(conditions=['new', 'demo'])
@@ -214,7 +189,7 @@ class MotorcycleModelTest(TestCase):
         field = self.motorcycle_for_sale._meta.get_field('is_available')
         self.assertIsInstance(self.motorcycle_for_sale.is_available, bool)
         self.assertTrue(field.default)
-        self.assertEqual(field.help_text, "Is this bike generally available for sale or in the active hire fleet?")
+        self.assertEqual(field.help_text, "Is this bike generally available for sale?")
         self.assertTrue(self.motorcycle_for_sale.is_available)
         self.assertFalse(self.motorcycle_unavailable.is_available)
 
@@ -251,49 +226,19 @@ class MotorcycleModelTest(TestCase):
                 stock_number=self.motorcycle_for_sale.stock_number                         
             )
 
-    def test_daily_hire_rate_field(self):
-        """Test the 'daily_hire_rate' field."""
-        field = self.motorcycle_for_hire._meta.get_field('daily_hire_rate')
-        self.assertIsInstance(self.motorcycle_for_hire.daily_hire_rate, Decimal)
-        self.assertEqual(field.max_digits, 8)
-        self.assertEqual(field.decimal_places, 2)
-        self.assertTrue(field.null)
-        self.assertTrue(field.blank)
-        self.assertEqual(field.help_text, "Price per day for hiring (if applicable)")
-        self.assertEqual(self.motorcycle_for_hire.daily_hire_rate, Decimal('100.00'))
-        self.assertIsNone(self.motorcycle_for_sale.daily_hire_rate)
-
-    def test_hourly_hire_rate_field(self):
-        """Test the 'hourly_hire_rate' field."""
-        field = self.motorcycle_for_hire._meta.get_field('hourly_hire_rate')
-        self.assertIsInstance(self.motorcycle_for_hire.hourly_hire_rate, Decimal)
-        self.assertEqual(field.max_digits, 8)
-        self.assertEqual(field.decimal_places, 2)
-        self.assertTrue(field.null)
-        self.assertTrue(field.blank)
-        self.assertEqual(field.help_text, "Price per hour for hiring (if applicable)")
-        self.assertEqual(self.motorcycle_for_hire.hourly_hire_rate, Decimal('20.00'))
-        self.assertIsNone(self.motorcycle_for_sale.hourly_hire_rate)
 
     def test_str_method(self):
         """
         Test the __str__ method of Motorcycle.
         """
         self.assertEqual(str(self.motorcycle_for_sale), "2022 Honda CBR1000RR")
-        self.assertEqual(str(self.motorcycle_for_hire), "2020 Yamaha MT-07")
 
     def test_get_conditions_display_method(self):
         """
         Test the get_conditions_display method.
         """
                                       
-        self.assertEqual(self.motorcycle_for_sale.get_conditions_display(), 'New')
-
-                                       
-        expected_display = f"{self.condition_used.display_name}, {self.condition_hire.display_name}"
-        self.assertEqual(self.motorcycle_for_hire.get_conditions_display(), expected_display)
-
-                                                                                      
+        self.assertEqual(self.motorcycle_for_sale.get_conditions_display(), 'New')                                                                         
                                                                          
                                                            
         moto_no_conditions = MotorcycleFactory(conditions=[])                                      
@@ -305,15 +250,6 @@ class MotorcycleModelTest(TestCase):
         moto_old_condition.conditions.clear()
         self.assertEqual(moto_old_condition.get_conditions_display(), 'Demo')
 
-
-    def test_is_for_hire_method(self):
-        """
-        Test the is_for_hire method.
-        """
-        self.assertFalse(self.motorcycle_for_sale.is_for_hire())
-        self.assertTrue(self.motorcycle_for_hire.is_for_hire())
-        self.assertFalse(self.motorcycle_unavailable.is_for_hire())
-
     def test_verbose_names_meta(self):
         """
         Test the Meta 'verbose_name' and 'verbose_name_plural' options
@@ -321,4 +257,3 @@ class MotorcycleModelTest(TestCase):
         """
         self.assertEqual(Motorcycle._meta.verbose_name, "motorcycle")
         self.assertEqual(Motorcycle._meta.verbose_name_plural, "motorcycles")
-

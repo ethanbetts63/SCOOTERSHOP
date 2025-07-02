@@ -8,7 +8,6 @@ class Motorcycle(models.Model):
         ('for_sale', 'For Sale'),
         ('sold', 'Sold'),
         ('reserved', "Reserved"),
-        ('for_hire', 'For Hire'),
         ('unavailable', 'Unavailable'),
     ]
 
@@ -16,7 +15,6 @@ class Motorcycle(models.Model):
         ('new', 'New'),
         ('used', 'Used'),
         ('demo', 'Demo'),
-        ('hire', 'Hire'),
     ]
 
     TRANSMISSION_CHOICES = [
@@ -45,13 +43,13 @@ class Motorcycle(models.Model):
         'inventory.MotorcycleCondition',                                                 
         related_name='motorcycles',
         blank=True,
-        help_text="Select all applicable conditions (e.g., Used, Hire)",
+        help_text="Select all applicable conditions (e.g., Used, New, Demo.)",
     )
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
         default='for_sale',                                 
-        help_text="The sales/hire status of the motorcycle."
+        help_text="The sales status of the motorcycle."
     )
     odometer = models.IntegerField(default=0)
     engine_size = models.IntegerField(
@@ -73,26 +71,10 @@ class Motorcycle(models.Model):
     description = models.TextField(null=True, blank=True)
     image = models.FileField(upload_to='motorcycles/', null=True, blank=True)
     date_posted = models.DateTimeField(auto_now_add=True)
-    is_available = models.BooleanField(default=True, help_text="Is this bike generally available for sale or in the active hire fleet?")
+    is_available = models.BooleanField(default=True, help_text="Is this bike generally available for sale?")
     rego = models.CharField(max_length=20, help_text="Registration number", null=True, blank=True)
     rego_exp = models.DateField(help_text="Registration expiration date", null=True, blank=True)
     stock_number = models.CharField(max_length=50, unique=True, null=True, blank=True)
-
-    daily_hire_rate = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Price per day for hiring (if applicable)"
-    )
-
-    hourly_hire_rate = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Price per hour for hiring (if applicable)"
-    )
 
     def __str__(self):
         return f"{self.year} {self.brand} {self.model}"
@@ -106,6 +88,3 @@ class Motorcycle(models.Model):
         elif self.condition:
             return dict(self.CONDITION_CHOICES).get(self.condition, self.condition).title()
         return "N/A"
-
-    def is_for_hire(self):
-        return self.conditions.filter(name='hire').exists()

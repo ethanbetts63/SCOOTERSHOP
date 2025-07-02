@@ -197,22 +197,6 @@ textarea#id_description {
     gap: 12px;
 }
 
-/* =================== SECTION: Hire Rates Section =================== */
-/* Styles for the hire rates section (hidden by default) */
-.hire-rates-section {
-    display: none;
-}
-
-/* Styles for the visible hire rates section */
-.hire-rates-section.visible {
-    display: block;
-    background-color: var(--bg-dark);
-    padding: 18px;
-    border-radius: var(--radius-sm);
-    margin-bottom: 24px;
-    border-left: 4px solid #606060;
-}
-
 /* =================== SECTION: Required Field Indicator =================== */
 /* Styles for the required field indicator */
 .required-indicator {

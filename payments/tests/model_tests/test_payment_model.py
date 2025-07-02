@@ -1,27 +1,19 @@
-                                      
-
 from decimal import Decimal
 from django.test import TestCase
 from django.db import IntegrityError
 import uuid
 import time
 
-                                          
 from ..test_helpers.model_factories import (
     PaymentFactory,
-    TempHireBookingFactory,
-    HireBookingFactory,
-    DriverProfileFactory,
-    MotorcycleFactory,                                           
-    MotorcycleConditionFactory,                                                               
-    TempServiceBookingFactory,                                           
-    ServiceBookingFactory,                                           
-    ServiceProfileFactory,                                           
+    MotorcycleFactory,
+    MotorcycleConditionFactory,
+    TempServiceBookingFactory,
+    ServiceBookingFactory,
+    ServiceProfileFactory,
 )
 
-                                                                
 from payments.models import Payment
-from hire.models import TempHireBooking, HireBooking, DriverProfile
 from service.models import TempServiceBooking, ServiceBooking, ServiceProfile
 
 
@@ -37,22 +29,9 @@ class PaymentModelTest(TestCase):
         We'll create some related objects that payments can link to.
         """
                                                                 
-        MotorcycleConditionFactory.create(name='hire', display_name='Hire')
+        MotorcycleConditionFactory.create(name='used', display_name='Used')
                                
         cls.motorcycle = MotorcycleFactory.create()
-        cls.driver_profile = DriverProfileFactory.create(name="Test Driver")
-        cls.temp_booking = TempHireBookingFactory.create(
-            motorcycle=cls.motorcycle,
-            driver_profile=cls.driver_profile,
-            total_hire_price=Decimal('200.00'),
-            grand_total=Decimal('250.00')
-        )
-        cls.hire_booking = HireBookingFactory.create(
-            motorcycle=cls.motorcycle,
-            driver_profile=cls.driver_profile,
-            total_hire_price=Decimal('300.00'),
-            grand_total=Decimal('350.00')
-        )
         cls.temp_service_booking = TempServiceBookingFactory.create()
         cls.service_profile = ServiceProfileFactory.create(name="Service Customer Name")
         cls.service_booking = ServiceBookingFactory.create(
@@ -62,93 +41,6 @@ class PaymentModelTest(TestCase):
 
         cls.stripe_pi_id_1 = "pi_test_12345"
         cls.stripe_pi_id_2 = "pi_test_67890"
-
-    def test_create_basic_payment(self):
-        """
-        Test that a basic Payment instance can be created with required fields.
-        """
-                                                                          
-        Payment.objects.all().delete()
-        payment = PaymentFactory.create(
-            amount=Decimal('150.00'),
-            currency='USD',
-            status='succeeded',
-            stripe_payment_intent_id=self.stripe_pi_id_1
-        )
-        self.assertIsNotNone(payment.pk)
-        self.assertEqual(payment.amount, Decimal('150.00'))
-        self.assertEqual(payment.currency, 'USD')
-        self.assertEqual(payment.status, 'succeeded')
-        self.assertEqual(payment.stripe_payment_intent_id, self.stripe_pi_id_1)
-        self.assertIsNone(payment.temp_hire_booking)
-        self.assertIsNone(payment.hire_booking)
-        self.assertIsNone(payment.driver_profile)
-        self.assertIsNotNone(payment.created_at)
-        self.assertIsNotNone(payment.updated_at)
-                                                                                          
-        self.assertEqual(payment.metadata, {})                              
-
-    def test_temp_hire_booking_relationship(self):
-        """
-        Test the OneToOneField relationship with TempHireBooking.
-        """
-                                                                          
-        Payment.objects.all().delete()
-        payment = PaymentFactory.create(
-            amount=Decimal('100.00'),
-            temp_hire_booking=self.temp_booking
-        )
-        self.assertEqual(payment.temp_hire_booking, self.temp_booking)
-        self.assertEqual(self.temp_booking.payment, payment)                     
-
-                                                                 
-        with self.assertRaises(IntegrityError):
-            PaymentFactory.create(
-                amount=Decimal('50.00'),
-                temp_hire_booking=self.temp_booking                                                         
-            )
-
-    def test_hire_booking_relationship(self):
-        """
-        Test the ForeignKey relationship with HireBooking.
-        """
-                                                                          
-        Payment.objects.all().delete()
-        payment1 = PaymentFactory.create(
-            amount=Decimal('200.00'),
-            hire_booking=self.hire_booking
-        )
-        payment2 = PaymentFactory.create(
-            amount=Decimal('50.00'),
-            hire_booking=self.hire_booking,
-                                                                                
-        )
-        self.assertEqual(payment1.hire_booking, self.hire_booking)
-        self.assertEqual(payment2.hire_booking, self.hire_booking)
-        self.assertIn(payment1, self.hire_booking.payments.all())
-        self.assertIn(payment2, self.hire_booking.payments.all())
-        self.assertEqual(self.hire_booking.payments.count(), 2)
-
-    def test_driver_profile_relationship(self):
-        """
-        Test the ForeignKey relationship with DriverProfile.
-        """
-                                                                          
-        Payment.objects.all().delete()
-        payment1 = PaymentFactory.create(
-            amount=Decimal('120.00'),
-            driver_profile=self.driver_profile
-        )
-        payment2 = PaymentFactory.create(
-            amount=Decimal('80.00'),
-            driver_profile=self.driver_profile,
-                                                                                
-        )
-        self.assertEqual(payment1.driver_profile, self.driver_profile)
-        self.assertEqual(payment2.driver_profile, self.driver_profile)
-        self.assertIn(payment1, self.driver_profile.payments.all())
-        self.assertIn(payment2, self.driver_profile.payments.all())
-        self.assertEqual(self.driver_profile.payments.count(), 2)
 
     def test_temp_service_booking_relationship(self):
         """
@@ -260,66 +152,9 @@ class PaymentModelTest(TestCase):
                                                      
         large_amount = Decimal('99999999.99')
         payment_large = PaymentFactory.create(amount=large_amount)
-        self.assertEqual(payment_large.amount, large_amount)
-
-                                                                                  
-                                                                                             
-                                                       
-                                                                                                   
-
-    def test_on_delete_temp_hire_booking_set_null(self):
-        """
-        Test that temp_hire_booking is set to NULL when TempHireBooking is deleted.
-        """
-                                                                          
-        Payment.objects.all().delete()
-        payment = PaymentFactory.create(
-            amount=Decimal('100.00'),
-            temp_hire_booking=self.temp_booking
-        )
-        temp_booking_id = self.temp_booking.id
-        self.temp_booking.delete()
-        payment.refresh_from_db()
-        self.assertIsNone(payment.temp_hire_booking)
-        self.assertFalse(TempHireBooking.objects.filter(id=temp_booking_id).exists())
-        self.assertTrue(Payment.objects.filter(id=payment.id).exists())                       
-
-    def test_on_delete_hire_booking_set_null(self):
-        """
-        Test that hire_booking is set to NULL when HireBooking is deleted.
-        """
-                                                                          
-        Payment.objects.all().delete()
-        payment = PaymentFactory.create(
-            amount=Decimal('200.00'),
-            hire_booking=self.hire_booking,
-                                                                                
-        )
-        hire_booking_ref = self.hire_booking.booking_reference
-        self.hire_booking.delete()
-        payment.refresh_from_db()
-        self.assertIsNone(payment.hire_booking)
-        self.assertFalse(HireBooking.objects.filter(booking_reference=hire_booking_ref).exists())
-        self.assertTrue(Payment.objects.filter(id=payment.id).exists())                       
-
-    def test_on_delete_driver_profile_set_null(self):
-        """
-        Test that driver_profile is set to NULL when DriverProfile is deleted.
-        """
-                                                                          
-        Payment.objects.all().delete()
-        payment = PaymentFactory.create(
-            amount=Decimal('50.00'),
-            driver_profile=self.driver_profile,
-                                                                                
-        )
-        driver_profile_id = self.driver_profile.id
-        self.driver_profile.delete()
-        payment.refresh_from_db()
-        self.assertIsNone(payment.driver_profile)
-        self.assertFalse(DriverProfile.objects.filter(id=driver_profile_id).exists())
-        self.assertTrue(Payment.objects.filter(id=payment.id).exists())                       
-
+        self.assertEqual(payment_large.amount, large_amount)                                                                               
+                                                                                                                                          
+                                                                                            
     def test_ordering_by_created_at(self):
         """
         Test that payments are ordered by created_at in descending order.

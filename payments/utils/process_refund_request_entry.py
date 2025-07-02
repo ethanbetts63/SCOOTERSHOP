@@ -17,7 +17,6 @@ def process_refund_request_entry(payment_obj: Payment, booking_obj, booking_type
                                                   
         refund_request = RefundRequest.objects.create(
             payment=payment_obj,
-            hire_booking=booking_obj if booking_type_str == 'hire_booking' else None,
             service_booking=booking_obj if booking_type_str == 'service_booking' else None,
             sales_booking=booking_obj if booking_type_str == 'sales_booking' else None,                      
             stripe_refund_id=stripe_refund_id,

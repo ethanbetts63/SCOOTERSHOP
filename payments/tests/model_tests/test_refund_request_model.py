@@ -1,20 +1,13 @@
-                                             
-
 from decimal import Decimal
 from django.test import TestCase
-from django.db import IntegrityError
 import uuid
 from django.utils import timezone
 import datetime                                
-import time                        
-
                         
 from payments.tests.test_helpers.model_factories import (
     RefundRequestFactory,
-    HireBookingFactory,
     ServiceBookingFactory,
     PaymentFactory,
-    DriverProfileFactory,
     ServiceProfileFactory,
     UserFactory,
     MotorcycleConditionFactory,                               
@@ -25,7 +18,6 @@ from payments.tests.test_helpers.model_factories import (
 
                                            
 from payments.models import RefundRequest, Payment
-from hire.models import HireBooking, DriverProfile
 from service.models import ServiceBooking, ServiceProfile
 from django.contrib.auth import get_user_model
 
@@ -44,20 +36,11 @@ class RefundRequestModelTest(TestCase):
         We'll create some related objects that RefundRequest can link to.
         """
                                                                 
-        MotorcycleConditionFactory.create(name='hire', display_name='Hire')
+        MotorcycleConditionFactory.create(name='used', display_name='Used')
 
         cls.motorcycle = MotorcycleFactory.create()
-        cls.driver_profile = DriverProfileFactory.create(name="Hire Driver")
         cls.service_profile = ServiceProfileFactory.create(name="Service Customer")
         cls.user = UserFactory.create(username='teststaff', is_staff=True)                         
-
-        cls.hire_booking = HireBookingFactory.create(
-            motorcycle=cls.motorcycle,
-            driver_profile=cls.driver_profile,
-            total_hire_price=Decimal('500.00'),
-            grand_total=Decimal('550.00'),
-            amount_paid=Decimal('550.00')
-        )
 
         cls.service_type = ServiceTypeFactory.create()
         cls.customer_motorcycle = CustomerMotorcycleFactory.create(service_profile=cls.service_profile)
@@ -68,12 +51,6 @@ class RefundRequestModelTest(TestCase):
             customer_motorcycle=cls.customer_motorcycle,
             calculated_total=Decimal('300.00'),
             amount_paid=Decimal('300.00')
-        )
-
-        cls.payment_for_hire = PaymentFactory.create(
-            amount=Decimal('550.00'),
-            hire_booking=cls.hire_booking,
-            status='succeeded'
         )
 
         cls.payment_for_service = PaymentFactory.create(
@@ -90,9 +67,8 @@ class RefundRequestModelTest(TestCase):
         RefundRequest.objects.all().delete()
 
         refund_request = RefundRequestFactory.create(
-            hire_booking=self.hire_booking,
-            payment=self.payment_for_hire,
-            driver_profile=self.driver_profile,
+            payment=self.payment_for_service,
+            service_profile=self.service_profile,
             reason="Customer cancelled booking due to unforeseen circumstances.",
             amount_to_refund=Decimal('250.00'),
             status='pending',
@@ -101,9 +77,8 @@ class RefundRequestModelTest(TestCase):
         )
 
         self.assertIsNotNone(refund_request.pk)
-        self.assertEqual(refund_request.hire_booking, self.hire_booking)
-        self.assertEqual(refund_request.payment, self.payment_for_hire)
-        self.assertEqual(refund_request.driver_profile, self.driver_profile)
+        self.assertEqual(refund_request.payment, self.payment_for_service)
+        self.assertEqual(refund_request.service_profile, self.service_profile)
         self.assertEqual(refund_request.reason, "Customer cancelled booking due to unforeseen circumstances.")
         self.assertEqual(refund_request.amount_to_refund, Decimal('250.00'))
         self.assertEqual(refund_request.status, 'pending')
@@ -115,24 +90,11 @@ class RefundRequestModelTest(TestCase):
         self.assertIsNotNone(refund_request.verification_token)
         self.assertIsNotNone(refund_request.token_created_at)
 
-    def test_str_method_hire_booking(self):
-        """
-        Test the __str__ method when a hire_booking is linked.
-        """
-        refund_request = RefundRequestFactory.create(
-            hire_booking=self.hire_booking,
-            service_booking=None,                                                     
-            status='approved'
-        )
-        expected_str = f"Refund Request for Booking {self.hire_booking.booking_reference} - Status: {refund_request.status}"
-        self.assertEqual(str(refund_request), expected_str)
-
     def test_str_method_service_booking(self):
         """
         Test the __str__ method when a service_booking is linked.
         """
         refund_request = RefundRequestFactory.create(
-            hire_booking=None,                                                                        
             service_booking=self.service_booking,
             status='rejected'
         )
@@ -144,7 +106,6 @@ class RefundRequestModelTest(TestCase):
         Test the __str__ method when no booking is linked.
         """
         refund_request = RefundRequestFactory.create(
-            hire_booking=None,
             service_booking=None,
             status='pending'
         )
@@ -157,10 +118,8 @@ class RefundRequestModelTest(TestCase):
         """
                                                                                      
         refund_request = RefundRequestFactory.build(
-            hire_booking=self.hire_booking,
-            payment=self.payment_for_hire,
-            driver_profile=self.driver_profile,
-            service_profile=self.service_profile,                                                          
+            payment=self.payment_for_service,
+            service_profile=self.service_profile,
             verification_token=None                                               
         )
         self.assertIsNone(refund_request.verification_token)
@@ -180,48 +139,28 @@ class RefundRequestModelTest(TestCase):
         Test all ForeignKey relationships.
         """
         refund_request = RefundRequestFactory.create(
-            hire_booking=self.hire_booking,
             service_booking=self.service_booking,                                            
-            payment=self.payment_for_hire,
-            driver_profile=self.driver_profile,
+            payment=self.payment_for_service,
             service_profile=self.service_profile,
             processed_by=self.user
         )
 
-        self.assertEqual(refund_request.hire_booking, self.hire_booking)
         self.assertEqual(refund_request.service_booking, self.service_booking)
-        self.assertEqual(refund_request.payment, self.payment_for_hire)
-        self.assertEqual(refund_request.driver_profile, self.driver_profile)
+        self.assertEqual(refund_request.payment, self.payment_for_service)
         self.assertEqual(refund_request.service_profile, self.service_profile)
         self.assertEqual(refund_request.processed_by, self.user)
 
                                                       
-        self.assertIn(refund_request, self.hire_booking.refund_requests.all())
         self.assertIn(refund_request, self.service_booking.refund_requests.all())
-        self.assertIn(refund_request, self.payment_for_hire.refund_requests.all())
-        self.assertIn(refund_request, self.driver_profile.refund_requests_related_driver.all())
+        self.assertIn(refund_request, self.payment_for_service.refund_requests.all())
         self.assertIn(refund_request, self.service_profile.refund_requests_related_service_profile.all())
         self.assertIn(refund_request, self.user.processed_refund_requests.all())
-
-    def test_on_delete_hire_booking_set_null(self):
-        """
-        Test that hire_booking is set to NULL when HireBooking is deleted.
-        """
-        refund_request = RefundRequestFactory.create(hire_booking=self.hire_booking)
-        hire_booking_id = self.hire_booking.id
-        self.hire_booking.delete()
-                                                                             
-        refund_request.refresh_from_db()
-        self.assertIsNone(refund_request.hire_booking)
-        self.assertFalse(HireBooking.objects.filter(id=hire_booking_id).exists())
-        self.assertTrue(RefundRequest.objects.filter(id=refund_request.id).exists())                             
 
     def test_on_delete_service_booking_set_null(self):
         """
         Test that service_booking is set to NULL when ServiceBooking is deleted.
         """
         refund_request = RefundRequestFactory.create(
-            hire_booking=None,                                                               
             service_booking=self.service_booking
         )
         service_booking_id = self.service_booking.id
@@ -236,24 +175,12 @@ class RefundRequestModelTest(TestCase):
         """
         Test that payment is set to NULL when Payment is deleted.
         """
-        refund_request = RefundRequestFactory.create(payment=self.payment_for_hire)
-        payment_id = self.payment_for_hire.id
-        self.payment_for_hire.delete()
+        refund_request = RefundRequestFactory.create(payment=self.payment_for_service)
+        payment_id = self.payment_for_service.id
+        self.payment_for_service.delete()
         refund_request.refresh_from_db()
         self.assertIsNone(refund_request.payment)
         self.assertFalse(Payment.objects.filter(id=payment_id).exists())
-        self.assertTrue(RefundRequest.objects.filter(id=refund_request.id).exists())
-
-    def test_on_delete_driver_profile_set_null(self):
-        """
-        Test that driver_profile is set to NULL when DriverProfile is deleted.
-        """
-        refund_request = RefundRequestFactory.create(driver_profile=self.driver_profile)
-        driver_profile_id = self.driver_profile.id
-        self.driver_profile.delete()
-        refund_request.refresh_from_db()
-        self.assertIsNone(refund_request.driver_profile)
-        self.assertFalse(DriverProfile.objects.filter(id=driver_profile_id).exists())
         self.assertTrue(RefundRequest.objects.filter(id=refund_request.id).exists())
 
     def test_on_delete_service_profile_set_null(self):
@@ -286,20 +213,18 @@ class RefundRequestModelTest(TestCase):
         """
                                                                                             
         refund_request_default = RefundRequest.objects.create(
-            hire_booking=self.hire_booking,
-            payment=self.payment_for_hire,
+            payment=self.payment_for_service,
             amount_to_refund=Decimal('10.00'),
             request_email="default@example.com",
                                                                                              
-            driver_profile=self.driver_profile
+            service_profile=self.service_profile
         )
         self.assertEqual(refund_request_default.status, 'unverified')
 
                                                              
         refund_request = RefundRequestFactory.create(
-            hire_booking=self.hire_booking,
-            payment=self.payment_for_hire,
-            driver_profile=self.driver_profile,
+            payment=self.payment_for_service,
+            service_profile=self.service_profile,
             amount_to_refund=Decimal('50.00'),
             request_email="valid@example.com"
         )
@@ -312,9 +237,8 @@ class RefundRequestModelTest(TestCase):
 
                                                                                     
         refund_request_invalid = RefundRequestFactory.create(
-            hire_booking=self.hire_booking,
-            payment=self.payment_for_hire,
-            driver_profile=self.driver_profile,
+            payment=self.payment_for_service,
+            service_profile=self.service_profile,
             amount_to_refund=Decimal('10.00'),
             request_email="invalid@example.com"
         )
@@ -390,11 +314,10 @@ class RefundRequestModelTest(TestCase):
 
                                     
         refund_request_default = RefundRequest.objects.create(
-            hire_booking=self.hire_booking,
-            payment=self.payment_for_hire,
+            payment=self.payment_for_service,
             amount_to_refund=Decimal('10.00'),
             request_email="default@example.com",
-            driver_profile=self.driver_profile                              
+            service_profile=self.service_profile                              
         )
         self.assertFalse(refund_request_default.is_admin_initiated)
 
@@ -421,9 +344,7 @@ class RefundRequestModelTest(TestCase):
                                                                                                
                                                                                        
         refund_request_default_json = RefundRequest.objects.create(
-            hire_booking=self.hire_booking,
-            payment=self.payment_for_hire,
-            driver_profile=self.driver_profile,
+            payment=self.payment_for_service,
             amount_to_refund=Decimal('1.00'),
             request_email="default_json@example.com",
                                                                                                      
@@ -449,9 +370,8 @@ class RefundRequestModelTest(TestCase):
                                                   
         refund_request_invalid_email = RefundRequestFactory.build(request_email="invalid-email")
                                                                                   
-        refund_request_invalid_email.hire_booking = self.hire_booking
-        refund_request_invalid_email.payment = self.payment_for_hire
-        refund_request_invalid_email.driver_profile = self.driver_profile
+        refund_request_invalid_email.payment = self.payment_for_service
+        refund_request_invalid_email.service_profile = self.service_profile
         refund_request_invalid_email.amount_to_refund = Decimal('1.00')
         with self.assertRaises(Exception):                                                                         
             refund_request_invalid_email.full_clean()
@@ -472,9 +392,8 @@ class RefundRequestModelTest(TestCase):
 
                                                
         refund_request_default_token = RefundRequest.objects.create(
-            hire_booking=self.hire_booking,
-            payment=self.payment_for_hire,
-            driver_profile=self.driver_profile,                              
+            payment=self.payment_for_service,
+            service_profile=self.service_profile,                              
             amount_to_refund=Decimal('10.00'),
             request_email="default2@example.com"
         )

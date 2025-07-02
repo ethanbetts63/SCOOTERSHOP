@@ -9,11 +9,9 @@ def create_refund_request(
     amount_to_refund,
     reason,
     payment=None,
-    hire_booking=None,
     service_booking=None,
     sales_booking=None,
     requesting_user=None,                                                
-    driver_profile=None,
     service_profile=None,
     sales_profile=None,
     is_admin_initiated=False,
@@ -28,20 +26,18 @@ def create_refund_request(
                 amount_to_refund=amount_to_refund,
                 reason=reason,
                 payment=payment,
-                hire_booking=hire_booking,
                 service_booking=service_booking,
                 sales_booking=sales_booking,
 
                 request_email=(requesting_user.email if requesting_user else
                                sales_profile.email if sales_profile else
                                service_profile.email if service_profile else
-                               driver_profile.email if driver_profile else None),
+                            None),
                 status=initial_status,
                 processed_by=requesting_user if is_admin_initiated else None,                                      
                 processed_at=timezone.now() if is_admin_initiated and initial_status in ['approved', 'reviewed_pending_approval'] else None,
                 is_admin_initiated=is_admin_initiated,
                 staff_notes=staff_notes,
-                driver_profile=driver_profile,
                 service_profile=service_profile,
                 sales_profile=sales_profile,
                                                                                                              

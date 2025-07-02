@@ -5,7 +5,6 @@ class VisibilitySettingsForm(forms.ModelForm):
     class Meta:
         model = SiteSettings
         fields = [
-            'enable_hire',
             'enable_service_booking',
             'enable_user_accounts',
             'enable_contact_page',
@@ -19,7 +18,6 @@ class VisibilitySettingsForm(forms.ModelForm):
             'enable_google_places_reviews',
         ]
         widgets = {
-            'enable_hire': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'enable_service_booking': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'enable_user_accounts': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'enable_contact_page': forms.CheckboxInput(attrs={'class': 'form-check-input'}),

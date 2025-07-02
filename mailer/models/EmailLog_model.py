@@ -1,12 +1,8 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
-from hire.models import HireBooking
-from hire.models.driver_profile import DriverProfile
-from service.models import ServiceBooking
-from service.models import ServiceProfile
-from inventory.models import SalesBooking                      
-from inventory.models import SalesProfile                      
+from service.models import ServiceBooking, ServiceProfile
+from inventory.models import SalesBooking, SalesProfile
 
 
 class EmailLog(models.Model):
@@ -57,15 +53,6 @@ class EmailLog(models.Model):
         help_text="The registered user associated with this email, if applicable."
     )
 
-    driver_profile = models.ForeignKey(
-        DriverProfile,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='sent_emails_for_driver',
-        help_text="The driver profile associated with this email, if applicable."
-    )
-
     service_profile = models.ForeignKey(
         ServiceProfile,
         on_delete=models.SET_NULL,
@@ -82,15 +69,6 @@ class EmailLog(models.Model):
         blank=True,
         related_name='sent_emails_for_sales_profile',
         help_text="The sales profile associated with this email, if applicable."
-    )
-
-    booking = models.ForeignKey(
-        HireBooking,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='related_emails_for_hire',
-        help_text="The hire booking associated with this email, if applicable."
     )
 
     service_booking = models.ForeignKey(

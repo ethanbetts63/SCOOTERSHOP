@@ -19,20 +19,12 @@ class MotorcycleForm(forms.ModelForm):
             'odometer', 'engine_size',
                                                                                  
             'seats', 'transmission',
-                        
-            'daily_hire_rate',
-            'hourly_hire_rate',
-                           
             'description', 'image',
             'is_available', 'rego', 'rego_exp', 'stock_number'
         ]
         widgets = {
-            'hourly_hire_rate': forms.NumberInput(attrs={'class': 'hire-field', 'step': '0.01'}),
-
             'rego_exp': forms.DateInput(attrs={'type': 'date'}),
-            'conditions': forms.CheckboxSelectMultiple(attrs={'class': 'condition-checkbox-list'}),
-            'daily_hire_rate': forms.NumberInput(attrs={'class': 'hire-field', 'step': '0.01'}),
-                                                                            
+            'conditions': forms.CheckboxSelectMultiple(attrs={'class': 'condition-checkbox-list'}),                                                                            
             'seats': forms.NumberInput(attrs={'min': '0', 'max': '3'}),                                           
             'transmission': forms.Select(attrs={'class': 'form-control'}),
         }
@@ -45,8 +37,6 @@ class MotorcycleForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
                                                                        
         self.fields['price'].required = False
-        self.fields['daily_hire_rate'].required = False
-        self.fields['hourly_hire_rate'].required = False
         self.fields['description'].required = False
         self.fields['seats'].required = False
         self.fields['transmission'].required = False
@@ -106,29 +96,7 @@ class MotorcycleForm(forms.ModelForm):
 
                                                     
     def clean(self):
-        cleaned_data = super().clean()
-        conditions = cleaned_data.get('conditions')
-        daily_hire_rate = cleaned_data.get('daily_hire_rate')
-        hourly_hire_rate = cleaned_data.get('hourly_hire_rate')
-
-                                               
-        is_hire_selected = False
-        if conditions:
-                                                                 
-                                                                                                 
-            for condition in conditions:
-                if condition.name == 'hire':
-                    is_hire_selected = True
-                    break
-
-        if is_hire_selected:
-            if daily_hire_rate is None and hourly_hire_rate is None:
-                self.add_error(None, "If 'Hire' is selected, either Daily Rate or Hourly Rate must be provided.")
-            elif daily_hire_rate is not None and daily_hire_rate <= 0:
-                self.add_error('daily_hire_rate', "Daily Rate must be a positive value if provided.")
-            elif hourly_hire_rate is not None and hourly_hire_rate <= 0:
-                self.add_error('hourly_hire_rate', "Hourly Rate must be a positive value if provided.")
-
+        cleaned_data = super().clean()                                 
         return cleaned_data
 
     def save(self, commit=True):

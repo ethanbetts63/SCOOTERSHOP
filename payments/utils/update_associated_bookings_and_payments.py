@@ -1,11 +1,7 @@
                                            
 
 from decimal import Decimal
-from payments.models import Payment
-from hire.models import HireBooking
-from service.models import ServiceBooking
-from inventory.models import SalesBooking                      
-
+from payments.models import Payment                    
 
 def update_associated_bookings_and_payments(payment_obj: Payment, booking_obj, booking_type_str: str, total_refunded_amount: Decimal):
     if booking_obj:
@@ -25,9 +21,6 @@ def update_associated_bookings_and_payments(payment_obj: Payment, booking_obj, b
         if booking_type_str == 'service_booking':
             if booking_obj.booking_status == 'declined' and booking_obj.payment_status == 'refunded':
                 booking_obj.booking_status = 'DECLINED_REFUNDED'
-        elif booking_type_str == 'hire_booking':
-            if booking_obj.payment_status == 'refunded':
-                booking_obj.status = 'cancelled'
         elif booking_type_str == 'sales_booking':                           
                                                                                          
                                                                        

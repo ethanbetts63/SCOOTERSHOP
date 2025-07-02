@@ -39,28 +39,38 @@
 
         <div class="content">
             <p>Dear Administrator,</p>
-            <p>This is to confirm that the refund request for booking <strong>{{ refund_request.hire_booking.booking_reference }}</strong> has been marked as rejected.</p>
+            <p>This is to confirm that the refund request for booking <strong>
+                {% if refund_request.service_booking %}{{ refund_request.service_booking.service_booking_reference }}
+                {% elif refund_request.sales_booking %}{{ refund_request.sales_booking.sales_booking_reference }}
+                {% else %}N/A
+                {% endif %}
+            </strong> has been marked as rejected.</p>
 
             <div class="highlight">
                 <strong>Refund Request ID:</strong> {{ refund_request.pk }}<br>
-                <strong>Booking Reference:</strong> {{ refund_request.hire_booking.booking_reference }}<br>
+                <strong>Booking Reference:</strong> 
+                {% if refund_request.service_booking %}{{ refund_request.service_booking.service_booking_reference }}
+                {% elif refund_request.sales_booking %}{{ refund_request.sales_booking.sales_booking_reference }}
+                {% else %}N/A
+                {% endif %}<br>
                 <strong>Processed By:</strong> {{ refund_request.processed_by.get_full_name|default:refund_request.processed_by.username }}<br>
                 <strong>Processed At:</strong> {{ refund_request.processed_at|date:"D, d M Y H:i" }}
             </div>
 
             <h3>Booking Details:</h3>
             <table class="details-table">
+                {% if refund_request.service_booking %}
                 <tr>
                     <th>Motorcycle:</th>
-                    <td>{{ refund_request.hire_booking.motorcycle.name }}</td>
+                    <td>{{ refund_request.service_booking.customer_motorcycle.name }}</td>
                 </tr>
                 <tr>
-                    <th>Pickup:</th>
-                    <td>{{ refund_request.hire_booking.pickup_date|date:"D, d M Y" }} at {{ refund_request.hire_booking.pickup_time|time:"H:i" }}</td>
+                    <th>Service Date:</th>
+                    <td>{{ refund_request.service_booking.service_date|date:"D, d M Y" }}</td>
                 </tr>
                 <tr>
-                    <th>Return:</th>
-                    <td>{{ refund_request.hire_booking.return_date|date:"D, d M Y" }} at {{ refund_request.hire_booking.return_time|time:"H:i" }}</td>
+                    <th>Drop-off:</th>
+                    <td>{{ refund_request.service_booking.dropoff_date|date:"D, d M Y" }} at {{ refund_request.service_booking.dropoff_time|time:"H:i" }}</td>
                 </tr>
                 <tr>
                     <th>Original Total Paid:</th>
@@ -68,12 +78,42 @@
                 </tr>
                 <tr>
                     <th>Current Booking Status:</th>
-                    <td>{{ refund_request.hire_booking.get_status_display }}</td>
+                    <td>{{ refund_request.service_booking.get_status_display }}</td>
                 </tr>
                 <tr>
                     <th>Current Payment Status:</th>
-                    <td>{{ refund_request.hire_booking.get_payment_status_display }}</td>
+                    <td>{{ refund_request.service_booking.get_payment_status_display }}</td>
                 </tr>
+                {% elif refund_request.sales_booking %}
+                <tr>
+                    <th>Motorcycle:</th>
+                    <td>{{ refund_request.sales_booking.motorcycle.name }}</td>
+                </tr>
+                <tr>
+                    <th>Appointment Date:</th>
+                    <td>{{ refund_request.sales_booking.appointment_date|date:"D, d M Y" }}</td>
+                </tr>
+                <tr>
+                    <th>Appointment Time:</th>
+                    <td>{{ refund_request.sales_booking.appointment_time|time:"H:i" }}</td>
+                </tr>
+                <tr>
+                    <th>Original Total Paid:</th>
+                    <td>{{ refund_request.payment.amount|floatformat:2 }} {{ refund_request.payment.currency }}</td>
+                </tr>
+                <tr>
+                    <th>Current Booking Status:</th>
+                    <td>{{ refund_request.sales_booking.get_booking_status_display }}</td>
+                </tr>
+                <tr>
+                    <th>Current Payment Status:</th>
+                    <td>{{ refund_request.sales_booking.get_payment_status_display }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="2">No booking details available.</td>
+                </tr>
+                {% endif %}
             </table>
 
             <h3>Refund Request Details:</h3>

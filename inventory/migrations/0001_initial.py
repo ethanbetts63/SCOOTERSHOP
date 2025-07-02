@@ -573,7 +573,7 @@ class Migration(migrations.Migration):
                             ("new", "New"),
                             ("used", "Used"),
                             ("demo", "Demo"),
-                            ("hire", "Hire"),
+                            
                         ],
                         max_length=20,
                     ),
@@ -585,12 +585,12 @@ class Migration(migrations.Migration):
                             ("for_sale", "For Sale"),
                             ("sold", "Sold"),
                             ("reserved", "Reserved"),
-                            ("for_hire", "For Hire"),
+                            
                             ("unavailable", "Unavailable"),
                             ("reserved", "Reserved"),
                         ],
                         default="for_sale",
-                        help_text="The sales/hire status of the motorcycle.",
+                        help_text="The sales status of the motorcycle.",
                         max_length=20,
                     ),
                 ),
@@ -629,13 +629,7 @@ class Migration(migrations.Migration):
                     models.FileField(blank=True, null=True, upload_to="motorcycles/"),
                 ),
                 ("date_posted", models.DateTimeField(auto_now_add=True)),
-                (
-                    "is_available",
-                    models.BooleanField(
-                        default=True,
-                        help_text="Is this bike generally available for sale or in the active hire fleet?",
-                    ),
-                ),
+                
                 (
                     "rego",
                     models.CharField(
@@ -655,31 +649,13 @@ class Migration(migrations.Migration):
                     "stock_number",
                     models.CharField(blank=True, max_length=50, null=True, unique=True),
                 ),
-                (
-                    "daily_hire_rate",
-                    models.DecimalField(
-                        blank=True,
-                        decimal_places=2,
-                        help_text="Price per day for hiring (if applicable)",
-                        max_digits=8,
-                        null=True,
-                    ),
-                ),
-                (
-                    "hourly_hire_rate",
-                    models.DecimalField(
-                        blank=True,
-                        decimal_places=2,
-                        help_text="Price per hour for hiring (if applicable)",
-                        max_digits=8,
-                        null=True,
-                    ),
-                ),
+                
+                
                 (
                     "conditions",
                     models.ManyToManyField(
                         blank=True,
-                        help_text="Select all applicable conditions (e.g., Used, Hire)",
+                        help_text="Select all applicable conditions (e.g., Used)",
                         related_name="motorcycles",
                         to="inventory.motorcyclecondition",
                     ),

@@ -50,8 +50,6 @@ def get_motorcycle_details_ajax(request, pk):
         'rego': motorcycle.rego,
         'rego_exp': str(motorcycle.rego_exp) if motorcycle.rego_exp else None,                         
         'stock_number': motorcycle.stock_number,
-        'daily_hire_rate': str(motorcycle.daily_hire_rate) if motorcycle.daily_hire_rate else None,
-        'hourly_hire_rate': str(motorcycle.hourly_hire_rate) if motorcycle.hourly_hire_rate else None,
     }
 
     return JsonResponse({'motorcycle_details': motorcycle_details})

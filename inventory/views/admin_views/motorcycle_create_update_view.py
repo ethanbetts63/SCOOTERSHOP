@@ -22,7 +22,7 @@ class MotorcycleCreateUpdateView(AdminRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        required_conditions = ['new', 'used', 'demo', 'hire']
+        required_conditions = ['new', 'used', 'demo']
         for condition_name in required_conditions:
             MotorcycleCondition.objects.get_or_create(
                 name=condition_name,

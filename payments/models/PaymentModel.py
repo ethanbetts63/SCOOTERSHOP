@@ -10,33 +10,6 @@ from payments.models import RefundPolicySettings
 class Payment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-    temp_hire_booking = models.OneToOneField(
-        'hire.TempHireBooking',
-        on_delete=models.SET_NULL,
-        related_name='payment',
-        null=True,
-        blank=True,
-        help_text="The temporary hire booking associated with this payment (null after conversion)."
-    )
-
-    hire_booking = models.ForeignKey(
-        'hire.HireBooking',
-        on_delete=models.SET_NULL,
-        related_name='payments',
-        null=True,
-        blank=True,
-        help_text="The permanent hire booking associated with this payment."
-    )
-    
-    driver_profile = models.ForeignKey(
-        'hire.DriverProfile',
-        on_delete=models.SET_NULL,
-        related_name='payments',
-        null=True,
-        blank=True,
-        help_text="The driver profile associated with this payment."
-    )
-
     temp_service_booking = models.OneToOneField(
         'service.TempServiceBooking',
         on_delete=models.SET_NULL,

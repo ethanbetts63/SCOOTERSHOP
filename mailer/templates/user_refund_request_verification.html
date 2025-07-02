@@ -30,7 +30,7 @@
 
         <div class="content">
             
-            <p>Hi {% if refund_request.driver_profile and refund_request.driver_profile.name %}{{ refund_request.driver_profile.name }}{% elif refund_request.service_profile and refund_request.service_profile.name %}{{ refund_request.service_profile.name }}{% elif refund_request.request_email %}{{ refund_request.request_email }}{% else %}there{% endif %},</p>
+            <p>Hi {% if refund_request.service_profile and refund_request.service_profile.name %}{{ refund_request.service_profile.name }}{% elif refund_request.sales_profile and refund_request.sales_profile.name %}{{ refund_request.sales_profile.name }}{% elif refund_request.request_email %}{{ refund_request.request_email }}{% else %}there{% endif %},</p>
             
             <p>Thank you for submitting a refund request for your booking with reference <strong>{{ booking_reference }}</strong>.</p>
             <p>To finalize your request and allow our team to review it, please click the verification link below:</p>
@@ -47,16 +47,7 @@
                     <th>Booking Reference:</th>
                     <td>{{ booking_reference }}</td>
                 </tr>
-                {% if refund_request.hire_booking %}
-                <tr>
-                    <th>Pickup Date:</th>
-                    <td>{{ refund_request.hire_booking.pickup_date|date:"D, d M Y" }}</td>
-                </tr>
-                <tr>
-                    <th>Motorcycle:</th>
-                    <td>{{ refund_request.hire_booking.motorcycle.name }}</td>
-                </tr>
-                {% elif refund_request.service_booking %}
+                {% if refund_request.service_booking %}
                 <tr>
                     <th>Service Date:</th>
                     <td>{{ refund_request.service_booking.dropoff_date|date:"D, d M Y" }}</td>
@@ -65,7 +56,15 @@
                     <th>Service Type:</th>
                     <td>{{ refund_request.service_booking.service_type.name }}</td>
                 </tr>
-                
+                {% elif refund_request.sales_booking %}
+                <tr>
+                    <th>Appointment Date:</th>
+                    <td>{{ refund_request.sales_booking.appointment_date|date:"D, d M Y" }}</td>
+                </tr>
+                <tr>
+                    <th>Motorcycle:</th>
+                    <td>{{ refund_request.sales_booking.motorcycle.name }}</td>
+                </tr>
                 {% endif %}
                 <tr>
                     <th>Your Email:</th>

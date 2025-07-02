@@ -64,9 +64,8 @@ def stripe_webhook(request):
                     payment_obj.save()
 
                 booking_type = None
-                if payment_obj.hire_booking or payment_obj.temp_hire_booking:
-                    booking_type = 'hire_booking'
-                elif payment_obj.service_booking or payment_obj.temp_service_booking:
+
+                if payment_obj.service_booking or payment_obj.temp_service_booking:
                     booking_type = 'service_booking'
                 elif payment_obj.sales_booking or payment_obj.temp_sales_booking:
                     booking_type = 'sales_booking'

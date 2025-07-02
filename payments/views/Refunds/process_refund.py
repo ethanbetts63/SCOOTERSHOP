@@ -46,11 +46,7 @@ class ProcessRefundView(View):
 
                 booking_reference_for_metadata = "N/A"
                 booking_type_for_metadata = "unknown"
-
-                if refund_request.hire_booking:
-                    booking_reference_for_metadata = refund_request.hire_booking.booking_reference
-                    booking_type_for_metadata = 'hire'
-                elif refund_request.service_booking:
+                if refund_request.service_booking:
                     booking_reference_for_metadata = refund_request.service_booking.service_booking_reference
                     booking_type_for_metadata = 'service'
                 elif refund_request.sales_booking:

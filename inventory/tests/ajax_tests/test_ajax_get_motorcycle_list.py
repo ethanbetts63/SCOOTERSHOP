@@ -27,14 +27,12 @@ class AjaxGetMotorcycleListTest(TestCase):
         cls.condition_new = MotorcycleConditionFactory(name='new', display_name='New')
         cls.condition_used = MotorcycleConditionFactory(name='used', display_name='Used')
         cls.condition_demo = MotorcycleConditionFactory(name='demo', display_name='Demo')
-        cls.condition_hire = MotorcycleConditionFactory(name='hire', display_name='For Hire')
-
                                                                                         
         base_time_setup = datetime.datetime(2023, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc)
         delta_seconds = 0
 
                                                                   
-        def create_and_set_date(brand, model, year, price, engine_size, conditions, daily_hire_rate=None, hourly_hire_rate=None):
+        def create_and_set_date(brand, model, year, price, engine_size, conditions):
             nonlocal delta_seconds
             moto = MotorcycleFactory(
                 brand=brand,
@@ -43,8 +41,6 @@ class AjaxGetMotorcycleListTest(TestCase):
                 price=price,
                 engine_size=engine_size,
                 conditions=conditions,
-                daily_hire_rate=daily_hire_rate,
-                hourly_hire_rate=hourly_hire_rate,
                 is_available=True,                               
             )
             moto.date_posted = base_time_setup + datetime.timedelta(seconds=delta_seconds)
@@ -61,8 +57,6 @@ class AjaxGetMotorcycleListTest(TestCase):
         cls.moto_kawasaki_used_2019 = create_and_set_date('Kawasaki', 'Ninja 400', 2019, Decimal('7000.00'), 400, [cls.condition_used.name])
         cls.moto_yamaha_demo_2021 = create_and_set_date('Yamaha', 'MT-07', 2021, Decimal('9500.00'), 700, [cls.condition_demo.name])
         cls.moto_ducati_demo_2021 = create_and_set_date('Ducati', 'Monster 821', 2021, Decimal('11000.00'), 800, [cls.condition_demo.name])
-        cls.moto_harley_hire_2018 = create_and_set_date('Harley-Davidson', 'Fat Boy', 2018, None, 1600, [cls.condition_hire.name], daily_hire_rate=Decimal('150.00'))
-        cls.moto_bmw_used_hire_2020 = create_and_set_date('BMW', 'R1250GS', 2020, Decimal('10500.00'), 1250, [cls.condition_used.name, cls.condition_hire.name], daily_hire_rate=Decimal('180.00'))
         cls.moto_ktm_used_2022 = create_and_set_date('KTM', 'Duke 390', 2022, Decimal('6000.00'), 390, [cls.condition_used.name])
 
 
@@ -206,8 +200,6 @@ class AjaxGetMotorcycleListTest(TestCase):
         self.assertIn(self.moto_yamaha_new_2022.title, returned_titles)
         self.assertIn(self.moto_yamaha_demo_2021.title, returned_titles)
         self.assertIn(self.moto_ducati_demo_2021.title, returned_titles)
-        self.assertIn(self.moto_bmw_used_hire_2020.title, returned_titles)
-
 
     def test_filter_by_engine_size_range(self):
         """
@@ -344,23 +336,10 @@ class AjaxGetMotorcycleListTest(TestCase):
         self.assertEqual(set(data_used['unique_makes_for_filter']), expected_unique_makes_used_raw)
 
 
-    def test_serialization_of_price_and_hire_rates(self):
+    def test_serialization_of_price(self):
         """
-        Test that Decimal fields (price, daily_hire_rate) are correctly converted to float.
-        Also, ensure that the correct motorcycle is returned when filtering by model.
+        Test that Decimal fields (price) are correctly converted to float.
         """
-                                                             
-        response_harley = self.client.get(reverse('inventory:ajax-get-motorcycle-list'), {'condition_slug': 'all', 'brand': 'Harley-Davidson'})
-        self.assertEqual(response_harley.status_code, 200)
-        data_harley = response_harley.json()
-        self.assertEqual(len(data_harley['motorcycles']), 1)
-        moto_data_harley = data_harley['motorcycles'][0]
-        self.assertEqual(moto_data_harley['brand'], 'Harley-Davidson')
-        self.assertIsNone(moto_data_harley['price'])
-        self.assertIsInstance(moto_data_harley['daily_hire_rate'], float)
-        self.assertEqual(moto_data_harley['daily_hire_rate'], 150.0)
-
-                                                             
         response_honda_cbr = self.client.get(reverse('inventory:ajax-get-motorcycle-list'), {'condition_slug': 'all', 'brand': 'Honda', 'model': 'CBR1000RR'})
         self.assertEqual(response_honda_cbr.status_code, 200)
         data_honda_cbr = response_honda_cbr.json()
@@ -368,6 +347,5 @@ class AjaxGetMotorcycleListTest(TestCase):
         moto_data_honda_cbr = data_honda_cbr['motorcycles'][0]
         self.assertEqual(moto_data_honda_cbr['model'], 'CBR1000RR')                              
         self.assertIsInstance(moto_data_honda_cbr['price'], float)
-        self.assertEqual(moto_data_honda_cbr['price'], 15000.0)                                           
-        self.assertIsNone(moto_data_honda_cbr['daily_hire_rate'])
+        self.assertEqual(moto_data_honda_cbr['price'], 15000.0)
 

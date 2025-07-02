@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("hire", "0001_initial"),
+        
         ("inventory", "0002_initial"),
         ("payments", "0001_initial"),
         ("service", "0001_initial"),
@@ -40,18 +40,7 @@ class Migration(migrations.Migration):
                 to="service.serviceprofile",
             ),
         ),
-        migrations.AddField(
-            model_name="payment",
-            name="temp_hire_booking",
-            field=models.OneToOneField(
-                blank=True,
-                help_text="The temporary hire booking associated with this payment (null after conversion).",
-                null=True,
-                on_delete=django.db.models.deletion.SET_NULL,
-                related_name="payment",
-                to="hire.temphirebooking",
-            ),
-        ),
+        
         migrations.AddField(
             model_name="payment",
             name="temp_sales_booking",
@@ -76,30 +65,8 @@ class Migration(migrations.Migration):
                 to="service.tempservicebooking",
             ),
         ),
-        migrations.AddField(
-            model_name="refundrequest",
-            name="driver_profile",
-            field=models.ForeignKey(
-                blank=True,
-                help_text="The driver profile associated with this refund (if applicable).",
-                null=True,
-                on_delete=django.db.models.deletion.SET_NULL,
-                related_name="refund_requests_related_driver",
-                to="hire.driverprofile",
-            ),
-        ),
-        migrations.AddField(
-            model_name="refundrequest",
-            name="hire_booking",
-            field=models.ForeignKey(
-                blank=True,
-                help_text="The hire booking for which the refund is requested (if applicable).",
-                null=True,
-                on_delete=django.db.models.deletion.SET_NULL,
-                related_name="refund_requests",
-                to="hire.hirebooking",
-            ),
-        ),
+        
+        
         migrations.AddField(
             model_name="refundrequest",
             name="payment",

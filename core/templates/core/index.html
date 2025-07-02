@@ -110,29 +110,6 @@
         </div>
     </div>
 
-        <div class="container">
-            <h2 class="section-title">Scooter Hire</h2>
-            <div class="card has-bg-effect brand-card hire-brand">
-                <div class="card-body">
-                    <h3>Great Rates & Service</h3>
-                    <p>We're committed to offering the best scooter hire rates in Perth while delivering top-notch service. Our loyal, growing customer base—built mainly through word of mouth— speaks for itself. With consistently positive reviews and a focus on improving our service, we're confident new customers will be more than satisfied.</p>
-
-                    <h4>What we offer:</h4>
-                    <ul class="reset-list hire-features">
-                        <li>Long term scooter hire rates</li>
-                        <li>Great Cheap Scooter Hire Rates</li>
-                        <li>Open 6 days a week Monday to Saturday</li>
-                        <li>After Hours Hire scooter Pick up & Drop off</li>
-                        <li>Hire Scooter Insurance included in Hire Rate</li>
-                    </ul>
-
-                    <div class="hire-cta">
-                        <a href="{% url 'hire:step2_choose_bike' %}" class="btn-primary">Check out the fleet</a>
-                    </div>
-                </div> 
-            </div>
-        </div>
-
     {% include "core/includes/featured.html" with section_title="Featured New Motorcycles" motorcycles=featured_new_motorcycles condition="new" %}
 
     {% include "core/includes/featured.html" with section_title="Featured Used Motorcycles" motorcycles=featured_used_motorcycles condition="used" %}

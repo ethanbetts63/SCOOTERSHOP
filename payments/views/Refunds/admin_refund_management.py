@@ -6,31 +6,18 @@ from django.utils import timezone
 from datetime import timedelta
 from mailer.utils import send_templated_email
 from django.conf import settings
-
-                                                                             
-from hire.models import HireBooking, DriverProfile
 from service.models import ServiceBooking, ServiceProfile
 from inventory.models import SalesBooking, SalesProfile                                       
 
 
 @method_decorator(staff_member_required, name='dispatch')
 class AdminRefundManagement(ListView):
-    """
-    View for administrators to manage all RefundRequest instances,
-    displaying them in a list with filtering and actions.
-    This view is generalized to handle HireBookings, ServiceBookings, and SalesBookings.
-    """
     model = RefundRequest
     template_name = 'payments/admin_refund_management.html'                                   
     context_object_name = 'refund_requests'
     paginate_by = 20
 
     def clean_expired_unverified_refund_requests(self):
-        """
-        Deletes 'unverified' RefundRequest objects older than 24 hours
-        and sends an email notification to the user.
-        This method is now generalized to handle Hire, Service, and Sales bookings.
-        """
         cutoff_time = timezone.now() - timedelta(hours=24)
 
         expired_requests = RefundRequest.objects.filter(
@@ -46,11 +33,7 @@ class AdminRefundManagement(ListView):
                 booking_reference_for_email = "N/A"
                 email_template_name = 'emails/user_refund_request_expired_unverified.html'                   
 
-                if refund_request.hire_booking:
-                    booking_object = refund_request.hire_booking
-                    customer_profile_object = refund_request.driver_profile
-                    booking_reference_for_email = refund_request.hire_booking.booking_reference
-                elif refund_request.service_booking:
+                if refund_request.service_booking:
                     booking_object = refund_request.service_booking
                     customer_profile_object = refund_request.service_profile
                     booking_reference_for_email = refund_request.service_booking.service_booking_reference
@@ -76,9 +59,7 @@ class AdminRefundManagement(ListView):
                         subject=f"Important: Your Refund Request for Booking {booking_reference_for_email} Has Expired",
                         template_name=email_template_name,
                         context=admin_email_context,
-                        booking=booking_object,                              
-                                                                                       
-                        driver_profile=customer_profile_object if isinstance(customer_profile_object, DriverProfile) else None,
+                        booking=booking_object,                                                                   
                         service_profile=customer_profile_object if isinstance(customer_profile_object, ServiceProfile) else None,
                         sales_profile=customer_profile_object if isinstance(customer_profile_object, SalesProfile) else None,                     
                     )
@@ -93,12 +74,6 @@ class AdminRefundManagement(ListView):
 
 
     def get_queryset(self):
-        """
-        Overrides get_queryset to perform cleaning of expired unverified refund requests
-        before retrieving the queryset for display.
-        The queryset now implicitly includes hire, service, and sales bookings
-        due to the RefundRequest model's structure.
-        """
         self.clean_expired_unverified_refund_requests()
 
         queryset = super().get_queryset()

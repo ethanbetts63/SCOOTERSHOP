@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEW HIRE BOOKING: {{ booking.booking_reference }}</title>
+    <title>NEW BOOKING: {{ booking.booking_reference }}</title>
     <style type="text/css">
         body {
             font-family: Arial, sans-serif;
@@ -93,13 +93,13 @@
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="container">
                     <tr>
                         <td class="header">
-                            <h1>New Hire Booking Received!</h1>
+                            <h1>New Booking Received!</h1>
                         </td>
                     </tr>
                     <tr>
                         <td class="content">
                             <p>Dear Administrator,</p>
-                            <p>A new motorcycle hire booking has been confirmed. Please find the full details below:</p>
+                            <p>A new booking has been confirmed. Please find the full details below:</p>
 
                             <div class="section-title">Booking Overview</div>
                             <table>
@@ -180,86 +180,13 @@
                                     <th>Is Available:</th>
                                     <td>{% if booking.motorcycle.is_available %}Yes{% else %}No{% endif %}</td>
                                 </tr>
-                                <tr>
-                                    <th>Hourly Rate:</th>
-                                    <td>{{ booking.motorcycle.hourly_rate|floatformat:2|default:"N/A" }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Daily Rate:</th>
-                                    <td>{{ booking.motorcycle.daily_rate|floatformat:2|default:"N/A" }}</td>
-                                </tr>
+                                
                             </table>
                             {% else %}
                             <p>No motorcycle details available.</p>
                             {% endif %}
 
-                            <div class="section-title">Driver Profile Details</div>
-                            {% if booking.driver_profile %}
-                            <table>
-                                <tr>
-                                    <th>Name:</th>
-                                    <td>{{ booking.driver_profile.name|default:"N/A" }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Email:</th>
-                                    <td>{{ booking.driver_profile.email|default:"N/A" }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Phone Number:</th>
-                                    <td>{{ booking.driver_profile.phone_number|default:"N/A" }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Date of Birth:</th>
-                                    <td>{{ booking.driver_profile.date_of_birth|date:"M d, Y"|default:"N/A" }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Linked User:</th>
-                                    <td>{% if booking.driver_profile.user %}{{ booking.driver_profile.user.email }} (ID: {{ booking.driver_profile.user.id }}){% else %}N/A{% endif %}</td>
-                                </tr>
-                                <tr>
-                                    <th>Australian Resident:</th>
-                                    <td>{% if booking.driver_profile.is_australian_resident %}Yes{% else %}No{% endif %}</td>
-                                </tr>
-                                <tr>
-                                    <th>Address:</th>
-                                    <td>
-                                        {{ booking.driver_profile.address_line_1|default:"" }}<br>
-                                        {% if booking.driver_profile.address_line_2 %}{{ booking.driver_profile.address_line_2 }}<br>{% endif %}
-                                        {{ booking.driver_profile.city|default:"" }}, {{ booking.driver_profile.state|default:"" }} {{ booking.driver_profile.post_code|default:"" }}<br>
-                                        {{ booking.driver_profile.country|default:"N/A" }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>License Number:</th>
-                                    <td>{{ booking.driver_profile.license_number|default:"N/A" }}</td>
-                                </tr>
-                                <tr>
-                                    <th>License Expiry Date:</th>
-                                    <td>{{ booking.driver_profile.license_expiry_date|date:"M d, Y"|default:"N/A" }}</td>
-                                </tr>
-                                {% if not booking.driver_profile.is_australian_resident %}
-                                <tr>
-                                    <th>Int. License Issuing Country:</th>
-                                    <td>{{ booking.driver_profile.international_license_issuing_country|default:"N/A" }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Int. License Expiry Date:</th>
-                                    <td>{{ booking.driver_profile.international_license_expiry_date|date:"M d, Y"|default:"N/A" }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Passport Number:</th>
-                                    <td>{{ booking.driver_profile.passport_number|default:"N/A" }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Passport Expiry Date:</th>
-                                    <td>{{ booking.driver_profile.passport_expiry_date|date:"M d, Y"|default:"N/A" }}</td>
-                                </tr>
-                                {% endif %}
-                                
-                            </table>
-                            {% else %}
-                            <p>No driver profile details available.</p>
-                            {% endif %}
+                            
 
                             <div class="section-title">Package & Add-ons</div>
                             <table>
@@ -285,18 +212,8 @@
 
                             <div class="section-title">Financial Details</div>
                             <table>
-                                <tr>
-                                    <th>Booked Hourly Rate:</th>
-                                    <td>{{ booking.booked_hourly_rate|floatformat:2|default:"N/A" }} {{ booking.currency }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Booked Daily Rate:</th>
-                                    <td>{{ booking.booked_daily_rate|floatformat:2|default:"N/A" }} {{ booking.currency }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Total Hire Price:</th>
-                                    <td>{{ booking.total_hire_price|floatformat:2|default:"0.00" }} {{ booking.currency }}</td>
-                                </tr>
+                                
+                                
                                 <tr>
                                     <th>Total Package Price:</th>
                                     <td>{{ booking.total_package_price|floatformat:2|default:"0.00" }} {{ booking.currency }}</td>

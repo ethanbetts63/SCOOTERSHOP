@@ -62,9 +62,6 @@ class PaymentFactory(factory.django.DjangoModelFactory):
     stripe_payment_method_id = factory.Sequence(lambda n: f"pm_{uuid.uuid4().hex[:24]}")
     refunded_amount = Decimal('0.00')
     refund_policy_snapshot = {}
-    temp_hire_booking = None
-    hire_booking = None
-    driver_profile = None
     temp_service_booking = None
     service_booking = None
     service_customer_profile = None
@@ -104,10 +101,6 @@ class MotorcycleFactory(factory.django.DjangoModelFactory):
     rego = factory.Faker('bothify', text='???###')
     rego_exp = factory.LazyFunction(lambda: fake.date_between(start_date='+6m', end_date='+2y'))
     stock_number = factory.Sequence(lambda n: f"STK-{n:05d}")
-
-    daily_hire_rate = factory.LazyFunction(lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True, min_value=50, max_value=300))
-    hourly_hire_rate = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True, min_value=10, max_value=50))
-
     status = factory.Faker('random_element', elements=[choice[0] for choice in Motorcycle.STATUS_CHOICES])
 
     @factory.post_generation
@@ -283,14 +276,10 @@ class RefundPolicySettingsFactory(factory.django.DjangoModelFactory):
 class RefundRequestFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = RefundRequest
-
-                                                                                    
-    hire_booking = None
     service_booking = None
     sales_booking = None                           
     service_profile = None
     sales_profile = None                           
-    driver_profile = None
     
     payment = factory.SubFactory(PaymentFactory)                                                    
 
@@ -316,4 +305,3 @@ class RefundRequestFactory(factory.django.DjangoModelFactory):
     request_email = factory.Faker('email')
     verification_token = factory.LazyFunction(uuid.uuid4)
     token_created_at = factory.LazyFunction(timezone.now)
-

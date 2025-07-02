@@ -1,28 +1,11 @@
-                                             
-
 from django import forms
 from django.core.exceptions import ValidationError
 from payments.models.RefundRequest import RefundRequest
-from hire.models import HireBooking
 from service.models import ServiceBooking
 from inventory.models import SalesBooking                      
 from decimal import Decimal
 
-class AdminRefundRequestForm(forms.ModelForm):
-    """
-    Form for administrators to create or edit a RefundRequest.
-    Allows selection of either a HireBooking, ServiceBooking, or SalesBooking,
-    and input of reason, staff notes, and amount to refund.
-    Customer profiles and payment are automatically linked
-    from the selected booking.
-    """
-                                         
-    hire_booking = forms.ModelChoiceField(
-        queryset=HireBooking.objects.filter(payment_status__in=['paid', 'deposit_paid', 'refunded']),
-        label="Select Hire Booking",
-        help_text="Choose a Hire Booking (Paid, Deposit Paid, or Refunded status).",
-        required=False
-    )
+class AdminRefundRequestForm(forms.ModelForm):                       
     service_booking = forms.ModelChoiceField(
         queryset=ServiceBooking.objects.filter(payment_status__in=['paid', 'deposit_paid', 'refunded']),
         label="Select Service Booking",
@@ -39,7 +22,6 @@ class AdminRefundRequestForm(forms.ModelForm):
     class Meta:
         model = RefundRequest
         fields = [
-            'hire_booking',
             'service_booking',
             'sales_booking',                              
             'reason',
@@ -67,56 +49,34 @@ class AdminRefundRequestForm(forms.ModelForm):
 
                                                                                                     
         if self.instance.pk:
-            if self.instance.hire_booking:
-                self.initial['hire_booking'] = self.instance.hire_booking
-            elif self.instance.service_booking:
+            if self.instance.service_booking:
                 self.initial['service_booking'] = self.instance.service_booking
             elif self.instance.sales_booking:                                
                 self.initial['sales_booking'] = self.instance.sales_booking
 
     def clean(self):
-        """
-        Custom validation for the admin refund request form.
-        Ensures exactly one of HireBooking, ServiceBooking, or SalesBooking is selected,
-        and links the appropriate payment and customer profile.
-        Also validates the refund amount against the paid amount.
-        """
         cleaned_data = super().clean()
-        hire_booking = cleaned_data.get('hire_booking')
         service_booking = cleaned_data.get('service_booking')
         sales_booking = cleaned_data.get('sales_booking')                    
         amount_to_refund = cleaned_data.get('amount_to_refund')
 
                                                   
-        selected_bookings = [b for b in [hire_booking, service_booking, sales_booking] if b is not None]
+        selected_bookings = [b for b in [service_booking, sales_booking] if b is not None]
         if len(selected_bookings) > 1:
-            raise ValidationError("Please select only one type of booking (Hire, Service, or Sales).")
+            raise ValidationError("Please select only one type of booking (Service, or Sales).")
         if not selected_bookings:
-            raise ValidationError("Please select a Hire, Service, or Sales Booking.")
+            raise ValidationError("Please select a Service, or Sales Booking.")
 
         selected_booking = selected_bookings[0]
         max_refund_amount = Decimal('0.00')
-
                                                                                                         
-                                                                   
-        self.instance.hire_booking = None
-        self.instance.driver_profile = None
         self.instance.service_booking = None
         self.instance.service_profile = None
         self.instance.sales_booking = None
         self.instance.sales_profile = None
         self.instance.payment = None                                       
 
-        if hire_booking:
-            if not hire_booking.payment:
-                self.add_error('hire_booking', "Selected Hire Booking does not have an associated payment record.")
-                return cleaned_data
-            self.instance.payment = hire_booking.payment
-            self.instance.hire_booking = hire_booking
-            self.instance.driver_profile = hire_booking.driver_profile
-            max_refund_amount = hire_booking.payment.amount
-
-        elif service_booking:
+        if service_booking:
             if not service_booking.payment:
                 self.add_error('service_booking', "Selected Service Booking does not have an associated payment record.")
                 return cleaned_data

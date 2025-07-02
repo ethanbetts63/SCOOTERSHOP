@@ -1,5 +1,3 @@
-                                             
-
 import django.db.models.deletion
 import django.utils.timezone
 import uuid
@@ -12,7 +10,6 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("hire", "0001_initial"),
         ("inventory", "0001_initial"),
     ]
 
@@ -330,6 +327,7 @@ class Migration(migrations.Migration):
                     "payload",
                     models.JSONField(
                         blank=True,
+                        default=dict,
                         help_text="The full JSON payload of the Stripe webhook event.",
                         null=True,
                     ),
@@ -434,28 +432,6 @@ class Migration(migrations.Migration):
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
-                (
-                    "driver_profile",
-                    models.ForeignKey(
-                        blank=True,
-                        help_text="The driver profile associated with this payment.",
-                        null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        related_name="payments",
-                        to="hire.driverprofile",
-                    ),
-                ),
-                (
-                    "hire_booking",
-                    models.ForeignKey(
-                        blank=True,
-                        help_text="The permanent hire booking associated with this payment.",
-                        null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        related_name="payments",
-                        to="hire.hirebooking",
-                    ),
-                ),
                 (
                     "sales_booking",
                     models.ForeignKey(

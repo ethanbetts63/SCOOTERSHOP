@@ -11,18 +11,11 @@ from payments.forms.user_refund_request_form import RefundRequestForm
 from payments.models.RefundRequest import RefundRequest
 from mailer.utils import send_templated_email
 from service.models import ServiceProfile
-from hire.models import DriverProfile
 from inventory.models import SalesProfile                      
 
 
 class UserRefundRequestView(View):
-    """
-    Handles the user-facing refund request form.
-    Allows users to submit a refund request by providing their booking reference and email.
-    Upon successful submission, a RefundRequest instance is created with 'unverified' status.
-    An email is then sent to the user for confirmation.
-    This view is generalized to handle HireBookings, ServiceBookings, and SalesBookings.
-    """
+
     template_name = 'payments/user_refund_request.html'                                  
 
     def get(self, request, *args, **kwargs):
@@ -68,11 +61,7 @@ class UserRefundRequestView(View):
             booking_object = None
             customer_profile_object = None
 
-            if refund_request.hire_booking:
-                booking_reference_for_email = refund_request.hire_booking.booking_reference
-                booking_object = refund_request.hire_booking
-                customer_profile_object = refund_request.driver_profile
-            elif refund_request.service_booking:
+            if refund_request.service_booking:
                 booking_reference_for_email = refund_request.service_booking.service_booking_reference
                 booking_object = refund_request.service_booking
                 customer_profile_object = refund_request.service_profile
@@ -97,7 +86,6 @@ class UserRefundRequestView(View):
                 context=user_email_context,
                                                                                   
                 booking=booking_object,                                                               
-                driver_profile=customer_profile_object if isinstance(customer_profile_object, DriverProfile) else None,
                 service_profile=customer_profile_object if isinstance(customer_profile_object, ServiceProfile) else None,
                 sales_profile=customer_profile_object if isinstance(customer_profile_object, SalesProfile) else None,                     
             )

@@ -1,5 +1,3 @@
-                                                                
-
 from django.test import TestCase
 from decimal import Decimal
 import datetime
@@ -24,14 +22,12 @@ class GetMotorcyclesByCriteriaTest(TestCase):
         cls.condition_new = MotorcycleConditionFactory(name='new', display_name='New')
         cls.condition_used = MotorcycleConditionFactory(name='used', display_name='Used')
         cls.condition_demo = MotorcycleConditionFactory(name='demo', display_name='Demo')
-        cls.condition_hire = MotorcycleConditionFactory(name='hire', display_name='For Hire')
-
                                                                                         
         base_time_setup = datetime.datetime(2023, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc)
         delta_seconds = 0
 
                                                                   
-        def create_and_set_date(brand, model, year, price, engine_size, conditions, daily_hire_rate=None, hourly_hire_rate=None):
+        def create_and_set_date(brand, model, year, price, engine_size, conditions):
             nonlocal delta_seconds
             moto = MotorcycleFactory(
                 brand=brand,
@@ -40,8 +36,6 @@ class GetMotorcyclesByCriteriaTest(TestCase):
                 price=price,
                 engine_size=engine_size,
                 conditions=conditions,
-                daily_hire_rate=daily_hire_rate,
-                hourly_hire_rate=hourly_hire_rate,
             )
                                                                                
             moto.date_posted = base_time_setup + datetime.timedelta(seconds=delta_seconds)
@@ -60,13 +54,8 @@ class GetMotorcyclesByCriteriaTest(TestCase):
         cls.kawasaki_used = create_and_set_date('Kawasaki', 'Ninja', 2019, Decimal('7000.00'), 400, [cls.condition_used.name])
         cls.yamaha_demo = create_and_set_date('Yamaha', 'MT', 2021, Decimal('9500.00'), 900, [cls.condition_demo.name])
         cls.ducati_demo = create_and_set_date('Ducati', 'Monster', 2021, Decimal('11000.00'), 1100, [cls.condition_demo.name])
-        cls.harley_hire = create_and_set_date('Harley-Davidson', 'Fat Boy', 2018, Decimal('5000.00'), 1600, [cls.condition_hire.name], daily_hire_rate=Decimal('50.00'), hourly_hire_rate=Decimal('10.00'))
-        cls.bmw_hire_used = create_and_set_date('BMW', 'GS', 2020, Decimal('10000.00'), 1250, [cls.condition_used.name, cls.condition_hire.name], daily_hire_rate=Decimal('100.00'), hourly_hire_rate=Decimal('20.00'))
-
-                                                                                                          
+                                                                                          
         cls.expected_default_order_full_dataset = [
-            cls.bmw_hire_used,
-            cls.harley_hire,
             cls.ducati_demo,
             cls.yamaha_demo,
             cls.kawasaki_used,
@@ -82,7 +71,7 @@ class GetMotorcyclesByCriteriaTest(TestCase):
         and they are correctly ordered by date_posted descending.
         """
         queryset = get_motorcycles_by_criteria()
-        self.assertEqual(queryset.count(), 9)
+        self.assertEqual(queryset.count(), 7)
         self.assertQuerySetEqual(queryset, self.expected_default_order_full_dataset, ordered=True)
 
     def test_filter_by_new_condition_slug(self):
@@ -102,24 +91,12 @@ class GetMotorcyclesByCriteriaTest(TestCase):
         Test filtering by 'used' condition slug, which should include 'demo'.
         """
         queryset = get_motorcycles_by_criteria(condition_slug='used')
-        self.assertEqual(queryset.count(), 5)                                                                                                  
+        self.assertEqual(queryset.count(), 4)                                                                                                  
         self.assertIn(self.honda_used, queryset)
         self.assertIn(self.kawasaki_used, queryset)
         self.assertIn(self.yamaha_demo, queryset)
         self.assertIn(self.ducati_demo, queryset)
-        self.assertIn(self.bmw_hire_used, queryset)
         self.assertNotIn(self.honda_new, queryset)                               
-        self.assertNotIn(self.harley_hire, queryset)                                     
-
-    def test_filter_by_specific_condition_slug(self):
-        """
-        Test filtering by a specific condition slug like 'hire'.
-        """
-        queryset = get_motorcycles_by_criteria(condition_slug='hire')
-        self.assertEqual(queryset.count(), 2)
-        self.assertIn(self.harley_hire, queryset)
-        self.assertIn(self.bmw_hire_used, queryset)                             
-        self.assertNotIn(self.honda_new, queryset)
 
     def test_filter_by_brand(self):
         """
@@ -177,16 +154,14 @@ class GetMotorcyclesByCriteriaTest(TestCase):
         self.assertIn(self.suzuki_new, queryset)
         self.assertIn(self.yamaha_demo, queryset)
         self.assertIn(self.ducati_demo, queryset)
-        self.assertIn(self.bmw_hire_used, queryset)
         self.assertNotIn(self.honda_new, queryset)        
         self.assertNotIn(self.honda_used, queryset)       
 
                         
         queryset_max_only = get_motorcycles_by_criteria(price_max=Decimal('7000.00'))
                                                             
-        self.assertEqual(queryset_max_only.count(), 2)
+        self.assertEqual(queryset_max_only.count(), 1)
         self.assertIn(self.kawasaki_used, queryset_max_only)
-        self.assertIn(self.harley_hire, queryset_max_only)
 
     def test_filter_by_engine_size_range(self):
         """
@@ -307,4 +282,3 @@ class GetMotorcyclesByCriteriaTest(TestCase):
         queryset = get_motorcycles_by_criteria(brand='NonExistentBrand')
         self.assertEqual(queryset.count(), 0)
         self.assertQuerySetEqual(queryset, [])
-

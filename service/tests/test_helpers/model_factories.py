@@ -187,9 +187,6 @@ class PaymentFactory(factory.django.DjangoModelFactory):
     stripe_payment_method_id = factory.Sequence(lambda n: f"pm_{uuid.uuid4().hex[:24]}")
     refunded_amount = Decimal('0.00')
     refund_policy_snapshot = {}
-    temp_hire_booking = None
-    hire_booking = None
-    driver_profile = None
     temp_service_booking = None
     service_booking = None
     service_customer_profile = None

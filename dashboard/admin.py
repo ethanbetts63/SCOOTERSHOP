@@ -55,7 +55,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         }),
         ('Visibility Settings', {
             'fields': (
-                'enable_sales_new', 'enable_sales_used', 'enable_hire', 'enable_service_booking',
+                'enable_sales_new', 'enable_sales_used', 'enable_service_booking',
                 'enable_user_accounts', 'enable_contact_page', 'enable_about_page',
                 'enable_map_display', 'enable_featured_section', 'display_new_prices',
                 'display_used_prices', 'enable_privacy_policy_page', 'enable_returns_page',
@@ -68,12 +68,6 @@ class SiteSettingsAdmin(admin.ModelAdmin):
                 'drop_off_start_time', 'drop_off_end_time', 'booking_advance_notice',
                 'max_visible_slots_per_day', 'service_confirmation_email_subject',
                 'service_pending_email_subject', 'admin_service_notification_email',
-            )
-        }),
-        ('Hire Booking Settings', {
-            'fields': (
-                'minimum_hire_duration_days', 'maximum_hire_duration_days', 'hire_booking_advance_notice',
-                'default_hire_deposit_percentage', 'hire_confirmation_email_subject', 'admin_hire_notification_email',
             )
         }),
         ('Miscellaneous Settings', {

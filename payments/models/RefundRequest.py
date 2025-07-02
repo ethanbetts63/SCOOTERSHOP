@@ -1,5 +1,3 @@
-                              
-
 from django.db import models
 from django.conf import settings                                 
 from payments.models.PaymentModel import Payment                           
@@ -17,19 +15,8 @@ class RefundRequest(models.Model):
         ('partially_refunded', 'Partially Refunded'),
         ('refunded', 'Refunded'),
         ('failed', 'Refund Failed'),
-    ]
-
-                                    
-    hire_booking = models.ForeignKey(
-        'hire.HireBooking',                                                
-        on_delete=models.SET_NULL,                      
-        related_name='refund_requests',
-        null=True,                   
-        blank=True,                   
-        help_text="The hire booking for which the refund is requested (if applicable)."
-    )
-
-                                       
+    ]                              
+                                     
     service_booking = models.ForeignKey(
         'service.ServiceBooking',                                                
         on_delete=models.SET_NULL,                      
@@ -67,15 +54,6 @@ class RefundRequest(models.Model):
         null=True,
         blank=True,
         help_text="The sales profile associated with this refund request (if applicable)."
-    )
-
-    driver_profile = models.ForeignKey(
-        'hire.DriverProfile',
-        on_delete=models.SET_NULL,
-        related_name='refund_requests_related_driver',
-        null=True,
-        blank=True,
-        help_text="The driver profile associated with this refund (if applicable)."
     )
     
     payment = models.ForeignKey(
@@ -170,11 +148,7 @@ class RefundRequest(models.Model):
         
     def __str__(self):
         booking_ref = "N/A"
-        if self.hire_booking:
-                                                  
-            booking_ref = f"Booking {self.hire_booking.booking_reference}"
-        elif self.service_booking:
-                                                  
+        if self.service_booking:                                  
             booking_ref = f"Booking {self.service_booking.service_booking_reference}"
         elif self.sales_booking:                            
             booking_ref = f"Sales Booking {self.sales_booking.sales_booking_reference}"

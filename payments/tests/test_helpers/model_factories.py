@@ -10,7 +10,6 @@ import django.apps
 fake = Faker()
 
 from payments.models import Payment, WebhookEvent, RefundRequest, RefundPolicySettings
-from hire.models import TempHireBooking, HireBooking, DriverProfile, BookingAddOn, Package, AddOn, TempBookingAddOn
 from service.models import ServiceBooking, ServiceProfile, TempServiceBooking, CustomerMotorcycle, ServiceBrand, ServiceType, BlockedServiceDate, ServiceSettings
 from inventory.models import Motorcycle, MotorcycleCondition, SalesBooking, TempSalesBooking, SalesProfile
 
@@ -65,7 +64,7 @@ class MotorcycleFactory(factory.django.DjangoModelFactory):
             for condition in extracted:
                 self.conditions.add(condition)
         else:
-            default_condition_name = fake.random_element(elements=['used', 'hire'])
+            default_condition_name = fake.random_element(elements=['used'])
             condition_obj, _ = MotorcycleCondition.objects.get_or_create(
                 name=default_condition_name,
                 defaults={'display_name': default_condition_name.replace('_', ' ').title()}
@@ -83,50 +82,11 @@ class MotorcycleFactory(factory.django.DjangoModelFactory):
     rego_exp = factory.LazyFunction(lambda: fake.date_between(start_date='+6m', end_date='+5y'))
     stock_number = factory.Sequence(lambda n: f"STK-{n:05d}")
 
-    daily_hire_rate = factory.LazyFunction(lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True))
-    hourly_hire_rate = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
-
-
-class AddOnFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = AddOn
-
-    name = factory.Faker('word')
-    description = factory.Faker('sentence')
-    hourly_cost = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
-    daily_cost = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
-    min_quantity = 1
-    max_quantity = factory.Faker('random_int', min=1, max=5)
-    is_available = factory.Faker('boolean')
-
-
-class PackageFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Package
-
-    name = factory.Faker('word')
-    description = factory.Faker('paragraph')
-    hourly_cost = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
-    daily_cost = factory.LazyFunction(lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True))
-    is_available = factory.Faker('boolean')
-
-    @factory.post_generation
-    def add_ons(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            for add_on in extracted:
-                self.add_ons.add(add_on)
-
 
 class PaymentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Payment
 
-    temp_hire_booking = None
-    hire_booking = None
-    driver_profile = None
     temp_service_booking = None
     service_booking = None
     service_customer_profile = None
@@ -178,135 +138,15 @@ class WebhookEventFactory(factory.django.DjangoModelFactory):
     received_at = factory.LazyFunction(timezone.now)
     payload = factory.LazyFunction(lambda: fake.json(num_rows=1, data_columns={'key': 'text', 'value': 'text'}))
 
-
-class DriverProfileFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = DriverProfile
-
-    user = None
-    phone_number = factory.Faker('phone_number')
-    address_line_1 = factory.Faker('street_address')
-    address_line_2 = factory.Faker('secondary_address')
-    city = factory.Faker('city')
-    state = factory.Faker('state_abbr')
-    post_code = factory.Faker('postcode')
-    country = factory.Faker('country_code')
-    name = factory.Faker('name')
-    email = factory.Faker('email')
-    date_of_birth = factory.Faker('date_of_birth', minimum_age=18, maximum_age=70)
-    is_australian_resident = factory.Faker('boolean')
-
-    license_number = factory.Faker('bothify', text='??########')
-    international_license_issuing_country = factory.Faker('country')
-    license_expiry_date = factory.LazyFunction(lambda: fake.date_between(start_date='+1y', end_date='+10y'))
-    international_license_expiry_date = factory.LazyFunction(lambda: fake.date_between(start_date='+1y', end_date='+10y'))
-    passport_number = factory.Faker('bothify', text='###########')
-    passport_photo = None
-    passport_expiry_date = factory.LazyFunction(lambda: fake.date_between(start_date='+1y', end_date='+10y'))
-
-    id_image = None
-    international_id_image = None
-    license_photo = None
-    international_license_photo = None
-
-
-class TempHireBookingFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = TempHireBooking
-
-    session_uuid = factory.LazyFunction(uuid.uuid4)
-    pickup_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+30d'))
-    pickup_time = factory.Faker('time_object')
-    return_date = factory.LazyAttribute(lambda o: o.pickup_date + datetime.timedelta(days=fake.random_int(min=1, max=7)))
-    return_time = factory.Faker('time_object')
-    has_motorcycle_license = factory.Faker('boolean')
-
-    motorcycle = factory.SubFactory(MotorcycleFactory)
-    package = factory.SubFactory(PackageFactory)
-    driver_profile = factory.SubFactory(DriverProfileFactory)
-    is_international_booking = factory.Faker('boolean')
-                                                                         
-    payment_option = factory.Faker('random_element', elements=['credit_card', 'bank_transfer', 'cash', 'stripe'])
-
-    booked_hourly_rate = factory.LazyAttribute(lambda o: getattr(o.motorcycle, 'hourly_hire_rate', fake.pydecimal(left_digits=2, right_digits=2, positive=True)))
-    booked_daily_rate = factory.LazyAttribute(lambda o: getattr(o.motorcycle, 'daily_hire_rate', fake.pydecimal(left_digits=3, right_digits=2, positive=True)))
-
-    total_hire_price = factory.LazyFunction(lambda: fake.pydecimal(left_digits=4, right_digits=2, positive=True))
-    total_addons_price = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
-    total_package_price = factory.LazyAttribute(lambda o: getattr(o.package, 'daily_cost', fake.pydecimal(left_digits=2, right_digits=2, positive=True)))
-
-    grand_total = factory.LazyAttribute(
-        lambda o: o.total_hire_price + o.total_addons_price + o.total_package_price
-    )
-    deposit_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
-    currency = 'AUD'
-
-
-class HireBookingFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = HireBooking
-
-    motorcycle = factory.SubFactory(MotorcycleFactory)
-    driver_profile = factory.SubFactory(DriverProfileFactory)
-    package = factory.SubFactory(PackageFactory)
-    payment = factory.SubFactory(PaymentFactory)
-
-    @factory.post_generation
-    def set_stripe_payment_intent_id(obj, create, extracted, **kwargs):
-        if create and obj.payment and obj.payment.stripe_payment_intent_id:
-            obj.stripe_payment_intent_id = obj.payment.stripe_payment_intent_id
-            obj.save(update_fields=['stripe_payment_intent_id'])
-
-    pickup_date = factory.LazyFunction(lambda: fake.date_between(start_date='today', end_date='+30d'))
-    pickup_time = factory.Faker('time_object')
-    return_date = factory.LazyAttribute(lambda o: o.pickup_date + datetime.timedelta(days=fake.random_int(min=1, max=7)))
-    return_time = factory.Faker('time_object')
-
-    booking_reference = factory.Sequence(lambda n: f"HIRE-{uuid.uuid4().hex[:8].upper()}")
-    is_international_booking = factory.Faker('boolean')
-
-    booked_hourly_rate = factory.LazyAttribute(lambda o: getattr(o.motorcycle, 'hourly_hire_rate', fake.pydecimal(left_digits=2, right_digits=2, positive=True)))
-    booked_daily_rate = factory.LazyAttribute(lambda o: getattr(o.motorcycle, 'daily_hire_rate', fake.pydecimal(left_digits=3, right_digits=2, positive=True)))
-
-    total_hire_price = factory.LazyFunction(lambda: fake.pydecimal(left_digits=4, right_digits=2, positive=True))
-    total_addons_price = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
-    total_package_price = factory.LazyAttribute(lambda o: getattr(o.package, 'daily_cost', fake.pydecimal(left_digits=2, right_digits=2, positive=True)))
-    grand_total = factory.LazyAttribute(
-        lambda o: o.total_hire_price + o.total_addons_price + o.total_package_price
-    )
-    deposit_amount = factory.LazyFunction(lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True))
-    amount_paid = factory.LazyAttribute(lambda o: o.grand_total)
-    payment_status = factory.Faker('random_element', elements=['pending', 'paid', 'requires_action', 'refunded', 'failed'])
-    payment_method = factory.Faker('random_element', elements=['credit_card', 'bank_transfer', 'cash', 'stripe'])
-    currency = 'AUD'
-
-    status = factory.Faker('random_element', elements=['pending', 'confirmed', 'cancelled', 'completed', 'picked_up', 'returned'])
-    customer_notes = factory.Faker('paragraph')
-    internal_notes = factory.Faker('paragraph')
-
-
-class BookingAddOnFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = BookingAddOn
-
-    booking = factory.SubFactory(HireBookingFactory)
-    addon = factory.SubFactory(AddOnFactory)
-
-    quantity = factory.Faker('random_int', min=1, max=3)
-    booked_addon_price = factory.LazyAttribute(lambda o: o.addon.daily_cost * o.quantity)
-
-
 class RefundRequestFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = RefundRequest
 
                                                                                     
-    hire_booking = None
     service_booking = None
     sales_booking = None                           
     service_profile = None
     sales_profile = None                           
-    driver_profile = None
     
     payment = factory.SubFactory(PaymentFactory)                                                    
 
@@ -506,22 +346,6 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
     
     booking_status = factory.Faker('random_element', elements=[choice[0] for choice in ServiceBooking.BOOKING_STATUS_CHOICES])
     customer_notes = factory.Faker('paragraph')
-
-class TempBookingAddOnFactory(factory.django.DjangoModelFactory):
-    """
-    Factory for the TempBookingAddOn model.
-    """
-    class Meta:
-        model = TempBookingAddOn
-
-    temp_booking = factory.SubFactory(TempHireBookingFactory)
-    addon = factory.SubFactory(AddOnFactory)
-    quantity = factory.Faker('random_int', min=1, max=3)
-    
-                                                                
-    booked_addon_price = factory.LazyAttribute(
-        lambda o: (o.addon.daily_cost * o.quantity) if o.addon else Decimal('0.00')
-    )
 
 class RefundPolicySettingsFactory(factory.django.DjangoModelFactory):
     class Meta:

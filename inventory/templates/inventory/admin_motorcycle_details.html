@@ -135,14 +135,6 @@
                 <div class="detail-label">Stock Number:</div>
                 <div class="detail-value">{{ motorcycle.stock_number|default:"N/A" }}</div>
             </div>
-            <div class="detail-item">
-                <div class="detail-label">Daily Hire Rate:</div>
-                <div class="detail-value">${{ motorcycle.daily_hire_rate|floatformat:2|default:"N/A" }}</div>
-            </div>
-            <div class="detail-item">
-                <div class="detail-label">Hourly Hire Rate:</div>
-                <div class="detail-value">${{ motorcycle.hourly_hire_rate|floatformat:2|default:"N/A" }}</div>
-            </div>
             <div class="detail-item md:col-span-2">
                 <div class="detail-label">Description:</div>
                 <div class="detail-value">{{ motorcycle.description|linebreaksbr|default:"N/A" }}</div>

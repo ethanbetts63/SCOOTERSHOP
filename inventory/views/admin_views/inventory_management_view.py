@@ -19,7 +19,7 @@ class InventoryManagementView(AdminRequiredMixin, ListView):
             if condition_slug == 'new':
                 queryset = queryset.filter(conditions__name='new')
             elif condition_slug == 'used':
-                queryset = queryset.filter(conditions__name__in=['used', 'demo', 'hire'])
+                queryset = queryset.filter(conditions__name__in=['used', 'demo'])
 
         search_term = self.request.GET.get('q', '').strip()
 
@@ -46,7 +46,7 @@ class InventoryManagementView(AdminRequiredMixin, ListView):
         if condition_slug == 'new':
             context['page_title'] = "New Motorcycle Management"
         elif condition_slug == 'used':
-            context['page_title'] = "Used/Demo/Hire Motorcycle Management"
+            context['page_title'] = "Used/Demo Motorcycle Management"
         else:
             context['page_title'] = "All Motorcycle Inventory Management"
             

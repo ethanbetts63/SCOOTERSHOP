@@ -24,14 +24,12 @@ class MotorcycleListViewTest(TestCase):
         cls.condition_new = MotorcycleConditionFactory(name='new', display_name='New')
         cls.condition_used = MotorcycleConditionFactory(name='used', display_name='Used')
         cls.condition_demo = MotorcycleConditionFactory(name='demo', display_name='Demo')
-        cls.condition_hire = MotorcycleConditionFactory(name='hire', display_name='For Hire')
-
                                                                                         
         base_time_setup = datetime.datetime(2023, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc)
         delta_seconds = 0
 
                                                                   
-        def create_and_set_date(brand, model, year, price, engine_size, conditions, daily_hire_rate=None, hourly_hire_rate=None):
+        def create_and_set_date(brand, model, year, price, engine_size, conditions):
             nonlocal delta_seconds
             moto = MotorcycleFactory(
                 brand=brand,
@@ -40,8 +38,6 @@ class MotorcycleListViewTest(TestCase):
                 price=price,
                 engine_size=engine_size,
                 conditions=conditions,
-                daily_hire_rate=daily_hire_rate,
-                hourly_hire_rate=hourly_hire_rate,
                 is_available=True,                               
             )
             moto.date_posted = base_time_setup + datetime.timedelta(seconds=delta_seconds)
@@ -59,8 +55,6 @@ class MotorcycleListViewTest(TestCase):
         create_and_set_date('Kawasaki', 'Ninja 400', 2019, Decimal('7000.00'), 400, [cls.condition_used.name])
         create_and_set_date('Yamaha', 'MT-07', 2021, Decimal('9500.00'), 700, [cls.condition_demo.name])
         create_and_set_date('Ducati', 'Monster 821', 2021, Decimal('11000.00'), 800, [cls.condition_demo.name])
-        create_and_set_date('Harley-Davidson', 'Fat Boy', 2018, None, 1600, [cls.condition_hire.name], daily_hire_rate=Decimal('150.00'))
-        create_and_set_date('BMW', 'R1250GS', 2020, Decimal('10500.00'), 1250, [cls.condition_used.name, cls.condition_hire.name], daily_hire_rate=Decimal('180.00'))
         create_and_set_date('KTM', 'Duke 390', 2022, Decimal('6000.00'), 390, [cls.condition_used.name])
 
                                                                                      
@@ -164,8 +158,3 @@ class MotorcycleListViewTest(TestCase):
         self.assertContains(response, 'No motorcycles match the current criteria.')
         self.assertEqual(len(response.context['motorcycles']), 0)
         self.assertFalse(response.context['page_obj'].object_list)
-
-                                                                                                     
-                                                                   
-                                                                                   
-                                                                                              

@@ -147,21 +147,24 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
                                 
-                                {% if request.hire_booking %}Hire
+                                {% if request.service_booking %}Service
+                                {% elif request.sales_booking %}Sales
                                 {% elif request.service_booking %}Service
                                 {% elif request.sales_booking %}Sales
                                 {% else %}N/A{% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
                                 
-                                {% if request.hire_booking %}{{ request.hire_booking.booking_reference }}
+                                {% if request.service_booking %}{{ request.service_booking.service_booking_reference }}
+                                {% elif request.sales_booking %}{{ request.sales_booking.sales_booking_reference }}
                                 {% elif request.service_booking %}{{ request.service_booking.service_booking_reference }}
                                 {% elif request.sales_booking %}{{ request.sales_booking.sales_booking_reference }}
                                 {% else %}N/A{% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
                                 
-                                {% if request.driver_profile %}{{ request.driver_profile.email|default:"N/A" }}
+                                {% if request.service_profile %}{{ request.service_profile.email|default:"N/A" }}
+                                {% elif request.sales_profile %}{{ request.sales_profile.email|default:"N/A" }}
                                 {% elif request.service_profile %}{{ request.service_profile.email|default:"N/A" }}
                                 {% elif request.sales_profile %}{{ request.sales_profile.email|default:"N/A" }}
                                 {% elif request.request_email %}{{ request.request_email }}

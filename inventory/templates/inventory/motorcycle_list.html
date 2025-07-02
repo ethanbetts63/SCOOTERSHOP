@@ -105,13 +105,7 @@
                                 <div class="p-6">
                                     <h3 class="text-xl font-bold text-gray-800 truncate">{{ motorcycle.title }}</h3>
                                     <p class="text-2xl font-extrabold text-blue-600 my-2">
-                                        {% if motorcycle.is_for_hire %}
-                                            {% if motorcycle.daily_hire_rate %}
-                                                ${{ motorcycle.daily_hire_rate|floatformat:2 }} / day
-                                            {% else %}
-                                                Price on request
-                                            {% endif %}
-                                        {% elif motorcycle.price %}
+                                        {% if motorcycle.price %}
                                             ${{ motorcycle.price|floatformat:2 }}
                                         {% else %}
                                             Price on request
@@ -266,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     statusClass = 'bg-red-700 text-white'; // Darker red for out of stock
                 }
             } 
-            // Logic for 'Used', 'Demo', 'Hire' bikes (check status)
+            // Logic for 'Used', 'Demo' bikes (check status)
             // Assumes bike.status is provided by your AJAX endpoint.
             else if (bike.status === 'reserved') {
                 applyDimming = true;
@@ -302,12 +296,8 @@ document.addEventListener('DOMContentLoaded', function() {
             tile.querySelector('.motorcycle-title').textContent = bike.title;
             
             let priceText = 'Price on request';
-            if(bike.is_for_hire) {
-                if(bike.daily_hire_rate) {
-                    priceText = `$${parseFloat(bike.daily_hire_rate).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} / day`;
-                }
-            } else if (bike.price) {
-                priceText = `$${parseFloat(bike.price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            if (bike.price) {
+                priceText = `${parseFloat(bike.price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             }
             tile.querySelector('.motorcycle-price').textContent = priceText;
 

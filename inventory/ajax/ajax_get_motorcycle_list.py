@@ -78,8 +78,6 @@ def get_motorcycle_list(request: HttpRequest):
                 'transmission': bike.transmission,
                 'description': bike.description,
                 'is_available': bike.is_available,
-                'is_for_hire': bike.is_for_hire(),
-                'daily_hire_rate': float(bike.daily_hire_rate) if bike.daily_hire_rate is not None else None,
             })
 
                                                                     

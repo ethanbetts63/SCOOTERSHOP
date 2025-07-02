@@ -9,11 +9,9 @@ from decimal import Decimal
 from django.conf import settings
 from django.http import Http404
 from payments.models.RefundRequest import RefundRequest
-from payments.utils.hire_refund_calc import calculate_hire_refund_amount
 from payments.utils.service_refund_calc import calculate_service_refund_amount
 from payments.utils.sales_refund_calc import calculate_sales_refund_amount                                         
 from mailer.utils import send_templated_email
-from hire.models import DriverProfile
 from service.models import ServiceProfile
 from inventory.models import SalesProfile                      
 
@@ -69,17 +67,7 @@ class UserVerifyRefundView(View):
             
             admin_link_name = 'payments:edit_refund_request' 
 
-            if refund_request.hire_booking:
-                calculated_refund_result = calculate_hire_refund_amount(
-                    booking=refund_request.hire_booking,
-                    refund_policy_snapshot=refund_policy_snapshot,
-                    cancellation_datetime=refund_request.requested_at
-                )
-                booking_reference_for_email = refund_request.hire_booking.booking_reference
-                booking_object = refund_request.hire_booking
-                customer_profile_object = refund_request.driver_profile
-                booking_type_for_details = 'hire'
-            elif refund_request.service_booking:
+            if refund_request.service_booking:
                 calculated_refund_result = calculate_service_refund_amount(
                     booking=refund_request.service_booking,
                     refund_policy_snapshot=refund_policy_snapshot,
@@ -138,7 +126,6 @@ class UserVerifyRefundView(View):
                 template_name='admin_refund_request_notification.html',
                 context=admin_email_context,
                 booking=booking_object,
-                driver_profile=customer_profile_object if isinstance(customer_profile_object, DriverProfile) else None,
                 service_profile=customer_profile_object if isinstance(customer_profile_object, ServiceProfile) else None,
                 sales_profile=customer_profile_object if isinstance(customer_profile_object, SalesProfile) else None,                     
             )

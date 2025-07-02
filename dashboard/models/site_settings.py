@@ -10,7 +10,6 @@ class SiteSettings(models.Model):
                                                                         
     enable_sales_new = models.BooleanField(default=True, help_text="Enable new motorcycle sales")
     enable_sales_used = models.BooleanField(default=True, help_text="Enable used motorcycle sales")
-    enable_hire = models.BooleanField(default=True, help_text="Enable motorcycle hire services")
     enable_service_booking = models.BooleanField(default=True, help_text="Enable service booking functionality")
     enable_user_accounts = models.BooleanField(default=True, help_text="Enable user account registration")
     enable_contact_page = models.BooleanField(default=True, help_text="Enable the contact us page")

@@ -12,20 +12,13 @@ from payments.models.RefundRequest import RefundRequest
 from users.views.auth import is_admin
 from mailer.utils import send_templated_email
 
-                                                                 
-from hire.models import HireBooking, DriverProfile
-from service.models import ServiceBooking, ServiceProfile
-from inventory.models import SalesBooking, SalesProfile                                       
+from service.models import ServiceProfile
+from inventory.models import SalesProfile                                       
 
 
 @method_decorator(user_passes_test(is_admin), name='dispatch')
 class AdminRejectRefundView(View):
-    """
-    View for administrators to reject a RefundRequest.
-    It allows the admin to provide a reason for rejection and
-    optionally send an automated email to the user.
-    This view is generalized to handle HireBookings, ServiceBookings, and SalesBookings.
-    """
+
     template_name = 'payments/admin_reject_refund_form.html'
 
     def get(self, request, pk, *args, **kwargs):
@@ -37,9 +30,7 @@ class AdminRejectRefundView(View):
 
                                                                    
         booking_reference = "N/A"
-        if refund_request.hire_booking:
-            booking_reference = refund_request.hire_booking.booking_reference
-        elif refund_request.service_booking:
+        if refund_request.service_booking:
             booking_reference = refund_request.service_booking.service_booking_reference
         elif refund_request.sales_booking:                     
             booking_reference = refund_request.sales_booking.sales_booking_reference
@@ -69,13 +60,7 @@ class AdminRejectRefundView(View):
         admin_management_redirect_url = 'payments:admin_refund_management'                   
         admin_edit_link_name = None                                             
 
-        if refund_request_instance.hire_booking:
-            booking_reference_for_email = refund_request_instance.hire_booking.booking_reference
-            booking_object = refund_request_instance.hire_booking
-            customer_profile_object = refund_request_instance.driver_profile
-            admin_management_redirect_url = 'payments:admin_refund_management'
-            admin_edit_link_name = 'payments:edit_refund_request'
-        elif refund_request_instance.service_booking:
+        if refund_request_instance.service_booking:
             booking_reference_for_email = refund_request_instance.service_booking.service_booking_reference
             booking_object = refund_request_instance.service_booking
             customer_profile_object = refund_request_instance.service_profile
@@ -103,9 +88,7 @@ class AdminRejectRefundView(View):
                 recipient_email = refund_request_instance.request_email
                                                                               
                 if not recipient_email:
-                    if isinstance(customer_profile_object, DriverProfile) and customer_profile_object.user:
-                        recipient_email = customer_profile_object.user.email
-                    elif isinstance(customer_profile_object, ServiceProfile) and customer_profile_object.user:
+                    if isinstance(customer_profile_object, ServiceProfile) and customer_profile_object.user:
                         recipient_email = customer_profile_object.user.email
                     elif isinstance(customer_profile_object, SalesProfile) and customer_profile_object.user:                     
                         recipient_email = customer_profile_object.user.email
@@ -123,7 +106,6 @@ class AdminRejectRefundView(View):
                             template_name='user_refund_request_rejected.html',
                             context=user_email_context,
                             booking=booking_object,                              
-                            driver_profile=customer_profile_object if isinstance(customer_profile_object, DriverProfile) else None,
                             service_profile=customer_profile_object if isinstance(customer_profile_object, ServiceProfile) else None,
                             sales_profile=customer_profile_object if isinstance(customer_profile_object, SalesProfile) else None,                     
                         )
@@ -159,7 +141,6 @@ class AdminRejectRefundView(View):
                     template_name='admin_refund_request_rejected.html',
                     context=admin_email_context,
                     booking=booking_object,                              
-                    driver_profile=customer_profile_object if isinstance(customer_profile_object, DriverProfile) else None,
                     service_profile=customer_profile_object if isinstance(customer_profile_object, ServiceProfile) else None,
                     sales_profile=customer_profile_object if isinstance(customer_profile_object, SalesProfile) else None,                     
                 )

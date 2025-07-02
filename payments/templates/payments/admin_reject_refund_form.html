@@ -59,8 +59,7 @@
         </div>
         
         <p class="mb-4 text-gray-600">Provide a reason for rejecting the refund request for booking <strong>
-            {% if refund_request.hire_booking %}{{ refund_request.hire_booking.booking_reference }}
-            {% elif refund_request.service_booking %}{{ refund_request.service_booking.service_booking_reference }}
+            {% if refund_request.service_booking %}{{ refund_request.service_booking.service_booking_reference }}
             {% elif refund_request.sales_booking %}{{ refund_request.sales_booking.sales_booking_reference }}
             {% else %}N/A{% endif %}
         </strong>.</p>
@@ -112,11 +111,7 @@
                     Confirm Rejection
                 </button>
                 
-                {% if refund_request and refund_request.hire_booking %}
-                    <a href="{% url 'payments:admin_refund_management' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Cancel
-                    </a>
-                {% elif refund_request and refund_request.service_booking %}
+                {% if refund_request and refund_request.service_booking %}
                     <a href="{% url 'payments:admin_refund_management' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         Cancel
                     </a>

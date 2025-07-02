@@ -20,8 +20,6 @@ class MotorcycleFormTest(TestCase):
         form = MotorcycleForm()
         self.assertTrue(form.fields['status'].required)                                
         self.assertFalse(form.fields['price'].required)
-        self.assertFalse(form.fields['daily_hire_rate'].required)
-        self.assertFalse(form.fields['hourly_hire_rate'].required)
         self.assertFalse(form.fields['description'].required)
         self.assertFalse(form.fields['seats'].required)
         self.assertTrue(form.fields['transmission'].required)
@@ -195,8 +193,6 @@ class MotorcycleFormTest(TestCase):
             'engine_size': 400,
             'seats': 2,
             'transmission': 'manual',
-            'daily_hire_rate': 100.00,
-            'hourly_hire_rate': 20.00,
             'description': 'A fantastic sportbike.',
             'is_available': True,
             'rego': 'XYZ789',

@@ -11,8 +11,6 @@ class MotorcycleForm(forms.ModelForm):
             'brand', 'model', 'year', 'price', 'quantity',
             'odometer', 'engine_size',
             'seats', 'transmission',
-            'daily_hire_rate',
-            'hourly_hire_rate',
             'description', 'image',
             'is_available', 'rego', 'rego_exp', 'stock_number',
             'vin_number', 'engine_number',
@@ -28,8 +26,6 @@ class MotorcycleForm(forms.ModelForm):
             'engine_size': forms.NumberInput(attrs={'class': 'form-input mt-1 block w-full rounded-md border border-gray-300 shadow-sm text-gray-900', 'min': '0'}),
             'seats': forms.NumberInput(attrs={'class': 'form-input mt-1 block w-full rounded-md border border-gray-300 shadow-sm text-gray-900', 'min': '0', 'max': '3'}),
             'transmission': forms.Select(attrs={'class': 'form-select mt-1 block w-full rounded-md border border-gray-300 shadow-sm text-gray-900'}),
-            'daily_hire_rate': forms.NumberInput(attrs={'class': 'hire-field form-input mt-1 block w-full rounded-md border border-gray-300 shadow-sm text-gray-900', 'step': '0.01'}),
-            'hourly_hire_rate': forms.NumberInput(attrs={'class': 'hire-field form-input mt-1 block w-full rounded-md border border-gray-300 shadow-sm text-gray-900', 'step': '0.01'}),
             'description': forms.Textarea(attrs={'class': 'form-textarea mt-1 block w-full rounded-md border border-gray-300 shadow-sm text-gray-900'}),
             'image': forms.FileInput(attrs={'class': 'form-input mt-1 block w-full text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300'}),
             'rego': forms.TextInput(attrs={'class': 'form-input mt-1 block w-full rounded-md border border-gray-300 shadow-sm text-gray-900'}),
@@ -49,8 +45,6 @@ class MotorcycleForm(forms.ModelForm):
 
         self.fields['status'].required = True
         self.fields['price'].required = False
-        self.fields['daily_hire_rate'].required = False
-        self.fields['hourly_hire_rate'].required = False
         self.fields['description'].required = False
         self.fields['seats'].required = False
         self.fields['transmission'].required = True

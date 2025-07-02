@@ -1,5 +1,3 @@
-                                             
-
 import django.db.models.deletion
 import django.utils.timezone
 from django.db import migrations, models
@@ -10,7 +8,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("hire", "0001_initial"),
+        
     ]
 
     operations = [
@@ -80,28 +78,7 @@ class Migration(migrations.Migration):
                         null=True,
                     ),
                 ),
-                (
-                    "booking",
-                    models.ForeignKey(
-                        blank=True,
-                        help_text="The hire booking associated with this email, if applicable.",
-                        null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        related_name="related_emails_for_hire",
-                        to="hire.hirebooking",
-                    ),
-                ),
-                (
-                    "driver_profile",
-                    models.ForeignKey(
-                        blank=True,
-                        help_text="The driver profile associated with this email, if applicable.",
-                        null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        related_name="sent_emails_for_driver",
-                        to="hire.driverprofile",
-                    ),
-                ),
+                
             ],
             options={
                 "verbose_name": "Email Log",

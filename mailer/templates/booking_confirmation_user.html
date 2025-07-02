@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Motorcycle Hire Booking Confirmation</title>
+    <title>Your Booking Confirmation</title>
     
     <style type="text/css">
         body {
@@ -85,8 +85,8 @@
                     </tr>
                     <tr>
                         <td class="content">
-                            <p>Hi {% if booking.driver_profile.name %}{{ booking.driver_profile.name }}{% else %}there{% endif %},</p>
-                            <p>Thank you for booking your motorcycle hire with us! Your booking is now confirmed.</p>
+                            <p>Hi {% if booking.service_profile %}{{ booking.service_profile.name }}{% elif booking.sales_profile %}{{ booking.sales_profile.name }}{% else %}there{% endif %},</p>
+                            <p>Thank you for booking with us! Your booking is now confirmed.</p>
 
                             <h2>Booking Details</h2>
                             <table>
@@ -94,52 +94,45 @@
                                     <th>Booking Reference:</th>
                                     <td><strong>{{ booking.booking_reference }}</strong></td>
                                 </tr>
+                                {% if booking.service_booking_reference %}
                                 <tr>
                                     <th>Motorcycle:</th>
-                                    <td>{{ booking.motorcycle.year }} {{ booking.motorcycle.make }} {{ booking.motorcycle.model }}</td>
+                                    <td>{{ booking.customer_motorcycle.year }} {{ booking.customer_motorcycle.brand }} {{ booking.customer_motorcycle.model }}</td>
                                 </tr>
                                 <tr>
-                                    <th>Pickup Date/Time:</th>
-                                    <td>{{ booking.pickup_date|date:"D, M d, Y" }} at {{ booking.pickup_time|time:"P" }}</td>
+                                    <th>Service Date:</th>
+                                    <td>{{ booking.service_date|date:"D, M d, Y" }}</td>
                                 </tr>
                                 <tr>
-                                    <th>Return Date/Time:</th>
-                                    <td>{{ booking.return_date|date:"D, M d, Y" }} at {{ booking.return_time|time:"P" }}</td>
+                                    <th>Drop-off Date/Time:</th>
+                                    <td>{{ booking.dropoff_date|date:"D, M d, Y" }} at {{ booking.dropoff_time|time:"P" }}</td>
                                 </tr>
-                                {% if booking.package %}
+                                {% elif booking.sales_booking_reference %}
                                 <tr>
-                                    <th>Package:</th>
-                                    <td>{{ booking.package.name }}</td>
+                                    <th>Motorcycle:</th>
+                                    <td>{{ booking.motorcycle.year }} {{ booking.motorcycle.brand }} {{ booking.motorcycle.model }}</td>
                                 </tr>
-                                {% endif %}
-                                {% if booking.bookingaddon_set.all %}
                                 <tr>
-                                    <th>Add-ons:</th>
-                                    <td>
-                                        <ul>
-                                            {% for booking_addon in booking.bookingaddon_set.all %}
-                                                <li>{{ booking_addon.add_on.name }} (x{{ booking_addon.quantity }}) - {{ booking_addon.booked_addon_price|floatformat:2 }} {{ booking.currency }} each</li>
-                                            {% endfor %}
-                                        </ul>
-                                    </td>
+                                    <th>Appointment Date/Time:</th>
+                                    <td>{{ booking.appointment_date|date:"D, M d, Y" }} at {{ booking.appointment_time|time:"P" }}</td>
                                 </tr>
                                 {% endif %}
                                 <tr>
-                                    <th>Total Hire Price:</th>
-                                    <td>{{ booking.total_hire_price|floatformat:2 }} {{ booking.currency }}</td>
+                                    <th>Grand Total:</th>
+                                    <td><strong>{{ booking.calculated_total|floatformat:2 }} {{ booking.currency }}</strong></td>
                                 </tr>
-                                {% if booking.total_package_price %}
                                 <tr>
-                                    <th>Total Package Price:</th>
-                                    <td>{{ booking.total_package_price|floatformat:2 }} {{ booking.currency }}</td>
+                                    <th>Amount Paid:</th>
+                                    <td>{{ booking.amount_paid|floatformat:2 }} {{ booking.currency }}</td>
                                 </tr>
-                                {% endif %}
-                                {% if booking.total_addons_price %}
                                 <tr>
-                                    <th>Total Add-ons Price:</th>
-                                    <td>{{ booking.total_addons_price|floatformat:2 }} {{ booking.currency }}</td>
+                                    <th>Payment Status:</th>
+                                    <td>{{ booking.get_payment_status_display }}</td>
                                 </tr>
-                                {% endif %}
+                                <tr>
+                                    <th>Payment Method:</th>
+                                    <td>{{ booking.get_payment_method_display }}</td>
+                                </tr>
                                 <tr>
                                     <th>Grand Total:</th>
                                     <td><strong>{{ booking.grand_total|floatformat:2 }} {{ booking.currency }}</strong></td>

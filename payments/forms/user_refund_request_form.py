@@ -1,8 +1,6 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 import re
-
-from hire.models import HireBooking, DriverProfile
 from service.models import ServiceBooking, ServiceProfile
 from inventory.models import SalesBooking, SalesProfile
 from payments.models.RefundRequest import RefundRequest
@@ -12,7 +10,7 @@ class RefundRequestForm(forms.ModelForm):
     booking_reference = forms.CharField(
         max_length=50,
         label=_("Booking Reference"),
-        help_text=_("Enter your unique booking reference number (e.g., HIRE-XXXXX, SERVICE-XXXXX, or SBK-XXXXX).")
+        help_text=_("Enter your unique booking reference number (e.g., SERVICE-XXXXX, or SBK-XXXXX).")
     )
     email = forms.EmailField(
         label=_("Your Email Address"),
@@ -44,14 +42,6 @@ class RefundRequestForm(forms.ModelForm):
 
         if booking_reference and email:
             try:
-                if re.match(r'^HIRE-\w+', booking_reference, re.IGNORECASE):
-                    try:
-                        booking_object = HireBooking.objects.get(booking_reference__iexact=booking_reference)
-                        customer_profile = booking_object.driver_profile
-                        payment_object = booking_object.payment
-                        booking_type = 'hire'
-                    except HireBooking.DoesNotExist:
-                        pass
 
                 if not booking_object and re.match(r'^(SERVICE|SVC)-\w+', booking_reference, re.IGNORECASE):
                     try:
@@ -101,25 +91,18 @@ class RefundRequestForm(forms.ModelForm):
                 self.instance.reason = reason
                 self.instance.request_email = email.lower()
 
-                self.instance.hire_booking = None
-                self.instance.driver_profile = None
                 self.instance.service_booking = None
                 self.instance.service_profile = None
                 self.instance.sales_booking = None
                 self.instance.sales_profile = None
 
-                if booking_type == 'hire':
-                    self.instance.hire_booking = booking_object
-                    self.instance.driver_profile = customer_profile
-                elif booking_type == 'service':
+                if booking_type == 'service':
                     self.instance.service_booking = booking_object
                     self.instance.service_profile = customer_profile
                 elif booking_type == 'sales':
                     self.instance.sales_booking = booking_object
                     self.instance.sales_profile = customer_profile
 
-            except DriverProfile.DoesNotExist:
-                self.add_error(None, _("Associated driver profile not found for this hire booking."))
             except ServiceProfile.DoesNotExist:
                 self.add_error(None, _("Associated service profile not found for this service booking."))
             except SalesProfile.DoesNotExist:

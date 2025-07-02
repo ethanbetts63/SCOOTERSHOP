@@ -1,5 +1,3 @@
-                                                                
-
 from django.test import TestCase
 from inventory.models import MotorcycleCondition
 from inventory.utils.get_unique_makes_for_filter import get_unique_makes_for_filter
@@ -19,10 +17,7 @@ class GetUniqueMakesForFilterTest(TestCase):
         cls.condition_new = MotorcycleConditionFactory(name='new', display_name='New')
         cls.condition_used = MotorcycleConditionFactory(name='used', display_name='Used')
         cls.condition_demo = MotorcycleConditionFactory(name='demo', display_name='Demo')
-        cls.condition_hire = MotorcycleConditionFactory(name='hire', display_name='For Hire')
-
-                                                               
-                         
+               
         MotorcycleFactory(brand='Honda', model='CBR', conditions=[cls.condition_new.name])
         MotorcycleFactory(brand='Yamaha', model='YZF', conditions=[cls.condition_new.name])
         MotorcycleFactory(brand='Suzuki', model='GSXR', conditions=[cls.condition_new.name])
@@ -34,14 +29,7 @@ class GetUniqueMakesForFilterTest(TestCase):
                                                                 
         MotorcycleFactory(brand='Yamaha', model='MT', conditions=[cls.condition_demo.name])
         MotorcycleFactory(brand='Ducati', model='Monster', conditions=[cls.condition_demo.name])
-
-                                               
-        MotorcycleFactory(brand='Harley-Davidson', model='Fat Boy', conditions=[cls.condition_hire.name])
-        MotorcycleFactory(brand='Kawasaki', model='Versys', conditions=[cls.condition_hire.name])
-
-                                               
-        MotorcycleFactory(brand='BMW', model='GS', conditions=[cls.condition_used.name, cls.condition_hire.name])
-
+                                    
                                                                                         
         MotorcycleFactory(brand='KTM', model='Duke')                                      
 
@@ -51,7 +39,7 @@ class GetUniqueMakesForFilterTest(TestCase):
         """
         expected_makes = {
             'Honda', 'Yamaha', 'Suzuki', 'Kawasaki', 'Ducati',
-            'Harley-Davidson', 'BMW', 'KTM'
+            'KTM'
         }
 
                          
@@ -74,7 +62,7 @@ class GetUniqueMakesForFilterTest(TestCase):
         """
         Test that brands of 'used' and 'demo' motorcycles are returned.
         """
-        expected_makes = {'Honda', 'Kawasaki', 'Yamaha', 'Ducati', 'BMW', 'KTM'}                         
+        expected_makes = {'Honda', 'Kawasaki', 'Yamaha', 'Ducati'}                         
         makes = get_unique_makes_for_filter(condition_slug='used')
         self.assertEqual(makes, expected_makes)
 
@@ -84,14 +72,6 @@ class GetUniqueMakesForFilterTest(TestCase):
         """
         expected_makes = {'Yamaha', 'Ducati'}
         makes = get_unique_makes_for_filter(condition_slug='demo')
-        self.assertEqual(makes, expected_makes)
-
-    def test_get_unique_makes_hire_condition(self):
-        """
-        Test that only brands of 'hire' motorcycles are returned.
-        """
-        expected_makes = {'Harley-Davidson', 'Kawasaki', 'BMW'}
-        makes = get_unique_makes_for_filter(condition_slug='hire')
         self.assertEqual(makes, expected_makes)
 
     def test_get_unique_makes_no_matching_condition(self):

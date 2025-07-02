@@ -94,47 +94,7 @@
     border-radius: var(--radius-md);
 }
 
-/* =================== SECTION: Hire Features =================== */
-/* Styles for hire features list */
-.hire-features {
-    margin: 20px 0;
-}
 
-/* Styles for hire features list items */
-.hire-features li {
-    padding: 8px 0;
-    border-bottom: 1px dotted var(--border-light);
-    position: relative;
-    padding-left: 30px;
-}
-
-/* Styles for the checkmark pseudo-element in hire features list items */
-.hire-features li:before {
-    content: "✓";
-    color: var(--color-primary);
-    position: absolute;
-    left: 5px;
-    font-weight: bold;
-}
-
-/* Styles for the last list item within hire features */
-.hire-features li:last-child {
-    border-bottom: none;
-}
-
-/* Styles for the hire call to action section */
-.hire-cta {
-    margin-top: 25px;
-    text-align: center;
-}
-
-/* Styles for the primary button within hire call to action */
-.hire-cta .btn-primary {
-    font-size: 1.1rem;
-    padding: 12px 24px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
 
 /* =================== SECTION: Responsive Design =================== */
 /* Stacks About and Contact cards vertically on smaller screens */

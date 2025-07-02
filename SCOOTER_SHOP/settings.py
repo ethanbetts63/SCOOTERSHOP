@@ -29,7 +29,7 @@ INSTALLED_APPS = [
     "dashboard.apps.DashboardConfig",
     "inventory.apps.InventoryConfig",
     "service.apps.ServiceConfig",
-    "hire.apps.HireConfig",
+    
     "payments.apps.PaymentsConfig",
     "mailer.apps.MailerConfig",
     'widget_tweaks',
