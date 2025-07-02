@@ -12,11 +12,8 @@ def site_settings(request):
         settings_object = SiteSettings.get_settings()
         if settings_object:
             service_types_list = ServiceType.objects.all()
-    except Exception:
-                                                        
+    except Exception:                                              
         pass                   
-
-
 
     return {
         'settings': settings_object, 
