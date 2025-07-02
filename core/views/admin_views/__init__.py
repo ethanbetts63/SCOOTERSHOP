@@ -1,1 +1,3 @@
 from .enquiry_management_view import EnquiryManagementView
+from .enquiry_delete_view import EnquiryDeleteView
+from .enquiry_detail_view import EnquiryDetailView

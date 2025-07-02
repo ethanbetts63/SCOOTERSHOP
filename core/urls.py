@@ -12,4 +12,6 @@ urlpatterns = [
     path('security', SecurityPolicyView.as_view(), name='security'),
     path('terms', TermsOfUseView.as_view(), name='terms'),
     path('dashboard/enquiries/', EnquiryManagementView.as_view(), name='enquiry_management'),
+    path('dashboard/enquiries/<int:pk>/delete/', EnquiryDeleteView.as_view(), name='enquiry_delete'),
+    path('dashboard/enquiries/<int:pk>/view-respond/', EnquiryDetailView.as_view(), name='enquiry_detail'),
 ]

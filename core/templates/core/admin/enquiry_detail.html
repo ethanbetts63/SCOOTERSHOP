@@ -1,0 +1,67 @@
+{% extends "dashboard/admin_layout.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} - Scootershop Australia{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .enquiry-detail-card {
+        background-color: #fff;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .enquiry-detail-item {
+        margin-bottom: 1rem;
+        color: #333; /* Darker text for better visibility */
+    }
+    .enquiry-detail-item strong {
+        display: inline-block;
+        min-width: 100px; /* Align labels */
+        color: #222; /* Even darker for labels */
+    }
+    .enquiry-message p {
+        color: #333; /* Darker text for message content */
+    }
+</style>
+{% endblock %}
+
+{% block admin_main_content %}
+<div class="p-4 sm:p-6 lg:p-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">{{ page_title }}</h1>
+        <a href="{% url 'core:enquiry_management' %}" class="action-button btn-secondary">Back to Enquiries</a>
+    </div>
+
+    <div class="enquiry-detail-card">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Enquiry Details</h2>
+        <div class="enquiry-detail-item">
+            <strong>Name:</strong> {{ enquiry.name }}
+        </div>
+        <div class="enquiry-detail-item">
+            <strong>Email:</strong> {{ enquiry.email }}
+        </div>
+        <div class="enquiry-detail-item">
+            <strong>Phone:</strong> {{ enquiry.phone_number|default:"N/A" }}
+        </div>
+        <div class="enquiry-detail-item">
+            <strong>Date:</strong> {{ enquiry.created_at|date:"Y-m-d H:i" }}
+        </div>
+        <div class="enquiry-detail-item">
+            <strong>Message:</strong>
+            <div class="enquiry-message">
+                <p>{{ enquiry.message|linebreaksbr }}</p>
+            </div>
+        </div>
+    </div>
+
+    {# Response section will go here later #}
+    <div class="response-section enquiry-detail-card">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Respond to Enquiry</h2>
+        <p>Response form will be implemented here later.</p>
+    </div>
+
+</div>
+{% endblock %}
