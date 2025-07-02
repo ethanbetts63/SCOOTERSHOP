@@ -1,19 +1,104 @@
 {% extends "dashboard/admin_layout.html" %}
 {% load static %}
 
-{% block admin_main_content %}
-<div class="p-4">
-    <h1 class="text-2xl font-bold text-gray-800 mb-6">{{ title }}</h1>
+{% block extra_css %}
+    {{ block.super }}
+    <style>
+        /* Custom styles for search results, borrowed from the service booking form */
+        .search-results-container ul {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 4px;
+            border: 1px solid #ddd;
+            border-radius: 0.375rem;
+            max-height: 250px;
+            overflow-y: auto;
+            position: absolute;
+            background-color: white;
+            z-index: 1000;
+            width: 100%;
+            color: #333;
+        }
+        .search-results-container li {
+            padding: 12px;
+            cursor: pointer;
+            color: #333;
+            border-bottom: 1px solid #eee;
+        }
+        .search-results-container li:last-child {
+            border-bottom: none;
+        }
+        .search-results-container li:hover {
+            background-color: #f0f0f0;
+        }
+        .selected-item-display {
+            padding: 1rem;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            margin-top: 1rem;
+            color: #333;
+        }
+        .form-control {
+            display: block;
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #495057;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        .action-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transition: all 0.15s ease-in-out;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .btn-create {
+            color: #ffffff;
+            background-color: #22c55e;
+            border: 1px solid #16a34a;
+        }
+        .btn-create:hover {
+            background-color: #16a34a;
+        }
+    </style>
+{% endblock %}
 
-    <div class="bg-white shadow-md rounded-lg p-6">
-        <form method="post">
-            {% csrf_token %}
-            <div class="grid grid-cols-1 gap-6">
-                <div>
-                    <label for="{{ form.motorcycle.id_for_label }}" class="block text-sm font-medium text-gray-700">Motorcycle</label>
-                    {{ form.motorcycle }}
+{% block admin_main_content %}
+<div class="p-4 sm:p-6 lg:p-8">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">{{ title }}</h1>
+
+        <div class="bg-white shadow-md rounded-lg p-6">
+            <form method="post" id="featuredMotorcycleForm">
+                {% csrf_token %}
+                
+                <!-- Hidden fields for motorcycle and category -->
+                {{ form.motorcycle }}
+                {{ form.category }}
+
+                <!-- Motorcycle Search Section -->
+                <div class="mb-6">
+                    <label for="motorcycleSearch" class="block text-sm font-medium text-gray-700 mb-2">Search for a {{ motorcycle_condition }} motorcycle</label>
+                    <div class="relative">
+                        <input type="text" id="motorcycleSearch" class="form-control" placeholder="Start typing name, brand, model, VIN..." autocomplete="off">
+                        <div id="motorcycleSearchResults" class="search-results-container"></div>
+                    </div>
+                    <div id="selectedMotorcycleDisplay" class="selected-item-display" style="display: none;"></div>
                     {% if form.motorcycle.errors %}
-                        <div class="text-red-500 text-sm mt-1">
+                        <div class="text-red-500 text-sm mt-2">
                             {% for error in form.motorcycle.errors %}
                                 <p>{{ error }}</p>
                             {% endfor %}
@@ -21,21 +106,11 @@
                     {% endif %}
                 </div>
 
-                <div>
-                    <label for="{{ form.category.id_for_label }}" class="block text-sm font-medium text-gray-700">Category</label>
-                    {{ form.category }}
-                    {% if form.category.errors %}
-                        <div class="text-red-500 text-sm mt-1">
-                            {% for error in form.category.errors %}
-                                <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-
-                <div>
-                    <label for="{{ form.order.id_for_label }}" class="block text-sm font-medium text-gray-700">Order</label>
+                <!-- Order Field -->
+                <div class="mb-6">
+                    <label for="{{ form.order.id_for_label }}" class="block text-sm font-medium text-gray-700">Display Order</label>
                     {{ form.order }}
+                    <p class="text-xs text-gray-500 mt-1">A lower number will appear first on the page.</p>
                     {% if form.order.errors %}
                         <div class="text-red-500 text-sm mt-1">
                             {% for error in form.order.errors %}
@@ -44,12 +119,164 @@
                         </div>
                     {% endif %}
                 </div>
-            </div>
 
-            <div class="mt-6">
-                <button type="submit" class="action-button btn-create">Save</button>
-            </div>
-        </form>
+                <!-- Submission Button -->
+                <div class="mt-8 border-t pt-6">
+                    <button type="submit" class="action-button btn-create w-full sm:w-auto">Save Featured Motorcycle</button>
+                    <a href="{% url 'inventory:featured_motorcycles' %}" class="ml-4 text-sm text-gray-600 hover:text-gray-800">Cancel</a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    // --- DOM Elements ---
+    const dom = {
+        form: document.getElementById('featuredMotorcycleForm'),
+        motorcycleInput: document.getElementById('id_motorcycle'),
+        categoryInput: document.getElementById('id_category'),
+        searchInput: document.getElementById('motorcycleSearch'),
+        resultsContainer: document.getElementById('motorcycleSearchResults'),
+        selectedDisplay: document.getElementById('selectedMotorcycleDisplay'),
+    };
+
+    // --- State & Config ---
+    const config = {
+        motorcycleCondition: '{{ motorcycle_condition }}',
+        searchUrl: '{{ ajax_search_motorcycles_url }}',
+        getDetailsUrl: '{{ ajax_get_motorcycle_details_url }}',
+        initialMotorcycleId: '{{ selected_motorcycle.pk|default:"" }}'
+    };
+    
+    let searchTimeout;
+
+    // --- Functions ---
+
+    /**
+     * Performs the AJAX search for motorcycles.
+     */
+    function performSearch() {
+        const query = dom.searchInput.value.trim();
+        dom.resultsContainer.innerHTML = '';
+
+        if (query.length < 2) return;
+
+        const url = `${config.searchUrl}?query=${encodeURIComponent(query)}&condition=${config.motorcycleCondition}`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const ul = document.createElement('ul');
+                if (data.motorcycles && data.motorcycles.length > 0) {
+                    data.motorcycles.forEach(mc => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<strong>${mc.title}</strong> <br><small class="text-gray-500">Stock: ${mc.stock_number || 'N/A'} | Rego: ${mc.rego || 'N/A'}</small>`;
+                        li.dataset.motorcycleId = mc.id;
+                        li.addEventListener('click', () => selectMotorcycle(mc.id, mc));
+                        ul.appendChild(li);
+                    });
+                } else {
+                    const li = document.createElement('li');
+                    li.textContent = 'No motorcycles found.';
+                    ul.appendChild(li);
+                }
+                dom.resultsContainer.appendChild(ul);
+            })
+            .catch(error => console.error('Error searching motorcycles:', error));
+    }
+
+    /**
+     * Handles the selection of a motorcycle from the search results.
+     * @param {string} motorcycleId - The ID of the selected motorcycle.
+     * @param {object} motorcycleData - The data object for the motorcycle (optional).
+     */
+    function selectMotorcycle(motorcycleId, motorcycleData = null) {
+        dom.motorcycleInput.value = motorcycleId;
+        dom.resultsContainer.innerHTML = '';
+        dom.searchInput.value = '';
+        dom.searchInput.style.display = 'none';
+
+        if (motorcycleData) {
+            updateSelectedDisplay(motorcycleData);
+        } else {
+            // If data isn't passed, fetch it (for initial load)
+            fetch(`${config.getDetailsUrl}${motorcycleId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.motorcycle_details) {
+                        updateSelectedDisplay(data.motorcycle_details);
+                    }
+                })
+                .catch(error => console.error('Error fetching motorcycle details:', error));
+        }
+    }
+
+    /**
+     * Updates the display area with the details of the selected motorcycle.
+     * @param {object} motorcycleData - The motorcycle data object.
+     */
+    function updateSelectedDisplay(motorcycleData) {
+        dom.selectedDisplay.innerHTML = `
+            <div class="flex justify-between items-center">
+                <div>
+                    <strong class="block text-gray-700">Selected Motorcycle:</strong>
+                    <span class="text-base font-medium">${motorcycleData.title}</span><br>
+                    <small class="text-gray-500">Stock: ${motorcycleData.stock_number || 'N/A'}</small>
+                </div>
+                <button type="button" class="bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-2 rounded-md text-sm" id="clearMotorcycleSelection">Change</button>
+            </div>
+        `;
+        dom.selectedDisplay.style.display = 'block';
+        document.getElementById('clearMotorcycleSelection').addEventListener('click', clearSelection);
+    }
+
+    /**
+     * Clears the current motorcycle selection and resets the UI.
+     */
+    function clearSelection() {
+        dom.motorcycleInput.value = '';
+        dom.selectedDisplay.style.display = 'none';
+        dom.selectedDisplay.innerHTML = '';
+        dom.searchInput.style.display = 'block';
+        dom.searchInput.focus();
+    }
+
+    /**
+     * Initializes the form on page load.
+     */
+    function initializeForm() {
+        // Set the hidden category field value
+        if (dom.categoryInput) {
+            dom.categoryInput.value = config.motorcycleCondition;
+        }
+
+        // If we are editing an existing entry, load its data
+        if (config.initialMotorcycleId) {
+            selectMotorcycle(config.initialMotorcycleId);
+        }
+    }
+
+    // --- Event Listeners ---
+    dom.searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(performSearch, 300);
+    });
+
+    // Hide search results if clicking outside
+    document.addEventListener('click', function(event) {
+        if (!dom.searchInput.contains(event.target)) {
+            dom.resultsContainer.innerHTML = '';
+        }
+    });
+
+    // --- Initial Load ---
+    initializeForm();
+});
+</script>
 {% endblock %}
