@@ -2,36 +2,41 @@ from django import forms
 from service.models import ServiceType
 from django.core.exceptions import ValidationError
 
+
 class AdminServiceTypeForm(forms.ModelForm):
     class Meta:
         model = ServiceType
         fields = [
-            'name',
-            'description',
-            'estimated_duration',
-            'base_price',
-            'is_active',
-            'image',
+            "name",
+            "description",
+            "estimated_duration",
+            "base_price",
+            "is_active",
+            "image",
         ]
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'estimated_duration': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '(e.g. 1)'}),
-            'base_price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}),
-            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'image': forms.FileInput(attrs={'class': 'form-control-file'}),
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "estimated_duration": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "(e.g. 1)"}
+            ),
+            "base_price": forms.NumberInput(
+                attrs={"class": "form-control", "step": "0.01", "min": "0"}
+            ),
+            "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "image": forms.FileInput(attrs={"class": "form-control-file"}),
         }
         labels = {
-            'name': 'Service Name',
-            'description': 'Service Description',
-            'estimated_duration': 'Estimated Duration',
-            'base_price': 'Base Price',
-            'is_active': 'Is Active?',
-            'image': 'Service Icon/Image',
+            "name": "Service Name",
+            "description": "Service Description",
+            "estimated_duration": "Estimated Duration",
+            "base_price": "Base Price",
+            "is_active": "Is Active?",
+            "image": "Service Icon/Image",
         }
 
     def clean_estimated_duration(self):
-        estimated_duration = self.cleaned_data.get('estimated_duration')
+        estimated_duration = self.cleaned_data.get("estimated_duration")
         if estimated_duration:
             try:
                 duration_value = float(estimated_duration)
@@ -42,7 +47,7 @@ class AdminServiceTypeForm(forms.ModelForm):
         return estimated_duration
 
     def clean_base_price(self):
-        base_price = self.cleaned_data.get('base_price')
+        base_price = self.cleaned_data.get("base_price")
         if base_price is not None:
             if base_price < 0:
                 raise ValidationError("Base price cannot be negative.")

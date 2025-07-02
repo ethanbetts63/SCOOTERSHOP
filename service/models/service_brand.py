@@ -1,13 +1,17 @@
 from django.db import models
 
-                                        
+
 class ServiceBrand(models.Model):
-    name = models.CharField(max_length=100, unique=True, help_text="Name of the service brand (e.g., 'Yamaha', 'Vespa').")
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+        help_text="Name of the service brand (e.g., 'Yamaha', 'Vespa').",
+    )
     image = models.ImageField(
-        upload_to='brands/',
+        upload_to="brands/",
         null=True,
         blank=True,
-        help_text="Optional image for this brand."
+        help_text="Optional image for this brand.",
     )
     last_updated = models.DateTimeField(auto_now=True)
 
@@ -17,4 +21,4 @@ class ServiceBrand(models.Model):
     class Meta:
         verbose_name = "Service Brand"
         verbose_name_plural = "Service Brands"
-        ordering = ['name']
+        ordering = ["name"]

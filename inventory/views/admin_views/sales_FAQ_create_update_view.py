@@ -1,5 +1,3 @@
-                                                                          
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.urls import reverse
@@ -8,13 +6,14 @@ from inventory.mixins import AdminRequiredMixin
 from inventory.forms import AdminSalesFAQForm
 from inventory.models import SalesFAQ
 
+
 class SalesFAQCreateUpdateView(AdminRequiredMixin, View):
-    
-    template_name = 'inventory/admin_sales_faq_create_update.html'
+
+    template_name = "inventory/admin_sales_faq_create_update.html"
     form_class = AdminSalesFAQForm
 
     def get(self, request, pk=None, *args, **kwargs):
-        
+
         if pk:
             instance = get_object_or_404(SalesFAQ, pk=pk)
             form = self.form_class(instance=instance)
@@ -23,14 +22,14 @@ class SalesFAQCreateUpdateView(AdminRequiredMixin, View):
             form = self.form_class()
 
         context = {
-            'form': form,
-            'is_edit_mode': bool(pk),
-            'page_title': "Edit Sales FAQ" if pk else "Create Sales FAQ"
+            "form": form,
+            "is_edit_mode": bool(pk),
+            "page_title": "Edit Sales FAQ" if pk else "Create Sales FAQ",
         }
         return render(request, self.template_name, context)
 
     def post(self, request, pk=None, *args, **kwargs):
-        
+
         if pk:
             instance = get_object_or_404(SalesFAQ, pk=pk)
             form = self.form_class(request.POST, instance=instance)
@@ -41,16 +40,19 @@ class SalesFAQCreateUpdateView(AdminRequiredMixin, View):
         if form.is_valid():
             faq = form.save()
             if pk:
-                messages.success(request, f"Sales FAQ '{faq.question[:50]}...' updated successfully.")
+                messages.success(
+                    request, f"Sales FAQ '{faq.question[:50]}...' updated successfully."
+                )
             else:
-                messages.success(request, f"Sales FAQ '{faq.question[:50]}...' created successfully.")
-            return redirect(reverse('inventory:sales_faq_management'))
+                messages.success(
+                    request, f"Sales FAQ '{faq.question[:50]}...' created successfully."
+                )
+            return redirect(reverse("inventory:sales_faq_management"))
         else:
             messages.error(request, "Please correct the errors below.")
             context = {
-                'form': form,
-                'is_edit_mode': bool(pk),
-                'page_title': "Edit Sales FAQ" if pk else "Create Sales FAQ"
+                "form": form,
+                "is_edit_mode": bool(pk),
+                "page_title": "Edit Sales FAQ" if pk else "Create Sales FAQ",
             }
             return render(request, self.template_name, context)
-

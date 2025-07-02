@@ -1,5 +1,3 @@
-                                             
-
 import datetime
 import django.db.models.deletion
 import uuid
@@ -573,7 +571,6 @@ class Migration(migrations.Migration):
                             ("new", "New"),
                             ("used", "Used"),
                             ("demo", "Demo"),
-                            
                         ],
                         max_length=20,
                     ),
@@ -585,7 +582,6 @@ class Migration(migrations.Migration):
                             ("for_sale", "For Sale"),
                             ("sold", "Sold"),
                             ("reserved", "Reserved"),
-                            
                             ("unavailable", "Unavailable"),
                             ("reserved", "Reserved"),
                         ],
@@ -629,7 +625,6 @@ class Migration(migrations.Migration):
                     models.FileField(blank=True, null=True, upload_to="motorcycles/"),
                 ),
                 ("date_posted", models.DateTimeField(auto_now_add=True)),
-                
                 (
                     "rego",
                     models.CharField(
@@ -649,8 +644,6 @@ class Migration(migrations.Migration):
                     "stock_number",
                     models.CharField(blank=True, max_length=50, null=True, unique=True),
                 ),
-                
-                
                 (
                     "conditions",
                     models.ManyToManyField(

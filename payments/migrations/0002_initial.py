@@ -1,5 +1,3 @@
-                                             
-
 import django.db.models.deletion
 from django.db import migrations, models
 
@@ -9,7 +7,6 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        
         ("inventory", "0002_initial"),
         ("payments", "0001_initial"),
         ("service", "0001_initial"),
@@ -40,7 +37,6 @@ class Migration(migrations.Migration):
                 to="service.serviceprofile",
             ),
         ),
-        
         migrations.AddField(
             model_name="payment",
             name="temp_sales_booking",
@@ -65,8 +61,6 @@ class Migration(migrations.Migration):
                 to="service.tempservicebooking",
             ),
         ),
-        
-        
         migrations.AddField(
             model_name="refundrequest",
             name="payment",

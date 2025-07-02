@@ -15,12 +15,14 @@ def get_service_date_availability_ajax(request):
         disabled_dates = json.loads(disabled_dates_json)
 
         response_data = {
-            'min_date': min_date.strftime('%Y-%m-%d'),
-            'disabled_dates': disabled_dates,
-            'warnings': []
+            "min_date": min_date.strftime("%Y-%m-%d"),
+            "disabled_dates": disabled_dates,
+            "warnings": [],
         }
 
         return JsonResponse(response_data)
 
     except Exception as e:
-        return JsonResponse({'error': 'Could not retrieve service date availability.'}, status=500)
+        return JsonResponse(
+            {"error": "Could not retrieve service date availability."}, status=500
+        )

@@ -2,13 +2,16 @@ from django.test import TestCase
 from unittest.mock import patch, MagicMock
 import datetime
 
-from service.utils.calculate_estimated_pickup_date import calculate_estimated_pickup_date
+from service.utils.calculate_estimated_pickup_date import (
+    calculate_estimated_pickup_date,
+)
 
 from service.tests.test_helpers.model_factories import (
     TempServiceBookingFactory,
     ServiceBookingFactory,
     ServiceTypeFactory,
 )
+
 
 class CalculateEstimatedPickupDateTest(TestCase):
 
@@ -21,11 +24,10 @@ class CalculateEstimatedPickupDateTest(TestCase):
 
     def test_basic_calculation_temp_service_booking(self):
         temp_booking = TempServiceBookingFactory(
-            service_date=self.fixed_service_date,
-            service_type=self.service_type_2_days
+            service_date=self.fixed_service_date, service_type=self.service_type_2_days
         )
 
-        with patch.object(temp_booking, 'save') as mock_save:
+        with patch.object(temp_booking, "save") as mock_save:
             calculated_date = calculate_estimated_pickup_date(temp_booking)
 
             expected_date = datetime.date(2025, 6, 17)
@@ -34,15 +36,14 @@ class CalculateEstimatedPickupDateTest(TestCase):
 
             self.assertEqual(temp_booking.estimated_pickup_date, expected_date)
 
-            mock_save.assert_called_once_with(update_fields=['estimated_pickup_date'])
+            mock_save.assert_called_once_with(update_fields=["estimated_pickup_date"])
 
     def test_basic_calculation_service_booking(self):
         service_booking = ServiceBookingFactory(
-            service_date=self.fixed_service_date,
-            service_type=self.service_type_5_days
+            service_date=self.fixed_service_date, service_type=self.service_type_5_days
         )
 
-        with patch.object(service_booking, 'save') as mock_save:
+        with patch.object(service_booking, "save") as mock_save:
             calculated_date = calculate_estimated_pickup_date(service_booking)
 
             expected_date = datetime.date(2025, 6, 20)
@@ -51,22 +52,21 @@ class CalculateEstimatedPickupDateTest(TestCase):
 
             self.assertEqual(service_booking.estimated_pickup_date, expected_date)
 
-            mock_save.assert_called_once_with(update_fields=['estimated_pickup_date'])
+            mock_save.assert_called_once_with(update_fields=["estimated_pickup_date"])
 
     def test_zero_estimated_duration(self):
         temp_booking = TempServiceBookingFactory(
-            service_date=self.fixed_service_date,
-            service_type=self.service_type_0_days
+            service_date=self.fixed_service_date, service_type=self.service_type_0_days
         )
 
-        with patch.object(temp_booking, 'save') as mock_save:
+        with patch.object(temp_booking, "save") as mock_save:
             calculated_date = calculate_estimated_pickup_date(temp_booking)
 
             expected_date = self.fixed_service_date
 
             self.assertEqual(calculated_date, expected_date)
             self.assertEqual(temp_booking.estimated_pickup_date, expected_date)
-            mock_save.assert_called_once_with(update_fields=['estimated_pickup_date'])
+            mock_save.assert_called_once_with(update_fields=["estimated_pickup_date"])
 
     def test_no_service_type_attribute(self):
         mock_booking_instance = MagicMock()
@@ -74,7 +74,7 @@ class CalculateEstimatedPickupDateTest(TestCase):
         mock_booking_instance.service_date = self.fixed_service_date
         mock_booking_instance.save = MagicMock()
 
-        with patch('builtins.print') as mock_print:
+        with patch("builtins.print") as mock_print:
             calculated_date = calculate_estimated_pickup_date(mock_booking_instance)
 
             self.assertIsNone(calculated_date)
@@ -86,7 +86,7 @@ class CalculateEstimatedPickupDateTest(TestCase):
         mock_booking_instance.service_date = self.fixed_service_date
         mock_booking_instance.save = MagicMock()
 
-        with patch('builtins.print') as mock_print:
+        with patch("builtins.print") as mock_print:
             calculated_date = calculate_estimated_pickup_date(mock_booking_instance)
 
             self.assertIsNone(calculated_date)
@@ -98,7 +98,7 @@ class CalculateEstimatedPickupDateTest(TestCase):
         del mock_booking_instance.service_date
         mock_booking_instance.save = MagicMock()
 
-        with patch('builtins.print') as mock_print:
+        with patch("builtins.print") as mock_print:
             calculated_date = calculate_estimated_pickup_date(mock_booking_instance)
 
             self.assertIsNone(calculated_date)
@@ -110,7 +110,7 @@ class CalculateEstimatedPickupDateTest(TestCase):
         mock_booking_instance.service_date = None
         mock_booking_instance.save = MagicMock()
 
-        with patch('builtins.print') as mock_print:
+        with patch("builtins.print") as mock_print:
             calculated_date = calculate_estimated_pickup_date(mock_booking_instance)
 
             self.assertIsNone(calculated_date)
@@ -119,8 +119,7 @@ class CalculateEstimatedPickupDateTest(TestCase):
     def test_factory_post_generation_for_temp_service_booking(self):
         service_type_3_days = ServiceTypeFactory(estimated_duration=3)
         temp_booking = TempServiceBookingFactory(
-            service_date=self.fixed_service_date,
-            service_type=service_type_3_days
+            service_date=self.fixed_service_date, service_type=service_type_3_days
         )
 
         expected_date = datetime.date(2025, 6, 18)
@@ -130,8 +129,7 @@ class CalculateEstimatedPickupDateTest(TestCase):
     def test_factory_post_generation_for_service_booking(self):
         service_type_1_day = ServiceTypeFactory(estimated_duration=1)
         service_booking = ServiceBookingFactory(
-            service_date=self.fixed_service_date,
-            service_type=service_type_1_day
+            service_date=self.fixed_service_date, service_type=service_type_1_day
         )
 
         expected_date = datetime.date(2025, 6, 16)

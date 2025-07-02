@@ -1,14 +1,19 @@
 from django import forms
 from service.models import BlockedServiceDate
 
+
 class BlockedServiceDateForm(forms.ModelForm):
     class Meta:
         model = BlockedServiceDate
-        fields = ['start_date', 'end_date', 'description']
+        fields = ["start_date", "end_date", "description"]
         widgets = {
-            'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'description': forms.TextInput(attrs={'class': 'form-control'}),
+            "start_date": forms.DateInput(
+                attrs={"class": "form-control", "type": "date"}
+            ),
+            "end_date": forms.DateInput(
+                attrs={"class": "form-control", "type": "date"}
+            ),
+            "description": forms.TextInput(attrs={"class": "form-control"}),
         }
 
     def clean(self):

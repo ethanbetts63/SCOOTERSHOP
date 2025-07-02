@@ -1,5 +1,3 @@
-                                             
-
 from django.db import migrations, models
 
 
@@ -18,7 +16,6 @@ class Migration(migrations.Migration):
                     ("for_sale", "For Sale"),
                     ("sold", "Sold"),
                     ("reserved", "Reserved"),
-                    
                     ("unavailable", "Unavailable"),
                 ],
                 default="for_sale",

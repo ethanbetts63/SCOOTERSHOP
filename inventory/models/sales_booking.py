@@ -3,41 +3,42 @@ import uuid
 from decimal import Decimal
 
 PAYMENT_STATUS_CHOICES = [
-    ('unpaid', 'Unpaid'),
-    ('deposit_paid', 'Deposit Paid'),
-    ('refunded', 'Refunded'),
+    ("unpaid", "Unpaid"),
+    ("deposit_paid", "Deposit Paid"),
+    ("refunded", "Refunded"),
 ]
 BOOKING_STATUS_CHOICES = [
-    ('pending_confirmation', 'Pending Confirmation'),
-    ('confirmed', 'Confirmed'),
-    ('cancelled', 'Cancelled'),
-    ('declined', 'Declined by Admin'),
-    ('completed', 'Completed'),
-    ('no_show', 'No Show'),
-    ('declined_refunded', 'Declined and Refunded'),
-    ('enquired', 'Enquired'),
+    ("pending_confirmation", "Pending Confirmation"),
+    ("confirmed", "Confirmed"),
+    ("cancelled", "Cancelled"),
+    ("declined", "Declined by Admin"),
+    ("completed", "Completed"),
+    ("no_show", "No Show"),
+    ("declined_refunded", "Declined and Refunded"),
+    ("enquired", "Enquired"),
 ]
 
 
 class SalesBooking(models.Model):
     motorcycle = models.ForeignKey(
-        'inventory.Motorcycle',
+        "inventory.Motorcycle",
         on_delete=models.PROTECT,
-        related_name='sales_bookings',
-        help_text="The motorcycle associated with this sales booking."
+        related_name="sales_bookings",
+        help_text="The motorcycle associated with this sales booking.",
     )
     sales_profile = models.ForeignKey(
-        'inventory.SalesProfile',
+        "inventory.SalesProfile",
         on_delete=models.PROTECT,
-        related_name='sales_bookings',
-        help_text="The customer's sales profile for this booking."
+        related_name="sales_bookings",
+        help_text="The customer's sales profile for this booking.",
     )
     payment = models.OneToOneField(
-        'payments.Payment',
+        "payments.Payment",
         on_delete=models.SET_NULL,
-        related_name='related_sales_booking',
-        null=True, blank=True,
-        help_text="Link to the associated payment record, if any (e.g., for deposit)."
+        related_name="related_sales_booking",
+        null=True,
+        blank=True,
+        help_text="Link to the associated payment record, if any (e.g., for deposit).",
     )
 
     sales_booking_reference = models.CharField(
@@ -45,35 +46,35 @@ class SalesBooking(models.Model):
         unique=True,
         blank=True,
         null=True,
-        help_text="A unique reference code for the sales booking."
+        help_text="A unique reference code for the sales booking.",
     )
     amount_paid = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        default=Decimal('0.00'),
-        help_text="The total amount paid for this booking (e.g., deposit or full payment)."
+        default=Decimal("0.00"),
+        help_text="The total amount paid for this booking (e.g., deposit or full payment).",
     )
     payment_status = models.CharField(
         max_length=20,
         choices=PAYMENT_STATUS_CHOICES,
-        default='unpaid',
-        help_text="Current payment status of the booking (e.g., unpaid, deposit_paid, paid)."
+        default="unpaid",
+        help_text="Current payment status of the booking (e.g., unpaid, deposit_paid, paid).",
     )
     currency = models.CharField(
         max_length=3,
-        default='AUD',
-        help_text="The three-letter ISO currency code for the booking (e.g., AUD)."
+        default="AUD",
+        help_text="The three-letter ISO currency code for the booking (e.g., AUD).",
     )
     stripe_payment_intent_id = models.CharField(
         max_length=100,
         unique=True,
         blank=True,
         null=True,
-        help_text="The ID of the Stripe Payment Intent associated with this booking, if applicable."
+        help_text="The ID of the Stripe Payment Intent associated with this booking, if applicable.",
     )
     request_viewing = models.BooleanField(
         default=False,
-        help_text="Indicates if the customer specifically requested a viewing/test drive in a deposit-less enquiry flow."
+        help_text="Indicates if the customer specifically requested a viewing/test drive in a deposit-less enquiry flow.",
     )
     appointment_date = models.DateField(
         help_text="Confirmed date for the test drive, appointment, or pickup.",
@@ -83,34 +84,34 @@ class SalesBooking(models.Model):
     appointment_time = models.TimeField(
         help_text="Confirmed time for the test drive, appointment, or pickup.",
         blank=True,
-        null=True
+        null=True,
     )
 
     booking_status = models.CharField(
         max_length=30,
         choices=BOOKING_STATUS_CHOICES,
-        default='pending_confirmation',
-        help_text="The current status of the sales booking (e.g., confirmed, reserved, enquired, completed)."
+        default="pending_confirmation",
+        help_text="The current status of the sales booking (e.g., confirmed, reserved, enquired, completed).",
     )
     customer_notes = models.TextField(
         blank=True,
         null=True,
-        help_text="Any additional notes or messages provided by the customer."
+        help_text="Any additional notes or messages provided by the customer.",
     )
 
     created_at = models.DateTimeField(
         auto_now_add=True,
-        help_text="The date and time when this sales booking was created."
+        help_text="The date and time when this sales booking was created.",
     )
     updated_at = models.DateTimeField(
         auto_now=True,
-        help_text="The date and time when this sales booking was last updated."
+        help_text="The date and time when this sales booking was last updated.",
     )
 
     class Meta:
         verbose_name = "Sales Booking"
         verbose_name_plural = "Sales Bookings"
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
 
     def save(self, *args, **kwargs):
         if not self.sales_booking_reference:

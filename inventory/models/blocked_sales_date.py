@@ -1,7 +1,6 @@
-                                    
-
 from django.db import models
 from django.core.exceptions import ValidationError
+
 
 class BlockedSalesDate(models.Model):
     start_date = models.DateField(
@@ -14,7 +13,7 @@ class BlockedSalesDate(models.Model):
         max_length=255,
         blank=True,
         null=True,
-        help_text="Optional description for the blocked period (e.g., 'Public Holiday', 'Staff Training')."
+        help_text="Optional description for the blocked period (e.g., 'Public Holiday', 'Staff Training').",
     )
 
     def __str__(self):
@@ -29,12 +28,11 @@ class BlockedSalesDate(models.Model):
     def clean(self):
         super().clean()
         if self.start_date and self.end_date and self.end_date < self.start_date:
-            raise ValidationError({
-                'end_date': "End date cannot be before the start date."
-            })
+            raise ValidationError(
+                {"end_date": "End date cannot be before the start date."}
+            )
 
     class Meta:
-        ordering = ['start_date']                                          
+        ordering = ["start_date"]
         verbose_name = "Blocked Sales Date"
         verbose_name_plural = "Blocked Sales Dates"
-

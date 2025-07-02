@@ -1,5 +1,3 @@
-                                                                                   
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.urls import reverse
@@ -9,8 +7,9 @@ from inventory.mixins import AdminRequiredMixin
 from inventory.forms import AdminBlockedSalesDateForm
 from inventory.models import BlockedSalesDate
 
+
 class BlockedSalesDateCreateUpdateView(AdminRequiredMixin, View):
-    template_name = 'inventory/admin_blocked_sales_date_create_update.html'
+    template_name = "inventory/admin_blocked_sales_date_create_update.html"
     form_class = AdminBlockedSalesDateForm
 
     def get(self, request, pk=None, *args, **kwargs):
@@ -22,10 +21,12 @@ class BlockedSalesDateCreateUpdateView(AdminRequiredMixin, View):
             form = self.form_class()
 
         context = {
-            'form': form,
-            'is_edit_mode': bool(pk),
-            'current_blocked_date': instance,
-            'page_title': "Edit Blocked Sales Date" if pk else "Create New Blocked Sales Date"
+            "form": form,
+            "is_edit_mode": bool(pk),
+            "current_blocked_date": instance,
+            "page_title": (
+                "Edit Blocked Sales Date" if pk else "Create New Blocked Sales Date"
+            ),
         }
         return render(request, self.template_name, context)
 
@@ -40,16 +41,24 @@ class BlockedSalesDateCreateUpdateView(AdminRequiredMixin, View):
         if form.is_valid():
             blocked_date = form.save()
             if pk:
-                messages.success(request, f"Blocked sales date '{blocked_date}' updated successfully.")
+                messages.success(
+                    request,
+                    f"Blocked sales date '{blocked_date}' updated successfully.",
+                )
             else:
-                messages.success(request, f"Blocked sales date '{blocked_date}' created successfully.")
-            return redirect(reverse('inventory:blocked_sales_date_management'))
+                messages.success(
+                    request,
+                    f"Blocked sales date '{blocked_date}' created successfully.",
+                )
+            return redirect(reverse("inventory:blocked_sales_date_management"))
         else:
             messages.error(request, "Please correct the errors below.")
             context = {
-                'form': form,
-                'is_edit_mode': bool(pk),
-                'current_blocked_date': instance,
-                'page_title': "Edit Blocked Sales Date" if pk else "Create New Blocked Sales Date"
+                "form": form,
+                "is_edit_mode": bool(pk),
+                "current_blocked_date": instance,
+                "page_title": (
+                    "Edit Blocked Sales Date" if pk else "Create New Blocked Sales Date"
+                ),
             }
             return render(request, self.template_name, context)

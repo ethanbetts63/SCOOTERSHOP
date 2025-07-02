@@ -3,63 +3,62 @@ from django.urls import reverse
 from django.http import JsonResponse
 import json
 
-                                          
+
 from ..test_helpers.model_factories import ServiceProfileFactory, UserFactory
 
-                                       
+
 from service.ajax.ajax_search_service_profiles import search_customer_profiles_ajax
 
+
 class AjaxSearchCustomerProfilesTest(TestCase):
-    
 
     def setUp(self):
-        
+
         self.factory = RequestFactory()
 
-                                                                     
-        self.user1 = UserFactory(username='johndoe', email='john.doe@example.com')
+        self.user1 = UserFactory(username="johndoe", email="john.doe@example.com")
         self.profile1 = ServiceProfileFactory(
             user=self.user1,
-            name='John Doe',
-            email='john.doe@example.com',
-            phone_number='0412345678',
-            city='Sydney',
-            post_code='2000'
+            name="John Doe",
+            email="john.doe@example.com",
+            phone_number="0412345678",
+            city="Sydney",
+            post_code="2000",
         )
 
-        self.user2 = UserFactory(username='janedoe', email='jane.doe@test.com')
+        self.user2 = UserFactory(username="janedoe", email="jane.doe@test.com")
         self.profile2 = ServiceProfileFactory(
             user=self.user2,
-            name='Jane Smith',
-            email='jane.smith@example.com',
-            phone_number='0498765432',
-            city='Melbourne',
-            address_line_1='123 Main St'
+            name="Jane Smith",
+            email="jane.smith@example.com",
+            phone_number="0498765432",
+            city="Melbourne",
+            address_line_1="123 Main St",
         )
 
-        self.user3 = UserFactory(username='bobjohnson', email='bob.j@other.com')                                   
+        self.user3 = UserFactory(username="bobjohnson", email="bob.j@other.com")
         self.profile3 = ServiceProfileFactory(
             user=self.user3,
-            name='Bob Johnson',                                                               
-            email='bob.j@other.com',
-            phone_number='0455551111',
-            city='Sydney',
-            country='Australia'
+            name="Bob Johnson",
+            email="bob.j@other.com",
+            phone_number="0455551111",
+            city="Sydney",
+            country="Australia",
         )
 
-        self.user4 = UserFactory(username='alice', email='alice@unique.com')
-        self.profile4 = ServiceProfileFactory(                                           
+        self.user4 = UserFactory(username="alice", email="alice@unique.com")
+        self.profile4 = ServiceProfileFactory(
             user=self.user4,
-            name='Alice Wonderland',
-            email='alice@unique.com',
-            phone_number='0400000000',
-            city='Brisbane'
+            name="Alice Wonderland",
+            email="alice@unique.com",
+            phone_number="0400000000",
+            city="Brisbane",
         )
 
     def test_search_customer_profiles_by_name(self):
-        
-        search_term = "John Doe"                                          
-        url = reverse('service:admin_api_search_customer') + f'?query={search_term}'
+
+        search_term = "John Doe"
+        url = reverse("service:admin_api_search_customer") + f"?query={search_term}"
         request = self.factory.get(url)
         response = search_customer_profiles_ajax(request)
 
@@ -67,16 +66,18 @@ class AjaxSearchCustomerProfilesTest(TestCase):
         self.assertIsInstance(response, JsonResponse)
         content = json.loads(response.content)
 
-        self.assertIn('profiles', content)
-        self.assertEqual(len(content['profiles']), 1)
-        self.assertEqual(content['profiles'][0]['name'], self.profile1.name)
-        self.assertEqual(content['profiles'][0]['email'], self.profile1.email)
-        self.assertEqual(content['profiles'][0]['phone_number'], self.profile1.phone_number)
+        self.assertIn("profiles", content)
+        self.assertEqual(len(content["profiles"]), 1)
+        self.assertEqual(content["profiles"][0]["name"], self.profile1.name)
+        self.assertEqual(content["profiles"][0]["email"], self.profile1.email)
+        self.assertEqual(
+            content["profiles"][0]["phone_number"], self.profile1.phone_number
+        )
 
     def test_search_customer_profiles_by_email(self):
-        
-        search_term = "jane.doe@test.com"                                    
-        url = reverse('service:admin_api_search_customer') + f'?query={search_term}'
+
+        search_term = "jane.doe@test.com"
+        url = reverse("service:admin_api_search_customer") + f"?query={search_term}"
         request = self.factory.get(url)
         response = search_customer_profiles_ajax(request)
 
@@ -84,14 +85,14 @@ class AjaxSearchCustomerProfilesTest(TestCase):
         self.assertIsInstance(response, JsonResponse)
         content = json.loads(response.content)
 
-        self.assertIn('profiles', content)
-        self.assertEqual(len(content['profiles']), 1)
-        self.assertEqual(content['profiles'][0]['name'], self.profile2.name)
+        self.assertIn("profiles", content)
+        self.assertEqual(len(content["profiles"]), 1)
+        self.assertEqual(content["profiles"][0]["name"], self.profile2.name)
 
     def test_search_customer_profiles_by_phone_number(self):
-        
+
         search_term = "045555"
-        url = reverse('service:admin_api_search_customer') + f'?query={search_term}'
+        url = reverse("service:admin_api_search_customer") + f"?query={search_term}"
         request = self.factory.get(url)
         response = search_customer_profiles_ajax(request)
 
@@ -99,14 +100,14 @@ class AjaxSearchCustomerProfilesTest(TestCase):
         self.assertIsInstance(response, JsonResponse)
         content = json.loads(response.content)
 
-        self.assertIn('profiles', content)
-        self.assertEqual(len(content['profiles']), 1)
-        self.assertEqual(content['profiles'][0]['name'], self.profile3.name)
+        self.assertIn("profiles", content)
+        self.assertEqual(len(content["profiles"]), 1)
+        self.assertEqual(content["profiles"][0]["name"], self.profile3.name)
 
     def test_search_customer_profiles_multiple_matches_and_ordering(self):
-        
-        search_term = "Sydney"                                           
-        url = reverse('service:admin_api_search_customer') + f'?query={search_term}'
+
+        search_term = "Sydney"
+        url = reverse("service:admin_api_search_customer") + f"?query={search_term}"
         request = self.factory.get(url)
         response = search_customer_profiles_ajax(request)
 
@@ -114,17 +115,16 @@ class AjaxSearchCustomerProfilesTest(TestCase):
         self.assertIsInstance(response, JsonResponse)
         content = json.loads(response.content)
 
-        self.assertIn('profiles', content)
-        self.assertEqual(len(content['profiles']), 2)
+        self.assertIn("profiles", content)
+        self.assertEqual(len(content["profiles"]), 2)
 
-                                                                           
-        self.assertEqual(content['profiles'][0]['name'], self.profile3.name)              
-        self.assertEqual(content['profiles'][1]['name'], self.profile1.name)           
+        self.assertEqual(content["profiles"][0]["name"], self.profile3.name)
+        self.assertEqual(content["profiles"][1]["name"], self.profile1.name)
 
     def test_search_customer_profiles_no_matches(self):
-        
+
         search_term = "NonExistentCustomer"
-        url = reverse('service:admin_api_search_customer') + f'?query={search_term}'
+        url = reverse("service:admin_api_search_customer") + f"?query={search_term}"
         request = self.factory.get(url)
         response = search_customer_profiles_ajax(request)
 
@@ -132,13 +132,13 @@ class AjaxSearchCustomerProfilesTest(TestCase):
         self.assertIsInstance(response, JsonResponse)
         content = json.loads(response.content)
 
-        self.assertIn('profiles', content)
-        self.assertEqual(len(content['profiles']), 0)
-        self.assertEqual(content['profiles'], [])
+        self.assertIn("profiles", content)
+        self.assertEqual(len(content["profiles"]), 0)
+        self.assertEqual(content["profiles"], [])
 
     def test_search_customer_profiles_empty_query(self):
-        
-        url = reverse('service:admin_api_search_customer') + '?query='
+
+        url = reverse("service:admin_api_search_customer") + "?query="
         request = self.factory.get(url)
         response = search_customer_profiles_ajax(request)
 
@@ -146,31 +146,29 @@ class AjaxSearchCustomerProfilesTest(TestCase):
         self.assertIsInstance(response, JsonResponse)
         content = json.loads(response.content)
 
-        self.assertIn('profiles', content)
-        self.assertEqual(len(content['profiles']), 0)
-        self.assertEqual(content['profiles'], [])
+        self.assertIn("profiles", content)
+        self.assertEqual(len(content["profiles"]), 0)
+        self.assertEqual(content["profiles"], [])
 
     def test_search_customer_profiles_no_query_parameter(self):
-        
-        url = reverse('service:admin_api_search_customer')
+
+        url = reverse("service:admin_api_search_customer")
         request = self.factory.get(url)
         response = search_customer_profiles_ajax(request)
 
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response, JsonResponse)
-        content = json.loads(response.content)                 
+        content = json.loads(response.content)
 
-        self.assertIn('profiles', content)
-        self.assertEqual(len(content['profiles']), 0)
-        self.assertEqual(content['profiles'], [])
+        self.assertIn("profiles", content)
+        self.assertEqual(len(content["profiles"]), 0)
+        self.assertEqual(content["profiles"], [])
 
     def test_only_get_requests_allowed(self):
-        
-        url = reverse('service:admin_api_search_customer')
-        request = self.factory.post(url)                      
+
+        url = reverse("service:admin_api_search_customer")
+        request = self.factory.post(url)
 
         response = search_customer_profiles_ajax(request)
 
-                                                                                    
         self.assertEqual(response.status_code, 405)
-

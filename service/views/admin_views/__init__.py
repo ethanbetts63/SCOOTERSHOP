@@ -1,4 +1,3 @@
-
 from .admin_service_profile_management import *
 from .admin_customer_motorcycle_management_view import *
 from .admin_create_update_customer_motorcycle import *

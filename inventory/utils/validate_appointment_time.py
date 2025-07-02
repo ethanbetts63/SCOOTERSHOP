@@ -1,9 +1,13 @@
-                                              
-
 from datetime import date, datetime, time, timedelta
 from django.utils import timezone
 
-def validate_appointment_time(appointment_date: date, appointment_time: time, inventory_settings, existing_booked_times: list):
+
+def validate_appointment_time(
+    appointment_date: date,
+    appointment_time: time,
+    inventory_settings,
+    existing_booked_times: list,
+):
     errors = []
 
     if not inventory_settings:
@@ -19,7 +23,10 @@ def validate_appointment_time(appointment_date: date, appointment_time: time, in
         )
 
     now_aware = timezone.now()
-    appointment_datetime_aware = timezone.make_aware(datetime.combine(appointment_date, appointment_time), timezone=timezone.get_current_timezone())
+    appointment_datetime_aware = timezone.make_aware(
+        datetime.combine(appointment_date, appointment_time),
+        timezone=timezone.get_current_timezone(),
+    )
     min_advance_hours = inventory_settings.min_advance_booking_hours
 
     earliest_allowed_datetime = now_aware + timedelta(hours=min_advance_hours)
@@ -28,14 +35,22 @@ def validate_appointment_time(appointment_date: date, appointment_time: time, in
             f"The selected time is too soon. Appointments require at least {min_advance_hours} hours notice from the current time."
         )
 
-                                                   
     for booked_time_obj in existing_booked_times:
-        booked_datetime_aware = timezone.make_aware(datetime.combine(appointment_date, booked_time_obj), timezone=timezone.get_current_timezone())
-        blocked_interval_start = booked_datetime_aware - timedelta(minutes=spacing_minutes)
-        blocked_interval_end = booked_datetime_aware + timedelta(minutes=spacing_minutes)
+        booked_datetime_aware = timezone.make_aware(
+            datetime.combine(appointment_date, booked_time_obj),
+            timezone=timezone.get_current_timezone(),
+        )
+        blocked_interval_start = booked_datetime_aware - timedelta(
+            minutes=spacing_minutes
+        )
+        blocked_interval_end = booked_datetime_aware + timedelta(
+            minutes=spacing_minutes
+        )
 
         if blocked_interval_start <= appointment_datetime_aware <= blocked_interval_end:
-            errors.append(f"The selected time ({appointment_time.strftime('%H:%M')}) overlaps with an existing appointment.")
-            break                                                              
+            errors.append(
+                f"The selected time ({appointment_time.strftime('%H:%M')}) overlaps with an existing appointment."
+            )
+            break
 
     return errors

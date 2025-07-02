@@ -3,40 +3,36 @@ from django.views import View
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-                                                      
+
 from service.forms import AdminServiceProfileForm
 from service.models import ServiceProfile
 
 
 class ServiceProfileCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, View):
-    
-    template_name = 'service/admin_service_profile_form.html'                             
+
+    template_name = "service/admin_service_profile_form.html"
     form_class = AdminServiceProfileForm
 
     def test_func(self):
-        
+
         return self.request.user.is_staff or self.request.user.is_superuser
 
     def get(self, request, pk=None, *args, **kwargs):
-        
+
         instance = None
         if pk:
-                                                                                      
+
             instance = get_object_or_404(ServiceProfile, pk=pk)
-            form = self.form_class(instance=instance)                        
+            form = self.form_class(instance=instance)
         else:
-                                                           
+
             form = self.form_class()
 
-        context = {
-            'form': form,
-            'is_edit_mode': bool(pk),                                     
-            'current_profile': instance                                                  
-        }
+        context = {"form": form, "is_edit_mode": bool(pk), "current_profile": instance}
         return render(request, self.template_name, context)
 
     def post(self, request, pk=None, *args, **kwargs):
-        
+
         instance = None
         if pk:
             instance = get_object_or_404(ServiceProfile, pk=pk)
@@ -47,16 +43,22 @@ class ServiceProfileCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, Vi
         if form.is_valid():
             service_profile = form.save()
             if pk:
-                messages.success(request, f"Service Profile for '{service_profile.name}' updated successfully.")
+                messages.success(
+                    request,
+                    f"Service Profile for '{service_profile.name}' updated successfully.",
+                )
             else:
-                messages.success(request, f"Service Profile for '{service_profile.name}' created successfully.")
-                                                                             
-            return redirect(reverse('service:admin_service_profiles'))
+                messages.success(
+                    request,
+                    f"Service Profile for '{service_profile.name}' created successfully.",
+                )
+
+            return redirect(reverse("service:admin_service_profiles"))
         else:
             messages.error(request, "Please correct the errors below.")
             context = {
-                'form': form,                                 
-                'is_edit_mode': bool(pk),
-                'current_profile': instance
+                "form": form,
+                "is_edit_mode": bool(pk),
+                "current_profile": instance,
             }
             return render(request, self.template_name, context)

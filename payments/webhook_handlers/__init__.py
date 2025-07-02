@@ -1,5 +1,3 @@
-                                       
-
 from .refund_handlers import (
     handle_booking_refunded,
     handle_booking_refund_updated,
@@ -12,15 +10,15 @@ from .sales_handlers import (
 )
 
 WEBHOOK_HANDLERS = {
-    'service_booking': {
-        'payment_intent.succeeded': handle_service_booking_succeeded,
-        'charge.refunded': handle_booking_refunded,
-        'charge.refund.updated': handle_booking_refund_updated,
-        'charge.succeeded': handle_service_booking_succeeded,
+    "service_booking": {
+        "payment_intent.succeeded": handle_service_booking_succeeded,
+        "charge.refunded": handle_booking_refunded,
+        "charge.refund.updated": handle_booking_refund_updated,
+        "charge.succeeded": handle_service_booking_succeeded,
     },
-    'sales_booking': { 
-        'payment_intent.succeeded': handle_sales_booking_succeeded,
-        'charge.refunded': handle_booking_refunded, 
-        'charge.refund.updated': handle_booking_refund_updated, 
+    "sales_booking": {
+        "payment_intent.succeeded": handle_sales_booking_succeeded,
+        "charge.refunded": handle_booking_refunded,
+        "charge.refund.updated": handle_booking_refund_updated,
     },
 }
