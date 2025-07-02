@@ -3,14 +3,11 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
 from django.db import transaction
-import logging
 import re
 from django.utils import timezone
 from .models import EmailLog
 from service.models import ServiceBooking, ServiceProfile
 from inventory.models import SalesBooking, SalesProfile
-
-logger = logging.getLogger(__name__)
 
 def send_templated_email(
     recipient_list,

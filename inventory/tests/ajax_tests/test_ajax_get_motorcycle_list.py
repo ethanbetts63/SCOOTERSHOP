@@ -58,6 +58,8 @@ class AjaxGetMotorcycleListTest(TestCase):
         cls.moto_yamaha_demo_2021 = create_and_set_date('Yamaha', 'MT-07', 2021, Decimal('9500.00'), 700, [cls.condition_demo.name])
         cls.moto_ducati_demo_2021 = create_and_set_date('Ducati', 'Monster 821', 2021, Decimal('11000.00'), 800, [cls.condition_demo.name])
         cls.moto_ktm_used_2022 = create_and_set_date('KTM', 'Duke 390', 2022, Decimal('6000.00'), 390, [cls.condition_used.name])
+        cls.moto_harley_new_2023 = create_and_set_date('Harley-Davidson', 'Street Glide', 2023, Decimal('25000.00'), 1800, [cls.condition_new.name])
+        cls.moto_bmw_used_2020 = create_and_set_date('BMW', 'R 1250 GS', 2020, Decimal('18000.00'), 1250, [cls.condition_used.name])
 
 
                                                                        
@@ -116,9 +118,9 @@ class AjaxGetMotorcycleListTest(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
 
-        self.assertEqual(len(data['motorcycles']), 3)
+        self.assertEqual(len(data['motorcycles']), 4)
         returned_brands = {m['brand'] for m in data['motorcycles']}
-        self.assertEqual(returned_brands, {'Honda', 'Yamaha', 'Suzuki'})
+        self.assertEqual(returned_brands, {'Honda', 'Yamaha', 'Suzuki', 'Harley-Davidson'})
         self.assertFalse(data['page_obj']['has_next'])                                           
 
     def test_filter_by_condition_slug_used(self):
@@ -321,7 +323,7 @@ class AjaxGetMotorcycleListTest(TestCase):
         response = self.client.get(reverse('inventory:ajax-get-motorcycle-list'), {'condition_slug': 'new'})
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        expected_unique_makes = sorted(list({'Honda', 'Yamaha', 'Suzuki'}))
+        expected_unique_makes = sorted(list({'Honda', 'Yamaha', 'Suzuki', 'Harley-Davidson'}))
         self.assertEqual(data['unique_makes_for_filter'], expected_unique_makes)
 
         response_used = self.client.get(reverse('inventory:ajax-get-motorcycle-list'), {'condition_slug': 'used'})

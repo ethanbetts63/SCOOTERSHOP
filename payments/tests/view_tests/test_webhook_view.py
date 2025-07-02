@@ -29,7 +29,6 @@ class StripeWebhookViewTest(TestCase):
         Payment.objects.all().delete()
         WebhookEvent.objects.all().delete()
         
-        self.driver_profile = DriverProfileFactory.create()
         self.motorcycle = MotorcycleFactory.create()
 
         self._original_webhook_handlers = WEBHOOK_HANDLERS.copy()

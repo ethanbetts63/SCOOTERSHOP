@@ -62,7 +62,7 @@ class GetUniqueMakesForFilterTest(TestCase):
         """
         Test that brands of 'used' and 'demo' motorcycles are returned.
         """
-        expected_makes = {'Honda', 'Kawasaki', 'Yamaha', 'Ducati'}                         
+        expected_makes = {'Honda', 'Kawasaki', 'Yamaha', 'Ducati', 'KTM'}                         
         makes = get_unique_makes_for_filter(condition_slug='used')
         self.assertEqual(makes, expected_makes)
 

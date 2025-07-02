@@ -125,7 +125,7 @@ class MotorcycleModelTest(TestCase):
                                                                              
         self.assertEqual(field.remote_field.related_name, 'motorcycles')
         self.assertTrue(field.blank)
-        self.assertEqual(field.help_text, "Select all applicable conditions (e.g., Used)")
+        self.assertEqual(field.help_text, "Select all applicable conditions (e.g., Used, New, Demo.)")
 
                                                
         motorcycle = MotorcycleFactory(conditions=['new', 'demo'])

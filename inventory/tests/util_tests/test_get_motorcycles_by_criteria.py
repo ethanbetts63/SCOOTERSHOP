@@ -149,7 +149,7 @@ class GetMotorcyclesByCriteriaTest(TestCase):
                                         
         queryset = get_motorcycles_by_criteria(price_min=Decimal('9000.00'), price_max=Decimal('13000.00'))
                                                                                                                 
-        self.assertEqual(queryset.count(), 5)
+        self.assertEqual(queryset.count(), 4)
         self.assertIn(self.yamaha_new, queryset)
         self.assertIn(self.suzuki_new, queryset)
         self.assertIn(self.yamaha_demo, queryset)

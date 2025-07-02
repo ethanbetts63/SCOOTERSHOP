@@ -133,7 +133,8 @@ class AdminRefundRequestFormTests(TestCase):
         Test that the form is invalid if multiple booking types are selected.
         """
         form_data = {
-            'service_booking': self.service_booking_paid.pk,                               
+            'service_booking': self.service_booking_paid.pk,
+            'sales_booking': self.sales_booking_deposit.pk,
             'reason': 'Test reason',
             'staff_notes': 'Test notes',
             'amount_to_refund': '100.00',
@@ -142,17 +143,6 @@ class AdminRefundRequestFormTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('__all__', form.errors)
         self.assertEqual(form.errors['__all__'], ['Please select only one type of booking (Service, or Sales).'])
-
-        form_data_2 = {
-            'sales_booking': self.sales_booking_deposit.pk,                             
-            'reason': 'Test reason',
-            'staff_notes': 'Test notes',
-            'amount_to_refund': '100.00',
-        }
-        form_2 = AdminRefundRequestForm(data=form_data_2)
-        self.assertFalse(form_2.is_valid())
-        self.assertIn('__all__', form_2.errors)
-        self.assertEqual(form_2.errors['__all__'], ['Please select only one type of booking (Service, or Sales).'])
 
     def test_form_initial_values_for_new_instance(self):
         """
