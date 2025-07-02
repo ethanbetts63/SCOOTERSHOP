@@ -9,11 +9,7 @@ from inventory.models import SalesProfile
 @require_GET
 @login_required
 def search_sales_profiles_ajax(request):
-    """
-    AJAX endpoint to search for SalesProfile instances based on a query term.
-    Searches across name, email, phone number, and linked user details.
-    Returns a JSON response with a list of matching profiles (ID, name, email, phone).
-    """
+    #--
                                                         
     if not request.user.is_staff:
         return JsonResponse({'error': 'Permission denied'}, status=403)

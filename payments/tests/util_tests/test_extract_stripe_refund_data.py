@@ -11,17 +11,10 @@ from payments.utils.extract_stripe_refund_data import extract_stripe_refund_data
 
 @override_settings(STRIPE_SECRET_KEY='sk_test_mock_key')
 class ExtractStripeRefundDataTestCase(TestCase):
-    """
-    Tests for the extract_stripe_refund_data utility function.
-    This suite covers various scenarios for Stripe charge and refund objects,
-    including successful refunds, partial refunds, and error handling when
-    retrieving charge data from Stripe.
-    """
+    #--
 
     def setUp(self):
-        """
-        Set up common data for tests.
-        """
+        #--
                                                                             
                                                                 
                                                        
@@ -30,16 +23,12 @@ class ExtractStripeRefundDataTestCase(TestCase):
         self.mock_now_patch.start()
 
     def tearDown(self):
-        """
-        Clean up after tests.
-        """
+        #--
         self.mock_now_patch.stop()
 
     @mock.patch('stripe.Charge.retrieve')
     def test_extract_from_charge_object_full_refund(self, mock_stripe_charge_retrieve):
-        """
-        Test extraction when the event object is a 'charge' with a full refund.
-        """
+        #--
                                                                                 
         mock_retrieved_charge = mock.Mock()
         mock_retrieved_charge.id = 'ch_full_refund'
@@ -91,10 +80,7 @@ class ExtractStripeRefundDataTestCase(TestCase):
 
     @mock.patch('stripe.Charge.retrieve')
     def test_extract_from_charge_object_partial_refund(self, mock_stripe_charge_retrieve):
-        """
-        Test extraction when the event object is a 'charge' with a partial refund.
-        Ensures the latest refund is picked if multiple exist.
-        """
+        #--
         latest_refund_time = self.mock_now + datetime.timedelta(minutes=5)
 
         mock_retrieved_charge = mock.Mock()
@@ -147,9 +133,7 @@ class ExtractStripeRefundDataTestCase(TestCase):
 
     @mock.patch('stripe.Charge.retrieve')
     def test_extract_from_charge_object_no_refunds(self, mock_stripe_charge_retrieve):
-        """
-        Test extraction when the event object is a 'charge' but has no refunds yet.
-        """
+        #--
         mock_retrieved_charge = mock.Mock()
         mock_retrieved_charge.id = 'ch_no_refund'
         mock_retrieved_charge.amount_refunded = 0
@@ -193,10 +177,7 @@ class ExtractStripeRefundDataTestCase(TestCase):
 
     @mock.patch('stripe.Charge.retrieve')
     def test_extract_from_refund_object_with_charge_retrieve(self, mock_stripe_charge_retrieve):
-        """
-        Test extraction when the event object is a 'refund' and the associated
-        charge can be retrieved successfully.
-        """
+        #--
                                                                                 
         mock_retrieved_charge = mock.Mock()
         mock_retrieved_charge.id = 'ch_refunded_linked'
@@ -241,10 +222,7 @@ class ExtractStripeRefundDataTestCase(TestCase):
 
     @mock.patch('stripe.Charge.retrieve', side_effect=stripe.error.StripeError("Charge not found"))
     def test_extract_from_refund_object_charge_retrieve_fails(self, mock_stripe_charge_retrieve):
-        """
-        Test extraction when the event object is a 'refund' but retrieving the
-        associated charge from Stripe fails. Should fall back to refund object's amount.
-        """
+        #--
         event_object_data = {
             'object': 'refund',
             'id': 're_failed_charge_lookup',
@@ -267,10 +245,7 @@ class ExtractStripeRefundDataTestCase(TestCase):
 
     @mock.patch('stripe.Charge.retrieve')
     def test_extract_from_refund_object_no_charge_id(self, mock_stripe_charge_retrieve):
-        """
-        Test extraction when the event object is a 'refund' and there's no 'charge' ID.
-        Should use the refund object's amount directly.
-        """
+        #--
         event_object_data = {
             'object': 'refund',
             'id': 're_no_charge',
@@ -291,9 +266,7 @@ class ExtractStripeRefundDataTestCase(TestCase):
         mock_stripe_charge_retrieve.assert_not_called()                                         
 
     def test_extract_from_unknown_object_type(self):
-        """
-        Test extraction when the event object is neither 'charge' nor 'refund'.
-        """
+        #--
         event_object_data = {
             'object': 'payment_intent',
             'id': 'pi_unknown',
@@ -313,10 +286,7 @@ class ExtractStripeRefundDataTestCase(TestCase):
 
     @mock.patch('stripe.Charge.retrieve')
     def test_extract_from_charge_object_amount_refunded_none(self, mock_stripe_charge_retrieve):
-        """
-        Test extraction from a 'charge' object where 'amount_refunded' is None,
-        but refunds exist.
-        """
+        #--
         latest_refund_time = self.mock_now + datetime.timedelta(minutes=5)
         mock_retrieved_charge = mock.Mock()
         mock_retrieved_charge.id = 'ch_amount_refunded_none'
@@ -368,10 +338,7 @@ class ExtractStripeRefundDataTestCase(TestCase):
 
     @mock.patch('stripe.Charge.retrieve')
     def test_extract_from_refund_object_charge_retrieve_amount_refunded_none(self, mock_stripe_charge_retrieve):
-        """
-        Test extraction from a 'refund' object where the retrieved charge has
-        'amount_refunded' as None. Should fall back to refund object's amount.
-        """
+        #--
         mock_retrieved_charge = mock.Mock()
         mock_retrieved_charge.id = 'ch_refunded_amount_none'
         mock_retrieved_charge.amount_refunded = None                                                    
@@ -408,10 +375,7 @@ class ExtractStripeRefundDataTestCase(TestCase):
         mock_stripe_charge_retrieve.assert_called_once_with('ch_refunded_amount_none')
 
     def test_extract_from_refund_object_amount_none(self):
-        """
-        Test extraction from a 'refund' object where 'amount' is None.
-        Should result in 0.00 refunded_amount_decimal.
-        """
+        #--
         event_object_data = {
             'object': 'refund',
             'id': 're_amount_none',

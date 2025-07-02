@@ -4,9 +4,7 @@ from django import forms
 from service.models import ServiceFAQ
 
 class AdminServiceFAQForm(forms.ModelForm):
-    """
-    Form for creating and updating ServiceFAQ objects in the admin interface.
-    """
+    #--
     class Meta:
         model = ServiceFAQ
         fields = [

@@ -6,10 +6,7 @@ from decimal import Decimal
 from datetime import time
 
 class InventorySettings(models.Model):
-    """
-    Dedicated settings for the sales and reservation system.
-    This model enforces a singleton pattern, meaning only one instance of it can exist.
-    """
+    #--
     enable_sales_system = models.BooleanField(
         default=True,
         help_text="Globally enable or disable the sales booking and enquiry system."
@@ -131,9 +128,7 @@ class InventorySettings(models.Model):
         return "Inventory Settings"
 
     def clean(self):
-        """
-        Custom validation for the InventorySettings model to ensure data integrity.
-        """
+        #--
         super().clean()
         errors = {}
 
@@ -167,9 +162,7 @@ class InventorySettings(models.Model):
             raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
-        """
-        Ensures that only one instance of InventorySettings can be created.
-        """
+        #--
         self.full_clean()                                                           
 
         if not self.pk and InventorySettings.objects.exists():

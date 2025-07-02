@@ -9,16 +9,12 @@ from service.forms import AdminServiceFAQForm
 from service.models import ServiceFAQ
 
 class ServiceFAQCreateUpdateView(AdminRequiredMixin, View):
-    """
-    View to handle creating and updating Service FAQs.
-    """
+    #--
     template_name = 'service/admin_service_faq_create_update.html'
     form_class = AdminServiceFAQForm
 
     def get(self, request, pk=None, *args, **kwargs):
-        """
-        Handles GET requests to display the form for creating or editing a Service FAQ.
-        """
+        #--
         if pk:
             instance = get_object_or_404(ServiceFAQ, pk=pk)
             form = self.form_class(instance=instance)
@@ -36,9 +32,7 @@ class ServiceFAQCreateUpdateView(AdminRequiredMixin, View):
         return render(request, self.template_name, context)
 
     def post(self, request, pk=None, *args, **kwargs):
-        """
-        Handles POST requests to save the form data.
-        """
+        #--
         if pk:
             instance = get_object_or_404(ServiceFAQ, pk=pk)
             form = self.form_class(request.POST, instance=instance)

@@ -7,13 +7,11 @@ from inventory.ajax.ajax_search_motorcycles import search_motorcycles_ajax
 from ..test_helpers.model_factories import UserFactory, MotorcycleFactory
 
 class AjaxSearchMotorcyclesTest(TestCase):
-    """
-    Test suite for the search_motorcycles_ajax view.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """Set up data for the whole test case"""
+        #--
         cls.factory = RequestFactory()
         cls.staff_user = UserFactory(is_staff=True)
         cls.non_staff_user = UserFactory(is_staff=False)
@@ -27,7 +25,7 @@ class AjaxSearchMotorcyclesTest(TestCase):
         cls.ktm_sxf = MotorcycleFactory(brand='KTM', model='350 SX-F', status='unavailable', is_available=False)
         
     def _get_response(self, user, query_params={}):
-        """Helper method to simulate a GET request to the view."""
+        #--
         request = self.factory.get(reverse('inventory:admin_api_search_motorcycles'), query_params)
         request.user = user
         return search_motorcycles_ajax(request)

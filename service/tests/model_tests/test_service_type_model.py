@@ -5,46 +5,33 @@ from service.models import ServiceType
 from ..test_helpers.model_factories import ServiceTypeFactory
 
 class ServiceTypeModelTest(TestCase):
-    """
-    Tests for the ServiceType model.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up non-modified objects used by all test methods.
-        We'll create a single ServiceType instance using the factory.
-        """
+        #--
         cls.service_type = ServiceTypeFactory()
 
     def test_service_type_creation(self):
-        """
-        Test that a ServiceType instance can be created successfully using the factory.
-        """
+        #--
         self.assertIsInstance(self.service_type, ServiceType)
         self.assertIsNotNone(self.service_type.pk)                                              
 
     def test_name_field(self):
-        """
-        Test the 'name' field properties.
-        """
+        #--
         service_type = self.service_type
         self.assertEqual(service_type._meta.get_field('name').max_length, 100)
         self.assertIsInstance(service_type.name, str)
         self.assertIsNotNone(service_type.name)
 
     def test_description_field(self):
-        """
-        Test the 'description' field properties.
-        """
+        #--
         service_type = self.service_type
         self.assertIsInstance(service_type.description, str)
         self.assertIsNotNone(service_type.description)
 
     def test_estimated_duration_field(self):
-        """
-        Test the 'estimated_duration' field properties and help text.
-        """
+        #--
         service_type = self.service_type
                                                     
         self.assertIsInstance(service_type.estimated_duration, int)
@@ -54,9 +41,7 @@ class ServiceTypeModelTest(TestCase):
 
 
     def test_base_price_field(self):
-        """
-        Test the 'base_price' field properties and default value.
-        """
+        #--
         service_type = self.service_type
         self.assertIsInstance(service_type.base_price, Decimal)
         self.assertIsNotNone(service_type.base_price)
@@ -73,9 +58,7 @@ class ServiceTypeModelTest(TestCase):
         self.assertEqual(new_service_type.base_price, Decimal('0.00'))
 
     def test_is_active_field(self):
-        """
-        Test the 'is_active' field properties and default value.
-        """
+        #--
         service_type = self.service_type
         self.assertIsInstance(service_type.is_active, bool)
         self.assertEqual(service_type.is_active, True)                                     
@@ -92,24 +75,16 @@ class ServiceTypeModelTest(TestCase):
         self.assertEqual(new_service_type.is_active, True)
 
     def test_str_method(self):
-        """
-        Test the __str__ method of the ServiceType model.
-        It should return the name of the service type.
-        """
+        #--
         service_type = self.service_type
         self.assertEqual(str(service_type), service_type.name)
 
     def test_verbose_name_plural(self):
-        """
-        Test the verbose name plural for the model.
-        """
+        #--
         self.assertEqual(str(ServiceType._meta.verbose_name_plural), 'Service Types')
 
     def test_unique_name(self):
-        """
-        Test that service names are not implicitly unique (CharField default).
-        If you later add unique=True to the name field, this test would fail.
-        """
+        #--
         ServiceTypeFactory(name="Unique Service Name")
                                                                              
         try:

@@ -9,12 +9,7 @@ from service.models import ServiceBooking
 @require_GET
 @login_required
 def search_service_bookings_ajax(request):
-    """
-    AJAX endpoint to search for ServiceBooking instances based on a query term.
-    Searches across booking reference, customer details, motorcycle details,
-    and service type details.
-    Returns a JSON response with a list of matching bookings.
-    """
+    #--
                                                             
     search_term = request.GET.get('query', '').strip()
     bookings_data = []

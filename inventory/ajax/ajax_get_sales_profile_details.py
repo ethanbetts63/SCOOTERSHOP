@@ -9,10 +9,7 @@ from inventory.models import SalesProfile
 @require_GET
 @login_required
 def get_sales_profile_details_ajax(request, pk):
-    """
-    AJAX endpoint to retrieve detailed information for a specific SalesProfile.
-    Returns a JSON response with all fields necessary to populate the display area.
-    """
+    #--
                                                         
     if not request.user.is_staff:
         return JsonResponse({'error': 'Permission denied'}, status=403)

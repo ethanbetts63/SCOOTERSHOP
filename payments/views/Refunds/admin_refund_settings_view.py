@@ -14,11 +14,7 @@ from users.views.auth import is_admin
 
 @method_decorator(user_passes_test(is_admin), name='dispatch')
 class AdminRefundSettingsView(UpdateView):
-    """
-    Class-based view for updating the singleton RefundPolicySettings model.
-    This view handles displaying the current settings, processing form submissions,
-    and managing messages for success or error. It ensures only one instance exists.
-    """
+    #--
     model = RefundPolicySettings
     form_class = RefundSettingsForm
     template_name = 'payments/admin_refund_settings.html'
@@ -26,19 +22,13 @@ class AdminRefundSettingsView(UpdateView):
     success_url = reverse_lazy('payments:admin_refund_settings')
 
     def get_object(self, queryset=None):
-        """
-        Retrieves the single instance of RefundPolicySettings (pk=1).
-        If no instance exists, it creates one.
-        """
+        #--
                                                                         
         obj, created = RefundPolicySettings.objects.get_or_create(pk=1)
         return obj
 
     def form_valid(self, form):
-        """
-        Handles valid form submissions for RefundPolicySettings.
-        Saves the form and adds a success message.
-        """
+        #--
         try:
             response = super().form_valid(form)
             messages.success(self.request, "Refund Policy settings updated successfully!")
@@ -49,17 +39,12 @@ class AdminRefundSettingsView(UpdateView):
             return self.form_invalid(form)
 
     def form_invalid(self, form):
-        """
-        Handles invalid form submissions for RefundPolicySettings.
-        Adds an error message and renders the form again with errors.
-        """
+        #--
         messages.error(self.request, "There was an error updating refund policy settings. Please correct the errors below.")
         return super().form_invalid(form)
 
     def post(self, request, *args, **kwargs):
-        """
-        Overrides the post method to only handle submissions from the main RefundPolicySettings form.
-        """
+        #--
         if 'refund_policy_settings_submit' in request.POST:
             self.object = self.get_object()                                                   
             form = self.get_form()

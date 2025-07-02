@@ -10,30 +10,21 @@ from service.models import ServiceBrand
 from ..test_helpers.model_factories import ServiceBrandFactory
 
 class ServiceBrandModelTest(TestCase):
-    """
-    Tests for the ServiceBrand model after removing 'is_primary'.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up non-modified objects used by all test methods.
-        We'll create a single ServiceBrand instance using the factory.
-        """
+        #--
                                                              
         cls.service_brand = ServiceBrandFactory(image=None)
 
     def test_service_brand_creation(self):
-        """
-        Test that a ServiceBrand instance can be created successfully using the factory.
-        """
+        #--
         self.assertIsInstance(self.service_brand, ServiceBrand)
         self.assertIsNotNone(self.service_brand.pk)                                              
 
     def test_name_field(self):
-        """
-        Test the 'name' field properties.
-        """
+        #--
         service_brand = self.service_brand
         self.assertEqual(service_brand._meta.get_field('name').max_length, 100)
         self.assertTrue(service_brand._meta.get_field('name').unique)
@@ -44,9 +35,7 @@ class ServiceBrandModelTest(TestCase):
                                     
 
     def test_image_field(self):
-        """
-        Test the 'image' field properties.
-        """
+        #--
         service_brand = self.service_brand
         image_field = service_brand._meta.get_field('image')
         self.assertTrue(image_field.null)
@@ -68,9 +57,7 @@ class ServiceBrandModelTest(TestCase):
 
 
     def test_last_updated_field(self):
-        """
-        Test the 'last_updated' field properties.
-        """
+        #--
         service_brand = self.service_brand
         self.assertIsInstance(service_brand.last_updated, datetime)
                                                        
@@ -80,24 +67,16 @@ class ServiceBrandModelTest(TestCase):
         self.assertGreater(service_brand.last_updated, old_last_updated)
 
     def test_str_method(self):
-        """
-        Test the __str__ method of the ServiceBrand model.
-        It should return the name of the service brand.
-        """
+        #--
         service_brand = self.service_brand
         self.assertEqual(str(service_brand), service_brand.name)
 
     def test_verbose_name_plural(self):
-        """
-        Test the verbose name plural for the model.
-        """
+        #--
         self.assertEqual(str(ServiceBrand._meta.verbose_name_plural), 'Service Brands')
 
     def test_unique_name_constraint(self):
-        """
-        Test that the 'name' field is unique.
-        Attempting to create a brand with an existing name should raise an IntegrityError.
-        """
+        #--
                                  
         initial_brand = ServiceBrandFactory()
         existing_name = initial_brand.name

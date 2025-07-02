@@ -5,11 +5,7 @@ from service.models import CustomerMotorcycle, ServiceProfile
 
 
 def admin_process_customer_motorcycle_form(request_post_data, request_files, profile_instance, motorcycle_id=None):
-    """
-    Processes the AdminCustomerMotorcycleForm data.
-    Requires the associated ServiceProfile instance for new motorcycles.
-    Returns (form_instance, saved_instance)
-    """
+    #--
     instance = None
     if motorcycle_id:
         try:

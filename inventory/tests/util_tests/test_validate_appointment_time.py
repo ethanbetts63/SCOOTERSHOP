@@ -20,9 +20,7 @@ class ValidateAppointmentTimeUtilTest(TestCase):
 
     @patch('django.utils.timezone.now')
     def test_time_too_soon_for_today(self, mock_now):
-        """
-        Tests that a time on the current day is correctly flagged as too soon.
-        """
+        #--
         fixed_now = datetime(2025, 6, 15, 10, 0, 0, tzinfo=timezone.get_current_timezone())
         mock_now.return_value = fixed_now
 
@@ -47,9 +45,7 @@ class ValidateAppointmentTimeUtilTest(TestCase):
 
     @patch('django.utils.timezone.now')
     def test_time_on_today_but_just_valid(self, mock_now):
-        """
-        Tests that a time on the current day that is just past the minimum notice period is considered valid.
-        """
+        #--
         fixed_now = datetime(2025, 6, 15, 10, 0, 0, tzinfo=timezone.get_current_timezone())
         mock_now.return_value = fixed_now
 
@@ -66,9 +62,7 @@ class ValidateAppointmentTimeUtilTest(TestCase):
 
     @patch('django.utils.timezone.now')
     def test_valid_time_within_range(self, mock_now):
-        """
-        Tests that a valid time on a future date passes all validations.
-        """
+        #--
         mock_now.return_value = datetime(2025, 6, 15, 10, 0, 0, tzinfo=timezone.get_current_timezone())
         future_date = date(2025, 7, 1)
         valid_time = time(10, 0)
@@ -77,9 +71,7 @@ class ValidateAppointmentTimeUtilTest(TestCase):
 
     @patch('django.utils.timezone.now')
     def test_time_before_start_time(self, mock_now):
-        """
-        Tests that a time before business hours is correctly flagged.
-        """
+        #--
         mock_now.return_value = datetime(2025, 6, 15, 10, 0, 0, tzinfo=timezone.get_current_timezone())
         future_date = date(2025, 7, 1)
         early_time = time(8, 0)
@@ -92,9 +84,7 @@ class ValidateAppointmentTimeUtilTest(TestCase):
 
     @patch('django.utils.timezone.now')
     def test_time_after_end_time(self, mock_now):
-        """
-        Tests that a time after business hours is correctly flagged.
-        """
+        #--
         mock_now.return_value = datetime(2025, 6, 15, 10, 0, 0, tzinfo=timezone.get_current_timezone())
         future_date = date(2025, 7, 1)
         late_time = time(18, 0)
@@ -107,9 +97,7 @@ class ValidateAppointmentTimeUtilTest(TestCase):
 
 
     def test_no_inventory_settings(self):
-        """
-        Tests that no errors are returned if inventory settings are not provided.
-        """
+        #--
         test_date = date.today()
         test_time = time(10, 0)
         errors = validate_appointment_time(test_date, test_time, None, [])
@@ -117,9 +105,7 @@ class ValidateAppointmentTimeUtilTest(TestCase):
 
     @patch('django.utils.timezone.now')
     def test_overlap_with_existing_booking(self, mock_now):
-        """
-        Tests that times overlapping with an existing booking are correctly flagged.
-        """
+        #--
         mock_now.return_value = datetime(2025, 6, 15, 10, 0, 0, tzinfo=timezone.get_current_timezone())
         selected_date = date(2025, 7, 1)
         
@@ -142,9 +128,7 @@ class ValidateAppointmentTimeUtilTest(TestCase):
 
     @patch('django.utils.timezone.now')
     def test_no_overlap_with_existing_booking(self, mock_now):
-        """
-        Tests that times that do not overlap with existing bookings are considered valid.
-        """
+        #--
         mock_now.return_value = datetime(2025, 6, 15, 10, 0, 0, tzinfo=timezone.get_current_timezone())
         selected_date = date(2025, 7, 1)
         
@@ -160,9 +144,7 @@ class ValidateAppointmentTimeUtilTest(TestCase):
 
     @patch('django.utils.timezone.now')
     def test_multiple_overlaps(self, mock_now):
-        """
-        Tests that a time that falls between two existing bookings is correctly flagged as an overlap.
-        """
+        #--
         mock_now.return_value = datetime(2025, 6, 15, 10, 0, 0, tzinfo=timezone.get_current_timezone())
         selected_date = date(2025, 7, 1)
         existing_booked_times = [time(10, 0), time(11, 0)]

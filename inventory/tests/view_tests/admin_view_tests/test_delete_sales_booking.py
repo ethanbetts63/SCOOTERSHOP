@@ -21,14 +21,11 @@ class SalesBookingDeleteViewTest(TestCase):
         cls.non_admin_user.save()
         
     def setUp(self):
-        """Login the admin user for each test."""
+        #--
         self.client.login(username='admin', password='adminpassword')
 
     def test_delete_booking_sets_reserved_motorcycle_to_for_sale(self):
-        """
-        Test that deleting a booking for a 'reserved' motorcycle
-        updates the motorcycle's status and shows the correct message.
-        """
+        #--
                                                            
         reserved_motorcycle = MotorcycleFactory(status='reserved', is_available=False)
         sales_booking = SalesBookingFactory(motorcycle=reserved_motorcycle)
@@ -57,10 +54,7 @@ class SalesBookingDeleteViewTest(TestCase):
         self.assertEqual(str(messages_list[0]), expected_message)
 
     def test_delete_booking_for_non_reserved_motorcycle(self):
-        """
-        Test that deleting a booking for a motorcycle that is not 'reserved'
-        shows the simple success message.
-        """
+        #--
                                                                  
         available_motorcycle = MotorcycleFactory(status='for_sale')
         sales_booking = SalesBookingFactory(motorcycle=available_motorcycle)

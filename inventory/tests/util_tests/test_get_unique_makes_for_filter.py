@@ -8,9 +8,7 @@ class GetUniqueMakesForFilterTest(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        """
-        
-        """
+        #--
                                          
         cls.condition_new = MotorcycleConditionFactory(name='new', display_name='New')
         cls.condition_used = MotorcycleConditionFactory(name='used', display_name='Used')

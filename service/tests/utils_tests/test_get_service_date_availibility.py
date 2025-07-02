@@ -21,16 +21,11 @@ from faker import Faker
 fake = Faker()
 
 class GetServiceDateAvailabilityTest(TestCase):
-    """
-    Tests for the get_service_date_availability utility function.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up common data for all tests in this class.
-        We'll use a mocked timezone to ensure consistent test results regardless of execution time.
-        """
+        #--
                                                                                    
                                                    
         cls.fixed_now = datetime.datetime(2025, 6, 15, 10, 0, 0, tzinfo=datetime.timezone.utc)
@@ -61,17 +56,13 @@ class GetServiceDateAvailabilityTest(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        """
-        Clean up mocks after all tests are done.
-        """
+        #--
         cls.patcher_now.stop()
         cls.patcher_localtime.stop()
         super().tearDownClass()
 
     def setUp(self):
-        """
-        Set up for each test method. Clear out any previous data.
-        """
+        #--
                                                                                            
                                                             
         self.service_settings.booking_advance_notice = 1
@@ -83,9 +74,7 @@ class GetServiceDateAvailabilityTest(TestCase):
         ServiceBooking.objects.all().delete()
 
     def test_min_date_with_advance_notice(self):
-        """
-        Test that min_date is correctly calculated based on booking_advance_notice.
-        """
+        #--
                                              
                                                     
         self.service_settings.booking_advance_notice = 1
@@ -109,9 +98,7 @@ class GetServiceDateAvailabilityTest(TestCase):
         self.assertEqual(min_date, expected_min_date)
 
     def test_blocked_service_dates(self):
-        """
-        Test that explicitly blocked dates are disabled.
-        """
+        #--
                             
         BlockedServiceDateFactory(
             start_date=datetime.date(2025, 6, 20),           
@@ -132,10 +119,7 @@ class GetServiceDateAvailabilityTest(TestCase):
         self.assertIn({'from': '2025-06-25', 'to': '2025-06-27'}, disabled_dates)
 
     def test_non_booking_open_days(self):
-        """
-        Test that days not specified in booking_open_days are disabled.
-        Fixed current date is Sunday, June 15, 2025.
-        """
+        #--
                                                 
         self.service_settings.booking_open_days = "Mon,Tue"
         self.service_settings.booking_advance_notice = 0                            
@@ -163,9 +147,7 @@ class GetServiceDateAvailabilityTest(TestCase):
         self.assertIn('2025-06-22', disabled_dates)
 
     def test_max_visible_slots_capacity(self):
-        """
-        Test that days reaching max_visible_slots_per_day are disabled.
-        """
+        #--
         self.service_settings.max_visible_slots_per_day = 1                      
         self.service_settings.booking_advance_notice = 0                   
         self.service_settings.save()
@@ -210,9 +192,7 @@ class GetServiceDateAvailabilityTest(TestCase):
 
 
     def test_combined_rules(self):
-        """
-        Test a scenario where multiple rules apply to disable a date.
-        """
+        #--
         self.service_settings.booking_advance_notice = 0
         self.service_settings.max_visible_slots_per_day = 1
         self.service_settings.booking_open_days = "Mon"                      
@@ -249,10 +229,7 @@ class GetServiceDateAvailabilityTest(TestCase):
         self.assertNotIn('2025-06-23', disabled_dates)                                                    
 
     def test_no_service_settings(self):
-        """
-        Test behavior when no ServiceSettings instance exists.
-        Should default to current date for min_date and no disabled dates beyond blocked.
-        """
+        #--
         ServiceSettings.objects.all().delete()                              
 
                                                                 
@@ -274,10 +251,7 @@ class GetServiceDateAvailabilityTest(TestCase):
         self.assertIn(expected_blocked, disabled_dates)
 
     def test_empty_booking_open_days(self):
-        """
-        Test when booking_open_days is an empty string or None.
-        Should effectively disable all days if no valid open days are provided.
-        """
+        #--
                                                                              
         self.service_settings.booking_open_days = "INVALID"
         self.service_settings.booking_advance_notice = 0
@@ -305,10 +279,7 @@ class GetServiceDateAvailabilityTest(TestCase):
 
 
     def test_no_max_visible_slots_per_day_set(self):
-        """
-        Test when max_visible_slots_per_day is effectively unlimited (very high number).
-        Capacity check should not disable any days.
-        """
+        #--
         self.service_settings.max_visible_slots_per_day = 99999                            
         self.service_settings.booking_advance_notice = 0
         self.service_settings.save()
@@ -335,9 +306,7 @@ class GetServiceDateAvailabilityTest(TestCase):
                                                                                                      
 
     def test_booking_status_filter(self):
-        """
-        Test that 'pending', 'confirmed', and 'in_progress' statuses count towards capacity.
-        """
+        #--
         self.service_settings.max_visible_slots_per_day = 1
         self.service_settings.booking_advance_notice = 0
         self.service_settings.save()

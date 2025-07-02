@@ -10,14 +10,7 @@ from service.utils.calculate_estimated_pickup_date import calculate_estimated_pi
 
 @require_GET
 def get_estimated_pickup_date_ajax(request):
-    """
-    AJAX endpoint to calculate the estimated pickup date based on service type
-    and service date provided via GET parameters.
-
-    Expected GET parameters:
-    - service_type_id (int): The ID of the selected ServiceType.
-    - service_date (str): The chosen service date in 'YYYY-MM-DD' format.
-    """
+    #--
     service_type_id = request.GET.get('service_type_id')
     service_date_str = request.GET.get('service_date')
 

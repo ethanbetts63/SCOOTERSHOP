@@ -18,8 +18,10 @@ class EnquiryDeleteView(AdminRequiredMixin, DeleteView):
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
-        # Get the success URL (which also adds the message) before deleting
+        ##
+
         success_url = self.get_success_url()
         self.object.delete()
-        # Now, return a proper redirect response
+        ##
+
         return redirect(success_url)

@@ -3,9 +3,7 @@
 from django.db import models
 
 class ServiceFAQ(models.Model):
-    """
-    Model to store Frequently Asked Questions for the service booking process.
-    """
+    #--
     BOOKING_STEP_CHOICES = [
         ('service_page', 'Main Service Page'),
         ('step1', 'Step 1: Service Details'),

@@ -16,18 +16,11 @@ from ..test_helpers.model_factories import (
 )
 
 class TempServiceBookingModelTest(TestCase):
-    """
-    Tests for the TempServiceBooking model, including field validations,
-    unique constraints, and foreign key relationships.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up non-modified objects used by all test methods.
-        We create foreign key instances here to ensure they are saved
-        in the database when building TempServiceBooking instances for full_clean tests.
-        """
+        #--
         cls.service_type = ServiceTypeFactory()
         cls.service_profile = ServiceProfileFactory()
         cls.customer_motorcycle = CustomerMotorcycleFactory(service_profile=cls.service_profile)                                      
@@ -44,19 +37,14 @@ class TempServiceBookingModelTest(TestCase):
         )
 
     def test_temp_service_booking_creation(self):
-        """
-        Test that a TempServiceBooking instance can be created using the factory.
-        """
+        #--
         self.assertIsNotNone(self.temp_booking)
         self.assertIsInstance(self.temp_booking, TempServiceBooking)
                                                                
         self.assertEqual(TempServiceBooking.objects.count(), 1)
 
     def test_field_attributes(self):
-        """
-        Test the attributes of various fields in the TempServiceBooking model.
-        Updated to reflect nullable fields.
-        """
+        #--
         booking = self.temp_booking
 
                       
@@ -137,11 +125,7 @@ class TempServiceBookingModelTest(TestCase):
         self.assertTrue(field.auto_now)
 
     def test_required_fields_validation(self):
-        """
-        Test that truly required fields (service_type, service_date)
-        raise ValidationError when missing.
-        Nullable fields (service_profile, dropoff_date, dropoff_time) should not.
-        """
+        #--
                                    
         with self.assertRaises(ValidationError) as cm:
             TempServiceBookingFactory.build(
@@ -214,9 +198,7 @@ class TempServiceBookingModelTest(TestCase):
             self.fail(f"full_clean raised ValidationError unexpectedly: {e.message_dict}")
 
     def test_session_uuid_uniqueness(self):
-        """
-        Test that session_uuid enforces uniqueness.
-        """
+        #--
                                                
         first_booking = TempServiceBookingFactory(
             service_type=self.service_type,
@@ -233,9 +215,7 @@ class TempServiceBookingModelTest(TestCase):
             )
 
     def test_payment_method_choices(self):
-        """
-        Test that payment_method only accepts valid choices.
-        """
+        #--
                                   
         try:
             TempServiceBookingFactory.build(
@@ -267,13 +247,7 @@ class TempServiceBookingModelTest(TestCase):
             self.fail(f"full_clean raised ValidationError unexpectedly for None payment_method: {e.message_dict}")
 
     def test_dropoff_date_not_in_past(self):
-        """
-        Test that dropoff_date cannot be in the past.
-        Note: Django's DateField does not have built-in future/past validation.
-        This would typically be handled in a form's clean method or custom model validation.
-        For now, we'll assume the model itself doesn't enforce this, but a form would.
-        If a custom clean method were added to TempServiceBooking, this test would change.
-        """
+        #--
                                                                                                                   
         past_date = date.today() - timedelta(days=1)
         try:
@@ -310,11 +284,7 @@ class TempServiceBookingModelTest(TestCase):
             self.fail(f"full_clean raised ValidationError unexpectedly for future dropoff_date: {e.message_dict}")
 
     def test_calculated_deposit_amount_validation(self):
-        """
-        Test that calculated_deposit_amount cannot be negative if provided.
-        Note: DecimalField allows negative values by default. This validation
-        would typically be in a form or custom model clean method.
-        """
+        #--
                                                                                                             
         negative_amount = -10.50
         try:
@@ -358,9 +328,7 @@ class TempServiceBookingModelTest(TestCase):
 
 
     def test_timestamps_auto_now_add_and_auto_now(self):
-        """
-        Test that created_at is set on creation and updated_at is updated on save.
-        """
+        #--
         booking = TempServiceBookingFactory(
             service_type=self.service_type,
             service_profile=self.service_profile
@@ -385,9 +353,7 @@ class TempServiceBookingModelTest(TestCase):
         self.assertEqual(booking.created_at, initial_created_at)
 
     def test_foreign_key_on_delete_service_type(self):
-        """
-        Test that deleting a ServiceType prevents deletion of TempServiceBooking (PROTECT).
-        """
+        #--
                                                                          
         service_type_to_delete = ServiceTypeFactory()
         booking_to_test = TempServiceBookingFactory(
@@ -402,9 +368,7 @@ class TempServiceBookingModelTest(TestCase):
         self.assertTrue(TempServiceBooking.objects.filter(pk=booking_to_test.pk).exists())
 
     def test_foreign_key_on_delete_service_profile(self):
-        """
-        Test that deleting a ServiceProfile cascades and deletes TempServiceBooking (CASCADE).
-        """
+        #--
                                                                 
         service_profile_to_delete = ServiceProfileFactory()
         booking_to_test = TempServiceBookingFactory(
@@ -419,9 +383,7 @@ class TempServiceBookingModelTest(TestCase):
         self.assertFalse(TempServiceBooking.objects.filter(pk=booking_to_test.pk).exists())
 
     def test_foreign_key_on_delete_customer_motorcycle(self):
-        """
-        Test that deleting a CustomerMotorcycle sets the customer_motorcycle field to NULL (SET_NULL).
-        """
+        #--
                                                                     
         customer_motorcycle_to_delete = CustomerMotorcycleFactory(service_profile=self.service_profile)
         booking_with_motorcycle = TempServiceBookingFactory(

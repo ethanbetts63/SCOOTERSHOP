@@ -19,17 +19,11 @@ from faker import Faker
 fake = Faker()
 
 class AjaxGetServiceDateAvailabilityTest(TestCase):
-    """
-    Tests for the ajax_get_available_service_dates endpoint.
-    This tests the Django view that serves the AJAX request.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up common data for all tests in this class.
-        We'll use a mocked timezone to ensure consistent test results regardless of execution time.
-        """
+        #--
                                                                                    
         cls.fixed_now = datetime.datetime(2025, 6, 15, 10, 0, 0, tzinfo=datetime.timezone.utc)
         cls.fixed_local_date = datetime.date(2025, 6, 15)                          
@@ -55,17 +49,13 @@ class AjaxGetServiceDateAvailabilityTest(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        """
-        Clean up mocks after all tests are done.
-        """
+        #--
         cls.patcher_now.stop()
         cls.patcher_localtime.stop()
         super().tearDownClass()
 
     def setUp(self):
-        """
-        Set up for each test method. Clear out any previous data.
-        """
+        #--
         self.client = Client()
                                                                             
         self.service_settings.booking_advance_notice = 1
@@ -78,9 +68,7 @@ class AjaxGetServiceDateAvailabilityTest(TestCase):
         ServiceBooking.objects.all().delete()
 
     def test_ajax_success_response(self):
-        """
-        Test that the AJAX endpoint returns a successful JSON response with correct data.
-        """
+        #--
                                                                                      
                                                                
         expected_min_date = (self.fixed_local_date + datetime.timedelta(days=1)).strftime('%Y-%m-%d')
@@ -98,9 +86,7 @@ class AjaxGetServiceDateAvailabilityTest(TestCase):
         self.assertEqual(len(data['disabled_dates']), 0) 
 
     def test_ajax_response_with_blocked_dates(self):
-        """
-        Test that explicitly blocked dates are returned in the disabled_dates.
-        """
+        #--
                             
         BlockedServiceDateFactory(
             start_date=datetime.date(2025, 6, 20),           
@@ -124,9 +110,7 @@ class AjaxGetServiceDateAvailabilityTest(TestCase):
         self.assertIn({'from': '2025-06-25', 'to': '2025-06-27'}, disabled_dates)
 
     def test_ajax_response_with_capacity_full(self):
-        """
-        Test that a date is disabled when it reaches max_visible_slots_per_day.
-        """
+        #--
         self.service_settings.max_visible_slots_per_day = 1                      
         self.service_settings.booking_advance_notice = 0                            
         self.service_settings.save()
@@ -152,10 +136,7 @@ class AjaxGetServiceDateAvailabilityTest(TestCase):
         self.assertIn(str(today), disabled_dates)                           
 
     def test_ajax_response_with_non_booking_open_days(self):
-        """
-        Test that days not specified in booking_open_days are disabled in the response.
-        Fixed current date is Sunday, June 15, 2025.
-        """
+        #--
                                                 
         self.service_settings.booking_open_days = "Mon,Tue"
         self.service_settings.booking_advance_notice = 0                            
@@ -177,9 +158,7 @@ class AjaxGetServiceDateAvailabilityTest(TestCase):
         self.assertIn('2025-06-18', disabled_dates)
         
     def test_ajax_error_handling(self):
-        """
-        Test that the AJAX endpoint handles errors gracefully and returns a 500.
-        """
+        #--
                                                                                        
         with patch('service.ajax.ajax_get_available_service_dates.get_service_date_availability', 
                    side_effect=Exception("Simulated utility error")):

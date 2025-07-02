@@ -8,10 +8,7 @@ from service.models import BlockedServiceDate
 from service.forms import BlockedServiceDateForm
 
 class BlockedServiceDateManagementView(View):
-    """
-    Class-based view for managing (listing and adding) blocked service dates.
-    Handles both GET (display form and list) and POST (add new blocked date).
-    """
+    #--
     template_name = 'service/blocked_service_dates_management.html'
     form_class = BlockedServiceDateForm
 
@@ -20,10 +17,7 @@ class BlockedServiceDateManagementView(View):
                                            
 
     def get(self, request, *args, **kwargs):
-        """
-        Handles GET requests: displays the form for adding new blocked dates
-        and lists all existing blocked service dates.
-        """
+        #--
         form = self.form_class()
         blocked_service_dates = BlockedServiceDate.objects.all()                          
 
@@ -36,10 +30,7 @@ class BlockedServiceDateManagementView(View):
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
-        """
-        Handles POST requests: processes the form submission for adding a new
-        blocked service date.
-        """
+        #--
         form = self.form_class(request.POST)
         if form.is_valid():
             form.save()

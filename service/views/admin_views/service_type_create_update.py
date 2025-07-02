@@ -10,24 +10,16 @@ from service.forms import AdminServiceTypeForm
 from service.models import ServiceType                               
 
 class ServiceTypeCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, View):
-    """
-    Admin view for creating a new ServiceType or updating an existing one.
-    Requires the user to be logged in and a staff member or superuser.
-    """
+    #--
     template_name = 'service/admin_service_type_create_update.html'                                             
     form_class = AdminServiceTypeForm
 
     def test_func(self):
-        """
-        Ensures that only staff members or superusers can access this view.
-        """
+        #--
         return self.request.user.is_staff or self.request.user.is_superuser
 
     def get(self, request, pk=None, *args, **kwargs):
-        """
-        Handles GET requests to display the form for creating a new service type
-        or editing an existing one.
-        """
+        #--
         instance = None
         if pk:
                                                                                            
@@ -45,9 +37,7 @@ class ServiceTypeCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, View)
         return render(request, self.template_name, context)
 
     def post(self, request, pk=None, *args, **kwargs):
-        """
-        Handles POST requests for form submission (creating or updating a ServiceType).
-        """
+        #--
         instance = None
         if pk:
             instance = get_object_or_404(ServiceType, pk=pk)

@@ -22,10 +22,7 @@ class AdminRejectRefundView(View):
     template_name = 'payments/admin_reject_refund_form.html'
 
     def get(self, request, pk, *args, **kwargs):
-        """
-        Handles GET requests to display the rejection form for a specific
-        RefundRequest.
-        """
+        #--
         refund_request = get_object_or_404(RefundRequest, pk=pk)
 
                                                                    
@@ -45,11 +42,7 @@ class AdminRejectRefundView(View):
         return render(request, self.template_name, context)
 
     def post(self, request, pk, *args, **kwargs):
-        """
-        Handles POST requests to process the rejection form submission.
-        Updates the refund request status, saves the rejection reason,
-        and conditionally sends an email.
-        """
+        #--
         refund_request_instance = get_object_or_404(RefundRequest, pk=pk)
         form = AdminRejectRefundForm(request.POST, instance=refund_request_instance)
 

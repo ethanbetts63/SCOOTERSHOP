@@ -16,11 +16,7 @@ class AdminAddEditRefundRequestView(View):
     template_name = 'payments/admin_refund_form.html'                                     
 
     def get(self, request, pk=None, *args, **kwargs):
-        """
-        Handles GET requests to display the refund request form.
-        If a primary key (pk) is provided, it fetches an existing RefundRequest
-        for editing; otherwise, it prepares a form for a new request.
-        """
+        #--
         refund_request = None                   
         booking_reference = "N/A"                       
 
@@ -48,10 +44,7 @@ class AdminAddEditRefundRequestView(View):
         return render(request, self.template_name, context)
 
     def post(self, request, pk=None, *args, **kwargs):
-        """
-        Handles POST requests to process the submitted refund request form.
-        Validates the form data and saves/updates the RefundRequest instance.
-        """
+        #--
         refund_request_instance = None                   
         if pk:
             refund_request_instance = get_object_or_404(RefundRequest, pk=pk)

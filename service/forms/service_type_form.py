@@ -2,9 +2,7 @@ from django import forms
 from service.models import ServiceType
 
 class AdminServiceTypeForm(forms.ModelForm):
-    """
-    Form for administrators to create and manage ServiceType instances.
-    """
+    #--
     class Meta:
         model = ServiceType
         fields = [

@@ -11,17 +11,11 @@ from service.models import CustomerMotorcycle
 from ..test_helpers.model_factories import CustomerMotorcycleFactory, ServiceProfileFactory
 
 class CustomerMotorcycleModelTest(TestCase):
-    """
-    Tests for the CustomerMotorcycle model, including field validations
-    and unique constraints.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up non-modified objects used by all test methods.
-        We need to ensure the factory provides all currently required fields.
-        """
+        #--
         cls.customer_motorcycle = CustomerMotorcycleFactory(
                                                                      
             brand="Honda",
@@ -34,18 +28,13 @@ class CustomerMotorcycleModelTest(TestCase):
         )
 
     def test_customer_motorcycle_creation(self):
-        """
-        Test that a CustomerMotorcycle instance can be created using the factory.
-        """
+        #--
         self.assertIsNotNone(self.customer_motorcycle)
         self.assertIsInstance(self.customer_motorcycle, CustomerMotorcycle)
         self.assertEqual(CustomerMotorcycle.objects.count(), 1)
 
     def test_str_method(self):
-        """
-        Test the __str__ method of the CustomerMotorcycle model.
-        Updated to reflect removal of 'make' field.
-        """
+        #--
         expected_str = (
             f"{self.customer_motorcycle.year} {self.customer_motorcycle.brand} {self.customer_motorcycle.model} "
             f"(Owner: {self.customer_motorcycle.service_profile.name})"
@@ -53,10 +42,7 @@ class CustomerMotorcycleModelTest(TestCase):
         self.assertEqual(str(self.customer_motorcycle), expected_str)
 
     def test_field_attributes(self):
-        """
-        Test the attributes of various fields in the CustomerMotorcycle model.
-        Updated to reflect changes in required/optional fields.
-        """
+        #--
         motorcycle = self.customer_motorcycle
 
                          
@@ -122,10 +108,7 @@ class CustomerMotorcycleModelTest(TestCase):
         self.assertTrue(field.auto_now)
 
     def test_clean_method_required_fields(self):
-        """
-        Test clean method for all required fields.
-        Updated to correctly assert the error messages, accounting for Django's default messages.
-        """
+        #--
         service_profile = ServiceProfileFactory()
 
                             
@@ -207,9 +190,7 @@ class CustomerMotorcycleModelTest(TestCase):
 
 
     def test_clean_method_year_validation(self):
-        """
-        Test clean method for motorcycle year validation.
-        """
+        #--
         service_profile = ServiceProfileFactory()
         current_year = date.today().year
 
@@ -256,10 +237,7 @@ class CustomerMotorcycleModelTest(TestCase):
             self.fail(f"full_clean raised ValidationError unexpectedly for 100 years ago: {e.message_dict}")
 
     def test_clean_method_vin_number_validation(self):
-        """
-        Test clean method for VIN number length validation.
-        Updated to correctly assert the error messages, accounting for Django's default messages.
-        """
+        #--
         service_profile = ServiceProfileFactory()
 
                                    
@@ -310,10 +288,7 @@ class CustomerMotorcycleModelTest(TestCase):
             self.fail(f"full_clean raised ValidationError unexpectedly for None VIN: {e.message_dict}")
 
     def test_clean_method_odometer_validation(self):
-        """
-        Test clean method for odometer reading validation (not negative).
-        Updated to correctly assert the error messages, accounting for Django's default messages.
-        """
+        #--
         service_profile = ServiceProfileFactory()
 
                                 
@@ -354,9 +329,7 @@ class CustomerMotorcycleModelTest(TestCase):
             self.fail(f"full_clean raised ValidationError unexpectedly for positive odometer: {e.message_dict}")
 
     def test_vin_number_unique_constraint_non_null(self):
-        """
-        Test that vin_number enforces uniqueness for non-null values.
-        """
+        #--
                                                                                 
         existing_motorcycle = CustomerMotorcycleFactory(
             vin_number="UNIQUEVIN123456789",
@@ -374,10 +347,7 @@ class CustomerMotorcycleModelTest(TestCase):
         self.assertIn("unique constraint failed", str(cm.exception).lower())
 
     def test_vin_number_unique_constraint_null_values(self):
-        """
-        Test that multiple null vin_number values are allowed.
-        Ensure all required fields are provided.
-        """
+        #--
                                                                                                   
         CustomerMotorcycleFactory(
             vin_number=None,
@@ -393,10 +363,7 @@ class CustomerMotorcycleModelTest(TestCase):
 
 
     def test_timestamps_auto_now_add_and_auto_now(self):
-        """
-        Test that created_at is set on creation and updated_at is updated on save.
-        Ensure all required fields are provided.
-        """
+        #--
         motorcycle = CustomerMotorcycleFactory(
             brand="Suzuki", model="GSX-R", year=2019, rego="GHI789", odometer=8000,
             transmission="MANUAL", engine_size="750cc"

@@ -36,7 +36,8 @@ class ContactView(TemplateView):
         if form.is_valid():
             enquiry = form.save()
 
-            # Send email to user
+            ##
+
             send_mail(
                 'Enquiry Received - Scooter Shop',
                 f'Hi {enquiry.name},\n\nThank you for your enquiry. We have received your message and will get back to you shortly.\n\nYour message:\n{enquiry.message}\n\nRegards,\nScooter Shop Team',
@@ -45,12 +46,14 @@ class ContactView(TemplateView):
                 fail_silently=False,
             )
 
-            # Send email to admin
+            ##
+
             send_mail(
                 'New Enquiry - Scooter Shop',
                 f'A new enquiry has been submitted:\n\nName: {enquiry.name}\nEmail: {enquiry.email}\nPhone: {enquiry.phone_number or "N/A"}\nMessage:\n{enquiry.message}',
                 settings.DEFAULT_FROM_EMAIL,
-                [settings.ADMIN_EMAIL], # Assuming ADMIN_EMAIL is defined in settings.py
+                [settings.ADMIN_EMAIL], ##
+
                 fail_silently=False,
             )
 

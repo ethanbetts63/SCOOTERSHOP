@@ -18,19 +18,10 @@ from ..test_helpers.model_factories import (
 from service.ajax.ajax_search_service_bookings import search_service_bookings_ajax
 
 class AjaxSearchServiceBookingsTest(TestCase):
-    """
-    Tests for the AJAX view `search_service_bookings_ajax`.
-    This test suite utilizes model factories to create actual database objects
-    for more realistic testing of the search functionality across multiple fields.
-    """
+    #--
 
     def setUp(self):
-        """
-        Set up for each test method.
-        Initialize a RequestFactory to create dummy request objects.
-        Create a staff user for authentication.
-        Create various ServiceBooking instances with linked data for comprehensive testing.
-        """
+        #--
         self.factory = RequestFactory()
 
                                                                                          
@@ -113,7 +104,7 @@ class AjaxSearchServiceBookingsTest(TestCase):
         )
 
     def _make_request(self, query_term, user=None):
-        """Helper to create and send a GET request to the AJAX view."""
+        #--
         url = reverse('service:admin_api_search_bookings')
         if query_term:
             url += f'?query={query_term}'
@@ -125,7 +116,7 @@ class AjaxSearchServiceBookingsTest(TestCase):
         return search_service_bookings_ajax(request)
 
     def test_search_by_booking_reference(self):
-        """Test searching by full or partial booking reference."""
+        #--
         response = self._make_request(query_term='ABCDEF01')
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -139,7 +130,7 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertEqual(content['bookings'][0]['reference'], self.booking2.service_booking_reference)
 
     def test_search_by_customer_name(self):
-        """Test searching by customer's full name."""
+        #--
         response = self._make_request(query_term='John Doe')
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -153,7 +144,7 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertEqual(content['bookings'][0]['customer_name'], self.profile2.name)
 
     def test_search_by_customer_email(self):
-        """Test searching by customer's email address."""
+        #--
         response = self._make_request(query_term='jane.smith@example.com')
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -161,7 +152,7 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertEqual(content['bookings'][0]['customer_name'], self.profile2.name)
 
     def test_search_by_motorcycle_brand_model_year(self):
-        """Test searching by motorcycle brand, model, or year."""
+        #--
         response = self._make_request(query_term='Honda')        
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -187,7 +178,7 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertIn('Suzuki', content['bookings'][0]['motorcycle_info'])
 
     def test_search_by_rego(self):
-        """Test searching by motorcycle license plate."""
+        #--
         response = self._make_request(query_term='AW004')
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -195,7 +186,7 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertEqual(content['bookings'][0]['customer_name'], self.profile4.name)
 
     def test_search_by_service_type_name_description(self):
-        """Test searching by service type name or description."""
+        #--
         response = self._make_request(query_term='Oil Change')       
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -212,7 +203,7 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertEqual(content['bookings'][1]['service_type_name'], self.service_type4.name)                     
 
     def test_search_by_booking_status(self):
-        """Test searching by booking status."""
+        #--
         response = self._make_request(query_term='confirmed')
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -225,7 +216,7 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertEqual(len(content['bookings']), 2)                                      
 
     def test_search_by_customer_notes(self):
-        """Test searching by customer notes."""
+        #--
         response = self._make_request(query_term='synthetic oil')
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -233,11 +224,7 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertEqual(content['bookings'][0]['reference'], self.booking1.service_booking_reference)
 
     def test_search_multiple_matches_and_ordering(self):
-        """
-        Test searching where multiple bookings match, ensuring correct ordering (by dropoff_date descending).
-        Bookings with 'pending' status: booking2 (dropoff_date +10 days), booking4 (dropoff_date +1 day)
-        Expected order: booking2, then booking4
-        """
+        #--
         response = self._make_request(query_term='pending')
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -247,7 +234,7 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertEqual(content['bookings'][1]['reference'], self.booking4.service_booking_reference)
 
     def test_search_no_matches(self):
-        """Test searching for a term that should yield no matches."""
+        #--
         response = self._make_request(query_term='NonExistentBookingTerm')
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -255,7 +242,7 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertEqual(content['bookings'], [])
 
     def test_search_empty_query(self):
-        """Test that an empty search query returns an empty list of bookings."""
+        #--
         response = self._make_request(query_term='')
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -263,7 +250,7 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertEqual(content['bookings'], [])
 
     def test_search_no_query_parameter(self):
-        """Test that no 'query' parameter also returns an empty list of bookings."""
+        #--
         url = reverse('service:admin_api_search_bookings')
         request = self.factory.get(url)
         request.user = self.staff_user                        
@@ -276,10 +263,7 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertEqual(content['bookings'], [])
 
     def test_only_get_requests_allowed(self):
-        """
-        Test that only GET requests are allowed for this view.
-        (The @require_GET decorator handles this).
-        """
+        #--
         url = reverse('service:admin_api_search_bookings')
         request = self.factory.post(url)                      
         request.user = self.staff_user                        
@@ -290,7 +274,7 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertEqual(response.status_code, 405)
 
     def test_permission_denied_for_non_staff_user(self):
-        """Test that a non-staff user gets a 403 Permission Denied response."""
+        #--
         response = self._make_request(query_term='John Doe', user=self.non_staff_user)
         self.assertEqual(response.status_code, 403)
         content = json.loads(response.content)

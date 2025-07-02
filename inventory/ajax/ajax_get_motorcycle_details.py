@@ -9,11 +9,7 @@ from inventory.models import Motorcycle
 @require_GET
 @login_required
 def get_motorcycle_details_ajax(request, pk):
-    """
-    AJAX endpoint to retrieve detailed information for a specific Motorcycle.
-    Returns a JSON response with all fields necessary to populate the motorcycle display area
-    in the admin sales booking form.
-    """
+    #--
                                                         
     if not request.user.is_staff:
         return JsonResponse({'error': 'Permission denied'}, status=403)

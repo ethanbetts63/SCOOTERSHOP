@@ -5,10 +5,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class AdminServiceProfileForm(forms.ModelForm):
-    """
-    Form for administrators to create and manage ServiceProfile instances.
-    Includes an optional field to link an existing Django User account.
-    """
+    #--
     user = forms.ModelChoiceField(
         queryset=User.objects.all().order_by('username'),
         required=False,
@@ -56,10 +53,7 @@ class AdminServiceProfileForm(forms.ModelForm):
         }
 
     def clean_user(self):
-        """
-        Custom clean method for the 'user' field to ensure that if a user is
-        selected, they don't already have a service profile linked to a *different* profile.
-        """
+        #--
         user = self.cleaned_data.get('user')
 
                                 
@@ -82,9 +76,7 @@ class AdminServiceProfileForm(forms.ModelForm):
         return user
 
     def clean(self):
-        """
-        Custom validation to ensure either 'user' is provided OR 'name', 'email', and 'phone_number' are provided.
-        """
+        #--
         cleaned_data = super().clean()
         user = cleaned_data.get('user')
         name = cleaned_data.get('name')

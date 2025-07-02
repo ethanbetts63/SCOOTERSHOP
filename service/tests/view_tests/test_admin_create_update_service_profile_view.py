@@ -10,17 +10,11 @@ from service.forms import AdminServiceProfileForm
 from ..test_helpers.model_factories import UserFactory, ServiceProfileFactory
 
 class ServiceProfileCreateUpdateViewTest(TestCase):
-    """
-    Tests for the ServiceProfileCreateUpdateView.
-    Covers access control, GET requests (create/update), and POST requests (create/update, valid/invalid).
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up non-modified objects used by all test methods.
-        Create different types of users and service profiles for testing access and view logic.
-        """
+        #--
         cls.staff_user = UserFactory(username='staff_user', is_staff=True, is_superuser=False)
         cls.superuser = UserFactory(username='superuser', is_staff=True, is_superuser=True)
         cls.regular_user = UserFactory(username='regular_user', is_staff=False, is_superuser=False)
@@ -34,10 +28,7 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
 
 
     def setUp(self):
-        """
-        Set up for each test method.
-        Initialize client and message storage for each test to avoid interference.
-        """
+        #--
         self.client = Client()
                                                              
                                                                          
@@ -54,9 +45,7 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
                                                                             
 
     def test_view_redirects_anonymous_user(self):
-        """
-        Ensure anonymous users are redirected to the login page.
-        """
+        #--
         response = self.client.get(self.create_url)
         self.assertRedirects(response, reverse('users:login') + f'?next={self.create_url}')                                                
 
@@ -64,9 +53,7 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
         self.assertRedirects(response, reverse('users:login') + f'?next={self.update_url}')
 
     def test_view_denies_access_to_regular_user(self):
-        """
-        Ensure regular (non-staff/non-superuser) users are denied access.
-        """
+        #--
         self.client.force_login(self.regular_user)
         response = self.client.get(self.create_url)
         self.assertEqual(response.status_code, 403)            
@@ -75,9 +62,7 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
         self.assertEqual(response.status_code, 403)            
 
     def test_view_grants_access_to_staff_user(self):
-        """
-        Ensure staff users can access the view.
-        """
+        #--
         self.client.force_login(self.staff_user)
         response = self.client.get(self.create_url)
         self.assertEqual(response.status_code, 200)
@@ -86,9 +71,7 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_view_grants_access_to_superuser(self):
-        """
-        Ensure superusers can access the view.
-        """
+        #--
         self.client.force_login(self.superuser)
         response = self.client.get(self.create_url)
         self.assertEqual(response.status_code, 200)
@@ -100,9 +83,7 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
                                
 
     def test_get_request_create_new_profile(self):
-        """
-        Test GET request for displaying the form to create a new ServiceProfile.
-        """
+        #--
         self.client.force_login(self.staff_user)
         response = self.client.get(self.create_url)
 
@@ -115,9 +96,7 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
         self.assertFalse(response.context['form'].is_bound)
 
     def test_get_request_update_existing_profile(self):
-        """
-        Test GET request for displaying the form to update an existing ServiceProfile.
-        """
+        #--
         self.client.force_login(self.staff_user)
         response = self.client.get(self.update_url)
 
@@ -135,10 +114,7 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
 
 
     def test_get_request_update_non_existent_profile(self):
-        """
-        Test GET request for an update URL with a non-existent PK.
-        Should return 404.
-        """
+        #--
         self.client.force_login(self.staff_user)
         non_existent_pk = self.existing_profile.pk + 9999
         non_existent_url = reverse('service:admin_edit_service_profile', kwargs={'pk': non_existent_pk})
@@ -149,9 +125,7 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
                                          
 
     def test_post_request_create_new_profile_valid(self):
-        """
-        Test POST request for creating a new ServiceProfile with valid data.
-        """
+        #--
         self.client.force_login(self.staff_user)
         initial_profile_count = ServiceProfile.objects.count()
         new_user = UserFactory(username='new_linked_user', email='new_linked@example.com')
@@ -181,10 +155,7 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
         self.assertEqual(messages_list[0].level, messages.SUCCESS)
 
     def test_post_request_create_new_profile_invalid(self):
-        """
-        Test POST request for creating a new ServiceProfile with invalid data.
-        (e.g., missing required fields when no user is linked).
-        """
+        #--
         self.client.force_login(self.staff_user)
         initial_profile_count = ServiceProfile.objects.count()
 
@@ -218,9 +189,7 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
                                          
 
     def test_post_request_update_existing_profile_valid(self):
-        """
-        Test POST request for updating an existing ServiceProfile with valid data.
-        """
+        #--
         self.client.force_login(self.staff_user)
         original_name = self.existing_profile.name
         updated_name = "Updated Existing Profile Name"
@@ -250,10 +219,7 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
 
 
     def test_post_request_update_existing_profile_invalid(self):
-        """
-        Test POST request for updating an existing ServiceProfile with invalid data.
-        (e.g., attempting to link to an already linked user, or missing required fields).
-        """
+        #--
         self.client.force_login(self.staff_user)
         original_name = self.existing_profile.name
 
@@ -292,10 +258,7 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
 
 
     def test_post_request_update_non_existent_profile(self):
-        """
-        Test POST request for an update URL with a non-existent PK.
-        Should return 404.
-        """
+        #--
         self.client.force_login(self.staff_user)
         non_existent_pk = self.existing_profile.pk + 9999
         non_existent_url = reverse('service:admin_edit_service_profile', kwargs={'pk': non_existent_pk})

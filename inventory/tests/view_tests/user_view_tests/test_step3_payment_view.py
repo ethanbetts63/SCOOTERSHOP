@@ -27,16 +27,11 @@ User = get_user_model()
                                  
 @patch('stripe.api_key', 'sk_test_mock_key')
 class Step3PaymentViewTest(TestCase):
-    """
-    Tests for the Step3PaymentView (dispatch, GET, and POST methods).
-    This class tests the Stripe payment integration for sales bookings.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up common data for all tests in this class.
-        """
+        #--
         cls.user = UserFactory()
         cls.inventory_settings = InventorySettingsFactory(
             enable_reservation_by_deposit=True,
@@ -47,9 +42,7 @@ class Step3PaymentViewTest(TestCase):
         cls.base_url = reverse('inventory:step3_payment')
 
     def setUp(self):
-        """
-        Set up for each test method.
-        """
+        #--
         TempSalesBooking.objects.all().delete()
         Payment.objects.all().delete()
         SalesProfile.objects.all().delete()
@@ -69,9 +62,7 @@ class Step3PaymentViewTest(TestCase):
                                    
 
     def test_dispatch_no_temp_booking_uuid_in_session_redirects(self):
-        """
-        Tests that dispatch redirects if no temp_sales_booking_uuid is in session.
-        """
+        #--
         self.client.logout()
         session = self.client.session
         if 'temp_sales_booking_uuid' in session:
@@ -84,9 +75,7 @@ class Step3PaymentViewTest(TestCase):
         self.assertTrue(any("Your booking session has expired or is invalid." in str(m) for m in messages))
 
     def test_dispatch_invalid_temp_booking_uuid_redirects(self):
-        """
-        Tests that dispatch redirects if an invalid temp_sales_booking_uuid is in session.
-        """
+        #--
         session = self.client.session
         session['temp_sales_booking_uuid'] = str(uuid.uuid4())
         session.save()
@@ -97,9 +86,7 @@ class Step3PaymentViewTest(TestCase):
         self.assertTrue(any("Your booking session could not be found." in str(m) for m in messages))
 
     def test_dispatch_no_motorcycle_redirects(self):
-        """
-        Tests dispatch redirects if no motorcycle is linked to the booking.
-        """
+        #--
         self.temp_booking.motorcycle = None
         self.temp_booking.save()
         
@@ -109,9 +96,7 @@ class Step3PaymentViewTest(TestCase):
         self.assertTrue(any("Please select a motorcycle first." in str(m) for m in messages))
 
     def test_dispatch_no_sales_profile_redirects(self):
-        """
-        Tests dispatch redirects if no sales profile is linked to the booking.
-        """
+        #--
         self.temp_booking.sales_profile = None
         self.temp_booking.save()
 
@@ -121,9 +106,7 @@ class Step3PaymentViewTest(TestCase):
         self.assertTrue(any("Please provide your contact details first." in str(m) for m in messages))
 
     def test_dispatch_deposit_not_required_redirects_to_confirmation(self):
-        """
-        Tests that dispatch redirects to confirmation if deposit is not required.
-        """
+        #--
         self.temp_booking.deposit_required_for_flow = False
         self.temp_booking.stripe_payment_intent_id = 'pi_12345'
         self.temp_booking.save()
@@ -138,9 +121,7 @@ class Step3PaymentViewTest(TestCase):
 
     @patch('inventory.views.user_views.step3_payment_view.create_or_update_sales_payment_intent')
     def test_get_creates_new_intent_and_payment_obj(self, mock_create_update):
-        """
-        Tests GET request creates a new Stripe PaymentIntent and local Payment object.
-        """
+        #--
         mock_intent = MagicMock(client_secret='new_client_secret', id='pi_new_123')
                                                                                     
         mock_payment = PaymentFactory.build(stripe_payment_intent_id=mock_intent.id, temp_sales_booking=self.temp_booking)
@@ -159,9 +140,7 @@ class Step3PaymentViewTest(TestCase):
 
     @patch('inventory.views.user_views.step3_payment_view.create_or_update_sales_payment_intent')
     def test_get_invalid_amount_redirects(self, mock_create_update):
-        """
-        Tests redirect if the amount to pay is zero or None.
-        """
+        #--
         self.temp_booking.amount_paid = Decimal('0.00')
         self.temp_booking.save()
 
@@ -173,9 +152,7 @@ class Step3PaymentViewTest(TestCase):
 
     @patch('inventory.views.user_views.step3_payment_view.create_or_update_sales_payment_intent')
     def test_get_stripe_error_redirects(self, mock_create_update):
-        """
-        Tests redirect on Stripe API error during GET request.
-        """
+        #--
         mock_create_update.side_effect = stripe.error.StripeError("Stripe API error")
 
         response = self.client.get(self.base_url)
@@ -187,9 +164,7 @@ class Step3PaymentViewTest(TestCase):
 
     @patch('stripe.PaymentIntent.retrieve')
     def test_post_payment_succeeded(self, mock_retrieve):
-        """
-        Tests POST when Stripe reports payment succeeded.
-        """
+        #--
         payment_intent_id = 'pi_test_succeeded'
                                                                                                   
                                                               
@@ -213,10 +188,7 @@ class Step3PaymentViewTest(TestCase):
 
     @patch('stripe.PaymentIntent.retrieve')
     def test_post_payment_requires_action(self, mock_retrieve):
-        """
-        Tests POST when Stripe reports payment requires action.
-        The local Payment object's status is expected to be updated by the webhook.
-        """
+        #--
         payment_intent_id = 'pi_test_requires_action'
                                                                                                   
                                                               
@@ -242,10 +214,7 @@ class Step3PaymentViewTest(TestCase):
 
     @patch('stripe.PaymentIntent.retrieve')
     def test_post_payment_failed(self, mock_retrieve):
-        """
-        Tests POST when Stripe reports payment failed.
-        The local Payment object's status is expected to be updated by the webhook.
-        """
+        #--
         payment_intent_id = 'pi_test_failed'
                                                                                                   
                                                               
@@ -270,9 +239,7 @@ class Step3PaymentViewTest(TestCase):
                                                         
 
     def test_post_invalid_json_returns_400(self):
-        """
-        Tests POST with invalid JSON.
-        """
+        #--
         response = self.client.post(
             self.base_url,
             '{"invalid_json": "test"',
@@ -282,9 +249,7 @@ class Step3PaymentViewTest(TestCase):
         self.assertIn('Invalid JSON', response.json()['error'])
 
     def test_post_missing_payment_intent_id_returns_400(self):
-        """
-        Tests POST with missing payment_intent_id.
-        """
+        #--
         response = self.client.post(
             self.base_url,
             json.dumps({'other_key': 'value'}),
@@ -295,9 +260,7 @@ class Step3PaymentViewTest(TestCase):
 
     @patch('stripe.PaymentIntent.retrieve')
     def test_post_stripe_error_returns_500(self, mock_retrieve):
-        """
-        Tests POST when Stripe API call fails.
-        """
+        #--
         mock_retrieve.side_effect = stripe.error.StripeError("Stripe error")
         response = self.client.post(
             self.base_url,

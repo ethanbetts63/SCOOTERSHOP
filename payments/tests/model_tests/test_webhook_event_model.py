@@ -14,21 +14,14 @@ from ..test_helpers.model_factories import WebhookEventFactory
 
 
 class WebhookEventModelTest(TestCase):
-    """
-    Unit tests for the WebhookEvent model.
-    """
+    #--
 
     def setUp(self):
-        """
-        Clear all WebhookEvent objects before each test to ensure isolation.
-        This prevents issues from other tests' creations.
-        """
+        #--
         WebhookEvent.objects.all().delete()
 
     def test_create_basic_webhook_event(self):
-        """
-        Test that a basic WebhookEvent instance can be created with required fields using the factory.
-        """
+        #--
         stripe_event_id = "evt_test_12345"
         event_type = "payment_intent.succeeded"
 
@@ -47,9 +40,7 @@ class WebhookEventModelTest(TestCase):
 
 
     def test_stripe_event_id_uniqueness(self):
-        """
-        Test that stripe_event_id is unique using the factory.
-        """
+        #--
         stripe_event_id = "evt_unique_id_1"
         event_type = "charge.succeeded"
 
@@ -66,9 +57,7 @@ class WebhookEventModelTest(TestCase):
             )
 
     def test_auto_now_add_for_received_at(self):
-        """
-        Test that 'received_at' is automatically set on creation using the factory.
-        """
+        #--
         event = WebhookEventFactory.create(
             stripe_event_id="evt_time_test",
             event_type="invoice.paid"
@@ -79,9 +68,7 @@ class WebhookEventModelTest(TestCase):
         self.assertLess(time_difference, datetime.timedelta(seconds=5))                                  
 
     def test_payload_json_field(self):
-        """
-        Test the payload JSONField using the factory.
-        """
+        #--
         payload_data = {
             "id": "pi_xyz",
             "object": "payment_intent",
@@ -117,9 +104,7 @@ class WebhookEventModelTest(TestCase):
 
 
     def test_str_method(self):
-        """
-        Test the __str__ method of WebhookEvent using the factory.
-        """
+        #--
         stripe_event_id = "evt_str_method_test"
         event_type = "customer.updated"
                                                         
@@ -134,9 +119,7 @@ class WebhookEventModelTest(TestCase):
 
 
     def test_ordering_by_received_at(self):
-        """
-        Test that WebhookEvents are ordered by received_at in descending order using the factory.
-        """
+        #--
                                                                                
         event1 = WebhookEventFactory.create(stripe_event_id="evt_order_1", event_type="type1")
         time.sleep(0.01)                                  
@@ -149,9 +132,7 @@ class WebhookEventModelTest(TestCase):
         self.assertEqual(list(all_events), [event3, event2, event1])
 
     def test_max_length_constraints(self):
-        """
-        Test max_length constraints for char fields.
-        """
+        #--
         long_id = "a" * 101                         
         long_type = "b" * 101                         
 

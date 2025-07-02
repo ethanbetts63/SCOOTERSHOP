@@ -19,9 +19,7 @@ class UserRefundRequestView(View):
     template_name = 'payments/user_refund_request.html'                                  
 
     def get(self, request, *args, **kwargs):
-        """
-        Displays the empty refund request form.
-        """
+        #--
         form = RefundRequestForm()                           
         context = {
             'form': form,
@@ -31,11 +29,7 @@ class UserRefundRequestView(View):
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
-        """
-        Processes the submitted refund request form.
-        Validates the booking reference and email, creates the refund request,
-        and triggers email notifications.
-        """
+        #--
         form = RefundRequestForm(request.POST)                           
 
         if form.is_valid():

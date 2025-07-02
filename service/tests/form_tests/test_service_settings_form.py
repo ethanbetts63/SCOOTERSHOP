@@ -7,17 +7,11 @@ from service.forms import ServiceBookingSettingsForm
 from ..test_helpers.model_factories import ServiceSettingsFactory
 
 class ServiceBookingSettingsFormTest(TestCase):
-    """
-    Tests for the ServiceBookingSettingsForm.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up non-modified objects used by all test methods.
-        Create a ServiceSettings instance using the factory.
-        The factory ensures a singleton, so we'll always get/update the same one.
-        """
+        #--
         cls.service_settings = ServiceSettingsFactory()
 
                                                                            
@@ -49,9 +43,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         }
 
     def test_form_valid_data(self):
-        """
-        Test that the form is valid with complete and correct data.
-        """
+        #--
         form = ServiceBookingSettingsForm(data=self.valid_data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
                                                       
@@ -63,9 +55,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertIsInstance(form.cleaned_data['latest_same_day_dropoff_time'], time)
 
     def test_form_initialization_with_instance(self):
-        """
-        Test that the form correctly loads data from an existing instance.
-        """
+        #--
                                                                      
         self.service_settings.enable_service_booking = False
         self.service_settings.booking_advance_notice = 5
@@ -95,9 +85,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertEqual(form.initial['after_hours_dropoff_disclaimer'], 'Test disclaimer.')
 
     def test_form_save_updates_instance(self):
-        """
-        Test that saving the form updates the ServiceSettings instance.
-        """
+        #--
         data = self.valid_data.copy()
         data['enable_service_booking'] = False
         data['booking_advance_notice'] = 10
@@ -132,9 +120,7 @@ class ServiceBookingSettingsFormTest(TestCase):
 
                                                                      
     def test_form_valid_drop_off_times(self):
-        """
-        Test that the form is valid with correct drop-off start and end times.
-        """
+        #--
         data = self.valid_data.copy()
         data['drop_off_start_time'] = time(9, 0)
         data['drop_off_end_time'] = time(17, 0)
@@ -144,9 +130,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertEqual(form.cleaned_data['drop_off_end_time'], time(17, 0))
 
     def test_form_invalid_drop_off_times_start_after_end(self):
-        """
-        Test that the form is invalid if drop_off_start_time is after drop_off_end_time.
-        """
+        #--
         data = self.valid_data.copy()
         data['drop_off_start_time'] = time(17, 0)
         data['drop_off_end_time'] = time(9, 0)
@@ -158,9 +142,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertIn('Booking end time must be earlier than start time.', form.errors['drop_off_end_time'])
 
     def test_form_invalid_drop_off_times_start_equals_end(self):
-        """
-        Test that the form is invalid if drop_off_start_time is equal to drop_off_end_time.
-        """
+        #--
         data = self.valid_data.copy()
         data['drop_off_start_time'] = time(10, 0)
         data['drop_off_end_time'] = time(10, 0)
@@ -173,9 +155,7 @@ class ServiceBookingSettingsFormTest(TestCase):
 
                                           
     def test_deposit_calc_method_flat_fee_requires_amount(self):
-        """
-        Test that if deposit_calc_method is FLAT_FEE, deposit_flat_fee_amount is required.
-        """
+        #--
         data = self.valid_data.copy()
         data['enable_deposit'] = True
         data['deposit_calc_method'] = 'FLAT_FEE'
@@ -188,9 +168,7 @@ class ServiceBookingSettingsFormTest(TestCase):
 
 
     def test_deposit_calc_method_percentage_requires_percentage(self):
-        """
-        Test that if deposit_calc_method is PERCENTAGE, deposit_percentage is required.
-        """
+        #--
         data = self.valid_data.copy()
         data['enable_deposit'] = True
         data['deposit_calc_method'] = 'PERCENTAGE'
@@ -202,9 +180,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertIn('This field is required.', form.errors['deposit_percentage'])
 
     def test_booking_open_days_format(self):
-        """
-        Test that booking_open_days accepts comma-separated string.
-        """
+        #--
         data = self.valid_data.copy()
         data['booking_open_days'] = 'Mon,Wed,Fri'
         form = ServiceBookingSettingsForm(data=data)
@@ -223,7 +199,7 @@ class ServiceBookingSettingsFormTest(TestCase):
 
                                          
     def test_drop_off_spacing_mins_valid(self):
-        """Test valid values for drop_off_spacing_mins."""
+        #--
         data = self.valid_data.copy()
         data['drop_off_spacing_mins'] = 15
         form = ServiceBookingSettingsForm(data=data)
@@ -231,7 +207,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertEqual(form.cleaned_data['drop_off_spacing_mins'], 15)
 
     def test_drop_off_spacing_mins_invalid_zero(self):
-        """Test invalid value (zero) for drop_off_spacing_mins."""
+        #--
         data = self.valid_data.copy()
         data['drop_off_spacing_mins'] = 0
         form = ServiceBookingSettingsForm(data=data)
@@ -240,7 +216,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertIn("Drop-off spacing must be a positive integer, typically between 1 and 60 minutes.", form.errors['drop_off_spacing_mins'])
 
     def test_drop_off_spacing_mins_invalid_too_high(self):
-        """Test invalid value (greater than 60) for drop_off_spacing_mins."""
+        #--
         data = self.valid_data.copy()
         data['drop_off_spacing_mins'] = 61
         form = ServiceBookingSettingsForm(data=data)
@@ -250,7 +226,7 @@ class ServiceBookingSettingsFormTest(TestCase):
 
                                             
     def test_max_advance_dropoff_days_valid(self):
-        """Test valid values for max_advance_dropoff_days."""
+        #--
         data = self.valid_data.copy()
         data['max_advance_dropoff_days'] = 30
         form = ServiceBookingSettingsForm(data=data)
@@ -258,7 +234,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertEqual(form.cleaned_data['max_advance_dropoff_days'], 30)
 
     def test_max_advance_dropoff_days_invalid_negative(self):
-        """Test invalid value (negative) for max_advance_dropoff_days."""
+        #--
         data = self.valid_data.copy()
         data['max_advance_dropoff_days'] = -1
         form = ServiceBookingSettingsForm(data=data)
@@ -268,9 +244,7 @@ class ServiceBookingSettingsFormTest(TestCase):
 
                                                           
     def test_latest_same_day_dropoff_time_valid(self):
-        """
-        Test that latest_same_day_dropoff_time is valid when within the drop-off time range.
-        """
+        #--
         data = self.valid_data.copy()
         data['drop_off_start_time'] = time(9, 0)
         data['drop_off_end_time'] = time(17, 0)
@@ -279,9 +253,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
 
     def test_latest_same_day_dropoff_time_invalid_before_start(self):
-        """
-        Test that latest_same_day_dropoff_time is invalid when before drop_off_start_time.
-        """
+        #--
         data = self.valid_data.copy()
         data['drop_off_start_time'] = time(9, 0)
         data['drop_off_end_time'] = time(17, 0)
@@ -292,9 +264,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertIn(f"Latest same-day drop-off time must be between {data['drop_off_start_time'].strftime('%H:%M')} and {data['drop_off_end_time'].strftime('%H:%M')}, inclusive.", form.errors['latest_same_day_dropoff_time'])
 
     def test_latest_same_day_dropoff_time_invalid_after_end(self):
-        """
-        Test that latest_same_day_dropoff_time is invalid when after drop_off_end_time.
-        """
+        #--
         data = self.valid_data.copy()
         data['drop_off_start_time'] = time(9, 0)
         data['drop_off_end_time'] = time(17, 0)

@@ -10,18 +10,10 @@ from ..test_helpers.model_factories import CustomerMotorcycleFactory, ServicePro
 from service.ajax.ajax_get_customer_motorcycle_details import get_motorcycle_details_ajax
 
 class AjaxGetCustomerMotorcycleDetailsTest(TestCase):
-    """
-    Tests for the AJAX view `get_motorcycle_details_ajax`.
-    This test suite utilizes model factories to create actual database objects
-    for more realistic testing.
-    """
+    #--
 
     def setUp(self):
-        """
-        Set up for each test method.
-        Initialize a RequestFactory to create dummy request objects.
-        Create a ServiceProfile and CustomerMotorcycle using factories.
-        """
+        #--
         self.factory = RequestFactory()
                                           
         self.service_profile = ServiceProfileFactory()
@@ -29,10 +21,7 @@ class AjaxGetCustomerMotorcycleDetailsTest(TestCase):
         self.motorcycle = CustomerMotorcycleFactory(service_profile=self.service_profile)
 
     def test_get_motorcycle_details_success(self):
-        """
-        Test that the view correctly returns detailed information for a valid motorcycle ID.
-        Uses a real motorcycle object created by a factory.
-        """
+        #--
                                                                             
                                                                           
         url = reverse('service:admin_api_get_motorcycle_details', args=[self.motorcycle.pk])
@@ -65,9 +54,7 @@ class AjaxGetCustomerMotorcycleDetailsTest(TestCase):
 
 
     def test_get_motorcycle_details_not_found(self):
-        """
-        Test that the view returns a 404 error if the motorcycle ID does not exist.
-        """
+        #--
         invalid_motorcycle_id = self.motorcycle.pk + 100                                  
 
                                                         
@@ -86,10 +73,7 @@ class AjaxGetCustomerMotorcycleDetailsTest(TestCase):
 
 
     def test_only_get_requests_allowed(self):
-        """
-        Test that only GET requests are allowed for this view.
-        (The @require_GET decorator handles this).
-        """
+        #--
                                                             
         url = reverse('service:admin_api_get_motorcycle_details', args=[self.motorcycle.pk])
 

@@ -12,7 +12,8 @@ class PrivacyPolicyView(TemplateView):
         context = super().get_context_data(**kwargs)
         site_settings = SiteSettings.get_settings()
         if not site_settings.enable_privacy_policy_page and not self.request.user.is_staff:
-            return redirect('core:index') # This redirect won't work directly in get_context_data, will need to be handled in dispatch
+            return redirect('core:index') ##
+
         context['settings'] = site_settings
         return context
 

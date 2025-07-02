@@ -3,9 +3,7 @@ import uuid
                                                                                                         
 
 class TempServiceBooking(models.Model):
-    """
-    Temporary model to incrementally store booking data during the multi-step user flow.
-    """
+    #--
                                 
     PAYMENT_METHOD_CHOICES = [
         ('online_full', 'Full Payment Online'),
@@ -63,7 +61,7 @@ class TempServiceBooking(models.Model):
                                                                
                                                       
         profile_name = self.service_profile.name if self.service_profile else "Anonymous"
-        return f"Temp Booking {{self.session_uuid}} for {profile_name} on {self.dropoff_date}"
+        return f"Temp Booking { self.session_uuid}  for {profile_name} on {self.dropoff_date}"
 
     class Meta:
         verbose_name = "Temporary Service Booking"

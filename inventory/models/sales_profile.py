@@ -3,10 +3,7 @@
 from django.db import models
 
 class SalesProfile(models.Model):
-    """
-    Stores customer contact, address, and driver's license details
-    for sales and reservation bookings.
-    """
+    #--
                                      
     user = models.OneToOneField(
         'users.User',                                                 

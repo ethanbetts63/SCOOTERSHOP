@@ -19,24 +19,18 @@ from payments.tests.test_helpers.model_factories import (
 settings.STRIPE_SECRET_KEY = 'sk_test_dummykey'
 
 class ProcessRefundViewTests(TestCase):
-    """
-    Tests for the ProcessRefundView, which handles initiating Stripe refunds.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up non-modified data for all test methods.
-        """
+        #--
         cls.client = Client()
         cls.admin_user = UserFactory(is_staff=True, is_superuser=True)
         cls.regular_user = UserFactory(is_staff=False, is_superuser=False)
 
 
     def setUp(self):
-        """
-        Log in the admin user before each test, unless explicitly logged out.
-        """
+        #--
         self.client.force_login(self.admin_user)
 
 
@@ -45,9 +39,7 @@ class ProcessRefundViewTests(TestCase):
     def test_successful_service_booking_refund(
         self, mock_is_admin, mock_stripe_refund_create
     ):
-        """
-        Tests successful processing of a refund for a ServiceBooking.
-        """
+        #--
         mock_stripe_refund_create.return_value = MagicMock(
             id='re_mockedservice456',
             status='succeeded'
@@ -110,9 +102,7 @@ class ProcessRefundViewTests(TestCase):
     def test_successful_sales_booking_refund(
         self, mock_is_admin, mock_stripe_refund_create
     ):
-        """
-        Tests successful processing of a refund for a SalesBooking.
-        """
+        #--
         mock_stripe_refund_create.return_value = MagicMock(
             id='re_mockedsales789',
             status='succeeded'
@@ -173,9 +163,7 @@ class ProcessRefundViewTests(TestCase):
 
     @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
     def test_refund_invalid_status_rejection(self, mock_is_admin):
-        """
-        Tests that a refund request with an invalid status is rejected.
-        """
+        #--
         refund_request = RefundRequestFactory(
             status='failed',                                          
             amount_to_refund=Decimal('50.00'),
@@ -198,9 +186,7 @@ class ProcessRefundViewTests(TestCase):
 
     @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
     def test_refund_no_associated_payment_rejection(self, mock_is_admin):
-        """
-        Tests that a refund request with no associated payment is rejected.
-        """
+        #--
         refund_request = RefundRequestFactory(
             status='pending',                                             
             amount_to_refund=Decimal('50.00'),
@@ -223,9 +209,7 @@ class ProcessRefundViewTests(TestCase):
 
     @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
     def test_refund_invalid_amount_rejection(self, mock_is_admin):
-        """
-        Tests that a refund request with invalid/zero amount_to_refund is rejected.
-        """
+        #--
         refund_request = RefundRequestFactory(
             status='pending',                                                     
             amount_to_refund=Decimal('0.00'),                 
@@ -249,9 +233,7 @@ class ProcessRefundViewTests(TestCase):
 
     @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
     def test_refund_no_stripe_payment_intent_id_rejection(self, mock_is_admin):
-        """
-        Tests that a refund request with no Stripe Payment Intent ID is rejected.
-        """
+        #--
         refund_request = RefundRequestFactory(
             status='pending',                                                     
             amount_to_refund=Decimal('50.00'),
@@ -278,10 +260,7 @@ class ProcessRefundViewTests(TestCase):
     def test_generic_exception_during_refund_creation(
         self, mock_is_admin, mock_stripe_refund_create
     ):
-        """
-        Tests handling of a generic Exception during refund creation (e.g., unexpected Python error).
-        Ensures refund_request status becomes 'failed' and no Stripe ID is set.
-        """
+        #--
                                                                      
         mock_stripe_refund_create.side_effect = ValueError("Something went wrong internally")
 
@@ -331,9 +310,7 @@ class ProcessRefundViewTests(TestCase):
 
     @patch('payments.views.Refunds.process_refund.is_admin', return_value=False)
     def test_unauthorized_access(self, mock_is_admin):
-        """
-        Tests that a non-admin user is redirected and cannot process a refund.
-        """
+        #--
         self.client.force_login(self.regular_user)
 
         refund_request = RefundRequestFactory(

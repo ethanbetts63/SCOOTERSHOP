@@ -7,10 +7,7 @@ from datetime import date
 from django.utils import timezone
 
 class AdminBookingDetailsForm(forms.ModelForm):
-    """
-    Form for admins to create and update service booking details.
-    This is now a ModelForm to handle both creation and editing of ServiceBooking instances.
-    """
+    #--
                                                                                    
     estimated_pickup_date = forms.DateField(
         widget=forms.DateInput(attrs={'class': 'form-control flatpickr-admin-date-input', 'placeholder': 'Estimated pickup date'}),
@@ -67,9 +64,7 @@ class AdminBookingDetailsForm(forms.ModelForm):
         self.fields['service_type'].empty_label = _("Select a Service Type")
 
     def clean(self):
-        """
-        Custom clean method for cross-field validation with warnings.
-        """
+        #--
         cleaned_data = super().clean()
         service_date = cleaned_data.get('service_date')
         dropoff_date = cleaned_data.get('dropoff_date')
@@ -106,7 +101,5 @@ class AdminBookingDetailsForm(forms.ModelForm):
         return cleaned_data
 
     def get_warnings(self):
-        """
-        Returns a list of non-blocking warning messages generated during clean.
-        """
+        #--
         return getattr(self, '_warnings', [])

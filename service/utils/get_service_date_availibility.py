@@ -9,15 +9,7 @@ from service.models import ServiceSettings, BlockedServiceDate
 from service.models import ServiceBooking                                                                    
 
 def get_service_date_availability():
-    """
-    Calculates and returns availability data for the service booking calendar.
-    This includes the minimum selectable date and a list of dates/ranges to disable.
-
-    Returns:
-        tuple: A tuple containing:
-            - min_date (datetime.date): The earliest date a user can select.
-            - disabled_dates_json (str): JSON string of dates/ranges to disable for Flatpickr.
-    """
+    #--
     service_settings = ServiceSettings.objects.first()
     
                                             

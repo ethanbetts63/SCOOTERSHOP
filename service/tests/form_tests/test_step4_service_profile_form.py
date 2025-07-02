@@ -3,16 +3,11 @@ from service.forms import ServiceBookingUserForm
 from ..test_helpers.model_factories import ServiceProfileFactory
 
 class ServiceBookingUserFormTest(TestCase):
-    """
-    Tests for the ServiceBookingUserForm (Step 4 form).
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up non-modified objects used by all test methods.
-        Create a ServiceProfile instance using the factory for valid data.
-        """
+        #--
         cls.valid_service_profile_data = {
             'name': 'John Doe',
             'email': 'john.doe@example.com',
@@ -26,9 +21,7 @@ class ServiceBookingUserFormTest(TestCase):
         }
 
     def test_form_valid_data(self):
-        """
-        Test that the form is valid with correct data.
-        """
+        #--
         form = ServiceBookingUserForm(data=self.valid_service_profile_data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
 
@@ -47,10 +40,7 @@ class ServiceBookingUserFormTest(TestCase):
         self.assertEqual(cleaned_data['country'], 'AU')
 
     def test_form_invalid_data_missing_required_fields(self):
-        """
-        Test that the form is invalid if required fields are missing.
-        'name', 'email', 'phone_number', 'address_line_1', 'city', 'post_code', 'country' are required.
-        """
+        #--
         required_fields = ['name', 'email', 'phone_number', 'address_line_1', 'city', 'post_code', 'country']
 
         for field in required_fields:
@@ -63,9 +53,7 @@ class ServiceBookingUserFormTest(TestCase):
                 self.assertIn('This field is required.', form.errors[field])
 
     def test_form_invalid_email_format(self):
-        """
-        Test that the form is invalid with an incorrectly formatted email address.
-        """
+        #--
         data = self.valid_service_profile_data.copy()
         data['email'] = 'invalid-email'                        
         form = ServiceBookingUserForm(data=data)
@@ -80,10 +68,7 @@ class ServiceBookingUserFormTest(TestCase):
         self.assertIn('Enter a valid email address.', form.errors['email'])
 
     def test_form_invalid_phone_number_format(self):
-        """
-        Test that the form is invalid with an incorrectly formatted phone number.
-        The ServiceProfile model's clean method has a regex for phone numbers.
-        """
+        #--
         data = self.valid_service_profile_data.copy()
 
                                                                                               
@@ -111,10 +96,7 @@ class ServiceBookingUserFormTest(TestCase):
 
 
     def test_form_with_existing_service_profile(self):
-        """
-        Test that the form can be initialized with an existing ServiceProfile instance
-        and update it correctly.
-        """
+        #--
         existing_profile = ServiceProfileFactory(
             name='Jane Doe',
             email='jane.doe@example.com',
@@ -158,9 +140,7 @@ class ServiceBookingUserFormTest(TestCase):
 
 
     def test_form_optional_fields(self):
-        """
-        Test that optional fields (address_line_2, state) can be left blank.
-        """
+        #--
         data = self.valid_service_profile_data.copy()
         data['address_line_2'] = ''                                                
         data['state'] = ''                                                

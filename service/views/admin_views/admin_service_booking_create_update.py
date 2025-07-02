@@ -8,19 +8,15 @@ from service.forms import AdminBookingDetailsForm
 from service.utils.admin_create_service_booking import admin_create_service_booking
 
 class AdminServiceBookingCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, View):
-    """
-    Handles the creation and updating of Service Bookings by an administrator.
-    If a 'pk' is provided in the URL, it operates in 'edit' mode.
-    Otherwise, it operates in 'create' mode.
-    """
+    #--
     template_name = 'service/admin_service_booking_create_update.html'
 
     def test_func(self):
-        """Ensures that only staff or superusers can access this view."""
+        #--
         return self.request.user.is_staff or self.request.user.is_superuser
 
     def get_context_data(self, **kwargs):
-        """Prepares and returns the context dictionary for the template."""
+        #--
         context = {
             'ajax_search_customer_url': reverse_lazy('service:admin_api_search_customer'),
             'create_profile_url': reverse_lazy('service:admin_create_service_profile'),
@@ -31,11 +27,7 @@ class AdminServiceBookingCreateUpdateView(LoginRequiredMixin, UserPassesTestMixi
         return context
 
     def get(self, request, pk=None, *args, **kwargs):
-        """
-        Handles GET requests. If a 'pk' is provided, it populates the form
-        with the existing booking's data for editing. Otherwise, it presents
-        a blank form for creation.
-        """
+        #--
         if pk:
                                                                      
             booking = get_object_or_404(ServiceBooking, pk=pk)
@@ -60,9 +52,7 @@ class AdminServiceBookingCreateUpdateView(LoginRequiredMixin, UserPassesTestMixi
         return render(request, self.template_name, context)
 
     def post(self, request, pk=None, *args, **kwargs):
-        """
-        Handles POST requests for both creating new bookings and updating existing ones.
-        """
+        #--
         booking_instance = None
         if pk:
                                                   

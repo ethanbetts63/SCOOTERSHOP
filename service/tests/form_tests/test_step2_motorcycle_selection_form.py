@@ -7,16 +7,11 @@ from service.forms import MotorcycleSelectionForm, ADD_NEW_MOTORCYCLE_OPTION
 from ..test_helpers.model_factories import ServiceProfileFactory, CustomerMotorcycleFactory
 
 class MotorcycleSelectionFormTest(TestCase):
-    """
-    Tests for the MotorcycleSelectionForm.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up non-modified objects used by all test methods.
-        Updated to remove 'make' and include all required fields for CustomerMotorcycleFactory.
-        """
+        #--
         cls.service_profile_with_bikes = ServiceProfileFactory()
         cls.motorcycle1 = CustomerMotorcycleFactory(
             service_profile=cls.service_profile_with_bikes,
@@ -42,11 +37,7 @@ class MotorcycleSelectionFormTest(TestCase):
         cls.service_profile_no_bikes = ServiceProfileFactory()
 
     def test_form_initialization_with_motorcycles(self):
-        """
-        Test that the form initializes correctly with existing motorcycles
-        for a service profile.
-        Updated to reflect removal of 'make' in string representation.
-        """
+        #--
         form = MotorcycleSelectionForm(service_profile=self.service_profile_with_bikes)
         choices = form.fields['selected_motorcycle'].choices
 
@@ -67,10 +58,7 @@ class MotorcycleSelectionFormTest(TestCase):
 
 
     def test_form_initialization_without_motorcycles(self):
-        """
-        Test that the form initializes correctly when no motorcycles exist
-        for a service profile, and 'Add New' is the default.
-        """
+        #--
         form = MotorcycleSelectionForm(service_profile=self.service_profile_no_bikes)
         choices = form.fields['selected_motorcycle'].choices
 
@@ -82,9 +70,7 @@ class MotorcycleSelectionFormTest(TestCase):
         self.assertEqual(form.fields['selected_motorcycle'].initial, ADD_NEW_MOTORCYCLE_OPTION)
 
     def test_form_valid_data_select_existing_motorcycle(self):
-        """
-        Test that the form is valid when an existing motorcycle is selected.
-        """
+        #--
         form = MotorcycleSelectionForm(
             service_profile=self.service_profile_with_bikes,
             data={'selected_motorcycle': str(self.motorcycle1.pk)}
@@ -93,9 +79,7 @@ class MotorcycleSelectionFormTest(TestCase):
         self.assertEqual(form.cleaned_data['selected_motorcycle'], str(self.motorcycle1.pk))
 
     def test_form_valid_data_select_add_new(self):
-        """
-        Test that the form is valid when 'Add New Motorcycle' is selected.
-        """
+        #--
         form = MotorcycleSelectionForm(
             service_profile=self.service_profile_with_bikes,                                                   
             data={'selected_motorcycle': ADD_NEW_MOTORCYCLE_OPTION}
@@ -104,9 +88,7 @@ class MotorcycleSelectionFormTest(TestCase):
         self.assertEqual(form.cleaned_data['selected_motorcycle'], ADD_NEW_MOTORCYCLE_OPTION)
 
     def test_form_invalid_data_missing_selection(self):
-        """
-        Test that the form is invalid if no selection is made (required field).
-        """
+        #--
         form = MotorcycleSelectionForm(
             service_profile=self.service_profile_with_bikes,
             data={'selected_motorcycle': ''}                  
@@ -116,10 +98,7 @@ class MotorcycleSelectionFormTest(TestCase):
         self.assertIn('This field is required.', form.errors['selected_motorcycle'])
 
     def test_form_invalid_data_non_existent_motorcycle_id_format(self):
-        """
-        Test that the form is invalid if a non-integer string is submitted,
-        which should trigger ChoiceField's validation.
-        """
+        #--
         form = MotorcycleSelectionForm(
             service_profile=self.service_profile_with_bikes,
             data={'selected_motorcycle': 'not-an-id'}
@@ -130,12 +109,7 @@ class MotorcycleSelectionFormTest(TestCase):
         self.assertIn('Select a valid choice. not-an-id is not one of the available choices.', form.errors['selected_motorcycle'])
 
     def test_form_invalid_data_unowned_motorcycle_id(self):
-        """
-        Test that the form is INVALID if a valid integer ID is submitted
-        that does not belong to the user's ServiceProfile, because the form's
-        choices are dynamically filtered by the service_profile.
-        Ensure all required fields are provided when creating `unowned_motorcycle`.
-        """
+        #--
                                                                         
         unowned_motorcycle = CustomerMotorcycleFactory(
             brand="Kawasaki", model="Ninja", year=2022, rego="KLM789", odometer=15000,

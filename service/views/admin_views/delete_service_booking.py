@@ -6,23 +6,20 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from service.models import ServiceBooking
 
 class AdminServiceBookingDeleteView(LoginRequiredMixin, UserPassesTestMixin, View):
-    """
-    Handles the deletion of a Service Booking. It presents a confirmation
-    page on GET and deletes the object on POST.
-    """
+    #--
     template_name = 'service/admin_service_booking_delete.html'
 
     def test_func(self):
-        """Ensures that only staff or superusers can access this view."""
+        #--
         return self.request.user.is_staff or self.request.user.is_superuser
 
     def get(self, request, pk, *args, **kwargs):
-        """Displays a confirmation page before deleting the booking."""
+        #--
         booking = get_object_or_404(ServiceBooking, pk=pk)
         return render(request, self.template_name, {'booking': booking})
 
     def post(self, request, pk, *args, **kwargs):
-        """Deletes the ServiceBooking identified by pk after confirmation."""
+        #--
         booking = get_object_or_404(ServiceBooking, pk=pk)
         booking_ref = booking.service_booking_reference
         try:

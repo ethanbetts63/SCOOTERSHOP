@@ -10,17 +10,11 @@ from service.models import BlockedServiceDate
 from ..test_helpers.model_factories import BlockedServiceDateFactory
 
 class BlockedServiceDateFormTest(TestCase):
-    """
-    Tests for the BlockedServiceDateForm.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up non-modified objects used by all test methods.
-        We'll use the factory to create a base instance for some tests,
-        but many tests will create data directly to test specific scenarios.
-        """
+        #--
         cls.today = date.today()
         cls.tomorrow = cls.today + timedelta(days=1)
         cls.yesterday = cls.today - timedelta(days=1)
@@ -29,9 +23,7 @@ class BlockedServiceDateFormTest(TestCase):
         cls.blocked_date_instance = BlockedServiceDateFactory()
 
     def test_form_valid_data_single_day(self):
-        """
-        Test that the form is valid when blocking a single day (start_date == end_date).
-        """
+        #--
         data = {
             'start_date': self.today,
             'end_date': self.today,
@@ -44,9 +36,7 @@ class BlockedServiceDateFormTest(TestCase):
         self.assertEqual(form.cleaned_data['description'], 'Public holiday')
 
     def test_form_valid_data_date_range(self):
-        """
-        Test that the form is valid when blocking a range of dates (start_date < end_date).
-        """
+        #--
         data = {
             'start_date': self.today,
             'end_date': self.tomorrow,
@@ -59,10 +49,7 @@ class BlockedServiceDateFormTest(TestCase):
         self.assertEqual(form.cleaned_data['description'], 'Maintenance period')
 
     def test_form_invalid_end_date_before_start_date(self):
-        """
-        Test that the form is invalid if end_date is before start_date.
-        This tests the custom clean method in the form.
-        """
+        #--
         data = {
             'start_date': self.today,
             'end_date': self.yesterday,
@@ -74,9 +61,7 @@ class BlockedServiceDateFormTest(TestCase):
         self.assertIn("End date cannot be before the start date.", str(form.errors['__all__']))
 
     def test_form_missing_start_date(self):
-        """
-        Test that the form is invalid if start_date is missing.
-        """
+        #--
         data = {
             'end_date': self.today,
             'description': 'Missing start date',
@@ -87,9 +72,7 @@ class BlockedServiceDateFormTest(TestCase):
         self.assertIn('This field is required.', form.errors['start_date'])
 
     def test_form_missing_end_date(self):
-        """
-        Test that the form is invalid if end_date is missing.
-        """
+        #--
         data = {
             'start_date': self.today,
             'description': 'Missing end date',
@@ -100,10 +83,7 @@ class BlockedServiceDateFormTest(TestCase):
         self.assertIn('This field is required.', form.errors['end_date'])
 
     def test_form_description_optional(self):
-        """
-        Test that the description field is optional.
-        When submitted as an empty string, it should clean to None.
-        """
+        #--
         data = {
             'start_date': self.today,
             'end_date': self.today,
@@ -123,9 +103,7 @@ class BlockedServiceDateFormTest(TestCase):
         self.assertIsNone(form_no_desc.cleaned_data['description'])                                 
 
     def test_form_initialization_with_instance(self):
-        """
-        Test that the form correctly loads data from an existing BlockedServiceDate instance.
-        """
+        #--
         instance = self.blocked_date_instance                                            
         form = BlockedServiceDateForm(instance=instance)
 
@@ -134,9 +112,7 @@ class BlockedServiceDateFormTest(TestCase):
         self.assertEqual(form.initial['description'], instance.description)
 
     def test_form_save_creates_new_instance(self):
-        """
-        Test that saving the form creates a new BlockedServiceDate instance.
-        """
+        #--
         initial_count = BlockedServiceDate.objects.count()
         data = {
             'start_date': self.today + timedelta(days=10),
@@ -154,9 +130,7 @@ class BlockedServiceDateFormTest(TestCase):
         self.assertEqual(new_instance.description, data['description'])
 
     def test_form_save_updates_existing_instance(self):
-        """
-        Test that saving the form updates an existing BlockedServiceDate instance.
-        """
+        #--
         instance = self.blocked_date_instance                                            
         original_start_date = instance.start_date
         original_end_date = instance.end_date

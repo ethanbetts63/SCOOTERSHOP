@@ -20,7 +20,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
         cls.base_url = reverse('service:service_book_step7')
 
     def setUp(self):
-        """Set up for each test method."""
+        #--
         self.client.force_login(self.user)
                                                            
         TempServiceBooking.objects.all().delete()
@@ -31,9 +31,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
 
 
     def test_get_booking_found_by_session_reference(self):
-        """
-        Tests retrieving a confirmed booking using the reference from the session.
-        """
+        #--
         final_booking = ServiceBookingFactory()
         session = self.client.session
         session['service_booking_reference'] = final_booking.service_booking_reference
@@ -49,9 +47,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
 
 
     def test_get_booking_found_by_payment_intent_id(self):
-        """
-        Tests retrieving a confirmed booking using a payment_intent_id from the URL.
-        """
+        #--
         payment_intent_id = f"pi_{uuid.uuid4().hex}"
         final_booking = ServiceBookingFactory(stripe_payment_intent_id=payment_intent_id)
         
@@ -68,10 +64,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
 
 
     def test_get_booking_processing_due_to_webhook_delay(self):
-        """
-        Tests the "processing" state when a ServiceBooking is not yet created
-        but a Payment object exists for the given payment_intent_id.
-        """
+        #--
         payment_intent_id = f"pi_{uuid.uuid4().hex}"
                                                                        
         PaymentFactory(stripe_payment_intent_id=payment_intent_id)
@@ -89,10 +82,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
 
 
     def test_get_no_identifiers_redirects_to_home(self):
-        """
-        Tests that accessing the page with no valid identifiers in session or URL
-        redirects to the service homepage with a warning message.
-        """
+        #--
         response = self.client.get(self.base_url)
 
         self.assertRedirects(response, reverse('service:service'))
@@ -101,10 +91,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
 
 
     def test_get_session_reference_invalid_then_redirects_to_home(self):
-        """
-        Tests that if a session reference exists but points to a non-existent booking,
-        it clears the session and redirects to home.
-        """
+        #--
         invalid_booking_reference = "NONEXISTENTREF123"
         session = self.client.session
         session['service_booking_reference'] = invalid_booking_reference
@@ -118,11 +105,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
         self.assertNotIn('service_booking_reference', self.client.session)                    
 
     def test_get_payment_intent_id_invalid_no_payment_or_booking_redirects_to_home(self):
-        """
-        Tests that if a payment_intent_id is provided but no corresponding Payment
-        or ServiceBooking exists, it redirects to the home page with an error.
-        This covers cases where the webhook might have totally failed.
-        """
+        #--
         payment_intent_id = f"pi_{uuid.uuid4().hex}"
                                                                  
 

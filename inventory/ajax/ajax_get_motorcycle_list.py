@@ -8,10 +8,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from decimal import Decimal, InvalidOperation                          
 
 def get_motorcycle_list(request: HttpRequest):
-    """
-    AJAX endpoint to retrieve a filtered and paginated list of motorcycles and associated filter data.
-    Filters are applied based on query parameters received in the GET request.
-    """
+    #--
     if request.method == 'GET':
         condition_slug = request.GET.get('condition_slug')
         year_min = request.GET.get('year_min')

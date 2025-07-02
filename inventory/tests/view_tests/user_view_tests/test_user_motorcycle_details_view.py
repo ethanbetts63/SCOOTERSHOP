@@ -3,15 +3,11 @@ from django.urls import reverse
 from ...test_helpers.model_factories import MotorcycleFactory, InventorySettingsFactory, MotorcycleConditionFactory
 
 class UserMotorcycleDetailsViewTest(TestCase):
-    """
-    Tests for the UserMotorcycleDetailsView.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up common data for all tests in this class.
-        """
+        #--
         cls.client = Client()
 
                                                           
@@ -40,9 +36,7 @@ class UserMotorcycleDetailsViewTest(TestCase):
 
 
     def test_motorcycle_details_view_success(self):
-        """
-        Test that the motorcycle details page loads successfully with the correct context.
-        """
+        #--
                                              
         url = reverse('inventory:motorcycle-detail', kwargs={'pk': self.motorcycle.pk})
         response = self.client.get(url)
@@ -68,9 +62,7 @@ class UserMotorcycleDetailsViewTest(TestCase):
 
 
     def test_motorcycle_details_view_404_not_found(self):
-        """
-        Test that accessing a non-existent motorcycle PK raises a 404 error.
-        """
+        #--
                                                                            
         non_existent_pk = self.motorcycle.pk + 999
 
@@ -85,11 +77,7 @@ class UserMotorcycleDetailsViewTest(TestCase):
 
 
     def test_motorcycle_details_view_unavailable_motorcycle(self):
-        """
-        Test that an unavailable motorcycle (is_available=False) still shows its details.
-        The get_motorcycle_details utility handles this, returning the object regardless
-        of availability, as the details page should show the item's info even if it's sold.
-        """
+        #--
         unavailable_motorcycle = MotorcycleFactory(
             brand='SoldBrand',
             model='SoldModel',

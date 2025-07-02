@@ -4,10 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from payments.models import RefundPolicySettings
 
 class RefundSettingsForm(forms.ModelForm):
-    """
-    Form for administrators to manage global Refund Policy Settings.
-    This form includes all fields from the RefundPolicySettings model.
-    """
+    #--
     class Meta:
         model = RefundPolicySettings
         fields = [

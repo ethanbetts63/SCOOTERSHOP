@@ -14,9 +14,7 @@ except ImportError:
     User = settings.AUTH_USER_MODEL 
 
 class ServiceProfile(models.Model):
-    """
-    Stores customer contact and identity details for service bookings.
-    """
+    #--
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
@@ -47,9 +45,7 @@ class ServiceProfile(models.Model):
         return f"Profile for {self.name} ({self.email})"
 
     def clean(self):
-        """
-        Custom validation for the ServiceProfile model.
-        """
+        #--
         super().clean()
         if self.phone_number:
                                                            

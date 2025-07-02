@@ -9,15 +9,12 @@ from service.models import ServiceBrand
 from service.forms import ServiceBrandForm                                   
 
 class ServiceBrandManagementView(View):
-    """
-    Class-based view for managing (listing, adding, and editing) service brands.
-    Handles GET (display form and list) and POST (add/edit brand).
-    """
+    #--
     template_name = 'service/service_brands_management.html'
     form_class = ServiceBrandForm
 
     def get_context_data(self, form=None, edit_brand=None):
-        """Helper method to get context data for rendering the template."""
+        #--
                                                      
         service_brands = ServiceBrand.objects.all().order_by('name')
 
@@ -35,10 +32,7 @@ class ServiceBrandManagementView(View):
         return context
 
     def get(self, request, *args, **kwargs):
-        """
-        Handles GET requests: displays the form for adding/editing brands
-        and lists all existing service brands.
-        """
+        #--
         edit_brand_pk = request.GET.get('edit_brand_pk')
         edit_brand = None
         if edit_brand_pk:
@@ -48,10 +42,7 @@ class ServiceBrandManagementView(View):
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
-        """
-        Handles POST requests: processes form submissions for adding,
-        editing, or deleting a service brand.
-        """
+        #--
         form = None
         edit_brand = None
 

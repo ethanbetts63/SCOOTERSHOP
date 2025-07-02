@@ -9,10 +9,7 @@ from service.models import ServiceProfile
 
 @require_GET
 def search_customer_profiles_ajax(request):
-    """
-    AJAX endpoint to search for ServiceProfile instances based on a query term.
-    Returns a JSON response with a list of matching profiles (ID, name, email, phone).
-    """
+    #--
     search_term = request.GET.get('query', '').strip()
     profiles_data = []
 

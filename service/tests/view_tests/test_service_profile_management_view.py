@@ -8,19 +8,11 @@ from service.models import ServiceProfile
 from ..test_helpers.model_factories import UserFactory, ServiceProfileFactory
 
 class ServiceProfileManagementViewTest(TestCase):
-    """
-    Tests for the ServiceProfileManagementView.
-    Covers access control, listing (initial paginated display), and form submission (create via management view).
-    Search functionality tests are removed as they are now handled by AJAX in the frontend
-    and the dedicated `ajax_search_service_profiles` view.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up non-modified objects used by all test methods.
-        Create various users and service profiles for testing different scenarios.
-        """
+        #--
         cls.staff_user = UserFactory(username='staff_user', is_staff=True, is_superuser=False)
         cls.superuser = UserFactory(username='superuser', is_staff=True, is_superuser=True)
         cls.regular_user = UserFactory(username='regular_user', is_staff=False, is_superuser=False)
@@ -64,10 +56,7 @@ class ServiceProfileManagementViewTest(TestCase):
 
 
     def setUp(self):
-        """
-        Set up for each test method.
-        Initialize client and session.
-        """
+        #--
         self.client = Client()
                                                               
         self.session = self.client.session
@@ -77,32 +66,24 @@ class ServiceProfileManagementViewTest(TestCase):
                                                                             
 
     def test_view_redirects_anonymous_user(self):
-        """
-        Ensure anonymous users are redirected to the login page for management view.
-        """
+        #--
         response = self.client.get(self.list_url)
         self.assertRedirects(response, reverse('users:login') + f'?next={self.list_url}')
 
     def test_view_denies_access_to_regular_user(self):
-        """
-        Ensure regular (non-staff/non-superuser) users are denied access to management view.
-        """
+        #--
         self.client.force_login(self.regular_user)
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, 403)            
 
     def test_view_grants_access_to_staff_user(self):
-        """
-        Ensure staff users can access the management view.
-        """
+        #--
         self.client.force_login(self.staff_user)
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, 200)
 
     def test_view_grants_access_to_superuser(self):
-        """
-        Ensure superusers can access the management view.
-        """
+        #--
         self.client.force_login(self.superuser)
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, 200)
@@ -111,10 +92,7 @@ class ServiceProfileManagementViewTest(TestCase):
                                                       
 
     def test_get_request_list_all_profiles_with_pagination(self):
-        """
-        Test GET request to list all service profiles, verifying pagination.
-        The view should now always return paginated results for the full list.
-        """
+        #--
         self.client.force_login(self.staff_user)
                                                             
         for i in range(15):                                                       
@@ -141,9 +119,7 @@ class ServiceProfileManagementViewTest(TestCase):
         self.assertEqual(response.context['search_term'], '')                                   
 
     def test_get_request_list_profiles_specific_page(self):
-        """
-        Test GET request to list service profiles on a specific page.
-        """
+        #--
         self.client.force_login(self.staff_user)
                                                    
         total_profiles = 25
@@ -167,13 +143,7 @@ class ServiceProfileManagementViewTest(TestCase):
 
 
     def test_get_request_edit_mode(self):
-        """
-        Test GET request to display the management view with a specific profile
-        loaded into the form for editing.
-        Note: The form displayed on the management page is the same AdminServiceProfileForm,
-        but the POST for actual update happens via a separate URL (admin_edit_service_profile)
-        handled by ServiceProfileCreateUpdateView. This test focuses on the GET display.
-        """
+        #--
         self.client.force_login(self.staff_user)
                                                                                            
         edit_url = reverse(self.edit_url_name, kwargs={'pk': self.profile1.pk})
@@ -191,9 +161,7 @@ class ServiceProfileManagementViewTest(TestCase):
 
 
     def test_get_request_edit_mode_non_existent_profile(self):
-        """
-        Test GET request to edit a non-existent profile. Should return 404.
-        """
+        #--
         self.client.force_login(self.staff_user)
         non_existent_pk = self.profile1.pk + 9999
                                                               
@@ -207,9 +175,7 @@ class ServiceProfileManagementViewTest(TestCase):
                                                         
 
     def test_post_request_create_profile_valid(self):
-        """
-        Test valid POST request to create a new profile from the management view (list page).
-        """
+        #--
         self.client.force_login(self.staff_user)
         initial_count = ServiceProfile.objects.count()
         new_profile_data = {
@@ -237,9 +203,7 @@ class ServiceProfileManagementViewTest(TestCase):
 
 
     def test_post_request_create_profile_invalid(self):
-        """
-        Test invalid POST request to create a new profile from the management view (list page).
-        """
+        #--
         self.client.force_login(self.staff_user)
         initial_count = ServiceProfile.objects.count()
         invalid_data = {
@@ -270,9 +234,7 @@ class ServiceProfileManagementViewTest(TestCase):
 
 
 class ServiceProfileDeleteViewTest(TestCase):
-    """
-    Tests for the ServiceProfileDeleteView.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
@@ -293,27 +255,20 @@ class ServiceProfileDeleteViewTest(TestCase):
                                   
 
     def test_view_redirects_anonymous_user(self):
-        """
-        Ensure anonymous users are redirected to login for delete view.
-        """
+        #--
         delete_url = reverse(self.delete_url_name, kwargs={'pk': self.profile_to_delete.pk})
         response = self.client.post(delete_url)
         self.assertRedirects(response, reverse('users:login') + f'?next={delete_url}')
 
     def test_view_denies_access_to_regular_user(self):
-        """
-        Ensure regular users are denied access to delete view.
-        """
+        #--
         self.client.force_login(self.regular_user)
         delete_url = reverse(self.delete_url_name, kwargs={'pk': self.profile_to_delete.pk})
         response = self.client.post(delete_url)
         self.assertEqual(response.status_code, 403)
 
     def test_view_grants_access_to_staff_user(self):
-        """
-        Ensure staff users can access delete view.
-        (This test implicitly passes if the POST test below passes, as GET isn't typically used for delete).
-        """
+        #--
         self.client.force_login(self.staff_user)
                                                                                     
         delete_url = reverse(self.delete_url_name, kwargs={'pk': self.profile_to_delete.pk})
@@ -324,9 +279,7 @@ class ServiceProfileDeleteViewTest(TestCase):
                                            
 
     def test_post_request_delete_profile_valid(self):
-        """
-        Test valid POST request to delete a ServiceProfile.
-        """
+        #--
         self.client.force_login(self.staff_user)
         profile_pk = self.profile_to_delete.pk
         profile_name = self.profile_to_delete.name
@@ -345,9 +298,7 @@ class ServiceProfileDeleteViewTest(TestCase):
         self.assertEqual(messages_list[0].level, messages.SUCCESS)
 
     def test_post_request_delete_non_existent_profile(self):
-        """
-        Test POST request to delete a non-existent ServiceProfile. Should return 404.
-        """
+        #--
         self.client.force_login(self.staff_user)
         non_existent_pk = self.profile_to_delete.pk + 9999
         delete_url = reverse(self.delete_url_name, kwargs={'pk': non_existent_pk})

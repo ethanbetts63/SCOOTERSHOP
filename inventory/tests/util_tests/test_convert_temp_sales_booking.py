@@ -19,15 +19,11 @@ from ..test_helpers.model_factories import (
 )
 
 class ConvertTempSalesBookingUtilTest(TestCase):
-    """
-    Tests for the `convert_temp_sales_booking` utility function.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up common data for all tests in this class.
-        """
+        #--
                                          
         cls.inventory_settings = InventorySettingsFactory(
             currency_code='USD',
@@ -39,9 +35,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         cls.sales_profile = SalesProfileFactory()
 
     def setUp(self):
-        """
-        Reset motorcycle status before each test if it was modified.
-        """
+        #--
         self.motorcycle.refresh_from_db()
         self.motorcycle.status = 'available'
         self.motorcycle.is_available = True
@@ -49,10 +43,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
 
 
     def test_basic_conversion_unpaid(self):
-        """
-        Test successful conversion of TempSalesBooking to SalesBooking
-        when payment status is 'unpaid'.
-        """
+        #--
         temp_booking = TempSalesBookingFactory(
             motorcycle=self.motorcycle,
             sales_profile=self.sales_profile,
@@ -98,10 +89,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         self.assertTrue(self.motorcycle.is_available)
 
     def test_conversion_with_payment_object(self):
-        """
-        Test conversion when a Payment object is provided, ensuring it's updated
-        and correctly linked to the new SalesBooking.
-        """
+        #--
         payment_obj = PaymentFactory(
             temp_sales_booking=None,                                   
             amount=Decimal('0.00'),
@@ -155,10 +143,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         self.assertFalse(TempSalesBooking.objects.filter(pk=temp_booking.pk).exists())
     
     def test_conversion_with_payment_object_no_refund_settings(self):
-        """
-        Test conversion with payment object but no RefundPolicySettings,
-        ensuring refund_policy_snapshot is an empty dict.
-        """
+        #--
         RefundPolicySettings.objects.all().delete()                                
         self.assertFalse(RefundPolicySettings.objects.exists())
 
@@ -186,9 +171,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         RefundPolicySettingsFactory()
 
     def test_conversion_no_inventory_settings(self):
-        """
-        Test conversion when no InventorySettings exist, ensuring default currency is used.
-        """
+        #--
         InventorySettings.objects.all().delete()                                
         self.assertFalse(InventorySettings.objects.exists())
 
@@ -209,9 +192,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
 
 
     def test_conversion_request_viewing_false(self):
-        """
-        Test conversion when request_viewing is False, ensuring appointment details are None.
-        """
+        #--
         temp_booking = TempSalesBookingFactory(
             motorcycle=self.motorcycle,
             sales_profile=self.sales_profile,
@@ -231,10 +212,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         self.assertIsNone(sales_booking.appointment_time)
 
     def test_conversion_handles_exception(self):
-        """
-        Test that the utility gracefully handles and re-raises exceptions during transaction.
-        We'll mock a method to raise an error.
-        """
+        #--
         temp_booking = TempSalesBookingFactory(
             motorcycle=self.motorcycle,
             sales_profile=self.sales_profile,

@@ -9,17 +9,11 @@ from service.models import CustomerMotorcycle
 from ..test_helpers.model_factories import ServiceProfileFactory, CustomerMotorcycleFactory
 
 class AdminCustomerMotorcycleFormTest(TestCase):
-    """
-    Tests for the AdminCustomerMotorcycleForm.
-    This form directly uses the CustomerMotorcycle model's clean method for most validations,
-    so these tests cover both form and model-level validation.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up non-modified objects used by all test methods.
-        """
+        #--
         cls.service_profile = ServiceProfileFactory(name="Test Service Profile")
         cls.valid_motorcycle_data = {
             'brand': 'Honda',
@@ -35,9 +29,7 @@ class AdminCustomerMotorcycleFormTest(TestCase):
         }
 
     def test_form_valid_data_create(self):
-        """
-        Test that the form is valid with all correct data for creation.
-        """
+        #--
         data = self.valid_motorcycle_data.copy()
         form = AdminCustomerMotorcycleForm(data=data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors.as_json()}")
@@ -48,9 +40,7 @@ class AdminCustomerMotorcycleFormTest(TestCase):
         self.assertEqual(motorcycle.service_profile, self.service_profile)
 
     def test_form_valid_data_create_without_service_profile(self):
-        """
-        Test that the form is valid when creating a motorcycle without linking a ServiceProfile.
-        """
+        #--
         data = self.valid_motorcycle_data.copy()
         data['service_profile'] = ''                     
         form = AdminCustomerMotorcycleForm(data=data)
@@ -60,9 +50,7 @@ class AdminCustomerMotorcycleFormTest(TestCase):
         self.assertIsNone(motorcycle.service_profile)
 
     def test_form_valid_data_update(self):
-        """
-        Test that the form is valid for updating an existing motorcycle.
-        """
+        #--
         existing_motorcycle = CustomerMotorcycleFactory(service_profile=self.service_profile)
         
         data = self.valid_motorcycle_data.copy()
@@ -78,9 +66,7 @@ class AdminCustomerMotorcycleFormTest(TestCase):
                                                                                        
 
     def test_missing_required_fields(self):
-        """
-        Test that the form catches missing required fields.
-        """
+        #--
         required_fields = ['brand', 'model', 'year', 'rego', 'odometer', 'transmission', 'engine_size']
         
         for field in required_fields:
@@ -114,10 +100,7 @@ class AdminCustomerMotorcycleFormTest(TestCase):
                                               
 
     def test_motorcycle_year_validation(self):
-        """
-        Test year validation: cannot be in the future, cannot be too old.
-        And also test the widget's min attribute validation.
-        """
+        #--
         current_year = date.today().year
 
                                           
@@ -158,11 +141,7 @@ class AdminCustomerMotorcycleFormTest(TestCase):
 
 
     def test_vin_number_length_validation(self):
-        """
-        Test VIN number length validation.
-        - Must be 17 characters if provided.
-        - Max length (17) handled by Django's CharField validation if too long.
-        """
+        #--
                                    
         data_short_vin = self.valid_motorcycle_data.copy()
         data_short_vin['vin_number'] = 'SHORTVIN'          
@@ -194,10 +173,7 @@ class AdminCustomerMotorcycleFormTest(TestCase):
 
 
     def test_odometer_negative_validation(self):
-        """
-        Test that odometer reading cannot be negative.
-        This is caught by PositiveIntegerField and the widget's min attribute.
-        """
+        #--
         data_negative_odometer = self.valid_motorcycle_data.copy()
         data_negative_odometer['odometer'] = -100
         form = AdminCustomerMotorcycleForm(data=data_negative_odometer)
@@ -207,9 +183,7 @@ class AdminCustomerMotorcycleFormTest(TestCase):
         self.assertIn('Ensure this value is greater than or equal to 0.', form.errors['odometer'])
 
     def test_transmission_choices(self):
-        """
-        Test that transmission field only accepts valid choices.
-        """
+        #--
         data_invalid_transmission = self.valid_motorcycle_data.copy()
         data_invalid_transmission['transmission'] = 'INVALID_TYPE'
         form = AdminCustomerMotorcycleForm(data=data_invalid_transmission)
@@ -219,9 +193,7 @@ class AdminCustomerMotorcycleFormTest(TestCase):
 
 
     def test_service_profile_queryset(self):
-        """
-        Test that the service_profile queryset is ordered correctly.
-        """
+        #--
         profile_a = ServiceProfileFactory(name="Profile A", email="a@example.com")
         profile_b = ServiceProfileFactory(name="Profile B", email="b@example.com")
         profile_c = ServiceProfileFactory(name="Profile C", email="c@example.com")

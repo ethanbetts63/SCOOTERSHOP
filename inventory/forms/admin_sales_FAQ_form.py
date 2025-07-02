@@ -4,9 +4,7 @@ from django import forms
 from inventory.models import SalesFAQ
 
 class AdminSalesFAQForm(forms.ModelForm):
-    """
-    Form for creating and updating SalesFAQ objects in the admin interface.
-    """
+    #--
     class Meta:
         model = SalesFAQ
         fields = [

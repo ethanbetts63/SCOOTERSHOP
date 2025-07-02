@@ -4,11 +4,7 @@ from django import forms
 from decimal import Decimal                                   
 
 class SalesBookingActionForm(forms.Form):
-    """
-    Form for processing sales booking approval or rejection actions.
-    Includes an optional message and a checkbox for sending notifications.
-    Also includes fields for initiating a refund during rejection if applicable.
-    """
+    #--
     message = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 4, 'placeholder': 'Optional message to the customer (e.g., specific instructions, reasons for rejection, etc.)'}),
         required=False,

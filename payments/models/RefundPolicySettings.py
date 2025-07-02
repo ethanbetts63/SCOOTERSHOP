@@ -5,10 +5,7 @@ from django.core.exceptions import ValidationError
 from decimal import Decimal
 
 class RefundPolicySettings(models.Model):
-    """
-    Centralized settings for refund policies and Stripe fees across all booking types.
-    This model is designed to be a singleton; only one instance should exist.
-    """
+    #--
 
                                                                                   
     cancellation_full_payment_full_refund_days = models.PositiveIntegerField(

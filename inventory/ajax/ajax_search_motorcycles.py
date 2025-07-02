@@ -9,12 +9,7 @@ from inventory.models import Motorcycle
 @require_GET
 @login_required
 def search_motorcycles_ajax(request):
-    """
-    AJAX endpoint to search for Motorcycle instances for sales bookings.
-    Searches across title, brand, model, VIN, stock number, ID (PK), and registration.
-    By default, it shows available or reserved motorcycles.
-    Returns a JSON response with a list of matching motorcycles.
-    """
+    #--
     if not request.user.is_staff:
         return JsonResponse({'error': 'Permission denied'}, status=403)
 

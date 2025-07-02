@@ -4,11 +4,7 @@ from django import forms
 from payments.models import RefundRequest
 
 class AdminRejectRefundForm(forms.ModelForm):
-    """
-    Form for administrators to reject a RefundRequest,
-    allowing them to provide a rejection reason and choose
-    whether to send an automated email to the user.
-    """
+    #--
                                                                                
     send_rejection_email = forms.BooleanField(
         label="Send automated rejection email to user",

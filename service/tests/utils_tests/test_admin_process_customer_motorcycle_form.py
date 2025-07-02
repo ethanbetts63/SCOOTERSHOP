@@ -4,28 +4,18 @@ from service.utils.admin_process_customer_motorcycle_form import admin_process_c
 from ..test_helpers.model_factories import ServiceProfileFactory, CustomerMotorcycleFactory, ServiceBrandFactory
 
 class AdminProcessCustomerMotorcycleFormTest(TestCase):
-    """
-    Tests for the `admin_process_customer_motorcycle_form` utility function.
-    This suite verifies that CustomerMotorcycle instances are created or updated correctly
-    based on the input form data and associated ServiceProfile, specifically for the AdminCustomerMotorcycleForm.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up test data for all tests in this class.
-        Create necessary related objects using factories.
-        """
+        #--
         cls.service_profile = ServiceProfileFactory()
         cls.another_service_profile = ServiceProfileFactory()                      
         cls.service_brand_honda = ServiceBrandFactory(name='Honda')
         cls.service_brand_yamaha = ServiceBrandFactory(name='Yamaha')
 
     def test_create_new_motorcycle_with_existing_brand(self):
-        """
-        Test successful creation of a new motorcycle with a brand typed in by the admin.
-        This brand should exist in ServiceBrand, but the form simply takes a string.
-        """
+        #--
         post_data = {
             'service_profile': self.service_profile.pk,                            
             'brand': self.service_brand_honda.name,
@@ -56,10 +46,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
 
 
     def test_create_new_motorcycle_with_custom_brand_typed_in(self):
-        """
-        Test successful creation of a new motorcycle when a custom brand name
-        (not in ServiceBrand) is typed directly into the brand field by the admin.
-        """
+        #--
         post_data = {
             'service_profile': self.service_profile.pk,
             'brand': 'Custom Chopper Brand',                            
@@ -89,9 +76,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
 
 
     def test_update_existing_motorcycle_change_brand(self):
-        """
-        Test successful update of an existing motorcycle, changing its brand.
-        """
+        #--
         initial_motorcycle = CustomerMotorcycleFactory(
             service_profile=self.service_profile,
             brand=self.service_brand_honda.name,
@@ -133,9 +118,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
         self.assertEqual(CustomerMotorcycle.objects.count(), 1)
 
     def test_update_existing_motorcycle_change_profile(self):
-        """
-        Test successful update of an existing motorcycle, changing its linked ServiceProfile.
-        """
+        #--
         initial_motorcycle = CustomerMotorcycleFactory(
             service_profile=self.service_profile,
             brand='Kawasaki',
@@ -176,9 +159,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
 
 
     def test_form_invalid_missing_required_fields(self):
-        """
-        Test that the form is invalid if other required fields are missing.
-        """
+        #--
         post_data = {
             'service_profile': self.service_profile.pk,
             'brand': self.service_brand_honda.name,
@@ -203,9 +184,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
         self.assertEqual(CustomerMotorcycle.objects.count(), 0)
 
     def test_form_invalid_year_in_future(self):
-        """
-        Test that the form is invalid if the year is in the future.
-        """
+        #--
         from datetime import date
         future_year = date.today().year + 1
 
@@ -232,9 +211,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
         self.assertIsNone(motorcycle_instance)
 
     def test_form_invalid_vin_number_length(self):
-        """
-        Test that the form is invalid if the VIN number is not 17 characters long.
-        """
+        #--
         post_data = {
             'service_profile': self.service_profile.pk,
             'brand': self.service_brand_honda.name,
@@ -259,9 +236,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
         self.assertIsNone(motorcycle_instance)
 
     def test_form_invalid_negative_odometer(self):
-        """
-        Test that the form is invalid if the odometer reading is negative.
-        """
+        #--
         post_data = {
             'service_profile': self.service_profile.pk,
             'brand': self.service_brand_honda.name,
@@ -285,11 +260,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
         self.assertIsNone(motorcycle_instance)
 
     def test_motorcycle_instance_not_found_with_form_error(self):
-        """
-        Test that the function returns (form, None) and the form is invalid
-        if motorcycle_id is provided but no instance is found.
-        (Reflects the added error message in the utility function)
-        """
+        #--
         post_data = {
             'service_profile': self.service_profile.pk,
             'brand': self.service_brand_honda.name,

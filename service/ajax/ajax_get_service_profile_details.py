@@ -7,11 +7,7 @@ from service.models import ServiceProfile
 
 @require_GET
 def get_service_profile_details_ajax(request, profile_id):
-    """
-    AJAX endpoint to retrieve detailed information for a specific ServiceProfile.
-    Returns a JSON response with all fields necessary to populate the ServiceBookingUserForm.
-    This function is used when an admin selects a customer from search results to pre-fill their form.
-    """
+    #--
     try:
         profile = get_object_or_404(ServiceProfile, pk=profile_id)
     except Exception as e:

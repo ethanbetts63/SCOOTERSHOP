@@ -10,25 +10,16 @@ from service.models import CustomerMotorcycle
 
 
 class CustomerMotorcycleCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, View):
-    """
-    Admin view for creating a new CustomerMotorcycle or updating an existing one.
-    Handles GET for displaying the form and POST for processing submissions.
-    Requires the user to be logged in and a staff member or superuser.
-    """
+    #--
     template_name = 'service/admin_customer_motorcycle_create_update.html'               
     form_class = AdminCustomerMotorcycleForm
 
     def test_func(self):
-        """
-        Ensures that only staff members or superusers can access this view.
-        """
+        #--
         return self.request.user.is_staff or self.request.user.is_superuser
 
     def get(self, request, pk=None, *args, **kwargs):
-        """
-        Handles GET requests to display the form.
-        If pk is provided, pre-populates the form with existing motorcycle data.
-        """
+        #--
         instance = None
         if pk:
                                                                                          
@@ -46,10 +37,7 @@ class CustomerMotorcycleCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin
         return render(request, self.template_name, context)
 
     def post(self, request, pk=None, *args, **kwargs):
-        """
-        Handles POST requests for form submission (creating or updating a CustomerMotorcycle).
-        Supports file uploads for the 'image' field.
-        """
+        #--
         instance = None
         if pk:
             instance = get_object_or_404(CustomerMotorcycle, pk=pk)

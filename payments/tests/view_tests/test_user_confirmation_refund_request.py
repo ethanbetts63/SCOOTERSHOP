@@ -4,24 +4,15 @@ from django.test import TestCase, Client
 from django.urls import reverse
 
 class UserConfirmationRefundRequestViewTests(TestCase):
-    """
-    Tests for the UserConfirmationRefundRequestView.
-    This view displays a static confirmation page after a user successfully
-    submits a refund request, informing them to check their email.
-    """
+    #--
 
     def setUp(self):
-        """
-        Set up test data and client for UserConfirmationRefundRequestView tests.
-        """
+        #--
         self.client = Client()
         self.confirmation_url = reverse('payments:user_confirmation_refund_request')
 
     def test_get_request_renders_correctly(self):
-        """
-        Test that a GET request to the UserConfirmationRefundRequestView renders the
-        correct template and returns a 200 OK status.
-        """
+        #--
         response = self.client.get(self.confirmation_url)
 
                                                           
@@ -31,9 +22,7 @@ class UserConfirmationRefundRequestViewTests(TestCase):
         self.assertTemplateUsed(response, 'payments/user_confirmation_refund_request.html')
 
     def test_context_data_is_correct(self):
-        """
-        Test that the context data passed to the template is correct.
-        """
+        #--
         response = self.client.get(self.confirmation_url)
 
                                                                            
@@ -53,9 +42,7 @@ class UserConfirmationRefundRequestViewTests(TestCase):
         )
 
     def test_content_contains_expected_text(self):
-        """
-        Test that the rendered page content contains the expected messages.
-        """
+        #--
         response = self.client.get(self.confirmation_url)
 
                                                                

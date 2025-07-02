@@ -7,10 +7,7 @@ from django.views.decorators.http import require_GET
 
 @require_GET
 def get_motorcycle_details_ajax(request, motorcycle_id):
-    """
-    AJAX endpoint to retrieve detailed information for a specific CustomerMotorcycle.
-    Returns a JSON response with all fields necessary to populate the CustomerMotorcycleForm.
-    """
+    #--
     try:
         motorcycle = get_object_or_404(CustomerMotorcycle, pk=motorcycle_id)
     except Exception as e:

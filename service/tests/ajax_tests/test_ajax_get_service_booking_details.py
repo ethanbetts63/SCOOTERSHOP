@@ -24,18 +24,10 @@ from service.models import ServiceBooking
 
 
 class AjaxGetServiceBookingDetailsTest(TestCase):
-    """
-    Tests for the AJAX view `get_service_booking_details_json`.
-    This test suite utilizes model factories to create actual database objects
-    for more realistic testing.
-    """
+    #--
 
     def setUp(self):
-        """
-        Set up for each test method.
-        Initialize a RequestFactory to create dummy request objects.
-        Create a staff user, a regular user, and a ServiceBooking instance with related objects.
-        """
+        #--
         self.factory = RequestFactory()
         
                                                      
@@ -68,10 +60,7 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
                                              
 
     def test_get_service_booking_details_success(self):
-        """
-        Test that the view correctly returns detailed information for a valid ServiceBooking ID
-        when accessed by a staff user.
-        """
+        #--
         url = reverse('service:admin_api_get_service_booking_details', args=[self.service_booking.pk])
         request = self.factory.get(url)
         request.user = self.staff_user                              
@@ -122,9 +111,7 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
         self.assertIsInstance(content['refund_calculation_details'], str)
 
     def test_get_service_booking_details_not_found(self):
-        """
-        Test that the view returns a 404 error if the ServiceBooking ID does not exist.
-        """
+        #--
         invalid_pk = self.service_booking.pk + 100                                  
 
         url = reverse('service:admin_api_get_service_booking_details', args=[invalid_pk])
@@ -140,9 +127,7 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
         self.assertEqual(content['error'], 'Service Booking not found')
 
     def test_get_service_booking_details_permission_denied(self):
-        """
-        Test that the view returns a 403 error if a non-staff user attempts to access it.
-        """
+        #--
         url = reverse('service:admin_api_get_service_booking_details', args=[self.service_booking.pk])
         request = self.factory.get(url)
         request.user = self.regular_user                                 
@@ -156,9 +141,7 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
         self.assertEqual(content['error'], 'Permission denied')
 
     def test_only_get_requests_allowed(self):
-        """
-        Test that only GET requests are allowed for this view (@require_GET decorator).
-        """
+        #--
         url = reverse('service:admin_api_get_service_booking_details', args=[self.service_booking.pk])
         
                             

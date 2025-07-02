@@ -5,24 +5,7 @@ from datetime import datetime
 from django.utils import timezone
 
 def calculate_service_refund_amount(booking, refund_policy_snapshot, cancellation_datetime=None):
-    """
-    Calculates the eligible refund amount for a given ServiceBooking based on
-    the cancellation policy *snapshot* stored at the time of booking's payment.
-
-    Args:
-        booking: The instance of the ServiceBooking model.
-        refund_policy_snapshot (dict): The dictionary containing the refund policy
-                                       settings captured at the time of booking's payment.
-        cancellation_datetime (datetime, optional): The exact datetime when the
-            cancellation request is made. If None, timezone.now() is used.
-
-    Returns:
-        dict: A dictionary containing:
-            - 'entitled_amount': The calculated refund amount (Decimal).
-            - 'details': A string explaining the calculation.
-            - 'policy_applied': Which policy (full_payment/deposit) was used.
-            - 'days_before_dropoff': Number of full days before the service drop-off date.
-    """
+    #--
     if not cancellation_datetime:
         cancellation_datetime = timezone.now()
 

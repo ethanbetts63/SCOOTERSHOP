@@ -13,19 +13,10 @@ from service.ajax.ajax_admin_booking_precheck import admin_booking_precheck_ajax
 from ..test_helpers.model_factories import ServiceTypeFactory
 
 class AjaxAdminBookingPrecheckTest(TestCase):
-    """
-    Tests for the AJAX view `admin_booking_precheck_ajax`.
-    This test suite focuses on how the view processes form validation results
-    (errors and warnings) and constructs its JSON response.
-    It mocks the underlying form's behavior to isolate the view's logic.
-    """
+    #--
 
     def setUp(self):
-        """
-        Set up for each test method.
-        Initialize a RequestFactory to create dummy request objects.
-        Create a dummy service type needed for the form's queryset if not mocking the form entirely.
-        """
+        #--
         self.factory = RequestFactory()
         self.service_type = ServiceTypeFactory()
 
@@ -48,9 +39,7 @@ class AjaxAdminBookingPrecheckTest(TestCase):
 
     @patch('service.ajax.ajax_admin_booking_precheck.AdminBookingDetailsForm')
     def test_precheck_success_no_warnings(self, MockAdminBookingDetailsForm):
-        """
-        Test that the view returns 'success' status when the form is valid and has no warnings.
-        """
+        #--
                                           
         mock_form_instance = Mock()
         mock_form_instance.is_valid.return_value = True
@@ -78,9 +67,7 @@ class AjaxAdminBookingPrecheckTest(TestCase):
 
     @patch('service.ajax.ajax_admin_booking_precheck.AdminBookingDetailsForm')
     def test_precheck_success_with_warnings(self, MockAdminBookingDetailsForm):
-        """
-        Test that the view returns 'warnings' status when the form is valid but has warnings.
-        """
+        #--
                                           
         mock_form_instance = Mock()
         mock_form_instance.is_valid.return_value = True
@@ -111,9 +98,7 @@ class AjaxAdminBookingPrecheckTest(TestCase):
 
     @patch('service.ajax.ajax_admin_booking_precheck.AdminBookingDetailsForm')
     def test_precheck_form_errors(self, MockAdminBookingDetailsForm):
-        """
-        Test that the view returns 'errors' status when the form is invalid.
-        """
+        #--
                                           
         mock_form_instance = Mock()
         mock_form_instance.is_valid.return_value = False
@@ -148,10 +133,7 @@ class AjaxAdminBookingPrecheckTest(TestCase):
         mock_form_instance.get_warnings.assert_not_called()                                                 
 
     def test_only_post_requests_allowed(self):
-        """
-        Test that only POST requests are allowed for this view.
-        (The @require_POST decorator handles this).
-        """
+        #--
         url = reverse('service:admin_api_booking_precheck')
                            
         request = self.factory.get(url)

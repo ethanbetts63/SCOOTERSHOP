@@ -3,9 +3,7 @@ from datetime import date
 from django.core.exceptions import ValidationError
 
 class CustomerMotorcycle(models.Model):
-    """
-    Stores details of a customer's motorcycle for service bookings.
-    """
+    #--
     service_profile = models.ForeignKey(
         'service.ServiceProfile',
         on_delete=models.CASCADE,

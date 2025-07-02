@@ -9,24 +9,16 @@ from service.models import ServiceProfile
 
 
 class ServiceProfileCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, View):
-    """
-    Admin view for creating a new ServiceProfile or updating an existing one.
-    Requires the user to be logged in and a staff member or superuser.
-    """
+    #--
     template_name = 'service/admin_service_profile_form.html'                             
     form_class = AdminServiceProfileForm
 
     def test_func(self):
-        """
-        Ensures that only staff members or superusers can access this view.
-        """
+        #--
         return self.request.user.is_staff or self.request.user.is_superuser
 
     def get(self, request, pk=None, *args, **kwargs):
-        """
-        Handles GET requests to display the form for creating a new profile
-        or editing an existing one.
-        """
+        #--
         instance = None
         if pk:
                                                                                       
@@ -44,9 +36,7 @@ class ServiceProfileCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, Vi
         return render(request, self.template_name, context)
 
     def post(self, request, pk=None, *args, **kwargs):
-        """
-        Handles POST requests for form submission (creating or updating a ServiceProfile).
-        """
+        #--
         instance = None
         if pk:
             instance = get_object_or_404(ServiceProfile, pk=pk)

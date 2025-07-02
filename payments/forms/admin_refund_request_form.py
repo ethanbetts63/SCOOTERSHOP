@@ -105,10 +105,7 @@ class AdminRefundRequestForm(forms.ModelForm):
         return cleaned_data
 
     def save(self, commit=True):
-        """
-        Override save to ensure payment, and associated customer profiles
-        are correctly linked before saving the RefundRequest instance.
-        """
+        #--
         refund_request = super().save(commit=False)
 
                                                                                        

@@ -9,16 +9,11 @@ from ..test_helpers.model_factories import ServiceTypeFactory
 from service.models import ServiceType                                     
 
 class ServiceDetailsFormTest(TestCase):
-    """
-    Tests for the ServiceDetailsForm.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up non-modified objects used by all test methods.
-        Create active and inactive service types for queryset testing.
-        """
+        #--
         cls.active_service_type_1 = ServiceTypeFactory(name="Oil Change", is_active=True)
         cls.active_service_type_2 = ServiceTypeFactory(name="Tire Replacement", is_active=True)
         cls.inactive_service_type = ServiceTypeFactory(name="Engine Rebuild", is_active=False)
@@ -32,9 +27,7 @@ class ServiceDetailsFormTest(TestCase):
                                                                                      
 
     def test_form_valid_data(self):
-        """
-        Test that the form is valid with all correct data.
-        """
+        #--
         form = ServiceDetailsForm(data=self.valid_data)
                                                                           
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
@@ -44,9 +37,7 @@ class ServiceDetailsFormTest(TestCase):
 
 
     def test_form_invalid_data_missing_fields(self):
-        """
-        Test that the form is invalid if required fields are missing.
-        """
+        #--
                                    
         data = self.valid_data.copy()
         data['service_type'] = ''
@@ -66,9 +57,7 @@ class ServiceDetailsFormTest(TestCase):
         self.assertIn('This field is required.', form.errors['service_date'])
 
     def test_service_type_queryset(self):
-        """
-        Test that the service_type queryset only includes active service types.
-        """
+        #--
         form = ServiceDetailsForm()
                                             
         queryset = form.fields['service_type'].queryset
@@ -83,9 +72,7 @@ class ServiceDetailsFormTest(TestCase):
 
 
     def test_service_date_past_date_validation(self):                                                      
-        """
-        Test that service_date cannot be in the past.
-        """
+        #--
                                
         past_date = date.today() - timedelta(days=1)
         data = self.valid_data.copy()

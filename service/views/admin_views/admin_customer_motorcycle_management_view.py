@@ -5,27 +5,18 @@ from django.views.generic import ListView
 from service.models import CustomerMotorcycle                                                            
 
 class CustomerMotorcycleManagementView(LoginRequiredMixin, UserPassesTestMixin, ListView):
-    """
-    Admin view for listing CustomerMotorcycle instances with search functionality.
-    Requires the user to be logged in and a staff member or superuser.
-    """
+    #--
     model = CustomerMotorcycle
     template_name = 'service/admin_customer_motorcycle_management.html'               
     context_object_name = 'motorcycles'                                             
     paginate_by = 10                                                
 
     def test_func(self):
-        """
-        Ensures that only staff members or superusers can access this view.
-        """
+        #--
         return self.request.user.is_staff or self.request.user.is_superuser
 
     def get_queryset(self):
-        """
-        Builds the queryset for CustomerMotorcycle instances, applying search filters.
-        Searchable fields: brand, model, rego, VIN, engine number.
-        Also search by linked service_profile's name or email.
-        """
+        #--
         queryset = super().get_queryset().select_related('service_profile')                                           
         search_term = self.request.GET.get('q', '').strip()
 
@@ -42,9 +33,7 @@ class CustomerMotorcycleManagementView(LoginRequiredMixin, UserPassesTestMixin, 
         return queryset.order_by('-created_at')                                       
 
     def get_context_data(self, **kwargs):
-        """
-        Adds context data, including the search term.
-        """
+        #--
         context = super().get_context_data(**kwargs)
         context['search_term'] = self.request.GET.get('q', '')                                               
         return context

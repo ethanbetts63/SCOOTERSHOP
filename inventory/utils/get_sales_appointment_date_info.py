@@ -4,23 +4,7 @@ from datetime import date, datetime, timedelta
 from inventory.models import InventorySettings, BlockedSalesDate
 
 def get_sales_appointment_date_info(inventory_settings: InventorySettings, is_deposit_flow: bool = False):
-    """
-    Calculates and returns the minimum allowed date, maximum allowed date,
-    and a list of blocked dates for sales appointments based on InventorySettings
-    and BlockedSalesDate entries.
-
-    Args:
-        inventory_settings: An instance of InventorySettings model.
-        is_deposit_flow: Boolean indicating if the current flow requires a deposit,
-                         which might affect the maximum booking date based on deposit lifespan.
-
-    Returns:
-        A tuple containing:
-        - min_date: The earliest date a booking can be made (date object).
-        - max_date: The latest date a booking can be made (date object).
-        - blocked_dates: A list of strings (YYYY-MM-DD) for dates that should be
-                         disabled in the date picker.
-    """
+    #--
     if not inventory_settings:
                                                              
         return date.today(), date.today() + timedelta(days=90), []

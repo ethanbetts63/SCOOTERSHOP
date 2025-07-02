@@ -71,8 +71,10 @@ class IndexViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'core/index.html')
         self.assertIn('reviews', response.context)
-        self.assertEqual(len(response.context['reviews']), 2) # Only 5-star reviews
-        self.assertEqual(response.context['reviews'][0]['text'], 'Excellent!') # Sorted by time, newest first
+        self.assertEqual(len(response.context['reviews']), 2) ##
+
+        self.assertEqual(response.context['reviews'][0]['text'], 'Excellent!') ##
+
 
     @patch('requests.get')
     def test_index_view_with_google_reviews_api_error(self, mock_requests_get):

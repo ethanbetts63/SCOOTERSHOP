@@ -8,11 +8,7 @@ from django.utils import timezone
 from decimal import Decimal
 
 class AdminSalesBookingForm(forms.ModelForm):
-    """
-    Form for administrators to create and update SalesBooking instances.
-    It now uses hidden fields for SalesProfile and Motorcycle IDs, populated via AJAX.
-    Includes custom clean method for generating non-blocking warnings.
-    """
+    #--
     selected_profile_id = forms.IntegerField(
         required=True,
         widget=forms.HiddenInput(),
@@ -160,7 +156,5 @@ class AdminSalesBookingForm(forms.ModelForm):
         return cleaned_data
 
     def get_warnings(self):
-        """
-        Returns a list of non-blocking warning messages generated during clean.
-        """
+        #--
         return getattr(self, '_warnings', [])

@@ -7,17 +7,11 @@ from service.models import ServiceBooking
 from ..test_helpers.model_factories import UserFactory, ServiceBookingFactory, ServiceTypeFactory
 
 class AdminServiceBookingDetailViewTest(TestCase):
-    """
-    Tests for the AdminServiceBookingDetailView.
-    Focuses on displaying specific service booking details for authorized staff.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up non-modified objects used by all test methods.
-        Create a staff user and a service booking for testing.
-        """
+        #--
         cls.staff_user = UserFactory(username='staff_user_detail', is_staff=True, is_superuser=False)
         cls.superuser = UserFactory(username='superuser_detail', is_staff=True, is_superuser=True)                                                                   
 
@@ -37,19 +31,14 @@ class AdminServiceBookingDetailViewTest(TestCase):
         cls.detail_url_name = 'service:admin_service_booking_detail'
 
     def setUp(self):
-        """
-        Set up for each test method.
-        """
+        #--
         self.client = Client()
         self.client.force_login(self.staff_user)                                             
 
                                
 
     def test_get_request_displays_booking_details(self):
-        """
-        Test GET request to display details of a specific service booking.
-        Ensures correct template, context object, and booking data.
-        """
+        #--
         response = self.client.get(reverse(self.detail_url_name, args=[self.booking.pk]))
 
         self.assertEqual(response.status_code, 200)
@@ -73,10 +62,7 @@ class AdminServiceBookingDetailViewTest(TestCase):
         self.assertContains(response, self.booking.customer_motorcycle.model)                                
 
     def test_get_request_invalid_booking_pk(self):
-        """
-        Test GET request with an invalid/non-existent booking primary key.
-        Should return a 404 Not Found error.
-        """
+        #--
         invalid_pk = self.booking.pk + 999                             
         response = self.client.get(reverse(self.detail_url_name, args=[invalid_pk]))
         self.assertEqual(response.status_code, 404)

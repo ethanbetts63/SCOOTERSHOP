@@ -12,17 +12,11 @@ from service.forms import (
 from ..test_helpers.model_factories import ServiceSettingsFactory, TempServiceBookingFactory                                   
 
 class PaymentOptionFormTest(TestCase):
-    """
-    Tests for the PaymentOptionForm (Step 5 form).
-    This form dynamically populates payment options based on ServiceSettings.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up non-modified objects used by all test methods.
-        We'll create various ServiceSettings configurations.
-        """
+        #--
                                                    
                                                                               
         cls.default_settings = ServiceSettingsFactory(
@@ -92,9 +86,7 @@ class PaymentOptionFormTest(TestCase):
 
 
     def test_form_initialization_all_options_enabled(self):
-        """
-        Test that the form correctly populates choices when all payment options are enabled.
-        """
+        #--
         form = PaymentOptionForm(service_settings=self.default_settings, temp_booking=self.temp_booking)                    
         expected_choices = [
             (PAYMENT_OPTION_DEPOSIT, f"Pay Deposit Online (${self.default_settings.deposit_flat_fee_amount:.2f})"),
@@ -105,10 +97,7 @@ class PaymentOptionFormTest(TestCase):
         self.assertIsNone(form.fields['payment_method'].initial)                                           
 
     def test_form_initialization_deposit_only(self):
-        """
-        Test that the form correctly populates choices when only deposit is enabled.
-        Also check initial selection.
-        """
+        #--
         form = PaymentOptionForm(service_settings=self.deposit_only_settings, temp_booking=self.temp_booking)                    
         expected_choices = [
             (PAYMENT_OPTION_DEPOSIT, f"Pay Deposit Online (${self.deposit_only_settings.deposit_flat_fee_amount:.2f})"),
@@ -117,10 +106,7 @@ class PaymentOptionFormTest(TestCase):
         self.assertEqual(form.fields['payment_method'].initial, PAYMENT_OPTION_DEPOSIT)                         
 
     def test_form_initialization_full_online_only(self):
-        """
-        Test that the form correctly populates choices when only full online is enabled.
-        Also check initial selection.
-        """
+        #--
         form = PaymentOptionForm(service_settings=self.full_online_only_settings, temp_booking=self.temp_booking)                    
         expected_choices = [
             (PAYMENT_OPTION_FULL_ONLINE, "Pay Full Amount Online Now"),
@@ -129,10 +115,7 @@ class PaymentOptionFormTest(TestCase):
         self.assertEqual(form.fields['payment_method'].initial, PAYMENT_OPTION_FULL_ONLINE)                         
 
     def test_form_initialization_instore_only(self):
-        """
-        Test that the form correctly populates choices when only in-store is enabled.
-        Also check initial selection.
-        """
+        #--
         form = PaymentOptionForm(service_settings=self.instore_only_settings, temp_booking=self.temp_booking)                    
         expected_choices = [
             (PAYMENT_OPTION_INSTORE, "Pay In-Store on Drop-off"),
@@ -141,17 +124,13 @@ class PaymentOptionFormTest(TestCase):
         self.assertEqual(form.fields['payment_method'].initial, PAYMENT_OPTION_INSTORE)                         
 
     def test_form_initialization_no_options_enabled(self):
-        """
-        Test that the form has no choices when no payment options are enabled.
-        """
+        #--
         form = PaymentOptionForm(service_settings=self.no_payment_settings, temp_booking=self.temp_booking)                    
         self.assertEqual(form.fields['payment_method'].choices, [])
         self.assertIsNone(form.fields['payment_method'].initial)
 
     def test_form_initialization_deposit_percentage_display(self):
-        """
-        Test that the deposit option displays the percentage when method is percentage.
-        """
+        #--
         form = PaymentOptionForm(service_settings=self.deposit_percentage_settings, temp_booking=self.temp_booking)                    
         
                                                   
@@ -165,9 +144,7 @@ class PaymentOptionFormTest(TestCase):
 
 
     def test_form_valid_submission_all_options(self):
-        """
-        Test a valid submission when all options are available.
-        """
+        #--
         data = {
             'dropoff_date': datetime.date.today() + datetime.timedelta(days=1),                  
             'dropoff_time': datetime.time(9, 0),                        
@@ -182,9 +159,7 @@ class PaymentOptionFormTest(TestCase):
         self.assertTrue(form.cleaned_data['service_terms_accepted'])
 
     def test_form_valid_submission_deposit_only(self):
-        """
-        Test a valid submission when only deposit option is available.
-        """
+        #--
         data = {
             'dropoff_date': datetime.date.today() + datetime.timedelta(days=1),                  
             'dropoff_time': datetime.time(9, 0),                        
@@ -199,9 +174,7 @@ class PaymentOptionFormTest(TestCase):
         self.assertTrue(form.cleaned_data['service_terms_accepted'])
 
     def test_form_invalid_submission_no_payment_method_selected(self):
-        """
-        Test that the form is invalid if no payment option is selected.
-        """
+        #--
         data = {
             'dropoff_date': datetime.date.today() + datetime.timedelta(days=1),                  
             'dropoff_time': datetime.time(9, 0),                        
@@ -214,9 +187,7 @@ class PaymentOptionFormTest(TestCase):
         self.assertIn('This field is required.', form.errors['payment_method'])
 
     def test_form_invalid_submission_terms_not_accepted(self):
-        """
-        Test that the form is invalid if terms are not accepted.
-        """
+        #--
         data = {
             'dropoff_date': datetime.date.today() + datetime.timedelta(days=1),                  
             'dropoff_time': datetime.time(9, 0),                        
@@ -229,10 +200,7 @@ class PaymentOptionFormTest(TestCase):
         self.assertIn('This field is required.', form.errors['service_terms_accepted'])
 
     def test_form_invalid_submission_invalid_choice(self):
-        """
-        Test that the form is invalid if an invalid payment option is submitted
-        (i.e., one not available based on settings).
-        """
+        #--
         data = {
             'dropoff_date': datetime.date.today() + datetime.timedelta(days=1),                  
             'dropoff_time': datetime.time(9, 0),                        
@@ -245,9 +213,7 @@ class PaymentOptionFormTest(TestCase):
         self.assertIn(f"Select a valid choice. {PAYMENT_OPTION_FULL_ONLINE} is not one of the available choices.", form.errors['payment_method'])
 
     def test_form_invalid_submission_no_choices_available(self):
-        """
-        Test that the form is invalid if no choices are available and a selection is attempted.
-        """
+        #--
         data = {
             'dropoff_date': datetime.date.today() + datetime.timedelta(days=1),                  
             'dropoff_time': datetime.time(9, 0),                        

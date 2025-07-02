@@ -3,9 +3,7 @@ from django.core.exceptions import ValidationError
 
                              
 class BlockedServiceDate(models.Model):
-    """
-    Model to store dates or date ranges when service bookings are not available.
-    """
+    #--
     start_date = models.DateField(help_text="The start date of the blocked period.")
     end_date = models.DateField(help_text="The end date of the blocked period (inclusive).")
     description = models.CharField(max_length=255, blank=True, null=True, help_text="Optional description for the blocked period.")
@@ -17,9 +15,7 @@ class BlockedServiceDate(models.Model):
             return f"Blocked: {self.start_date.strftime('%Y-%m-%d')} to {self.end_date.strftime('%Y-%m-%d')}"
 
     def clean(self):
-        """
-        Custom validation to ensure end_date is not before start_date.
-        """
+        #--
         super().clean()
         if self.start_date and self.end_date and self.end_date < self.start_date:
             raise ValidationError({

@@ -7,19 +7,13 @@ from django.contrib import messages
 from service.models import ServiceBrand
 
 class ServiceBrandDeleteView(View):
-    """
-    Class-based view for deleting a specific service brand.
-    Handles POST requests for deletion.
-    """
+    #--
                                                                   
                           
                                            
 
     def post(self, request, pk, *args, **kwargs):
-        """
-        Handles POST requests: deletes the ServiceBrand instance
-        identified by the primary key (pk).
-        """
+        #--
         brand_to_delete = get_object_or_404(ServiceBrand, pk=pk)
         brand_name = brand_to_delete.name                                       
         try:

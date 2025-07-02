@@ -17,16 +17,10 @@ from payments.tests.test_helpers.model_factories import (
 
 
 class ProcessRefundRequestEntryTestCase(TestCase):
-    """
-    Tests for the process_refund_request_entry utility function.
-    This function handles the creation or updating of RefundRequest instances
-    based on Stripe webhook data.
-    """
+    #--
 
     def setUp(self):
-        """
-        Set up common data and mock for consistent timestamps.
-        """
+        #--
                                                                                                
                                                                 
         self.mock_now = datetime.datetime(2023, 1, 15, 12, 0, 0, tzinfo=dt_timezone.utc)
@@ -34,17 +28,12 @@ class ProcessRefundRequestEntryTestCase(TestCase):
         self.mock_now_patch.start()
 
     def tearDown(self):
-        """
-        Clean up after tests.
-        """
+        #--
         self.mock_now_patch.stop()
 
 
     def test_create_new_refund_request_for_service_booking(self):
-        """
-        Tests that a new RefundRequest is created when no existing one matches
-        and the payment is linked to a ServiceBooking.
-        """
+        #--
         service_booking = ServiceBookingFactory()
         payment = PaymentFactory(service_booking=service_booking, status='succeeded')
         
@@ -76,9 +65,7 @@ class ProcessRefundRequestEntryTestCase(TestCase):
         self.assertEqual(payment.refund_requests.count(), 1)
 
     def test_update_existing_unverified_refund_request(self):
-        """
-        Tests that an existing RefundRequest with an 'unverified' status is updated.
-        """
+        #--
         service_booking = ServiceBookingFactory()
         payment = PaymentFactory(service_booking=service_booking, status='succeeded')
         
@@ -112,10 +99,7 @@ class ProcessRefundRequestEntryTestCase(TestCase):
 
 
     def test_payment_status_is_refunded_for_existing_request(self):
-        """
-        Tests that if payment_obj.status is 'refunded', an existing RefundRequest
-        status is updated to 'refunded'.
-        """
+        #--
         service_booking = ServiceBookingFactory()
                                                
         payment = PaymentFactory(service_booking=service_booking, status='refunded')
@@ -140,10 +124,7 @@ class ProcessRefundRequestEntryTestCase(TestCase):
 
 
     def test_no_booking_linked_to_payment(self):
-        """
-        Tests that if the payment_obj has no booking linked,
-        the refund request also has no booking linked, but is still created.
-        """
+        #--
         payment = PaymentFactory(service_booking=None, status='succeeded')
         
         extracted_data = {

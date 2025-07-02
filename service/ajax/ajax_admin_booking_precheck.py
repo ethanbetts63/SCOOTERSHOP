@@ -6,10 +6,7 @@ from service.forms import AdminBookingDetailsForm
 
 @require_POST
 def admin_booking_precheck_ajax(request):
-    """
-    AJAX endpoint to perform validation and gather warnings for admin booking forms.
-    Returns JSON indicating errors, warnings, or if valid.
-    """
+    #--
     admin_form = AdminBookingDetailsForm(request.POST)
     response_data = {
         'status': 'success',                  

@@ -17,29 +17,18 @@ from ..test_helpers.model_factories import (
                                                      
 
 class AdminCreateServiceBookingTest(TestCase):
-    """
-    Tests for the `admin_create_service_booking` utility function.
-    This suite verifies that ServiceBooking instances are created correctly
-    based on the input data and associated objects, after removing
-    `admin_notes` and `created_by` fields from the model and utility.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up test data for all tests in this class.
-        Create necessary related objects using factories.
-        """
+        #--
         cls.service_type = ServiceTypeFactory()
         cls.service_profile = ServiceProfileFactory()
         cls.customer_motorcycle = CustomerMotorcycleFactory(service_profile=cls.service_profile)
                                                                                  
 
     def test_booking_creation_with_all_fields(self):
-        """
-        Test that a ServiceBooking is created successfully when all data,
-        including optional fields (that still exist), is provided.
-        """
+        #--
         today = date.today()
         future_service_date = today.replace(year=today.year + 1)
         future_dropoff_date = future_service_date
@@ -86,9 +75,7 @@ class AdminCreateServiceBookingTest(TestCase):
                                                                         
 
     def test_booking_creation_with_optional_fields_missing(self):
-        """
-        Test that a ServiceBooking is created successfully when optional fields are missing.
-        """
+        #--
         today = date.today()
         future_service_date = today.replace(year=today.year + 1)
         future_dropoff_date = future_service_date
@@ -134,9 +121,7 @@ class AdminCreateServiceBookingTest(TestCase):
                                                                         
 
     def test_booking_status_and_payment_status_options(self):
-        """
-        Test that various booking_status and payment_status options can be set.
-        """
+        #--
         today = date.today()
         future_date = today + timedelta(days=10)
         dropoff_time = time(11, 0)
@@ -172,10 +157,7 @@ class AdminCreateServiceBookingTest(TestCase):
         self.assertEqual(booking_declined.payment_status, 'refunded')
 
     def test_service_booking_reference_generation(self):
-        """
-        Test that service_booking_reference is automatically generated on save
-        if not provided.
-        """
+        #--
         today = date.today()
         future_date = today.replace(year=today.year + 1)
         dropoff_time = time(12, 0)

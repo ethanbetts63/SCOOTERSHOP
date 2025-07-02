@@ -4,15 +4,11 @@ from inventory.models import TempSalesBooking
 from ...test_helpers.model_factories import MotorcycleFactory, InventorySettingsFactory
 
 class InitiateBookingProcessViewTest(TestCase):
-    """
-    Tests for the InitiateBookingProcessView.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up common data for all tests in this class.
-        """
+        #--
         cls.client = Client()
 
                                                                                           
@@ -25,10 +21,7 @@ class InitiateBookingProcessViewTest(TestCase):
         cls.initiate_booking_url = reverse('inventory:initiate_booking', kwargs={'pk': cls.motorcycle.pk})
 
     def test_post_request_creates_temp_booking_deposit_flow(self):
-        """
-        Test that a POST request with 'deposit_required_for_flow': 'true'
-        correctly creates a TempSalesBooking and redirects.
-        """
+        #--
         initial_temp_booking_count = TempSalesBooking.objects.count()
 
         data = {
@@ -59,10 +52,7 @@ class InitiateBookingProcessViewTest(TestCase):
 
 
     def test_post_request_creates_temp_booking_enquiry_flow(self):
-        """
-        Test that a POST request with 'deposit_required_for_flow': 'false'
-        correctly creates a TempSalesBooking (enquiry flow) and redirects.
-        """
+        #--
         initial_temp_booking_count = TempSalesBooking.objects.count()
 
         data = {
@@ -85,10 +75,7 @@ class InitiateBookingProcessViewTest(TestCase):
         self.assertEqual(self.client.session['temp_sales_booking_uuid'], str(temp_booking.session_uuid))
 
     def test_post_request_creates_temp_booking_with_viewing_request(self):
-        """
-        Test that a POST request with 'request_viewing': 'true'
-        correctly creates a TempSalesBooking with request_viewing flag set.
-        """
+        #--
         initial_temp_booking_count = TempSalesBooking.objects.count()
 
         data = {
@@ -112,9 +99,7 @@ class InitiateBookingProcessViewTest(TestCase):
 
 
     def test_post_request_non_existent_motorcycle_pk(self):
-        """
-        Test that a POST request with a non-existent motorcycle PK returns a 404.
-        """
+        #--
         non_existent_pk = self.motorcycle.pk + 999
         url = reverse('inventory:initiate_booking', kwargs={'pk': non_existent_pk})
 

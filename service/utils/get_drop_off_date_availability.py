@@ -3,22 +3,7 @@ from datetime import timedelta, datetime
 from service.models import BlockedServiceDate                                                   
 
 def get_drop_off_date_availability(temp_booking, service_settings):
-    """
-    Calculates a list of all available drop-off dates based on the temporary booking's
-    service date, global service settings, and blocked service dates.
-
-    Args:
-        temp_booking (TempServiceBooking): The temporary service booking instance,
-                                          containing the 'service_date'.
-        service_settings (ServiceSettings): The singleton service settings instance,
-                                            containing 'max_advance_dropoff_days',
-                                            'allow_after_hours_dropoff', and
-                                            'booking_open_days'.
-
-    Returns:
-        list: A list of date strings (YYYY-MM-DD) representing all valid drop-off dates.
-              Returns an empty list if no dates are available or valid.
-    """
+    #--
     today = timezone.localdate(timezone.now())
     service_date = temp_booking.service_date
     max_advance_days = service_settings.max_advance_dropoff_days

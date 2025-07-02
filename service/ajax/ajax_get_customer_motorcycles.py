@@ -8,10 +8,7 @@ from django.views.decorators.http import require_GET
 
 @require_GET
 def get_customer_motorcycles_ajax(request, profile_id):
-    """
-    AJAX endpoint to retrieve a list of motorcycles associated with a given ServiceProfile.
-    Returns a JSON response containing motorcycle IDs, brands, models, and registration numbers.
-    """
+    #--
     try:
                                           
         service_profile = get_object_or_404(ServiceProfile, pk=profile_id)

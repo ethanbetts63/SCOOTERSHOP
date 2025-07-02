@@ -20,19 +20,11 @@ from ..test_helpers.model_factories import (
 
 
 class AjaxGetPaymentStatusTest(TestCase):
-    """
-    Tests for the AJAX endpoint `ajax_sales_payment_status_check`.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up test data for the GetPaymentStatusView AJAX endpoint.
-        This includes:
-        - A client for making HTTP requests.
-        - A motorcycle, sales profile, and payment instances.
-        - SalesBooking instances representing different payment/booking statuses.
-        """
+        #--
         cls.client = Client()
 
                                                       
@@ -69,10 +61,7 @@ class AjaxGetPaymentStatusTest(TestCase):
         cls.non_existent_payment_intent_id = "pi_nonexistent12345"
 
     def test_successful_payment_status_check(self):
-        """
-        Test that a successful payment intent ID returns 'ready' status
-        and correct booking details.
-        """
+        #--
         response = self.client.get(
             reverse('inventory:ajax_sales_payment_status_check'),
             {'payment_intent_id': self.successful_booking.stripe_payment_intent_id}
@@ -98,10 +87,7 @@ class AjaxGetPaymentStatusTest(TestCase):
         self.assertEqual(self.client.session['sales_booking_reference'], self.successful_booking.sales_booking_reference)
 
     def test_payment_processing_status(self):
-        """
-        Test that if a payment exists but no sales booking, it returns 'processing'.
-        This simulates a scenario where the webhook might still be finalizing the booking.
-        """
+        #--
         response = self.client.get(
             reverse('inventory:ajax_sales_payment_status_check'),
             {'payment_intent_id': self.processing_payment.stripe_payment_intent_id}
@@ -113,9 +99,7 @@ class AjaxGetPaymentStatusTest(TestCase):
         self.assertIn('Booking finalization is still in progress.', data['message'])
 
     def test_payment_intent_not_found(self):
-        """
-        Test that if neither SalesBooking nor Payment exists for the ID, it returns 'error'.
-        """
+        #--
         response = self.client.get(
             reverse('inventory:ajax_sales_payment_status_check'),
             {'payment_intent_id': self.non_existent_payment_intent_id}
@@ -127,9 +111,7 @@ class AjaxGetPaymentStatusTest(TestCase):
         self.assertIn('Booking finalization failed. Please contact support for assistance.', data['message'])
 
     def test_missing_payment_intent_id(self):
-        """
-        Test that if payment_intent_id is not provided, it returns a 400 error.
-        """
+        #--
         response = self.client.get(
             reverse('inventory:ajax_sales_payment_status_check')
         )
@@ -140,9 +122,7 @@ class AjaxGetPaymentStatusTest(TestCase):
         self.assertEqual(data['message'], 'Payment Intent ID is required.')
 
     def test_sales_booking_details_in_response(self):
-        """
-        Ensure all relevant sales booking details are correctly included in the response.
-        """
+        #--
         response = self.client.get(
             reverse('inventory:ajax_sales_payment_status_check'),
             {'payment_intent_id': self.successful_booking.stripe_payment_intent_id}

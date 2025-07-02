@@ -6,7 +6,8 @@ class EnquiryManagementView(AdminRequiredMixin, ListView):
     model = Enquiry
     template_name = 'core/admin/enquiry_management.html'
     context_object_name = 'enquiries'
-    paginate_by = 10 # You can adjust this as needed
+    paginate_by = 10 ##
+
 
     def get_queryset(self):
         return Enquiry.objects.all().order_by('-created_at')

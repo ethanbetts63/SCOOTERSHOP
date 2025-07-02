@@ -8,11 +8,7 @@ from django.contrib import messages
 from django.urls import reverse                                 
 
 class IntermediaryRefundProcessingView(LoginRequiredMixin, TemplateView):
-    """
-    An intermediary view that displays a page which immediately
-    submits a POST request to the actual ProcessRefundView.
-    This is used to convert a GET redirect into a POST submission.
-    """
+    #--
     template_name = 'payments/intermediary_refund_processing.html'
 
     def get_context_data(self, **kwargs):

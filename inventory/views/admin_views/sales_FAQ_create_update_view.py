@@ -9,16 +9,12 @@ from inventory.forms import AdminSalesFAQForm
 from inventory.models import SalesFAQ
 
 class SalesFAQCreateUpdateView(AdminRequiredMixin, View):
-    """
-    View to handle creating and updating Sales FAQs.
-    """
+    #--
     template_name = 'inventory/admin_sales_faq_create_update.html'
     form_class = AdminSalesFAQForm
 
     def get(self, request, pk=None, *args, **kwargs):
-        """
-        Handles GET requests to display the form for creating or editing an FAQ.
-        """
+        #--
         if pk:
             instance = get_object_or_404(SalesFAQ, pk=pk)
             form = self.form_class(instance=instance)
@@ -34,9 +30,7 @@ class SalesFAQCreateUpdateView(AdminRequiredMixin, View):
         return render(request, self.template_name, context)
 
     def post(self, request, pk=None, *args, **kwargs):
-        """
-        Handles POST requests to save the form data.
-        """
+        #--
         if pk:
             instance = get_object_or_404(SalesFAQ, pk=pk)
             form = self.form_class(request.POST, instance=instance)

@@ -15,16 +15,11 @@ from service.models import ServiceBooking
 from ..test_helpers.model_factories import ServiceBookingFactory, ServiceTypeFactory, ServiceProfileFactory, CustomerMotorcycleFactory, PaymentFactory
 
 class ServiceBookingModelTest(TestCase):
-    """
-    Tests for the ServiceBooking model.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up non-modified objects used by all test methods.
-        Ensure required date/time fields for ServiceBooking are provided.
-        """
+        #--
                                                                                                       
         test_dropoff_date = fake.date_between(start_date='today', end_date='+30d')
         test_dropoff_time = fake.time_object()
@@ -39,17 +34,13 @@ class ServiceBookingModelTest(TestCase):
         )
 
     def test_service_booking_creation(self):
-        """
-        Test that a ServiceBooking instance can be created using the factory.
-        """
+        #--
         self.assertIsNotNone(self.service_booking)
         self.assertIsInstance(self.service_booking, ServiceBooking)
         self.assertEqual(ServiceBooking.objects.count(), 1)
 
     def test_service_booking_reference_generation_on_save(self):
-        """
-        Test that service_booking_reference is automatically generated if not provided.
-        """
+        #--
                                                                                  
                                                            
         booking = ServiceBookingFactory()
@@ -67,16 +58,12 @@ class ServiceBookingModelTest(TestCase):
         self.assertEqual(booking.service_booking_reference, old_reference)
 
     def test_str_method(self):
-        """
-        Test the __str__ method of the ServiceBooking model.
-        """
+        #--
         expected_str = f"Booking {self.service_booking.service_booking_reference} for {self.service_booking.service_profile.name} on {self.service_booking.dropoff_date}"
         self.assertEqual(str(self.service_booking), expected_str)
 
     def test_field_attributes(self):
-        """
-        Test the attributes of various fields in the ServiceBooking model.
-        """
+        #--
         booking = self.service_booking
 
                                                         
@@ -200,9 +187,7 @@ class ServiceBookingModelTest(TestCase):
         self.assertTrue(field.auto_now)
 
     def test_service_booking_reference_unique_constraint(self):
-        """
-        Test that service_booking_reference enforces uniqueness.
-        """
+        #--
                                                     
         existing_booking = ServiceBookingFactory(service_booking_reference="SERVICE-TESTREF")
         
@@ -218,9 +203,7 @@ class ServiceBookingModelTest(TestCase):
         self.assertIn("unique constraint failed", str(cm.exception).lower())
 
     def test_stripe_payment_intent_id_unique_constraint(self):
-        """
-        Test that stripe_payment_intent_id enforces uniqueness.
-        """
+        #--
                                                                    
         existing_booking = ServiceBookingFactory(stripe_payment_intent_id="pi_test_intent_123")
 
@@ -237,9 +220,7 @@ class ServiceBookingModelTest(TestCase):
 
 
     def test_default_values(self):
-        """
-        Test that default values are correctly applied when not explicitly set.
-        """
+        #--
                                                        
         service_type = ServiceTypeFactory()
         service_profile = ServiceProfileFactory()
@@ -269,9 +250,7 @@ class ServiceBookingModelTest(TestCase):
         self.assertIsNone(booking.customer_notes) 
 
     def test_timestamps_auto_now_add_and_auto_now(self):
-        """
-        Test that created_at is set on creation and updated_at is updated on save.
-        """
+        #--
         booking = ServiceBookingFactory()                                             
         initial_created_at = booking.created_at
         initial_updated_at = booking.updated_at
@@ -295,9 +274,7 @@ class ServiceBookingModelTest(TestCase):
         self.assertEqual(booking.created_at, initial_created_at)
 
     def test_related_name_accessors(self):
-        """
-        Test that related_name accessors work as expected.
-        """
+        #--
         service_type = ServiceTypeFactory()
         service_profile = ServiceProfileFactory()
         customer_motorcycle = CustomerMotorcycleFactory(service_profile=service_profile)
@@ -317,9 +294,7 @@ class ServiceBookingModelTest(TestCase):
         self.assertEqual(booking, payment.related_service_booking_payment)
 
     def test_on_delete_behavior(self):
-        """
-        Test the on_delete behavior for foreign keys.
-        """
+        #--
                                   
                                                                                  
         service_type_for_protect = ServiceTypeFactory()

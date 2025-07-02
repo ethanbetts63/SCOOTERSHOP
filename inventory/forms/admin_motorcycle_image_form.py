@@ -7,10 +7,7 @@ from django.forms import inlineformset_factory
 from inventory.models import Motorcycle, MotorcycleImage
 
 class MotorcycleImageForm(forms.ModelForm):
-    """
-    Form for a single MotorcycleImage instance.
-    This is used by the MotorcycleImageFormSet.
-    """
+    #--
     class Meta:
         model = MotorcycleImage
         fields = ['image',]

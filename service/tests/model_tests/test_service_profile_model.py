@@ -13,29 +13,20 @@ from ..test_helpers.model_factories import ServiceProfileFactory, UserFactory
 User = settings.AUTH_USER_MODEL
 
 class ServiceProfileModelTest(TestCase):
-    """
-    Tests for the ServiceProfile model.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up non-modified objects used by all test methods.
-        We'll create a single ServiceProfile instance using the factory.
-        """
+        #--
         cls.service_profile = ServiceProfileFactory()
 
     def test_service_profile_creation(self):
-        """
-        Test that a ServiceProfile instance can be created successfully using the factory.
-        """
+        #--
         self.assertIsInstance(self.service_profile, ServiceProfile)
         self.assertIsNotNone(self.service_profile.pk)                                              
 
     def test_user_relationship(self):
-        """
-        Test the OneToOneField relationship with the User model.
-        """
+        #--
         profile = self.service_profile
         self.assertIsNotNone(profile.user)
         self.assertIsInstance(profile.user, UserFactory._meta.model)                                              
@@ -46,9 +37,7 @@ class ServiceProfileModelTest(TestCase):
         self.assertIsNone(profile_no_user.user)
 
     def test_contact_information_fields(self):
-        """
-        Test the 'name', 'email', and 'phone_number' fields.
-        """
+        #--
         profile = self.service_profile
         self.assertEqual(profile._meta.get_field('name').max_length, 100)
         self.assertFalse(profile._meta.get_field('name').blank)
@@ -66,9 +55,7 @@ class ServiceProfileModelTest(TestCase):
         self.assertIsInstance(profile.phone_number, str)
 
     def test_address_information_fields(self):
-        """
-        Test the address fields.
-        """
+        #--
         profile = self.service_profile
         self.assertEqual(profile._meta.get_field('address_line_1').max_length, 100)
         self.assertFalse(profile._meta.get_field('address_line_1').blank)
@@ -101,9 +88,7 @@ class ServiceProfileModelTest(TestCase):
         self.assertIsInstance(profile.country, str)
 
     def test_timestamps(self):
-        """
-        Test 'created_at' and 'updated_at' fields.
-        """
+        #--
         profile = self.service_profile
         self.assertIsInstance(profile.created_at, datetime)
         self.assertIsInstance(profile.updated_at, datetime)
@@ -116,9 +101,7 @@ class ServiceProfileModelTest(TestCase):
         self.assertGreater(profile.updated_at, old_updated_at)
 
     def test_clean_method_phone_number_validation(self):
-        """
-        Test the clean method's validation for the 'phone_number' field.
-        """
+        #--
                                                                                      
                                                                               
         profile = ServiceProfileFactory()
@@ -146,10 +129,7 @@ class ServiceProfileModelTest(TestCase):
             profile.full_clean()
 
     def test_clean_method_email_user_email_discrepancy(self):
-        """
-        Test the clean method's behavior when service_profile.email
-        and user.email are different.
-        """
+        #--
         user = UserFactory(email="user@example.com")
                                                                                         
         profile = ServiceProfileFactory(user=user, email="profile@example.com")
@@ -170,10 +150,7 @@ class ServiceProfileModelTest(TestCase):
 
 
     def test_str_method(self):
-        """
-        Test the __str__ method of the ServiceProfile model.
-        It should return a descriptive string based on user or name/email.
-        """
+        #--
                                  
         profile_with_user = self.service_profile
         expected_str_with_user = f"Profile for {profile_with_user.user.get_username()} ({profile_with_user.name})"
@@ -185,8 +162,6 @@ class ServiceProfileModelTest(TestCase):
         self.assertEqual(str(profile_no_user), expected_str_no_user)
 
     def test_meta_options(self):
-        """
-        Test the Meta options of the ServiceProfile model.
-        """
+        #--
         self.assertEqual(ServiceProfile._meta.verbose_name, "Service Customer Profile")
         self.assertEqual(ServiceProfile._meta.verbose_name_plural, "Service Customer Profiles")

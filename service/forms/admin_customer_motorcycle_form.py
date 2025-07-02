@@ -2,10 +2,7 @@ from django import forms
 from service.models import CustomerMotorcycle, ServiceProfile
 
 class AdminCustomerMotorcycleForm(forms.ModelForm):
-    """
-    Form for administrators to create and manage CustomerMotorcycle instances.
-    Includes a field to link an existing ServiceProfile.
-    """
+    #--
     service_profile = forms.ModelChoiceField(
         queryset=ServiceProfile.objects.all().order_by('name', 'email'),                                             
         required=False,                                                                           

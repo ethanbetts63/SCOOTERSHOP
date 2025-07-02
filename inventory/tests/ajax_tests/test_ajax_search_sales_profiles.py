@@ -7,13 +7,11 @@ from inventory.ajax.ajax_search_sales_profiles import search_sales_profiles_ajax
 from ..test_helpers.model_factories import UserFactory, SalesProfileFactory
 
 class AjaxSearchSalesProfilesTest(TestCase):
-    """
-    Test suite for the search_sales_profiles_ajax view.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """Set up data for the whole test case"""
+        #--
         cls.factory = RequestFactory()
         cls.staff_user = UserFactory(is_staff=True)
         cls.non_staff_user = UserFactory(is_staff=False)
@@ -24,7 +22,7 @@ class AjaxSearchSalesProfilesTest(TestCase):
         cls.profile3 = SalesProfileFactory(name='Peter Jones', email='peter.j@test.com', phone_number='777-888-9999', address_line_1='123 Test Street')
         
     def _get_response(self, user, query_params={}):
-        """Helper method to simulate a GET request to the view."""
+        #--
         request = self.factory.get(reverse('inventory:admin_api_search_sales_profiles'), query_params)
         request.user = user
         return search_sales_profiles_ajax(request)
@@ -35,9 +33,7 @@ class AjaxSearchSalesProfilesTest(TestCase):
         self.assertEqual(json.loads(response.content), {'error': 'Permission denied'})
 
     def test_search_returns_correct_json_structure(self):
-        """
-        Tests that the JSON response contains the expected keys for each profile.
-        """
+        #--
         response = self._get_response(self.staff_user, {'query': 'Johnathan'})
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)

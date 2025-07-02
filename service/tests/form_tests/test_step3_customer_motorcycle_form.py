@@ -7,16 +7,11 @@ import datetime
 import random
 
 class CustomerMotorcycleFormTest(TestCase):
-    """
-    Tests for the CustomerMotorcycleForm (Step 3 of the booking flow).
-    This form handles creating and updating CustomerMotorcycle instances.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up non-modified objects used by all test methods.
-        """
+        #--
         cls.service_profile = ServiceProfileFactory()
         ServiceSettings.objects.get_or_create(pk=1)
 
@@ -107,10 +102,7 @@ class CustomerMotorcycleFormTest(TestCase):
         self.assertEqual(form.initial.get('other_brand_name', ''), '')                                    
 
     def test_form_initialization_with_instance_other_brand(self):
-        """
-        Test that the form correctly pre-populates fields when initialized with an existing
-        CustomerMotorcycle instance where the brand was originally 'Other' and a custom name was saved.
-        """
+        #--
                                                                                      
         custom_brand_name = "MyPreviouslyEnteredOtherBrand"
         existing_motorcycle = CustomerMotorcycleFactory(

@@ -10,18 +10,11 @@ from ..test_helpers.model_factories import UserFactory, CustomerMotorcycleFactor
                                                                      
 
 class CustomerMotorcycleCreateUpdateViewTest(TestCase):
-    """
-    Tests for the CustomerMotorcycleCreateUpdateView.
-    Covers access control, GET requests (create/update), and POST requests (create/update, valid/invalid).
-    Image upload testing has been explicitly removed as requested.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up non-modified objects used by all test methods.
-        Create different types of users and related objects for testing.
-        """
+        #--
         cls.staff_user = UserFactory(username='staff_motorcycle_user', is_staff=True, is_superuser=False)
         cls.superuser = UserFactory(username='superuser_motorcycle', is_staff=True, is_superuser=True)
         cls.regular_user = UserFactory(username='regular_motorcycle_user', is_staff=False, is_superuser=False)
@@ -38,10 +31,7 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         cls.list_management_url = reverse('service:admin_customer_motorcycle_management')                                        
 
     def setUp(self):
-        """
-        Set up for each test method.
-        Initialize client.
-        """
+        #--
         self.client = Client()
         self.session = self.client.session
         self.session.save()
@@ -55,9 +45,7 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
                                   
 
     def test_view_redirects_anonymous_user(self):
-        """
-        Ensure anonymous users are redirected to the login page.
-        """
+        #--
         response = self.client.get(self.create_url)
         self.assertRedirects(response, reverse('users:login') + f'?next={self.create_url}')
 
@@ -65,9 +53,7 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         self.assertRedirects(response, reverse('users:login') + f'?next={self.update_url}')
 
     def test_view_denies_access_to_regular_user(self):
-        """
-        Ensure regular users are denied access.
-        """
+        #--
         self.client.force_login(self.regular_user)
         response = self.client.get(self.create_url)
         self.assertEqual(response.status_code, 403)            
@@ -76,9 +62,7 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         self.assertEqual(response.status_code, 403)            
 
     def test_view_grants_access_to_staff_user(self):
-        """
-        Ensure staff users can access the view.
-        """
+        #--
         self.client.force_login(self.staff_user)
         response = self.client.get(self.create_url)
         self.assertEqual(response.status_code, 200)
@@ -87,9 +71,7 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_view_grants_access_to_superuser(self):
-        """
-        Ensure superusers can access the view.
-        """
+        #--
         self.client.force_login(self.superuser)
         response = self.client.get(self.create_url)
         self.assertEqual(response.status_code, 200)
@@ -100,9 +82,7 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
                                
 
     def test_get_request_create_new_motorcycle(self):
-        """
-        Test GET request for displaying the form to create a new CustomerMotorcycle.
-        """
+        #--
         self.client.force_login(self.staff_user)
         response = self.client.get(self.create_url)
 
@@ -114,9 +94,7 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         self.assertFalse(response.context['form'].is_bound)
 
     def test_get_request_update_existing_motorcycle(self):
-        """
-        Test GET request for displaying the form to update an existing CustomerMotorcycle.
-        """
+        #--
         self.client.force_login(self.staff_user)
         response = self.client.get(self.update_url)
 
@@ -130,10 +108,7 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
 
 
     def test_get_request_update_non_existent_motorcycle(self):
-        """
-        Test GET request for an update URL with a non-existent PK.
-        Should return 404.
-        """
+        #--
         self.client.force_login(self.staff_user)
         non_existent_pk = self.existing_motorcycle.pk + 9999
         non_existent_url = reverse('service:admin_edit_customer_motorcycle', kwargs={'pk': non_existent_pk})
@@ -144,9 +119,7 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
                                          
 
     def test_post_request_create_new_motorcycle_valid(self):
-        """
-        Test POST request for creating a new CustomerMotorcycle with valid data.
-        """
+        #--
         self.client.force_login(self.staff_user)
         initial_count = CustomerMotorcycle.objects.count()
 
@@ -177,10 +150,7 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         self.assertEqual(messages_list[0].level, messages.SUCCESS)
 
     def test_post_request_create_new_motorcycle_invalid(self):
-        """
-        Test POST request for creating a new CustomerMotorcycle with invalid data.
-        (e.g., missing required fields).
-        """
+        #--
         self.client.force_login(self.staff_user)
         initial_count = CustomerMotorcycle.objects.count()
 
@@ -211,9 +181,7 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
                                          
 
     def test_post_request_update_existing_motorcycle_valid(self):
-        """
-        Test POST request for updating an existing CustomerMotorcycle with valid data.
-        """
+        #--
         self.client.force_login(self.staff_user)
         original_brand = self.existing_motorcycle.brand
         updated_brand = "UpdatedBrand"
@@ -244,10 +212,7 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
                                                                          
 
     def test_post_request_update_existing_motorcycle_invalid(self):
-        """
-        Test POST request for updating an existing CustomerMotorcycle with invalid data.
-        (e.g., missing required fields).
-        """
+        #--
         self.client.force_login(self.staff_user)
         original_model = self.existing_motorcycle.model
 
@@ -279,10 +244,7 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
 
 
     def test_post_request_update_non_existent_motorcycle(self):
-        """
-        Test POST request for an update URL with a non-existent PK.
-        Should return 404.
-        """
+        #--
         self.client.force_login(self.staff_user)
         non_existent_pk = self.existing_motorcycle.pk + 9999
         non_existent_url = reverse('service:admin_edit_customer_motorcycle', kwargs={'pk': non_existent_pk})

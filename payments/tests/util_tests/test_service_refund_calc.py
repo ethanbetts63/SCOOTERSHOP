@@ -11,16 +11,11 @@ from payments.utils.service_refund_calc import calculate_service_refund_amount
 from payments.tests.test_helpers.model_factories import ServiceBookingFactory, PaymentFactory, RefundPolicySettingsFactory
 
 class ServiceRefundCalcTests(TestCase):
-    """
-    Tests for the calculate_service_refund_amount function in payments.service_refund_calc.
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up test data that will be used across all test methods in this class.
-        We create a single RefundPolicySettings instance as it's a singleton.
-        """
+        #--
         cls.refund_policy_settings = RefundPolicySettingsFactory()
 
                                                                   
@@ -45,9 +40,7 @@ class ServiceRefundCalcTests(TestCase):
         }
 
     def _create_booking_with_payment(self, total_amount, payment_method, payment_status=None, dropoff_date_offset_days=10, refund_policy_snapshot=None):
-        """
-        Helper to create a ServiceBooking and an associated Payment (if needed for context, though service_refund_calc uses booking.amount_paid).
-        """
+        #--
                                                                                                               
         payment = PaymentFactory(amount=total_amount, status='succeeded')
 
@@ -81,9 +74,7 @@ class ServiceRefundCalcTests(TestCase):
                                                         
 
     def test_full_refund_full_payment(self):
-        """
-        Tests full refund for a full payment service booking when cancelled well in advance.
-        """
+        #--
         cancellation_datetime = timezone.now()
                                                                    
         booking, payment = self._create_booking_with_payment(
@@ -101,9 +92,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 8)
 
     def test_partial_refund_full_payment(self):
-        """
-        Tests partial refund for a full payment service booking when cancelled within partial refund window.
-        """
+        #--
         cancellation_datetime = timezone.now()
                                                                       
         booking, payment = self._create_booking_with_payment(
@@ -122,9 +111,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 4)
 
     def test_minimal_refund_full_payment(self):
-        """
-        Tests minimal refund for a full payment service booking when cancelled within minimal refund window.
-        """
+        #--
         cancellation_datetime = timezone.now()
                                                                      
         booking, payment = self._create_booking_with_payment(
@@ -143,9 +130,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 2)
 
     def test_no_refund_full_payment_too_close(self):
-        """
-        Tests no refund for a full payment service booking when cancelled too close to drop-off.
-        """
+        #--
         cancellation_datetime = timezone.now()
                                                                                 
         booking, payment = self._create_booking_with_payment(
@@ -163,9 +148,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 0)
 
     def test_no_refund_full_payment_after_dropoff(self):
-        """
-        Tests no refund for a full payment service booking when cancelled after the drop-off time.
-        """
+        #--
         dropoff_date = timezone.now().date() - timedelta(days=1)
         cancellation_datetime = timezone.now()
 
@@ -193,9 +176,7 @@ class ServiceRefundCalcTests(TestCase):
                                                               
 
     def test_full_refund_deposit_payment(self):
-        """
-        Tests full refund for a deposit payment service booking when cancelled well in advance.
-        """
+        #--
         cancellation_datetime = timezone.now()
                                                                                  
         booking, payment = self._create_booking_with_payment(
@@ -214,9 +195,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 11)
 
     def test_partial_refund_deposit_payment(self):
-        """
-        Tests partial refund for a deposit payment service booking when cancelled within partial refund window.
-        """
+        #--
         cancellation_datetime = timezone.now()
                                                                                   
         booking, payment = self._create_booking_with_payment(
@@ -236,9 +215,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 6)
 
     def test_minimal_refund_deposit_payment(self):
-        """
-        Tests minimal refund for a deposit payment service booking when cancelled within minimal refund window.
-        """
+        #--
         cancellation_datetime = timezone.now()
                                                                                   
         booking, payment = self._create_booking_with_payment(
@@ -258,9 +235,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 3)
 
     def test_no_refund_deposit_payment_too_close(self):
-        """
-        Tests no refund for a deposit payment service booking when cancelled too close to drop-off.
-        """
+        #--
         cancellation_datetime = timezone.now()
                                                                                  
         booking, payment = self._create_booking_with_payment(
@@ -282,9 +257,7 @@ class ServiceRefundCalcTests(TestCase):
                                             
 
     def test_no_refund_policy_snapshot(self):
-        """
-        Tests behavior when refund_policy_snapshot is missing or empty.
-        """
+        #--
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('500.00'),
             payment_method='online_full',
@@ -298,9 +271,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 'N/A')
 
     def test_manual_payment_method(self):
-        """
-        Tests behavior for payment methods that require manual refunds.
-        """
+        #--
         cancellation_datetime = timezone.now()
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('500.00'),
@@ -317,9 +288,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 'N/A')
 
     def test_booking_without_payment_object_amount_paid_used(self):
-        """
-        Tests the case where a service booking's amount_paid is used directly.
-        """
+        #--
         cancellation_datetime = timezone.now()
 
         mock_booking = MagicMock()
@@ -338,10 +307,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertIn("Cancellation 8 days before drop-off.", result['details'])
 
     def test_booking_without_payment_object_zero_amount_paid(self):
-        """
-        Tests the case where a service booking might not have a linked payment object
-        and amount_paid is zero.
-        """
+        #--
         cancellation_datetime = timezone.now()
 
         mock_booking = MagicMock()
@@ -360,9 +326,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertIn("Cancellation 8 days before drop-off.", result['details'])
 
     def test_custom_cancellation_datetime(self):
-        """
-        Tests that a custom cancellation_datetime is used correctly.
-        """
+        #--
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('500.00'),
             payment_method='online_full',
@@ -380,10 +344,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 8)
 
     def test_exact_boundary_full_refund_days(self):
-        """
-        Tests cancellation exactly on the boundary for full refund.
-        Should result in a full refund.
-        """
+        #--
         cancellation_datetime = timezone.make_aware(datetime.combine(date(2025, 1, 1), time(10, 0, 0)))
         dropoff_datetime_exact_boundary = cancellation_datetime + timedelta(days=7)
 
@@ -403,10 +364,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 7)
 
     def test_just_under_boundary_full_refund_days(self):
-        """
-        Tests cancellation just under the boundary for full refund.
-        Should result in a partial refund.
-        """
+        #--
         cancellation_datetime = timezone.make_aware(datetime.combine(date(2025, 1, 1), time(10, 0, 0)))
         dropoff_datetime_just_under = cancellation_datetime + timedelta(days=6, hours=23)
 
@@ -427,9 +385,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 6)
 
     def test_minimal_refund_zero_percentage(self):
-        """
-        Tests a scenario where minimal refund percentage is 0%.
-        """
+        #--
         policy_with_zero_minimal = self.full_payment_policy_snapshot.copy()
         policy_with_zero_minimal['cancellation_full_payment_minimal_refund_percentage'] = str(Decimal('0.00'))
 
@@ -447,9 +403,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 1)
 
     def test_decimal_precision(self):
-        """
-        Ensures Decimal objects are handled correctly for precision.
-        """
+        #--
         policy_snapshot = {
             'deposit_enabled': False,
             'cancellation_full_payment_full_refund_days': 7,
@@ -473,9 +427,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 4)
 
     def test_total_paid_for_calculation_from_amount_paid(self):
-        """
-        Ensures total_paid_for_calculation correctly uses booking.amount_paid.
-        """
+        #--
         cancellation_datetime = timezone.now()
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('123.45'),

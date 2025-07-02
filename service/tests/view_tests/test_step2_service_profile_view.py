@@ -20,15 +20,11 @@ from ..test_helpers.model_factories import (
 
 
 class Step2MotorcycleSelectionViewTest(TestCase):
-    """
-    Tests for the Step2MotorcycleSelectionView (dispatch, GET, and POST methods).
-    """
+    #--
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up common data for all tests in this class.
-        """
+        #--
         cls.factory = RequestFactory()
         cls.user = UserFactory()
         cls.service_profile = ServiceProfileFactory(user=cls.user)
@@ -36,9 +32,7 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         cls.base_url = reverse('service:service_book_step2')
 
     def setUp(self):
-        """
-        Set up for each test method. Ensure a clean state and common request setup.
-        """
+        #--
         TempServiceBooking.objects.all().delete()
         CustomerMotorcycle.objects.all().delete()
 
@@ -66,10 +60,7 @@ class Step2MotorcycleSelectionViewTest(TestCase):
                                                                                             
 
     def test_dispatch_no_temp_booking_uuid_in_session(self):
-        """
-        Test dispatch redirects to service:service if 'temp_service_booking_uuid' is missing from session.
-        Uses RequestFactory because we are testing the dispatch logic before template rendering.
-        """
+        #--
         request = self.factory.get(self.base_url)
         request.session = {}                     
         request.user = self.user                                             
@@ -78,9 +69,7 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         self.assertEqual(response.url, reverse('service:service'))                                          
 
     def test_dispatch_invalid_temp_booking_uuid_in_session(self):
-        """
-        Test dispatch redirects to service:service if 'temp_service_booking_uuid' in session is invalid (not in DB).
-        """
+        #--
         request = self.factory.get(self.base_url)
                                      
         request.session = {'temp_service_booking_uuid': str(uuid.uuid4())}                                     
@@ -92,9 +81,7 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         self.assertNotIn('temp_service_booking_uuid', request.session)
 
     def test_dispatch_temp_booking_missing_service_profile(self):
-        """
-        Test dispatch redirects to step3 if temp_booking.service_profile is None.
-        """
+        #--
         self.temp_booking.service_profile = None
         self.temp_booking.save()
         request = self.factory.get(self.base_url)
@@ -107,9 +94,7 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         self.assertEqual(response.url, reverse('service:service_book_step3'))
 
     def test_dispatch_no_motorcycles_redirects_to_step3(self):
-        """
-        Test dispatch redirects to step3 if the user has no existing motorcycles.
-        """
+        #--
         CustomerMotorcycle.objects.all().delete()                                            
         request = self.factory.get(self.base_url)
                                      
@@ -124,10 +109,7 @@ class Step2MotorcycleSelectionViewTest(TestCase):
                                                   
 
     def test_get_renders_form_with_motorcycles(self):
-        """
-        Test GET request renders the form correctly with existing motorcycles.
-        Uses self.client to get a response that includes context and template info.
-        """
+        #--
                                                                             
                                                                             
         CustomerMotorcycleFactory(service_profile=self.service_profile) 
@@ -150,9 +132,7 @@ class Step2MotorcycleSelectionViewTest(TestCase):
 
     @patch('service.views.user_views.step2_motorcycle_selection_view.MotorcycleSelectionForm')
     def test_post_select_new_motorcycle_redirects_to_step3(self, MockMotorcycleSelectionForm):
-        """
-        Test POST request redirects to Step 3 when 'Add New Motorcycle' is selected.
-        """
+        #--
                                                      
         mock_form_instance = MockMotorcycleSelectionForm.return_value
         mock_form_instance.is_valid.return_value = True
@@ -170,9 +150,7 @@ class Step2MotorcycleSelectionViewTest(TestCase):
 
     @patch('service.views.user_views.step2_motorcycle_selection_view.MotorcycleSelectionForm')
     def test_post_select_existing_motorcycle_redirects_to_step4(self, MockMotorcycleSelectionForm):
-        """
-        Test POST request updates temp_booking with selected motorcycle and redirects to Step 4.
-        """
+        #--
         mock_form_instance = MockMotorcycleSelectionForm.return_value
         mock_form_instance.is_valid.return_value = True
         mock_form_instance.cleaned_data = {'selected_motorcycle': str(self.customer_motorcycle.pk)}
@@ -189,9 +167,7 @@ class Step2MotorcycleSelectionViewTest(TestCase):
 
     @patch('service.views.user_views.step2_motorcycle_selection_view.MotorcycleSelectionForm')
     def test_post_invalid_motorcycle_selection_renders_form_with_error(self, MockMotorcycleSelectionForm):
-        """
-        Test POST with an invalid motorcycle ID (e.g., non-existent or not belonging to user).
-        """
+        #--
         mock_form_instance = MockMotorcycleSelectionForm.return_value
         mock_form_instance.is_valid.return_value = True                                                        
         mock_form_instance.cleaned_data = {'selected_motorcycle': '9999'}                  
@@ -217,9 +193,7 @@ class Step2MotorcycleSelectionViewTest(TestCase):
 
     @patch('service.views.user_views.step2_motorcycle_selection_view.MotorcycleSelectionForm')
     def test_post_form_not_valid_renders_form_with_errors(self, MockMotorcycleSelectionForm):
-        """
-        Test POST request with invalid form data (e.g., no selection).
-        """
+        #--
         mock_form_instance = MockMotorcycleSelectionForm.return_value
         mock_form_instance.is_valid.return_value = False
                                                       
@@ -240,10 +214,7 @@ class Step2MotorcycleSelectionViewTest(TestCase):
 
 
     def test_post_authenticated_user_without_motorcycles_still_redirects_to_step3(self):
-        """
-        Test that if a user has no motorcycles, even on POST, they are redirected to Step 3.
-        This tests the dispatch method's re-evaluation.
-        """
+        #--
         CustomerMotorcycle.objects.all().delete()                                            
 
                                                                                           
