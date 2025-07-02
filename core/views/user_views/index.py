@@ -6,8 +6,10 @@ from dashboard.models import SiteSettings
 from service.models import ServiceSettings, TempServiceBooking
 from service.forms import ServiceDetailsForm
 from service.utils import get_service_date_availability
+from django.views.decorators.http import require_http_methods
 
 
+@require_http_methods(["GET"])
 def index(request):
     site_settings = SiteSettings.get_settings()
     service_settings = ServiceSettings.objects.first()
