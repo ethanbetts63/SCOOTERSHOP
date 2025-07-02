@@ -1,4 +1,6 @@
 from .admin_motorcycle_details_view import *
+from .featured_motorcycle_management import *
+from .featured_motorcycle_create_update import *
 from .blocked_sales_date_management_view import *
 from .blocked_sales_date_create_update_view import *
 from .inventory_management_view import *
