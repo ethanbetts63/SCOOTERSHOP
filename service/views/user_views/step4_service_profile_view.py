@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.views import View
 from django.urls import reverse
 from django.contrib import messages
-from service.models import TempServiceBooking, ServiceProfile
+from service.models import TempServiceBooking, ServiceProfile, ServiceFAQ
 from service.forms.step4_service_profile_form import ServiceBookingUserForm
 
 class Step4ServiceProfileView(View):
@@ -55,12 +55,14 @@ class Step4ServiceProfileView(View):
     def get(self, request, *args, **kwargs):
         profile_instance = self._get_service_profile_instance(request, self.temp_booking)
         form = self.form_class(instance=profile_instance)
+        service_faqs = ServiceFAQ.objects.filter(is_active=True)
         
         context = {
             'form': form,
             'temp_booking': self.temp_booking,
             'step': 4, 
             'total_steps': 7,
+            'service_faqs': service_faqs,
         }
         return render(request, self.template_name, context)
 
@@ -90,11 +92,12 @@ class Step4ServiceProfileView(View):
             return redirect(reverse('service:service_book_step5'))
         else:
             messages.error(request, "Please correct the errors below.")
+            service_faqs = ServiceFAQ.objects.filter(is_active=True)
             context = {
                 'form': form,
                 'temp_booking': self.temp_booking,
                 'step': 4,
                 'total_steps': 7, 
+                'service_faqs': service_faqs,
             }
             return render(request, self.template_name, context)
-

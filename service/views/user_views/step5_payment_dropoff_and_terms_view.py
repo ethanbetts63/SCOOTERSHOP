@@ -6,7 +6,7 @@ from decimal import Decimal
 from django.conf import settings
 import json
 from service.forms.step5_payment_choice_and_terms_form import PaymentOptionForm
-from service.models import TempServiceBooking, ServiceSettings
+from service.models import TempServiceBooking, ServiceSettings, ServiceFAQ
 from service.utils.convert_temp_service_booking import convert_temp_service_booking
 from service.utils.get_drop_off_date_availability import get_drop_off_date_availability
 from service.utils.calculate_service_total import calculate_service_total
@@ -55,6 +55,7 @@ class Step5PaymentDropoffAndTermsView(View):
 
     def get_context_data(self, **kwargs):
         available_dropoff_dates = get_drop_off_date_availability(self.temp_booking, self.service_settings)
+        service_faqs = ServiceFAQ.objects.filter(is_active=True)
         context = {
             'temp_booking': self.temp_booking,
             'service_settings': self.service_settings,
@@ -63,6 +64,7 @@ class Step5PaymentDropoffAndTermsView(View):
             'step': 5,
             'total_steps': 7,
             'is_same_day_dropoff_only': (self.service_settings.max_advance_dropoff_days == 0),
+            'service_faqs': service_faqs,
         }
         context.update(kwargs)
         return context
@@ -117,7 +119,7 @@ class Step5PaymentDropoffAndTermsView(View):
                                 booking=final_service_booking,
                                 profile=final_service_booking.service_profile
                             )
-                            messages.info(request, "A confirmation email has been sent to your registered email address.")
+                            messages.info(request, "Booking confirmed, but failed to send confirmation email.")
                         except Exception:
                             messages.warning(request, "Booking confirmed, but failed to send confirmation email.")
                     else:

@@ -3,7 +3,7 @@ from django.views import View
 from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from service.forms import MotorcycleSelectionForm, ADD_NEW_MOTORCYCLE_OPTION
-from service.models import TempServiceBooking, CustomerMotorcycle, ServiceProfile
+from service.models import TempServiceBooking, CustomerMotorcycle, ServiceProfile, ServiceFAQ
 
 class Step2MotorcycleSelectionView(LoginRequiredMixin, View):
     template_name = 'service/step2_motorcycle_selection.html'
@@ -34,9 +34,11 @@ class Step2MotorcycleSelectionView(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
         form = MotorcycleSelectionForm(service_profile=self.service_profile)
+        service_faqs = ServiceFAQ.objects.filter(is_active=True)
         context = {
             'form': form,
             'temp_booking': self.temp_booking,
+            'service_faqs': service_faqs,
         }
         return render(request, self.template_name, context)
 
@@ -62,9 +64,10 @@ class Step2MotorcycleSelectionView(LoginRequiredMixin, View):
                 except (ValueError, CustomerMotorcycle.DoesNotExist):
                     form.add_error('selected_motorcycle', "Invalid motorcycle selection.")
         
+        service_faqs = ServiceFAQ.objects.filter(is_active=True)
         context = {
             'form': form,
             'temp_booking': self.temp_booking,
+            'service_faqs': service_faqs,
         }
         return render(request, self.template_name, context)
-

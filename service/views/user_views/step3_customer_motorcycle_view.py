@@ -5,7 +5,7 @@ from django.conf import settings
 import uuid
 from django.contrib import messages
 
-from service.models import TempServiceBooking, ServiceSettings
+from service.models import TempServiceBooking, ServiceSettings, ServiceFAQ
 from service.forms.step3_customer_motorcycle_form import CustomerMotorcycleForm
 
 
@@ -38,6 +38,7 @@ class Step3CustomerMotorcycleView(View):
         else:
             form = CustomerMotorcycleForm()
 
+        service_faqs = ServiceFAQ.objects.filter(is_active=True)
         context = {
             'form': form,
             'temp_booking': self.temp_booking,
@@ -45,6 +46,7 @@ class Step3CustomerMotorcycleView(View):
             'enable_service_brands': self.service_settings.enable_service_brands if self.service_settings else False,
             'step': 3,
             'total_steps': 7,
+            'service_faqs': service_faqs,
         }
         return render(request, self.template_name, context)
 
@@ -70,6 +72,7 @@ class Step3CustomerMotorcycleView(View):
 
             return redirect(reverse('service:service_book_step4'))
         else:
+            service_faqs = ServiceFAQ.objects.filter(is_active=True)
             context = {
                 'form': form,
                 'temp_booking': self.temp_booking,
@@ -77,6 +80,6 @@ class Step3CustomerMotorcycleView(View):
                 'enable_service_brands': self.service_settings.enable_service_brands if self.service_settings else False,
                 'step': 3,
                 'total_steps': 7,
+                'service_faqs': service_faqs,
             }
             return render(request, self.template_name, context)
-
