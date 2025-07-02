@@ -8,7 +8,6 @@ from inventory.tests.test_helpers.model_factories import (
     MotorcycleFactory,
 )
 
-
 class Step4ConfirmationViewTest(TestCase):
 
     def setUp(self):
