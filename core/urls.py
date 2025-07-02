@@ -1,10 +1,6 @@
 from django.urls import path                                                                   
-from .views import index
-from .views.contact_view import ContactView
-from .views.privacy_policy_view import PrivacyPolicyView
-from .views.returns_policy_view import ReturnsPolicyView
-from .views.security_policy_view import SecurityPolicyView
-from .views.terms_of_use_view import TermsOfUseView
+from .views.admin_views import *
+from .views.user_views import *
 
 app_name = 'core'                                   
 
