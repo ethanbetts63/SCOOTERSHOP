@@ -31,6 +31,8 @@ from .views.admin_views import (
     sales_FAQ_management_view,
     sales_FAQ_create_update_view,
     sales_FAQ_delete_view,
+    featured_motorcycle_management,
+    featured_motorcycle_create_update,
 )
 
 from .ajax import (
@@ -233,6 +235,21 @@ urlpatterns = [
         "admin/sales-faqs/<int:pk>/delete/",
         sales_FAQ_delete_view.SalesFAQDeleteView.as_view(),
         name="sales_faq_delete",
+    ),
+    path(
+        "admin/featured-motorcycles/",
+        featured_motorcycle_management.FeaturedMotorcycleManagementView.as_view(),
+        name="featured_motorcycles",
+    ),
+    path(
+        "admin/featured-motorcycles/add/",
+        featured_motorcycle_create_update.FeaturedMotorcycleCreateUpdateView.as_view(),
+        name="add_featured_motorcycle",
+    ),
+    path(
+        "admin/featured-motorcycles/<int:pk>/update/",
+        featured_motorcycle_create_update.FeaturedMotorcycleCreateUpdateView.as_view(),
+        name="update_featured_motorcycle",
     ),
     path(
         "ajax/get-motorcycle-list/",

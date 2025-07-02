@@ -71,9 +71,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
             )
         }),
         ('Miscellaneous Settings', {
-             'fields': (
-                                                                                  
-                                                                    
+             'fields': (                                                                                                                 
              )
         }),
     )

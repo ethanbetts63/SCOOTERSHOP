@@ -1,31 +1,42 @@
-from django.views.generic import CreateView
+from django.views.generic import UpdateView
 from django.urls import reverse_lazy
 from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect
 from inventory.models import FeaturedMotorcycle
 from inventory.forms.admin_featured_motorcycle_form import FeaturedMotorcycleForm
 
-class FeaturedMotorcycleCreateView(CreateView):
+class FeaturedMotorcycleCreateUpdateView(UpdateView):
     model = FeaturedMotorcycle
     form_class = FeaturedMotorcycleForm
-    template_name = "dashboard/featured_motorcycle_create.html"
-    success_url = reverse_lazy("dashboard:featured_motorcycles")
+    template_name = "inventory/admin_featured_motorcycle_create_update.html"
+    context_object_name = "featured_motorcycle"
 
-    def get_initial(self):
-        initial = super().get_initial()
-        category = self.request.GET.get('category')
-        if category:
-            initial['category'] = category
-        return initial
+    def get_object(self, queryset=None):
+        pk = self.kwargs.get("pk")
+        if pk:
+            return get_object_or_404(FeaturedMotorcycle, pk=pk)
+        return None
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["title"] = "Add New Featured Motorcycle"
+        context["title"] = (
+            f"Edit Featured Motorcycle: {self.object.motorcycle.title}"
+            if self.object
+            else "Add New Featured Motorcycle"
+        )
         return context
 
-    def form_valid(self, form):
-        messages.success(self.request, "Featured motorcycle added successfully!")
-        return super().form_valid(form)
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
 
-    def form_invalid(self, form):
-        messages.error(self.request, "Please correct the errors below.")
-        return super().form_invalid(form)
+        if form.is_valid():
+            self.object = form.save()
+            messages.success(self.request, "Featured motorcycle saved successfully!")
+            return redirect(self.get_success_url())
+        else:
+            messages.error(self.request, "Please correct the errors below.")
+            return self.render_to_response(self.get_context_data(form=form))
+
+    def get_success_url(self):
+        return reverse_lazy("inventory:featured_motorcycles")
