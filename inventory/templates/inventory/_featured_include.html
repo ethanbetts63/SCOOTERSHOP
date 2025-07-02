@@ -1,78 +1,139 @@
 {% load static %}
 
-<div class="detail-featured">
-    <h3 class="featured-heading">{{ section_title }}</h3>
-    <div class="featured-grid">
-        {% if condition == "new" %}
-        <div class="featured-item message-card no-hover">
-            <div class="card message-content">
-                <div class="card-body text-center d-flex flex-column">
-                    <h5 class="card-title">We are proud to stock both SYM and Segway scooters.</h5>
-                    <a href="{% url 'inventory:new' %}" class="btn-primary mt-3">View New Scooters</a>
-                </div>
-            </div>
+<!--
+This template expects the following context variables:
+- featured_items: A queryset of FeaturedMotorcycle objects.
+- section_title: A string for the main heading (e.g., "Other Featured Used Motorcycles").
+- category: The category string ('new' or 'used') for the "View All" link.
+-->
+
+{% if featured_items %}
+<div class="featured-container bg-gray-50 rounded-2xl shadow-lg overflow-hidden">
+    <div class="flex">
+        <!-- Left Side: Title Card -->
+        <div class="flex-shrink-0 w-full sm:w-64 md:w-72 p-6 md:p-8 flex flex-col justify-center bg-white">
+            <h3 class="text-2xl md:text-3xl font-bold text-gray-800">{{ section_title }}</h3>
+            <p class="text-gray-500 mt-2">Check out these other great models available now.</p>
+            {% if category == "new" %}
+                <a href="{% url 'inventory:new' %}" class="mt-4 inline-block bg-blue-600 text-white font-semibold px-5 py-3 rounded-lg hover:bg-blue-700 transition-colors text-center">
+                    View All New
+                </a>
+            {% else %}
+                <a href="{% url 'inventory:used' %}" class="mt-4 inline-block bg-blue-600 text-white font-semibold px-5 py-3 rounded-lg hover:bg-blue-700 transition-colors text-center">
+                    View All Used
+                </a>
+            {% endif %}
         </div>
-        {% elif condition == "used" %}
-        <div class="featured-item message-card no-hover">
-            <div class="card message-content">
-                <div class="card-body text-center d-flex flex-column">
-                    <h5 class="card-title">Every used scooter we sell has been thoroughly inspected by our mechanics.</h5>
-                    <a href="{% url 'inventory:used' %}" class="btn-primary mt-3">View Used Scooters</a>
-                </div>
-            </div>
-        </div>
-        
-        {% endif %}
-        
-        {% for motorcycle in motorcycles %}
-        <div class="featured-item">
-            <a href="{% url 'inventory:motorcycle-detail' motorcycle.pk %}" class="card-link">
-                <div class="card">
-                    {% if motorcycle.image %}
-                        <img src="{{ motorcycle.image.url }}" class="card-img-top" alt="{{ motorcycle.title }}">
-                    {% else %}
-                        <img src="{% static 'images/no_image.jpg' %}" class="card-img-top" alt="No Image Available">
-                    {% endif %}
-                    <div class="card-body text-center">
-                        <h5 class="card-title">{{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }}</h5>
-                        
-                        <div class="motorcycle-details">
-                            
-                            <div class="detail-item">
-                                <span class="svg-icon svg-icon-md icon-category"></span>
-                                <span class="detail-value">{{ motorcycle.condition|title }}</span>
-                            </div>
-                            
-                            
-                            <div class="detail-item">
-                                <span class="svg-icon svg-icon-md icon-capacity"></span>
-                                <span class="detail-value">{{ motorcycle.engine_size }}cc</span>
-                            </div>
-                            
-                            
-                            <div class="detail-item">
-                                <span class="svg-icon svg-icon-md icon-odometer"></span>
-                                <span class="detail-value">
-                                    {% if motorcycle.odometer %}
-                                        {{ motorcycle.odometer }} km
-                                    {% else %}
-                                        N/A
-                                    {% endif %}
-                                </span>
+
+        <!-- Right Side: Scrollable Bike Cards -->
+        <div class="flex-grow relative">
+            <div class="featured-scroller absolute inset-0 flex items-center gap-6 p-6 overflow-x-auto">
+                {% for featured in featured_items %}
+                <div class="featured-card flex-shrink-0 w-64 bg-white rounded-2xl shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-300 ease-in-out group">
+                    <a href="{{ featured.motorcycle.get_absolute_url }}" class="block">
+                        <div class="relative">
+                            <img src="{% if featured.motorcycle.image %}{{ featured.motorcycle.image.url }}{% else %}https://placehold.co/600x400/e2e8f0/333?text=No+Image{% endif %}" alt="{{ featured.motorcycle.title }}" class="w-full h-40 object-cover">
+                        </div>
+                        <div class="p-4">
+                            <h4 class="text-md font-bold text-gray-800 truncate group-hover:text-blue-600 transition-colors">{{ featured.motorcycle.title }}</h4>
+                            <p class="text-lg font-extrabold text-blue-600 my-1">
+                                {% if featured.motorcycle.price %}
+                                    ${{ featured.motorcycle.price|floatformat:2 }}
+                                {% else %}
+                                    Price on request
+                                {% endif %}
+                            </p>
+                            <div class="flex justify-between text-xs text-gray-500 mt-2 border-t pt-2">
+                                <span><i class="fas fa-calendar-alt mr-1"></i> {{ featured.motorcycle.year }}</span>
+                                <span><i class="fas fa-tachometer-alt mr-1"></i> {{ featured.motorcycle.odometer }} km</span>
                             </div>
                         </div>
-                        
-                        <p class="card-text fw-bold">${{ motorcycle.price }}</p>
-                    </div>
+                    </a>
                 </div>
-            </a>
+                {% endfor %}
+            </div>
+
+            <!-- Scroll Arrows -->
+            <button class="scroll-arrow left-arrow absolute top-1/2 left-0 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-md cursor-pointer z-10 hidden sm:block">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+            </button>
+            <button class="scroll-arrow right-arrow absolute top-1/2 right-0 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-md cursor-pointer z-10 hidden sm:block">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+            </button>
         </div>
-        {% empty %}
-        {% if not condition %}
-        <div class="col-12 text-center py-3">
-            <p>No {{ section_title|lower }} available at this time.</p>
-        </div>
-        {% endif %}
-        {% endfor %}
     </div>
 </div>
+
+<style>
+/* Custom scrollbar for a cleaner look */
+.featured-scroller {
+    scrollbar-width: thin;
+    scrollbar-color: #a0aec0 #e2e8f0;
+}
+.featured-scroller::-webkit-scrollbar {
+    height: 8px;
+}
+.featured-scroller::-webkit-scrollbar-track {
+    background: #edf2f7;
+    border-radius: 10px;
+}
+.featured-scroller::-webkit-scrollbar-thumb {
+    background-color: #a0aec0;
+    border-radius: 10px;
+    border: 2px solid #edf2f7;
+}
+/* Hide scrollbar by default and show on hover for a cleaner UI */
+.featured-scroller {
+    overflow-x: scroll;
+}
+.featured-scroller:not(:hover) {
+   scrollbar-color: transparent transparent;
+}
+.featured-scroller:not(:hover)::-webkit-scrollbar-thumb {
+   background-color: transparent;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // This script needs to run for each featured section on the page.
+    const featuredContainers = document.querySelectorAll('.featured-container');
+    
+    featuredContainers.forEach(container => {
+        const scroller = container.querySelector('.featured-scroller');
+        const leftArrow = container.querySelector('.left-arrow');
+        const rightArrow = container.querySelector('.right-arrow');
+
+        if (!scroller || !leftArrow || !rightArrow) return;
+
+        function updateArrowVisibility() {
+            const maxScrollLeft = scroller.scrollWidth - scroller.clientWidth;
+            leftArrow.style.display = scroller.scrollLeft > 0 ? 'block' : 'none';
+            rightArrow.style.display = scroller.scrollLeft < maxScrollLeft - 1 ? 'block' : 'none';
+        }
+
+        leftArrow.addEventListener('click', () => {
+            scroller.scrollBy({ left: -300, behavior: 'smooth' });
+        });
+
+        rightArrow.addEventListener('click', () => {
+            scroller.scrollBy({ left: 300, behavior: 'smooth' });
+        });
+
+        // Use a timeout to ensure scrollWidth is calculated correctly after images load
+        let debounceTimer;
+        scroller.addEventListener('scroll', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(updateArrowVisibility, 50);
+        });
+        
+        // Also check on window resize
+        window.addEventListener('resize', updateArrowVisibility);
+
+        // Initial check
+        // A small delay helps ensure the layout is stable before the first check
+        setTimeout(updateArrowVisibility, 100);
+    });
+});
+</script>
+{% endif %}
