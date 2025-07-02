@@ -1,16 +1,8 @@
 {% load static %}
 
-<!--
-This template expects the following context variables:
-- featured_items: A queryset of FeaturedMotorcycle objects.
-- section_title: A string for the main heading (e.g., "Other Featured Used Motorcycles").
-- category: The category string ('new' or 'used') for the "View All" link.
--->
-
 {% if featured_items %}
 <div class="featured-container bg-gray-50 rounded-2xl shadow-lg overflow-hidden">
     <div class="flex">
-        <!-- Left Side: Title Card -->
         <div class="flex-shrink-0 w-full sm:w-64 md:w-72 p-6 md:p-8 flex flex-col justify-center bg-white">
             <h3 class="text-2xl md:text-3xl font-bold text-gray-800">{{ section_title }}</h3>
             <p class="text-gray-500 mt-2">Check out these other great models available now.</p>
@@ -25,16 +17,15 @@ This template expects the following context variables:
             {% endif %}
         </div>
 
-        <!-- Right Side: Scrollable Bike Cards -->
         <div class="flex-grow relative">
             <div class="featured-scroller absolute inset-0 flex items-center gap-6 p-6 overflow-x-auto">
                 {% for featured in featured_items %}
                 <div class="featured-card flex-shrink-0 w-64 bg-white rounded-2xl shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-300 ease-in-out group">
                     <a href="{{ featured.motorcycle.get_absolute_url }}" class="block">
                         <div class="relative">
-                            <img src="{% if featured.motorcycle.image %}{{ featured.motorcycle.image.url }}{% else %}https://placehold.co/600x400/e2e8f0/333?text=No+Image{% endif %}" alt="{{ featured.motorcycle.title }}" class="w-full h-40 object-cover">
+                            <img src="{% if featured.motorcycle.image %}{{ featured.motorcycle.image.url }}{% else %}https://placehold.co/600x400/e2e8f0/333?text=No+Image{% endif %}" alt="{{ featured.motorcycle.title }}" class="w-full h-32 object-cover">
                         </div>
-                        <div class="p-4">
+                        <div class="p-3">
                             <h4 class="text-md font-bold text-gray-800 truncate group-hover:text-blue-600 transition-colors">{{ featured.motorcycle.title }}</h4>
                             <p class="text-lg font-extrabold text-blue-600 my-1">
                                 {% if featured.motorcycle.price %}
@@ -43,7 +34,7 @@ This template expects the following context variables:
                                     Price on request
                                 {% endif %}
                             </p>
-                            <div class="flex justify-between text-xs text-gray-500 mt-2 border-t pt-2">
+                            <div class="flex justify-between text-xs text-gray-500 mt-1 pt-1 border-t">
                                 <span><i class="fas fa-calendar-alt mr-1"></i> {{ featured.motorcycle.year }}</span>
                                 <span><i class="fas fa-tachometer-alt mr-1"></i> {{ featured.motorcycle.odometer }} km</span>
                             </div>
@@ -52,20 +43,11 @@ This template expects the following context variables:
                 </div>
                 {% endfor %}
             </div>
-
-            <!-- Scroll Arrows -->
-            <button class="scroll-arrow left-arrow absolute top-1/2 left-0 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-md cursor-pointer z-10 hidden sm:block">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-            </button>
-            <button class="scroll-arrow right-arrow absolute top-1/2 right-0 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-md cursor-pointer z-10 hidden sm:block">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-            </button>
         </div>
     </div>
 </div>
 
 <style>
-/* Custom scrollbar for a cleaner look */
 .featured-scroller {
     scrollbar-width: thin;
     scrollbar-color: #a0aec0 #e2e8f0;
@@ -82,58 +64,6 @@ This template expects the following context variables:
     border-radius: 10px;
     border: 2px solid #edf2f7;
 }
-/* Hide scrollbar by default and show on hover for a cleaner UI */
-.featured-scroller {
-    overflow-x: scroll;
-}
-.featured-scroller:not(:hover) {
-   scrollbar-color: transparent transparent;
-}
-.featured-scroller:not(:hover)::-webkit-scrollbar-thumb {
-   background-color: transparent;
-}
 </style>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // This script needs to run for each featured section on the page.
-    const featuredContainers = document.querySelectorAll('.featured-container');
-    
-    featuredContainers.forEach(container => {
-        const scroller = container.querySelector('.featured-scroller');
-        const leftArrow = container.querySelector('.left-arrow');
-        const rightArrow = container.querySelector('.right-arrow');
-
-        if (!scroller || !leftArrow || !rightArrow) return;
-
-        function updateArrowVisibility() {
-            const maxScrollLeft = scroller.scrollWidth - scroller.clientWidth;
-            leftArrow.style.display = scroller.scrollLeft > 0 ? 'block' : 'none';
-            rightArrow.style.display = scroller.scrollLeft < maxScrollLeft - 1 ? 'block' : 'none';
-        }
-
-        leftArrow.addEventListener('click', () => {
-            scroller.scrollBy({ left: -300, behavior: 'smooth' });
-        });
-
-        rightArrow.addEventListener('click', () => {
-            scroller.scrollBy({ left: 300, behavior: 'smooth' });
-        });
-
-        // Use a timeout to ensure scrollWidth is calculated correctly after images load
-        let debounceTimer;
-        scroller.addEventListener('scroll', () => {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(updateArrowVisibility, 50);
-        });
-        
-        // Also check on window resize
-        window.addEventListener('resize', updateArrowVisibility);
-
-        // Initial check
-        // A small delay helps ensure the layout is stable before the first check
-        setTimeout(updateArrowVisibility, 100);
-    });
-});
-</script>
 {% endif %}
