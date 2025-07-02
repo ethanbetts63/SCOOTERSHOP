@@ -1,9 +1,7 @@
 from django.views.generic import TemplateView
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 from django.conf import settings
 from dashboard.models import SiteSettings, AboutPageContent
-from django.contrib.auth.decorators import user_passes_test
-from django.utils.decorators import method_decorator
 from django.contrib import messages
 from core.forms.enquiry_form import EnquiryForm
 from django.core.mail import send_mail

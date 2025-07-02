@@ -2,9 +2,8 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from decimal import Decimal
 import datetime
-import json
 
-from inventory.models import Motorcycle, MotorcycleCondition
+from inventory.models import Motorcycle
 from ..test_helpers.model_factories import MotorcycleFactory, MotorcycleConditionFactory
 
 

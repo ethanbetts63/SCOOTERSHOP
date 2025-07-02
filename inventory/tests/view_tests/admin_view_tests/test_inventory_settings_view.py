@@ -2,7 +2,6 @@ import datetime
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-from django.contrib.messages import get_messages
 
 from inventory.models import InventorySettings
 from ...test_helpers.model_factories import UserFactory, InventorySettingsFactory

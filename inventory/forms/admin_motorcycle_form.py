@@ -1,6 +1,6 @@
 from django import forms
 import datetime
-from inventory.models import Motorcycle, MotorcycleCondition
+from inventory.models import Motorcycle
 
 
 class MotorcycleForm(forms.ModelForm):

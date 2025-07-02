@@ -40,9 +40,9 @@ def index(request):
                 five_star_reviews.sort(key=lambda x: x.get("time", 0), reverse=True)
             else:
                 pass
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException:
             pass
-        except Exception as e:
+        except Exception:
             pass
 
     service_form = ServiceDetailsForm()

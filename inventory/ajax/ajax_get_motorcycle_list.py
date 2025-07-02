@@ -1,7 +1,6 @@
 from django.http import JsonResponse, HttpRequest
 from inventory.utils.get_motorcycles_by_criteria import get_motorcycles_by_criteria
 from inventory.utils.get_unique_makes_for_filter import get_unique_makes_for_filter
-import json
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from decimal import Decimal, InvalidOperation
 

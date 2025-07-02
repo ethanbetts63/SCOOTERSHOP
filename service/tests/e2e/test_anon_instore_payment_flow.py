@@ -7,11 +7,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from service.models import (
-    TempServiceBooking,
     ServiceBooking,
-    CustomerMotorcycle,
-    ServiceProfile,
-    ServiceBrand,
 )
 from dashboard.models import SiteSettings
 from ..test_helpers.model_factories import (

@@ -65,7 +65,7 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
                 profile=service_profile,
             )
 
-    except TempServiceBooking.DoesNotExist as e:
+    except TempServiceBooking.DoesNotExist:
         raise
-    except Exception as e:
+    except Exception:
         raise

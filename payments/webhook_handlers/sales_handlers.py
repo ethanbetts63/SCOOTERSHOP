@@ -1,11 +1,10 @@
 from django.conf import settings
 from decimal import Decimal
 
-from inventory.models import TempSalesBooking, SalesBooking, SalesProfile
+from inventory.models import TempSalesBooking
 from payments.models import Payment
 from inventory.utils.convert_temp_sales_booking import convert_temp_sales_booking
 from mailer.utils import send_templated_email
-from inventory.models import Motorcycle
 
 
 def handle_sales_booking_succeeded(payment_obj: Payment, payment_intent_data: dict):
@@ -93,7 +92,7 @@ def handle_sales_booking_succeeded(payment_obj: Payment, payment_intent_data: di
                 profile=sales_profile,
             )
 
-    except TempSalesBooking.DoesNotExist as e:
+    except TempSalesBooking.DoesNotExist:
         raise
-    except Exception as e:
+    except Exception:
         raise

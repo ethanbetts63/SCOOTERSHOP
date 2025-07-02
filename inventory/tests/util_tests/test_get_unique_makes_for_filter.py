@@ -1,5 +1,4 @@
 from django.test import TestCase
-from inventory.models import MotorcycleCondition
 from inventory.utils.get_unique_makes_for_filter import get_unique_makes_for_filter
 from ..test_helpers.model_factories import MotorcycleFactory, MotorcycleConditionFactory
 

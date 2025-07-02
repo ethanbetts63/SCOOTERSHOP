@@ -1,6 +1,5 @@
 from django.test import TestCase
 from core.forms.enquiry_form import EnquiryForm
-from ..test_helpers.model_factories import EnquiryFactory
 
 
 class EnquiryFormTest(TestCase):

@@ -3,9 +3,9 @@ from django.urls import reverse
 from unittest.mock import patch, MagicMock
 import requests
 from dashboard.models import SiteSettings
-from service.models import ServiceSettings, TempServiceBooking
+from service.models import ServiceSettings
 from service.forms import ServiceDetailsForm
-from datetime import date, timedelta
+from datetime import date
 
 
 class IndexViewTest(TestCase):

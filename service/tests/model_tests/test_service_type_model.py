@@ -1,5 +1,4 @@
 from django.test import TestCase
-from datetime import timedelta
 from decimal import Decimal
 from service.models import ServiceType
 from ..test_helpers.model_factories import ServiceTypeFactory

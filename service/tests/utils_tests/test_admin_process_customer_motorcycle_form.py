@@ -1,5 +1,5 @@
 from django.test import TestCase
-from service.models import CustomerMotorcycle, ServiceProfile
+from service.models import CustomerMotorcycle
 from service.utils.admin_process_customer_motorcycle_form import (
     admin_process_customer_motorcycle_form,
 )

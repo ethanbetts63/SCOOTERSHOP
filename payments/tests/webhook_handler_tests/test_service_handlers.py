@@ -4,7 +4,7 @@ from unittest import mock
 from django.conf import settings
 
 
-from inventory.models import SalesBooking, TempSalesBooking, MotorcycleCondition
+from inventory.models import SalesBooking, TempSalesBooking
 from payments.webhook_handlers.sales_handlers import handle_sales_booking_succeeded
 
 

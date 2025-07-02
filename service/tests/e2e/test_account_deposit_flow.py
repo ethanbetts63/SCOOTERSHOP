@@ -12,9 +12,6 @@ from django.utils import timezone
 from service.models import (
     TempServiceBooking,
     ServiceBooking,
-    CustomerMotorcycle,
-    ServiceProfile,
-    ServiceBrand,
 )
 from dashboard.models import SiteSettings
 from payments.models import Payment

@@ -3,7 +3,6 @@ from django.utils import timezone
 from datetime import date, timedelta, time
 from decimal import Decimal
 from inventory.forms.admin_sales_booking_form import AdminSalesBookingForm
-from inventory.models import SalesBooking, Motorcycle, SalesProfile, InventorySettings
 from ..test_helpers.model_factories import (
     SalesProfileFactory,
     MotorcycleFactory,

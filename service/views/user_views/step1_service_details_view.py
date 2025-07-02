@@ -5,17 +5,14 @@ from django.views import View
 from django.contrib import messages
 from django.urls import reverse
 from django.utils import timezone
-from django.conf import settings
 
 from service.forms import ServiceDetailsForm
 from service.models import (
     TempServiceBooking,
     ServiceProfile,
-    ServiceType,
     ServiceSettings,
     BlockedServiceDate,
 )
-from service.models import CustomerMotorcycle
 from service.utils.booking_protection import check_and_manage_recent_booking_flag
 
 

@@ -8,5 +8,5 @@ def get_motorcycle_details(pk: int):
         return motorcycle
     except ObjectDoesNotExist:
         return None
-    except Exception as e:
+    except Exception:
         return None

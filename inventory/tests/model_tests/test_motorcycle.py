@@ -1,10 +1,8 @@
 from django.test import TestCase
-from django.urls import reverse
 from datetime import date
 import datetime
 from django.db import IntegrityError
 from decimal import Decimal
-from django.db.models.deletion import SET_NULL
 
 from inventory.models import Motorcycle, MotorcycleCondition
 from django.contrib.auth import get_user_model

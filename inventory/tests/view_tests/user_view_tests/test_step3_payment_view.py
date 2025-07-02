@@ -12,8 +12,6 @@ from payments.models import Payment
 from inventory.models import (
     TempSalesBooking,
     SalesProfile,
-    Motorcycle,
-    InventorySettings,
 )
 
 from inventory.tests.test_helpers.model_factories import (

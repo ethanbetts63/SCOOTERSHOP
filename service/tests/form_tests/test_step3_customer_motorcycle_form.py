@@ -1,5 +1,4 @@
 from django.test import TestCase
-from django.core.files.uploadedfile import SimpleUploadedFile
 from service.forms import CustomerMotorcycleForm
 from ..test_helpers.model_factories import (
     CustomerMotorcycleFactory,

@@ -174,7 +174,7 @@ class Step2BookingDetailsView(View):
                             booking=converted_sales_booking,
                             profile=converted_sales_booking.sales_profile,
                         )
-                    except Exception as e:
+                    except Exception:
                         pass
 
                     if settings.ADMIN_EMAIL:
@@ -187,7 +187,7 @@ class Step2BookingDetailsView(View):
                                 booking=converted_sales_booking,
                                 profile=converted_sales_booking.sales_profile,
                             )
-                        except Exception as e:
+                        except Exception:
                             pass
 
                     if "temp_sales_booking_uuid" in request.session:

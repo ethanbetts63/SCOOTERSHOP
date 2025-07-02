@@ -1,12 +1,9 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-import json
 from decimal import Decimal
 import datetime
 
 
-from inventory.models import SalesBooking
-from payments.models import Payment
 
 
 from ..test_helpers.model_factories import (

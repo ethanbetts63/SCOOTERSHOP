@@ -55,7 +55,7 @@ def send_sales_booking_to_mechanicdesk(sales_booking_instance):
 
     pickup_datetime_str = appointment_datetime_str
 
-    notes_content = f"--- SALES BOOKING NOTIFICATION ---\n\n"
+    notes_content = "--- SALES BOOKING NOTIFICATION ---\n\n"
     notes_content += (
         f"Booking Reference: {sales_booking_instance.sales_booking_reference}\n"
     )
@@ -80,7 +80,7 @@ def send_sales_booking_to_mechanicdesk(sales_booking_instance):
         )
         notes_content += f"\nAppointment Requested (Perth Time): {sales_booking_instance.appointment_date.strftime('%d/%m/%Y')} at {local_time_str}\n"
 
-    notes_content += f"\nFinancial Details:\n"
+    notes_content += "\nFinancial Details:\n"
     notes_content += f"  Amount Paid (Deposit): {sales_booking_instance.amount_paid} {sales_booking_instance.currency}\n"
     notes_content += (
         f"  Payment Status: {sales_booking_instance.get_payment_status_display()}\n"
@@ -134,5 +134,5 @@ def send_sales_booking_to_mechanicdesk(sales_booking_instance):
         if hasattr(e, "response") and e.response is not None:
             pass
         return False
-    except Exception as e:
+    except Exception:
         return False

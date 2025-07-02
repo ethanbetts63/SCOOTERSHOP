@@ -2,7 +2,6 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 from ..models import ServiceSettings
 from decimal import Decimal
-from datetime import time
 
 
 class ServiceBookingSettingsForm(forms.ModelForm):
@@ -163,7 +162,7 @@ class ServiceBookingSettingsForm(forms.ModelForm):
         ):
             self.add_error(
                 "deposit_percentage",
-                _(f"Ensure deposit percentage is between 0.00% and 100.00%."),
+                _("Ensure deposit percentage is between 0.00% and 100.00%."),
             )
 
         return cleaned_data

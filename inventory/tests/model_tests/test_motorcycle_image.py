@@ -1,6 +1,4 @@
 from django.test import TestCase
-from django.core.files.uploadedfile import SimpleUploadedFile
-import os
 
 
 from inventory.models import Motorcycle, MotorcycleImage

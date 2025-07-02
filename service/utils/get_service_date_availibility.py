@@ -1,6 +1,5 @@
 import datetime
 from django.utils import timezone
-from django.conf import settings
 import json
 
 from service.models import ServiceSettings, BlockedServiceDate

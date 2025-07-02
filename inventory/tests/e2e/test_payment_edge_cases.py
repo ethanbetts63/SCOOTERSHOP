@@ -1,4 +1,3 @@
-import datetime
 from decimal import Decimal
 import stripe
 from unittest import skipIf, mock
@@ -6,9 +5,8 @@ from unittest import skipIf, mock
 from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.conf import settings
-from django.contrib.messages import get_messages
 
-from inventory.models import TempSalesBooking, SalesBooking, Motorcycle
+from inventory.models import TempSalesBooking, SalesBooking
 from payments.models import Payment
 from ..test_helpers.model_factories import (
     InventorySettingsFactory,

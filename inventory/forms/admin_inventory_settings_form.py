@@ -2,7 +2,6 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 from inventory.models import InventorySettings
 from decimal import Decimal
-from datetime import time
 
 
 class InventorySettingsForm(forms.ModelForm):

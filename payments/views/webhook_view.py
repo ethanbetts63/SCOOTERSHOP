@@ -19,9 +19,9 @@ def stripe_webhook(request):
         event = stripe.Webhook.construct_event(
             payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
         )
-    except (ValueError, stripe.error.SignatureVerificationError) as e:
+    except (ValueError, stripe.error.SignatureVerificationError):
         return HttpResponse(status=400)
-    except Exception as e:
+    except Exception:
         return HttpResponse(status=400)
 
     try:
@@ -32,7 +32,7 @@ def stripe_webhook(request):
                 payload=event.to_dict(),
                 received_at=timezone.now(),
             )
-    except Exception as e:
+    except Exception:
         return HttpResponse(status=200)
 
     event_type = event["type"]
@@ -90,7 +90,7 @@ def stripe_webhook(request):
                     if handler:
                         try:
                             handler(payment_obj, event_data)
-                        except Exception as handler_e:
+                        except Exception:
                             raise
                     else:
                         pass
@@ -99,7 +99,7 @@ def stripe_webhook(request):
 
         except Payment.DoesNotExist:
             return HttpResponse(status=200)
-        except Exception as e:
+        except Exception:
             return HttpResponse(status=500)
     else:
         pass

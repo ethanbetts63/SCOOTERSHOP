@@ -3,11 +3,9 @@ from django.urls import reverse
 import json
 import uuid
 
-from inventory.models import TempSalesBooking, Motorcycle
 
 from ..test_helpers.model_factories import (
     MotorcycleFactory,
-    SalesProfileFactory,
     TempSalesBookingFactory,
 )
 

@@ -4,7 +4,6 @@ from django.contrib.messages import get_messages
 
 from django.contrib.messages.storage.fallback import FallbackStorage
 import datetime
-import uuid
 from unittest.mock import patch, Mock
 
 

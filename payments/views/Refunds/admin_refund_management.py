@@ -6,8 +6,8 @@ from django.utils import timezone
 from datetime import timedelta
 from mailer.utils import send_templated_email
 from django.conf import settings
-from service.models import ServiceBooking, ServiceProfile
-from inventory.models import SalesBooking, SalesProfile
+from service.models import ServiceProfile
+from inventory.models import SalesProfile
 
 
 @method_decorator(staff_member_required, name="dispatch")
@@ -84,7 +84,7 @@ class AdminRefundManagement(ListView):
 
                 refund_request.delete()
 
-            except Exception as e:
+            except Exception:
                 pass
 
     def get_queryset(self):

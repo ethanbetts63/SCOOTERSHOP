@@ -1,9 +1,6 @@
 from django.db import models
-from django.conf import settings
 import uuid
-from decimal import Decimal
 
-from payments.models import RefundPolicySettings
 
 
 class Payment(models.Model):

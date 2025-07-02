@@ -1,5 +1,5 @@
 from django import forms
-from service.models import CustomerMotorcycle, ServiceProfile
+from service.models import CustomerMotorcycle
 
 ADD_NEW_MOTORCYCLE_OPTION = "add_new"
 

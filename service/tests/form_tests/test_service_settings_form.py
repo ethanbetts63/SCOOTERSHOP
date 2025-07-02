@@ -1,7 +1,6 @@
 from django.test import TestCase
 from decimal import Decimal
 from datetime import time
-from django.utils.translation import gettext_lazy as _
 
 from service.forms import ServiceBookingSettingsForm
 from ..test_helpers.model_factories import ServiceSettingsFactory

@@ -1,7 +1,6 @@
-from payments.models import RefundRequest, Payment
+from payments.models import RefundRequest
 from django.db import transaction
 from django.utils import timezone
-from decimal import Decimal
 
 
 def create_refund_request(
@@ -49,6 +48,6 @@ def create_refund_request(
                 sales_profile=sales_profile,
             )
             return refund_request
-    except Exception as e:
+    except Exception:
 
         return None

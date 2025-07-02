@@ -1,5 +1,4 @@
 from django.test import TestCase
-from django.db import transaction
 from decimal import Decimal
 import datetime
 from unittest import mock
@@ -8,9 +7,8 @@ from inventory.models import (
     TempSalesBooking,
     SalesBooking,
     InventorySettings,
-    Motorcycle,
 )
-from payments.models import Payment, RefundPolicySettings
+from payments.models import RefundPolicySettings
 from inventory.utils.convert_temp_sales_booking import convert_temp_sales_booking
 from ..test_helpers.model_factories import (
     TempSalesBookingFactory,

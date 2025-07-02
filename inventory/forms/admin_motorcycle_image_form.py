@@ -2,9 +2,6 @@ from django import forms
 from django.forms import inlineformset_factory
 from inventory.models import Motorcycle, MotorcycleImage
 
-from django import forms
-from django.forms import inlineformset_factory
-from inventory.models import Motorcycle, MotorcycleImage
 
 
 class MotorcycleImageForm(forms.ModelForm):

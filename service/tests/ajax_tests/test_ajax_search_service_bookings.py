@@ -1,6 +1,5 @@
 from django.test import TestCase, RequestFactory
 from django.urls import reverse
-from django.http import JsonResponse
 import json
 from datetime import date, time, timedelta
 

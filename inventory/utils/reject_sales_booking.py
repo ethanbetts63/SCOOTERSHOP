@@ -3,7 +3,6 @@ from django.conf import settings
 from inventory.models import SalesBooking
 from mailer.utils import send_templated_email
 from payments.utils.create_refund_request import create_refund_request
-from payments.models import Payment
 
 
 def reject_sales_booking(
@@ -127,7 +126,7 @@ def reject_sales_booking(
                     sales_booking=booking,
                 )
 
-            success_message = f"Sales booking rejected successfully."
+            success_message = "Sales booking rejected successfully."
             if refund_request_created:
                 success_message += f" A refund request for {refund_amount_initiated} has been created and will be processed automatically."
 

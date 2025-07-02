@@ -1,5 +1,4 @@
 from django.db import models
-from datetime import timedelta
 
 
 class ServiceType(models.Model):

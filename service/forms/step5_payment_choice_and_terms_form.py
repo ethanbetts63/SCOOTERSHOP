@@ -1,7 +1,6 @@
 from django import forms
 from django.utils import timezone
-from datetime import timedelta, datetime
-from decimal import Decimal
+from datetime import timedelta
 
 PAYMENT_OPTION_DEPOSIT = "online_deposit"
 PAYMENT_OPTION_FULL_ONLINE = "online_full"

@@ -6,7 +6,6 @@ from unittest.mock import patch, MagicMock
 from decimal import Decimal
 from django.utils import timezone
 from datetime import time, timedelta
-import stripe
 
 from payments.tests.test_helpers.model_factories import (
     RefundRequestFactory,

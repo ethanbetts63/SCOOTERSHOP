@@ -1,5 +1,5 @@
 from django.db.models import Q
-from inventory.models import Motorcycle, MotorcycleCondition
+from inventory.models import Motorcycle
 
 
 def get_unique_makes_for_filter(condition_slug=None):

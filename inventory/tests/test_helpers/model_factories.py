@@ -34,7 +34,7 @@ from inventory.models.sales_booking import (
     BOOKING_STATUS_CHOICES as SALES_BOOKING_STATUS_CHOICES,
 )
 
-from payments.models import Payment, RefundRequest, RefundPolicySettings
+from payments.models import Payment, RefundRequest
 
 User = get_user_model()
 

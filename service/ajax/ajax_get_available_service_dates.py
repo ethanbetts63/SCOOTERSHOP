@@ -1,7 +1,5 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
-from django.utils import timezone
-import datetime
 import json
 
 from ..utils import get_service_date_availability
@@ -22,7 +20,7 @@ def get_service_date_availability_ajax(request):
 
         return JsonResponse(response_data)
 
-    except Exception as e:
+    except Exception:
         return JsonResponse(
             {"error": "Could not retrieve service date availability."}, status=500
         )

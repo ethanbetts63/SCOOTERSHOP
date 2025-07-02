@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.contrib import messages
 from unittest import mock
 
-from inventory.models import SalesBooking, Motorcycle
+from inventory.models import SalesBooking
 
 from ...test_helpers.model_factories import (
     SalesBookingFactory,

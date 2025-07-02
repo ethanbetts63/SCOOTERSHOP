@@ -1,8 +1,6 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib import messages
-from django.contrib.messages.storage.fallback import FallbackStorage
-from django.http import HttpRequest
 
 
 from service.models import ServiceProfile

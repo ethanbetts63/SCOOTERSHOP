@@ -1,6 +1,5 @@
 from django import forms
-from inventory.models import SalesProfile, TempSalesBooking
-import datetime
+from inventory.models import SalesProfile
 
 
 class SalesProfileForm(forms.ModelForm):

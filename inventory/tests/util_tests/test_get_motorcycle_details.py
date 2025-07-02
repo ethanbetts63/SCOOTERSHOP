@@ -1,8 +1,6 @@
 from django.test import TestCase
-from inventory.models import Motorcycle, MotorcycleCondition
 from ..test_helpers.model_factories import MotorcycleFactory, MotorcycleConditionFactory
 from inventory.utils.get_motorcycle_details import get_motorcycle_details
-from django.db import connection
 from decimal import Decimal
 
 

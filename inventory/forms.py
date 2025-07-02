@@ -1,10 +1,9 @@
 from django import forms
 from django.forms import inlineformset_factory
-from django.utils.translation import gettext_lazy as _
 import datetime
 
 
-from .models import Motorcycle, MotorcycleImage, MotorcycleCondition
+from .models import Motorcycle, MotorcycleImage
 
 
 class MotorcycleForm(forms.ModelForm):

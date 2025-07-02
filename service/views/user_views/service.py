@@ -17,13 +17,13 @@ def service(request):
 
     try:
         service_types = ServiceType.objects.filter(is_active=True)
-    except Exception as e:
+    except Exception:
         service_types = []
         messages.warning(request, "Could not load service types.")
 
     try:
         service_faqs = ServiceFAQ.objects.filter(is_active=True)
-    except Exception as e:
+    except Exception:
         service_faqs = []
         messages.warning(request, "Could not load service FAQs.")
 

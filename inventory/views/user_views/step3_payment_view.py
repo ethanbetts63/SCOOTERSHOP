@@ -32,7 +32,7 @@ class Step3PaymentView(View):
         except Http404:
             messages.error(request, "Your booking session could not be found.")
             return redirect("inventory:used")
-        except Exception as e:
+        except Exception:
             messages.error(
                 request, "An unexpected error occurred while retrieving your booking."
             )
@@ -106,10 +106,10 @@ class Step3PaymentView(View):
                 request, f"Payment system error: {e}. Please try again later."
             )
             return redirect("inventory:step2_booking_details_and_appointment")
-        except Exception as e:
+        except Exception:
             messages.error(
                 request,
-                f"An unexpected error occurred during payment setup. Please try again.",
+                "An unexpected error occurred during payment setup. Please try again.",
             )
             return redirect("inventory:step2_booking_details_and_appointment")
 
@@ -181,7 +181,7 @@ class Step3PaymentView(View):
 
         except stripe.error.StripeError as e:
             return JsonResponse({"error": str(e)}, status=500)
-        except Exception as e:
+        except Exception:
             return JsonResponse(
                 {
                     "error": "An internal server error occurred during payment processing."

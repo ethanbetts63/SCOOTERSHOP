@@ -1,7 +1,6 @@
 from django.test import TestCase
 from decimal import Decimal
 import datetime
-from inventory.models import Motorcycle
 from inventory.utils.get_motorcycles_by_criteria import get_motorcycles_by_criteria
 from ..test_helpers.model_factories import MotorcycleFactory, MotorcycleConditionFactory
 

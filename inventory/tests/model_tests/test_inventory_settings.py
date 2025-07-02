@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
-from datetime import time, date
+from datetime import time
 from decimal import Decimal
 import datetime
 

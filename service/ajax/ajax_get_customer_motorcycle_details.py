@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from service.models import ServiceProfile, CustomerMotorcycle
+from service.models import CustomerMotorcycle
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET
 

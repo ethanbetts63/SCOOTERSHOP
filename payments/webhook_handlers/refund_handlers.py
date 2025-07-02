@@ -44,7 +44,7 @@ def handle_booking_refunded(payment_obj: Payment, event_object_data: dict):
                 extracted_data,
             )
 
-    except Exception as e:
+    except Exception:
         raise
 
 

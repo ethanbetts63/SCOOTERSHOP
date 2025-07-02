@@ -1,8 +1,6 @@
 from django.shortcuts import render, redirect
 from django.views import View
 from django.urls import reverse
-from django.conf import settings
-import uuid
 from django.contrib import messages
 
 from service.models import TempServiceBooking, ServiceSettings, ServiceFAQ

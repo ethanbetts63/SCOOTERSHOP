@@ -2,7 +2,6 @@ import requests
 from django.conf import settings
 from django.db.models import ObjectDoesNotExist
 import datetime
-import json
 
 
 def send_booking_to_mechanicdesk(service_booking_instance):

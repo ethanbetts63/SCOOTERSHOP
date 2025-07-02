@@ -1,5 +1,4 @@
 from django.views.generic import TemplateView
-from django.shortcuts import get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from payments.models import RefundRequest
 from django.contrib import messages

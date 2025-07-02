@@ -1,11 +1,10 @@
 from django.test import TestCase
-from datetime import date, datetime, time, timedelta
+from datetime import datetime, time, timedelta
 from django.utils import timezone
 
 from inventory.utils.get_available_appointment_times import (
     get_available_appointment_times,
 )
-from inventory.models import InventorySettings, SalesBooking
 from ..test_helpers.model_factories import InventorySettingsFactory, SalesBookingFactory
 
 

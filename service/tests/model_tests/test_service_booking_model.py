@@ -2,7 +2,6 @@ from django.test import TestCase
 from django.db import models, IntegrityError
 from decimal import Decimal
 import datetime
-import uuid
 from faker import Faker
 
 fake = Faker()

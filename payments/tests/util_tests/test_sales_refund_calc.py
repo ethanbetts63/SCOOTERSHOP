@@ -2,7 +2,6 @@ from django.test import TestCase
 from decimal import Decimal
 from datetime import datetime, timedelta
 from django.utils import timezone
-from unittest.mock import MagicMock
 
 
 from payments.utils.sales_refund_calc import calculate_sales_refund_amount

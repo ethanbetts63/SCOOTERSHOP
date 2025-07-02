@@ -75,7 +75,7 @@ def convert_temp_sales_booking(
                         }
                     else:
                         payment_obj.refund_policy_snapshot = {}
-                except Exception as e:
+                except Exception:
                     payment_obj.refund_policy_snapshot = {}
 
                 payment_obj.save()
@@ -88,7 +88,7 @@ def convert_temp_sales_booking(
             ):
                 try:
                     send_success = send_sales_booking_to_mechanicdesk(sales_booking)
-                except Exception as md_e:
+                except Exception:
                     pass
 
             return sales_booking

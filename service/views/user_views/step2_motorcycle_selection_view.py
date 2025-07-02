@@ -6,7 +6,6 @@ from service.forms import MotorcycleSelectionForm, ADD_NEW_MOTORCYCLE_OPTION
 from service.models import (
     TempServiceBooking,
     CustomerMotorcycle,
-    ServiceProfile,
     ServiceFAQ,
 )
 

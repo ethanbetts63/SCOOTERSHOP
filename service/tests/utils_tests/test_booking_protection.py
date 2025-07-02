@@ -1,7 +1,6 @@
 from django.test import TestCase, RequestFactory
 from django.urls import reverse
 from django.contrib.messages import get_messages
-from django.utils import timezone
 import datetime
 from unittest.mock import patch
 

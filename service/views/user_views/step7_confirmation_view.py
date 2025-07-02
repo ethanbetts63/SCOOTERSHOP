@@ -40,7 +40,7 @@ class Step7ConfirmationView(View):
 
                 except Payment.DoesNotExist:
                     is_processing = False
-            except Exception as e:
+            except Exception:
                 try:
                     Payment.objects.get(stripe_payment_intent_id=payment_intent_id)
                     is_processing = True

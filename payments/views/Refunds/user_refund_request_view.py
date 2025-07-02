@@ -8,7 +8,6 @@ import uuid
 
 
 from payments.forms.user_refund_request_form import RefundRequestForm
-from payments.models.RefundRequest import RefundRequest
 from mailer.utils import send_templated_email
 from service.models import ServiceProfile
 from inventory.models import SalesProfile

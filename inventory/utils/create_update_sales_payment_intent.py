@@ -80,7 +80,7 @@ def create_or_update_sales_payment_intent(
                     django_payment_obj.status = stripe_intent.status
                     django_payment_obj.save()
 
-        except stripe.error.StripeError as e:
+        except stripe.error.StripeError:
             stripe_intent = None
             django_payment_obj = None
 

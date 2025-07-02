@@ -1,7 +1,5 @@
 from django.test import TestCase
-from django import forms
 import datetime
-from inventory.models import Motorcycle, MotorcycleCondition
 from inventory.forms.admin_motorcycle_form import MotorcycleForm
 from ..test_helpers.model_factories import MotorcycleFactory, MotorcycleConditionFactory
 

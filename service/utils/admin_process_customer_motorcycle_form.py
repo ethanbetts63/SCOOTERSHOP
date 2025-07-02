@@ -1,5 +1,5 @@
 from service.forms import AdminCustomerMotorcycleForm
-from service.models import CustomerMotorcycle, ServiceProfile
+from service.models import CustomerMotorcycle
 
 
 def admin_process_customer_motorcycle_form(

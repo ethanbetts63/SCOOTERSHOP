@@ -1,5 +1,5 @@
 from django.db.models import Q
-from inventory.models import Motorcycle, MotorcycleCondition
+from inventory.models import Motorcycle
 
 
 def get_motorcycles_by_criteria(

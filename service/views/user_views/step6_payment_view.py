@@ -10,7 +10,6 @@ from payments.models import Payment
 from service.models import (
     TempServiceBooking,
     ServiceSettings,
-    ServiceBooking,
     ServiceFAQ,
 )
 from service.utils.get_service_date_availibility import get_service_date_availability
@@ -197,7 +196,7 @@ class Step6PaymentView(View):
                             payment_obj.status = intent.status
                             payment_obj.save()
 
-                except stripe.error.StripeError as e:
+                except stripe.error.StripeError:
                     intent = None
 
             if not intent:
@@ -244,7 +243,7 @@ class Step6PaymentView(View):
                 request, f"Payment system error: {e}. Please try again later."
             )
             return redirect("service:service_book_step5")
-        except Exception as e:
+        except Exception:
             messages.error(
                 request,
                 "An unexpected error occurred during payment setup. Please try again.",
@@ -315,7 +314,7 @@ class Step6PaymentView(View):
 
         except stripe.error.StripeError as e:
             return JsonResponse({"error": str(e)}, status=500)
-        except Exception as e:
+        except Exception:
             return JsonResponse(
                 {
                     "error": "An internal server error occurred during payment processing."

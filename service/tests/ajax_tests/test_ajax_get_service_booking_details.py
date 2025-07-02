@@ -18,11 +18,9 @@ from ..test_helpers.model_factories import (
     CustomerMotorcycleFactory,
     ServiceTypeFactory,
     PaymentFactory,
-    RefundPolicySettingsFactory,
     UserFactory,
 )
 
-from service.models import ServiceBooking
 
 
 class AjaxGetServiceBookingDetailsTest(TestCase):

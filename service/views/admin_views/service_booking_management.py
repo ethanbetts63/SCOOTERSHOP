@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.views import View
 
-from service.models import ServiceBooking, ServiceType, BlockedServiceDate
+from service.models import ServiceBooking
 
 
 class ServiceBookingManagementView(View):

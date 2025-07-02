@@ -1,5 +1,4 @@
 from django.test import TestCase
-from django.core.exceptions import ValidationError
 from datetime import date, time
 from decimal import Decimal
 import datetime
@@ -9,7 +8,6 @@ from django.db import models
 from inventory.models import TempSalesBooking
 from inventory.models.temp_sales_booking import (
     PAYMENT_STATUS_CHOICES,
-    BOOKING_STATUS_CHOICES,
 )
 
 from ..test_helpers.model_factories import (

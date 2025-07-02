@@ -3,7 +3,6 @@ from django.urls import reverse
 from django.utils import timezone
 
 
-from service.models import ServiceBooking
 from ..test_helpers.model_factories import (
     UserFactory,
     ServiceBookingFactory,

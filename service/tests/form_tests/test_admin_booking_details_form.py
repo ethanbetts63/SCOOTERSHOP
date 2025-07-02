@@ -1,14 +1,13 @@
 from django.test import TestCase
-from datetime import date, time, timedelta
-import datetime
+from datetime import date, timedelta
 from django.utils import timezone
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 
 
 from service.forms import AdminBookingDetailsForm
 
 
-from ..test_helpers.model_factories import ServiceTypeFactory, ServiceBookingFactory
+from ..test_helpers.model_factories import ServiceTypeFactory
 
 
 class AdminBookingDetailsFormTest(TestCase):

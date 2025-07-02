@@ -9,7 +9,6 @@ from inventory.utils.create_update_sales_payment_intent import (
 )
 
 from payments.models import Payment
-from inventory.models import TempSalesBooking, SalesProfile
 from ..test_helpers.model_factories import (
     MotorcycleFactory,
     SalesProfileFactory,

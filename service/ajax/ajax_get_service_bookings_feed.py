@@ -46,7 +46,7 @@ def get_service_bookings_json_ajax(request):
                 booking_url = reverse(
                     "service:admin_service_booking_detail", args=[booking.pk]
                 )
-            except Exception as e:
+            except Exception:
                 pass
 
         customer_name = "N/A"

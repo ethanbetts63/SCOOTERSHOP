@@ -13,7 +13,6 @@ from service.models import (
     TempServiceBooking,
     ServiceProfile,
     CustomerMotorcycle,
-    ServiceSettings,
 )
 from ..test_helpers.model_factories import (
     UserFactory,

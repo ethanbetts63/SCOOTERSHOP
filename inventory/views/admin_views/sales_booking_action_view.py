@@ -1,13 +1,11 @@
 from django.views.generic.edit import FormView
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse_lazy
 from django.contrib import messages
 from inventory.models import SalesBooking
 from inventory.forms import SalesBookingActionForm
 from inventory.utils.confirm_sales_booking import confirm_sales_booking
 from inventory.utils.reject_sales_booking import reject_sales_booking
-from inventory.mixins import AdminRequiredMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
-from users.views.auth import is_admin
 
 
 class SalesBookingActionView(LoginRequiredMixin, FormView):

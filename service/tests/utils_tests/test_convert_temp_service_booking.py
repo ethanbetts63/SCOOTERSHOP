@@ -1,7 +1,6 @@
 from django.test import TestCase
 from decimal import Decimal
-import uuid
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 
 
 from service.models import TempServiceBooking, ServiceBooking, ServiceSettings

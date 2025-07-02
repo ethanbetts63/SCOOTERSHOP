@@ -1,11 +1,9 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 import datetime
-import json
 
 
-from service.models import ServiceType
 
 
 from service.tests.test_helpers.model_factories import ServiceTypeFactory
