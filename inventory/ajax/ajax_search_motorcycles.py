@@ -32,8 +32,11 @@ def search_motorcycles_ajax(request):
 
         queryset = Motorcycle.objects.filter(search_query)
 
-        if not include_unavailable:
+        condition = request.GET.get("condition")
+        if condition in ["new", "used"]:
+            queryset = queryset.filter(condition=condition)
 
+        if not include_unavailable:
             queryset = queryset.filter(status__in=["for_sale", "reserved"])
 
         queryset = queryset.distinct().order_by("brand", "model", "year")

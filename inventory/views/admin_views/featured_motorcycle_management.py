@@ -2,7 +2,7 @@ from django.views.generic import TemplateView
 from inventory.models import FeaturedMotorcycle
 
 class FeaturedMotorcycleManagementView(TemplateView):
-    template_name = "dashboard/featured_motorcycle_management.html"
+    template_name = "inventory/admin_featured_motorcycle_management.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

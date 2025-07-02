@@ -33,6 +33,7 @@ from .views.admin_views import (
     sales_FAQ_delete_view,
     featured_motorcycle_management,
     featured_motorcycle_create_update,
+    featured_motorcycle_delete_view
 )
 
 from .ajax import (
