@@ -13,13 +13,13 @@ class EnquiryDeleteView(AdminRequiredMixin, DeleteView):
         return reverse_lazy('core:enquiry_management')
 
     def get(self, request, *args, **kwargs):
-        # This handles direct GET requests to the delete URL, preventing accidental deletion
-        # Instead of showing a confirmation template, it redirects with a message.
         messages.info(request, "Please confirm deletion via the management page.")
         return redirect(reverse_lazy('core:enquiry_management'))
 
     def post(self, request, *args, **kwargs):
-        # This method is called when the form is submitted (e.g., from a button click)
         self.object = self.get_object()
+        # Get the success URL (which also adds the message) before deleting
+        success_url = self.get_success_url()
         self.object.delete()
-        return self.get_success_url()
+        # Now, return a proper redirect response
+        return redirect(success_url)

@@ -1,6 +1,6 @@
 from django.views.generic import ListView
 from core.models.enquiry import Enquiry
-from inventory.mixins import AdminRequiredMixin
+from core.mixins import AdminRequiredMixin
 
 class EnquiryManagementView(AdminRequiredMixin, ListView):
     model = Enquiry
