@@ -14,19 +14,11 @@ from ..test_helpers.model_factories import (
 )
 
 class AdminSalesBookingFormTest(TestCase):
-    """
-    Test suite for the AdminSalesBookingForm.
     
-    This class tests the form's validation, error handling, and the generation
-    of non-blocking warnings based on various business logic rules.
-    """
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up non-modified objects used by all test methods.
-        This includes creating singleton settings and common model instances.
-        """
+        
                                                                                                 
         cls.inventory_settings = InventorySettingsFactory(deposit_amount=Decimal('100.00'))
         
@@ -44,10 +36,7 @@ class AdminSalesBookingFormTest(TestCase):
 
 
     def test_form_is_valid_with_complete_and_correct_data(self):
-        """
-        Tests that the form is valid when provided with all necessary and correct data.
-        This serves as a baseline "happy path" test.
-        """
+        
         form_data = {
             'selected_profile_id': self.sales_profile.pk,
             'selected_motorcycle_id': self.motorcycle_available.pk,
@@ -66,9 +55,7 @@ class AdminSalesBookingFormTest(TestCase):
                                                                     
 
     def test_form_is_invalid_if_profile_id_is_missing(self):
-        """
-        Tests that form validation fails if the 'selected_profile_id' is not provided.
-        """
+        
         form_data = {
                                                              
             'selected_motorcycle_id': self.motorcycle_available.pk,
@@ -80,9 +67,7 @@ class AdminSalesBookingFormTest(TestCase):
         self.assertEqual(form.errors['selected_profile_id'][0], 'This field is required.')
 
     def test_form_is_invalid_if_profile_id_does_not_exist(self):
-        """
-        Tests that form validation fails if the 'selected_profile_id' points to a non-existent SalesProfile.
-        """
+        
         form_data = {
             'selected_profile_id': 99999,                                          
             'selected_motorcycle_id': self.motorcycle_available.pk,
@@ -94,9 +79,7 @@ class AdminSalesBookingFormTest(TestCase):
         self.assertEqual(form.errors['selected_profile_id'][0], 'Selected sales profile does not exist.')
 
     def test_form_is_invalid_if_motorcycle_id_is_missing(self):
-        """
-        Tests that form validation fails if the 'selected_motorcycle_id' is not provided.
-        """
+        
         form_data = {
             'selected_profile_id': self.sales_profile.pk,
                                                                 
@@ -108,9 +91,7 @@ class AdminSalesBookingFormTest(TestCase):
         self.assertEqual(form.errors['selected_motorcycle_id'][0], 'This field is required.')
 
     def test_form_is_invalid_if_motorcycle_id_does_not_exist(self):
-        """
-        Tests that form validation fails if the 'selected_motorcycle_id' points to a non-existent Motorcycle.
-        """
+        
         form_data = {
             'selected_profile_id': self.sales_profile.pk,
             'selected_motorcycle_id': 99999,                                          
@@ -120,13 +101,9 @@ class AdminSalesBookingFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('selected_motorcycle_id', form.errors)
         self.assertEqual(form.errors['selected_motorcycle_id'][0], 'Selected motorcycle does not exist.')
-
-                                                                                                            
-
+                                                                                                      
     def test_warning_is_generated_for_past_appointment_date(self):
-        """
-        Tests that a warning is generated if the appointment date is in the past, even though the form is valid.
-        """
+        
         form_data = {
             **self.base_valid_data,
             'selected_profile_id': self.sales_profile.pk,
@@ -138,9 +115,7 @@ class AdminSalesBookingFormTest(TestCase):
         self.assertIn("Warning: Appointment date is in the past.", form.get_warnings())
 
     def test_warning_is_generated_for_past_appointment_time_on_today(self):
-        """
-        Tests that a warning is generated if the appointment time on the current day is in the past.
-        """
+        
         past_time = (timezone.localtime(timezone.now()) - timedelta(hours=1)).time()
         form_data = {
             **self.base_valid_data,
@@ -154,9 +129,7 @@ class AdminSalesBookingFormTest(TestCase):
         self.assertIn("Warning: Appointment time for today is in the past.", form.get_warnings())
 
     def test_warning_for_confirmed_booking_with_unpaid_status(self):
-        """
-        Tests the warning for a 'confirmed' booking that has a payment status of 'unpaid'.
-        """
+        
         form_data = {
             'selected_profile_id': self.sales_profile.pk,
             'selected_motorcycle_id': self.motorcycle_available.pk,
@@ -170,9 +143,7 @@ class AdminSalesBookingFormTest(TestCase):
         self.assertIn("Warning: Booking is 'Confirmed' but no deposit or full payment recorded. Please verify payment status.", form.get_warnings())
 
     def test_warning_for_confirmed_booking_with_insufficient_deposit(self):
-        """
-        Tests the warning for a 'confirmed' booking where the amount paid is less than the required deposit.
-        """
+        
         insufficient_amount = self.inventory_settings.deposit_amount - Decimal('10.00')
         form_data = {
             'selected_profile_id': self.sales_profile.pk,
@@ -190,9 +161,7 @@ class AdminSalesBookingFormTest(TestCase):
         self.assertIn(expected_warning, form.get_warnings())
 
     def test_warning_for_used_motorcycle_that_is_already_reserved(self):
-        """
-        Tests the warning for creating a booking on a unique motorcycle (e.g., used) that is already reserved.
-        """
+        
         reserved_bike = MotorcycleFactory(condition='used', status='reserved')
         form_data = {
             **self.base_valid_data,
@@ -205,10 +174,6 @@ class AdminSalesBookingFormTest(TestCase):
         self.assertIn(expected_warning, form.get_warnings())
 
     def test_no_warning_when_editing_booking_for_its_own_reserved_motorcycle(self):
-        """
-        Tests a critical edge case: no warning should be generated when editing a booking
-        that is linked to a motorcycle that is reserved *by this very booking*.
-        """
         reserved_bike = MotorcycleFactory(condition='used', status='for_sale')
         booking_instance = SalesBookingFactory(
             motorcycle=reserved_bike, 
@@ -231,9 +196,6 @@ class AdminSalesBookingFormTest(TestCase):
         self.assertTrue(form.is_valid(), f"Form should be valid but had errors: {form.errors.as_json()}")
 
     def test_warning_for_new_motorcycle_out_of_stock(self):
-        """
-        Tests the warning for a 'new' motorcycle that has a quantity of 0.
-        """
         out_of_stock_bike = MotorcycleFactory(condition='new', quantity=0, status='for_sale')
         form_data = {
             **self.base_valid_data,
@@ -246,9 +208,6 @@ class AdminSalesBookingFormTest(TestCase):
         self.assertIn(expected_warning, form.get_warnings())
 
     def test_warning_for_new_motorcycle_with_only_one_left(self):
-        """
-        Tests the warning for a 'new' motorcycle that has a quantity of exactly 1.
-        """
         last_bike_in_stock = MotorcycleFactory(condition='new', quantity=1, status='for_sale')
         form_data = {
             **self.base_valid_data,
@@ -262,9 +221,7 @@ class AdminSalesBookingFormTest(TestCase):
         self.assertIn(expected_warning, form.get_warnings())
 
     def test_warning_for_requesting_viewing_without_appointment_details(self):
-        """
-        Tests the warning generated when 'request_viewing' is checked but no appointment date or time is set.
-        """
+        
         form_data = {
             'selected_profile_id': self.sales_profile.pk,
             'selected_motorcycle_id': self.motorcycle_available.pk,
@@ -283,10 +240,7 @@ class AdminSalesBookingFormTest(TestCase):
                                       
 
     def test_form_initializes_correctly_from_instance(self):
-        """
-        Tests that the form's hidden fields ('selected_profile_id', 'selected_motorcycle_id')
-        and other fields are correctly initialized when an existing SalesBooking instance is provided.
-        """
+        
         booking_instance = SalesBookingFactory(
             sales_profile=self.sales_profile,
             motorcycle=self.motorcycle_available
