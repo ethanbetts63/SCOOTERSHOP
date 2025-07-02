@@ -7,9 +7,6 @@ from decimal import Decimal
 from datetime import time
 
 class InventorySettingsForm(forms.ModelForm):
-    """
-    Form for managing global inventory and sales system settings.
-    """
     class Meta:
         model = InventorySettings
         fields = [
@@ -58,38 +55,28 @@ class InventorySettingsForm(forms.ModelForm):
         }
 
     def clean(self):
-        """
-        Custom validation for form fields, complementing model's clean method.
-        """
-        cleaned_data = super().clean()
-
-                                 
+        cleaned_data = super().clean()                         
         deposit_amount = cleaned_data.get('deposit_amount')
         if deposit_amount is not None and deposit_amount < Decimal('0.00'):
             self.add_error('deposit_amount', _("Deposit amount cannot be negative."))
-
                                         
         deposit_lifespan_days = cleaned_data.get('deposit_lifespan_days')
         if deposit_lifespan_days is not None and deposit_lifespan_days < 0:
             self.add_error('deposit_lifespan_days', _("Deposit lifespan days cannot be negative."))
-
                                     
         start_time = cleaned_data.get('sales_appointment_start_time')
         end_time = cleaned_data.get('sales_appointment_end_time')
         if start_time and end_time and start_time >= end_time:
             self.add_error('sales_appointment_start_time', _("Appointment start time must be earlier than end time."))
             self.add_error('sales_appointment_end_time', _("Appointment end time must be later than start time."))
-
                                       
         spacing_mins = cleaned_data.get('sales_appointment_spacing_mins')
         if spacing_mins is not None and spacing_mins <= 0:
             self.add_error('sales_appointment_spacing_mins', _("Appointment spacing must be a positive integer."))
-
                                        
         max_days = cleaned_data.get('max_advance_booking_days')
         if max_days is not None and max_days < 0:
             self.add_error('max_advance_booking_days', _("Maximum advance booking days cannot be negative."))
-
                                                 
         min_hours = cleaned_data.get('min_advance_booking_hours')
         if min_hours is not None and min_hours < 0:
