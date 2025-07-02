@@ -6,18 +6,11 @@ from inventory.models import Motorcycle
 from ...test_helpers.model_factories import MotorcycleFactory, MotorcycleConditionFactory
 
 class MotorcycleListViewTest(TestCase):
-    """
-    Tests for the MotorcycleListView's initial render and context.
-    This view now primarily serves the static shell and initial context,
-    with actual motorcycle data loaded via AJAX.
-    """
+    
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up common condition objects and some motorcycles.
-        These motorcycles are used by the AJAX endpoint (not directly by this view's initial render).
-        """
+        
         cls.client = Client()
 
                                                                              
@@ -69,10 +62,7 @@ class MotorcycleListViewTest(TestCase):
             )
 
     def test_all_motorcycles_page_renders_empty_initially(self):
-        """
-        Test that the '/motorcycles/' (all) page renders correctly,
-        but initially shows an empty list of motorcycles (as data is loaded via AJAX).
-        """
+        
         response = self.client.get(reverse('inventory:all'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'inventory/motorcycle_list.html')
@@ -103,10 +93,7 @@ class MotorcycleListViewTest(TestCase):
 
 
     def test_new_motorcycles_page_renders_empty_initially(self):
-        """
-        Test that the '/motorcycles/new/' page renders correctly,
-        but initially shows an empty list of motorcycles.
-        """
+        
         response = self.client.get(reverse('inventory:new'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'inventory/motorcycle_list.html')
@@ -125,10 +112,7 @@ class MotorcycleListViewTest(TestCase):
 
 
     def test_used_motorcycles_page_renders_empty_initially(self):
-        """
-        Test that the '/motorcycles/used/' page renders correctly,
-        but initially shows an empty list of motorcycles.
-        """
+        
         response = self.client.get(reverse('inventory:used'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'inventory/motorcycle_list.html')
@@ -149,10 +133,7 @@ class MotorcycleListViewTest(TestCase):
 
 
     def test_no_motorcycles_found_display_initial_load(self):
-        """
-        Test the display when no motorcycles are found for a given condition on initial page load.
-        Since the view's queryset is always empty now, this tests the 'no results' message appears.
-        """
+        
         response = self.client.get(reverse('inventory:all'))                                        
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'No motorcycles match the current criteria.')

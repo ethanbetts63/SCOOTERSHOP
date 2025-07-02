@@ -59,7 +59,8 @@ class MotorcycleFormTest(TestCase):
             'status': 'for_sale',                      
             'brand': 'Honda', 'model': 'CBR',
             'engine_size': 500, 'odometer': 1000, 'is_available': True,
-            'transmission': 'automatic', 'stock_number': 'STK001',
+            'transmission': 'automatic',
+            'stock_number': 'STK001',
             'conditions': [],
         }
 
@@ -87,7 +88,8 @@ class MotorcycleFormTest(TestCase):
             'status': 'for_sale',                      
             'brand': 'Honda', 'model': 'CBR', 'year': 2020,
             'engine_size': 500, 'odometer': 1000, 'is_available': True,
-            'transmission': 'automatic', 'stock_number': 'STK001',
+            'transmission': 'automatic',
+            'stock_number': 'STK001',
             'rego': 'abc123',
             'conditions': [],
         }
@@ -101,7 +103,8 @@ class MotorcycleFormTest(TestCase):
             'status': 'for_sale',                      
             'brand': 'Honda', 'model': 'CBR', 'year': 2020,
             'engine_size': 500, 'odometer': 1000, 'is_available': True,
-            'transmission': 'automatic', 'stock_number': 'STK001',
+            'transmission': 'automatic',
+            'stock_number': 'STK001',
             'conditions': [self.condition_new.pk, self.condition_used.pk],
             'quantity': 1,
         }
@@ -115,7 +118,8 @@ class MotorcycleFormTest(TestCase):
             'status': 'for_sale',                      
             'brand': 'Honda', 'model': 'CBR', 'year': 2020,
             'engine_size': 500, 'odometer': 1000, 'is_available': True,
-            'transmission': 'automatic', 'stock_number': 'STK001',
+            'transmission': 'automatic',
+            'stock_number': 'STK001',
             'conditions': [self.condition_demo.pk, self.condition_used.pk],
             'quantity': 1,
         }
@@ -129,7 +133,8 @@ class MotorcycleFormTest(TestCase):
             'status': 'for_sale',                      
             'brand': 'Honda', 'model': 'CBR', 'year': 2020,
             'engine_size': 500, 'odometer': 1000, 'is_available': True,
-            'transmission': 'automatic', 'stock_number': 'STK001',
+            'transmission': 'automatic',
+            'stock_number': 'STK001',
             'conditions': [self.condition_used.pk],
             'quantity': 1,
         }
@@ -217,9 +222,7 @@ class MotorcycleFormTest(TestCase):
 
                                   
 
-    def test_form_saves_is_available_correctly(self):
-        """Tests that the 'is_available' field is correctly saved."""
-                                                 
+    def test_form_saves_is_available_correctly(self):                                                 
         data_available = {
             'status': 'for_sale',
             'brand': 'Test', 'model': 'Available', 'year': 2022,
@@ -259,7 +262,6 @@ class MotorcycleFormTest(TestCase):
 
 
     def test_form_saves_status_correctly(self):
-        """Tests that the 'status' field is correctly saved."""
         base_data = {
             'brand': 'Test', 'model': 'Status', 'year': 2022,
             'engine_size': 500, 'odometer': 100, 'transmission': 'manual',

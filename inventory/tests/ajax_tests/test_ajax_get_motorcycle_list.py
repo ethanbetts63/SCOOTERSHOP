@@ -10,17 +10,11 @@ from inventory.models import Motorcycle, MotorcycleCondition
 from ..test_helpers.model_factories import MotorcycleFactory, MotorcycleConditionFactory
 
 class AjaxGetMotorcycleListTest(TestCase):
-    """
-    Tests for the AJAX endpoint `get_motorcycle_list`.
-    """
+    
 
     @classmethod
     def setUpTestData(cls):
-        """
-        Set up various motorcycles with different conditions, brands, years, prices,
-        and engine sizes to thoroughly test the AJAX filtering and sorting.
-        We'll explicitly control `date_posted` for predictable ordering.
-        """
+        
         cls.client = Client()
 
                                          

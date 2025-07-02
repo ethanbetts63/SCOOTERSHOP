@@ -42,8 +42,7 @@ class MotorcycleCreateUpdateView(AdminRequiredMixin, UpdateView):
         self.object = self.get_object()
         form = self.get_form()
         
-                                                                       
-                                                    
+
         image_formset = MotorcycleImageFormSet(self.request.POST, self.request.FILES, instance=self.object)
 
         if form.is_valid() and image_formset.is_valid():
