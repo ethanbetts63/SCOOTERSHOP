@@ -54,7 +54,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ enquiry.created_at|date:"Y-m-d H:i" }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex flex-wrap gap-2">
-                                    <a href="{% url 'core:enquiry_detail' pk=enquiry.pk %}" class="action-button btn-view">View/Respond</a>
+                                    <a href="{% url 'core:enquiry_detail' pk=enquiry.pk %}" class="action-button btn-view">View</a>
                                     <form action="{% url 'core:enquiry_delete' pk=enquiry.pk %}" method="post" class="inline">
                                         {% csrf_token %}
                                         <button type="submit" class="action-button btn-delete" onclick="return confirm('Are you sure you want to delete this enquiry?');">
