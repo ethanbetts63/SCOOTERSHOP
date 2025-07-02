@@ -143,22 +143,17 @@ class MotorcycleFactory(factory.django.DjangoModelFactory):
     def conditions(obj, create, extracted, **kwargs):
         if not create:
             return
-
-        if extracted is not None:
-            if extracted:
-                for condition_name in extracted:
-                    condition, _ = MotorcycleCondition.objects.get_or_create(
-                        name=condition_name,
-                        defaults={
-                            "display_name": condition_name.replace("_", " ").title()
-                        },
-                    )
-                    obj.conditions.add(condition)
-        else:
-            condition, _ = MotorcycleCondition.objects.get_or_create(
-                name="used", defaults={"display_name": "Used"}
-            )
-            obj.conditions.add(condition)
+        
+        # --- FIX: Only add conditions if they are explicitly passed in ---
+        if extracted:
+            for condition_name in extracted:
+                condition, _ = MotorcycleCondition.objects.get_or_create(
+                    name=condition_name,
+                    defaults={
+                        "display_name": condition_name.replace("_", " ").title()
+                    },
+                )
+                obj.conditions.add(condition)
 
 
 class MotorcycleImageFactory(factory.django.DjangoModelFactory):
