@@ -17,6 +17,13 @@ class FeaturedMotorcycleCreateUpdateView(UpdateView):
             return get_object_or_404(FeaturedMotorcycle, pk=pk)
         return None
 
+    def get_initial(self):
+        initial = super().get_initial()
+        category = self.request.GET.get('category')
+        if category:
+            initial['category'] = category
+        return initial
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["title"] = (

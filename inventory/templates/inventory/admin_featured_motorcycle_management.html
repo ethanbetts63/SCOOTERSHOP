@@ -63,7 +63,7 @@
         <div class="bg-white shadow-md rounded-lg overflow-hidden">
             <div class="flex justify-between items-center p-4 bg-gray-50 border-b">
                 <h2 class="text-xl font-bold text-gray-800">New Motorcycles</h2>
-                <a href="{% url 'dashboard:add_featured_motorcycle' %}?category=new" class="action-button btn-create">Add New</a>
+                <a href="{% url 'inventory:add_featured_motorcycle' %}?category=new" class="action-button btn-create">Add New</a>
             </div>
             <div class="p-4">
                 <div class="table-responsive">
@@ -82,8 +82,13 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ featured.order }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium table-cell-padding">
                                         <div class="flex space-x-2">
-                                            <a href="{% url 'inventory:motorcycle-detail' featured.motorcycle.pk %}" class="action-button btn-info">View</a>
-                                            <button class="action-button btn-danger">Remove</button>
+                                            <a href="{% url 'inventory:update_featured_motorcycle' pk=featured.pk %}" class="action-button btn-info">Edit</a>
+                                            <form action="{% url 'inventory:delete_featured_motorcycle' pk=featured.pk %}" method="post" class="inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="action-button btn-danger" onclick="return confirm('Are you sure you want to remove this featured motorcycle?');">
+                                                    Remove
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>
@@ -102,7 +107,7 @@
         <div class="bg-white shadow-md rounded-lg overflow-hidden">
             <div class="flex justify-between items-center p-4 bg-gray-50 border-b">
                 <h2 class="text-xl font-bold text-gray-800">Used Motorcycles</h2>
-                <a href="{% url 'dashboard:add_featured_motorcycle' %}?category=used" class="action-button btn-create">Add Used</a>
+                <a href="{% url 'inventory:add_featured_motorcycle' %}?category=used" class="action-button btn-create">Add Used</a>
             </div>
             <div class="p-4">
                 <div class="table-responsive">
@@ -121,8 +126,13 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ featured.order }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium table-cell-padding">
                                         <div class="flex space-x-2">
-                                            <a href="{% url 'inventory:motorcycle-detail' featured.motorcycle.pk %}" class="action-button btn-info">View</a>
-                                            <button class="action-button btn-danger">Remove</button>
+                                            <a href="{% url 'inventory:update_featured_motorcycle' pk=featured.pk %}" class="action-button btn-info">Edit</a>
+                                            <form action="{% url 'inventory:delete_featured_motorcycle' pk=featured.pk %}" method="post" class="inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="action-button btn-danger" onclick="return confirm('Are you sure you want to remove this featured motorcycle?');">
+                                                    Remove
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>

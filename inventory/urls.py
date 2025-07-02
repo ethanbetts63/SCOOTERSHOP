@@ -252,6 +252,11 @@ urlpatterns = [
         name="update_featured_motorcycle",
     ),
     path(
+        "admin/featured-motorcycles/<int:pk>/delete/",
+        featured_motorcycle_delete_view.FeaturedMotorcycleDeleteView.as_view(),
+        name="delete_featured_motorcycle",
+    ),
+    path(
         "ajax/get-motorcycle-list/",
         get_motorcycle_list,
         name="ajax-get-motorcycle-list",
