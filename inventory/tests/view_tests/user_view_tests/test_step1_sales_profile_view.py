@@ -15,11 +15,11 @@ from ...test_helpers.model_factories import (
 )
 
 class Step1SalesProfileViewTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
         cls.client = Client()
         cls.url = reverse('inventory:step1_sales_profile')
 
@@ -39,7 +39,7 @@ class Step1SalesProfileViewTest(TestCase):
 
 
     def _create_temp_booking_in_session(self, client, user=None, sales_profile=None):
-        #--
+        
         temp_booking = TempSalesBookingFactory(
             motorcycle=self.motorcycle,
             sales_profile=sales_profile,
@@ -52,7 +52,7 @@ class Step1SalesProfileViewTest(TestCase):
         return temp_booking
 
     def _create_dummy_image(self, name='test_image.jpg', size=(50, 50), color=(255, 0, 0)):
-        #--
+        
         file = tempfile.NamedTemporaryFile(suffix='.jpg', delete=False)
         img = Image.new('RGB', size, color)
         img.save(file, 'jpeg')
@@ -62,7 +62,7 @@ class Step1SalesProfileViewTest(TestCase):
                                
 
     def test_get_no_temp_booking_id_in_session(self):
-        #--
+        
         response = self.client.get(self.url, follow=True)
         self.assertRedirects(response, reverse('inventory:all'))
         messages = list(get_messages(response.wsgi_request))
@@ -70,7 +70,7 @@ class Step1SalesProfileViewTest(TestCase):
         self.assertEqual(str(messages[0]), "Your booking session has expired or is invalid. Please start again.")
 
     def test_get_invalid_temp_booking_id(self):
-        #--
+        
         session = self.client.session
         session['temp_sales_booking_uuid'] = 'a2b3c4d5-e6f7-8901-2345-67890abcdef0'                                      
         session.save()
@@ -83,7 +83,7 @@ class Step1SalesProfileViewTest(TestCase):
 
 
     def test_get_no_inventory_settings(self):
-        #--
+        
                                                                                        
         self._create_temp_booking_in_session(self.client)
                                                                   
@@ -100,7 +100,7 @@ class Step1SalesProfileViewTest(TestCase):
         self.inventory_settings = InventorySettingsFactory(pk=1)                        
 
     def test_get_success_unauthenticated_user(self):
-        #--
+        
         temp_booking = self._create_temp_booking_in_session(self.client)
 
         response = self.client.get(self.url)
@@ -112,7 +112,7 @@ class Step1SalesProfileViewTest(TestCase):
         self.assertIsNone(response.context['sales_profile_form'].instance.pk)                                
 
     def test_get_success_authenticated_user_no_profile(self):
-        #--
+        
         self.client.login(username='testuser', password='password123')
         temp_booking = self._create_temp_booking_in_session(self.client, user=self.user)
 
@@ -122,7 +122,7 @@ class Step1SalesProfileViewTest(TestCase):
         self.assertIsNone(response.context['sales_profile_form'].instance.pk)                         
 
     def test_get_success_authenticated_user_with_profile(self):
-        #--
+        
         self.client.login(username='testuser', password='password123')
         existing_profile = SalesProfileFactory(user=self.user, name='Existing Name', email='existing@example.com')
         temp_booking = self._create_temp_booking_in_session(self.client, user=self.user)
@@ -137,7 +137,7 @@ class Step1SalesProfileViewTest(TestCase):
 
 
     def test_get_success_temp_booking_has_profile(self):
-        #--
+        
         existing_profile_for_temp = SalesProfileFactory(name='Temp Linked Name', email='temp_linked@example.com')
         temp_booking = self._create_temp_booking_in_session(self.client, sales_profile=existing_profile_for_temp)
 
@@ -163,7 +163,7 @@ class Step1SalesProfileViewTest(TestCase):
     @mock.patch('django.contrib.messages.success')
     @mock.patch('django.contrib.messages.error')
     def test_post_no_temp_booking_id_in_session(self, mock_error, mock_success):
-        #--
+        
         response = self.client.post(self.url, data={}, follow=True)
         self.assertRedirects(response, reverse('inventory:all'))
         mock_error.assert_called_once_with(mock.ANY, "Your booking session has expired or is invalid. Please start again.")
@@ -172,7 +172,7 @@ class Step1SalesProfileViewTest(TestCase):
     @mock.patch('django.contrib.messages.success')
     @mock.patch('django.contrib.messages.error')
     def test_post_invalid_temp_booking_id(self, mock_error, mock_success):
-        #--
+        
         session = self.client.session
         session['temp_sales_booking_uuid'] = 'a2b3c4d5-e6f7-8901-2345-67890abcdef0'                                      
         session.save()
@@ -186,7 +186,7 @@ class Step1SalesProfileViewTest(TestCase):
     @mock.patch('django.contrib.messages.success')
     @mock.patch('django.contrib.messages.error')
     def test_post_no_inventory_settings(self, mock_error, mock_success):
-        #--
+        
         self._create_temp_booking_in_session(self.client)                               
         InventorySettings.objects.all().delete()                                                   
 
@@ -202,7 +202,7 @@ class Step1SalesProfileViewTest(TestCase):
     @mock.patch('django.contrib.messages.success')
     @mock.patch('django.contrib.messages.error')
     def test_post_valid_data_new_profile_unauthenticated(self, mock_error, mock_success):
-        #--
+        
         temp_booking = self._create_temp_booking_in_session(self.client)
         initial_profile_count = SalesProfile.objects.count()
 
@@ -231,7 +231,7 @@ class Step1SalesProfileViewTest(TestCase):
     @mock.patch('django.contrib.messages.success')
     @mock.patch('django.contrib.messages.error')
     def test_post_valid_data_update_existing_profile_authenticated(self, mock_error, mock_success):
-        #--
+        
         self.client.login(username='testuser', password='password123')
         existing_profile = SalesProfileFactory(user=self.user, name='Old Name', email='old@example.com', phone_number='111')
         temp_booking = self._create_temp_booking_in_session(self.client, user=self.user, sales_profile=existing_profile)
@@ -261,7 +261,7 @@ class Step1SalesProfileViewTest(TestCase):
     @mock.patch('django.contrib.messages.success')
     @mock.patch('django.contrib.messages.error')
     def test_post_invalid_data(self, mock_error, mock_success):
-        #--
+        
         temp_booking = self._create_temp_booking_in_session(self.client)
         initial_profile_count = SalesProfile.objects.count()
 
@@ -290,7 +290,7 @@ class Step1SalesProfileViewTest(TestCase):
     @mock.patch('django.contrib.messages.success')
     @mock.patch('django.contrib.messages.error')
     def test_post_requires_drivers_license(self, mock_error, mock_success):
-        #--
+        
         self.inventory_settings.require_drivers_license = True
         self.inventory_settings.save()
 
@@ -318,7 +318,7 @@ class Step1SalesProfileViewTest(TestCase):
     @mock.patch('django.contrib.messages.success')
     @mock.patch('django.contrib.messages.error')
     def test_post_requires_address_info(self, mock_error, mock_success):
-        #--
+        
         self.inventory_settings.require_address_info = True
         self.inventory_settings.save()
 

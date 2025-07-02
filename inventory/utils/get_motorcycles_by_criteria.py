@@ -4,7 +4,7 @@ from django.db.models import Q
 from inventory.models import Motorcycle, MotorcycleCondition
 
 def get_motorcycles_by_criteria(condition_slug=None, brand=None, model=None, year_min=None, year_max=None, price_min=None, price_max=None, engine_min_cc=None, engine_max_cc=None, order=None):
-    #--
+    
     queryset = Motorcycle.objects.all()
 
                                                  

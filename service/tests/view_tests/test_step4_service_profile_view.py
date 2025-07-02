@@ -20,11 +20,11 @@ from ..test_helpers.model_factories import (
 User = get_user_model()
 
 class Step4ServiceProfileViewTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
         cls.factory = RequestFactory()
         cls.user_password = 'testpassword123'
         cls.user = UserFactory(password=cls.user_password)                          
@@ -35,7 +35,7 @@ class Step4ServiceProfileViewTest(TestCase):
         cls.base_url = reverse('service:service_book_step4')
 
     def setUp(self):
-        #--
+        
                                                 
         TempServiceBooking.objects.all().delete()
         ServiceProfile.objects.all().delete()

@@ -11,11 +11,11 @@ from payments.utils.service_refund_calc import calculate_service_refund_amount
 from payments.tests.test_helpers.model_factories import ServiceBookingFactory, PaymentFactory, RefundPolicySettingsFactory
 
 class ServiceRefundCalcTests(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
         cls.refund_policy_settings = RefundPolicySettingsFactory()
 
                                                                   
@@ -40,7 +40,7 @@ class ServiceRefundCalcTests(TestCase):
         }
 
     def _create_booking_with_payment(self, total_amount, payment_method, payment_status=None, dropoff_date_offset_days=10, refund_policy_snapshot=None):
-        #--
+        
                                                                                                               
         payment = PaymentFactory(amount=total_amount, status='succeeded')
 
@@ -74,7 +74,7 @@ class ServiceRefundCalcTests(TestCase):
                                                         
 
     def test_full_refund_full_payment(self):
-        #--
+        
         cancellation_datetime = timezone.now()
                                                                    
         booking, payment = self._create_booking_with_payment(
@@ -92,7 +92,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 8)
 
     def test_partial_refund_full_payment(self):
-        #--
+        
         cancellation_datetime = timezone.now()
                                                                       
         booking, payment = self._create_booking_with_payment(
@@ -111,7 +111,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 4)
 
     def test_minimal_refund_full_payment(self):
-        #--
+        
         cancellation_datetime = timezone.now()
                                                                      
         booking, payment = self._create_booking_with_payment(
@@ -130,7 +130,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 2)
 
     def test_no_refund_full_payment_too_close(self):
-        #--
+        
         cancellation_datetime = timezone.now()
                                                                                 
         booking, payment = self._create_booking_with_payment(
@@ -148,7 +148,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 0)
 
     def test_no_refund_full_payment_after_dropoff(self):
-        #--
+        
         dropoff_date = timezone.now().date() - timedelta(days=1)
         cancellation_datetime = timezone.now()
 
@@ -176,7 +176,7 @@ class ServiceRefundCalcTests(TestCase):
                                                               
 
     def test_full_refund_deposit_payment(self):
-        #--
+        
         cancellation_datetime = timezone.now()
                                                                                  
         booking, payment = self._create_booking_with_payment(
@@ -195,7 +195,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 11)
 
     def test_partial_refund_deposit_payment(self):
-        #--
+        
         cancellation_datetime = timezone.now()
                                                                                   
         booking, payment = self._create_booking_with_payment(
@@ -215,7 +215,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 6)
 
     def test_minimal_refund_deposit_payment(self):
-        #--
+        
         cancellation_datetime = timezone.now()
                                                                                   
         booking, payment = self._create_booking_with_payment(
@@ -235,7 +235,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 3)
 
     def test_no_refund_deposit_payment_too_close(self):
-        #--
+        
         cancellation_datetime = timezone.now()
                                                                                  
         booking, payment = self._create_booking_with_payment(
@@ -257,7 +257,7 @@ class ServiceRefundCalcTests(TestCase):
                                             
 
     def test_no_refund_policy_snapshot(self):
-        #--
+        
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('500.00'),
             payment_method='online_full',
@@ -271,7 +271,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 'N/A')
 
     def test_manual_payment_method(self):
-        #--
+        
         cancellation_datetime = timezone.now()
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('500.00'),
@@ -288,7 +288,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 'N/A')
 
     def test_booking_without_payment_object_amount_paid_used(self):
-        #--
+        
         cancellation_datetime = timezone.now()
 
         mock_booking = MagicMock()
@@ -307,7 +307,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertIn("Cancellation 8 days before drop-off.", result['details'])
 
     def test_booking_without_payment_object_zero_amount_paid(self):
-        #--
+        
         cancellation_datetime = timezone.now()
 
         mock_booking = MagicMock()
@@ -326,7 +326,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertIn("Cancellation 8 days before drop-off.", result['details'])
 
     def test_custom_cancellation_datetime(self):
-        #--
+        
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('500.00'),
             payment_method='online_full',
@@ -344,7 +344,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 8)
 
     def test_exact_boundary_full_refund_days(self):
-        #--
+        
         cancellation_datetime = timezone.make_aware(datetime.combine(date(2025, 1, 1), time(10, 0, 0)))
         dropoff_datetime_exact_boundary = cancellation_datetime + timedelta(days=7)
 
@@ -364,7 +364,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 7)
 
     def test_just_under_boundary_full_refund_days(self):
-        #--
+        
         cancellation_datetime = timezone.make_aware(datetime.combine(date(2025, 1, 1), time(10, 0, 0)))
         dropoff_datetime_just_under = cancellation_datetime + timedelta(days=6, hours=23)
 
@@ -385,7 +385,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 6)
 
     def test_minimal_refund_zero_percentage(self):
-        #--
+        
         policy_with_zero_minimal = self.full_payment_policy_snapshot.copy()
         policy_with_zero_minimal['cancellation_full_payment_minimal_refund_percentage'] = str(Decimal('0.00'))
 
@@ -403,7 +403,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 1)
 
     def test_decimal_precision(self):
-        #--
+        
         policy_snapshot = {
             'deposit_enabled': False,
             'cancellation_full_payment_full_refund_days': 7,
@@ -427,7 +427,7 @@ class ServiceRefundCalcTests(TestCase):
         self.assertEqual(result['days_before_dropoff'], 4)
 
     def test_total_paid_for_calculation_from_amount_paid(self):
-        #--
+        
         cancellation_datetime = timezone.now()
         booking, payment = self._create_booking_with_payment(
             total_amount=Decimal('123.45'),

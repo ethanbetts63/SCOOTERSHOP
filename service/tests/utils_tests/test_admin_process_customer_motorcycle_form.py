@@ -4,18 +4,18 @@ from service.utils.admin_process_customer_motorcycle_form import admin_process_c
 from ..test_helpers.model_factories import ServiceProfileFactory, CustomerMotorcycleFactory, ServiceBrandFactory
 
 class AdminProcessCustomerMotorcycleFormTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
         cls.service_profile = ServiceProfileFactory()
         cls.another_service_profile = ServiceProfileFactory()                      
         cls.service_brand_honda = ServiceBrandFactory(name='Honda')
         cls.service_brand_yamaha = ServiceBrandFactory(name='Yamaha')
 
     def test_create_new_motorcycle_with_existing_brand(self):
-        #--
+        
         post_data = {
             'service_profile': self.service_profile.pk,                            
             'brand': self.service_brand_honda.name,
@@ -46,7 +46,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
 
 
     def test_create_new_motorcycle_with_custom_brand_typed_in(self):
-        #--
+        
         post_data = {
             'service_profile': self.service_profile.pk,
             'brand': 'Custom Chopper Brand',                            
@@ -76,7 +76,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
 
 
     def test_update_existing_motorcycle_change_brand(self):
-        #--
+        
         initial_motorcycle = CustomerMotorcycleFactory(
             service_profile=self.service_profile,
             brand=self.service_brand_honda.name,
@@ -118,7 +118,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
         self.assertEqual(CustomerMotorcycle.objects.count(), 1)
 
     def test_update_existing_motorcycle_change_profile(self):
-        #--
+        
         initial_motorcycle = CustomerMotorcycleFactory(
             service_profile=self.service_profile,
             brand='Kawasaki',
@@ -159,7 +159,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
 
 
     def test_form_invalid_missing_required_fields(self):
-        #--
+        
         post_data = {
             'service_profile': self.service_profile.pk,
             'brand': self.service_brand_honda.name,
@@ -184,7 +184,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
         self.assertEqual(CustomerMotorcycle.objects.count(), 0)
 
     def test_form_invalid_year_in_future(self):
-        #--
+        
         from datetime import date
         future_year = date.today().year + 1
 
@@ -211,7 +211,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
         self.assertIsNone(motorcycle_instance)
 
     def test_form_invalid_vin_number_length(self):
-        #--
+        
         post_data = {
             'service_profile': self.service_profile.pk,
             'brand': self.service_brand_honda.name,
@@ -236,7 +236,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
         self.assertIsNone(motorcycle_instance)
 
     def test_form_invalid_negative_odometer(self):
-        #--
+        
         post_data = {
             'service_profile': self.service_profile.pk,
             'brand': self.service_brand_honda.name,
@@ -260,7 +260,7 @@ class AdminProcessCustomerMotorcycleFormTest(TestCase):
         self.assertIsNone(motorcycle_instance)
 
     def test_motorcycle_instance_not_found_with_form_error(self):
-        #--
+        
         post_data = {
             'service_profile': self.service_profile.pk,
             'brand': self.service_brand_honda.name,

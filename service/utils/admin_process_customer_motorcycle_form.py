@@ -5,7 +5,7 @@ from service.models import CustomerMotorcycle, ServiceProfile
 
 
 def admin_process_customer_motorcycle_form(request_post_data, request_files, profile_instance, motorcycle_id=None):
-    #--
+    
     instance = None
     if motorcycle_id:
         try:

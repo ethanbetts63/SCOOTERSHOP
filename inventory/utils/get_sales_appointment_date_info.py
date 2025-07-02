@@ -4,7 +4,7 @@ from datetime import date, datetime, timedelta
 from inventory.models import InventorySettings, BlockedSalesDate
 
 def get_sales_appointment_date_info(inventory_settings: InventorySettings, is_deposit_flow: bool = False):
-    #--
+    
     if not inventory_settings:
                                                              
         return date.today(), date.today() + timedelta(days=90), []

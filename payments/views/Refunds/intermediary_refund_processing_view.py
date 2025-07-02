@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.urls import reverse                                 
 
 class IntermediaryRefundProcessingView(LoginRequiredMixin, TemplateView):
-    #--
+    
     template_name = 'payments/intermediary_refund_processing.html'
 
     def get_context_data(self, **kwargs):

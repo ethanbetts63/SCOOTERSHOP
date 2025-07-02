@@ -3,7 +3,7 @@ from django.utils import timezone
 from service.models import ServiceSettings, ServiceBooking
 
 def get_available_dropoff_times(selected_date):
-    #--
+    
     service_settings = ServiceSettings.objects.first()
     if not service_settings:
                                                                   

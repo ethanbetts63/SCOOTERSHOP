@@ -5,18 +5,18 @@ from ..test_helpers.model_factories import ServiceBrandFactory
                                              
 
 class ServiceBrandFormTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
                                                                                    
         cls.brand1 = ServiceBrandFactory(name='Brand A', image=None)
         cls.brand2 = ServiceBrandFactory(name='Brand B', image=None)
 
 
     def test_form_valid_data(self):
-        #--
+        
         data = {'name': 'New Valid Brand'}
                                                                                      
         form = ServiceBrandForm(data=data)
@@ -29,7 +29,7 @@ class ServiceBrandFormTest(TestCase):
 
 
     def test_form_invalid_data_missing_name(self):
-        #--
+        
         data = {'name': ''}
         form = ServiceBrandForm(data=data)
         self.assertFalse(form.is_valid())
@@ -37,7 +37,7 @@ class ServiceBrandFormTest(TestCase):
         self.assertIn('This field is required.', form.errors['name'])
 
     def test_form_invalid_data_duplicate_name(self):
-        #--
+        
                                                                                       
         data = {'name': 'Brand A'}
         form = ServiceBrandForm(data=data)
@@ -47,7 +47,7 @@ class ServiceBrandFormTest(TestCase):
         self.assertIn('Service Brand with this Name already exists.', form.errors['name'])
 
     def test_form_update_existing_brand(self):
-        #--
+        
         existing_brand = self.brand1
         
         data = {'name': 'Updated Brand A'}

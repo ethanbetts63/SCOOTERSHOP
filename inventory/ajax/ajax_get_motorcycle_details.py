@@ -9,7 +9,7 @@ from inventory.models import Motorcycle
 @require_GET
 @login_required
 def get_motorcycle_details_ajax(request, pk):
-    #--
+    
                                                         
     if not request.user.is_staff:
         return JsonResponse({'error': 'Permission denied'}, status=403)

@@ -8,7 +8,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from decimal import Decimal, InvalidOperation                          
 
 def get_motorcycle_list(request: HttpRequest):
-    #--
+    
     if request.method == 'GET':
         condition_slug = request.GET.get('condition_slug')
         year_min = request.GET.get('year_min')

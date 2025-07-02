@@ -15,11 +15,11 @@ from ..test_helpers.model_factories import (
 )
 
 class GetDropOffDateAvailabilityTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
                                                                                   
         cls.fixed_now_utc = datetime.datetime(2025, 6, 15, 10, 0, 0, tzinfo=datetime.timezone.utc)
                                                                         
@@ -39,14 +39,14 @@ class GetDropOffDateAvailabilityTest(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        #--
+        
         cls.patcher_now.stop()
         cls.patcher_localdate.stop()
         timezone.deactivate()
         super().tearDownClass()
 
     def setUp(self):
-        #--
+        
         ServiceSettings.objects.all().delete()
         BlockedServiceDate.objects.all().delete()
 
@@ -62,7 +62,7 @@ class GetDropOffDateAvailabilityTest(TestCase):
         )
 
     def test_basic_availability_all_days_open(self):
-        #--
+        
                                                                
         self.service_settings.max_advance_dropoff_days = 7
         self.service_settings.booking_open_days = "Mon,Tue,Wed,Thu,Fri,Sat,Sun"
@@ -83,7 +83,7 @@ class GetDropOffDateAvailabilityTest(TestCase):
         self.assertEqual(available_dates, expected_dates)
 
     def test_max_advance_dropoff_days_restriction(self):
-        #--
+        
         self.service_settings.max_advance_dropoff_days = 3
         self.service_settings.booking_open_days = "Mon,Tue,Wed,Thu,Fri,Sat,Sun"
         self.service_settings.save()
@@ -101,7 +101,7 @@ class GetDropOffDateAvailabilityTest(TestCase):
         self.assertEqual(available_dates, expected_dates)
 
     def test_dropoff_date_cannot_be_after_service_date(self):
-        #--
+        
         self.service_settings.max_advance_dropoff_days = 7
         self.service_settings.booking_open_days = "Mon,Tue,Wed,Thu,Fri,Sat,Sun"
         self.service_settings.save()
@@ -117,7 +117,7 @@ class GetDropOffDateAvailabilityTest(TestCase):
         self.assertEqual(available_dates, expected_dates)
 
     def test_blocked_service_date_single_day(self):
-        #--
+        
         self.service_settings.booking_open_days = "Mon,Tue,Wed,Thu,Fri,Sat,Sun"
         self.service_settings.save()
 
@@ -138,7 +138,7 @@ class GetDropOffDateAvailabilityTest(TestCase):
         self.assertEqual(available_dates, expected_dates)
 
     def test_blocked_service_date_range(self):
-        #--
+        
         self.service_settings.booking_open_days = "Mon,Tue,Wed,Thu,Fri,Sat,Sun"
         self.service_settings.save()
 
@@ -161,7 +161,7 @@ class GetDropOffDateAvailabilityTest(TestCase):
         self.assertEqual(available_dates, expected_dates)
 
     def test_allow_after_hours_dropoff_true_ignores_open_days(self):
-        #--
+        
         self.service_settings.allow_after_hours_dropoff = True
         self.service_settings.booking_open_days = "Mon,Tue"                  
         self.service_settings.save()
@@ -179,7 +179,7 @@ class GetDropOffDateAvailabilityTest(TestCase):
         self.assertEqual(available_dates, expected_dates)
 
     def test_allow_after_hours_dropoff_false_respects_open_days(self):
-        #--
+        
         self.service_settings.allow_after_hours_dropoff = False
         self.service_settings.booking_open_days = "Mon,Tue"
         self.service_settings.save()
@@ -198,7 +198,7 @@ class GetDropOffDateAvailabilityTest(TestCase):
         self.assertEqual(available_dates, expected_dates)
 
     def test_service_date_in_past(self):
-        #--
+        
         self.service_settings.booking_open_days = "Mon,Tue,Wed,Thu,Fri,Sat,Sun"
         self.service_settings.save()
 
@@ -210,7 +210,7 @@ class GetDropOffDateAvailabilityTest(TestCase):
         self.assertEqual(available_dates, expected_dates)
 
     def test_max_advance_days_is_zero(self):
-        #--
+        
         self.service_settings.max_advance_dropoff_days = 0
         self.service_settings.booking_open_days = "Mon,Tue,Wed,Thu,Fri,Sat,Sun"
         self.service_settings.save()
@@ -223,7 +223,7 @@ class GetDropOffDateAvailabilityTest(TestCase):
         self.assertEqual(available_dates, expected_dates)
 
     def test_empty_booking_open_days_no_after_hours(self):
-        #--
+        
                                                                           
                                                                       
                                                                       
@@ -249,7 +249,7 @@ class GetDropOffDateAvailabilityTest(TestCase):
         self.assertEqual(available_dates, expected_dates)
 
     def test_all_dates_blocked(self):
-        #--
+        
         self.service_settings.booking_open_days = "Mon,Tue,Wed,Thu,Fri,Sat,Sun"
         self.service_settings.save()
 

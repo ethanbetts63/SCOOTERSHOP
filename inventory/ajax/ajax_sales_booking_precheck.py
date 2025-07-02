@@ -9,7 +9,7 @@ from django import forms
 @require_POST
 @login_required
 def sales_booking_precheck_ajax(request):
-    #--
+    
     if not request.user.is_staff:
         return JsonResponse({'error': 'Permission denied'}, status=403)
 

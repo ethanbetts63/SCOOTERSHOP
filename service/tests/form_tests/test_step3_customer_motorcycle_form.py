@@ -7,11 +7,11 @@ import datetime
 import random
 
 class CustomerMotorcycleFormTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
         cls.service_profile = ServiceProfileFactory()
         ServiceSettings.objects.get_or_create(pk=1)
 
@@ -102,7 +102,7 @@ class CustomerMotorcycleFormTest(TestCase):
         self.assertEqual(form.initial.get('other_brand_name', ''), '')                                    
 
     def test_form_initialization_with_instance_other_brand(self):
-        #--
+        
                                                                                      
         custom_brand_name = "MyPreviouslyEnteredOtherBrand"
         existing_motorcycle = CustomerMotorcycleFactory(

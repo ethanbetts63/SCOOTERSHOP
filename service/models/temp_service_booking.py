@@ -3,7 +3,7 @@ import uuid
                                                                                                         
 
 class TempServiceBooking(models.Model):
-    #--
+    
                                 
     PAYMENT_METHOD_CHOICES = [
         ('online_full', 'Full Payment Online'),

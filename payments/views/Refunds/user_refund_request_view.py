@@ -19,7 +19,7 @@ class UserRefundRequestView(View):
     template_name = 'payments/user_refund_request.html'                                  
 
     def get(self, request, *args, **kwargs):
-        #--
+        
         form = RefundRequestForm()                           
         context = {
             'form': form,
@@ -29,7 +29,7 @@ class UserRefundRequestView(View):
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
-        #--
+        
         form = RefundRequestForm(request.POST)                           
 
         if form.is_valid():

@@ -21,18 +21,18 @@ class EnquiryModelTest(TestCase):
     def test_field_attributes(self):
         enquiry = self.enquiry
 
-        ##
+       
 
         field = enquiry._meta.get_field('name')
         self.assertIsInstance(field, models.CharField)
         self.assertEqual(field.max_length, 100)
 
-        ##
+       
 
         field = enquiry._meta.get_field('email')
         self.assertIsInstance(field, models.EmailField)
 
-        ##
+       
 
         field = enquiry._meta.get_field('phone_number')
         self.assertIsInstance(field, models.CharField)
@@ -40,12 +40,12 @@ class EnquiryModelTest(TestCase):
         self.assertTrue(field.blank)
         self.assertTrue(field.null)
 
-        ##
+       
 
         field = enquiry._meta.get_field('message')
         self.assertIsInstance(field, models.TextField)
 
-        ##
+       
 
         field = enquiry._meta.get_field('created_at')
         self.assertIsInstance(field, models.DateTimeField)

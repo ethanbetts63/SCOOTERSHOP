@@ -9,16 +9,16 @@ from unittest.mock import patch
 from service.ajax.ajax_get_available_dropoff_times_for_date import get_available_dropoff_times_for_date
 
 class AjaxGetAvailableDropoffTimesForDateTest(TestCase):
-    #--
+    
 
     def setUp(self):
-        #--
+        
         self.factory = RequestFactory()
 
                                                                                             
     @patch('service.ajax.ajax_get_available_dropoff_times_for_date.get_available_dropoff_times')
     def test_missing_date_parameter(self, mock_get_available_dropoff_times):
-        #--
+        
         request = self.factory.get('/ajax/available-times/')                      
         response = get_available_dropoff_times_for_date(request)
 
@@ -32,7 +32,7 @@ class AjaxGetAvailableDropoffTimesForDateTest(TestCase):
                           
     @patch('service.ajax.ajax_get_available_dropoff_times_for_date.get_available_dropoff_times')
     def test_invalid_date_format(self, mock_get_available_dropoff_times):
-        #--
+        
         request = self.factory.get('/ajax/available-times/?date=2025/06/15')                 
         response = get_available_dropoff_times_for_date(request)
 
@@ -47,7 +47,7 @@ class AjaxGetAvailableDropoffTimesForDateTest(TestCase):
                           
     @patch('service.ajax.ajax_get_available_dropoff_times_for_date.get_available_dropoff_times')
     def test_valid_date_no_available_times(self, mock_get_available_dropoff_times):
-        #--
+        
                                                            
         mock_get_available_dropoff_times.return_value = []
 
@@ -66,7 +66,7 @@ class AjaxGetAvailableDropoffTimesForDateTest(TestCase):
                           
     @patch('service.ajax.ajax_get_available_dropoff_times_for_date.get_available_dropoff_times')
     def test_valid_date_with_available_times(self, mock_get_available_dropoff_times):
-        #--
+        
                                                              
         mock_times = ["09:00", "09:30", "10:00"]
         mock_get_available_dropoff_times.return_value = mock_times
@@ -91,7 +91,7 @@ class AjaxGetAvailableDropoffTimesForDateTest(TestCase):
                           
     @patch('service.ajax.ajax_get_available_dropoff_times_for_date.get_available_dropoff_times')
     def test_only_get_requests_allowed(self, mock_get_available_dropoff_times):
-        #--
+        
         test_date = datetime.date(2025, 6, 22)
         request = self.factory.post(f'/ajax/available-times/?date={test_date.strftime("%Y-%m-%d")}')
         response = get_available_dropoff_times_for_date(request)

@@ -10,11 +10,11 @@ from ..test_helpers.model_factories import UserFactory, ServiceProfileFactory
 User = get_user_model()
 
 class AdminServiceProfileFormTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
                                                          
         cls.unlinked_user = UserFactory(username='unlinked_user', email='unlinked@example.com')
 
@@ -32,7 +32,7 @@ class AdminServiceProfileFormTest(TestCase):
 
 
     def test_form_valid_data_with_new_user_link(self):
-        #--
+        
         data = {
             'user': self.unlinked_user.pk,                        
             'name': 'Test User Name',                                              
@@ -53,7 +53,7 @@ class AdminServiceProfileFormTest(TestCase):
 
 
     def test_form_valid_data_without_user_link(self):
-        #--
+        
         data = {
             'user': '',                 
             'name': 'Standalone Profile Name',
@@ -72,7 +72,7 @@ class AdminServiceProfileFormTest(TestCase):
 
 
     def test_form_invalid_data_missing_contact_details_without_user(self):
-        #--
+        
                            
         data_missing_name = {
             'user': '',
@@ -122,7 +122,7 @@ class AdminServiceProfileFormTest(TestCase):
         self.assertIn("Phone Number is required if no user account is linked.", form.errors['phone_number'])
 
     def test_clean_user_prevents_linking_already_linked_user_to_new_profile(self):
-        #--
+        
                                                                       
         data = {
             'user': self.linked_user_existing_profile.pk,
@@ -144,7 +144,7 @@ class AdminServiceProfileFormTest(TestCase):
         )
 
     def test_clean_user_allows_re_linking_same_user_to_same_profile_on_update(self):
-        #--
+        
                                                                
         data = {
             'user': self.existing_service_profile_user.pk,
@@ -166,7 +166,7 @@ class AdminServiceProfileFormTest(TestCase):
         self.assertEqual(form.cleaned_data['name'], 'Updated Profile Name')
 
     def test_initial_data_for_existing_instance(self):
-        #--
+        
         form = AdminServiceProfileForm(instance=self.existing_service_profile)
         self.assertEqual(form.initial['user'], self.existing_service_profile.user.pk)
         self.assertEqual(form.initial['name'], self.existing_service_profile.name)
@@ -176,7 +176,7 @@ class AdminServiceProfileFormTest(TestCase):
         self.assertEqual(form.initial['city'], self.existing_service_profile.city)
 
     def test_user_field_queryset(self):
-        #--
+        
         form = AdminServiceProfileForm()
         queryset = form.fields['user'].queryset
                                                                    

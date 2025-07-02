@@ -9,7 +9,7 @@ from service.models import ServiceSettings, BlockedServiceDate
 from service.models import ServiceBooking                                                                    
 
 def get_service_date_availability():
-    #--
+    
     service_settings = ServiceSettings.objects.first()
     
                                             

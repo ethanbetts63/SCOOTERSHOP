@@ -6,7 +6,7 @@ from decimal import Decimal
 from datetime import time
 
 class InventorySettings(models.Model):
-    #--
+    
     enable_sales_system = models.BooleanField(
         default=True,
         help_text="Globally enable or disable the sales booking and enquiry system."
@@ -128,7 +128,7 @@ class InventorySettings(models.Model):
         return "Inventory Settings"
 
     def clean(self):
-        #--
+        
         super().clean()
         errors = {}
 
@@ -162,7 +162,7 @@ class InventorySettings(models.Model):
             raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
-        #--
+        
         self.full_clean()                                                           
 
         if not self.pk and InventorySettings.objects.exists():

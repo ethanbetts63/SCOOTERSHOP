@@ -24,10 +24,10 @@ from service.models import ServiceBooking
 
 
 class AjaxGetServiceBookingDetailsTest(TestCase):
-    #--
+    
 
     def setUp(self):
-        #--
+        
         self.factory = RequestFactory()
         
                                                      
@@ -60,7 +60,7 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
                                              
 
     def test_get_service_booking_details_success(self):
-        #--
+        
         url = reverse('service:admin_api_get_service_booking_details', args=[self.service_booking.pk])
         request = self.factory.get(url)
         request.user = self.staff_user                              
@@ -111,7 +111,7 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
         self.assertIsInstance(content['refund_calculation_details'], str)
 
     def test_get_service_booking_details_not_found(self):
-        #--
+        
         invalid_pk = self.service_booking.pk + 100                                  
 
         url = reverse('service:admin_api_get_service_booking_details', args=[invalid_pk])
@@ -127,7 +127,7 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
         self.assertEqual(content['error'], 'Service Booking not found')
 
     def test_get_service_booking_details_permission_denied(self):
-        #--
+        
         url = reverse('service:admin_api_get_service_booking_details', args=[self.service_booking.pk])
         request = self.factory.get(url)
         request.user = self.regular_user                                 
@@ -141,7 +141,7 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
         self.assertEqual(content['error'], 'Permission denied')
 
     def test_only_get_requests_allowed(self):
-        #--
+        
         url = reverse('service:admin_api_get_service_booking_details', args=[self.service_booking.pk])
         
                             

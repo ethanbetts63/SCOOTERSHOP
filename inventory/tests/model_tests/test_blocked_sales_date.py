@@ -10,11 +10,11 @@ from ..test_helpers.model_factories import BlockedSalesDateFactory
 
 
 class BlockedSalesDateModelTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
                                                                                              
         BlockedSalesDate.objects.all().delete()
 
@@ -26,7 +26,7 @@ class BlockedSalesDateModelTest(TestCase):
         )
 
     def test_blocked_sales_date_creation(self):
-        #--
+        
         self.assertIsInstance(self.blocked_date_range, BlockedSalesDate)
         self.assertIsNotNone(self.blocked_date_range.pk)                                              
 
@@ -34,7 +34,7 @@ class BlockedSalesDateModelTest(TestCase):
         self.assertIsNotNone(self.blocked_single_day.pk)
 
     def test_start_date_field(self):
-        #--
+        
         blocked_date = self.blocked_date_range
         self.assertIsInstance(blocked_date.start_date, date)
         self.assertIsNotNone(blocked_date.start_date)
@@ -44,7 +44,7 @@ class BlockedSalesDateModelTest(TestCase):
         )
 
     def test_end_date_field(self):
-        #--
+        
         blocked_date = self.blocked_date_range
         self.assertIsInstance(blocked_date.end_date, date)
         self.assertIsNotNone(blocked_date.end_date)
@@ -54,7 +54,7 @@ class BlockedSalesDateModelTest(TestCase):
         )
 
     def test_description_field(self):
-        #--
+        
         blocked_date = self.blocked_date_range
         self.assertEqual(blocked_date._meta.get_field('description').max_length, 255)
         self.assertTrue(blocked_date._meta.get_field('description').blank)
@@ -74,13 +74,13 @@ class BlockedSalesDateModelTest(TestCase):
 
 
     def test_str_method_single_day(self):
-        #--
+        
                                                                                 
         expected_str = f"Blocked Sales Date: {self.blocked_single_day.start_date.strftime('%Y-%m-%d')}"
         self.assertEqual(str(self.blocked_single_day), expected_str)
 
     def test_str_method_date_range(self):
-        #--
+        
         start = date(2025, 3, 1)
         end = date(2025, 3, 5)
         blocked_range = BlockedSalesDateFactory(start_date=start, end_date=end)
@@ -89,7 +89,7 @@ class BlockedSalesDateModelTest(TestCase):
         self.assertEqual(str(blocked_range), expected_str)
 
     def test_ordering_meta(self):
-        #--
+        
                                                                 
         BlockedSalesDate.objects.all().delete()
 
@@ -107,12 +107,12 @@ class BlockedSalesDateModelTest(TestCase):
 
 
     def test_verbose_names_meta(self):
-        #--
+        
         self.assertEqual(BlockedSalesDate._meta.verbose_name, "Blocked Sales Date")
         self.assertEqual(BlockedSalesDate._meta.verbose_name_plural, "Blocked Sales Dates")
 
     def test_end_date_not_before_start_date_validation(self):
-        #--
+        
                                                                               
         expected_error_message = "End date cannot be before the start date."
         with self.assertRaisesMessage(ValidationError, expected_error_message) as cm:

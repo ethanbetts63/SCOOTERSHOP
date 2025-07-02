@@ -4,10 +4,10 @@ from django.test import TestCase
 from service.utils.admin_parse_booking_request_flags import admin_parse_booking_request_flags
 
 class AdminParseBookingRequestFlagsTest(TestCase):
-    #--
+    
 
     def test_all_flags_provided_and_true(self):
-        #--
+        
         request_data = {
             'selected_profile_id': '123',
             'selected_motorcycle_id': '456',
@@ -25,7 +25,7 @@ class AdminParseBookingRequestFlagsTest(TestCase):
         self.assertEqual(parsed_flags, expected_flags)
 
     def test_all_flags_provided_and_false(self):
-        #--
+        
         request_data = {
             'selected_profile_id': '789',
             'selected_motorcycle_id': '101',
@@ -43,7 +43,7 @@ class AdminParseBookingRequestFlagsTest(TestCase):
         self.assertEqual(parsed_flags, expected_flags)
 
     def test_missing_flags_and_ids(self):
-        #--
+        
         request_data = {
             'selected_profile_id': '',                                     
                                                
@@ -61,7 +61,7 @@ class AdminParseBookingRequestFlagsTest(TestCase):
         self.assertEqual(parsed_flags, expected_flags)
 
     def test_empty_request_data(self):
-        #--
+        
         request_data = {}
         parsed_flags = admin_parse_booking_request_flags(request_data)
 
@@ -74,7 +74,7 @@ class AdminParseBookingRequestFlagsTest(TestCase):
         self.assertEqual(parsed_flags, expected_flags)
 
     def test_non_string_id_values(self):
-        #--
+        
         request_data = {
             'selected_profile_id': 123,                         
             'selected_motorcycle_id': 456,
@@ -92,7 +92,7 @@ class AdminParseBookingRequestFlagsTest(TestCase):
         self.assertEqual(parsed_flags, expected_flags)
 
     def test_id_values_that_cannot_be_converted_to_int(self):
-        #--
+        
         request_data = {
             'selected_profile_id': 'invalid_id',                     
             'selected_motorcycle_id': '456',

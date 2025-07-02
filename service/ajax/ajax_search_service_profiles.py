@@ -9,7 +9,7 @@ from service.models import ServiceProfile
 
 @require_GET
 def search_customer_profiles_ajax(request):
-    #--
+    
     search_term = request.GET.get('query', '').strip()
     profiles_data = []
 

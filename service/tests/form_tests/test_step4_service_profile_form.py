@@ -3,11 +3,11 @@ from service.forms import ServiceBookingUserForm
 from ..test_helpers.model_factories import ServiceProfileFactory
 
 class ServiceBookingUserFormTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
         cls.valid_service_profile_data = {
             'name': 'John Doe',
             'email': 'john.doe@example.com',
@@ -21,7 +21,7 @@ class ServiceBookingUserFormTest(TestCase):
         }
 
     def test_form_valid_data(self):
-        #--
+        
         form = ServiceBookingUserForm(data=self.valid_service_profile_data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
 
@@ -40,7 +40,7 @@ class ServiceBookingUserFormTest(TestCase):
         self.assertEqual(cleaned_data['country'], 'AU')
 
     def test_form_invalid_data_missing_required_fields(self):
-        #--
+        
         required_fields = ['name', 'email', 'phone_number', 'address_line_1', 'city', 'post_code', 'country']
 
         for field in required_fields:
@@ -53,7 +53,7 @@ class ServiceBookingUserFormTest(TestCase):
                 self.assertIn('This field is required.', form.errors[field])
 
     def test_form_invalid_email_format(self):
-        #--
+        
         data = self.valid_service_profile_data.copy()
         data['email'] = 'invalid-email'                        
         form = ServiceBookingUserForm(data=data)
@@ -68,7 +68,7 @@ class ServiceBookingUserFormTest(TestCase):
         self.assertIn('Enter a valid email address.', form.errors['email'])
 
     def test_form_invalid_phone_number_format(self):
-        #--
+        
         data = self.valid_service_profile_data.copy()
 
                                                                                               
@@ -96,7 +96,7 @@ class ServiceBookingUserFormTest(TestCase):
 
 
     def test_form_with_existing_service_profile(self):
-        #--
+        
         existing_profile = ServiceProfileFactory(
             name='Jane Doe',
             email='jane.doe@example.com',
@@ -140,7 +140,7 @@ class ServiceBookingUserFormTest(TestCase):
 
 
     def test_form_optional_fields(self):
-        #--
+        
         data = self.valid_service_profile_data.copy()
         data['address_line_2'] = ''                                                
         data['state'] = ''                                                

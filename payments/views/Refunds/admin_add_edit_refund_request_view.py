@@ -16,7 +16,7 @@ class AdminAddEditRefundRequestView(View):
     template_name = 'payments/admin_refund_form.html'                                     
 
     def get(self, request, pk=None, *args, **kwargs):
-        #--
+        
         refund_request = None                   
         booking_reference = "N/A"                       
 
@@ -44,7 +44,7 @@ class AdminAddEditRefundRequestView(View):
         return render(request, self.template_name, context)
 
     def post(self, request, pk=None, *args, **kwargs):
-        #--
+        
         refund_request_instance = None                   
         if pk:
             refund_request_instance = get_object_or_404(RefundRequest, pk=pk)

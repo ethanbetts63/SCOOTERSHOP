@@ -17,10 +17,10 @@ from payments.tests.test_helpers.model_factories import (
 
 
 class ProcessRefundRequestEntryTestCase(TestCase):
-    #--
+    
 
     def setUp(self):
-        #--
+        
                                                                                                
                                                                 
         self.mock_now = datetime.datetime(2023, 1, 15, 12, 0, 0, tzinfo=dt_timezone.utc)
@@ -28,12 +28,12 @@ class ProcessRefundRequestEntryTestCase(TestCase):
         self.mock_now_patch.start()
 
     def tearDown(self):
-        #--
+        
         self.mock_now_patch.stop()
 
 
     def test_create_new_refund_request_for_service_booking(self):
-        #--
+        
         service_booking = ServiceBookingFactory()
         payment = PaymentFactory(service_booking=service_booking, status='succeeded')
         
@@ -65,7 +65,7 @@ class ProcessRefundRequestEntryTestCase(TestCase):
         self.assertEqual(payment.refund_requests.count(), 1)
 
     def test_update_existing_unverified_refund_request(self):
-        #--
+        
         service_booking = ServiceBookingFactory()
         payment = PaymentFactory(service_booking=service_booking, status='succeeded')
         
@@ -99,7 +99,7 @@ class ProcessRefundRequestEntryTestCase(TestCase):
 
 
     def test_payment_status_is_refunded_for_existing_request(self):
-        #--
+        
         service_booking = ServiceBookingFactory()
                                                
         payment = PaymentFactory(service_booking=service_booking, status='refunded')
@@ -124,7 +124,7 @@ class ProcessRefundRequestEntryTestCase(TestCase):
 
 
     def test_no_booking_linked_to_payment(self):
-        #--
+        
         payment = PaymentFactory(service_booking=None, status='succeeded')
         
         extracted_data = {

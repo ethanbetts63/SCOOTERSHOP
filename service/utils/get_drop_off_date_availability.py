@@ -3,7 +3,7 @@ from datetime import timedelta, datetime
 from service.models import BlockedServiceDate                                                   
 
 def get_drop_off_date_availability(temp_booking, service_settings):
-    #--
+    
     today = timezone.localdate(timezone.now())
     service_date = temp_booking.service_date
     max_advance_days = service_settings.max_advance_dropoff_days

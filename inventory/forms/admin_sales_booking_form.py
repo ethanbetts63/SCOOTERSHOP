@@ -8,7 +8,7 @@ from django.utils import timezone
 from decimal import Decimal
 
 class AdminSalesBookingForm(forms.ModelForm):
-    #--
+    
     selected_profile_id = forms.IntegerField(
         required=True,
         widget=forms.HiddenInput(),
@@ -156,5 +156,5 @@ class AdminSalesBookingForm(forms.ModelForm):
         return cleaned_data
 
     def get_warnings(self):
-        #--
+        
         return getattr(self, '_warnings', [])

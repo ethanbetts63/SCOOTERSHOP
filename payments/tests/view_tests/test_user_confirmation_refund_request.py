@@ -4,15 +4,15 @@ from django.test import TestCase, Client
 from django.urls import reverse
 
 class UserConfirmationRefundRequestViewTests(TestCase):
-    #--
+    
 
     def setUp(self):
-        #--
+        
         self.client = Client()
         self.confirmation_url = reverse('payments:user_confirmation_refund_request')
 
     def test_get_request_renders_correctly(self):
-        #--
+        
         response = self.client.get(self.confirmation_url)
 
                                                           
@@ -22,7 +22,7 @@ class UserConfirmationRefundRequestViewTests(TestCase):
         self.assertTemplateUsed(response, 'payments/user_confirmation_refund_request.html')
 
     def test_context_data_is_correct(self):
-        #--
+        
         response = self.client.get(self.confirmation_url)
 
                                                                            
@@ -42,7 +42,7 @@ class UserConfirmationRefundRequestViewTests(TestCase):
         )
 
     def test_content_contains_expected_text(self):
-        #--
+        
         response = self.client.get(self.confirmation_url)
 
                                                                

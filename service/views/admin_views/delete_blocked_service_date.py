@@ -7,13 +7,13 @@ from django.contrib import messages
 from service.models import BlockedServiceDate
 
 class BlockedServiceDateDeleteView(View):
-    #--
+    
                                                                   
                           
                                            
 
     def post(self, request, pk, *args, **kwargs):
-        #--
+        
         blocked_date = get_object_or_404(BlockedServiceDate, pk=pk)
         try:
             blocked_date.delete()

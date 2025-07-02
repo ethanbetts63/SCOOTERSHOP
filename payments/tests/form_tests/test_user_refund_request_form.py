@@ -14,10 +14,10 @@ from payments.tests.test_helpers.model_factories import (
 )
 
 class UserRefundRequestFormTests(TestCase):
-    #--
+    
 
     def setUp(self):
-        #--
+        
                                   
         self.user = UserFactory()
         self.service_profile = ServiceProfileFactory(email='service.customer@example.com', user=self.user)
@@ -49,7 +49,7 @@ class UserRefundRequestFormTests(TestCase):
         payment_sales.save()
 
     def test_valid_service_booking_request(self):
-        #--
+        
         form_data = {
             'booking_reference': self.service_booking.service_booking_reference,
             'email': self.service_profile.email,
@@ -68,7 +68,7 @@ class UserRefundRequestFormTests(TestCase):
         self.assertIsNone(instance.sales_booking)
 
     def test_valid_sales_booking_request(self):
-        #--
+        
         form_data = {
             'booking_reference': self.sales_booking.sales_booking_reference,
             'email': self.sales_profile.email,

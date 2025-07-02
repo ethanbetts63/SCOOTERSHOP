@@ -25,7 +25,7 @@ class Step7StatusCheckViewTest(TestCase):
         Payment.objects.all().delete()
 
     def test_get_status_ready(self):
-        #--
+        
         payment_intent_id = f"pi_{uuid.uuid4().hex}"
         booking = ServiceBookingFactory(stripe_payment_intent_id=payment_intent_id)
 
@@ -42,7 +42,7 @@ class Step7StatusCheckViewTest(TestCase):
         self.assertEqual(self.client.session.get('service_booking_reference'), booking.service_booking_reference)
 
     def test_get_status_processing(self):
-        #--
+        
         payment_intent_id = f"pi_{uuid.uuid4().hex}"
                                                                       
         PaymentFactory(stripe_payment_intent_id=payment_intent_id)
@@ -57,7 +57,7 @@ class Step7StatusCheckViewTest(TestCase):
         self.assertEqual(data['message'], 'Booking finalization is still in progress.')
 
     def test_get_status_error_finalization_failed(self):
-        #--
+        
         payment_intent_id = f"pi_{uuid.uuid4().hex}"
                                                             
 
@@ -71,7 +71,7 @@ class Step7StatusCheckViewTest(TestCase):
         self.assertEqual(data['message'], 'Booking finalization failed. Please contact support for assistance.')
 
     def test_get_missing_payment_intent_id(self):
-        #--
+        
         response = self.client.get(self.base_url)                     
 
         self.assertEqual(response.status_code, 400)
@@ -84,7 +84,7 @@ class Step7StatusCheckViewTest(TestCase):
                                                                                                           
     @patch('service.views.user_views.step7_status_check_view.ServiceBooking.objects.get')
     def test_get_generic_exception_returns_500(self, mock_get):
-        #--
+        
         payment_intent_id = f"pi_{uuid.uuid4().hex}"
         mock_get.side_effect = Exception("A database error occurred")
 

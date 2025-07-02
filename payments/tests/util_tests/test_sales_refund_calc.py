@@ -13,11 +13,11 @@ from payments.utils.sales_refund_calc import calculate_sales_refund_amount
 from payments.tests.test_helpers.model_factories import SalesBookingFactory, PaymentFactory, RefundPolicySettingsFactory
 
 class SalesRefundCalcTests(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
         cls.refund_policy_settings = RefundPolicySettingsFactory()
 
                                                                         
@@ -42,7 +42,7 @@ class SalesRefundCalcTests(TestCase):
         }
 
     def _create_booking_with_payment(self, amount_paid, created_at_offset_hours=0, refund_policy_snapshot=None):
-        #--
+        
                                                                    
         payment = PaymentFactory(amount=amount_paid, status='succeeded')
         if refund_policy_snapshot:
@@ -73,7 +73,7 @@ class SalesRefundCalcTests(TestCase):
                                                    
 
     def test_full_refund_within_grace_period(self):
-        #--
+        
                                                                 
         booking, payment = self._create_booking_with_payment(
             amount_paid=Decimal('100.00'),
@@ -90,7 +90,7 @@ class SalesRefundCalcTests(TestCase):
         self.assertIn("Cancellation occurred 12.00 hours after booking creation.", result['details'])
 
     def test_no_refund_outside_grace_period(self):
-        #--
+        
                                                                 
         booking, payment = self._create_booking_with_payment(
             amount_paid=Decimal('100.00'),
@@ -107,7 +107,7 @@ class SalesRefundCalcTests(TestCase):
         self.assertIn("Cancellation occurred 30.00 hours after booking creation.", result['details'])
 
     def test_full_refund_grace_period_disabled(self):
-        #--
+        
                                                                     
         booking, payment = self._create_booking_with_payment(
             amount_paid=Decimal('100.00'),
@@ -124,7 +124,7 @@ class SalesRefundCalcTests(TestCase):
         self.assertIn("Cancellation occurred 50.00 hours after booking creation.", result['details'])
 
     def test_no_refund_deposit_refund_disabled(self):
-        #--
+        
                                                                         
         booking, payment = self._create_booking_with_payment(
             amount_paid=Decimal('100.00'),
@@ -141,7 +141,7 @@ class SalesRefundCalcTests(TestCase):
         self.assertIn("Cancellation occurred 10.00 hours after booking creation.", result['details'])
 
     def test_no_refund_policy_snapshot(self):
-        #--
+        
         booking, payment = self._create_booking_with_payment(
             amount_paid=Decimal('100.00'),
             refund_policy_snapshot={}                 
@@ -154,7 +154,7 @@ class SalesRefundCalcTests(TestCase):
         self.assertEqual(result['time_since_booking_creation_hours'], 'N/A')
 
     def test_zero_amount_paid(self):
-        #--
+        
         booking, payment = self._create_booking_with_payment(
             amount_paid=Decimal('0.00'),
             created_at_offset_hours=1,
@@ -169,7 +169,7 @@ class SalesRefundCalcTests(TestCase):
                                                                                  
 
     def test_custom_cancellation_datetime(self):
-        #--
+        
                                         
         booking, payment = self._create_booking_with_payment(
             amount_paid=Decimal('100.00'),
@@ -189,7 +189,7 @@ class SalesRefundCalcTests(TestCase):
         self.assertIn("Cancellation occurred 25.00 hours after booking creation.", result['details'])
 
     def test_exact_grace_period_boundary(self):
-        #--
+        
         policy = self.full_refund_enabled_grace_period_policy.copy()
         policy['sales_deposit_refund_grace_period_hours'] = 24
 
@@ -209,7 +209,7 @@ class SalesRefundCalcTests(TestCase):
         self.assertIn("Cancellation occurred 24.00 hours after booking creation.", result['details'])
 
     def test_just_after_grace_period_boundary(self):
-        #--
+        
         policy = self.full_refund_enabled_grace_period_policy.copy()
         policy['sales_deposit_refund_grace_period_hours'] = 24
 
@@ -230,7 +230,7 @@ class SalesRefundCalcTests(TestCase):
         self.assertIn("Cancellation occurred", result['details'])
 
     def test_negative_time_difference_cancellation_before_creation(self):
-        #--
+        
         policy = self.full_refund_enabled_grace_period_policy.copy()
         policy['sales_deposit_refund_grace_period_hours'] = 24
 

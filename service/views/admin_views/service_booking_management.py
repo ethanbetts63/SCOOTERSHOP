@@ -4,11 +4,11 @@ from django.views import View
 from service.models import ServiceBooking, ServiceType, BlockedServiceDate                                    
 
 class ServiceBookingManagementView(View):
-    #--
+    
     template_name = 'service/service_booking_management.html'
 
     def get(self, request, *args, **kwargs):
-        #--
+        
                                                                         
                                              
                                                                           

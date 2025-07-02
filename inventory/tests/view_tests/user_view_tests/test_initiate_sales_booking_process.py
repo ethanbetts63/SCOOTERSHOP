@@ -4,11 +4,11 @@ from inventory.models import TempSalesBooking
 from ...test_helpers.model_factories import MotorcycleFactory, InventorySettingsFactory
 
 class InitiateBookingProcessViewTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
         cls.client = Client()
 
                                                                                           
@@ -21,7 +21,7 @@ class InitiateBookingProcessViewTest(TestCase):
         cls.initiate_booking_url = reverse('inventory:initiate_booking', kwargs={'pk': cls.motorcycle.pk})
 
     def test_post_request_creates_temp_booking_deposit_flow(self):
-        #--
+        
         initial_temp_booking_count = TempSalesBooking.objects.count()
 
         data = {
@@ -52,7 +52,7 @@ class InitiateBookingProcessViewTest(TestCase):
 
 
     def test_post_request_creates_temp_booking_enquiry_flow(self):
-        #--
+        
         initial_temp_booking_count = TempSalesBooking.objects.count()
 
         data = {
@@ -75,7 +75,7 @@ class InitiateBookingProcessViewTest(TestCase):
         self.assertEqual(self.client.session['temp_sales_booking_uuid'], str(temp_booking.session_uuid))
 
     def test_post_request_creates_temp_booking_with_viewing_request(self):
-        #--
+        
         initial_temp_booking_count = TempSalesBooking.objects.count()
 
         data = {
@@ -99,7 +99,7 @@ class InitiateBookingProcessViewTest(TestCase):
 
 
     def test_post_request_non_existent_motorcycle_pk(self):
-        #--
+        
         non_existent_pk = self.motorcycle.pk + 999
         url = reverse('inventory:initiate_booking', kwargs={'pk': non_existent_pk})
 

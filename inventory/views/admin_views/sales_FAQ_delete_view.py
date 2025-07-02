@@ -7,7 +7,7 @@ from inventory.models import SalesFAQ
 from inventory.mixins import AdminRequiredMixin
 
 class SalesFAQDeleteView(AdminRequiredMixin, DeleteView):
-    #--
+    
     model = SalesFAQ
     success_url = reverse_lazy('inventory:sales_faq_management')
     template_name = 'inventory/admin_confirm_delete.html'                                  
@@ -20,6 +20,6 @@ class SalesFAQDeleteView(AdminRequiredMixin, DeleteView):
         return context
 
     def form_valid(self, form):
-        #--
+        
         messages.success(self.request, f"The FAQ '{self.object.question[:50]}...' was deleted successfully.")
         return super().form_valid(form)

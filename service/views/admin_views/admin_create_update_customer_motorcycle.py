@@ -10,16 +10,16 @@ from service.models import CustomerMotorcycle
 
 
 class CustomerMotorcycleCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, View):
-    #--
+    
     template_name = 'service/admin_customer_motorcycle_create_update.html'               
     form_class = AdminCustomerMotorcycleForm
 
     def test_func(self):
-        #--
+        
         return self.request.user.is_staff or self.request.user.is_superuser
 
     def get(self, request, pk=None, *args, **kwargs):
-        #--
+        
         instance = None
         if pk:
                                                                                          
@@ -37,7 +37,7 @@ class CustomerMotorcycleCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin
         return render(request, self.template_name, context)
 
     def post(self, request, pk=None, *args, **kwargs):
-        #--
+        
         instance = None
         if pk:
             instance = get_object_or_404(CustomerMotorcycle, pk=pk)

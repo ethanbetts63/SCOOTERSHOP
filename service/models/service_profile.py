@@ -14,7 +14,7 @@ except ImportError:
     User = settings.AUTH_USER_MODEL 
 
 class ServiceProfile(models.Model):
-    #--
+    
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
@@ -45,7 +45,7 @@ class ServiceProfile(models.Model):
         return f"Profile for {self.name} ({self.email})"
 
     def clean(self):
-        #--
+        
         super().clean()
         if self.phone_number:
                                                            

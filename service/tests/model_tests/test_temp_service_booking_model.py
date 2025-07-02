@@ -16,11 +16,11 @@ from ..test_helpers.model_factories import (
 )
 
 class TempServiceBookingModelTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
         cls.service_type = ServiceTypeFactory()
         cls.service_profile = ServiceProfileFactory()
         cls.customer_motorcycle = CustomerMotorcycleFactory(service_profile=cls.service_profile)                                      
@@ -37,14 +37,14 @@ class TempServiceBookingModelTest(TestCase):
         )
 
     def test_temp_service_booking_creation(self):
-        #--
+        
         self.assertIsNotNone(self.temp_booking)
         self.assertIsInstance(self.temp_booking, TempServiceBooking)
                                                                
         self.assertEqual(TempServiceBooking.objects.count(), 1)
 
     def test_field_attributes(self):
-        #--
+        
         booking = self.temp_booking
 
                       
@@ -125,7 +125,7 @@ class TempServiceBookingModelTest(TestCase):
         self.assertTrue(field.auto_now)
 
     def test_required_fields_validation(self):
-        #--
+        
                                    
         with self.assertRaises(ValidationError) as cm:
             TempServiceBookingFactory.build(
@@ -198,7 +198,7 @@ class TempServiceBookingModelTest(TestCase):
             self.fail(f"full_clean raised ValidationError unexpectedly: {e.message_dict}")
 
     def test_session_uuid_uniqueness(self):
-        #--
+        
                                                
         first_booking = TempServiceBookingFactory(
             service_type=self.service_type,
@@ -215,7 +215,7 @@ class TempServiceBookingModelTest(TestCase):
             )
 
     def test_payment_method_choices(self):
-        #--
+        
                                   
         try:
             TempServiceBookingFactory.build(
@@ -247,7 +247,7 @@ class TempServiceBookingModelTest(TestCase):
             self.fail(f"full_clean raised ValidationError unexpectedly for None payment_method: {e.message_dict}")
 
     def test_dropoff_date_not_in_past(self):
-        #--
+        
                                                                                                                   
         past_date = date.today() - timedelta(days=1)
         try:
@@ -284,7 +284,7 @@ class TempServiceBookingModelTest(TestCase):
             self.fail(f"full_clean raised ValidationError unexpectedly for future dropoff_date: {e.message_dict}")
 
     def test_calculated_deposit_amount_validation(self):
-        #--
+        
                                                                                                             
         negative_amount = -10.50
         try:
@@ -328,7 +328,7 @@ class TempServiceBookingModelTest(TestCase):
 
 
     def test_timestamps_auto_now_add_and_auto_now(self):
-        #--
+        
         booking = TempServiceBookingFactory(
             service_type=self.service_type,
             service_profile=self.service_profile
@@ -353,7 +353,7 @@ class TempServiceBookingModelTest(TestCase):
         self.assertEqual(booking.created_at, initial_created_at)
 
     def test_foreign_key_on_delete_service_type(self):
-        #--
+        
                                                                          
         service_type_to_delete = ServiceTypeFactory()
         booking_to_test = TempServiceBookingFactory(
@@ -368,7 +368,7 @@ class TempServiceBookingModelTest(TestCase):
         self.assertTrue(TempServiceBooking.objects.filter(pk=booking_to_test.pk).exists())
 
     def test_foreign_key_on_delete_service_profile(self):
-        #--
+        
                                                                 
         service_profile_to_delete = ServiceProfileFactory()
         booking_to_test = TempServiceBookingFactory(
@@ -383,7 +383,7 @@ class TempServiceBookingModelTest(TestCase):
         self.assertFalse(TempServiceBooking.objects.filter(pk=booking_to_test.pk).exists())
 
     def test_foreign_key_on_delete_customer_motorcycle(self):
-        #--
+        
                                                                     
         customer_motorcycle_to_delete = CustomerMotorcycleFactory(service_profile=self.service_profile)
         booking_with_motorcycle = TempServiceBookingFactory(

@@ -9,7 +9,7 @@ from service.models import ServiceBooking
 @require_GET
 @login_required
 def search_service_bookings_ajax(request):
-    #--
+    
                                                             
     search_term = request.GET.get('query', '').strip()
     bookings_data = []

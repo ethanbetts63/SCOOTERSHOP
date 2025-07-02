@@ -20,11 +20,11 @@ from ..test_helpers.model_factories import (
 TEST_MECHANICDESK_TOKEN = 'test-token-1234567890abcdef'
 
 class MechanicDeskIntegrationTests(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
                                                                                            
         cls.service_type = ServiceTypeFactory()
         cls.service_profile = ServiceProfileFactory(
@@ -50,7 +50,7 @@ class MechanicDeskIntegrationTests(TestCase):
                                                                                 
 
     def setUp(self):
-        #--
+        
                                                                                                            
         self.service_booking = ServiceBookingFactory(
             service_type=self.service_type,
@@ -67,7 +67,7 @@ class MechanicDeskIntegrationTests(TestCase):
     @patch('requests.post')                                                                         
     @override_settings(MECHANICDESK_BOOKING_TOKEN=TEST_MECHANICDESK_TOKEN)
     def test_send_booking_to_mechanicdesk_success(self, mock_post):
-        #--
+        
                                                                        
         mock_response = Mock()
         mock_response.status_code = 200
@@ -147,7 +147,7 @@ class MechanicDeskIntegrationTests(TestCase):
     @patch('requests.post')
     @override_settings(MECHANICDESK_BOOKING_TOKEN=TEST_MECHANICDESK_TOKEN)
     def test_send_booking_to_mechanicdesk_http_error(self, mock_post):
-        #--
+        
         mock_response = Mock()
         mock_response.status_code = 400
         mock_response.text = "Invalid Request Data"
@@ -163,7 +163,7 @@ class MechanicDeskIntegrationTests(TestCase):
     @patch('requests.post')
     @override_settings(MECHANICDESK_BOOKING_TOKEN=None)
     def test_send_booking_to_mechanicdesk_no_token(self, mock_post):
-        #--
+        
         result = send_booking_to_mechanicdesk(self.service_booking)
 
         self.assertFalse(result)
@@ -173,7 +173,7 @@ class MechanicDeskIntegrationTests(TestCase):
     @patch('requests.post')
     @override_settings(MECHANICDESK_BOOKING_TOKEN=TEST_MECHANICDESK_TOKEN)
     def test_send_booking_to_mechanicdesk_no_customer_motorcycle(self, mock_post):
-        #--
+        
         self.service_booking_no_moto = ServiceBookingFactory(
             service_type=self.service_type,
             service_profile=self.service_profile,

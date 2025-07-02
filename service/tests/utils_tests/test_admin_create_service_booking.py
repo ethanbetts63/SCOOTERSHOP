@@ -17,18 +17,18 @@ from ..test_helpers.model_factories import (
                                                      
 
 class AdminCreateServiceBookingTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
         cls.service_type = ServiceTypeFactory()
         cls.service_profile = ServiceProfileFactory()
         cls.customer_motorcycle = CustomerMotorcycleFactory(service_profile=cls.service_profile)
                                                                                  
 
     def test_booking_creation_with_all_fields(self):
-        #--
+        
         today = date.today()
         future_service_date = today.replace(year=today.year + 1)
         future_dropoff_date = future_service_date
@@ -75,7 +75,7 @@ class AdminCreateServiceBookingTest(TestCase):
                                                                         
 
     def test_booking_creation_with_optional_fields_missing(self):
-        #--
+        
         today = date.today()
         future_service_date = today.replace(year=today.year + 1)
         future_dropoff_date = future_service_date
@@ -121,7 +121,7 @@ class AdminCreateServiceBookingTest(TestCase):
                                                                         
 
     def test_booking_status_and_payment_status_options(self):
-        #--
+        
         today = date.today()
         future_date = today + timedelta(days=10)
         dropoff_time = time(11, 0)
@@ -157,7 +157,7 @@ class AdminCreateServiceBookingTest(TestCase):
         self.assertEqual(booking_declined.payment_status, 'refunded')
 
     def test_service_booking_reference_generation(self):
-        #--
+        
         today = date.today()
         future_date = today.replace(year=today.year + 1)
         dropoff_time = time(12, 0)

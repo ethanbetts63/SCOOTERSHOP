@@ -6,16 +6,16 @@ from django.core.exceptions import ValidationError
 from payments.models import RefundPolicySettings
 
 class RefundPolicySettingsModelTests(TestCase):
-    #--
+    
 
     def setUp(self):
-        #--
+        
         RefundPolicySettings.objects.all().delete()
                                                   
         self.settings = RefundPolicySettings.objects.create()
 
     def test_singleton_creation_raises_error(self):
-        #--
+        
                                                               
         self.assertEqual(RefundPolicySettings.objects.count(), 1)
 
@@ -35,7 +35,7 @@ class RefundPolicySettingsModelTests(TestCase):
         self.assertEqual(RefundPolicySettings.objects.count(), 1)
 
     def test_singleton_get_or_create(self):
-        #--
+        
         self.assertEqual(RefundPolicySettings.objects.count(), 1)
         initial_instance = RefundPolicySettings.objects.get()
 
@@ -49,7 +49,7 @@ class RefundPolicySettingsModelTests(TestCase):
 
 
     def test_default_values(self):
-        #--
+        
                                                                   
         RefundPolicySettings.objects.all().delete()
         settings = RefundPolicySettings.objects.create()
@@ -76,13 +76,13 @@ class RefundPolicySettingsModelTests(TestCase):
         self.assertEqual(settings.stripe_fee_fixed_international, Decimal('0.30'))
 
     def test_str_method(self):
-        #--
+        
         self.assertEqual(str(self.settings), "Refund Policy Settings")
 
                                                  
 
     def test_percentage_fields_validation_success(self):
-        #--
+        
         settings = self.settings
         settings.cancellation_full_payment_partial_refund_percentage = Decimal('25.50')
         settings.cancellation_full_payment_minimal_refund_percentage = Decimal('5.00')
@@ -91,7 +91,7 @@ class RefundPolicySettingsModelTests(TestCase):
         settings.full_clean()                                   
 
     def test_percentage_fields_validation_failure_too_high(self):
-        #--
+        
         settings = self.settings
         settings.cancellation_full_payment_partial_refund_percentage = Decimal('100.01')
         with self.assertRaises(ValidationError) as cm:
@@ -99,7 +99,7 @@ class RefundPolicySettingsModelTests(TestCase):
         self.assertIn('cancellation_full_payment_partial_refund_percentage', cm.exception.message_dict)
 
     def test_percentage_fields_validation_failure_too_low(self):
-        #--
+        
         settings = self.settings
         settings.cancellation_full_payment_minimal_refund_percentage = Decimal('-0.01')
         with self.assertRaises(ValidationError) as cm:
@@ -107,14 +107,14 @@ class RefundPolicySettingsModelTests(TestCase):
         self.assertIn('cancellation_full_payment_minimal_refund_percentage', cm.exception.message_dict)
 
     def test_stripe_fee_percentage_validation_success(self):
-        #--
+        
         settings = self.settings
         settings.stripe_fee_percentage_domestic = Decimal('0.0500')     
         settings.stripe_fee_percentage_international = Decimal('0.0999')        
         settings.full_clean()                                   
 
     def test_stripe_fee_percentage_validation_failure_too_high(self):
-        #--
+        
         settings = self.settings
         settings.stripe_fee_percentage_domestic = Decimal('0.1001')
         with self.assertRaises(ValidationError) as cm:
@@ -122,7 +122,7 @@ class RefundPolicySettingsModelTests(TestCase):
         self.assertIn('stripe_fee_percentage_domestic', cm.exception.message_dict)
 
     def test_days_thresholds_validation_success(self):
-        #--
+        
         settings = self.settings
                            
         settings.cancellation_full_payment_full_refund_days = 10
@@ -135,7 +135,7 @@ class RefundPolicySettingsModelTests(TestCase):
         settings.full_clean()                                   
 
     def test_days_thresholds_validation_failure_full_payment_order(self):
-        #--
+        
         settings = self.settings
         settings.cancellation_full_payment_full_refund_days = 2
         settings.cancellation_full_payment_partial_refund_days = 5                          
@@ -151,7 +151,7 @@ class RefundPolicySettingsModelTests(TestCase):
         self.assertIn('cancellation_full_payment_partial_refund_days', cm.exception.message_dict)
 
     def test_days_thresholds_validation_failure_deposit_order(self):
-        #--
+        
         settings = self.settings
         settings.cancellation_deposit_full_refund_days = 2
         settings.cancellation_deposit_partial_refund_days = 5                          

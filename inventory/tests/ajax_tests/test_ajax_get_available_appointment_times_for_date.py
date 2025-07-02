@@ -5,11 +5,11 @@ from inventory.models import InventorySettings
 from ..test_helpers.model_factories import InventorySettingsFactory, SalesBookingFactory, MotorcycleFactory, SalesProfileFactory
 
 class GetAvailableAppointmentTimesForDateAjaxTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
         cls.client = Client()
 
                                                                                     
@@ -27,20 +27,20 @@ class GetAvailableAppointmentTimesForDateAjaxTest(TestCase):
         cls.ajax_url = reverse('inventory:ajax_get_appointment_times')
 
     def test_missing_date_parameter(self):
-        #--
+        
         response = self.client.get(self.ajax_url)
         self.assertEqual(response.status_code, 400)
         self.assertJSONEqual(response.content, {'error': 'Date parameter (selected_date) is missing.'})
 
     def test_invalid_date_format(self):
-        #--
+        
         response = self.client.get(f"{self.ajax_url}?selected_date=2025/06/24")
         self.assertEqual(response.status_code, 400)
                                                    
         self.assertJSONEqual(response.content, {'error': 'Invalid date format. Use YYYY-MM-DD.'})
 
     def test_no_inventory_settings(self):
-        #--
+        
                                                               
         InventorySettings.objects.all().delete()
         response = self.client.get(f"{self.ajax_url}?selected_date=2025-06-24")
@@ -56,7 +56,7 @@ class GetAvailableAppointmentTimesForDateAjaxTest(TestCase):
 
 
     def test_get_available_times_no_bookings(self):
-        #--
+        
         test_date = datetime.date.today() + datetime.timedelta(days=1)                  
         response = self.client.get(f"{self.ajax_url}?selected_date={test_date.strftime('%Y-%m-%d')}")
         self.assertEqual(response.status_code, 200)
@@ -78,7 +78,7 @@ class GetAvailableAppointmentTimesForDateAjaxTest(TestCase):
         self.assertEqual(data['available_times'], expected_times)
 
     def test_get_available_times_with_existing_bookings(self):
-        #--
+        
         test_date = datetime.date.today() + datetime.timedelta(days=2)                     
 
                                          
@@ -137,7 +137,7 @@ class GetAvailableAppointmentTimesForDateAjaxTest(TestCase):
         self.assertEqual(data['available_times'], expected_available_times)
 
     def test_get_available_times_min_advance_booking_hours(self):
-        #--
+        
                                                                              
                                                                                    
 

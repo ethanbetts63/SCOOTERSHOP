@@ -4,7 +4,7 @@ from django import forms
 from inventory.models import SalesFAQ
 
 class AdminSalesFAQForm(forms.ModelForm):
-    #--
+    
     class Meta:
         model = SalesFAQ
         fields = [

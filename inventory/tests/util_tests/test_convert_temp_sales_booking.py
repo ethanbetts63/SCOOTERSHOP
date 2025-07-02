@@ -19,11 +19,11 @@ from ..test_helpers.model_factories import (
 )
 
 class ConvertTempSalesBookingUtilTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
                                          
         cls.inventory_settings = InventorySettingsFactory(
             currency_code='USD',
@@ -35,7 +35,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         cls.sales_profile = SalesProfileFactory()
 
     def setUp(self):
-        #--
+        
         self.motorcycle.refresh_from_db()
         self.motorcycle.status = 'available'
         self.motorcycle.is_available = True
@@ -43,7 +43,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
 
 
     def test_basic_conversion_unpaid(self):
-        #--
+        
         temp_booking = TempSalesBookingFactory(
             motorcycle=self.motorcycle,
             sales_profile=self.sales_profile,
@@ -89,7 +89,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         self.assertTrue(self.motorcycle.is_available)
 
     def test_conversion_with_payment_object(self):
-        #--
+        
         payment_obj = PaymentFactory(
             temp_sales_booking=None,                                   
             amount=Decimal('0.00'),
@@ -143,7 +143,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         self.assertFalse(TempSalesBooking.objects.filter(pk=temp_booking.pk).exists())
     
     def test_conversion_with_payment_object_no_refund_settings(self):
-        #--
+        
         RefundPolicySettings.objects.all().delete()                                
         self.assertFalse(RefundPolicySettings.objects.exists())
 
@@ -171,7 +171,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         RefundPolicySettingsFactory()
 
     def test_conversion_no_inventory_settings(self):
-        #--
+        
         InventorySettings.objects.all().delete()                                
         self.assertFalse(InventorySettings.objects.exists())
 
@@ -192,7 +192,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
 
 
     def test_conversion_request_viewing_false(self):
-        #--
+        
         temp_booking = TempSalesBookingFactory(
             motorcycle=self.motorcycle,
             sales_profile=self.sales_profile,
@@ -212,7 +212,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         self.assertIsNone(sales_booking.appointment_time)
 
     def test_conversion_handles_exception(self):
-        #--
+        
         temp_booking = TempSalesBookingFactory(
             motorcycle=self.motorcycle,
             sales_profile=self.sales_profile,

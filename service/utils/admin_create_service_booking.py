@@ -3,7 +3,7 @@ from service.models import ServiceBooking
 from service.utils.send_booking_to_mechanicdesk import send_booking_to_mechanicdesk
 
 def admin_create_service_booking(admin_booking_form_data, service_profile, customer_motorcycle):                                    
-    #--
+    
     booking = ServiceBooking(
         service_type=admin_booking_form_data['service_type'],
         service_date=admin_booking_form_data['service_date'],

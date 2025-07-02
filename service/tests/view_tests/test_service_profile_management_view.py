@@ -8,11 +8,11 @@ from service.models import ServiceProfile
 from ..test_helpers.model_factories import UserFactory, ServiceProfileFactory
 
 class ServiceProfileManagementViewTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
         cls.staff_user = UserFactory(username='staff_user', is_staff=True, is_superuser=False)
         cls.superuser = UserFactory(username='superuser', is_staff=True, is_superuser=True)
         cls.regular_user = UserFactory(username='regular_user', is_staff=False, is_superuser=False)
@@ -56,7 +56,7 @@ class ServiceProfileManagementViewTest(TestCase):
 
 
     def setUp(self):
-        #--
+        
         self.client = Client()
                                                               
         self.session = self.client.session
@@ -66,24 +66,24 @@ class ServiceProfileManagementViewTest(TestCase):
                                                                             
 
     def test_view_redirects_anonymous_user(self):
-        #--
+        
         response = self.client.get(self.list_url)
         self.assertRedirects(response, reverse('users:login') + f'?next={self.list_url}')
 
     def test_view_denies_access_to_regular_user(self):
-        #--
+        
         self.client.force_login(self.regular_user)
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, 403)            
 
     def test_view_grants_access_to_staff_user(self):
-        #--
+        
         self.client.force_login(self.staff_user)
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, 200)
 
     def test_view_grants_access_to_superuser(self):
-        #--
+        
         self.client.force_login(self.superuser)
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, 200)
@@ -92,7 +92,7 @@ class ServiceProfileManagementViewTest(TestCase):
                                                       
 
     def test_get_request_list_all_profiles_with_pagination(self):
-        #--
+        
         self.client.force_login(self.staff_user)
                                                             
         for i in range(15):                                                       
@@ -119,7 +119,7 @@ class ServiceProfileManagementViewTest(TestCase):
         self.assertEqual(response.context['search_term'], '')                                   
 
     def test_get_request_list_profiles_specific_page(self):
-        #--
+        
         self.client.force_login(self.staff_user)
                                                    
         total_profiles = 25
@@ -143,7 +143,7 @@ class ServiceProfileManagementViewTest(TestCase):
 
 
     def test_get_request_edit_mode(self):
-        #--
+        
         self.client.force_login(self.staff_user)
                                                                                            
         edit_url = reverse(self.edit_url_name, kwargs={'pk': self.profile1.pk})
@@ -161,7 +161,7 @@ class ServiceProfileManagementViewTest(TestCase):
 
 
     def test_get_request_edit_mode_non_existent_profile(self):
-        #--
+        
         self.client.force_login(self.staff_user)
         non_existent_pk = self.profile1.pk + 9999
                                                               
@@ -175,7 +175,7 @@ class ServiceProfileManagementViewTest(TestCase):
                                                         
 
     def test_post_request_create_profile_valid(self):
-        #--
+        
         self.client.force_login(self.staff_user)
         initial_count = ServiceProfile.objects.count()
         new_profile_data = {
@@ -203,7 +203,7 @@ class ServiceProfileManagementViewTest(TestCase):
 
 
     def test_post_request_create_profile_invalid(self):
-        #--
+        
         self.client.force_login(self.staff_user)
         initial_count = ServiceProfile.objects.count()
         invalid_data = {
@@ -234,7 +234,7 @@ class ServiceProfileManagementViewTest(TestCase):
 
 
 class ServiceProfileDeleteViewTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
@@ -255,20 +255,20 @@ class ServiceProfileDeleteViewTest(TestCase):
                                   
 
     def test_view_redirects_anonymous_user(self):
-        #--
+        
         delete_url = reverse(self.delete_url_name, kwargs={'pk': self.profile_to_delete.pk})
         response = self.client.post(delete_url)
         self.assertRedirects(response, reverse('users:login') + f'?next={delete_url}')
 
     def test_view_denies_access_to_regular_user(self):
-        #--
+        
         self.client.force_login(self.regular_user)
         delete_url = reverse(self.delete_url_name, kwargs={'pk': self.profile_to_delete.pk})
         response = self.client.post(delete_url)
         self.assertEqual(response.status_code, 403)
 
     def test_view_grants_access_to_staff_user(self):
-        #--
+        
         self.client.force_login(self.staff_user)
                                                                                     
         delete_url = reverse(self.delete_url_name, kwargs={'pk': self.profile_to_delete.pk})
@@ -279,7 +279,7 @@ class ServiceProfileDeleteViewTest(TestCase):
                                            
 
     def test_post_request_delete_profile_valid(self):
-        #--
+        
         self.client.force_login(self.staff_user)
         profile_pk = self.profile_to_delete.pk
         profile_name = self.profile_to_delete.name
@@ -298,7 +298,7 @@ class ServiceProfileDeleteViewTest(TestCase):
         self.assertEqual(messages_list[0].level, messages.SUCCESS)
 
     def test_post_request_delete_non_existent_profile(self):
-        #--
+        
         self.client.force_login(self.staff_user)
         non_existent_pk = self.profile_to_delete.pk + 9999
         delete_url = reverse(self.delete_url_name, kwargs={'pk': non_existent_pk})

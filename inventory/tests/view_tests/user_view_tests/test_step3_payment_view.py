@@ -27,11 +27,11 @@ User = get_user_model()
                                  
 @patch('stripe.api_key', 'sk_test_mock_key')
 class Step3PaymentViewTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
         cls.user = UserFactory()
         cls.inventory_settings = InventorySettingsFactory(
             enable_reservation_by_deposit=True,
@@ -42,7 +42,7 @@ class Step3PaymentViewTest(TestCase):
         cls.base_url = reverse('inventory:step3_payment')
 
     def setUp(self):
-        #--
+        
         TempSalesBooking.objects.all().delete()
         Payment.objects.all().delete()
         SalesProfile.objects.all().delete()
@@ -62,7 +62,7 @@ class Step3PaymentViewTest(TestCase):
                                    
 
     def test_dispatch_no_temp_booking_uuid_in_session_redirects(self):
-        #--
+        
         self.client.logout()
         session = self.client.session
         if 'temp_sales_booking_uuid' in session:
@@ -75,7 +75,7 @@ class Step3PaymentViewTest(TestCase):
         self.assertTrue(any("Your booking session has expired or is invalid." in str(m) for m in messages))
 
     def test_dispatch_invalid_temp_booking_uuid_redirects(self):
-        #--
+        
         session = self.client.session
         session['temp_sales_booking_uuid'] = str(uuid.uuid4())
         session.save()
@@ -86,7 +86,7 @@ class Step3PaymentViewTest(TestCase):
         self.assertTrue(any("Your booking session could not be found." in str(m) for m in messages))
 
     def test_dispatch_no_motorcycle_redirects(self):
-        #--
+        
         self.temp_booking.motorcycle = None
         self.temp_booking.save()
         
@@ -96,7 +96,7 @@ class Step3PaymentViewTest(TestCase):
         self.assertTrue(any("Please select a motorcycle first." in str(m) for m in messages))
 
     def test_dispatch_no_sales_profile_redirects(self):
-        #--
+        
         self.temp_booking.sales_profile = None
         self.temp_booking.save()
 
@@ -106,7 +106,7 @@ class Step3PaymentViewTest(TestCase):
         self.assertTrue(any("Please provide your contact details first." in str(m) for m in messages))
 
     def test_dispatch_deposit_not_required_redirects_to_confirmation(self):
-        #--
+        
         self.temp_booking.deposit_required_for_flow = False
         self.temp_booking.stripe_payment_intent_id = 'pi_12345'
         self.temp_booking.save()
@@ -121,7 +121,7 @@ class Step3PaymentViewTest(TestCase):
 
     @patch('inventory.views.user_views.step3_payment_view.create_or_update_sales_payment_intent')
     def test_get_creates_new_intent_and_payment_obj(self, mock_create_update):
-        #--
+        
         mock_intent = MagicMock(client_secret='new_client_secret', id='pi_new_123')
                                                                                     
         mock_payment = PaymentFactory.build(stripe_payment_intent_id=mock_intent.id, temp_sales_booking=self.temp_booking)
@@ -140,7 +140,7 @@ class Step3PaymentViewTest(TestCase):
 
     @patch('inventory.views.user_views.step3_payment_view.create_or_update_sales_payment_intent')
     def test_get_invalid_amount_redirects(self, mock_create_update):
-        #--
+        
         self.temp_booking.amount_paid = Decimal('0.00')
         self.temp_booking.save()
 
@@ -152,7 +152,7 @@ class Step3PaymentViewTest(TestCase):
 
     @patch('inventory.views.user_views.step3_payment_view.create_or_update_sales_payment_intent')
     def test_get_stripe_error_redirects(self, mock_create_update):
-        #--
+        
         mock_create_update.side_effect = stripe.error.StripeError("Stripe API error")
 
         response = self.client.get(self.base_url)
@@ -164,7 +164,7 @@ class Step3PaymentViewTest(TestCase):
 
     @patch('stripe.PaymentIntent.retrieve')
     def test_post_payment_succeeded(self, mock_retrieve):
-        #--
+        
         payment_intent_id = 'pi_test_succeeded'
                                                                                                   
                                                               
@@ -188,7 +188,7 @@ class Step3PaymentViewTest(TestCase):
 
     @patch('stripe.PaymentIntent.retrieve')
     def test_post_payment_requires_action(self, mock_retrieve):
-        #--
+        
         payment_intent_id = 'pi_test_requires_action'
                                                                                                   
                                                               
@@ -214,7 +214,7 @@ class Step3PaymentViewTest(TestCase):
 
     @patch('stripe.PaymentIntent.retrieve')
     def test_post_payment_failed(self, mock_retrieve):
-        #--
+        
         payment_intent_id = 'pi_test_failed'
                                                                                                   
                                                               
@@ -239,7 +239,7 @@ class Step3PaymentViewTest(TestCase):
                                                         
 
     def test_post_invalid_json_returns_400(self):
-        #--
+        
         response = self.client.post(
             self.base_url,
             '{"invalid_json": "test"',
@@ -249,7 +249,7 @@ class Step3PaymentViewTest(TestCase):
         self.assertIn('Invalid JSON', response.json()['error'])
 
     def test_post_missing_payment_intent_id_returns_400(self):
-        #--
+        
         response = self.client.post(
             self.base_url,
             json.dumps({'other_key': 'value'}),
@@ -260,7 +260,7 @@ class Step3PaymentViewTest(TestCase):
 
     @patch('stripe.PaymentIntent.retrieve')
     def test_post_stripe_error_returns_500(self, mock_retrieve):
-        #--
+        
         mock_retrieve.side_effect = stripe.error.StripeError("Stripe error")
         response = self.client.post(
             self.base_url,

@@ -19,18 +19,18 @@ from payments.tests.test_helpers.model_factories import (
 settings.STRIPE_SECRET_KEY = 'sk_test_dummykey'
 
 class ProcessRefundViewTests(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
         cls.client = Client()
         cls.admin_user = UserFactory(is_staff=True, is_superuser=True)
         cls.regular_user = UserFactory(is_staff=False, is_superuser=False)
 
 
     def setUp(self):
-        #--
+        
         self.client.force_login(self.admin_user)
 
 
@@ -39,7 +39,7 @@ class ProcessRefundViewTests(TestCase):
     def test_successful_service_booking_refund(
         self, mock_is_admin, mock_stripe_refund_create
     ):
-        #--
+        
         mock_stripe_refund_create.return_value = MagicMock(
             id='re_mockedservice456',
             status='succeeded'
@@ -102,7 +102,7 @@ class ProcessRefundViewTests(TestCase):
     def test_successful_sales_booking_refund(
         self, mock_is_admin, mock_stripe_refund_create
     ):
-        #--
+        
         mock_stripe_refund_create.return_value = MagicMock(
             id='re_mockedsales789',
             status='succeeded'
@@ -163,7 +163,7 @@ class ProcessRefundViewTests(TestCase):
 
     @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
     def test_refund_invalid_status_rejection(self, mock_is_admin):
-        #--
+        
         refund_request = RefundRequestFactory(
             status='failed',                                          
             amount_to_refund=Decimal('50.00'),
@@ -186,7 +186,7 @@ class ProcessRefundViewTests(TestCase):
 
     @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
     def test_refund_no_associated_payment_rejection(self, mock_is_admin):
-        #--
+        
         refund_request = RefundRequestFactory(
             status='pending',                                             
             amount_to_refund=Decimal('50.00'),
@@ -209,7 +209,7 @@ class ProcessRefundViewTests(TestCase):
 
     @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
     def test_refund_invalid_amount_rejection(self, mock_is_admin):
-        #--
+        
         refund_request = RefundRequestFactory(
             status='pending',                                                     
             amount_to_refund=Decimal('0.00'),                 
@@ -233,7 +233,7 @@ class ProcessRefundViewTests(TestCase):
 
     @patch('payments.views.Refunds.process_refund.is_admin', return_value=True)
     def test_refund_no_stripe_payment_intent_id_rejection(self, mock_is_admin):
-        #--
+        
         refund_request = RefundRequestFactory(
             status='pending',                                                     
             amount_to_refund=Decimal('50.00'),
@@ -260,7 +260,7 @@ class ProcessRefundViewTests(TestCase):
     def test_generic_exception_during_refund_creation(
         self, mock_is_admin, mock_stripe_refund_create
     ):
-        #--
+        
                                                                      
         mock_stripe_refund_create.side_effect = ValueError("Something went wrong internally")
 
@@ -310,7 +310,7 @@ class ProcessRefundViewTests(TestCase):
 
     @patch('payments.views.Refunds.process_refund.is_admin', return_value=False)
     def test_unauthorized_access(self, mock_is_admin):
-        #--
+        
         self.client.force_login(self.regular_user)
 
         refund_request = RefundRequestFactory(

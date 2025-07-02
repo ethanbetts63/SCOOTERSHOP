@@ -18,10 +18,10 @@ class EnquiryDeleteView(AdminRequiredMixin, DeleteView):
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
-        ##
+       
 
         success_url = self.get_success_url()
         self.object.delete()
-        ##
+       
 
         return redirect(success_url)

@@ -7,10 +7,10 @@ from payments.forms import RefundSettingsForm
 from payments.models import RefundPolicySettings
 
 class RefundSettingsFormTests(TestCase):
-    #--
+    
 
     def _get_valid_form_data(self):
-        #--
+        
         return {
             'cancellation_full_payment_full_refund_days': 7,
             'cancellation_full_payment_partial_refund_days': 3,
@@ -36,7 +36,7 @@ class RefundSettingsFormTests(TestCase):
         }
 
     def setUp(self):
-        #--
+        
                                                                 
         self.refund_settings, created = RefundPolicySettings.objects.get_or_create(pk=1, defaults=self._get_valid_form_data())
                                                                                               
@@ -44,7 +44,7 @@ class RefundSettingsFormTests(TestCase):
             self.refund_settings.save()
 
     def test_form_valid_data(self):
-        #--
+        
         data = self._get_valid_form_data()
         data.update({
             'cancellation_full_payment_full_refund_days': 10,
@@ -84,7 +84,7 @@ class RefundSettingsFormTests(TestCase):
         self.assertEqual(RefundPolicySettings.objects.count(), 1)                                 
 
     def test_form_invalid_percentage_fields(self):
-        #--
+        
         data = self._get_valid_form_data()
         data['cancellation_full_payment_partial_refund_percentage'] = Decimal('101.00')          
         form = RefundSettingsForm(instance=self.refund_settings, data=data)
@@ -102,7 +102,7 @@ class RefundSettingsFormTests(TestCase):
                       form.errors['cancellation_deposit_minimal_refund_percentage'])
 
     def test_form_invalid_stripe_fee_percentage_fields(self):
-        #--
+        
         data = self._get_valid_form_data()
         data['stripe_fee_percentage_domestic'] = Decimal('0.1500')                
         form = RefundSettingsForm(instance=self.refund_settings, data=data)
@@ -120,7 +120,7 @@ class RefundSettingsFormTests(TestCase):
                       form.errors['stripe_fee_percentage_international'])
 
     def test_form_invalid_full_payment_days_thresholds(self):
-        #--
+        
                         
         data = self._get_valid_form_data()
         data.update({
@@ -148,7 +148,7 @@ class RefundSettingsFormTests(TestCase):
                       form.errors['cancellation_full_payment_partial_refund_days'][0])
 
     def test_form_invalid_deposit_days_thresholds(self):
-        #--
+        
                         
         data = self._get_valid_form_data()
         data.update({
@@ -175,7 +175,7 @@ class RefundSettingsFormTests(TestCase):
                       form.errors['cancellation_deposit_partial_refund_days'][0])
 
     def test_form_no_new_instance_creation(self):
-        #--
+        
                                                                   
         data = self._get_valid_form_data()
         form = RefundSettingsForm(data=data)                                           
@@ -193,7 +193,7 @@ class RefundSettingsFormTests(TestCase):
         self.assertEqual(RefundPolicySettings.objects.count(), 1)                          
 
     def test_form_initial_data_for_existing_instance(self):
-        #--
+        
         initial_percentage = Decimal('45.00')
         initial_grace_hours = 36
         initial_enable_refund = False
@@ -209,7 +209,7 @@ class RefundSettingsFormTests(TestCase):
         self.assertEqual(form.initial['sales_enable_deposit_refund'], initial_enable_refund)
 
     def test_sales_refund_settings_validation(self):
-        #--
+        
                          
         data = self._get_valid_form_data()
         data['sales_enable_deposit_refund_grace_period'] = True

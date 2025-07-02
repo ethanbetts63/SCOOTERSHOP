@@ -7,11 +7,11 @@ from inventory.utils.get_sales_appointment_date_info import get_sales_appointmen
 from ..test_helpers.model_factories import InventorySettingsFactory, BlockedSalesDateFactory
 
 class GetSalesAppointmentDateInfoTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
                                                                                       
         cls.default_inventory_settings = InventorySettingsFactory(
             sales_appointment_start_time=datetime.time(9, 0),
@@ -24,7 +24,7 @@ class GetSalesAppointmentDateInfoTest(TestCase):
         )
 
     def tearDown(self):
-        #--
+        
                                                                  
         self.default_inventory_settings.refresh_from_db()
         self.default_inventory_settings.sales_appointment_start_time = datetime.time(9, 0)
@@ -39,7 +39,7 @@ class GetSalesAppointmentDateInfoTest(TestCase):
 
 
     def test_default_behavior(self):
-        #--
+        
                                                                     
                                                                                      
                                                                              
@@ -67,7 +67,7 @@ class GetSalesAppointmentDateInfoTest(TestCase):
         self.assertEqual(blocked_dates, sorted(list(set(expected_blocked_dates))))
 
     def test_no_inventory_settings_provided(self):
-        #--
+        
                                                                 
         InventorySettings.objects.all().delete()
         min_date, max_date, blocked_dates = get_sales_appointment_date_info(None)            
@@ -81,7 +81,7 @@ class GetSalesAppointmentDateInfoTest(TestCase):
 
 
     def test_min_advance_booking_hours(self):
-        #--
+        
                                                                      
         self.default_inventory_settings.min_advance_booking_hours = 24
         self.default_inventory_settings.save()
@@ -98,7 +98,7 @@ class GetSalesAppointmentDateInfoTest(TestCase):
         self.assertEqual(min_date, expected_min_date)
 
     def test_max_advance_booking_days(self):
-        #--
+        
         self.default_inventory_settings.max_advance_booking_days = 30
         self.default_inventory_settings.save()
 
@@ -107,7 +107,7 @@ class GetSalesAppointmentDateInfoTest(TestCase):
         self.assertEqual(max_date, expected_max_date)
 
     def test_deposit_flow_caps_max_date(self):
-        #--
+        
         self.default_inventory_settings.max_advance_booking_days = 90
         self.default_inventory_settings.deposit_lifespan_days = 10                   
         self.default_inventory_settings.min_advance_booking_hours = 0                                       
@@ -129,7 +129,7 @@ class GetSalesAppointmentDateInfoTest(TestCase):
         self.assertEqual(max_date, expected_max_date)
 
     def test_blocked_sales_dates(self):
-        #--
+        
         today = datetime.date.today()
                                 
         BlockedSalesDateFactory(
@@ -171,7 +171,7 @@ class GetSalesAppointmentDateInfoTest(TestCase):
 
 
     def test_sales_booking_open_days(self):
-        #--
+        
         today = datetime.date.today()
                                                   
         self.default_inventory_settings.sales_booking_open_days = "Mon,Tue"
@@ -192,7 +192,7 @@ class GetSalesAppointmentDateInfoTest(TestCase):
         self.assertEqual(blocked_dates, sorted(list(set(expected_blocked_dates))))
 
     def test_max_date_capped_by_min_date(self):
-        #--
+        
                                                  
         self.default_inventory_settings.min_advance_booking_hours = 720          
                                                
@@ -207,7 +207,7 @@ class GetSalesAppointmentDateInfoTest(TestCase):
         self.assertEqual(max_date, expected_min_date)
 
     def test_combined_blocking_factors(self):
-        #--
+        
         today = datetime.date.today()
 
                          

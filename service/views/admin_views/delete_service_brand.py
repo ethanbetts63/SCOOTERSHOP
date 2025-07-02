@@ -7,13 +7,13 @@ from django.contrib import messages
 from service.models import ServiceBrand
 
 class ServiceBrandDeleteView(View):
-    #--
+    
                                                                   
                           
                                            
 
     def post(self, request, pk, *args, **kwargs):
-        #--
+        
         brand_to_delete = get_object_or_404(ServiceBrand, pk=pk)
         brand_name = brand_to_delete.name                                       
         try:

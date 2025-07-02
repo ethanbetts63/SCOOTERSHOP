@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from decimal import Decimal
 
 class RefundPolicySettings(models.Model):
-    #--
+    
 
                                                                                   
     cancellation_full_payment_full_refund_days = models.PositiveIntegerField(

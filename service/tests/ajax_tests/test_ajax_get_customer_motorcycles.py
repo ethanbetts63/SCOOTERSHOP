@@ -10,10 +10,10 @@ from ..test_helpers.model_factories import CustomerMotorcycleFactory, ServicePro
 from service.ajax.ajax_get_customer_motorcycle_details import get_motorcycle_details_ajax
 
 class AjaxGetCustomerMotorcycleDetailsTest(TestCase):
-    #--
+    
 
     def setUp(self):
-        #--
+        
         self.factory = RequestFactory()
                                           
         self.service_profile = ServiceProfileFactory()
@@ -21,7 +21,7 @@ class AjaxGetCustomerMotorcycleDetailsTest(TestCase):
         self.motorcycle = CustomerMotorcycleFactory(service_profile=self.service_profile)
 
     def test_get_motorcycle_details_success(self):
-        #--
+        
                                                                             
                                                                           
         url = reverse('service:admin_api_get_motorcycle_details', args=[self.motorcycle.pk])
@@ -54,7 +54,7 @@ class AjaxGetCustomerMotorcycleDetailsTest(TestCase):
 
 
     def test_get_motorcycle_details_not_found(self):
-        #--
+        
         invalid_motorcycle_id = self.motorcycle.pk + 100                                  
 
                                                         
@@ -73,7 +73,7 @@ class AjaxGetCustomerMotorcycleDetailsTest(TestCase):
 
 
     def test_only_get_requests_allowed(self):
-        #--
+        
                                                             
         url = reverse('service:admin_api_get_motorcycle_details', args=[self.motorcycle.pk])
 

@@ -87,19 +87,19 @@ class ContactViewTest(TestCase):
         self.mock_enquiry_form_instance.save.assert_called_once()
         self.assertEqual(self.mock_send_mail.call_count, 2)
 
-        ##
+       
 
         user_email_args = self.mock_send_mail.call_args_list[0].args
         self.assertEqual(user_email_args[0], 'Enquiry Received - Scooter Shop')
         self.assertIn(f'Hi {mock_enquiry_instance.name},', user_email_args[1])
         self.assertEqual(user_email_args[3], [mock_enquiry_instance.email])
 
-        ##
+       
 
         admin_email_args = self.mock_send_mail.call_args_list[1].args
         self.assertEqual(admin_email_args[0], 'New Enquiry - Scooter Shop')
         self.assertIn(f'Name: {mock_enquiry_instance.name}', admin_email_args[1])
-        self.assertEqual(admin_email_args[3], [self.mock_admin_email]) ##
+        self.assertEqual(admin_email_args[3], [self.mock_admin_email])
 
 
         messages = list(get_messages(response.wsgi_request))

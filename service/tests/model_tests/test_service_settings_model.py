@@ -14,11 +14,11 @@ from service.models import ServiceBooking
 from ..test_helpers.model_factories import ServiceBookingFactory, ServiceTypeFactory, ServiceProfileFactory, CustomerMotorcycleFactory, PaymentFactory
 
 class ServiceBookingModelTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
                                                                                                       
         test_dropoff_date = fake.date_between(start_date='today', end_date='+30d')
         test_dropoff_time = fake.time_object()
@@ -33,13 +33,13 @@ class ServiceBookingModelTest(TestCase):
         )
 
     def test_service_booking_creation(self):
-        #--
+        
         self.assertIsNotNone(self.service_booking)
         self.assertIsInstance(self.service_booking, ServiceBooking)
         self.assertEqual(ServiceBooking.objects.count(), 1)
 
     def test_service_booking_reference_generation_on_save(self):
-        #--
+        
                                                                                  
                                                            
         booking = ServiceBookingFactory()
@@ -57,12 +57,12 @@ class ServiceBookingModelTest(TestCase):
         self.assertEqual(booking.service_booking_reference, old_reference)
 
     def test_str_method(self):
-        #--
+        
         expected_str = f"Booking {self.service_booking.service_booking_reference} for {self.service_booking.service_profile.name} on {self.service_booking.dropoff_date}"
         self.assertEqual(str(self.service_booking), expected_str)
 
     def test_field_attributes(self):
-        #--
+        
         booking = self.service_booking
 
                                                         
@@ -186,7 +186,7 @@ class ServiceBookingModelTest(TestCase):
         self.assertTrue(field.auto_now)
 
     def test_service_booking_reference_unique_constraint(self):
-        #--
+        
                                                     
         existing_booking = ServiceBookingFactory(service_booking_reference="SERVICE-TESTREF")
         
@@ -202,7 +202,7 @@ class ServiceBookingModelTest(TestCase):
         self.assertIn("unique constraint failed", str(cm.exception).lower())
 
     def test_stripe_payment_intent_id_unique_constraint(self):
-        #--
+        
                                                                    
         existing_booking = ServiceBookingFactory(stripe_payment_intent_id="pi_test_intent_123")
 
@@ -219,7 +219,7 @@ class ServiceBookingModelTest(TestCase):
 
 
     def test_default_values(self):
-        #--
+        
                                                        
         service_type = ServiceTypeFactory()
         service_profile = ServiceProfileFactory()
@@ -249,7 +249,7 @@ class ServiceBookingModelTest(TestCase):
         self.assertIsNone(booking.customer_notes) 
 
     def test_timestamps_auto_now_add_and_auto_now(self):
-        #--
+        
         booking = ServiceBookingFactory()                                             
         initial_created_at = booking.created_at
         initial_updated_at = booking.updated_at
@@ -273,7 +273,7 @@ class ServiceBookingModelTest(TestCase):
         self.assertEqual(booking.created_at, initial_created_at)
 
     def test_related_name_accessors(self):
-        #--
+        
         service_type = ServiceTypeFactory()
         service_profile = ServiceProfileFactory()
         customer_motorcycle = CustomerMotorcycleFactory(service_profile=service_profile)
@@ -293,7 +293,7 @@ class ServiceBookingModelTest(TestCase):
         self.assertEqual(booking, payment.related_service_booking_payment)
 
     def test_on_delete_behavior(self):
-        #--
+        
                                   
                                                                                  
         service_type_for_protect = ServiceTypeFactory()

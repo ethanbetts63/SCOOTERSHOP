@@ -5,7 +5,7 @@ from service.utils.get_available_service_dropoff_times import get_available_drop
 
 @require_GET
 def get_available_dropoff_times_for_date(request):
-    #--
+    
     selected_date_str = request.GET.get('date')
 
     if not selected_date_str:

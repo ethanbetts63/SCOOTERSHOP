@@ -3,11 +3,11 @@ from django.urls import reverse
 from ...test_helpers.model_factories import MotorcycleFactory, InventorySettingsFactory, MotorcycleConditionFactory
 
 class UserMotorcycleDetailsViewTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
         cls.client = Client()
 
                                                           
@@ -36,7 +36,7 @@ class UserMotorcycleDetailsViewTest(TestCase):
 
 
     def test_motorcycle_details_view_success(self):
-        #--
+        
                                              
         url = reverse('inventory:motorcycle-detail', kwargs={'pk': self.motorcycle.pk})
         response = self.client.get(url)
@@ -62,7 +62,7 @@ class UserMotorcycleDetailsViewTest(TestCase):
 
 
     def test_motorcycle_details_view_404_not_found(self):
-        #--
+        
                                                                            
         non_existent_pk = self.motorcycle.pk + 999
 
@@ -77,7 +77,7 @@ class UserMotorcycleDetailsViewTest(TestCase):
 
 
     def test_motorcycle_details_view_unavailable_motorcycle(self):
-        #--
+        
         unavailable_motorcycle = MotorcycleFactory(
             brand='SoldBrand',
             model='SoldModel',

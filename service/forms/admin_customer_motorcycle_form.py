@@ -2,7 +2,7 @@ from django import forms
 from service.models import CustomerMotorcycle, ServiceProfile
 
 class AdminCustomerMotorcycleForm(forms.ModelForm):
-    #--
+    
     service_profile = forms.ModelChoiceField(
         queryset=ServiceProfile.objects.all().order_by('name', 'email'),                                             
         required=False,                                                                           

@@ -10,10 +10,10 @@ from ..test_helpers.model_factories import ServiceProfileFactory, UserFactory
 from service.ajax.ajax_search_service_profiles import search_customer_profiles_ajax
 
 class AjaxSearchCustomerProfilesTest(TestCase):
-    #--
+    
 
     def setUp(self):
-        #--
+        
         self.factory = RequestFactory()
 
                                                                      
@@ -57,7 +57,7 @@ class AjaxSearchCustomerProfilesTest(TestCase):
         )
 
     def test_search_customer_profiles_by_name(self):
-        #--
+        
         search_term = "John Doe"                                          
         url = reverse('service:admin_api_search_customer') + f'?query={search_term}'
         request = self.factory.get(url)
@@ -74,7 +74,7 @@ class AjaxSearchCustomerProfilesTest(TestCase):
         self.assertEqual(content['profiles'][0]['phone_number'], self.profile1.phone_number)
 
     def test_search_customer_profiles_by_email(self):
-        #--
+        
         search_term = "jane.doe@test.com"                                    
         url = reverse('service:admin_api_search_customer') + f'?query={search_term}'
         request = self.factory.get(url)
@@ -89,7 +89,7 @@ class AjaxSearchCustomerProfilesTest(TestCase):
         self.assertEqual(content['profiles'][0]['name'], self.profile2.name)
 
     def test_search_customer_profiles_by_phone_number(self):
-        #--
+        
         search_term = "045555"
         url = reverse('service:admin_api_search_customer') + f'?query={search_term}'
         request = self.factory.get(url)
@@ -104,7 +104,7 @@ class AjaxSearchCustomerProfilesTest(TestCase):
         self.assertEqual(content['profiles'][0]['name'], self.profile3.name)
 
     def test_search_customer_profiles_multiple_matches_and_ordering(self):
-        #--
+        
         search_term = "Sydney"                                           
         url = reverse('service:admin_api_search_customer') + f'?query={search_term}'
         request = self.factory.get(url)
@@ -122,7 +122,7 @@ class AjaxSearchCustomerProfilesTest(TestCase):
         self.assertEqual(content['profiles'][1]['name'], self.profile1.name)           
 
     def test_search_customer_profiles_no_matches(self):
-        #--
+        
         search_term = "NonExistentCustomer"
         url = reverse('service:admin_api_search_customer') + f'?query={search_term}'
         request = self.factory.get(url)
@@ -137,7 +137,7 @@ class AjaxSearchCustomerProfilesTest(TestCase):
         self.assertEqual(content['profiles'], [])
 
     def test_search_customer_profiles_empty_query(self):
-        #--
+        
         url = reverse('service:admin_api_search_customer') + '?query='
         request = self.factory.get(url)
         response = search_customer_profiles_ajax(request)
@@ -151,7 +151,7 @@ class AjaxSearchCustomerProfilesTest(TestCase):
         self.assertEqual(content['profiles'], [])
 
     def test_search_customer_profiles_no_query_parameter(self):
-        #--
+        
         url = reverse('service:admin_api_search_customer')
         request = self.factory.get(url)
         response = search_customer_profiles_ajax(request)
@@ -165,7 +165,7 @@ class AjaxSearchCustomerProfilesTest(TestCase):
         self.assertEqual(content['profiles'], [])
 
     def test_only_get_requests_allowed(self):
-        #--
+        
         url = reverse('service:admin_api_search_customer')
         request = self.factory.post(url)                      
 

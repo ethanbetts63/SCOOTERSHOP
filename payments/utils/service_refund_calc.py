@@ -5,7 +5,7 @@ from datetime import datetime
 from django.utils import timezone
 
 def calculate_service_refund_amount(booking, refund_policy_snapshot, cancellation_datetime=None):
-    #--
+    
     if not cancellation_datetime:
         cancellation_datetime = timezone.now()
 

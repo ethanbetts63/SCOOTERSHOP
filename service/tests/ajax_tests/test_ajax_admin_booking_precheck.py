@@ -13,10 +13,10 @@ from service.ajax.ajax_admin_booking_precheck import admin_booking_precheck_ajax
 from ..test_helpers.model_factories import ServiceTypeFactory
 
 class AjaxAdminBookingPrecheckTest(TestCase):
-    #--
+    
 
     def setUp(self):
-        #--
+        
         self.factory = RequestFactory()
         self.service_type = ServiceTypeFactory()
 
@@ -39,7 +39,7 @@ class AjaxAdminBookingPrecheckTest(TestCase):
 
     @patch('service.ajax.ajax_admin_booking_precheck.AdminBookingDetailsForm')
     def test_precheck_success_no_warnings(self, MockAdminBookingDetailsForm):
-        #--
+        
                                           
         mock_form_instance = Mock()
         mock_form_instance.is_valid.return_value = True
@@ -67,7 +67,7 @@ class AjaxAdminBookingPrecheckTest(TestCase):
 
     @patch('service.ajax.ajax_admin_booking_precheck.AdminBookingDetailsForm')
     def test_precheck_success_with_warnings(self, MockAdminBookingDetailsForm):
-        #--
+        
                                           
         mock_form_instance = Mock()
         mock_form_instance.is_valid.return_value = True
@@ -98,7 +98,7 @@ class AjaxAdminBookingPrecheckTest(TestCase):
 
     @patch('service.ajax.ajax_admin_booking_precheck.AdminBookingDetailsForm')
     def test_precheck_form_errors(self, MockAdminBookingDetailsForm):
-        #--
+        
                                           
         mock_form_instance = Mock()
         mock_form_instance.is_valid.return_value = False
@@ -133,7 +133,7 @@ class AjaxAdminBookingPrecheckTest(TestCase):
         mock_form_instance.get_warnings.assert_not_called()                                                 
 
     def test_only_post_requests_allowed(self):
-        #--
+        
         url = reverse('service:admin_api_booking_precheck')
                            
         request = self.factory.get(url)

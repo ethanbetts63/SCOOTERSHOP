@@ -20,7 +20,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
         cls.base_url = reverse('service:service_book_step7')
 
     def setUp(self):
-        #--
+        
         self.client.force_login(self.user)
                                                            
         TempServiceBooking.objects.all().delete()
@@ -31,7 +31,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
 
 
     def test_get_booking_found_by_session_reference(self):
-        #--
+        
         final_booking = ServiceBookingFactory()
         session = self.client.session
         session['service_booking_reference'] = final_booking.service_booking_reference
@@ -47,7 +47,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
 
 
     def test_get_booking_found_by_payment_intent_id(self):
-        #--
+        
         payment_intent_id = f"pi_{uuid.uuid4().hex}"
         final_booking = ServiceBookingFactory(stripe_payment_intent_id=payment_intent_id)
         
@@ -64,7 +64,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
 
 
     def test_get_booking_processing_due_to_webhook_delay(self):
-        #--
+        
         payment_intent_id = f"pi_{uuid.uuid4().hex}"
                                                                        
         PaymentFactory(stripe_payment_intent_id=payment_intent_id)
@@ -82,7 +82,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
 
 
     def test_get_no_identifiers_redirects_to_home(self):
-        #--
+        
         response = self.client.get(self.base_url)
 
         self.assertRedirects(response, reverse('service:service'))
@@ -91,7 +91,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
 
 
     def test_get_session_reference_invalid_then_redirects_to_home(self):
-        #--
+        
         invalid_booking_reference = "NONEXISTENTREF123"
         session = self.client.session
         session['service_booking_reference'] = invalid_booking_reference
@@ -105,7 +105,7 @@ class ServiceBookingConfirmationViewTest(TestCase):
         self.assertNotIn('service_booking_reference', self.client.session)                    
 
     def test_get_payment_intent_id_invalid_no_payment_or_booking_redirects_to_home(self):
-        #--
+        
         payment_intent_id = f"pi_{uuid.uuid4().hex}"
                                                                  
 

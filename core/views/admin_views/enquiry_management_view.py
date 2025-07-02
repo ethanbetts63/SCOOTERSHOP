@@ -6,7 +6,7 @@ class EnquiryManagementView(AdminRequiredMixin, ListView):
     model = Enquiry
     template_name = 'core/admin/enquiry_management.html'
     context_object_name = 'enquiries'
-    paginate_by = 10 ##
+    paginate_by = 10
 
 
     def get_queryset(self):

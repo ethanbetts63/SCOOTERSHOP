@@ -6,7 +6,7 @@ from service.forms import AdminBookingDetailsForm
 
 @require_POST
 def admin_booking_precheck_ajax(request):
-    #--
+    
     admin_form = AdminBookingDetailsForm(request.POST)
     response_data = {
         'status': 'success',                  

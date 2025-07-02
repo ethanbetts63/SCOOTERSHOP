@@ -10,21 +10,21 @@ from service.models import ServiceBrand
 from ..test_helpers.model_factories import ServiceBrandFactory
 
 class ServiceBrandModelTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
                                                              
         cls.service_brand = ServiceBrandFactory(image=None)
 
     def test_service_brand_creation(self):
-        #--
+        
         self.assertIsInstance(self.service_brand, ServiceBrand)
         self.assertIsNotNone(self.service_brand.pk)                                              
 
     def test_name_field(self):
-        #--
+        
         service_brand = self.service_brand
         self.assertEqual(service_brand._meta.get_field('name').max_length, 100)
         self.assertTrue(service_brand._meta.get_field('name').unique)
@@ -35,7 +35,7 @@ class ServiceBrandModelTest(TestCase):
                                     
 
     def test_image_field(self):
-        #--
+        
         service_brand = self.service_brand
         image_field = service_brand._meta.get_field('image')
         self.assertTrue(image_field.null)
@@ -57,7 +57,7 @@ class ServiceBrandModelTest(TestCase):
 
 
     def test_last_updated_field(self):
-        #--
+        
         service_brand = self.service_brand
         self.assertIsInstance(service_brand.last_updated, datetime)
                                                        
@@ -67,16 +67,16 @@ class ServiceBrandModelTest(TestCase):
         self.assertGreater(service_brand.last_updated, old_last_updated)
 
     def test_str_method(self):
-        #--
+        
         service_brand = self.service_brand
         self.assertEqual(str(service_brand), service_brand.name)
 
     def test_verbose_name_plural(self):
-        #--
+        
         self.assertEqual(str(ServiceBrand._meta.verbose_name_plural), 'Service Brands')
 
     def test_unique_name_constraint(self):
-        #--
+        
                                  
         initial_brand = ServiceBrandFactory()
         existing_name = initial_brand.name

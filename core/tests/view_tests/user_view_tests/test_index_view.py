@@ -71,9 +71,9 @@ class IndexViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'core/index.html')
         self.assertIn('reviews', response.context)
-        self.assertEqual(len(response.context['reviews']), 2) ##
+        self.assertEqual(len(response.context['reviews']), 2)
 
-        self.assertEqual(response.context['reviews'][0]['text'], 'Excellent!') ##
+        self.assertEqual(response.context['reviews'][0]['text'], 'Excellent!')
 
 
     @patch('requests.get')

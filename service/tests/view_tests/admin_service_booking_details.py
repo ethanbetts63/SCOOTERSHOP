@@ -7,11 +7,11 @@ from service.models import ServiceBooking
 from ..test_helpers.model_factories import UserFactory, ServiceBookingFactory, ServiceTypeFactory
 
 class AdminServiceBookingDetailViewTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
         cls.staff_user = UserFactory(username='staff_user_detail', is_staff=True, is_superuser=False)
         cls.superuser = UserFactory(username='superuser_detail', is_staff=True, is_superuser=True)                                                                   
 
@@ -31,14 +31,14 @@ class AdminServiceBookingDetailViewTest(TestCase):
         cls.detail_url_name = 'service:admin_service_booking_detail'
 
     def setUp(self):
-        #--
+        
         self.client = Client()
         self.client.force_login(self.staff_user)                                             
 
                                
 
     def test_get_request_displays_booking_details(self):
-        #--
+        
         response = self.client.get(reverse(self.detail_url_name, args=[self.booking.pk]))
 
         self.assertEqual(response.status_code, 200)
@@ -62,7 +62,7 @@ class AdminServiceBookingDetailViewTest(TestCase):
         self.assertContains(response, self.booking.customer_motorcycle.model)                                
 
     def test_get_request_invalid_booking_pk(self):
-        #--
+        
         invalid_pk = self.booking.pk + 999                             
         response = self.client.get(reverse(self.detail_url_name, args=[invalid_pk]))
         self.assertEqual(response.status_code, 404)

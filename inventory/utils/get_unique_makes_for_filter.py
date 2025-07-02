@@ -4,7 +4,7 @@ from django.db.models import Q
 from inventory.models import Motorcycle, MotorcycleCondition                                         
 
 def get_unique_makes_for_filter(condition_slug=None):
-    #--
+    
     queryset = Motorcycle.objects.all()
 
                                                            

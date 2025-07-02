@@ -23,7 +23,7 @@ User = get_user_model()
 
                                                                                                           
 def get_model_choices(app_label, model_name, choices_attribute):
-    #--
+    
                                            
     django.apps.apps.check_apps_ready()
     model = django.apps.apps.get_model(app_label, model_name)

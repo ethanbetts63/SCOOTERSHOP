@@ -20,7 +20,7 @@ class ServiceDetailsForm(forms.Form):
                                 
 
     def clean_service_date(self):                 
-        #--
+        
         service_date = self.cleaned_data['service_date']                       
         current_date = date.today()
         if service_date < current_date:

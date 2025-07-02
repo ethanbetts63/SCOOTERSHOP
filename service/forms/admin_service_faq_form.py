@@ -4,7 +4,7 @@ from django import forms
 from service.models import ServiceFAQ
 
 class AdminServiceFAQForm(forms.ModelForm):
-    #--
+    
     class Meta:
         model = ServiceFAQ
         fields = [

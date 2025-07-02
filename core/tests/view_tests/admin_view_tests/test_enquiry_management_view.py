@@ -12,7 +12,7 @@ class EnquiryManagementViewTest(TestCase):
         cls.login_url = reverse('users:login')
         cls.list_url = reverse('core:enquiry_management')
 
-        ##
+       
 
         for i in range(15):
             EnquiryFactory()
@@ -43,11 +43,11 @@ class EnquiryManagementViewTest(TestCase):
         self.assertIn('enquiries', response.context)
         self.assertIn('page_obj', response.context)
         self.assertTrue(response.context['page_obj'].has_next())
-        self.assertEqual(len(response.context['enquiries']), 10) ##
+        self.assertEqual(len(response.context['enquiries']), 10)
 
         self.assertEqual(response.context['page_title'], "Enquiry Management")
 
-        ##
+       
 
         enquiries_in_context = response.context['enquiries']
         all_enquiries = list(Enquiry.objects.all().order_by('-created_at'))

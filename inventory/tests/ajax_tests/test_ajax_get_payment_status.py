@@ -20,11 +20,11 @@ from ..test_helpers.model_factories import (
 
 
 class AjaxGetPaymentStatusTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
         cls.client = Client()
 
                                                       
@@ -61,7 +61,7 @@ class AjaxGetPaymentStatusTest(TestCase):
         cls.non_existent_payment_intent_id = "pi_nonexistent12345"
 
     def test_successful_payment_status_check(self):
-        #--
+        
         response = self.client.get(
             reverse('inventory:ajax_sales_payment_status_check'),
             {'payment_intent_id': self.successful_booking.stripe_payment_intent_id}
@@ -87,7 +87,7 @@ class AjaxGetPaymentStatusTest(TestCase):
         self.assertEqual(self.client.session['sales_booking_reference'], self.successful_booking.sales_booking_reference)
 
     def test_payment_processing_status(self):
-        #--
+        
         response = self.client.get(
             reverse('inventory:ajax_sales_payment_status_check'),
             {'payment_intent_id': self.processing_payment.stripe_payment_intent_id}
@@ -99,7 +99,7 @@ class AjaxGetPaymentStatusTest(TestCase):
         self.assertIn('Booking finalization is still in progress.', data['message'])
 
     def test_payment_intent_not_found(self):
-        #--
+        
         response = self.client.get(
             reverse('inventory:ajax_sales_payment_status_check'),
             {'payment_intent_id': self.non_existent_payment_intent_id}
@@ -111,7 +111,7 @@ class AjaxGetPaymentStatusTest(TestCase):
         self.assertIn('Booking finalization failed. Please contact support for assistance.', data['message'])
 
     def test_missing_payment_intent_id(self):
-        #--
+        
         response = self.client.get(
             reverse('inventory:ajax_sales_payment_status_check')
         )
@@ -122,7 +122,7 @@ class AjaxGetPaymentStatusTest(TestCase):
         self.assertEqual(data['message'], 'Payment Intent ID is required.')
 
     def test_sales_booking_details_in_response(self):
-        #--
+        
         response = self.client.get(
             reverse('inventory:ajax_sales_payment_status_check'),
             {'payment_intent_id': self.successful_booking.stripe_payment_intent_id}

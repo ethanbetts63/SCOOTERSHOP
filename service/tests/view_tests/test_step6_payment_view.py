@@ -86,7 +86,7 @@ class Step6PaymentViewTest(TestCase):
                                    
 
     def test_dispatch_no_temp_booking_uuid_in_session_redirects_to_service_home(self):
-        #--
+        
         self.client.logout()
         session = self.client.session
         if 'temp_service_booking_uuid' in session:
@@ -100,7 +100,7 @@ class Step6PaymentViewTest(TestCase):
         self.assertTrue(any("Your booking session has expired or is invalid." in str(m) for m in messages))
 
     def test_dispatch_invalid_temp_booking_uuid_redirects_to_service_home(self):
-        #--
+        
         session = self.client.session
         session['temp_service_booking_uuid'] = str(uuid.uuid4())
         session.save()
@@ -112,7 +112,7 @@ class Step6PaymentViewTest(TestCase):
         self.assertTrue(any("Your booking session could not be found." in str(m) for m in messages))
 
     def test_dispatch_no_customer_motorcycle_redirects_to_step3(self):
-        #--
+        
         self.temp_booking.customer_motorcycle = None
         self.temp_booking.save()
         
@@ -123,7 +123,7 @@ class Step6PaymentViewTest(TestCase):
         self.assertTrue(any("Please select or add your motorcycle details first (Step 3)." in str(m) for m in messages))
 
     def test_dispatch_no_service_profile_redirects_to_step4(self):
-        #--
+        
         self.temp_booking.service_profile = None
         self.temp_booking.save()
 
@@ -135,7 +135,7 @@ class Step6PaymentViewTest(TestCase):
 
     @patch('service.views.step6_payment_view.get_service_date_availability', return_value=(datetime.date.today(), '[]'))
     def test_dispatch_valid_temp_booking_proceeds(self, mock_availability):
-        #--
+        
         with patch('stripe.PaymentIntent.create') as mock_create:
             mock_create.return_value = MagicMock(
                 client_secret='test_client_secret', 
@@ -153,7 +153,7 @@ class Step6PaymentViewTest(TestCase):
     @patch('stripe.PaymentIntent.retrieve')
     @patch('stripe.PaymentIntent.modify')
     def test_get_online_full_payment_creates_new_intent_and_payment_obj(self, mock_modify, mock_retrieve, mock_create):
-        #--
+        
         self.temp_booking.payment_method = 'online_full'
         self.temp_booking.save()
 
@@ -196,7 +196,7 @@ class Step6PaymentViewTest(TestCase):
     @patch('stripe.PaymentIntent.retrieve')
     @patch('stripe.PaymentIntent.modify')
     def test_get_online_deposit_creates_new_intent_and_payment_obj(self, mock_modify, mock_retrieve, mock_create):
-        #--
+        
         self.temp_booking.payment_method = 'online_deposit'
         self.temp_booking.save()
 
@@ -234,7 +234,7 @@ class Step6PaymentViewTest(TestCase):
     @patch('stripe.PaymentIntent.retrieve')
     @patch('stripe.PaymentIntent.modify')
     def test_get_existing_intent_modified_if_amount_changed(self, mock_modify, mock_retrieve, mock_create):
-        #--
+        
         existing_amount = Decimal('100.00')
         new_amount = Decimal('150.00')
         self.temp_booking.payment_method = 'online_full'
@@ -294,7 +294,7 @@ class Step6PaymentViewTest(TestCase):
     @patch('stripe.PaymentIntent.retrieve')
     @patch('stripe.PaymentIntent.modify')
     def test_get_existing_intent_succeeded_renders_with_flag(self, mock_modify, mock_retrieve, mock_create):
-        #--
+        
         initial_payment = PaymentFactory(
             temp_service_booking=self.temp_booking,
             amount=self.service_type.base_price,
@@ -327,7 +327,7 @@ class Step6PaymentViewTest(TestCase):
     @patch('stripe.PaymentIntent.retrieve')
     @patch('stripe.PaymentIntent.modify')
     def test_get_stripe_error_redirects_to_step5(self, mock_modify, mock_retrieve, mock_create):
-        #--
+        
         mock_retrieve.side_effect = stripe.error.StripeError("Stripe API error during retrieve")
         mock_create.side_effect = stripe.error.StripeError("Stripe API error during create")
 
@@ -343,7 +343,7 @@ class Step6PaymentViewTest(TestCase):
     @patch('stripe.PaymentIntent.retrieve')
     @patch('stripe.PaymentIntent.modify')
     def test_get_invalid_amount_redirects_to_step5(self, mock_modify, mock_retrieve, mock_create):
-        #--
+        
         self.temp_booking.payment_method = 'online_full'
         self.temp_booking.service_type.base_price = Decimal('0.00')
         self.temp_booking.service_type.save()
@@ -365,7 +365,7 @@ class Step6PaymentViewTest(TestCase):
 
     @patch('stripe.PaymentIntent.retrieve')
     def test_post_payment_succeeded_json_response(self, mock_retrieve):
-        #--
+        
         payment_intent_id = 'pi_test_succeeded'
         payment_obj = PaymentFactory(
             temp_service_booking=self.temp_booking,
@@ -395,7 +395,7 @@ class Step6PaymentViewTest(TestCase):
 
     @patch('stripe.PaymentIntent.retrieve')
     def test_post_payment_requires_action_json_response(self, mock_retrieve):
-        #--
+        
         payment_intent_id = 'pi_test_requires_action'
         payment_obj = PaymentFactory(
             temp_service_booking=self.temp_booking,
@@ -425,7 +425,7 @@ class Step6PaymentViewTest(TestCase):
 
     @patch('stripe.PaymentIntent.retrieve')
     def test_post_payment_failed_json_response(self, mock_retrieve):
-        #--
+        
         payment_intent_id = 'pi_test_failed'
         payment_obj = PaymentFactory(
             temp_service_booking=self.temp_booking,
@@ -454,7 +454,7 @@ class Step6PaymentViewTest(TestCase):
         self.assertEqual(payment_obj.status, 'requires_payment_method')
 
     def test_post_invalid_json_returns_400(self):
-        #--
+        
         response = self.client.post(
             self.base_url,
             '{"payment_intent_id": "pi_invalid"',
@@ -464,7 +464,7 @@ class Step6PaymentViewTest(TestCase):
         self.assertIn('Invalid JSON format in request body', response.json()['error'])
 
     def test_post_missing_payment_intent_id_returns_400(self):
-        #--
+        
         response = self.client.post(
             self.base_url,
             json.dumps({'some_other_key': 'value'}),
@@ -475,7 +475,7 @@ class Step6PaymentViewTest(TestCase):
 
     @patch('stripe.PaymentIntent.retrieve')
     def test_post_stripe_error_returns_500(self, mock_retrieve):
-        #--
+        
         payment_intent_id = 'pi_error_on_retrieve'
         mock_retrieve.side_effect = stripe.error.StripeError("Error retrieving intent")
 

@@ -10,16 +10,16 @@ from service.forms import AdminServiceTypeForm
 from service.models import ServiceType                               
 
 class ServiceTypeCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, View):
-    #--
+    
     template_name = 'service/admin_service_type_create_update.html'                                             
     form_class = AdminServiceTypeForm
 
     def test_func(self):
-        #--
+        
         return self.request.user.is_staff or self.request.user.is_superuser
 
     def get(self, request, pk=None, *args, **kwargs):
-        #--
+        
         instance = None
         if pk:
                                                                                            
@@ -37,7 +37,7 @@ class ServiceTypeCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, View)
         return render(request, self.template_name, context)
 
     def post(self, request, pk=None, *args, **kwargs):
-        #--
+        
         instance = None
         if pk:
             instance = get_object_or_404(ServiceType, pk=pk)

@@ -9,16 +9,16 @@ from service.models import ServiceProfile
 
 
 class ServiceProfileCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, View):
-    #--
+    
     template_name = 'service/admin_service_profile_form.html'                             
     form_class = AdminServiceProfileForm
 
     def test_func(self):
-        #--
+        
         return self.request.user.is_staff or self.request.user.is_superuser
 
     def get(self, request, pk=None, *args, **kwargs):
-        #--
+        
         instance = None
         if pk:
                                                                                       
@@ -36,7 +36,7 @@ class ServiceProfileCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, Vi
         return render(request, self.template_name, context)
 
     def post(self, request, pk=None, *args, **kwargs):
-        #--
+        
         instance = None
         if pk:
             instance = get_object_or_404(ServiceProfile, pk=pk)

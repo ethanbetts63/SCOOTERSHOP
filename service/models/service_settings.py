@@ -4,7 +4,7 @@ from decimal import Decimal
 from datetime import time
 
 class ServiceSettings(models.Model):
-    #--
+    
                               
     enable_service_booking = models.BooleanField(default=True, help_text="Globally enable or disable the service booking system.")
     booking_advance_notice = models.IntegerField(default=1, help_text="Minimum number of days notice required for a booking (e.g., 1 for next day).")

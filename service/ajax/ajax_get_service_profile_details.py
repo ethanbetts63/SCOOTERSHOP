@@ -7,7 +7,7 @@ from service.models import ServiceProfile
 
 @require_GET
 def get_service_profile_details_ajax(request, profile_id):
-    #--
+    
     try:
         profile = get_object_or_404(ServiceProfile, pk=profile_id)
     except Exception as e:

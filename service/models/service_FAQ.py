@@ -3,7 +3,7 @@
 from django.db import models
 
 class ServiceFAQ(models.Model):
-    #--
+    
     BOOKING_STEP_CHOICES = [
         ('service_page', 'Main Service Page'),
         ('step1', 'Step 1: Service Details'),

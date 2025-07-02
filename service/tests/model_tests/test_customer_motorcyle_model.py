@@ -11,11 +11,11 @@ from service.models import CustomerMotorcycle
 from ..test_helpers.model_factories import CustomerMotorcycleFactory, ServiceProfileFactory
 
 class CustomerMotorcycleModelTest(TestCase):
-    #--
+    
 
     @classmethod
     def setUpTestData(cls):
-        #--
+        
         cls.customer_motorcycle = CustomerMotorcycleFactory(
                                                                      
             brand="Honda",
@@ -28,13 +28,13 @@ class CustomerMotorcycleModelTest(TestCase):
         )
 
     def test_customer_motorcycle_creation(self):
-        #--
+        
         self.assertIsNotNone(self.customer_motorcycle)
         self.assertIsInstance(self.customer_motorcycle, CustomerMotorcycle)
         self.assertEqual(CustomerMotorcycle.objects.count(), 1)
 
     def test_str_method(self):
-        #--
+        
         expected_str = (
             f"{self.customer_motorcycle.year} {self.customer_motorcycle.brand} {self.customer_motorcycle.model} "
             f"(Owner: {self.customer_motorcycle.service_profile.name})"
@@ -42,7 +42,7 @@ class CustomerMotorcycleModelTest(TestCase):
         self.assertEqual(str(self.customer_motorcycle), expected_str)
 
     def test_field_attributes(self):
-        #--
+        
         motorcycle = self.customer_motorcycle
 
                          
@@ -108,7 +108,7 @@ class CustomerMotorcycleModelTest(TestCase):
         self.assertTrue(field.auto_now)
 
     def test_clean_method_required_fields(self):
-        #--
+        
         service_profile = ServiceProfileFactory()
 
                             
@@ -190,7 +190,7 @@ class CustomerMotorcycleModelTest(TestCase):
 
 
     def test_clean_method_year_validation(self):
-        #--
+        
         service_profile = ServiceProfileFactory()
         current_year = date.today().year
 
@@ -237,7 +237,7 @@ class CustomerMotorcycleModelTest(TestCase):
             self.fail(f"full_clean raised ValidationError unexpectedly for 100 years ago: {e.message_dict}")
 
     def test_clean_method_vin_number_validation(self):
-        #--
+        
         service_profile = ServiceProfileFactory()
 
                                    
@@ -288,7 +288,7 @@ class CustomerMotorcycleModelTest(TestCase):
             self.fail(f"full_clean raised ValidationError unexpectedly for None VIN: {e.message_dict}")
 
     def test_clean_method_odometer_validation(self):
-        #--
+        
         service_profile = ServiceProfileFactory()
 
                                 
@@ -329,7 +329,7 @@ class CustomerMotorcycleModelTest(TestCase):
             self.fail(f"full_clean raised ValidationError unexpectedly for positive odometer: {e.message_dict}")
 
     def test_vin_number_unique_constraint_non_null(self):
-        #--
+        
                                                                                 
         existing_motorcycle = CustomerMotorcycleFactory(
             vin_number="UNIQUEVIN123456789",
@@ -347,7 +347,7 @@ class CustomerMotorcycleModelTest(TestCase):
         self.assertIn("unique constraint failed", str(cm.exception).lower())
 
     def test_vin_number_unique_constraint_null_values(self):
-        #--
+        
                                                                                                   
         CustomerMotorcycleFactory(
             vin_number=None,
@@ -363,7 +363,7 @@ class CustomerMotorcycleModelTest(TestCase):
 
 
     def test_timestamps_auto_now_add_and_auto_now(self):
-        #--
+        
         motorcycle = CustomerMotorcycleFactory(
             brand="Suzuki", model="GSX-R", year=2019, rego="GHI789", odometer=8000,
             transmission="MANUAL", engine_size="750cc"

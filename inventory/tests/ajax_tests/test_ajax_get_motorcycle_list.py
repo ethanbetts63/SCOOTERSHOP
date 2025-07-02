@@ -69,7 +69,7 @@ class AjaxGetMotorcycleListTest(TestCase):
                                                             
 
     def test_initial_load_all_motorcycles_default_order(self):
-        #--
+        
         response = self.client.get(reverse('inventory:ajax-get-motorcycle-list'), {'condition_slug': 'all'})
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -102,7 +102,7 @@ class AjaxGetMotorcycleListTest(TestCase):
 
 
     def test_filter_by_condition_slug_new(self):
-        #--
+        
         response = self.client.get(reverse('inventory:ajax-get-motorcycle-list'), {'condition_slug': 'new'})
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -113,7 +113,7 @@ class AjaxGetMotorcycleListTest(TestCase):
         self.assertFalse(data['page_obj']['has_next'])                                           
 
     def test_filter_by_condition_slug_used(self):
-        #--
+        
         response = self.client.get(reverse('inventory:ajax-get-motorcycle-list'), {'condition_slug': 'used'})
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -131,7 +131,7 @@ class AjaxGetMotorcycleListTest(TestCase):
 
 
     def test_filter_by_brand(self):
-        #--
+        
         response = self.client.get(reverse('inventory:ajax-get-motorcycle-list'), {'brand': 'Honda', 'condition_slug': 'all'})
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -142,7 +142,7 @@ class AjaxGetMotorcycleListTest(TestCase):
         self.assertFalse(data['page_obj']['has_next'])                                      
 
     def test_filter_by_year_range(self):
-        #--
+        
         response = self.client.get(reverse('inventory:ajax-get-motorcycle-list'), {
             'year_min': '2021',
             'year_max': '2022',
@@ -162,7 +162,7 @@ class AjaxGetMotorcycleListTest(TestCase):
 
 
     def test_filter_by_price_range(self):
-        #--
+        
         response = self.client.get(reverse('inventory:ajax-get-motorcycle-list'), {
             'price_min': '8000.00',
             'price_max': '12000.00',
@@ -185,7 +185,7 @@ class AjaxGetMotorcycleListTest(TestCase):
         self.assertIn(self.moto_ducati_demo_2021.title, returned_titles)
 
     def test_filter_by_engine_size_range(self):
-        #--
+        
         response = self.client.get(reverse('inventory:ajax-get-motorcycle-list'), {
             'engine_min_cc': '600',
             'engine_max_cc': '800',
@@ -201,7 +201,7 @@ class AjaxGetMotorcycleListTest(TestCase):
 
 
     def test_combined_filters_and_pagination(self):
-        #--
+        
         response = self.client.get(reverse('inventory:ajax-get-motorcycle-list'), {
             'condition_slug': 'used',
             'brand': 'Kawasaki',
@@ -221,7 +221,7 @@ class AjaxGetMotorcycleListTest(TestCase):
 
 
     def test_sorting_price_low_to_high(self):
-        #--
+        
         response = self.client.get(reverse('inventory:ajax-get-motorcycle-list'), {
             'order': 'price_low_to_high',
             'condition_slug': 'all',
@@ -236,7 +236,7 @@ class AjaxGetMotorcycleListTest(TestCase):
         self.assertEqual(prices, sorted(prices))
 
     def test_pagination_second_page(self):
-        #--
+        
         response = self.client.get(reverse('inventory:ajax-get-motorcycle-list'), {
             'condition_slug': 'all',
             'page': 2
@@ -259,7 +259,7 @@ class AjaxGetMotorcycleListTest(TestCase):
 
 
     def test_pagination_last_page_empty(self):
-        #--
+        
         response = self.client.get(reverse('inventory:ajax-get-motorcycle-list'), {
             'condition_slug': 'all',
             'page': 100                          
@@ -275,7 +275,7 @@ class AjaxGetMotorcycleListTest(TestCase):
 
 
     def test_invalid_number_format_for_filters(self):
-        #--
+        
         response = self.client.get(reverse('inventory:ajax-get-motorcycle-list'), {
             'price_min': 'invalid_price'
         })
@@ -285,7 +285,7 @@ class AjaxGetMotorcycleListTest(TestCase):
         self.assertEqual(data['error'], 'Invalid number format for filters')
 
     def test_unique_makes_for_filter_context(self):
-        #--
+        
         response = self.client.get(reverse('inventory:ajax-get-motorcycle-list'), {'condition_slug': 'new'})
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -305,7 +305,7 @@ class AjaxGetMotorcycleListTest(TestCase):
 
 
     def test_serialization_of_price(self):
-        #--
+        
         response_honda_cbr = self.client.get(reverse('inventory:ajax-get-motorcycle-list'), {'condition_slug': 'all', 'brand': 'Honda', 'model': 'CBR1000RR'})
         self.assertEqual(response_honda_cbr.status_code, 200)
         data_honda_cbr = response_honda_cbr.json()
