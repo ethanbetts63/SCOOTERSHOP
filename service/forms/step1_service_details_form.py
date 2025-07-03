@@ -7,7 +7,7 @@ from datetime import date
 class ServiceDetailsForm(forms.Form):
     service_type = forms.ModelChoiceField(
         queryset=ServiceType.objects.filter(is_active=True),
-        empty_label="Select a Service Type",
+        empty_label="Select Service Type",
         label="Service Type",
         widget=forms.Select(attrs={"class": "form-control"}),
         required=True,

@@ -86,7 +86,7 @@ class AdminBookingDetailsForm(forms.ModelForm):
         self.fields["service_type"].queryset = ServiceType.objects.filter(
             is_active=True
         ).order_by("name")
-        self.fields["service_type"].empty_label = _("Select a Service Type")
+        self.fields["service_type"].empty_label = _("Select Service Type")
 
     def clean(self):
 
