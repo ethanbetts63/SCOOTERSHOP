@@ -86,20 +86,21 @@
     <!-- ================================================================= -->
     <!-- ========= START: New "Our Brands" Section ======================= -->
     <!-- ================================================================= -->
-    <!-- Removed the gray background wrapper -->
     <div class="container mx-auto px-4 py-16">
         <div class="space-y-16">
-            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 text-center">Our Trusted Brands</h2>
+            <!-- Text color changed to white -->
+            <h2 class="text-3xl md:text-4xl font-bold text-white text-center">Our Trusted Brands</h2>
 
             <!-- SYM Brand Section (Text on Left, Image on Right) -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
                 <div class="flex flex-col justify-center">
-                    <h3 class="text-2xl font-bold text-gray-800 mb-2">SYM Scooters</h3>
-                    <p class="font-semibold text-gray-600 mb-4">Reliable, Affordable, and Built to Last</p>
-                    <p class="text-gray-700 mb-4">
+                    <!-- Text colors changed to white and light gray -->
+                    <h3 class="text-2xl font-bold text-white mb-2">SYM Scooters</h3>
+                    <p class="font-semibold text-gray-300 mb-4">Reliable, Affordable, and Built to Last</p>
+                    <p class="text-gray-300 mb-4">
                         Founded in 1954, SYM is a trusted Taiwanese manufacturer known for exceptional build quality and reliability. They strike the perfect balance—offering better quality than many low-end brands, without the high price tag of premium models.
                     </p>
-                    <p class="text-gray-700 mb-6">
+                    <p class="text-gray-300 mb-6">
                         We've proudly partnered with them for years—mainly because it just makes sense. Their scooters come back with fewer issues, and our mechanics enjoy working on them.
                     </p>
                     <a href="{% url 'inventory:new' %}" class="inline-block w-full sm:w-auto bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-colors duration-300 text-center">
@@ -117,12 +118,13 @@
                      <img src="https://placehold.co/800x600/333/e0e0e0?text=Segway+Moped" alt="Segway Moped" class="w-full h-full object-cover">
                 </div>
                 <div class="flex flex-col justify-center">
-                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Segway Electric Mopeds</h3>
-                    <p class="font-semibold text-gray-600 mb-4">Innovation Meets Reliability</p>
-                    <p class="text-gray-700 mb-4">
+                    <!-- Text colors changed to white and light gray -->
+                    <h3 class="text-2xl font-bold text-white mb-2">Segway Electric Mopeds</h3>
+                    <p class="font-semibold text-gray-300 mb-4">Innovation Meets Reliability</p>
+                    <p class="text-gray-300 mb-4">
                         Best known for their self-balancing transporters, Segway has evolved into a serious player in the electric moped space. As the market changes, Segway stands out with the experience and quality that comes from being an early innovator.
                     </p>
-                    <p class="text-gray-700 mb-6">
+                    <p class="text-gray-300 mb-6">
                         We've tested a lot of brands, but Segway's electric mopeds impressed us with their build quality, design, and performance. We're confident these are vehicles we can stand behind—and that you'll love riding.
                     </p>
                     <a href="{% url 'inventory:new' %}" class="inline-block w-full sm:w-auto bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-colors duration-300 text-center">
@@ -140,7 +142,7 @@
 
 {% block map %}
     <div class="container mx-auto px-4 my-8">
-        <h2 class="text-3xl font-bold tracking-tight text-gray-900 text-center mb-8">Where To Find Us</h2>
+        <h2 class="text-3xl font-bold tracking-tight text-white text-center mb-8">Where To Find Us</h2>
         {% include "core/includes/map.html" %}
     </div>
 {% endblock %}
