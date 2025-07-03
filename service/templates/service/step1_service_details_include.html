@@ -1,49 +1,35 @@
 {% load static %}
 
-<!-- 
-  The 'service-booking-card' class is essential for maintaining the 
-  overall card style, including the green left-hand border.
--->
-<div class="card has-bg-effect service-booking-card h-full flex flex-col bg-white shadow-lg rounded-lg overflow-hidden">
+<div class="card has-bg-effect service-booking-card h-full flex flex-col bg-gray-800 shadow-lg rounded-lg overflow-hidden">
     <div class="card-body p-8 flex-grow flex flex-col">
-        <h2 class="text-3xl font-bold text-gray-800 mb-4">Expert Scooter Servicing</h2>
-        <p class="text-gray-600 mb-4">
+        <h2 class="text-3xl font-bold text-white mb-4">Expert Scooter Servicing</h2>
+        <p class="text-gray-300 mb-4">
             At Scooter Shop Australia, we offer full workshop facilities from our fully licensed premises.
             Whether it's factory servicing or tyre changes, we take pride in being your one-stop scooter shop.
         </p>
-        <p class="text-gray-600 mb-6">
+        <p class="text-gray-300 mb-6">
             Our team of qualified technicians consists of life-long scooter enthusiasts. We treat every bike like it's our own, so you can rest assured knowing we'll do everything we can to get your bike back out on the road.
         </p>
         
-        <!-- The 'mt-auto' class pushes the form to the bottom of the card, creating a clean separation from the text. -->
         <div class="mt-auto">
             <form method="post" action="{% url 'service:service_book_step1' %}" class="service-booking-form">
                 {% csrf_token %}
 
-                <!-- 
-                  This grid layout organizes the form fields and button.
-                  - On small screens (mobile), it's a single column (grid-cols-1).
-                  - On medium screens and larger (desktop), it becomes a three-column grid (md:grid-cols-3).
-                  - 'items-end' vertically aligns the items to their bottom edge for a clean look.
-                -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                     
-                    <!-- Service Type Selection -->
                     <div class="flex-grow">
-                        <label for="id_service_type" class="block mb-2 text-sm font-medium text-gray-700">Service Type</label>
+                        <label for="id_service_type" class="block mb-2 text-sm font-medium text-gray-300">Service Type</label>
                         {{ form.service_type }}
                     </div>
 
-                    <!-- Service Date Selection -->
                     <div class="flex-grow">
-                        <label for="id_service_date" class="block mb-2 text-sm font-medium text-gray-700">Service Date</label>
+                        <label for="id_service_date" class="block mb-2 text-sm font-medium text-gray-300">Service Date</label>
                         <input type="text" id="id_service_date" name="service_date"
-                               class="form-control bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                               class="form-control bg-gray-700 border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                                placeholder="Select service date"
                                data-min-date-flatpickr="{{ min_service_date_flatpickr|default:'' }}">
                     </div>
                     
-                    <!-- Search Button -->
                     <div class="flex-grow">
                         <button type="submit" class="w-full text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-3 text-center transition-colors duration-300">
                             Search
@@ -63,21 +49,20 @@
     </div>
 </div>
 
-<!-- Custom styles to ensure the Django-rendered select menu matches the Tailwind-styled inputs -->
 <style>
     .service-booking-form select {
-        background-color: #F9FAFB; /* bg-gray-50 */
-        border: 1px solid #D1D5DB; /* border-gray-300 */
-        color: #111827; /* text-gray-900 */
-        font-size: 0.875rem; /* text-sm */
-        border-radius: 0.5rem; /* rounded-lg */
+        background-color: #374151; /* bg-gray-700 */
+        border: 1px solid #4B5563; /* border-gray-600 */
+        color: #FFFFFF; /* text-white */
+        font-size: 0.875rem;
+        border-radius: 0.5rem;
         display: block;
         width: 100%;
-        padding: 0.625rem; /* p-2.5 */
+        padding: 0.625rem;
     }
     .service-booking-form select:focus {
         --tw-ring-color: rgb(59 130 246 / 0.5);
-        border-color: #3B82F6; /* focus:border-blue-500 */
+        border-color: #3B82F6;
     }
 </style>
 
@@ -86,7 +71,6 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-<!-- The JavaScript functionality for the date picker remains unchanged -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const serviceTypeSelect = document.getElementById('id_service_type');
