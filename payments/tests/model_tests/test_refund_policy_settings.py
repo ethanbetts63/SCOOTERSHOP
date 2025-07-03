@@ -176,3 +176,8 @@ class RefundPolicySettingsModelTests(TestCase):
         self.assertIn(
             "cancellation_deposit_partial_refund_days", cm.exception.message_dict
         )
+
+    @classmethod
+    def tearDownClass(cls):
+        RefundPolicySettings.objects.all().delete()
+        super().tearDownClass()
