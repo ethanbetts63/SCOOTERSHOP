@@ -3,75 +3,92 @@
 
 {% block title %}Admin Dashboard - Scootershop Australia{% endblock %}
 
-{% block extra_css %}
-{{ block.super }} 
-<link rel="stylesheet" href="{% static 'css/admin_layout_styles.css' %}">
-<link rel="stylesheet" href="{% static 'css/form_styles.css' %}">
-
-{% endblock %}
-
 {% block content %}
-<div class="admin-layout-container">
-    <aside class="admin-layout-sidebar">
-        <h2>Admin Navigation</h2>
-        <ul class="reset-list">
-            <li><a href="{% url 'dashboard:dashboard_index' %}">Dashboard Home</a></li>
-            
-            <li class="nav-section">
-                <h3>General</h3>
-                <ul class="reset-list">
-                    <li><a href="{% url 'dashboard:settings_business_info' %}">Business Information</a></li>
-                    <li><a href="{% url 'dashboard:settings_visibility' %}">Visibility Settings</a></li>
-                    <li><a href="{% url 'core:enquiry_management' %}">Enquiry Management</a></li>
-                </ul>
-            </li>
+<div class="flex text-gray-200" style="background-color: #222a2e;">
+    <!-- 
+      Sidebar Changes:
+      - `h-screen`: Makes the sidebar the full height of the viewport.
+      - `sticky top-0`: Makes the sidebar stick to the top of the page, even when the main content is scrolled.
+      - `flex flex-col`: Turns the sidebar into a flex container to manage its children's layout (header and nav).
+    -->
+    <aside class="w-72 flex-shrink-0 h-screen sticky top-0 flex flex-col" style="background-color: #273034;">
+        <!-- Sidebar Header: No longer needs to be sticky itself. -->
+        <div class="p-5 border-b border-gray-700">
+            <h2 class="text-2xl font-bold text-white text-center">Admin Panel</h2>
+        </div>
+        
+        <!-- 
+          Navigation container Changes:
+          - `flex-1`: Allows the nav to grow and fill the remaining vertical space in the sidebar.
+          - `overflow-y-auto`: Adds a scrollbar ONLY to the nav if its content is taller than the available space.
+        -->
+        <nav class="flex-1 p-4 text-base overflow-y-auto">
+            <div class="space-y-4">
+                <div>
+                    <a href="{% url 'dashboard:dashboard_index' %}" class="flex items-center py-2.5 px-4 rounded-lg font-semibold text-white bg-green-600 hover:bg-green-700 transition-colors duration-200">
+                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                        Dashboard Home
+                    </a>
+                </div>
+                
+                <div class="pt-4">
+                    <h3 class="px-4 text-lg font-semibold text-gray-400 uppercase tracking-wider">General</h3>
+                    <div class="mt-2 space-y-1">
+                        <div><a href="{% url 'dashboard:settings_business_info' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">Business Information</a></div>
+                        <div><a href="{% url 'dashboard:settings_visibility' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">Visibility Settings</a></div>
+                        <div><a href="{% url 'core:enquiry_management' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">Enquiry Management</a></div>
+                    </div>
+                </div>
 
-            <li class="nav-section">
-                <h3>Inventory Management</h3>
-                <ul class="reset-list">
-                    
-                    <li><a href="{% url 'inventory:admin_motorcycle_create' %}">Add Motorcycle</a></li>
-                    
-                    <li><a href="{% url 'inventory:admin_new_motorcycle_management' %}">New Motorcycle Management</a></li>
-                    <li><a href="{% url 'inventory:admin_used_motorcycle_management' %}">Used Motorcycle Management</a></li>
-                    <li><a href="{% url 'inventory:sales_bookings_management' %}">Sales Bookings Management</a></li>
-                    <li><a href="{% url 'inventory:sales_profile_management' %}">Sales Profiles Management</a></li>
-                    <li><a href="{% url 'inventory:sales_faq_management' %}">Sales FAQs Management</a></li>
-                    <li><a href="{% url 'inventory:blocked_sales_date_management' %}">Blocked Sales Dates Management</a></li>
-                    <li><a href="{% url 'inventory:inventory_settings' %}">Inventory Settings</a></li>
-                    <li><a href="{% url 'inventory:featured_motorcycles' %}">Featured Motorcycles</a></li>
-                </ul>
-            </li>
+                <div class="pt-4">
+                    <h3 class="px-4 text-lg font-semibold text-gray-400 uppercase tracking-wider">Inventory</h3>
+                    <div class="mt-2 space-y-1">
+                        <div><a href="{% url 'inventory:admin_motorcycle_create' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">Add Motorcycle</a></div>
+                        <div><a href="{% url 'inventory:admin_new_motorcycle_management' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">New Motorcycle Mngmt</a></div>
+                        <div><a href="{% url 'inventory:admin_used_motorcycle_management' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">Used Motorcycle Mngmt</a></div>
+                        <div><a href="{% url 'inventory:sales_bookings_management' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">Sales Bookings</a></div>
+                        <div><a href="{% url 'inventory:sales_profile_management' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">Sales Profiles</a></div>
+                        <div><a href="{% url 'inventory:sales_faq_management' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">Sales FAQs</a></div>
+                        <div><a href="{% url 'inventory:blocked_sales_date_management' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">Blocked Sales Dates</a></div>
+                        <div><a href="{% url 'inventory:inventory_settings' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">Inventory Settings</a></div>
+                        <div><a href="{% url 'inventory:featured_motorcycles' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">Featured Motorcycles</a></div>
+                    </div>
+                </div>
 
-            
-            <li class="nav-section">
-                <h3>Service Management</h3>
-                <ul class="reset-list">
-                    <li><a href="{% url 'service:service_booking_management' %}">Service Bookings</a></li>
-                    <li><a href="{% url 'service:admin_create_service_booking' %}">Create Service Booking</a></li>
-                    <li><a href="{% url 'service:admin_service_profiles' %}">Service Profiles</a></li>
-                    <li><a href="{% url 'service:admin_customer_motorcycle_management' %}">Customer Motorcycles</a></li>
-                    <li><a href="{% url 'service:service_settings' %}">Service Settings</a></li>
-                    <li><a href="{% url 'service:service_types_management' %}">Service Types</a></li>
-                    <li><a href="{% url 'service:service_brands_management' %}">Service Brands</a></li>
-                    <li><a href="{% url 'service:blocked_service_dates_management' %}">Blocked Service Dates</a></li>
-                    <li><a href="{% url 'service:service_faq_management' %}">Service FAQs Management</a></li> 
-                </ul>
-            </li>
+                <div class="pt-4">
+                    <h3 class="px-4 text-lg font-semibold text-gray-400 uppercase tracking-wider">Service</h3>
+                    <div class="mt-2 space-y-1">
+                        <div><a href="{% url 'service:service_booking_management' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">Service Bookings</a></div>
+                        <div><a href="{% url 'service:admin_create_service_booking' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">Create Service Booking</a></div>
+                        <div><a href="{% url 'service:admin_service_profiles' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">Service Profiles</a></div>
+                        <div><a href="{% url 'service:admin_customer_motorcycle_management' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">Customer Motorcycles</a></div>
+                        <div><a href="{% url 'service:service_settings' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">Service Settings</a></div>
+                        <div><a href="{% url 'service:service_types_management' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">Service Types</a></div>
+                        <div><a href="{% url 'service:service_brands_management' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">Service Brands</a></div>
+                        <div><a href="{% url 'service:blocked_service_dates_management' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">Blocked Service Dates</a></div>
+                        <div><a href="{% url 'service:service_faq_management' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">Service FAQs</a></div> 
+                    </div>
+                </div>
 
-            
-            <li class="nav-section">
-                <h3>Refund Management</h3>
-                <ul class="reset-list">
-                    <li><a href="{% url 'payments:admin_refund_management' %}">Refund Requests</a></li>
-                    <li><a href="{% url 'payments:admin_refund_settings' %}">Refund Settings</a></li>
-                </ul>
-            </li>
-        </ul>
+                <div class="pt-4">
+                    <h3 class="px-4 text-lg font-semibold text-gray-400 uppercase tracking-wider">Refunds</h3>
+                    <div class="mt-2 space-y-1">
+                        <div><a href="{% url 'payments:admin_refund_management' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">Refund Requests</a></div>
+                        <div><a href="{% url 'payments:admin_refund_settings' %}" class="block py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200">Refund Settings</a></div>
+                    </div>
+                </div>
+            </div>
+        </nav>
     </aside>
-    <main class="admin-layout-content">
+
+    <main class="flex-1 p-6 lg:p-10">
         {% block admin_main_content %}
-            
+            <div class="p-8 rounded-lg shadow-lg" style="background-color: #273034;">
+                <h1 class="text-3xl font-bold text-white mb-4">Welcome to the Admin Dashboard</h1>
+                <p class="text-gray-300">
+                    Select a section from the navigation menu on the left to manage your shop's content, settings, and operations.
+                </p>
+            </div>
         {% endblock %}
     </main>
 </div>
