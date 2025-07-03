@@ -10,37 +10,74 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container">
-        <h1 class="section-title">Contact Us</h1>
+<div class="container mx-auto px-4 py-8">
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-extrabold text-white tracking-tight">Contact Us</h1>
+        <p class="text-lg text-gray-300 mt-2">We'd love to hear from you. Drop us a line below.</p>
+    </div>
 
-        <div class="contact-sections">
-            <div class="card contact-form-card">
-                <div class="card-body">
-                    <h3>Send Us a Message</h3>
-                    <form method="post">
-                        {% csrf_token %}
-                        {{ form.as_p }}
-                        <button type="submit" class="btn btn-primary">Submit Enquiry</button>
-                    </form>
-                </div>
-            </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+        
+        <!-- Updated Contact Form Card -->
+        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6">Send Us a Message</h3>
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
 
-            <div class="card has-bg-effect contact-message">
-                <div class="card-body">
-                    <h3>We'd Love to See You!</h3>
-                    <div class="welcome-message">
-                        <p>Have questions about scooters? Need to book your scooter in? Want to check out our latest arrivals?</p>
-                        <p>We're passionate about scooters and would love to help you out. As Perth's only dedicated scooter shop, our friendly team has the expertise to guide you through every step of your scooter journey.</p>
-                        <p>Drop by our Fremantle showroom, give us a call, or send us an email. We're always happy to chat about all things scooters!</p>
-                        <a href="tel:0894334613" class="contact-cta mobile-only-cta">Call Us Now</a>
+                {% if form.non_field_errors %}
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        {{ form.non_field_errors }}
                     </div>
+                {% endif %}
+
+                <div>
+                    <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700">Your Name</label>
+                    <input type="text" name="{{ form.name.name }}" id="{{ form.name.id_for_label }}"
+                           class="mt-1 block w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all"
+                           value="{{ form.name.value|default:'' }}">
+                    {% for error in form.name.errors %}
+                        <p class="text-red-600 text-sm italic mt-1">{{ error }}</p>
+                    {% endfor %}
                 </div>
-            </div>
+
+                <div>
+                    <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700">Your Email</label>
+                    <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}"
+                           class="mt-1 block w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all"
+                           value="{{ form.email.value|default:'' }}">
+                    {% for error in form.email.errors %}
+                        <p class="text-red-600 text-sm italic mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div>
+                    <label for="{{ form.message.id_for_label }}" class="block text-sm font-medium text-gray-700">Message</label>
+                    <textarea name="{{ form.message.name }}" id="{{ form.message.id_for_label }}" rows="5"
+                              class="mt-1 block w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all">{{ form.message.value|default:'' }}</textarea>
+                    {% for error in form.message.errors %}
+                        <p class="text-red-600 text-sm italic mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div>
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105">
+                        Submit Enquiry
+                    </button>
+                </div>
+            </form>
         </div>
 
-        <div class="map-container">
-            <h2 class="section-title">Where to find us:</h2>
-            {% include "core/includes/map.html" %}
+        <div class="bg-gray-800 p-8 rounded-2xl shadow-lg text-gray-300 space-y-4">
+            <h3 class="text-2xl font-bold text-white mb-4">We'd Love to See You!</h3>
+            <p>Have some questions? Want to report a problem with this website? Or absolutely anything else?</p>
+            <p>We're passionate about scooters and would love to help you out. As Perth's only dedicated scooter shop, our friendly team has the expertise to guide you through every step of your scooter journey.</p>
+            <p>For sales enquires the best thing is to use the enquiry button located at the bottom of each bike's page. For service booking please visit the service page.</p>
         </div>
     </div>
+
+    <div class="mt-16">
+        <h2 class="text-3xl font-bold text-white text-center mb-8">Where to find us:</h2>
+        {% include "core/includes/map.html" %}
+    </div>
+</div>
 {% endblock %}
