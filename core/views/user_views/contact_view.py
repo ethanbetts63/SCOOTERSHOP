@@ -1,7 +1,7 @@
 from django.views.generic import TemplateView
 from django.shortcuts import redirect
 from django.conf import settings
-from dashboard.models import SiteSettings, AboutPageContent
+from dashboard.models import SiteSettings
 from django.contrib import messages
 from core.forms.enquiry_form import EnquiryForm
 from django.core.mail import send_mail
@@ -15,16 +15,9 @@ class ContactView(TemplateView):
         site_settings = SiteSettings.get_settings()
         about_content = None
 
-        if site_settings.enable_about_page or self.request.user.is_staff:
-            try:
-                about_content = AboutPageContent.objects.get(pk=1)
-            except AboutPageContent.DoesNotExist:
-                pass
-
         context.update(
             {
                 "settings": site_settings,
-                "about_content": about_content,
                 "google_api_key": settings.GOOGLE_API_KEY,
                 "form": EnquiryForm(),
             }

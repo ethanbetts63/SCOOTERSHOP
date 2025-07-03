@@ -9,8 +9,8 @@
         
         
         <div class="text-center mb-8">
-            <h1 class="text-4xl font-extrabold text-gray-800 tracking-tight">{{ page_title }}</h1>
-            <p class="text-lg text-gray-600 mt-2">Browse our collection of premium motorcycles.</p>
+            <h1 class="text-4xl font-extrabold text-white tracking-tight">{{ page_title }}</h1>
+            <p class="text-lg text-gray-300 mt-2">Browse our collection of premium motorcycles.</p>
         </div>
 
         <div class="flex flex-col lg:flex-row gap-8">
@@ -23,7 +23,7 @@
                         
                         <div class="mb-6">
                             <label for="brand-select" class="block text-sm font-semibold text-gray-700 mb-2">Brand</label>
-                            <select id="brand-select" name="brand" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-blue-500 transition-all">
+                            <select id="brand-select" name="brand" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all">
                                 <option value="">All Brands</option>
                                 {% for make in unique_makes %}
                                 <option value="{{ make }}">{{ make }}</option>
@@ -35,14 +35,14 @@
                         <div class="mb-6">
                              <label class="block text-sm font-semibold text-gray-700 mb-2">Year</label>
                             <div class="flex items-center space-x-2">
-                               <select id="year-min-select" name="year_min" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-blue-500 transition-all">
+                               <select id="year-min-select" name="year_min" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all">
                                     <option value="">Min</option>
                                      {% for year in years %}
                                         <option value="{{ year }}">{{ year }}</option>
                                      {% endfor %}
                                 </select>
                                  <span class="text-gray-500">-</span>
-                                 <select id="year-max-select" name="year_max" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-blue-500 transition-all">
+                                 <select id="year-max-select" name="year_max" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all">
                                     <option value="">Max</option>
                                      {% for year in years %}
                                         <option value="{{ year }}">{{ year }}</option>
@@ -55,9 +55,9 @@
                         <div class="mb-6">
                             <label for="price-range" class="block text-sm font-semibold text-gray-700 mb-2">Price Range</label>
                             <div class="flex items-center space-x-2">
-                                <input type="number" name="price_min" placeholder="Min" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-blue-500 transition-all" step="100">
+                                <input type="number" name="price_min" placeholder="Min" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all" step="100">
                                 <span class="text-gray-500">-</span>
-                                <input type="number" name="price_max" placeholder="Max" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-blue-500 transition-all" step="100">
+                                <input type="number" name="price_max" placeholder="Max" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all" step="100">
                             </div>
                         </div>
                         
@@ -65,14 +65,14 @@
                         <div class="mb-6">
                             <label for="engine-size-range" class="block text-sm font-semibold text-gray-700 mb-2">Engine (cc)</label>
                             <div class="flex items-center space-x-2">
-                                <input type="number" name="engine_min_cc" placeholder="Min" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-blue-500 transition-all" step="50">
+                                <input type="number" name="engine_min_cc" placeholder="Min" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all" step="50">
                                 <span class="text-gray-500">-</span>
-                                <input type="number" name="engine_max_cc" placeholder="Max" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-blue-500 transition-all" step="50">
+                                <input type="number" name="engine_max_cc" placeholder="Max" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all" step="50">
                             </div>
                         </div>
 
                         <div class="flex space-x-2 mt-4">
-                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105">Apply</button>
+                            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105">Apply</button>
                             <button type="reset" id="reset-filters" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105">Reset</button>
                         </div>
                     </form>
@@ -83,7 +83,7 @@
             <main class="w-full lg:w-3/4">
                 
                 <div class="mb-6 flex justify-end">
-                    <select id="sort-by" name="order" class="bg-white border-2 border-gray-300 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:border-blue-500 transition-all shadow-sm">
+                    <select id="sort-by" name="order" class="bg-white border-2 border-gray-300 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:border-green-500 transition-all shadow-sm">
                         <option value="">Sort by...</option>
                         <option value="price_low_to_high">Price: Low to High</option>
                         <option value="price_high_to_low">Price: High to Low</option>
@@ -100,11 +100,11 @@
                             <a href="{% url 'inventory:motorcycle-detail' pk=motorcycle.pk %}" class="block">
                                 <div class="relative">
                                     <img src="{% if motorcycle.image %}{{ motorcycle.image.url }}{% else %}https://placehold.co/600x400/e2e8f0/333?text=No+Image{% endif %}" alt="{{ motorcycle.title }}" class="w-full h-56 object-cover">
-                                    <div class="absolute top-4 right-4 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">{{ motorcycle.get_conditions_display }}</div>
+                                    <div class="absolute top-4 right-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">{{ motorcycle.get_conditions_display }}</div>
                                 </div>
                                 <div class="p-6">
                                     <h3 class="text-xl font-bold text-gray-800 truncate">{{ motorcycle.title }}</h3>
-                                    <p class="text-2xl font-extrabold text-blue-600 my-2">
+                                    <p class="text-2xl font-extrabold text-green-600 my-2">
                                         {% if motorcycle.price %}
                                             ${{ motorcycle.price|floatformat:2 }}
                                         {% else %}
@@ -139,7 +139,7 @@
                     <a href="#" data-page="{{ page_obj.previous_page_number }}" class="pagination-link rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 shadow-sm">Previous</a>
                     {% endif %}
                     {% if page_obj.paginator.num_pages > 1 %}
-                    <span class="page-current px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg shadow-md">
+                    <span class="page-current px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg shadow-md">
                         Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
                     </span>
                     {% endif %}
@@ -169,11 +169,11 @@
         <a href="#" class="block motorcycle-link">
             <div class="relative">
                 <img src="https://placehold.co/600x400/e2e8f0/333?text=Bike+Image" alt="Motorcycle Image" class="w-full h-56 object-cover motorcycle-image">
-                <div class="absolute top-4 right-4 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full motorcycle-condition"></div>
+                <div class="absolute top-4 right-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full motorcycle-condition"></div>
             </div>
             <div class="p-6">
                 <h3 class="text-xl font-bold text-gray-800 truncate motorcycle-title"></h3>
-                <p class="text-2xl font-extrabold text-blue-600 my-2 motorcycle-price"></p>
+                <p class="text-2xl font-extrabold text-green-600 my-2 motorcycle-price"></p>
                 <div class="grid grid-cols-3 gap-4 text-sm text-gray-600 mt-4 border-t pt-4">
                     <div class="text-center">
                         <p class="font-semibold">Year</p>
@@ -248,45 +248,38 @@ document.addEventListener('DOMContentLoaded', function() {
             let statusClass = '';
             let applyDimming = false; 
 
-            // Always set the detail URL, as bikes should always be clickable
             motorcycleLink.href = `/inventory/motorcycles/${bike.id}/`; 
 
-            // Logic for 'New' bikes (check quantity)
-            // Assumes bike.condition_name is provided by your AJAX endpoint.
             if (bike.condition_name === 'new') { 
                 if (bike.quantity <= 0) {
                     applyDimming = true;
                     statusText = 'Out of Stock';
-                    statusClass = 'bg-red-700 text-white'; // Darker red for out of stock
+                    statusClass = 'bg-red-700 text-white';
                 }
             } 
-            // Logic for 'Used', 'Demo' bikes (check status)
-            // Assumes bike.status is provided by your AJAX endpoint.
             else if (bike.status === 'reserved') {
                 applyDimming = true;
                 statusText = 'Reserved';
-                statusClass = 'bg-red-500 text-white'; // Red for reserved
+                statusClass = 'bg-red-500 text-white';
             } else if (bike.status === 'sold') {
                 applyDimming = true;
                 statusText = 'Sold';
-                statusClass = 'bg-gray-600 text-white'; // Grey for sold
+                statusClass = 'bg-gray-600 text-white';
             }
 
 
-            // Apply grayscale and opacity if dimming is needed
             if (applyDimming) {
                 tile.classList.add('opacity-50', 'grayscale'); 
             } else {
                 tile.classList.remove('opacity-50', 'grayscale');
             }
 
-            // Display status badge if applicable
             if (statusText) {
                 statusBadge.textContent = statusText;
                 statusBadge.className = `motorcycle-status-badge absolute top-4 left-4 text-sm font-bold px-4 py-2 rounded-full z-20 ${statusClass}`;
-                statusBadge.classList.remove('hidden'); // Show the badge
+                statusBadge.classList.remove('hidden');
             } else {
-                statusBadge.classList.add('hidden'); // Hide if no special status
+                statusBadge.classList.add('hidden');
             }
 
             const image = tile.querySelector('.motorcycle-image');
@@ -321,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function() {
             html += `<a href="#" data-page="${pageObj.previous_page_number}" class="pagination-link rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 shadow-sm">Previous</a>`;
         }
 
-        html += `<span class="page-current px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg shadow-md">Page ${pageObj.number} of ${pageObj.paginator.num_pages}</span>`;
+        html += `<span class="page-current px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg shadow-md">Page ${pageObj.number} of ${pageObj.paginator.num_pages}</span>`;
         
         if (pageObj.has_next) {
             html += `<a href="#" data-page="${pageObj.next_page_number}" class="pagination-link rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 shadow-sm">Next</a>`;
@@ -350,7 +343,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Initial fetch of motorcycles when the DOM is loaded
     fetchMotorcycles(1);
 
 });

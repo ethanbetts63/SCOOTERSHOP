@@ -1,43 +1,5 @@
-                    
-
-from django.contrib import admin
-
-                                      
-from .models import AboutPageContent, SiteSettings
-
-                            
-
-@admin.register(AboutPageContent)
-class AboutPageContentAdmin(admin.ModelAdmin):
-                                                                      
-                                                                    
-    fieldsets = (
-        ('Introduction', {
-            'fields': ('intro_text',)
-        }),
-        ('Sales Section', {
-            'fields': ('sales_title', 'sales_content', 'sales_image')
-        }),
-        ('Service Section', {
-            'fields': ('service_title', 'service_content', 'service_image')
-        }),
-        ('Parts & Accessories Section', {
-            'fields': ('parts_title', 'parts_content', 'parts_image')
-        }),
-        ('Call to Action', {
-            'fields': ('cta_text',)
-        }),
-    )
-                                                        
-    def has_add_permission(self, request):
-                                                                                            
-        return AboutPageContent.objects.count() == 0
-
-                                                                      
-    def has_delete_permission(self, request, obj=None):
-                                                                                    
-        return AboutPageContent.objects.count() > 1                                          
-
+from django.contrib import admin                                     
+from .models import SiteSettings
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):

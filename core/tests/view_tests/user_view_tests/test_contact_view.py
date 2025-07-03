@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from unittest.mock import patch, MagicMock
 from core.forms.enquiry_form import EnquiryForm
-from dashboard.models import SiteSettings, AboutPageContent
+from dashboard.models import SiteSettings
 from django.contrib.messages import get_messages
 
 
@@ -30,14 +30,6 @@ class ContactViewTest(TestCase):
         )
         self.mock_get_settings = patch_site_settings.start()
         self.addCleanup(patch_site_settings.stop)
-
-        self.mock_about_content = MagicMock(spec=AboutPageContent)
-        patch_about_content_get = patch(
-            "dashboard.models.AboutPageContent.objects.get",
-            return_value=self.mock_about_content,
-        )
-        self.mock_about_content_get = patch_about_content_get.start()
-        self.addCleanup(patch_about_content_get.stop)
 
         self.mock_enquiry_form_instance = MagicMock(spec=EnquiryForm)
         patch_enquiry_form = patch(
