@@ -14,7 +14,6 @@ class ContactViewTest(TestCase):
         self.template_name = "core/information/contact.html"
 
         self.mock_site_settings = MagicMock(spec=SiteSettings)
-        self.mock_site_settings.enable_about_page = False
         self.mock_site_settings.google_places_place_id = "test_place_id"
         self.mock_site_settings.google_api_key = "test_api_key"
 
@@ -62,15 +61,6 @@ class ContactViewTest(TestCase):
         self.assertIn("form", response.context)
         self.assertEqual(response.context["form"], self.mock_enquiry_form_instance)
         self.mock_about_content_get.assert_not_called()
-
-    def test_contact_view_get_with_about_page_enabled(self):
-        self.mock_site_settings.enable_about_page = True
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, self.template_name)
-        self.assertIn("about_content", response.context)
-        self.assertEqual(response.context["about_content"], self.mock_about_content)
-        self.mock_about_content_get.assert_called_once_with(pk=1)
 
     def test_contact_view_post_valid_form(self):
         self.mock_enquiry_form_instance.is_valid.return_value = True

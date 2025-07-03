@@ -58,14 +58,14 @@
                     </li>
                 {% endif %}
 
-                {% if settings.enable_contact_page or settings.enable_about_page or user.is_staff %}
+                {% if settings.enable_contact_page or user.is_staff %}
                     <li>
                         <a href="{% url 'core:contact' %}"
-                         {% if not settings.enable_contact_page and not settings.enable_about_page and user.is_staff %}
+                         {% if not settings.enable_contact_page and user.is_staff %}
                              style="color: #08E5D1;"
                          {% endif %}
                         >
-                            {% if not settings.enable_contact_page and settings.enable_about_page %}
+                            {% if not settings.enable_contact_page %}
                                 About us
                             {% else %}
                                 Contact Us
@@ -101,7 +101,7 @@
                 <a href="https://www.instagram.com/scootershop_australia/" target="_blank" rel="noopener">
                     <img src="{% static 'images/svgs/instagram.svg' %}" alt="Instagram">
                 </a>
-                {% if settings.enable_contact_page or settings.enable_about_page or user.is_staff %}
+                {% if settings.enable_contact_page or or user.is_staff %}
                     <a href="{% url 'core:contact' %}">
                         <img src="{% static 'images/svgs/mail.svg' %}" alt="Contact Us">
                     </a>
@@ -167,14 +167,14 @@
                             </a>
                         </li>
 
-                        {% if settings.enable_contact_page or settings.enable_about_page or user.is_staff %}
+                        {% if settings.enable_contact_page or user.is_staff %}
                             <li>
                                 <a href="{% url 'core:contact' %}"
-                                {% if not settings.enable_contact_page and not settings.enable_about_page and user.is_staff %}
+                                {% if not settings.enable_contact_page and and user.is_staff %}
                                     style="color: #08E5D1;"
                                 {% endif %}
                                 >
-                                    {% if not settings.enable_contact_page and settings.enable_about_page %}
+                                    {% if not settings.enable_contact_page %}
                                         About us
                                     {% else %}
                                         Contact Us
@@ -299,7 +299,7 @@
                         <a href="https://www.instagram.com/scootershop_australia/" target="_blank" rel="noopener">
                             <img src="{% static 'images/svgs/instagram.svg' %}" alt="Instagram">
                         </a>
-                        {% if settings.enable_contact_page or settings.enable_about_page or user.is_staff %}
+                        {% if settings.enable_contact_page or user.is_staff %}
                             <a href="{% url 'core:contact' %}">
                                 <img src="{% static 'images/svgs/mail.svg' %}" alt="Contact Us">
                             </a>

@@ -26,7 +26,6 @@ class SettingsVisibilityViewTest(TestCase):
             'enable_service_booking': False,
             'enable_user_accounts': False,
             'enable_contact_page': False,
-            'enable_about_page': False,
             'enable_map_display': False,
             'enable_featured_section': False,
             'enable_privacy_policy_page': False,

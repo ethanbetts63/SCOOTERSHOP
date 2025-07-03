@@ -8,7 +8,6 @@ class VisibilitySettingsFormTest(TestCase):
             'enable_service_booking': True,
             'enable_user_accounts': True,
             'enable_contact_page': True,
-            'enable_about_page': True,
             'enable_map_display': True,
             'enable_featured_section': True,
             'enable_privacy_policy_page': True,

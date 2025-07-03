@@ -135,12 +135,6 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "enable_about_page",
-                    models.BooleanField(
-                        default=True, help_text="Enable the about us page"
-                    ),
-                ),
-                (
                     "enable_map_display",
                     models.BooleanField(
                         default=True,

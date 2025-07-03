@@ -13,7 +13,6 @@ class SiteSettings(models.Model):
     enable_service_booking = models.BooleanField(default=True, help_text="Enable service booking functionality")
     enable_user_accounts = models.BooleanField(default=True, help_text="Enable user account registration")
     enable_contact_page = models.BooleanField(default=True, help_text="Enable the contact us page")
-    enable_about_page = models.BooleanField(default=True, help_text="Enable the about us page")
     enable_map_display = models.BooleanField(default=True, help_text="Enable displaying a map (e.g., location map)")
     enable_featured_section = models.BooleanField(default=True, help_text="Enable a featured items or content section")
     enable_privacy_policy_page = models.BooleanField(default=True, help_text="Enable the privacy policy page")

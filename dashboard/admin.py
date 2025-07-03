@@ -18,7 +18,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         ('Visibility Settings', {
             'fields': (
                 'enable_sales_new', 'enable_sales_used', 'enable_service_booking',
-                'enable_user_accounts', 'enable_contact_page', 'enable_about_page',
+                'enable_user_accounts', 'enable_contact_page',
                 'enable_map_display', 'enable_featured_section', 'display_new_prices',
                 'display_used_prices', 'enable_privacy_policy_page', 'enable_returns_page',
                 'enable_security_page', 'enable_terms_page', 'enable_google_places_reviews',
