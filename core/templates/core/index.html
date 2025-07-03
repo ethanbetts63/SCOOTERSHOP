@@ -12,7 +12,36 @@
 {% endblock %}
 
 {% block content %}
-    {% include 'service/step1_service_details_include.html' %}
+    <div class="container mx-auto px-4 mt-8">
+        <div class="flex flex-wrap -mx-4">
+            <!-- Left Column: Service Booking -->
+            <div class="w-full lg:w-1/2 px-4 mb-8 lg:mb-0">
+                {% include 'service/step1_service_details_include.html' %}
+            </div>
+
+            <!-- Right Column: New and Used Bikes -->
+            <div class="w-full lg:w-1/2 px-4">
+                <div class="flex flex-col h-full justify-around">
+                     <!-- New Bikes Box -->
+                    <div class="bg-gray-50 rounded-lg p-8 text-center shadow-md hover:shadow-xl transition-shadow duration-300 ease-in-out mb-4">
+                        <h2 class="text-3xl font-bold mb-3 text-gray-800">New Bikes</h2>
+                        <p class="mb-5 text-gray-600">Explore our latest models from the world's leading brands.</p>
+                        <a href="{% url 'inventory:new' %}" class="inline-block bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300">
+                            View New Bikes
+                        </a>
+                    </div>
+                    <!-- Used Bikes Box -->
+                    <div class="bg-gray-50 rounded-lg p-8 text-center shadow-md hover:shadow-xl transition-shadow duration-300 ease-in-out mt-4">
+                        <h2 class="text-3xl font-bold mb-3 text-gray-800">Used Bikes</h2>
+                        <p class="mb-5 text-gray-600">Discover high-quality, pre-owned scooters at fantastic prices.</p>
+                        <a href="{% url 'inventory:used' %}" class="inline-block bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300">
+                            View Used Bikes
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     {% include "core/includes/reviews.html" %}
 
@@ -40,7 +69,7 @@
                     <p>We stock new SYM and Segway scooters, plus a rotating selection of second-hand models. Our factory-trained mechanic offers expert servicing with quality parts and accessories on hand.</p>
                     <p>We also carry genuine Vespa, Piaggio, and Aprilia accessories, along with helmets and maintenance gear.</p>
                     <p>Drop by for friendly advice, test rides, and all your scooter needs.</p>
-                </div> 
+                </div>
             </div>
 
             <div class="card has-bg-effect brand-card contact-brand">
@@ -95,13 +124,13 @@
                             </div>
                         </div>
                     </div>
-                </div> 
+                </div>
             </div>
         </div>
     </div>
 
-    
-    
+
+
     <div class="container">
         <h2 class="section-title">Our Brands</h2>
 
@@ -111,7 +140,7 @@
                     <h3>SYM Scooters – Reliable, Affordable, and Built to Last</h3>
                     <p>Founded in 1954, SYM is a trusted Taiwanese motorcycle manufacturer known for exceptional build quality, reliability, and generous warranty coverage. They strike the perfect balance—offering better quality than many low-end Chinese brands, without the high price tag of Japanese or premium European models.</p>
                     <p>SYM has a strong reputation across Europe, Southeast Asia, and South America. We've proudly partnered with them for years—mainly because it just makes sense. Their scooters come back with fewer issues, and our mechanics enjoy working on them.</p>
-                </div> 
+                </div>
             </div>
 
             <div class="card has-bg-effect brand-card segway-brand">
@@ -119,7 +148,7 @@
                     <h3>Segway Electric Mopeds – Innovation Meets Reliability</h3>
                     <p>Best known for their self-balancing transporters, Segway has evolved into a serious player in the electric moped space. As the market continues to grow and change rapidly, Segway stands out with the experience and quality that comes from being an early innovator.</p>
                     <p>We've tested a lot of brands, but Segway's electric mopeds impressed us with their build quality, design, and performance. After a long search, we're confident these are vehicles we can stand behind—and that you'll love riding.</p>
-                </div>  
+                </div>
             </div>
         </div>
     </div>

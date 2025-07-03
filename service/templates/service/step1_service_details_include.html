@@ -1,42 +1,59 @@
-
 {% load static %}
 
-<div class="container book-service-container">
-    <div class="card has-bg-effect service-booking-card">
-        <div class="card-body">
-            <h2 class="section-title booking-title">Book Your Service</h2>
-
-            <form method="post" action="{% url 'service:service_book_step1' %}" class="booking-form-container service-booking-form">
+<!-- 
+  The 'service-booking-card' class is essential for maintaining the 
+  overall card style, including the green left-hand border.
+-->
+<div class="card has-bg-effect service-booking-card h-full flex flex-col bg-white shadow-lg rounded-lg overflow-hidden">
+    <div class="card-body p-8 flex-grow flex flex-col">
+        <h2 class="text-3xl font-bold text-gray-800 mb-4">Expert Scooter Servicing</h2>
+        <p class="text-gray-600 mb-4">
+            At Scooter Shop Australia, we offer full workshop facilities from our fully licensed premises.
+            Whether it's factory servicing or tyre changes, we take pride in being your one-stop scooter shop.
+        </p>
+        <p class="text-gray-600 mb-6">
+            Our team of qualified technicians consists of life-long scooter enthusiasts. We treat every bike like it's our own, so you can rest assured knowing we'll do everything we can to get your bike back out on the road.
+        </p>
+        
+        <!-- The 'mt-auto' class pushes the form to the bottom of the card, creating a clean separation from the text. -->
+        <div class="mt-auto">
+            <form method="post" action="{% url 'service:service_book_step1' %}" class="service-booking-form">
                 {% csrf_token %}
 
-                <div class="date-time-rows-group">
-                    <div class="form-field service-type-field">
-                        <label for="id_service_type">Service Type</label>
-                        {{ form.service_type }} 
+                <!-- 
+                  This grid layout organizes the form fields and button.
+                  - On small screens (mobile), it's a single column (grid-cols-1).
+                  - On medium screens and larger (desktop), it becomes a three-column grid (md:grid-cols-3).
+                  - 'items-end' vertically aligns the items to their bottom edge for a clean look.
+                -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                    
+                    <!-- Service Type Selection -->
+                    <div class="flex-grow">
+                        <label for="id_service_type" class="block mb-2 text-sm font-medium text-gray-700">Service Type</label>
+                        {{ form.service_type }}
                     </div>
 
-                    <div class="date-time-row">
-                        <div class="form-field">
-                            <label for="id_service_date">Service Date</label> 
-                            <input type="text" id="id_service_date" name="service_date" 
-                                   class="form-control"
-                                   placeholder="Select service date" 
-                                   data-min-date-flatpickr="{{ min_service_date_flatpickr|default:'' }}">
-                        </div>
-                        
+                    <!-- Service Date Selection -->
+                    <div class="flex-grow">
+                        <label for="id_service_date" class="block mb-2 text-sm font-medium text-gray-700">Service Date</label>
+                        <input type="text" id="id_service_date" name="service_date"
+                               class="form-control bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                               placeholder="Select service date"
+                               data-min-date-flatpickr="{{ min_service_date_flatpickr|default:'' }}">
                     </div>
-
-                    <div class="search-button-column">
-                        <button type="submit" class="btn-primary book-now-btn">
+                    
+                    <!-- Search Button -->
+                    <div class="flex-grow">
+                        <button type="submit" class="w-full text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-3 text-center transition-colors duration-300">
                             Search
                         </button>
                     </div>
                 </div>
 
-                
                 {% if request.GET %}
                     {% for key, value in request.GET.items %}
-                        {% if key not in 'service_date,service_type' %} 
+                        {% if key not in 'service_date,service_type' %}
                             <input type="hidden" name="{{ key }}" value="{{ value }}">
                         {% endif %}
                     {% endfor %}
@@ -46,16 +63,35 @@
     </div>
 </div>
 
+<!-- Custom styles to ensure the Django-rendered select menu matches the Tailwind-styled inputs -->
+<style>
+    .service-booking-form select {
+        background-color: #F9FAFB; /* bg-gray-50 */
+        border: 1px solid #D1D5DB; /* border-gray-300 */
+        color: #111827; /* text-gray-900 */
+        font-size: 0.875rem; /* text-sm */
+        border-radius: 0.5rem; /* rounded-lg */
+        display: block;
+        width: 100%;
+        padding: 0.625rem; /* p-2.5 */
+    }
+    .service-booking-form select:focus {
+        --tw-ring-color: rgb(59 130 246 / 0.5);
+        border-color: #3B82F6; /* focus:border-blue-500 */
+    }
+</style>
+
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
+<!-- The JavaScript functionality for the date picker remains unchanged -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const serviceTypeSelect = document.getElementById('id_service_type');
-        const serviceDatePickerInput = document.getElementById('id_service_date'); // Updated variable name
-        
+        const serviceDatePickerInput = document.getElementById('id_service_date');
+
         const minDateFlatpickr = serviceDatePickerInput.getAttribute('data-min-date-flatpickr');
         const blockedDatesRaw = "{{ blocked_service_dates_json|escapejs }}";
         let blockedDates = [];
@@ -65,70 +101,50 @@
             console.error("Error parsing blocked dates JSON:", e);
         }
 
-        // Initialize Flatpickr for the service date
-        const serviceDatePicker = flatpickr(serviceDatePickerInput, { // Updated variable name
+        const serviceDatePicker = flatpickr(serviceDatePickerInput, {
             dateFormat: "Y-m-d",
             minDate: minDateFlatpickr,
             altInput: true,
             altFormat: "F j, Y",
-            disable: blockedDates, // These are dates that should *always* be disabled
+            disable: blockedDates,
             onChange: function(selectedDates, dateStr, instance) {
-                // No time selection logic here, simply handle date selection.
-                // The submit button will be used to move to the next step.
             }
         });
 
-        /**
-         * Resets the date field (clears selection and disables the input).
-         */
         function resetDateField() {
-            serviceDatePicker.clear(); // Clear the selected date in Flatpickr
-            serviceDatePickerInput.disabled = true; // Disable the HTML input
+            serviceDatePicker.clear();
+            serviceDatePickerInput.disabled = true;
         }
 
-        // Event listener for Service Type change
         serviceTypeSelect.addEventListener('change', function() {
             if (this.value) {
-                // Service type selected: Enable date input, Flatpickr becomes interactive
                 serviceDatePickerInput.disabled = false;
-                // Open the calendar automatically
-                serviceDatePicker.open(); 
+                serviceDatePicker.open();
             } else {
-                // Service type cleared: Reset and disable date field
                 resetDateField();
             }
         });
-        
-        // --- Initial Form State Setup ---
+
         function initializeFormState() {
             const initialServiceTypePk = "{{ temp_service_booking.service_type.pk|default:'' }}";
-            const initialServiceDate = "{{ temp_service_booking.service_date|date:'Y-m-d'|default:'' }}"; // Updated variable name
+            const initialServiceDate = "{{ temp_service_booking.service_date|date:'Y-m-d'|default:'' }}";
 
-            // 1. Pre-select service type if an initial value is provided from context.
             if (initialServiceTypePk && serviceTypeSelect) {
-                // Check if the option actually exists before trying to set it
                 if ([...serviceTypeSelect.options].some(opt => opt.value === initialServiceTypePk)) {
                     serviceTypeSelect.value = initialServiceTypePk;
                 }
             }
             
-            // 2. Determine date picker state based on whether a service type is selected (either pre-filled or not).
             if (serviceTypeSelect.value) {
-                // A service type is selected (or was pre-filled). Enable the date input.
                 serviceDatePickerInput.disabled = false;
-
-                // If an initial service date is also provided from context, set it in Flatpickr.
                 if (initialServiceDate) {
-                    serviceDatePicker.setDate(initialServiceDate, false); // Set date, false to not trigger its own onChange
-                } else {
-                    // Service type is selected, but no initial date. Date picker is enabled.
+                    serviceDatePicker.setDate(initialServiceDate, false);
                 }
             } else {
-                // No service type selected initially. Reset and disable the date field.
                 resetDateField(); 
             }
         }
 
-        initializeFormState(); // Set up the form when the DOM is ready.
+        initializeFormState();
     });
 </script>
