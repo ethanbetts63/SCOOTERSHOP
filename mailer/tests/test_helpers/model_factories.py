@@ -1,4 +1,5 @@
 import factory
+import datetime
 from django.contrib.auth import get_user_model
 from mailer.models.EmailLog_model import EmailLog
 from service.tests.test_helpers.model_factories import ServiceProfileFactory, ServiceBookingFactory
@@ -23,7 +24,7 @@ class EmailLogFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = EmailLog
 
-    timestamp = factory.Faker('date_time_this_year')
+    timestamp = factory.Faker('date_time_this_year', tzinfo=datetime.timezone.utc)
     sender = factory.Faker('email')
     recipient = factory.Faker('email')
     subject = factory.Faker('sentence')

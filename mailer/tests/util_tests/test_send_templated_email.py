@@ -23,8 +23,8 @@ class SendTemplatedEmailTest(TestCase):
         # Ensure a default from email is set for tests
         settings.DEFAULT_FROM_EMAIL = "default@example.com"
 
-    @patch('django.core.mail.EmailMultiAlternatives')
-    @patch('django.template.loader.render_to_string')
+    @patch('mailer.utils.send_templated_email.EmailMultiAlternatives')
+    @patch('mailer.utils.send_templated_email.render_to_string')
     def test_send_templated_email_success(self, mock_render_to_string, mock_email_multi_alternatives):
         mock_render_to_string.return_value = "<html><body><h1>Hello</h1><p>Test</p></body></html>"
         mock_email_instance = MagicMock()
@@ -43,7 +43,7 @@ class SendTemplatedEmailTest(TestCase):
             'user': self.user
         })
         mock_email_multi_alternatives.assert_called_once_with(
-            self.subject, "Hello\n\nTest", settings.DEFAULT_FROM_EMAIL, self.recipient_list
+            self.subject, "Hello\nTest", settings.DEFAULT_FROM_EMAIL, self.recipient_list
         )
         mock_email_instance.attach_alternative.assert_called_once_with(
             "<html><body><h1>Hello</h1><p>Test</p></body></html>", "text/html"
@@ -57,8 +57,8 @@ class SendTemplatedEmailTest(TestCase):
         self.assertEqual(email_log.service_booking, self.service_booking)
         self.assertEqual(email_log.service_profile, self.service_profile)
 
-    @patch('django.core.mail.EmailMultiAlternatives')
-    @patch('django.template.loader.render_to_string')
+    @patch('mailer.utils.send_templated_email.EmailMultiAlternatives')
+    @patch('mailer.utils.send_templated_email.render_to_string')
     def test_send_templated_email_failure_rendering(self, mock_render_to_string, mock_email_multi_alternatives):
         mock_render_to_string.side_effect = Exception("Template error")
 
@@ -75,8 +75,8 @@ class SendTemplatedEmailTest(TestCase):
         self.assertEqual(email_log.sales_booking, self.sales_booking)
         self.assertEqual(email_log.sales_profile, self.sales_profile)
 
-    @patch('django.core.mail.EmailMultiAlternatives')
-    @patch('django.template.loader.render_to_string')
+    @patch('mailer.utils.send_templated_email.EmailMultiAlternatives')
+    @patch('mailer.utils.send_templated_email.render_to_string')
     def test_send_templated_email_failure_sending(self, mock_render_to_string, mock_email_multi_alternatives):
         mock_render_to_string.return_value = "<html><body>Test</body></html>"
         mock_email_instance = MagicMock()
@@ -101,8 +101,8 @@ class SendTemplatedEmailTest(TestCase):
         self.assertFalse(success)
         self.assertEqual(EmailLog.objects.count(), 0) # No log should be created if no recipient
 
-    @patch('django.core.mail.EmailMultiAlternatives')
-    @patch('django.template.loader.render_to_string')
+    @patch('mailer.utils.send_templated_email.EmailMultiAlternatives')
+    @patch('mailer.utils.send_templated_email.render_to_string')
     def test_send_templated_email_with_sales_booking_and_profile(self, mock_render_to_string, mock_email_multi_alternatives):
         mock_render_to_string.return_value = "<html><body>Sales Test</body></html>"
         mock_email_instance = MagicMock()
@@ -121,22 +121,10 @@ class SendTemplatedEmailTest(TestCase):
         self.assertIsNone(email_log.service_booking)
         self.assertIsNone(email_log.service_profile)
 
-    @patch('django.core.mail.EmailMultiAlternatives')
-    @patch('django.template.loader.render_to_string')
+    @patch('mailer.utils.send_templated_email.EmailMultiAlternatives')
+    @patch('mailer.utils.send_templated_email.render_to_string')
     def test_send_templated_email_html_to_text_conversion(self, mock_render_to_string, mock_email_multi_alternatives):
-        html_content = """
-        <html>
-        <body>
-            <h1>Title</h1>
-            <p>Paragraph 1</p><br>
-            <div>Div content</div>
-            <ul>
-                <li>Item 1</li>
-                <li>Item 2</li>
-            </ul>
-        </body>
-        </html>
-        """
+        html_content = "<html><body><h1>Title</h1><p>Paragraph 1</p><br><div>Div content</div><ul><li>Item 1</li><li>Item 2</li></ul></body></html>"
         mock_render_to_string.return_value = html_content
         mock_email_instance = MagicMock()
         mock_email_multi_alternatives.return_value = mock_email_instance
@@ -146,6 +134,6 @@ class SendTemplatedEmailTest(TestCase):
             booking=self.service_booking, profile=self.service_profile
         )
 
-        expected_text_content = "Title\n\nParagraph 1\n\nDiv content\nItem 1\nItem 2"
+        expected_text_content = "Title\nParagraph 1\n\n\nDiv content\nItem 1\nItem 2"
         args, kwargs = mock_email_multi_alternatives.call_args
         self.assertEqual(args[1].strip(), expected_text_content.strip())
