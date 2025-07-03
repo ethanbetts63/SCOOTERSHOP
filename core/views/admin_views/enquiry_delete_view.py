@@ -3,7 +3,7 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.shortcuts import redirect
 from core.models.enquiry import Enquiry
-from inventory.mixins import AdminRequiredMixin
+from core.mixins import AdminRequiredMixin
 
 
 class EnquiryDeleteView(AdminRequiredMixin, DeleteView):
