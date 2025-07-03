@@ -91,7 +91,6 @@ class Step3PaymentView(View):
 
         sales_customer_profile = temp_booking.sales_profile
         payment_obj = Payment.objects.filter(temp_sales_booking=temp_booking).first()
-        print(f"[DEBUG] Existing payment object found: {payment_obj}")
 
         try:
             intent, payment_obj = create_or_update_sales_payment_intent(
@@ -101,7 +100,6 @@ class Step3PaymentView(View):
                 currency=currency,
                 existing_payment_obj=payment_obj,
             )
-            print(f"[DEBUG] Intent: {intent.id if intent else 'None'}, Payment Obj: {payment_obj}")
 
         except stripe.error.StripeError as e:
             messages.error(
@@ -134,12 +132,9 @@ class Step3PaymentView(View):
         return render(request, "inventory/step3_payment.html", context)
 
     def post(self, request, *args, **kwargs):
-        print("[DEBUG] Step3PaymentView POST method entered.")
         try:
             data = json.loads(request.body)
-            print(f"[DEBUG] Request body data: {data}")
             payment_intent_id = data.get("payment_intent_id")
-            print(f"[DEBUG] Payment Intent ID from request: {payment_intent_id}")
         except json.JSONDecodeError:
             return JsonResponse(
                 {"error": "Invalid JSON format in request body"}, status=400

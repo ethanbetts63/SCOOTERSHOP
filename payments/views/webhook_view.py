@@ -11,11 +11,9 @@ from payments.webhook_handlers import WEBHOOK_HANDLERS
 
 @csrf_exempt
 def stripe_webhook(request):
-    print("\n[DEBUG] Webhook view called.")
     payload = request.body
     sig_header = request.META.get("HTTP_STRIPE_SIGNATURE")
     event = None
-    print(f"[DEBUG] Signature header: {sig_header}")
 
 
     try:
