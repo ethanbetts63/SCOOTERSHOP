@@ -2,11 +2,11 @@ from django.views.generic import View
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from service.mixins import AdminRequiredMixin
 from service.models import ServiceBooking
 
 
-class AdminServiceBookingDeleteView(LoginRequiredMixin, UserPassesTestMixin, View):
+class AdminServiceBookingDeleteView(AdminRequiredMixin, View):
 
     template_name = "service/admin_service_booking_delete.html"
 

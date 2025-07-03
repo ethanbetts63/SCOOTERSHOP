@@ -2,11 +2,11 @@ from django.shortcuts import redirect, get_object_or_404
 from django.views import View
 from django.urls import reverse
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from service.mixins import AdminRequiredMixin
 from service.models import ServiceProfile
 
 
-class ServiceProfileDeleteView(LoginRequiredMixin, UserPassesTestMixin, View):
+class ServiceProfileDeleteView(AdminRequiredMixin, View):
     def test_func(self):
         return self.request.user.is_staff or self.request.user.is_superuser
 

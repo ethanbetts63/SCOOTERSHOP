@@ -2,12 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.urls import reverse
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from service.mixins import AdminRequiredMixin
 from service.forms import AdminCustomerMotorcycleForm
 from service.models import CustomerMotorcycle
 
 
-class CustomerMotorcycleCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, View):
+class CustomerMotorcycleCreateUpdateView(AdminRequiredMixin, View):
 
     template_name = "service/admin_customer_motorcycle_create_update.html"
     form_class = AdminCustomerMotorcycleForm

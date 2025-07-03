@@ -2,13 +2,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.urls import reverse
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from service.mixins import AdminRequiredMixin
 
 from service.forms import AdminServiceTypeForm
 from service.models import ServiceType
 
 
-class ServiceTypeCreateUpdateView(LoginRequiredMixin, UserPassesTestMixin, View):
+class ServiceTypeCreateUpdateView(AdminRequiredMixin, View):
 
     template_name = "service/admin_service_type_create_update.html"
     form_class = AdminServiceTypeForm

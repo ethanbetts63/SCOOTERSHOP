@@ -1,12 +1,13 @@
 from django.shortcuts import render, redirect
 from django.views import View
+from service.mixins import AdminRequiredMixin
 from django.contrib import messages
 
 from service.models import BlockedServiceDate
 from service.forms import BlockedServiceDateForm
 
 
-class BlockedServiceDateManagementView(View):
+class BlockedServiceDateManagementView(AdminRequiredMixin, View):
 
     template_name = "service/blocked_service_dates_management.html"
     form_class = BlockedServiceDateForm

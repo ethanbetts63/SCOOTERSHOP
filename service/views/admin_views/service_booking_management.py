@@ -1,10 +1,11 @@
+from service.mixins import AdminRequiredMixin
 from django.shortcuts import render
 from django.views import View
 
 from service.models import ServiceBooking
 
 
-class ServiceBookingManagementView(View):
+class ServiceBookingManagementView(AdminRequiredMixin, View):
 
     template_name = "service/service_booking_management.html"
 

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.urls import reverse
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from service.mixins import AdminRequiredMixin
 
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -12,7 +12,7 @@ from service.forms import AdminServiceProfileForm
 from service.models import ServiceProfile
 
 
-class ServiceProfileManagementView(LoginRequiredMixin, UserPassesTestMixin, View):
+class ServiceProfileManagementView(AdminRequiredMixin, View):
 
     template_name = "service/admin_service_profile_management.html"
     form_class = AdminServiceProfileForm

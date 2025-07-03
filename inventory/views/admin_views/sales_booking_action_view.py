@@ -1,3 +1,4 @@
+from inventory.mixins import AdminRequiredMixin
 from django.views.generic.edit import FormView
 from django.urls import reverse_lazy
 from django.contrib import messages
@@ -8,7 +9,7 @@ from inventory.utils.reject_sales_booking import reject_sales_booking
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 
-class SalesBookingActionView(LoginRequiredMixin, FormView):
+class SalesBookingActionView(AdminRequiredMixin, FormView):
     template_name = "inventory/admin_sales_booking_action.html"
     form_class = SalesBookingActionForm
     success_url = reverse_lazy("inventory:sales_bookings_management")

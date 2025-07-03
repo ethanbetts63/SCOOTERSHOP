@@ -1,3 +1,4 @@
+from service.mixins import AdminRequiredMixin
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.contrib import messages
@@ -7,7 +8,7 @@ from service.models import ServiceBrand
 from service.forms import ServiceBrandForm
 
 
-class ServiceBrandManagementView(View):
+class ServiceBrandManagementView(AdminRequiredMixin, View):
 
     template_name = "service/service_brands_management.html"
     form_class = ServiceBrandForm

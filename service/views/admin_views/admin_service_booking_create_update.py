@@ -2,15 +2,13 @@ from django.views.generic import View
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from service.mixins import AdminRequiredMixin
 from service.models import ServiceProfile, CustomerMotorcycle, ServiceBooking
 from service.forms import AdminBookingDetailsForm
 from service.utils.admin_create_service_booking import admin_create_service_booking
 
 
-class AdminServiceBookingCreateUpdateView(
-    LoginRequiredMixin, UserPassesTestMixin, View
-):
+class AdminServiceBookingCreateUpdateView(AdminRequiredMixin, View):
 
     template_name = "service/admin_service_booking_create_update.html"
 

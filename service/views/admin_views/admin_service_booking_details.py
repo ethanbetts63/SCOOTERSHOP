@@ -1,11 +1,9 @@
 from django.views.generic import DetailView
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from service.mixins import AdminRequiredMixin
 from service.models import ServiceBooking
 
 
-class AdminServiceBookingDetailView(
-    LoginRequiredMixin, UserPassesTestMixin, DetailView
-):
+class AdminServiceBookingDetailView(AdminRequiredMixin, DetailView):
 
     model = ServiceBooking
     template_name = "service/admin_service_booking_detail.html"

@@ -1,12 +1,10 @@
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from service.mixins import AdminRequiredMixin
 from django.db.models import Q
 from django.views.generic import ListView
 from service.models import CustomerMotorcycle
 
 
-class CustomerMotorcycleManagementView(
-    LoginRequiredMixin, UserPassesTestMixin, ListView
-):
+class CustomerMotorcycleManagementView(AdminRequiredMixin, ListView):
 
     model = CustomerMotorcycle
     template_name = "service/admin_customer_motorcycle_management.html"

@@ -1,3 +1,4 @@
+from service.mixins import AdminRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import UpdateView
 from django.contrib import messages
@@ -7,7 +8,7 @@ from service.models import ServiceSettings
 from service.forms import ServiceBookingSettingsForm
 
 
-class ServiceSettingsView(UpdateView):
+class ServiceSettingsView(AdminRequiredMixin, UpdateView):
 
     model = ServiceSettings
     form_class = ServiceBookingSettingsForm

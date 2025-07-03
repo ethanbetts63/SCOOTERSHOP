@@ -1,3 +1,4 @@
+from inventory.mixins import AdminRequiredMixin
 from django.views.generic import UpdateView
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
@@ -5,7 +6,7 @@ from django.shortcuts import get_object_or_404, redirect
 from inventory.models import FeaturedMotorcycle, Motorcycle
 from inventory.forms.admin_featured_motorcycle_form import FeaturedMotorcycleForm
 
-class FeaturedMotorcycleCreateUpdateView(UpdateView):
+class FeaturedMotorcycleCreateUpdateView(AdminRequiredMixin, UpdateView):
     model = FeaturedMotorcycle
     form_class = FeaturedMotorcycleForm
     template_name = "inventory/admin_featured_motorcycle_create_update.html"

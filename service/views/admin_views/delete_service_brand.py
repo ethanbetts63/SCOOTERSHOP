@@ -1,11 +1,12 @@
 from django.shortcuts import redirect, get_object_or_404
 from django.views import View
 from django.contrib import messages
+from service.mixins import AdminRequiredMixin
 
 from service.models import ServiceBrand
 
 
-class ServiceBrandDeleteView(View):
+class ServiceBrandDeleteView(AdminRequiredMixin, View):
 
     def post(self, request, pk, *args, **kwargs):
 

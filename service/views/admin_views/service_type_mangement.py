@@ -1,11 +1,11 @@
+from service.mixins import AdminRequiredMixin
 from django.shortcuts import render
 from django.views import View
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 from service.models import ServiceType
 
 
-class ServiceTypeManagementView(LoginRequiredMixin, UserPassesTestMixin, View):
+class ServiceTypeManagementView(AdminRequiredMixin, View):
 
     template_name = "service/admin_service_type_management.html"
 
