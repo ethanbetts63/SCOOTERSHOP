@@ -25,7 +25,7 @@
         bottom: 0;
         left: 0;
         background: rgba(0, 0, 0, 0.5);
-        border-radius: 0.5rem; /* Matches rounded-lg */
+        border-radius: 0.5rem;
     }
     .image-cycler-content {
         position: relative;
@@ -83,18 +83,12 @@
         </div>
     {% endif %}
 
-    <!-- ================================================================= -->
-    <!-- ========= START: New "Our Brands" Section ======================= -->
-    <!-- ================================================================= -->
-    <div class="container mx-auto px-4 py-16">
+    <div class="container mx-auto px-4 pt-4 pb-16">
         <div class="space-y-16">
-            <!-- Text color changed to white -->
             <h2 class="text-3xl md:text-4xl font-bold text-white text-center">Our Trusted Brands</h2>
 
-            <!-- SYM Brand Section (Text on Left, Image on Right) -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
                 <div class="flex flex-col justify-center">
-                    <!-- Text colors changed to white and light gray -->
                     <h3 class="text-2xl font-bold text-white mb-2">SYM Scooters</h3>
                     <p class="font-semibold text-gray-300 mb-4">Reliable, Affordable, and Built to Last</p>
                     <p class="text-gray-300 mb-4">
@@ -104,21 +98,19 @@
                         We've proudly partnered with them for years—mainly because it just makes sense. Their scooters come back with fewer issues, and our mechanics enjoy working on them.
                     </p>
                     <a href="{% url 'inventory:new' %}" class="inline-block w-full sm:w-auto bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-colors duration-300 text-center">
-                        View New Models
+                        View SYM Models
                     </a>
                 </div>
                 <div class="w-full h-64 lg:h-full rounded-2xl overflow-hidden shadow-lg">
-                    <img src="https://placehold.co/800x600/e0e0e0/333?text=SYM+Scooter" alt="SYM Scooter" class="w-full h-full object-cover">
+                    <img src="{% static 'images/sym_22.jpg' %}" alt="SYM Scooter" class="w-full h-full object-cover">
                 </div>
             </div>
 
-            <!-- Segway Brand Section (Image on Left, Text on Right) -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
                 <div class="w-full h-64 lg:h-full rounded-2xl overflow-hidden shadow-lg lg:order-first">
-                     <img src="https://placehold.co/800x600/333/e0e0e0?text=Segway+Moped" alt="Segway Moped" class="w-full h-full object-cover">
+                     <img src="{% static 'images/segway_1.jpg' %}" alt="Segway Moped" class="w-full h-full object-cover">
                 </div>
                 <div class="flex flex-col justify-center">
-                    <!-- Text colors changed to white and light gray -->
                     <h3 class="text-2xl font-bold text-white mb-2">Segway Electric Mopeds</h3>
                     <p class="font-semibold text-gray-300 mb-4">Innovation Meets Reliability</p>
                     <p class="text-gray-300 mb-4">
@@ -128,16 +120,13 @@
                         We've tested a lot of brands, but Segway's electric mopeds impressed us with their build quality, design, and performance. We're confident these are vehicles we can stand behind—and that you'll love riding.
                     </p>
                     <a href="{% url 'inventory:new' %}" class="inline-block w-full sm:w-auto bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-colors duration-300 text-center">
-                        View New Models
+                        View Segway Models
                     </a>
                 </div>
             </div>
 
         </div>
     </div>
-    <!-- ================================================================= -->
-    <!-- ========= END: New "Our Brands" Section ========================= -->
-    <!-- ================================================================= -->
 {% endblock %}
 
 {% block map %}
