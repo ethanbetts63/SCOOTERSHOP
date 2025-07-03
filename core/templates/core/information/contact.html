@@ -16,43 +16,51 @@
         <p class="text-lg text-gray-300 mt-2">We'd love to hear from you. Drop us a line below.</p>
     </div>
 
+    <!-- The grid now has h-full on its children to make them equal height -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
         
-        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+        <!-- Added h-full to make this column match the height of the other one -->
+        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg h-full">
             <h3 class="text-2xl font-bold text-gray-800 mb-6">Send Us a Message</h3>
             <form method="post" class="space-y-6">
                 {% csrf_token %}
 
                 {% if form.non_field_errors %}
                     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                        {{ form.non_field_errors }}
+                        {% for error in form.non_field_errors %}
+                            <span class="block sm:inline">{{ error }}</span>
+                        {% endfor %}
                     </div>
                 {% endif %}
 
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <input type="text" name="{{ form.name.name }}" id="{{ form.name.id_for_label }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" value="{{ form.name.value|default:'' }}">
+                        {% for error in form.name.errors %}
+                            <p class="text-red-600 text-sm italic mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    <div>
+                        <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" value="{{ form.email.value|default:'' }}">
+                        {% for error in form.email.errors %}
+                            <p class="text-red-600 text-sm italic mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
                 <div>
-                    <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700">Your Name</label>
-                    <input type="text" name="{{ form.name.name }}" id="{{ form.name.id_for_label }}"
-                           class="mt-1 block w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all"
-                           value="{{ form.name.value|default:'' }}">
-                    {% for error in form.name.errors %}
+                    <label for="{{ form.subject.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                    <input type="text" name="{{ form.subject.name }}" id="{{ form.subject.id_for_label }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" value="{{ form.subject.value|default:'' }}">
+                    {% for error in form.subject.errors %}
                         <p class="text-red-600 text-sm italic mt-1">{{ error }}</p>
                     {% endfor %}
                 </div>
 
                 <div>
-                    <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700">Your Email</label>
-                    <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}"
-                           class="mt-1 block w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all"
-                           value="{{ form.email.value|default:'' }}">
-                    {% for error in form.email.errors %}
-                        <p class="text-red-600 text-sm italic mt-1">{{ error }}</p>
-                    {% endfor %}
-                </div>
-
-                <div>
-                    <label for="{{ form.message.id_for_label }}" class="block text-sm font-medium text-gray-700">Message</label>
-                    <textarea name="{{ form.message.name }}" id="{{ form.message.id_for_label }}" rows="5"
-                              class="mt-1 block w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all">{{ form.message.value|default:'' }}</textarea>
+                    <label for="{{ form.message.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                    <textarea name="{{ form.message.name }}" id="{{ form.message.id_for_label }}" rows="5" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">{{ form.message.value|default:'' }}</textarea>
                     {% for error in form.message.errors %}
                         <p class="text-red-600 text-sm italic mt-1">{{ error }}</p>
                     {% endfor %}
@@ -66,16 +74,34 @@
             </form>
         </div>
 
-        <div class="bg-gray-800 p-8 rounded-2xl shadow-lg text-gray-300 space-y-4">
-            <h3 class="text-2xl font-bold text-white mb-4">We'd Love to See You!</h3>
-            <p>Have some questions? Want to report a problem with this website? Or absolutely anything else?</p>
-            <p>We're passionate about scooters and would love to help you out. As Perth's only dedicated scooter shop, our friendly team has the expertise to guide you through every step of your scooter journey.</p>
-            <p>For sales enquires the best thing is to use the enquiry button located at the bottom of each bike's page. For service booking please visit the service page.</p>
+        <!-- This card is now a flex column to push buttons to the bottom, and has h-full -->
+        <div class="bg-gray-800 p-8 rounded-2xl shadow-lg text-gray-300 flex flex-col h-full">
+            <div class="flex-grow">
+                <h3 class="text-2xl font-bold text-white mb-4">We'd Love to See You!</h3>
+                <div class="space-y-4">
+                    <p>Have some questions? Want to report a problem with this website? Or absolutely anything else?</p>
+                    <p>We're passionate about scooters and would love to help you out. As Perth's only dedicated scooter shop, our friendly team has the expertise to guide you through every step of your scooter journey.</p>
+                    <p>For sales enquires the best thing is to use the enquiry button located at the bottom of each bike's page. For service booking please visit the service page.</p>
+                </div>
+            </div>
+            
+            <!-- Buttons are added here, at the bottom of the card -->
+            <div class="mt-6 pt-6 border-t border-gray-700 space-y-3">
+                <a href="{% url 'service:service' %}" class="block w-full text-center bg-green-600 text-white font-semibold px-5 py-3 rounded-lg hover:bg-green-700 transition-colors">
+                    Book a Service
+                </a>
+                <a href="{% url 'inventory:new' %}" class="block w-full text-center bg-blue-600 text-white font-semibold px-5 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                    Shop New Bikes
+                </a>
+                <a href="{% url 'inventory:used' %}" class="block w-full text-center bg-gray-600 text-white font-semibold px-5 py-3 rounded-lg hover:bg-gray-700 transition-colors">
+                    Shop Used Bikes
+                </a>
+            </div>
         </div>
     </div>
 
     <div class="mt-16">
-        <h2 class="text-3xl font-bold text-white text-center mb-8">Where to find us (By Appointment):</h2>
+        <h2 class="text-3xl font-bold text-white text-center mb-8">Where To Find Us (By Appointment)</h2>
         {% include "core/includes/map.html" %}
     </div>
 </div>
