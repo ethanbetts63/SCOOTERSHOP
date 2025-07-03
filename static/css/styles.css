@@ -1,183 +1,16 @@
-/* =================== SECTION: Theme Variables =================== */
 :root {
-    /* Color System - Base */
-    --color-primary: #81c784;
-    --color-secondary: #90caf9;
-
-    /* Text Colors */
     --text-primary: #e0e0e0;
     --text-secondary: #b0bec5;
-    --text-muted: #9ca5ab;
     --text-light: #cfd8dc;
-    --text-lighter: #90a4ae;
-    --text-lightest: #78909c;
-
-    /* Background Colors */
     --bg-dark: #2f3a3f;
     --bg-darker: #273034;
-    --bg-darkest: #222a2e;
-    --bg-highlight: #364249;
-
-    /* Border Colors */
-    --border-color: #3a464c;
-    --border-light: #4a5b66;
     --border-accent: #455a64;
-
-    /* Button Colors */
-    --btn-bg: #505a60;
-    --btn-hover: #606a70;
-
-    /* Shadow Values */
-    --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.2);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.2);
-    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.4);
-
-    /* Spacing and Sizing */
-    --spacing-xs: 5px;
     --spacing-sm: 10px;
     --spacing-md: 15px;
-    --spacing-lg: 20px;
     --spacing-xl: 30px;
-
-    /* Border Radius */
-    --radius-sm: 4px;
-    --radius-md: 8px;
-
-    /* Transitions */
-    --transition-fast: 0.2s ease;
     --transition-medium: 0.3s ease;
-    --transition-slow: 0.5s ease;
 }
 
-/* =================== SECTION: SVG Icon Styles =================== */
-/* Base SVG icon styles with shared properties */
-.svg-icon {
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    display: inline-block;
-}
-
-/* Small SVG icon size variant */
-.svg-icon-sm {
-    width: 16px;
-    height: 16px;
-}
-
-/* Medium SVG icon size variant */
-.svg-icon-md {
-    width: 24px;
-    height: 24px;
-}
-
-/* Large SVG icon size variant */
-.svg-icon-lg {
-    width: 32px;
-    height: 32px;
-}
-
-/* Specific icon definition for brand */
-.icon-brand {
-    background-image: url('../images/svgs/brand.svg');
-}
-
-/* Specific icon definition for capacity */
-.icon-capacity {
-    background-image: url('../images/svgs/capacity.svg');
-}
-
-/* Specific icon definition for category */
-.icon-category {
-    background-image: url('../images/svgs/category.svg');
-}
-
-/* Specific icon definition for clock */
-.icon-clock {
-    background-image: url('../images/svgs/clock.svg');
-}
-
-/* Specific icon definition for insurance */
-.icon-insurance{
-    background-image: url('../images/svgs/insurance.svg');
-}
-
-/* Specific icon definition for mail */
-.icon-mail {
-    background-image: url('../images/svgs/mail.svg');
-}
-
-/* Specific icon definition for model */
-.icon-model {
-    background-image: url('../images/svgs/model.svg');
-}
-
-/* Specific icon definition for odometer */
-.icon-odometer {
-    background-image: url('../images/svgs/odometer.svg');
-}
-
-/* Specific icon definition for phone */
-.icon-phone {
-    background-image: url('../images/svgs/phone.svg');
-}
-
-/* Specific icon definition for pick-up */
-.icon-pick-up {
-    background-image: url('../images/svgs/pick_up.svg');
-}
-
-/* Specific icon definition for pin */
-.icon-pin {
-    background-image: url('../images/svgs/pin.svg');
-}
-
-/* Specific icon definition for rego */
-.icon-rego {
-    background-image: url('../images/svgs/rego.svg');
-}
-
-/* Specific icon definition for rego expiration */
-.icon-rego-exp {
-    background-image: url('../images/svgs/rego_exp.svg');
-}
-
-/* Specific icon definition for seat */
-.icon-seat {
-    background-image: url('../images/svgs/seat.svg');
-}
-
-/* Specific icon definition for servicing */
-.icon-servicing {
-    background-image: url('../images/svgs/servicing.svg');
-}
-
-/* Specific icon definition for stock */
-.icon-stock {
-    background-image: url('../images/svgs/stock.svg');
-}
-
-/* Specific icon definition for transmission */
-.icon-transmission {
-    background-image: url('../images/svgs/transmission.svg');
-}
-
-/* Specific icon definition for tyre */
-.icon-tyre {
-    background-image: url('../images/svgs/tyre.svg');
-}
-
-/* Specific icon definition for year */
-.icon-year {
-    background-image: url('../images/svgs/year.svg');
-}
-
-/* Specific icon definition for year */
-.icon-info {
-    background-image: url('../images/svgs/info.svg');
-}
-
-
-/* =================== SECTION: Base and Reset Styles =================== */
 html, body {
     height: 100%;
     margin: 0;
@@ -191,14 +24,6 @@ body {
     font-family: Arial, sans-serif;
 }
 
-/* Reset default list styling */
-.reset-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-/* =================== SECTION: Navigation =================== */
 nav {
     background-color: var(--bg-darker);
     display: flex;
@@ -208,7 +33,6 @@ nav {
     padding: 0 40px 0 0;
 }
 
-/* Styles for the logo area in the navigation */
 .logo {
     display: flex;
     align-items: center;
@@ -217,7 +41,6 @@ nav {
     flex-shrink: 0;
 }
 
-/* Styles for the logo image */
 .logo img {
     max-height: 100px;
     height: 100%;
@@ -225,8 +48,6 @@ nav {
     object-fit: contain;
 }
 
-/* =================== SECTION: Navigation Menu =================== */
-/* Styles for the unordered list in the navigation menu */
 nav ul {
     list-style: none;
     display: flex;
@@ -236,7 +57,6 @@ nav ul {
     align-items: stretch;
 }
 
-/* Styles for list items in the navigation menu */
 nav ul li {
     flex: 0 1 auto;
     text-align: center;
@@ -244,7 +64,6 @@ nav ul li {
     display: flex;
 }
 
-/* Styles for links in the navigation menu */
 nav a {
     text-decoration: none;
     color: var(--text-light);
@@ -255,20 +74,16 @@ nav a {
     align-items: center;
 }
 
-/* Hover styles for navigation items */
 .nav-item:hover {
     color: #ffffff;
 }
 
-/* Styles for the active link in the navigation menu */
 nav ul li a.active {
     background-color: var(--border-accent);
     color: #ffffff;
     font-weight: bold;
 }
 
-/* =================== SECTION: Navigation Social Icons =================== */
-/* Styles for the container holding navigation social icons */
 .nav-social-icons {
     display: flex;
     align-items: center;
@@ -276,7 +91,6 @@ nav ul li a.active {
     flex-shrink: 0;
 }
 
-/* Styles for links around navigation social icons */
 .nav-social-icons a {
     display: flex;
     align-items: center;
@@ -287,20 +101,16 @@ nav ul li a.active {
     padding: 0;
 }
 
-/* Hover styles for navigation social icons */
 .nav-social-icons a:hover {
     opacity: 0.8;
 }
 
-/* Styles for images within navigation social icons */
 .nav-social-icons img {
     width: 20px;
     height: 20px;
     filter: brightness(0) invert(1);
 }
 
-/* =================== SECTION: Footer Structure =================== */
-/* Styles for the site footer */
 .site-footer {
     background-color: var(--bg-dark);
     padding: 40px 20px 20px;
@@ -310,7 +120,6 @@ nav ul li a.active {
     color: var(--text-primary);
 }
 
-/* Styles for the footer container */
 .footer-container {
     display: flex;
     flex-wrap: wrap;
@@ -319,8 +128,6 @@ nav ul li a.active {
     margin: 0 auto;
 }
 
-/* =================== SECTION: Footer Sections =================== */
-/* Styles for individual sections within the footer */
 .footer-section {
     flex: 1;
     min-width: 200px;
@@ -328,7 +135,6 @@ nav ul li a.active {
     padding: 0 var(--spacing-md);
 }
 
-/* Styles for headings within footer sections */
 .footer-section h3 {
     font-size: 18px;
     margin-bottom: var(--spacing-md);
@@ -337,7 +143,6 @@ nav ul li a.active {
     padding-bottom: var(--spacing-sm);
 }
 
-/* Styles for the underline pseudo-element for footer section headings */
 .footer-section h3:after {
     content: "";
     position: absolute;
@@ -348,38 +153,31 @@ nav ul li a.active {
     background-color: var(--border-accent);
 }
 
-/* Styles for unordered lists within footer sections */
 .footer-section ul {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-/* Styles for list items within footer sections */
 .footer-section ul li {
     margin-bottom: 8px;
 }
 
-/* Styles for links within footer sections */
 .footer-section a {
     color: var(--text-secondary);
     text-decoration: none;
     transition: color var(--transition-medium);
 }
 
-/* Hover styles for links within footer sections */
 .footer-section a:hover {
     color: #ffffff;
 }
 
-/* =================== SECTION: Footer Social Icons =================== */
-/* Styles for the container holding footer social icons */
 .social-icons {
     display: flex;
     gap: var(--spacing-md);
 }
 
-/* Styles for links around footer social icons */
 .social-icons a {
     display: flex;
     align-items: center;
@@ -391,20 +189,16 @@ nav ul li a.active {
     transition: background-color var(--transition-medium);
 }
 
-/* Hover styles for footer social icons */
 .social-icons a:hover {
     background-color: var(--border-accent);
 }
 
-/* Styles for images within footer social icons */
 .social-icons img {
     width: 20px;
     height: 20px;
     filter: brightness(0) invert(1);
 }
 
-/* =================== SECTION: Footer Bottom =================== */
-/* Styles for the bottom section of the footer */
 .footer-bottom {
     text-align: center;
     border-top: 1px solid #3d4b50;
@@ -413,228 +207,7 @@ nav ul li a.active {
     font-size: 14px;
 }
 
-/* Styles for paragraphs within the footer bottom */
 .footer-bottom p {
     margin: 5px 0;
     color: var(--text-secondary);
-}
-
-/* =================== SECTION: Common Layout Elements =================== */
-/* Standard container for page content */
-.container {
-    max-width: 1200px;
-    margin: 40px auto;
-    padding: 0 var(--spacing-md);
-}
-
-/* Standard title for sections */
-.section-title {
-    font-size: 2rem;
-    color: var(--text-primary);
-    border-bottom: 2px solid var(--border-accent);
-    padding-bottom: 10px;
-    margin-bottom: 30px;
-}
-
-/* Base styling for card-like elements */
-.card {
-    background-color: var(--bg-darker);
-    border: none;
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-md);
-    overflow: hidden;
-}
-
-/* Standardized padding for card content */
-.card-body {
-    padding: var(--spacing-lg);
-}
-
-/* Utility class for cards with a border */
-.card-border {
-    border: 1px solid var(--border-color);
-}
-
-/* Utility class for card hover effect */
-.card-hover-effect {
-    transition: transform var(--transition-medium), box-shadow var(--transition-medium);
-}
-
-/* Hover styles for cards with hover effect */
-.card-hover-effect:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-lg);
-}
-
-/* Base styling for elements with full-cover background image effect */
-.has-bg-effect {
-    position: relative;
-    overflow: hidden;
-    z-index: 1;
-}
-
-/* Pseudo-element for background image effect */
-.has-bg-effect::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-repeat: no-repeat;
-    opacity: 0.3;
-    z-index: -1;
-}
-
-/* Utility class for primary text color */
-.text-primary {
-    color: var(--color-primary) !important;
-}
-
-/* Utility class for secondary text color */
-.text-secondary {
-    color: var(--text-secondary) !important;
-}
-
-/* Utility class for responsive images */
-.img-responsive {
-    display: block;
-    max-width: 100%;
-    height: auto;
-}
-
-/* Utility class for images that should cover their container */
-.img-cover {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* =================== SECTION: Form Styles =================== */
-/* Styles for form labels */
-.form-label {
-    font-size: 0.9rem;
-    letter-spacing: 0.3px;
-    color: var(--text-secondary);
-    font-weight: 500;
-    margin-bottom: 6px;
-    display: block;
-}
-
-/* Styles for form select and control elements */
-.form-select, .form-control {
-    background-color: var(--bg-dark);
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-    border-radius: var(--radius-sm);
-    padding: 10px 12px;
-    transition: all var(--transition-medium);
-}
-
-/* Hover styles for form select and control elements */
-.form-select:hover, .form-control:hover {
-    border-color: var(--border-light);
-}
-
-/* Focus styles for form select and control elements */
-.form-control:focus, .form-select:focus {
-    background-color: var(--bg-highlight);
-    border-color: var(--border-light);
-    color: var(--text-primary);
-    box-shadow: 0 0 0 3px rgba(200, 200, 200, 0.2);
-}
-
-/* Styles for form check labels */
-.form-check-label {
-    color: var(--text-secondary);
-}
-
-/* =================== SECTION: Carousel Navigation Base Styles =================== */
-/* Base styles for carousel navigation arrows */
-.carousel-arrow {
-    background-color: var(--color-primary);
-    color: var(--text-primary);
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    font-size: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background-color var(--transition-medium);
-}
-
-/* Hover styles for carousel navigation arrows */
-.carousel-arrow:hover {
-    background-color: #a5d6a7;
-}
-
-/* Styles for disabled carousel navigation arrows */
-.carousel-arrow:disabled {
-    background-color: #37474f;
-    color: var(--text-lightest);
-    cursor: not-allowed;
-}
-
-/* =================== SECTION: Button Styles =================== */
-
-
-/* Styles for primary and secondary buttons */
-.btn-primary, .btn-secondary, .btn-sm.btn-primary {
-    background-color: var(--btn-bg);
-    border: none;
-    color: white;
-    padding: 10px 20px;
-    border-radius: var(--radius-sm);
-    font-weight: 500;
-    transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    line-height: 1.5;
-    height: auto;
-    box-sizing: border-box;
-    vertical-align: middle;
-}
-
-/* Hover styles for primary and secondary buttons */
-.btn-primary:hover, .btn-secondary:hover, .btn-sm.btn-primary:hover {
-    background-color: var(--btn-hover);
-    color: white;
-    text-decoration: none;
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
-}
-
-/* Styles for primary and secondary buttons within search options */
-.search-options .btn-primary, .search-options .btn-secondary {
-    width: 100%;
-    margin-bottom: 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* Styles for secondary button links */
-a.btn-secondary {
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.button-group-spaced {
-    display: flex;
-    gap: 15px; /* Adjust the gap value as needed for desired spacing */
-    align-items: center;
-}
-
-/* =================== SECTION: Responsive Styles =================== */
-@media (max-width: 768px) {
-    /* Adjusts container padding on smaller screens */
-    .container {
-        padding: 0 var(--spacing-md);
-    }
 }
