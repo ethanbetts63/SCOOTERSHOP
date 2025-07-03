@@ -9,35 +9,61 @@
 <link rel="stylesheet" href="{% static 'core/css/review_styles.css' %}">
 <link rel="stylesheet" href="{% static 'core/css/featured_styles.css' %}">
 <link rel="stylesheet" href="{% static 'core/css/book_include_styles.css' %}">
+<style>
+    .image-cycler-box {
+        position: relative;
+        background-size: cover;
+        background-position: center;
+        transition: background-image 1s ease-in-out;
+        min-height: 250px; 
+    }
+    .image-cycler-box::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 0.5rem; /* Matches rounded-lg */
+    }
+    .image-cycler-content {
+        position: relative;
+        z-index: 10;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
     <div class="container mx-auto px-4 mt-8">
         <div class="flex flex-wrap -mx-4">
-            <!-- Left Column: Service Booking -->
             <div class="w-full lg:w-1/2 px-4 mb-8 lg:mb-0">
                 {% include 'service/step1_service_details_include.html' %}
             </div>
 
-            <!-- Right Column: New and Used Bikes -->
             <div class="w-full lg:w-1/2 px-4">
                 <div class="flex flex-col h-full justify-around">
-                     <!-- New Bikes Box -->
-                    <div class="bg-gray-50 rounded-lg p-8 text-center shadow-md hover:shadow-xl transition-shadow duration-300 ease-in-out mb-4">
-                        <h2 class="text-3xl font-bold mb-3 text-gray-800">New Bikes</h2>
-                        <p class="mb-5 text-gray-600">Explore our latest models from the world's leading brands.</p>
-                        <a href="{% url 'inventory:new' %}" class="inline-block bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300">
-                            View New Bikes
-                        </a>
+                    
+                    <div id="new-bikes-box" class="image-cycler-box rounded-lg p-8 text-center shadow-md hover:shadow-xl transition-shadow duration-300 ease-in-out mb-4 flex items-center justify-center">
+                        <div class="image-cycler-content">
+                            <h2 class="text-3xl font-bold mb-3 text-white">New Bikes</h2>
+                            <p class="mb-5 text-gray-200">Explore our latest models from the world's leading brands.</p>
+                            <a href="{% url 'inventory:new' %}" class="inline-block bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300">
+                                View New Bikes
+                            </a>
+                        </div>
                     </div>
-                    <!-- Used Bikes Box -->
-                    <div class="bg-gray-50 rounded-lg p-8 text-center shadow-md hover:shadow-xl transition-shadow duration-300 ease-in-out mt-4">
-                        <h2 class="text-3xl font-bold mb-3 text-gray-800">Used Bikes</h2>
-                        <p class="mb-5 text-gray-600">Discover high-quality, pre-owned scooters at fantastic prices.</p>
-                        <a href="{% url 'inventory:used' %}" class="inline-block bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300">
-                            View Used Bikes
-                        </a>
+
+                    <div id="used-bikes-box" class="image-cycler-box rounded-lg p-8 text-center shadow-md hover:shadow-xl transition-shadow duration-300 ease-in-out mt-4 flex items-center justify-center">
+                         <div class="image-cycler-content">
+                            <h2 class="text-3xl font-bold mb-3 text-white">Used Bikes</h2>
+                            <p class="mb-5 text-gray-200">Discover high-quality, pre-owned scooters at fantastic prices.</p>
+                            <a href="{% url 'inventory:used' %}" class="inline-block bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300">
+                                View Used Bikes
+                            </a>
+                        </div>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -45,14 +71,12 @@
 
     {% include "core/includes/reviews.html" %}
 
-    {# --- Renders the NEW featured motorcycles section --- #}
     {% if featured_new_items %}
         <div class="container my-5 py-5">
             {% include 'inventory/_featured_include.html' with featured_items=featured_new_items section_title="Featured New Motorcycles" category="new" %}
         </div>
     {% endif %}
 
-    {# --- Renders the USED featured motorcycles section --- #}
     {% if featured_used_items %}
         <div class="container my-5 py-5 border-t">
             {% include 'inventory/_featured_include.html' with featured_items=featured_used_items section_title="Featured Used Motorcycles" category="used" %}
@@ -129,11 +153,8 @@
         </div>
     </div>
 
-
-
     <div class="container">
         <h2 class="section-title">Our Brands</h2>
-
         <div class="brand-cards-container">
             <div class="card has-bg-effect brand-card sym-brand">
                 <div class="card-body">
@@ -142,7 +163,6 @@
                     <p>SYM has a strong reputation across Europe, Southeast Asia, and South America. We've proudly partnered with them for years—mainly because it just makes sense. Their scooters come back with fewer issues, and our mechanics enjoy working on them.</p>
                 </div>
             </div>
-
             <div class="card has-bg-effect brand-card segway-brand">
                 <div class="card-body">
                     <h3>Segway Electric Mopeds – Innovation Meets Reliability</h3>
@@ -159,4 +179,45 @@
         <h2 class="section-title map-title">Where to find us:</h2>
         {% include "core/includes/map.html" %}
     </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const newBikeImages = [];
+    "{% for item in featured_new_items %}"
+        "{% if item.motorcycle.image %}"
+            newBikeImages.push("{{ item.motorcycle.image.url }}");
+        "{% endif %}"
+    "{% endfor %}"
+
+    const usedBikeImages = [];
+    "{% for item in featured_used_items %}"
+        "{% if item.motorcycle.image %}"
+            usedBikeImages.push("{{ item.motorcycle.image.url }}");
+        "{% endif %}"
+    "{% endfor %}"
+
+    function createImageCycler(elementId, images) {
+        const box = document.getElementById(elementId);
+        if (!box || images.length === 0) {
+            if (box) {
+                box.style.backgroundImage = "url('{% static 'images/default_scooter_bg.jpg' %}')";
+            }
+            return;
+        }
+
+        let currentIndex = 0;
+        box.style.backgroundImage = `url('${images[currentIndex]}')`;
+
+        setInterval(() => {
+            currentIndex = (currentIndex + 1) % images.length;
+            box.style.backgroundImage = `url('${images[currentIndex]}')`;
+        }, 7000);
+    }
+
+    createImageCycler('new-bikes-box', newBikeImages);
+    createImageCycler('used-bikes-box', usedBikeImages);
+});
+</script>
 {% endblock %}
