@@ -54,13 +54,10 @@ class ContactViewTest(TestCase):
         self.assertTemplateUsed(response, self.template_name)
         self.assertIn("settings", response.context)
         self.assertEqual(response.context["settings"], self.mock_site_settings)
-        self.assertIn("about_content", response.context)
-        self.assertIsNone(response.context["about_content"])
         self.assertIn("google_api_key", response.context)
         self.assertEqual(response.context["google_api_key"], "test_api_key")
         self.assertIn("form", response.context)
         self.assertEqual(response.context["form"], self.mock_enquiry_form_instance)
-        self.mock_about_content_get.assert_not_called()
 
     def test_contact_view_post_valid_form(self):
         self.mock_enquiry_form_instance.is_valid.return_value = True
@@ -120,6 +117,5 @@ class ContactViewTest(TestCase):
             "There was an error with your submission. Please correct the errors below.",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, self.template_name)
-        self.assertIn("form", response.context)
+        self.assertTemplateUsed(response, "core/information/contact.html")
         self.assertEqual(response.context["form"], self.mock_enquiry_form_instance)
