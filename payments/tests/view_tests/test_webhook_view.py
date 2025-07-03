@@ -90,7 +90,6 @@ class StripeWebhookViewTest(TestCase):
             if hasattr(settings, "STRIPE_WEBHOOK_SECRET"):
                 del settings.STRIPE_WEBHOOK_SECRET
 
-        WEBHOOK_HANDLERS.clear()
         WEBHOOK_HANDLERS.update(self._original_webhook_handlers)
 
     @patch("stripe.Webhook.construct_event")
