@@ -1,1 +1,1 @@
-from send_templated_email import *
+from .send_templated_email import *

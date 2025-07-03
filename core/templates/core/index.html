@@ -72,41 +72,75 @@
     {% include "core/includes/reviews.html" %}
 
     {% if featured_new_items %}
-        <div class="container my-5 py-5">
+        <div class="container mx-auto my-5 py-5">
             {% include 'inventory/_featured_include.html' with featured_items=featured_new_items section_title="Featured New Motorcycles" category="new" %}
         </div>
     {% endif %}
 
     {% if featured_used_items %}
-        <div class="container my-5 py-5">
+        <div class="container mx-auto my-5 py-5">
             {% include 'inventory/_featured_include.html' with featured_items=featured_used_items section_title="Featured Used Motorcycles" category="used" %}
         </div>
     {% endif %}
 
-    <div class="container">
-        <h2 class="section-title">Our Brands</h2>
-        <div class="brand-cards-container">
-            <div class="card has-bg-effect brand-card sym-brand">
-                <div class="card-body">
-                    <h3>SYM Scooters – Reliable, Affordable, and Built to Last</h3>
-                    <p>Founded in 1954, SYM is a trusted Taiwanese motorcycle manufacturer known for exceptional build quality, reliability, and generous warranty coverage. They strike the perfect balance—offering better quality than many low-end Chinese brands, without the high price tag of Japanese or premium European models.</p>
-                    <p>SYM has a strong reputation across Europe, Southeast Asia, and South America. We've proudly partnered with them for years—mainly because it just makes sense. Their scooters come back with fewer issues, and our mechanics enjoy working on them.</p>
+    <!-- ================================================================= -->
+    <!-- ========= START: New "Our Brands" Section ======================= -->
+    <!-- ================================================================= -->
+    <!-- Removed the gray background wrapper -->
+    <div class="container mx-auto px-4 py-16">
+        <div class="space-y-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 text-center">Our Trusted Brands</h2>
+
+            <!-- SYM Brand Section (Text on Left, Image on Right) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+                <div class="flex flex-col justify-center">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">SYM Scooters</h3>
+                    <p class="font-semibold text-gray-600 mb-4">Reliable, Affordable, and Built to Last</p>
+                    <p class="text-gray-700 mb-4">
+                        Founded in 1954, SYM is a trusted Taiwanese manufacturer known for exceptional build quality and reliability. They strike the perfect balance—offering better quality than many low-end brands, without the high price tag of premium models.
+                    </p>
+                    <p class="text-gray-700 mb-6">
+                        We've proudly partnered with them for years—mainly because it just makes sense. Their scooters come back with fewer issues, and our mechanics enjoy working on them.
+                    </p>
+                    <a href="{% url 'inventory:new' %}" class="inline-block w-full sm:w-auto bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-colors duration-300 text-center">
+                        View SYM Models
+                    </a>
+                </div>
+                <div class="w-full h-64 lg:h-full rounded-2xl overflow-hidden shadow-lg">
+                    <img src="https://placehold.co/800x600/e0e0e0/333?text=SYM+Scooter" alt="SYM Scooter" class="w-full h-full object-cover">
                 </div>
             </div>
-            <div class="card has-bg-effect brand-card segway-brand">
-                <div class="card-body">
-                    <h3>Segway Electric Mopeds – Innovation Meets Reliability</h3>
-                    <p>Best known for their self-balancing transporters, Segway has evolved into a serious player in the electric moped space. As the market continues to grow and change rapidly, Segway stands out with the experience and quality that comes from being an early innovator.</p>
-                    <p>We've tested a lot of brands, but Segway's electric mopeds impressed us with their build quality, design, and performance. After a long search, we're confident these are vehicles we can stand behind—and that you'll love riding.</p>
+
+            <!-- Segway Brand Section (Image on Left, Text on Right) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+                <div class="w-full h-64 lg:h-full rounded-2xl overflow-hidden shadow-lg lg:order-first">
+                     <img src="https://placehold.co/800x600/333/e0e0e0?text=Segway+Moped" alt="Segway Moped" class="w-full h-full object-cover">
+                </div>
+                <div class="flex flex-col justify-center">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Segway Electric Mopeds</h3>
+                    <p class="font-semibold text-gray-600 mb-4">Innovation Meets Reliability</p>
+                    <p class="text-gray-700 mb-4">
+                        Best known for their self-balancing transporters, Segway has evolved into a serious player in the electric moped space. As the market changes, Segway stands out with the experience and quality that comes from being an early innovator.
+                    </p>
+                    <p class="text-gray-700 mb-6">
+                        We've tested a lot of brands, but Segway's electric mopeds impressed us with their build quality, design, and performance. We're confident these are vehicles we can stand behind—and that you'll love riding.
+                    </p>
+                    <a href="{% url 'inventory:new' %}" class="inline-block w-full sm:w-auto bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-colors duration-300 text-center">
+                        View Segway Models
+                    </a>
                 </div>
             </div>
+
         </div>
     </div>
+    <!-- ================================================================= -->
+    <!-- ========= END: New "Our Brands" Section ========================= -->
+    <!-- ================================================================= -->
 {% endblock %}
 
 {% block map %}
-    <div class="container">
-        <h2 class="section-title map-title">Where to find us:</h2>
+    <div class="container mx-auto px-4 my-8">
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900 text-center mb-8">Where To Find Us</h2>
         {% include "core/includes/map.html" %}
     </div>
 {% endblock %}

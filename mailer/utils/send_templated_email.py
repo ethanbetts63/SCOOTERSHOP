@@ -5,7 +5,7 @@ from django.conf import settings
 from django.db import transaction
 import re
 from django.utils import timezone
-from .models import EmailLog
+from mailer.models.EmailLog_model import EmailLog
 from service.models import ServiceBooking, ServiceProfile
 from inventory.models import SalesBooking, SalesProfile
 
