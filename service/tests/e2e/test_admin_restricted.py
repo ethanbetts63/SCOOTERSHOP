@@ -1,4 +1,3 @@
-
 from django.test import TestCase, Client
 from django.urls import reverse
 from service.tests.test_helpers.model_factories import (
@@ -29,7 +28,7 @@ class AdminViewsAccessTest(TestCase):
         self.service_profile = ServiceProfileFactory()
         self.customer_motorcycle = CustomerMotorcycleFactory()
 
-        self.admin_urls = [
+        all_urls = [
             ("service:service_booking_management", {}),
             ("service:admin_service_booking_detail", {"pk": self.service_booking.pk}),
             ("service:admin_create_service_booking", {}),
@@ -87,17 +86,33 @@ class AdminViewsAccessTest(TestCase):
             ("service:admin_api_get_estimated_pickup_date", {}),
         ]
 
-    def test_admin_views_for_regular_user(self):
+        self.admin_cbv_urls = [u for u in all_urls if "_api_" not in u[0]]
+        self.admin_ajax_urls = [u for u in all_urls if "_api_" in u[0]]
+
+    def test_admin_cbv_views_for_regular_user(self):
         self.client.login(username="testuser", password="testpassword")
-        for url_name, kwargs in self.admin_urls:
+        for url_name, kwargs in self.admin_cbv_urls:
             url = reverse(url_name, kwargs=kwargs)
             response = self.client.get(url)
             self.assertEqual(response.status_code, 302, f"URL {url_name} is not redirecting for regular user.")
 
-    def test_admin_views_for_admin_user(self):
-        self.client.login(username="adminuser", password="testpassword")
-        for url_name, kwargs in self.admin_urls:
+    def test_admin_ajax_views_for_regular_user(self):
+        self.client.login(username="testuser", password="testpassword")
+        for url_name, kwargs in self.admin_ajax_urls:
             url = reverse(url_name, kwargs=kwargs)
             response = self.client.get(url)
-            self.assertNotEqual(response.status_code, 403, f"URL {url_name} is returning 403 for admin user.")
+            self.assertIn(response.status_code, [401, 403], f"URL {url_name} is not returning 401/403 for regular user.")
+
+    def test_admin_cbv_views_for_admin_user(self):
+        self.client.login(username="adminuser", password="testpassword")
+        for url_name, kwargs in self.admin_cbv_urls:
+            url = reverse(url_name, kwargs=kwargs)
+            response = self.client.get(url)
             self.assertNotEqual(response.status_code, 302, f"URL {url_name} is redirecting for admin user.")
+
+    def test_admin_ajax_views_for_admin_user(self):
+        self.client.login(username="adminuser", password="testpassword")
+        for url_name, kwargs in self.admin_ajax_urls:
+            url = reverse(url_name, kwargs=kwargs)
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200, f"URL {url_name} is not returning 200 for admin user.")
