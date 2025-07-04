@@ -95,12 +95,21 @@
             </ul>
 
             <div class="nav-social-icons">
-                <a href="https://www.facebook.com/ScooterShopAustralia/" target="_blank" rel="noopener">
+                {% if settings.facebook_link %}
+                <a href="{{ settings.facebook_link }}" target="_blank" rel="noopener">
                     <img src="{% static 'images/svgs/facebook.svg' %}" alt="Facebook">
                 </a>
-                <a href="https://www.instagram.com/scootershop_australia/" target="_blank" rel="noopener">
+                {% endif %}
+                {% if settings.instagram_link %}
+                <a href="{{ settings.instagram_link }}" target="_blank" rel="noopener">
                     <img src="{% static 'images/svgs/instagram.svg' %}" alt="Instagram">
                 </a>
+                {% endif %}
+                {% if settings.youtube_link %}
+                <a href="{{ settings.youtube_link }}" target="_blank" rel="noopener">
+                    <img src="{% static 'images/svgs/youtube.svg' %}" alt="YouTube">
+                </a>
+                {% endif %}
                 {% if settings.enable_contact_page or user.is_staff %}
                     <a href="{% url 'core:contact' %}">
                         <img src="{% static 'images/svgs/mail.svg' %}" alt="Contact Us">
@@ -239,36 +248,39 @@
                     <h3>Contact Info</h3>
                     <ul>
                         {% if settings %}
-                            {% if settings.phone_number %}
+                            {% if settings.display_phone_number and settings.phone_number %}
                                 <li><strong>Phone:</strong> {{ settings.phone_number }}</li>
                             {% endif %}
                             {% if settings.email_address %}
                                 <li><strong>Email:</strong> {{ settings.email_address }}</li>
                             {% endif %}
-                            {% if settings.storefront_address %}
+                            {% if settings.display_address and settings.storefront_address %}
                                 <li><strong>Address:</strong> {{ settings.storefront_address|linebreaksbr }}</li>
                             {% endif %}
-                            <li><strong>Hours:</strong></li>
-                            {% if settings.opening_hours_monday %}
-                                <li>Monday: {{ settings.opening_hours_monday }}</li>
-                            {% endif %}
-                            {% if settings.opening_hours_tuesday %}
-                                <li>Tuesday: {{ settings.opening_hours_tuesday }}</li>
-                            {% endif %}
-                            {% if settings.opening_hours_wednesday %}
-                                <li>Wednesday: {{ settings.opening_hours_wednesday }}</li>
-                            {% endif %}
-                            {% if settings.opening_hours_thursday %}
-                                <li>Thursday: {{ settings.opening_hours_thursday }}</li>
-                            {% endif %}
-                            {% if settings.opening_hours_friday %}
-                                <li>Friday: {{ settings.opening_hours_friday }}</li>
-                            {% endif %}
-                            {% if settings.opening_hours_saturday %}
-                                <li>Saturday: {{ settings.opening_hours_saturday }}</li>
-                            {% endif %}
-                            {% if settings.opening_hours_sunday %}
-                                <li>Sunday: {{ settings.opening_hours_sunday }}</li>
+                            
+                            {% if settings.display_opening_hours %}
+                                <li><strong>Hours:</strong></li>
+                                {% if settings.opening_hours_monday %}
+                                    <li>Monday: {{ settings.opening_hours_monday }}</li>
+                                {% endif %}
+                                {% if settings.opening_hours_tuesday %}
+                                    <li>Tuesday: {{ settings.opening_hours_tuesday }}</li>
+                                {% endif %}
+                                {% if settings.opening_hours_wednesday %}
+                                    <li>Wednesday: {{ settings.opening_hours_wednesday }}</li>
+                                {% endif %}
+                                {% if settings.opening_hours_thursday %}
+                                    <li>Thursday: {{ settings.opening_hours_thursday }}</li>
+                                {% endif %}
+                                {% if settings.opening_hours_friday %}
+                                    <li>Friday: {{ settings.opening_hours_friday }}</li>
+                                {% endif %}
+                                {% if settings.opening_hours_saturday %}
+                                    <li>Saturday: {{ settings.opening_hours_saturday }}</li>
+                                {% endif %}
+                                {% if settings.opening_hours_sunday %}
+                                    <li>Sunday: {{ settings.opening_hours_sunday }}</li>
+                                {% endif %}
                             {% endif %}
                         {% else %}
                             <li><strong>Phone:</strong> (08) 9433 4613</li>
@@ -286,12 +298,21 @@
                 <div class="footer-section">
                     <h3>Follow Us</h3>
                     <div class="social-icons">
-                        <a href="https://www.facebook.com/ScooterShopAustralia/" target="_blank" rel="noopener">
+                        {% if settings.facebook_link %}
+                        <a href="{{ settings.facebook_link }}" target="_blank" rel="noopener">
                             <img src="{% static 'images/svgs/facebook.svg' %}" alt="Facebook">
                         </a>
-                        <a href="https://www.instagram.com/scootershop_australia/" target="_blank" rel="noopener">
+                        {% endif %}
+                        {% if settings.instagram_link %}
+                        <a href="{{ settings.instagram_link }}" target="_blank" rel="noopener">
                             <img src="{% static 'images/svgs/instagram.svg' %}" alt="Instagram">
                         </a>
+                        {% endif %}
+                        {% if settings.youtube_link %}
+                        <a href="{{ settings.youtube_link }}" target="_blank" rel="noopener">
+                            <img src="{% static 'images/svgs/youtube.svg' %}" alt="YouTube">
+                        </a>
+                        {% endif %}
                         {% if settings.enable_contact_page or user.is_staff %}
                             <a href="{% url 'core:contact' %}">
                                 <img src="{% static 'images/svgs/mail.svg' %}" alt="Contact Us">
