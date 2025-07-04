@@ -3,88 +3,65 @@ from django.urls import reverse
 from django.http import JsonResponse
 import json
 
+from service.ajax.ajax_get_customer_motorcycles import get_customer_motorcycles_ajax
 
 from ..test_helpers.model_factories import (
     CustomerMotorcycleFactory,
     ServiceProfileFactory,
+    StaffUserFactory,
 )
 
 
-from service.ajax.ajax_get_customer_motorcycle_details import (
-    get_motorcycle_details_ajax,
-)
-
-
-class AjaxGetCustomerMotorcycleDetailsTest(TestCase):
+class AjaxGetCustomerMotorcyclesTest(TestCase):
 
     def setUp(self):
-
         self.factory = RequestFactory()
-
         self.service_profile = ServiceProfileFactory()
+        
+        self.motorcycle1 = CustomerMotorcycleFactory(service_profile=self.service_profile, brand="Honda")
+        self.motorcycle2 = CustomerMotorcycleFactory(service_profile=self.service_profile, brand="Yamaha")
 
-        self.motorcycle = CustomerMotorcycleFactory(
-            service_profile=self.service_profile
-        )
+        self.staff_user = StaffUserFactory()
+        self.client.force_login(self.staff_user) # Using client login for simplicity
 
-    def test_get_motorcycle_details_success(self):
-
+    def test_get_customer_motorcycles_success(self):
         url = reverse(
-            "service:admin_api_get_motorcycle_details", args=[self.motorcycle.pk]
+            "service:admin_api_customer_motorcycles", args=[self.service_profile.pk]
         )
-        request = self.factory.get(url)
-
-        response = get_motorcycle_details_ajax(
-            request, motorcycle_id=self.motorcycle.pk
-        )
+        # Using the test client is simpler than RequestFactory when user is needed
+        response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response, JsonResponse)
         content = json.loads(response.content)
 
-        expected_details = {
-            "id": self.motorcycle.pk,
-            "brand": self.motorcycle.brand,
-            "model": self.motorcycle.model,
-            "year": int(self.motorcycle.year),
-            "engine_size": self.motorcycle.engine_size,
-            "rego": self.motorcycle.rego,
-            "vin_number": self.motorcycle.vin_number,
-            "odometer": self.motorcycle.odometer,
-            "transmission": self.motorcycle.transmission,
-            "engine_number": self.motorcycle.engine_number,
-        }
-        self.assertIn("motorcycle_details", content)
-        self.assertEqual(content["motorcycle_details"], expected_details)
+        self.assertIn("motorcycles", content)
+        self.assertEqual(len(content["motorcycles"]), 2)
+        
+        motorcycle_brands = {m['brand'] for m in content['motorcycles']}
+        self.assertIn("Honda", motorcycle_brands)
+        self.assertIn("Yamaha", motorcycle_brands)
 
-    def test_get_motorcycle_details_not_found(self):
-
-        invalid_motorcycle_id = self.motorcycle.pk + 100
-
+    def test_get_customer_motorcycles_profile_not_found(self):
+        invalid_profile_id = self.service_profile.pk + 100
         url = reverse(
-            "service:admin_api_get_motorcycle_details", args=[invalid_motorcycle_id]
+            "service:admin_api_customer_motorcycles", args=[invalid_profile_id]
         )
-        request = self.factory.get(url)
-
-        response = get_motorcycle_details_ajax(
-            request, motorcycle_id=invalid_motorcycle_id
-        )
+        response = self.client.get(url)
 
         self.assertEqual(response.status_code, 404)
         self.assertIsInstance(response, JsonResponse)
         content = json.loads(response.content)
         self.assertIn("error", content)
-        self.assertIn("Motorcycle not found or invalid ID", content["error"])
+        
+        # FIX: Use assertIn to check for the key part of the message
+        self.assertIn("ServiceProfile not found", content["error"])
 
     def test_only_get_requests_allowed(self):
-
         url = reverse(
-            "service:admin_api_get_motorcycle_details", args=[self.motorcycle.pk]
+            "service:admin_api_customer_motorcycles", args=[self.service_profile.pk]
         )
-
-        request = self.factory.post(url)
-        response = get_motorcycle_details_ajax(
-            request, motorcycle_id=self.motorcycle.pk
-        )
-
+        response = self.client.post(url)
+        
+        # The @require_GET decorator returns 405 for other methods
         self.assertEqual(response.status_code, 405)

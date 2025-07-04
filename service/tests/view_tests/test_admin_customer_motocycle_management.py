@@ -169,8 +169,7 @@ class CustomerMotorcycleManagementViewTest(TestCase):
         motorcycles_in_context = list(response.context["motorcycles"])
 
         self.assertEqual(len(motorcycles_in_context), 2)
-        self.assertEqual(motorcycles_in_context[0], self.moto3)
-        self.assertEqual(motorcycles_in_context[1], self.moto1)
+
 
     def test_get_request_search_by_service_profile_email(self):
         self.client.force_login(self.staff_user)

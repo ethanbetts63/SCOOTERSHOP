@@ -13,7 +13,6 @@ from .views.user_views import (
 from .views.admin_views import (
     admin_motorcycle_details_view,
     blocked_sales_date_management_view,
-    blocked_sales_date_create_update_view,
     inventory_management_view,
     inventory_settings_view,
     motorcycle_create_update_view,
@@ -147,16 +146,6 @@ urlpatterns = [
         blocked_sales_date_management_view.BlockedSalesDateManagementView.as_view(),
         name="blocked_sales_date_management",
     ),
-    # path(
-    #     "admin/blocked-sales-dates/create/",
-    #     blocked_sales_date_create_update_view.BlockedSalesDateCreateUpdateView.as_view(),
-    #     name="blocked_sales_date_create",
-    # ),
-    # path(
-    #     "admin/blocked-sales-dates/<int:pk>/update/",
-    #     blocked_sales_date_create_update_view.BlockedSalesDateCreateUpdateView.as_view(),
-    #     name="blocked_sales_date_update",
-    # ),
     path(
         "admin/blocked-sales-dates/<int:pk>/delete/",
         delete_blocked_sales_date.BlockedSalesDateDeleteView.as_view(),

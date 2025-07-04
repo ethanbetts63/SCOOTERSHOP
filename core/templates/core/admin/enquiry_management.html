@@ -26,77 +26,79 @@
 {% endblock %}
 
 {% block admin_main_content %}
-<div class="p-4 sm:p-6 lg:p-8">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">{{ page_title|default:"Enquiry Management" }}</h1>
-    </div>
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-lg rounded-lg p-6 md:p-8 max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">{{ page_title|default:"Enquiry Management" }}</h1>
 
-    {% if enquiries %}
-        <div class="bg-white shadow-md rounded-lg overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    {% for enquiry in enquiries %}
+        <p class="mb-6 text-gray-600 text-center">Manage the motorcycles that are featured on the homepage.</p>
+
+        {% if enquiries %}
+            <div class="bg-white shadow-md rounded-lg overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ enquiry.name }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ enquiry.email }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ enquiry.phone_number|default:"N/A" }}</td>
-                            <td class="px-6 py-4 whitespace-normal text-sm text-gray-500">{{ enquiry.message|truncatechars:100 }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ enquiry.created_at|date:"Y-m-d H:i" }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <div class="flex flex-wrap gap-2">
-                                    <a href="{% url 'core:enquiry_detail' pk=enquiry.pk %}" class="action-button btn-view">View</a>
-                                    <form action="{% url 'core:enquiry_delete' pk=enquiry.pk %}" method="post" class="inline">
-                                        {% csrf_token %}
-                                        <button type="submit" class="action-button btn-delete" onclick="return confirm('Are you sure you want to delete this enquiry?');">
-                                            Delete
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for enquiry in enquiries %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ enquiry.name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ enquiry.email }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ enquiry.phone_number|default:"N/A" }}</td>
+                                <td class="px-6 py-4 whitespace-normal text-sm text-gray-500">{{ enquiry.message|truncatechars:100 }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ enquiry.created_at|date:"Y-m-d H:i" }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex flex-wrap gap-2">
+                                        <a href="{% url 'core:enquiry_detail' pk=enquiry.pk %}" class="action-button btn-view">View</a>
+                                        <form action="{% url 'core:enquiry_delete' pk=enquiry.pk %}" method="post" class="inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="action-button btn-delete" onclick="return confirm('Are you sure you want to delete this enquiry?');">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
-        {# Pagination (optional, but good practice for management views) #}
-        {% if is_paginated %}
-            <div class="pagination mt-4 flex justify-center">
-                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                    {% if page_obj.has_previous %}
-                        <a href="?page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">Previous</a>
-                    {% endif %}
-
-                    {% for i in page_obj.paginator.page_range %}
-                        {% if page_obj.number == i %}
-                            <a href="#" aria-current="page" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-indigo-500 text-sm font-medium text-white">{{ i }}</a>
-                        {% else %}
-                            <a href="?page={{ i }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">{{ i }}</a>
+            {# Pagination (optional, but good practice for management views) #}
+            {% if is_paginated %}
+                <div class="pagination mt-4 flex justify-center">
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        {% if page_obj.has_previous %}
+                            <a href="?page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">Previous</a>
                         {% endif %}
-                    {% endfor %}
 
-                    {% if page_obj.has_next %}
-                        <a href="?page={{ page_obj.next_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">Next</a>
-                    {% endif %}
-                </nav>
+                        {% for i in page_obj.paginator.page_range %}
+                            {% if page_obj.number == i %}
+                                <a href="#" aria-current="page" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-indigo-500 text-sm font-medium text-white">{{ i }}</a>
+                            {% else %}
+                                <a href="?page={{ i }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">{{ i }}</a>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">Next</a>
+                        {% endif %}
+                    </nav>
+                </div>
+            {% endif %}
+
+        {% else %}
+             <div class="text-center py-10 bg-white rounded-lg shadow-md">
+                <p class="text-gray-600 font-semibold">No Enquiries Found</p>
+                <p class="text-gray-500 mt-2">There are no customer enquiries at the moment.</p>
             </div>
         {% endif %}
-
-    {% else %}
-         <div class="text-center py-10 bg-white rounded-lg shadow-md">
-            <p class="text-gray-600 font-semibold">No Enquiries Found</p>
-            <p class="text-gray-500 mt-2">There are no customer enquiries at the moment.</p>
-        </div>
-    {% endif %}
+    </div>
 </div>
 {% endblock %}

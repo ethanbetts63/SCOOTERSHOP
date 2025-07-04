@@ -3,9 +3,8 @@ from django.urls import reverse
 from django.http import JsonResponse
 import json
 
-
-from ..test_helpers.model_factories import ServiceProfileFactory, UserFactory
-
+# FIX 1: Import the StaffUserFactory
+from ..test_helpers.model_factories import ServiceProfileFactory, UserFactory, StaffUserFactory
 
 from service.ajax.ajax_get_service_profile_details import (
     get_service_profile_details_ajax,
@@ -15,19 +14,19 @@ from service.ajax.ajax_get_service_profile_details import (
 class AjaxGetServiceProfileDetailsTest(TestCase):
 
     def setUp(self):
-
         self.factory = RequestFactory()
-
         self.user = UserFactory()
-
         self.service_profile = ServiceProfileFactory(user=self.user)
+        # FIX 2: Create a staff user to attach to requests
+        self.staff_user = StaffUserFactory()
 
     def test_get_service_profile_details_success(self):
-
         url = reverse(
             "service:admin_api_get_customer_details", args=[self.service_profile.pk]
         )
         request = self.factory.get(url)
+        # FIX 3: Manually attach the user to the request
+        request.user = self.staff_user
 
         response = get_service_profile_details_ajax(
             request, profile_id=self.service_profile.pk
@@ -55,13 +54,13 @@ class AjaxGetServiceProfileDetailsTest(TestCase):
         self.assertEqual(content["profile_details"], expected_details)
 
     def test_get_service_profile_details_not_found(self):
-
         invalid_profile_id = self.service_profile.pk + 100
-
         url = reverse(
             "service:admin_api_get_customer_details", args=[invalid_profile_id]
         )
         request = self.factory.get(url)
+        # FIX 3: Manually attach the user to the request
+        request.user = self.staff_user
 
         response = get_service_profile_details_ajax(
             request, profile_id=invalid_profile_id
@@ -74,11 +73,11 @@ class AjaxGetServiceProfileDetailsTest(TestCase):
         self.assertIn("ServiceProfile not found or invalid ID", content["error"])
 
     def test_only_get_requests_allowed(self):
-
         test_profile_id = 1
-
         url = reverse("service:admin_api_get_customer_details", args=[test_profile_id])
         request = self.factory.post(url)
+        # FIX 3: Manually attach the user to the request
+        request.user = self.staff_user
 
         response = get_service_profile_details_ajax(request, profile_id=test_profile_id)
 
