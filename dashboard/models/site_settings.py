@@ -89,8 +89,6 @@ class SiteSettings(models.Model):
         """
         settings = cls.get_settings()
         return {
-            'allow_anonymous_bookings': settings.allow_anonymous_bookings,
-            'allow_account_bookings': settings.allow_account_bookings,
             'booking_open_days': settings.booking_open_days,
             'drop_off_start_time': settings.drop_off_start_time,
             'drop_off_end_time': settings.drop_off_end_time,

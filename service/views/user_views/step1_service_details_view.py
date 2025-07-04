@@ -43,17 +43,6 @@ class Step1ServiceDetailsView(View):
                 messages.error(request, "Service bookings are currently disabled.")
                 errors_exist = True
 
-            if (
-                service_settings
-                and not service_settings.allow_anonymous_bookings
-                and not request.user.is_authenticated
-            ):
-                messages.error(
-                    request,
-                    "Anonymous bookings are not allowed. Please log in to book a service.",
-                )
-                errors_exist = True
-
             if service_settings and service_settings.booking_advance_notice is not None:
                 min_allowed_service_date = (
                     now_in_perth

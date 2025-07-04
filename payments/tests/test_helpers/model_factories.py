@@ -356,8 +356,6 @@ class ServiceSettingsFactory(factory.django.DjangoModelFactory):
     enable_service_booking = True
     booking_advance_notice = 1
     max_visible_slots_per_day = 6
-    allow_anonymous_bookings = True
-    allow_account_bookings = True
     booking_open_days = "Mon,Tue,Wed,Thu,Fri"
     drop_off_start_time = datetime.time(9, 0)
     drop_off_end_time = datetime.time(17, 0)

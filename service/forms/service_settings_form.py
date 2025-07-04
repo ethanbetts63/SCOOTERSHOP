@@ -11,8 +11,6 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             "enable_service_booking",
             "booking_advance_notice",
             "max_visible_slots_per_day",
-            "allow_anonymous_bookings",
-            "allow_account_bookings",
             "booking_open_days",
             "drop_off_start_time",
             "drop_off_end_time",
@@ -42,12 +40,6 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             ),
             "max_visible_slots_per_day": forms.NumberInput(
                 attrs={"class": "form-control", "min": "1"}
-            ),
-            "allow_anonymous_bookings": forms.CheckboxInput(
-                attrs={"class": "form-check-input"}
-            ),
-            "allow_account_bookings": forms.CheckboxInput(
-                attrs={"class": "form-check-input"}
             ),
             "booking_open_days": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Mon,Tue,Wed,Thu,Fri"}
@@ -82,7 +74,7 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             "enable_deposit": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "deposit_calc_method": forms.Select(attrs={"class": "form-control"}),
             "deposit_flat_fee_amount": forms.NumberInput(
-                attrs={"class": "form-control", "step": "0.01"}
+                attrs={"class": "form-control", "step": "0.01", "min": "1"}
             ),
             "deposit_percentage": forms.NumberInput(
                 attrs={
@@ -163,6 +155,21 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             self.add_error(
                 "deposit_percentage",
                 _("Ensure deposit percentage is between 0.00% and 100.00%."),
+            )
+
+        enable_deposit = cleaned_data.get("enable_deposit")
+        deposit_calc_method = cleaned_data.get("deposit_calc_method")
+        deposit_flat_fee_amount = cleaned_data.get("deposit_flat_fee_amount")
+
+        if (
+            enable_deposit
+            and deposit_calc_method == "FLAT_FEE"
+            and deposit_flat_fee_amount is not None
+            and deposit_flat_fee_amount < 1
+        ):
+            self.add_error(
+                "deposit_flat_fee_amount",
+                _("If deposit is enabled as a flat fee, the amount must be at least 1.00."),
             )
 
         return cleaned_data

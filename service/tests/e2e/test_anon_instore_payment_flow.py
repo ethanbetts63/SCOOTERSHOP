@@ -28,8 +28,6 @@ class TestAnonymousInStorePaymentFlow(TestCase):
         SiteSettings.objects.create(enable_service_booking=True)
         self.service_settings = ServiceSettingsFactory(
             enable_service_booking=True,
-            allow_anonymous_bookings=True,
-            allow_account_bookings=True,
             enable_instore_full_payment=True,
             booking_advance_notice=1,
             drop_off_start_time=datetime.time(9, 0),

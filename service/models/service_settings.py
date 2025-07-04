@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
 from decimal import Decimal
 from datetime import time
 
@@ -16,13 +17,6 @@ class ServiceSettings(models.Model):
     max_visible_slots_per_day = models.IntegerField(
         default=2,
         help_text="Maximum number of booking slots to show per day in the calendar.",
-    )
-
-    allow_anonymous_bookings = models.BooleanField(
-        default=True, help_text="Allow users to book without creating an account."
-    )
-    allow_account_bookings = models.BooleanField(
-        default=True, help_text="Allow logged-in users to book."
     )
 
     booking_open_days = models.CharField(
@@ -89,8 +83,9 @@ class ServiceSettings(models.Model):
     deposit_flat_fee_amount = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        default=Decimal("0.00"),
+        default=Decimal("50.00"),
         help_text="Flat fee amount for deposit if 'Flat Fee' method is chosen.",
+        validators=[MinValueValidator(Decimal('1.00'))]
     )
     deposit_percentage = models.DecimalField(
         max_digits=5,

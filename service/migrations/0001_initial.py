@@ -285,19 +285,6 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "allow_anonymous_bookings",
-                    models.BooleanField(
-                        default=True,
-                        help_text="Allow users to book without creating an account.",
-                    ),
-                ),
-                (
-                    "allow_account_bookings",
-                    models.BooleanField(
-                        default=True, help_text="Allow logged-in users to book."
-                    ),
-                ),
-                (
                     "booking_open_days",
                     models.CharField(
                         default="Mon,Tue,Wed,Thu,Fri",
