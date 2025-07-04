@@ -15,7 +15,7 @@ class ServiceBrandModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
 
-        cls.service_brand = ServiceBrandFactory(image=None)
+        cls.service_brand = ServiceBrandFactory()
 
     def test_service_brand_creation(self):
 
@@ -32,31 +32,6 @@ class ServiceBrandModelTest(TestCase):
         self.assertEqual(
             service_brand._meta.get_field("name").help_text,
             "Name of the service brand (e.g., 'Yamaha', 'Vespa').",
-        )
-
-    def test_image_field(self):
-
-        service_brand = self.service_brand
-        image_field = service_brand._meta.get_field("image")
-        self.assertTrue(image_field.null)
-        self.assertTrue(image_field.blank)
-        self.assertEqual(image_field.upload_to, "brands/")
-
-        self.assertEqual(image_field.help_text, "Optional image for this brand.")
-
-        dummy_image = SimpleUploadedFile(
-            "test_image.jpg", b"dummy_content", content_type="image/jpeg"
-        )
-        brand_with_image = ServiceBrandFactory(
-            name="Brand with Image", image=dummy_image
-        )
-        self.assertIsNotNone(brand_with_image.image)
-        self.assertIn("brands/", brand_with_image.image.name)
-
-        brand_with_image.image = None
-        brand_with_image.save()
-        self.assertIsNone(
-            brand_with_image.image.name if brand_with_image.image else None
         )
 
     def test_last_updated_field(self):

@@ -8,8 +8,8 @@ class ServiceBrandFormTest(TestCase):
     @classmethod
     def setUpTestData(cls):
 
-        cls.brand1 = ServiceBrandFactory(name="Brand A", image=None)
-        cls.brand2 = ServiceBrandFactory(name="Brand B", image=None)
+        cls.brand1 = ServiceBrandFactory(name="Brand A")
+        cls.brand2 = ServiceBrandFactory(name="Brand B")
 
     def test_form_valid_data(self):
 
@@ -21,7 +21,6 @@ class ServiceBrandFormTest(TestCase):
         self.assertEqual(brand.name, "New Valid Brand")
         self.assertIsNotNone(brand.pk)
 
-        self.assertIsNone(brand.image.name if brand.image else None)
 
     def test_form_invalid_data_missing_name(self):
 
@@ -56,4 +55,3 @@ class ServiceBrandFormTest(TestCase):
         self.assertEqual(updated_brand.name, "Updated Brand A")
         self.assertEqual(updated_brand.pk, existing_brand.pk)
 
-        self.assertIsNone(updated_brand.image.name if updated_brand.image else None)
