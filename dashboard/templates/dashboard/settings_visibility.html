@@ -9,6 +9,15 @@
     }
     .form-check-label {
         color: #000;
+        margin-left: 0.5rem;
+    }
+    .form-check {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    .form-text {
+        margin-left: 1.5rem; /* Indent help text */
     }
 </style>
 {% endblock %}
@@ -32,76 +41,116 @@
             </div>
 
             <div class="space-y-4">
-                <h3 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Feature Visibility</h3>
-
+                <h3 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Module Visibility</h3>
+                
+                <div class="form-check">
+                    {{ form.enable_sales_new }}
+                    <div>
+                        <label class="form-check-label" for="{{ form.enable_sales_new.id_for_label }}">Enable New Sales</label>
+                        <small class="block text-gray-500 form-text">Allow users to view and enquire about new motorcycles.</small>
+                    </div>
+                </div>
+                <div class="form-check">
+                    {{ form.enable_sales_used }}
+                    <div>
+                        <label class="form-check-label" for="{{ form.enable_sales_used.id_for_label }}">Enable Used Sales</label>
+                        <small class="block text-gray-500 form-text">Allow users to view and enquire about used motorcycles.</small>
+                    </div>
+                </div>
                 <div class="form-check">
                     {{ form.enable_service_booking }}
-                    <label class="form-check-label" for="{{ form.enable_service_booking.id_for_label }}">
-                        Enable Service Booking
-                    </label>
-                    <small class="form-text text-gray-500">
-                        Allow users to book motorcycle services online
-                    </small>
+                    <div>
+                        <label class="form-check-label" for="{{ form.enable_service_booking.id_for_label }}">Enable Service Booking</label>
+                        <small class="block text-gray-500 form-text">Allow users to book motorcycle services online.</small>
+                    </div>
                 </div>
-
+                <div class="form-check">
+                    {{ form.enable_faq_service }}
+                    <div>
+                        <label class="form-check-label" for="{{ form.enable_faq_service.id_for_label }}">Enable Service FAQs</label>
+                        <small class="block text-gray-500 form-text">Show the Frequently Asked Questions section on the service page.</small>
+                    </div>
+                </div>
+                 <div class="form-check">
+                    {{ form.enable_faq_sales }}
+                    <div>
+                        <label class="form-check-label" for="{{ form.enable_faq_sales.id_for_label }}">Enable Sales FAQs</label>
+                        <small class="block text-gray-500 form-text">Show the Frequently Asked Questions section on sales pages.</small>
+                    </div>
+                </div>
                 <div class="form-check">
                     {{ form.enable_user_accounts }}
-                    <label class="form-check-label" for="{{ form.enable_user_accounts.id_for_label }}">
-                        Enable User Accounts
-                    </label>
-                    <small class="form-text text-gray-500">
-                        Allow users to register and maintain accounts
-                    </small>
+                    <div>
+                        <label class="form-check-label" for="{{ form.enable_user_accounts.id_for_label }}">Enable User Accounts</label>
+                        <small class="block text-gray-500 form-text">Allow users to register and maintain accounts.</small>
+                    </div>
                 </div>
-
                 <div class="form-check">
                     {{ form.enable_contact_page }}
-                    <label class="form-check-label" for="{{ form.enable_contact_page.id_for_label }}">
-                        Enable Contact Page
-                    </label>
-                    <small class="form-text text-gray-500">
-                        Allow users to access the contact us page
-                    </small>
+                    <div>
+                        <label class="form-check-label" for="{{ form.enable_contact_page.id_for_label }}">Enable Contact Page</label>
+                        <small class="block text-gray-500 form-text">Allow users to access the contact us page.</small>
+                    </div>
                 </div>
-
-                <div class="form-check">
-                    {{ form.enable_map_display }}
-                    <label class="form-check-label" for="{{ form.enable_map_display.id_for_label }}">
-                        Enable Map Display
-                    </label>
-                    <small class="form-text text-gray-500">
-                        Show location map on relevant pages
-                    </small>
-                </div>
-
                 <div class="form-check">
                     {{ form.enable_privacy_policy_page }}
-                    <label class="form-check-label" for="{{ form.enable_privacy_policy_page.id_for_label }}">
-                        Enable Privacy Policy Page
-                    </label>
-                    <small class="form-text text-gray-500">
-                        Allow users to access the privacy policy page
-                    </small>
+                    <div>
+                        <label class="form-check-label" for="{{ form.enable_privacy_policy_page.id_for_label }}">Enable Privacy Policy Page</label>
+                        <small class="block text-gray-500 form-text">Allow users to access the privacy policy page.</small>
+                    </div>
                 </div>
-
                 <div class="form-check">
                     {{ form.enable_returns_page }}
-                    <label class="form-check-label" for="{{ form.enable_returns_page.id_for_label }}">
-                        Enable Returns Page
-                    </label>
-                    <small class="form-text text-gray-500">
-                        Allow users to access the returns page
-                    </small>
+                    <div>
+                        <label class="form-check-label" for="{{ form.enable_returns_page.id_for_label }}">Enable Returns Page</label>
+                        <small class="block text-gray-500 form-text">Allow users to access the returns page.</small>
+                    </div>
                 </div>
-
                 <div class="form-check">
                     {{ form.enable_security_page }}
-                    <label class="form-check-label" for="{{ form.enable_security_page.id_for_label }}">
-                        Enable Security Page
-                    </label>
-                    <small class="form-text text-gray-500">
-                        Allow users to access the security page
-                    </small>
+                    <div>
+                        <label class="form-check-label" for="{{ form.enable_security_page.id_for_label }}">Enable Security Page</label>
+                        <small class="block text-gray-500 form-text">Allow users to access the security page.</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4 pt-6">
+                <h3 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Content Display</h3>
+                <div class="form-check">
+                    {{ form.display_phone_number }}
+                    <div>
+                        <label class="form-check-label" for="{{ form.display_phone_number.id_for_label }}">Display Phone Number</label>
+                        <small class="block text-gray-500 form-text">Show the business phone number in the site header and footer.</small>
+                    </div>
+                </div>
+                <div class="form-check">
+                    {{ form.display_address }}
+                    <div>
+                        <label class="form-check-label" for="{{ form.display_address.id_for_label }}">Display Address</label>
+                        <small class="block text-gray-500 form-text">Show the business address in the site footer and on the contact page.</small>
+                    </div>
+                </div>
+                <div class="form-check">
+                    {{ form.display_opening_hours }}
+                    <div>
+                        <label class="form-check-label" for="{{ form.display_opening_hours.id_for_label }}">Display Opening Hours</label>
+                        <small class="block text-gray-500 form-text">Show the business opening hours in the site footer.</small>
+                    </div>
+                </div>
+                 <div class="form-check">
+                    {{ form.enable_map_display }}
+                    <div>
+                        <label class="form-check-label" for="{{ form.enable_map_display.id_for_label }}">Enable Map Display</label>
+                        <small class="block text-gray-500 form-text">Show location map on relevant pages.</small>
+                    </div>
+                </div>
+                 <div class="form-check">
+                    {{ form.enable_google_places_reviews }}
+                    <div>
+                        <label class="form-check-label" for="{{ form.enable_google_places_reviews.id_for_label }}">Enable Google Reviews</label>
+                        <small class="block text-gray-500 form-text">Show Google Places reviews on the site.</small>
+                    </div>
                 </div>
             </div>
         </form>
