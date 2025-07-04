@@ -1,11 +1,12 @@
 from django.views.generic import TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin
-from payments.models import RefundRequest
 from django.contrib import messages
 from django.urls import reverse
 
+from core.mixins import AdminRequiredMixin
+from payments.models import RefundRequest
 
-class IntermediaryRefundProcessingView(LoginRequiredMixin, TemplateView):
+
+class IntermediaryRefundProcessingView(AdminRequiredMixin, TemplateView):
 
     template_name = "payments/intermediary_refund_processing.html"
 
@@ -32,7 +33,3 @@ class IntermediaryRefundProcessingView(LoginRequiredMixin, TemplateView):
             context["refund_request_pk"] = None
 
         return context
-
-    def dispatch(self, request, *args, **kwargs):
-
-        return super().dispatch(request, *args, **kwargs)

@@ -1,17 +1,15 @@
-from django.contrib.admin.views.decorators import staff_member_required
 from django.views.generic import ListView
-from django.utils.decorators import method_decorator
-from payments.models import RefundRequest
 from django.utils import timezone
 from datetime import timedelta
 from mailer.utils import send_templated_email
 from django.conf import settings
+from core.mixins import AdminRequiredMixin
+from payments.models import RefundRequest
 from service.models import ServiceProfile
 from inventory.models import SalesProfile
 
 
-@method_decorator(staff_member_required, name="dispatch")
-class AdminRefundManagement(ListView):
+class AdminRefundManagement(AdminRequiredMixin, ListView):
     model = RefundRequest
     template_name = "payments/admin_refund_management.html"
     context_object_name = "refund_requests"
@@ -79,9 +77,7 @@ class AdminRefundManagement(ListView):
                         ),
                     )
                 else:
-
                     pass
-
                 refund_request.delete()
 
             except Exception:

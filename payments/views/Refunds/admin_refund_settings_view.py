@@ -2,16 +2,12 @@ from django.urls import reverse_lazy
 from django.views.generic import UpdateView
 from django.contrib import messages
 from django.forms import ValidationError
-from django.utils.decorators import method_decorator
-from django.contrib.auth.decorators import user_passes_test
-
+from core.mixins import AdminRequiredMixin
 from payments.models import RefundPolicySettings
 from payments.forms.refund_settings_form import RefundSettingsForm
-from users.views.auth import is_admin
 
 
-@method_decorator(user_passes_test(is_admin), name="dispatch")
-class AdminRefundSettingsView(UpdateView):
+class AdminRefundSettingsView(AdminRequiredMixin, UpdateView):
 
     model = RefundPolicySettings
     form_class = RefundSettingsForm

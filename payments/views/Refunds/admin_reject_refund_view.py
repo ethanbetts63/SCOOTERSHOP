@@ -1,23 +1,18 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.utils.decorators import method_decorator
 from django.views import View
 from django.contrib import messages
 from django.utils import timezone
-from django.contrib.auth.decorators import user_passes_test
 from django.conf import settings
 from django.urls import reverse
-
+from core.mixins import AdminRequiredMixin
 from payments.forms.admin_reject_refund_form import AdminRejectRefundForm
 from payments.models.RefundRequest import RefundRequest
-from users.views.auth import is_admin
 from mailer.utils import send_templated_email
-
 from service.models import ServiceProfile
 from inventory.models import SalesProfile
 
 
-@method_decorator(user_passes_test(is_admin), name="dispatch")
-class AdminRejectRefundView(View):
+class AdminRejectRefundView(AdminRequiredMixin, View):
 
     template_name = "payments/admin_reject_refund_form.html"
 

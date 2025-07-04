@@ -1,19 +1,17 @@
 import stripe
 from django.shortcuts import redirect, get_object_or_404
 from django.views import View
-from django.utils.decorators import method_decorator
 from django.contrib import messages
 from django.db import transaction
 from django.conf import settings
 from decimal import Decimal
 from django.utils import timezone
-from django.contrib.auth.decorators import user_passes_test
-from users.views.auth import is_admin
+
+from core.mixins import AdminRequiredMixin
 from payments.models import RefundRequest
 
 
-@method_decorator(user_passes_test(is_admin), name="dispatch")
-class ProcessRefundView(View):
+class ProcessRefundView(AdminRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         refund_request = get_object_or_404(RefundRequest, pk=pk)
 

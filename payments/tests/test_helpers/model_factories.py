@@ -51,6 +51,7 @@ def get_model_choices(app_label, model_name, choices_attribute):
     return [choice[0] for choice in getattr(model, choices_attribute)]
 
 
+
 class MotorcycleConditionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = MotorcycleCondition
@@ -246,6 +247,7 @@ class UserFactory(factory.django.DjangoModelFactory):
 
     username = factory.Sequence(lambda n: f"user_{n}")
     email = factory.Sequence(lambda n: f"user_{n}@example.com")
+    password = factory.PostGenerationMethodCall('set_password', 'testpassword')
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")
     is_active = True
@@ -260,6 +262,8 @@ class UserFactory(factory.django.DjangoModelFactory):
     post_code = factory.Faker("postcode")
     country = factory.Faker("country_code")
 
+class StaffUserFactory(UserFactory):
+    is_staff = True
 
 class ServiceBrandFactory(factory.django.DjangoModelFactory):
     class Meta:

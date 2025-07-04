@@ -1,17 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.utils.decorators import method_decorator
 from django.views import View
 from django.contrib import messages
 from django.utils import timezone
-from django.contrib.auth.decorators import user_passes_test
-
+from core.mixins import AdminRequiredMixin
 from payments.forms.admin_refund_request_form import AdminRefundRequestForm
 from payments.models.RefundRequest import RefundRequest
-from users.views.auth import is_admin
 
 
-@method_decorator(user_passes_test(is_admin), name="dispatch")
-class AdminAddEditRefundRequestView(View):
+class AdminAddEditRefundRequestView(AdminRequiredMixin, View):
     template_name = "payments/admin_refund_form.html"
 
     def get(self, request, pk=None, *args, **kwargs):
