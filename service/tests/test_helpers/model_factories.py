@@ -16,6 +16,7 @@ from service.models import (
     ServiceType,
     TempServiceBooking,
     ServiceBrand,
+    ServiceFAQ,
 )
 
 from payments.models import Payment, RefundPolicySettings
@@ -325,6 +326,19 @@ class RefundPolicySettingsFactory(factory.django.DjangoModelFactory):
     stripe_fee_fixed_international = factory.LazyFunction(
         lambda: Decimal(fake.random_element(["0.30", "0.40"]))
     )
+
+class ServiceFAQFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ServiceFAQ
+
+    booking_step = factory.Faker(
+        "random_element",
+        elements=[choice[0] for choice in ServiceFAQ.BOOKING_STEP_CHOICES],
+    )
+    question = factory.Faker("sentence")
+    answer = factory.Faker("paragraph")
+    is_active = True
+    display_order = factory.Sequence(lambda n: n)
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
