@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
+from ..decorators import admin_required
 
 from service.models import ServiceType
 import datetime
@@ -10,6 +11,7 @@ from service.utils.calculate_estimated_pickup_date import (
 
 
 @require_GET
+@admin_required
 def get_estimated_pickup_date_ajax(request):
 
     service_type_id = request.GET.get("service_type_id")

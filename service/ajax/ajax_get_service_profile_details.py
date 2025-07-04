@@ -2,9 +2,11 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET
 from service.models import ServiceProfile
+from ..decorators import admin_required
 
 
 @require_GET
+@admin_required
 def get_service_profile_details_ajax(request, profile_id):
 
     try:

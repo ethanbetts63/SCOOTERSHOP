@@ -7,14 +7,12 @@ from django.utils import timezone
 from service.models import ServiceBooking
 from payments.models import RefundRequest
 from payments.utils.service_refund_calc import calculate_service_refund_amount
+from ..decorators import admin_required
 
 
 @require_GET
-@login_required
+@admin_required
 def get_service_booking_details_json(request, pk):
-
-    if not request.user.is_staff:
-        return JsonResponse({"error": "Permission denied"}, status=403)
 
     try:
         service_booking = get_object_or_404(ServiceBooking, pk=pk)

@@ -2,10 +2,11 @@ from django.http import JsonResponse
 from django.urls import reverse
 from datetime import timedelta
 from django.utils import timezone
+from ..decorators import admin_required
 
 from service.models import ServiceBooking, BlockedServiceDate
 
-
+@admin_required
 def get_service_bookings_json_ajax(request):
     start_param = request.GET.get("start")
     end_param = request.GET.get("end")

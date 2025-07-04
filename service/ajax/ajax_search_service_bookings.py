@@ -3,10 +3,11 @@ from django.db.models import Q
 from django.views.decorators.http import require_GET
 from django.contrib.auth.decorators import login_required
 from service.models import ServiceBooking
+from ..decorators import admin_required
 
 
 @require_GET
-@login_required
+@admin_required
 def search_service_bookings_ajax(request):
 
     search_term = request.GET.get("query", "").strip()

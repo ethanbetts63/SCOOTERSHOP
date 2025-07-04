@@ -2,9 +2,11 @@ from django.http import JsonResponse
 from django.db.models import Q
 from django.views.decorators.http import require_GET
 from service.models import ServiceProfile
+from ..decorators import admin_required
 
 
 @require_GET
+@admin_required
 def search_customer_profiles_ajax(request):
 
     search_term = request.GET.get("query", "").strip()

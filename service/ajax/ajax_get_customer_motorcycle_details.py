@@ -2,9 +2,11 @@ from django.http import JsonResponse
 from service.models import CustomerMotorcycle
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET
+from ..decorators import admin_required
 
 
 @require_GET
+@admin_required
 def get_motorcycle_details_ajax(request, motorcycle_id):
 
     try:
