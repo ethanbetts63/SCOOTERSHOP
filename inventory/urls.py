@@ -147,16 +147,16 @@ urlpatterns = [
         blocked_sales_date_management_view.BlockedSalesDateManagementView.as_view(),
         name="blocked_sales_date_management",
     ),
-    path(
-        "admin/blocked-sales-dates/create/",
-        blocked_sales_date_create_update_view.BlockedSalesDateCreateUpdateView.as_view(),
-        name="blocked_sales_date_create",
-    ),
-    path(
-        "admin/blocked-sales-dates/<int:pk>/update/",
-        blocked_sales_date_create_update_view.BlockedSalesDateCreateUpdateView.as_view(),
-        name="blocked_sales_date_update",
-    ),
+    # path(
+    #     "admin/blocked-sales-dates/create/",
+    #     blocked_sales_date_create_update_view.BlockedSalesDateCreateUpdateView.as_view(),
+    #     name="blocked_sales_date_create",
+    # ),
+    # path(
+    #     "admin/blocked-sales-dates/<int:pk>/update/",
+    #     blocked_sales_date_create_update_view.BlockedSalesDateCreateUpdateView.as_view(),
+    #     name="blocked_sales_date_update",
+    # ),
     path(
         "admin/blocked-sales-dates/<int:pk>/delete/",
         delete_blocked_sales_date.BlockedSalesDateDeleteView.as_view(),

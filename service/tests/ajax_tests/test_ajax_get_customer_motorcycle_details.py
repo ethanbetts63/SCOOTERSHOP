@@ -3,36 +3,36 @@ from django.urls import reverse
 from django.http import JsonResponse
 import json
 
-
 from service.ajax.ajax_get_customer_motorcycle_details import (
     get_motorcycle_details_ajax,
 )
 
-
+# FIX 1: Import the StaffUserFactory
 from ..test_helpers.model_factories import (
     CustomerMotorcycleFactory,
     ServiceProfileFactory,
+    StaffUserFactory,
 )
 
 
 class AjaxGetCustomerMotorcycleDetailsTest(TestCase):
 
     def setUp(self):
-
         self.factory = RequestFactory()
-
         self.service_profile = ServiceProfileFactory()
-
         self.motorcycle = CustomerMotorcycleFactory(
             service_profile=self.service_profile
         )
+        # FIX 2: Create a staff user to attach to requests
+        self.staff_user = StaffUserFactory()
 
     def test_get_motorcycle_details_success(self):
-
         url = reverse(
             "service:admin_api_get_motorcycle_details", args=[self.motorcycle.pk]
         )
         request = self.factory.get(url)
+        # FIX 3: Manually attach the user to the request
+        request.user = self.staff_user
 
         response = get_motorcycle_details_ajax(
             request, motorcycle_id=self.motorcycle.pk
@@ -58,13 +58,13 @@ class AjaxGetCustomerMotorcycleDetailsTest(TestCase):
         self.assertEqual(content["motorcycle_details"], expected_details)
 
     def test_get_motorcycle_details_not_found(self):
-
         invalid_motorcycle_id = self.motorcycle.pk + 100
-
         url = reverse(
             "service:admin_api_get_motorcycle_details", args=[invalid_motorcycle_id]
         )
         request = self.factory.get(url)
+        # FIX 3: Manually attach the user to the request
+        request.user = self.staff_user
 
         response = get_motorcycle_details_ajax(
             request, motorcycle_id=invalid_motorcycle_id
@@ -77,12 +77,13 @@ class AjaxGetCustomerMotorcycleDetailsTest(TestCase):
         self.assertIn("Motorcycle not found or invalid ID", content["error"])
 
     def test_only_get_requests_allowed(self):
-
         url = reverse(
             "service:admin_api_get_motorcycle_details", args=[self.motorcycle.pk]
         )
-
         request = self.factory.post(url)
+        # FIX 3: Manually attach the user to the request
+        request.user = self.staff_user
+        
         response = get_motorcycle_details_ajax(
             request, motorcycle_id=self.motorcycle.pk
         )

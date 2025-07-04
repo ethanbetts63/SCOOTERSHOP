@@ -2,176 +2,156 @@
 {% load static %}
 
 {% block extra_css %}
-{{ block.super }}
-    <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}"> 
-    <style>
-        /* Specific styles for refund policy settings if needed */
-        .form-section-title {
-            font-size: 1.25rem; /* text-xl */
-            font-weight: 600; /* semi-bold */
-            color: #374151; /* gray-700 */
-            margin-top: 2.5rem; /* mt-10 */
-            margin-bottom: 1.5rem; /* mb-6 */
-            border-bottom: 1px solid #e5e7eb; /* border-gray-200 */
-            padding-bottom: 0.5rem; /* pb-2 */
-        }
-        /* Style for checkbox fields to align them properly */
-        .checkbox-field {
-            display: flex;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-        .checkbox-field input[type="checkbox"] {
-            margin-right: 0.5rem;
-            transform: scale(1.2); /* Slightly larger checkbox */
-        }
-        .checkbox-field label {
-            margin-bottom: 0; /* Remove default bottom margin for labels in checkbox fields */
-            font-weight: normal; /* Checkbox labels typically not bold */
-        }
-        .form-field small {
-            display: block; /* Ensure help text and errors appear on a new line */
-            color: #6b7280; /* gray-500 for help text */
-            margin-top: 0.25rem;
-            font-size: 0.875rem; /* text-sm */
-        }
-        .form-field small[style="color: red;"] {
-            color: #ef4444 !important; /* Red-500 for errors, important to override */
-        }
-    </style>
+<style>
+    .form-group input,
+    .form-group select,
+    .form-group textarea,
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+        border: 1px solid #ccc;
+        color: #000;
+        width: 100%;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+    }
+    .checkbox-field input {
+        width: auto;
+    }
+</style>
 {% endblock %}
 
 {% block admin_main_content %}
-<div class="service-booking-container"> 
-    <div class="booking-progress">
-        <h2>Refund Policy Settings</h2>
-    </div>
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-lg rounded-lg p-6 md:p-8 max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">
+            Refund Policy Settings
+        </h1>
 
-    <hr>
+        <form method="post" name="refund_policy_settings_form" class="space-y-6">
+            {% csrf_token %}
 
-    <form method="post" name="refund_policy_settings_form">
-        {% csrf_token %}
+            <div class="flex justify-end mb-4">
+                <button type="button" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l" id="editButton">Edit</button>
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4" id="saveButton" name="refund_policy_settings_submit">Save Changes</button>
+                <button type="button" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r" id="resetButton">Reset</button>
+            </div>
 
-        <div class="form-field" style="flex-direction: row; justify-content: flex-end; margin-bottom: 20px;">
-            <button type="button" class="btn-secondary" id="editButton" style="margin-right: 10px;">Edit</button>
-            <button type="submit" id="saveButton" name="refund_policy_settings_submit">Save Changes</button>
-            <button type="button" class="btn-secondary" id="resetButton" style="margin-left: 10px;">Reset</button>
-        </div>
+            {% if form.non_field_errors %}
+                <div class="form-field">
+                    {% for error in form.non_field_errors %}
+                        <small class="text-red-500">{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
 
-        
-        {% if form.non_field_errors %}
-            <div class="form-field">
-                {% for error in form.non_field_errors %}
-                    <small style="color: red;">{{ error }}</small>
+            <h3 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Full Payment Cancellation Policy</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for field in form %}
+                    {% if 'cancellation_full_payment' in field.name %}
+                        <div class="form-group">
+                            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <small class="text-gray-500">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% if field.errors %}
+                                {% for error in field.errors %}
+                                    <small class="text-red-500">{{ error }}</small>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 {% endfor %}
             </div>
-        {% endif %}
 
-        <h3 class="form-section-title">Full Payment Cancellation Policy</h3>
-        
-        {% for field in form %}
-            {% if 'cancellation_full_payment' in field.name %}
-                <div class="form-field">
-                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.help_text %}
-                        <small>{{ field.help_text }}</small>
+            <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-4 border-b pb-2">Deposit Cancellation Policy</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for field in form %}
+                    {% if 'cancellation_deposit' in field.name and 'sales_enable_deposit_refund' not in field.name %}
+                        <div class="form-group">
+                            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <small class="text-gray-500">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% if field.errors %}
+                                {% for error in field.errors %}
+                                    <small class="text-red-500">{{ error }}</small>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
                     {% endif %}
-                    {% if field.errors %}
-                        {% for error in field.errors %}
-                            <small style="color: red;">{{ error }}</small>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-            {% endif %}
-        {% endfor %}
+                {% endfor %}
+            </div>
 
-        <h3 class="form-section-title">Deposit Cancellation Policy</h3>
-        {% for field in form %}
-            {% if 'cancellation_deposit' in field.name and 'sales_enable_deposit_refund' not in field.name %} 
-                <div class="form-field">
-                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.help_text %}
-                        <small>{{ field.help_text }}</small>
+            <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-4 border-b pb-2">Inventory App Refund Settings</h3>
+            {% for field in form %}
+                {% if 'sales_enable_deposit_refund_grace_period' == field.name or 'sales_deposit_refund_grace_period_hours' == field.name or 'sales_enable_deposit_refund' == field.name %}
+                    {% if field.field.widget.input_type == 'checkbox' %}
+                        <div class="form-field checkbox-field flex items-center">
+                            {{ field }}
+                            <label for="{{ field.id_for_label }}" class="ml-2 block text-sm text-gray-900">{{ field.label }}</label>
+                            {% if field.help_text %}
+                                <small class="ml-2 text-gray-500">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% if field.errors %}
+                                {% for error in field.errors %}
+                                    <small class="text-red-500">{{ error }}</small>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="form-group">
+                            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <small class="text-gray-500">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% if field.errors %}
+                                {% for error in field.errors %}
+                                    <small class="text-red-500">{{ error }}</small>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
                     {% endif %}
-                    {% if field.errors %}
-                        {% for error in field.errors %}
-                            <small style="color: red;">{{ error }}</small>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-            {% endif %}
-        {% endfor %}
-
-        <h3 class="form-section-title">Inventory App Refund Settings</h3>
-        {% for field in form %}
-            {% if 'sales_enable_deposit_refund_grace_period' == field.name or 'sales_deposit_refund_grace_period_hours' == field.name or 'sales_enable_deposit_refund' == field.name %}
-                {% if field.field.widget.input_type == 'checkbox' %}
-                    <div class="form-field checkbox-field">
-                        {{ field }}
-                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                        {% if field.help_text %}
-                            <small>{{ field.help_text }}</small>
-                        {% endif %}
-                        {% if field.errors %}
-                            {% for error in field.errors %}
-                                <small style="color: red;">{{ error }}</small>
-                            {% endfor %}
-                        {% endif %}
-                    </div>
-                {% else %}
-                    <div class="form-field">
-                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.help_text %}
-                            <small>{{ field.help_text }}</small>
-                        {% endif %}
-                        {% if field.errors %}
-                            {% for error in field.errors %}
-                                <small style="color: red;">{{ error }}</small>
-                            {% endfor %}
-                        {% endif %}
-                    </div>
                 {% endif %}
-            {% endif %}
-        {% endfor %}
+            {% endfor %}
 
-        <h3 class="form-section-title">Stripe Fee Settings</h3>
-        {% for field in form %}
-            
-            {% if 'stripe_fee' in field.name or field.name == 'refund_deducts_stripe_fee_policy' %}
-                {% if field.field.widget.input_type == 'checkbox' %}
-                    <div class="form-field checkbox-field">
-                        {{ field }}
-                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                        {% if field.help_text %}
-                            <small>{{ field.help_text }}</small>
-                        {% endif %}
-                        {% if field.errors %}
-                            {% for error in field.errors %}
-                                <small style="color: red;">{{ error }}</small>
-                            {% endfor %}
-                        {% endif %}
-                    </div>
-                {% else %}
-                    <div class="form-field">
-                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.help_text %}
-                            <small>{{ field.help_text }}</small>
-                        {% endif %}
-                        {% if field.errors %}
-                            {% for error in field.errors %}
-                                <small style="color: red;">{{ error }}</small>
-                            {% endfor %}
-                        {% endif %}
-                    </div>
+            <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-4 border-b pb-2">Stripe Fee Settings</h3>
+            {% for field in form %}
+                {% if 'stripe_fee' in field.name or field.name == 'refund_deducts_stripe_fee_policy' %}
+                    {% if field.field.widget.input_type == 'checkbox' %}
+                        <div class="form-field checkbox-field flex items-center">
+                            {{ field }}
+                            <label for="{{ field.id_for_label }}" class="ml-2 block text-sm text-gray-900">{{ field.label }}</label>
+                            {% if field.help_text %}
+                                <small class="ml-2 text-gray-500">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% if field.errors %}
+                                {% for error in field.errors %}
+                                    <small class="text-red-500">{{ error }}</small>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="form-group">
+                            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <small class="text-gray-500">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% if field.errors %}
+                                {% for error in field.errors %}
+                                    <small class="text-red-500">{{ error }}</small>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 {% endif %}
-            {% endif %}
-        {% endfor %}
-
-    </form>
+            {% endfor %}
+        </form>
+    </div>
 </div>
 {% endblock %}
 
@@ -202,7 +182,6 @@
             });
         }
 
-        // Initial state: Hide save/reset, show edit, make form readonly
         saveButton.style.display = 'none';
         resetButton.style.display = 'none';
         setFormReadonly(true);
@@ -215,22 +194,18 @@
         });
 
         resetButton.addEventListener('click', function(event) {
-            event.preventDefault(); // Prevent default form submission
-            mainForm.reset(); // Reset form to initial values
-            // After resetting, ensure it goes back to read-only mode and button visibility
+            event.preventDefault();
+            mainForm.reset();
             saveButton.style.display = 'none';
             resetButton.style.display = 'none';
             editButton.style.display = 'inline-block';
             setFormReadonly(true);
         });
 
-        // Re-apply read-only after potential form submission (page load)
         window.addEventListener('load', function() {
             setFormReadonly(true);
         });
 
-        // Handle the case where the Save button was clicked and the page reloaded without a full navigation
-        // This is a subtle case to ensure the form remains readonly if the page reloaded due to a successful save.
         if (window.performance && window.performance.getEntriesByType('navigation').length > 0 && 
             window.performance.getEntriesByType('navigation')[0].type === 'reload') {
             setFormReadonly(true);
