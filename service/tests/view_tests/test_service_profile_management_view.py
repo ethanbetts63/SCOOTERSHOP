@@ -159,7 +159,7 @@ class ServiceProfileManagementViewTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        self.assertTemplateUsed(response, "service/admin_service_profile_form.html")
+        self.assertTemplateUsed(response, "service/admin_service_profile_create_update.html")
         self.assertIn("form", response.context)
         self.assertTrue(response.context["is_edit_mode"])
         self.assertEqual(response.context["current_profile"], self.profile1)

@@ -77,7 +77,7 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
         response = self.client.get(self.create_url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "service/admin_service_profile_form.html")
+        self.assertTemplateUsed(response, "service/admin_service_profile_create_update.html")
         self.assertIsInstance(response.context["form"], AdminServiceProfileForm)
         self.assertFalse(response.context["is_edit_mode"])
         self.assertIsNone(response.context["current_profile"])
@@ -90,7 +90,7 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
         response = self.client.get(self.update_url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "service/admin_service_profile_form.html")
+        self.assertTemplateUsed(response, "service/admin_service_profile_create_update.html")
         self.assertIsInstance(response.context["form"], AdminServiceProfileForm)
         self.assertTrue(response.context["is_edit_mode"])
         self.assertEqual(response.context["current_profile"], self.existing_profile)
@@ -163,7 +163,7 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
 
         self.assertEqual(ServiceProfile.objects.count(), initial_profile_count)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "service/admin_service_profile_form.html")
+        self.assertTemplateUsed(response, "service/admin_service_profile_create_update.html")
         self.assertIn("form", response.context)
         self.assertFalse(response.context["form"].is_valid())
         self.assertIn("name", response.context["form"].errors)
@@ -225,7 +225,7 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
         response = self.client.post(self.update_url, data)
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "service/admin_service_profile_form.html")
+        self.assertTemplateUsed(response, "service/admin_service_profile_create_update.html")
         self.assertIn("form", response.context)
         self.assertFalse(response.context["form"].is_valid())
         self.assertIn("user", response.context["form"].errors)

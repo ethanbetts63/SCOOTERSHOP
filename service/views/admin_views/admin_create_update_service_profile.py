@@ -10,7 +10,7 @@ from service.models import ServiceProfile
 
 class ServiceProfileCreateUpdateView(AdminRequiredMixin, View):
 
-    template_name = "service/admin_service_profile_form.html"
+    template_name = "service/admin_service_profile_create_update.html"
     form_class = AdminServiceProfileForm
 
     def test_func(self):
