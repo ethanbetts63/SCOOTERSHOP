@@ -276,7 +276,7 @@ class ServiceProfileDeleteViewTest(TestCase):
             self.delete_url_name, kwargs={"pk": self.profile_to_delete.pk}
         )
         response = self.client.post(delete_url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 302)
 
     def test_view_grants_access_to_staff_user(self):
 

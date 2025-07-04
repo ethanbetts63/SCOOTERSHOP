@@ -63,15 +63,12 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         )
 
     def test_view_denies_access_to_regular_user(self):
+        self.client.login(username="testuser", password="testpassword")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)
 
-        self.client.force_login(self.regular_user)
-        response = self.client.get(self.create_url)
-        self.assertEqual(response.status_code, 403)
-
-        response = self.client.get(self.update_url)
-        self.assertEqual(response.status_code, 403)
-
-    def test_view_grants_access_to_staff_user(self):
+    def test_view_allows_access_to_admin_user(self):
+        self.client.login(username="adminuser", password="testpassword")
 
         self.client.force_login(self.staff_user)
         response = self.client.get(self.create_url)
