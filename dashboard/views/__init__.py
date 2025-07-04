@@ -1,7 +1,4 @@
-                             
-
-from .settings_visibility import settings_visibility
-from .settings_business_info import *
-from .index import *
-
+from .dashboard_index import DashboardIndexView
+from .settings_visibility import SettingsBusinessInfoView
+from .settings_business_info import SettingsVisibilityView
                                                         

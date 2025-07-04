@@ -1,10 +1,14 @@
 from django.urls import path
-from . import views 
-from service.views import *
+from dashboard.views import (
+    DashboardIndexView, 
+    SettingsBusinessInfoView, 
+    SettingsVisibilityView
+
+)
 app_name = 'dashboard'
 
 urlpatterns = [                            
-    path('', views.dashboard_index, name='dashboard_index'),               
-    path('settings/business-info/', views.settings_business_info, name='settings_business_info'),
-    path('settings/visibility/', views.settings_visibility, name='settings_visibility'),
+    path('', DashboardIndexView, name='dashboard_index'),               
+    path('settings/business-info/', SettingsBusinessInfoView, name='settings_business_info'),
+    path('settings/visibility/', SettingsVisibilityView, name='settings_visibility'),
 ]

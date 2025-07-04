@@ -17,6 +17,8 @@ from inventory.models import (
     SalesBooking,
     SalesProfile,
     TempSalesBooking,
+    SalesFAQ, # Added import
+    FeaturedMotorcycle, # Added import
 )
 
 from payments.models import RefundPolicySettings
@@ -144,7 +146,6 @@ class MotorcycleFactory(factory.django.DjangoModelFactory):
         if not create:
             return
         
-        # --- FIX: Only add conditions if they are explicitly passed in ---
         if extracted:
             for condition_name in extracted:
                 condition, _ = MotorcycleCondition.objects.get_or_create(
@@ -305,6 +306,32 @@ class BlockedSalesDateFactory(factory.django.DjangoModelFactory):
         lambda o: o.start_date + datetime.timedelta(days=fake.random_int(min=0, max=7))
     )
     description = factory.Faker("sentence")
+
+
+class SalesFAQFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = SalesFAQ
+
+    booking_step = factory.Faker(
+        "random_element",
+        elements=[choice[0] for choice in SalesFAQ.BOOKING_STEP_CHOICES],
+    )
+    question = factory.Faker("sentence", nb_words=6)
+    answer = factory.Faker("paragraph", nb_sentences=3)
+    is_active = True
+    display_order = factory.Sequence(lambda n: n)
+
+
+class FeaturedMotorcycleFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = FeaturedMotorcycle
+
+    motorcycle = factory.SubFactory(MotorcycleFactory)
+    category = factory.Faker(
+        "random_element",
+        elements=[choice[0] for choice in FeaturedMotorcycle.CATEGORY_CHOICES],
+    )
+    order = factory.Sequence(lambda n: n)
 
 
 class RefundPolicySettingsFactory(factory.django.DjangoModelFactory):
