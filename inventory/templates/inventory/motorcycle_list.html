@@ -117,8 +117,13 @@
                                             <p>{{ motorcycle.year }}</p>
                                         </div>
                                         <div class="text-center">
-                                            <p class="font-semibold">Odometer</p>
-                                            <p>{{ motorcycle.odometer }} km</p>
+                                            {% if 'New' in motorcycle.get_conditions_display %}
+                                                <p class="font-semibold">Transmission</p>
+                                                <p>{{ motorcycle.get_transmission_display|default:'N/A' }}</p>
+                                            {% else %}
+                                                <p class="font-semibold">Odometer</p>
+                                                <p>{{ motorcycle.odometer|default:0 }} km</p>
+                                            {% endif %}
                                         </div>
                                         <div class="text-center">
                                             <p class="font-semibold">Engine</p>
@@ -180,8 +185,8 @@
                         <p class="motorcycle-year"></p>
                     </div>
                     <div class="text-center">
-                        <p class="font-semibold">Odometer</p>
-                        <p class="motorcycle-odometer"></p>
+                        <p class="font-semibold motorcycle-middle-label">Odometer</p>
+                        <p class="motorcycle-middle-value"></p>
                     </div>
                     <div class="text-center">
                         <p class="font-semibold">Engine</p>
@@ -296,7 +301,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
             tile.querySelector('.motorcycle-condition').textContent = bike.condition_display;
             tile.querySelector('.motorcycle-year').textContent = bike.year;
-            tile.querySelector('.motorcycle-odometer').textContent = `${bike.odometer.toLocaleString('en-US')} km`;
+
+            const middleLabel = tile.querySelector('.motorcycle-middle-label');
+            const middleValue = tile.querySelector('.motorcycle-middle-value');
+            if (bike.condition_display && bike.condition_display.includes('New')) {
+                middleLabel.textContent = 'Transmission';
+                let transmissionText = bike.transmission || 'N/A';
+                if (transmissionText !== 'N/A') {
+                    // Capitalize the first letter for display
+                    middleValue.textContent = transmissionText.charAt(0).toUpperCase() + transmissionText.slice(1);
+                } else {
+                    middleValue.textContent = 'N/A';
+                }
+            } else {
+                middleLabel.textContent = 'Odometer';
+                middleValue.textContent = `${(bike.odometer || 0).toLocaleString('en-US')} km`;
+            }
+
             tile.querySelector('.motorcycle-engine').textContent = `${bike.engine_size} cc`;
             
             motorcycleGrid.appendChild(tile);
