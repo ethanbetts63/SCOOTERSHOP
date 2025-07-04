@@ -1,297 +1,114 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from inventory.tests.test_helpers.model_factories import (
+from django.contrib.auth import get_user_model
+import factory
+
+from ..test_helpers.model_factories import (
+    UserFactory,
     MotorcycleFactory,
-    BlockedSalesDateFactory,
     SalesBookingFactory,
     SalesProfileFactory,
-    UserFactory, 
-    SalesFAQFactory, 
-    FeaturedMotorcycleFactory
+    BlockedSalesDateFactory,
+    SalesFAQFactory,
+    FeaturedMotorcycleFactory,
+    InventorySettingsFactory,
+    MotorcycleConditionFactory,
+    StaffUserFactory,
 )
 
-class InventoryAdminViewsRedirectTestCase(TestCase):
-    """
-    Tests that all inventory admin views redirect non-superuser users
-    (including staff) to the login page.
-    """
+User = get_user_model()
 
-    def setUp(self):
-        """Set up the client, users, and necessary model instances for the tests."""
-        self.client = Client()
-        self.login_url = reverse("users:login")
-
-        # Create a regular user (not staff, not superuser)
-        self.regular_user = UserFactory(password="password123")
-
-        # Create a staff user (staff, but not superuser)
-        self.staff_user = UserFactory(is_staff=True, password="password123")
+class InventoryAdminViewsPermissionsTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.login_url = reverse("users:login")
         
-        # Create a superuser for sanity checks (should not be redirected)
-        self.admin_user = UserFactory(is_staff=True, is_superuser=True, password="password123")
+        cls.regular_user = UserFactory(password="password123")
+        cls.staff_user = StaffUserFactory()
 
-        # Create instances of models needed for URLs with primary keys
-        self.motorcycle = MotorcycleFactory()
-        self.blocked_sales_date = BlockedSalesDateFactory()
-        self.sales_booking = SalesBookingFactory()
-        self.sales_profile = SalesProfileFactory()
-        self.sales_faq = SalesFAQFactory()
-        self.featured_motorcycle = FeaturedMotorcycleFactory()
+        cls.motorcycle_condition = MotorcycleConditionFactory(name="used")
+        cls.motorcycle = MotorcycleFactory(conditions=["used"])
+        cls.sales_profile = SalesProfileFactory()
+        cls.sales_booking = SalesBookingFactory()
+        cls.blocked_date = BlockedSalesDateFactory()
+        cls.faq = SalesFAQFactory()
+        cls.featured_motorcycle = FeaturedMotorcycleFactory()
+        InventorySettingsFactory()
 
-    def _assert_redirects_to_login(self, url, user):
-        """
-        Helper method to log in a user, make a request, and assert it redirects
-        to the login page.
-        """
-        self.client.login(username=user.username, password="password123")
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 302, f"URL {url} did not redirect for user {user.username}")
-        self.assertIn(self.login_url, response.url, f"URL {url} redirected to {response.url} instead of login for user {user.username}")
+    def _test_url_permissions(self, url_name, kwargs=None, method='get', data=None):
+        url = reverse(url_name, kwargs=kwargs)
+        
+        # Test anonymous user
+        response_anon = self.client.get(url)
+        self.assertEqual(response_anon.status_code, 302)
+        self.assertIn(self.login_url, response_anon.url)
+
+        # Test regular user
+        self.client.login(username=self.regular_user.username, password="password123")
+        response_regular = self.client.get(url)
+        self.assertEqual(response_regular.status_code, 302)
+        self.assertIn(self.login_url, response_regular.url)
         self.client.logout()
 
-    # --- Tests for Regular User (Non-Staff) ---
+        # Test staff user
+        self.client.login(username=self.staff_user.username, password="password123")
+        if method == 'post':
+            response_staff = self.client.post(url, data if data else {})
+        else:
+            response_staff = self.client.get(url)
+        
+        # For POST requests that redirect on success, 302 is OK. Otherwise, expect 200.
+        expected_staff_status = 302 if method == 'post' else 200
+        self.assertIn(response_staff.status_code, [200, 302])
+        if method == 'get':
+            self.assertEqual(response_staff.status_code, 200)
 
-    def test_inventory_settings_redirects_regular_user(self):
-        url = reverse("inventory:inventory_settings")
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_admin_inventory_management_redirects_regular_user(self):
-        url = reverse("inventory:admin_inventory_management")
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_admin_motorcycle_create_redirects_regular_user(self):
-        url = reverse("inventory:admin_motorcycle_create")
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_admin_motorcycle_update_redirects_regular_user(self):
-        url = reverse("inventory:admin_motorcycle_update", args=[self.motorcycle.pk])
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_admin_motorcycle_delete_redirects_regular_user(self):
-        url = reverse("inventory:admin_motorcycle_delete", args=[self.motorcycle.pk])
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_admin_motorcycle_details_redirects_regular_user(self):
-        url = reverse("inventory:admin_motorcycle_details", args=[self.motorcycle.pk])
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_blocked_sales_date_management_redirects_regular_user(self):
-        url = reverse("inventory:blocked_sales_date_management")
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_blocked_sales_date_create_redirects_regular_user(self):
-        url = reverse("inventory:blocked_sales_date_create")
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_blocked_sales_date_update_redirects_regular_user(self):
-        url = reverse("inventory:blocked_sales_date_update", args=[self.blocked_sales_date.pk])
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_admin_blocked_sales_date_delete_redirects_regular_user(self):
-        url = reverse("inventory:admin_blocked_sales_date_delete", args=[self.blocked_sales_date.pk])
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_sales_bookings_management_redirects_regular_user(self):
-        url = reverse("inventory:sales_bookings_management")
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_sales_booking_create_redirects_regular_user(self):
-        url = reverse("inventory:sales_booking_create")
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_sales_booking_update_redirects_regular_user(self):
-        url = reverse("inventory:sales_booking_update", args=[self.sales_booking.pk])
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_admin_sales_booking_delete_redirects_regular_user(self):
-        url = reverse("inventory:admin_sales_booking_delete", args=[self.sales_booking.pk])
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_sales_booking_details_redirects_regular_user(self):
-        url = reverse("inventory:sales_booking_details", args=[self.sales_booking.pk])
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_admin_sales_booking_action_redirects_regular_user(self):
-        url = reverse("inventory:admin_sales_booking_action", args=[self.sales_booking.pk, "confirm"])
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_sales_profile_management_redirects_regular_user(self):
-        url = reverse("inventory:sales_profile_management")
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_sales_profile_create_redirects_regular_user(self):
-        url = reverse("inventory:sales_profile_create")
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_sales_profile_update_redirects_regular_user(self):
-        url = reverse("inventory:sales_profile_update", args=[self.sales_profile.pk])
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_admin_sales_profile_delete_redirects_regular_user(self):
-        url = reverse("inventory:admin_sales_profile_delete", args=[self.sales_profile.pk])
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_sales_profile_details_redirects_regular_user(self):
-        url = reverse("inventory:sales_profile_details", args=[self.sales_profile.pk])
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_sales_faq_management_redirects_regular_user(self):
-        url = reverse("inventory:sales_faq_management")
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_sales_faq_create_redirects_regular_user(self):
-        url = reverse("inventory:sales_faq_create")
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_sales_faq_update_redirects_regular_user(self):
-        url = reverse("inventory:sales_faq_update", args=[self.sales_faq.pk])
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_sales_faq_delete_redirects_regular_user(self):
-        url = reverse("inventory:sales_faq_delete", args=[self.sales_faq.pk])
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_featured_motorcycles_redirects_regular_user(self):
-        url = reverse("inventory:featured_motorcycles")
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_add_featured_motorcycle_redirects_regular_user(self):
-        url = reverse("inventory:add_featured_motorcycle")
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_update_featured_motorcycle_redirects_regular_user(self):
-        url = reverse("inventory:update_featured_motorcycle", args=[self.featured_motorcycle.pk])
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    def test_delete_featured_motorcycle_redirects_regular_user(self):
-        url = reverse("inventory:delete_featured_motorcycle", args=[self.featured_motorcycle.pk])
-        self._assert_redirects_to_login(url, self.regular_user)
-
-    # --- Tests for Staff User (Non-Superuser) ---
-
-    def test_inventory_settings_redirects_staff_user(self):
-        url = reverse("inventory:inventory_settings")
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_admin_inventory_management_redirects_staff_user(self):
-        url = reverse("inventory:admin_inventory_management")
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_admin_motorcycle_create_redirects_staff_user(self):
-        url = reverse("inventory:admin_motorcycle_create")
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_admin_motorcycle_update_redirects_staff_user(self):
-        url = reverse("inventory:admin_motorcycle_update", args=[self.motorcycle.pk])
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_admin_motorcycle_delete_redirects_staff_user(self):
-        url = reverse("inventory:admin_motorcycle_delete", args=[self.motorcycle.pk])
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_admin_motorcycle_details_redirects_staff_user(self):
-        url = reverse("inventory:admin_motorcycle_details", args=[self.motorcycle.pk])
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_blocked_sales_date_management_redirects_staff_user(self):
-        url = reverse("inventory:blocked_sales_date_management")
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_blocked_sales_date_create_redirects_staff_user(self):
-        url = reverse("inventory:blocked_sales_date_create")
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_blocked_sales_date_update_redirects_staff_user(self):
-        url = reverse("inventory:blocked_sales_date_update", args=[self.blocked_sales_date.pk])
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_admin_blocked_sales_date_delete_redirects_staff_user(self):
-        url = reverse("inventory:admin_blocked_sales_date_delete", args=[self.blocked_sales_date.pk])
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_sales_bookings_management_redirects_staff_user(self):
-        url = reverse("inventory:sales_bookings_management")
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_sales_booking_create_redirects_staff_user(self):
-        url = reverse("inventory:sales_booking_create")
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_sales_booking_update_redirects_staff_user(self):
-        url = reverse("inventory:sales_booking_update", args=[self.sales_booking.pk])
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_admin_sales_booking_delete_redirects_staff_user(self):
-        url = reverse("inventory:admin_sales_booking_delete", args=[self.sales_booking.pk])
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_sales_booking_details_redirects_staff_user(self):
-        url = reverse("inventory:sales_booking_details", args=[self.sales_booking.pk])
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_admin_sales_booking_action_redirects_staff_user(self):
-        url = reverse("inventory:admin_sales_booking_action", args=[self.sales_booking.pk, "confirm"])
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_sales_profile_management_redirects_staff_user(self):
-        url = reverse("inventory:sales_profile_management")
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_sales_profile_create_redirects_staff_user(self):
-        url = reverse("inventory:sales_profile_create")
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_sales_profile_update_redirects_staff_user(self):
-        url = reverse("inventory:sales_profile_update", args=[self.sales_profile.pk])
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_admin_sales_profile_delete_redirects_staff_user(self):
-        url = reverse("inventory:admin_sales_profile_delete", args=[self.sales_profile.pk])
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_sales_profile_details_redirects_staff_user(self):
-        url = reverse("inventory:sales_profile_details", args=[self.sales_profile.pk])
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_sales_faq_management_redirects_staff_user(self):
-        url = reverse("inventory:sales_faq_management")
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_sales_faq_create_redirects_staff_user(self):
-        url = reverse("inventory:sales_faq_create")
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_sales_faq_update_redirects_staff_user(self):
-        url = reverse("inventory:sales_faq_update", args=[self.sales_faq.pk])
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_sales_faq_delete_redirects_staff_user(self):
-        url = reverse("inventory:sales_faq_delete", args=[self.sales_faq.pk])
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_featured_motorcycles_redirects_staff_user(self):
-        url = reverse("inventory:featured_motorcycles")
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_add_featured_motorcycle_redirects_staff_user(self):
-        url = reverse("inventory:add_featured_motorcycle")
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_update_featured_motorcycle_redirects_staff_user(self):
-        url = reverse("inventory:update_featured_motorcycle", args=[self.featured_motorcycle.pk])
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    def test_delete_featured_motorcycle_redirects_staff_user(self):
-        url = reverse("inventory:delete_featured_motorcycle", args=[self.featured_motorcycle.pk])
-        self._assert_redirects_to_login(url, self.staff_user)
-
-    # --- Test for Superuser Access ---
-    
-    def test_superuser_can_access_admin_page(self):
-        """A quick check to ensure a superuser is NOT redirected."""
-        self.client.login(username=self.admin_user.username, password="password123")
-        url = reverse("inventory:admin_inventory_management")
-        response = self.client.get(url)
-        # Superuser should get a 200 OK, not a redirect
-        self.assertEqual(response.status_code, 200)
         self.client.logout()
+
+    def test_inventory_settings_permissions(self):
+        self._test_url_permissions("inventory:inventory_settings")
+
+    def test_inventory_management_permissions(self):
+        self._test_url_permissions("inventory:admin_inventory_management")
+        self._test_url_permissions("inventory:admin_new_motorcycle_management")
+        self._test_url_permissions("inventory:admin_used_motorcycle_management")
+
+    def test_motorcycle_crud_permissions(self):
+        self._test_url_permissions("inventory:admin_motorcycle_create")
+        self._test_url_permissions("inventory:admin_motorcycle_update", kwargs={'pk': self.motorcycle.pk})
+        self._test_url_permissions("inventory:admin_motorcycle_delete", kwargs={'pk': self.motorcycle.pk})
+        self._test_url_permissions("inventory:admin_motorcycle_details", kwargs={'pk': self.motorcycle.pk})
+
+    def test_blocked_sales_date_crud_permissions(self):
+        self._test_url_permissions("inventory:blocked_sales_date_management")
+        self._test_url_permissions("inventory:blocked_sales_date_create")
+        self._test_url_permissions("inventory:blocked_sales_date_update", kwargs={'pk': self.blocked_date.pk})
+        self._test_url_permissions("inventory:admin_blocked_sales_date_delete", kwargs={'pk': self.blocked_date.pk})
+
+    def test_sales_booking_crud_permissions(self):
+        self._test_url_permissions("inventory:sales_bookings_management")
+        self._test_url_permissions("inventory:sales_booking_create")
+        self._test_url_permissions("inventory:sales_booking_update", kwargs={'pk': self.sales_booking.pk})
+        self._test_url_permissions("inventory:admin_sales_booking_delete", kwargs={'pk': self.sales_booking.pk})
+        self._test_url_permissions("inventory:sales_booking_details", kwargs={'pk': self.sales_booking.pk})
+        self._test_url_permissions("inventory:admin_sales_booking_action", kwargs={'pk': self.sales_booking.pk, 'action_type': 'confirm'})
+
+    def test_sales_profile_crud_permissions(self):
+        self._test_url_permissions("inventory:sales_profile_management")
+        self._test_url_permissions("inventory:sales_profile_create")
+        self._test_url_permissions("inventory:sales_profile_update", kwargs={'pk': self.sales_profile.pk})
+        self._test_url_permissions("inventory:admin_sales_profile_delete", kwargs={'pk': self.sales_profile.pk})
+        self._test_url_permissions("inventory:sales_profile_details", kwargs={'pk': self.sales_profile.pk})
+
+    def test_sales_faq_crud_permissions(self):
+        self._test_url_permissions("inventory:sales_faq_management")
+        self._test_url_permissions("inventory:sales_faq_create")
+        self._test_url_permissions("inventory:sales_faq_update", kwargs={'pk': self.faq.pk})
+        self._test_url_permissions("inventory:sales_faq_delete", kwargs={'pk': self.faq.pk})
+
+    def test_featured_motorcycle_crud_permissions(self):
+        self._test_url_permissions("inventory:featured_motorcycles")
+        self._test_url_permissions("inventory:add_featured_motorcycle")
+        self._test_url_permissions("inventory:update_featured_motorcycle", kwargs={'pk': self.featured_motorcycle.pk})
+        self._test_url_permissions("inventory:delete_featured_motorcycle", kwargs={'pk': self.featured_motorcycle.pk})

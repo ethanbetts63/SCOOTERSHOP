@@ -7,28 +7,16 @@ from payments.tests.test_helpers.model_factories import (
 )
 
 class PaymentsAdminViewsTestCase(TestCase):
-    """
-    Tests access permissions for all admin-facing views in the payments app.
-    - Regular users should be redirected.
-    - Staff and Superusers should be granted access.
-    """
-
     def setUp(self):
-        """Set up the client, users, and necessary model instances for the tests."""
         self.client = Client()
         self.login_url = reverse("users:login")
-
-        
         self.regular_user = UserFactory(password="password123")
         self.staff_user = UserFactory(is_staff=True, password="password123")
         self.admin_user = UserFactory(is_staff=True, is_superuser=True, password="password123")
-
-        
         self.refund_request = RefundRequestFactory()
         RefundPolicySettingsFactory() 
 
     def _assert_redirects_to_login(self, url):
-        """Helper to assert that a regular user is redirected."""
         self.client.login(username=self.regular_user.username, password="password123")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302, f"URL {url} did not redirect for regular user.")
@@ -36,20 +24,16 @@ class PaymentsAdminViewsTestCase(TestCase):
         self.client.logout()
 
     def _assert_staff_access_allowed(self, url):
-        """Helper to assert that a staff user is allowed access."""
         self.client.login(username=self.staff_user.username, password="password123")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200, f"URL {url} blocked staff user.")
         self.client.logout()
 
     def _assert_superuser_access_allowed(self, url):
-        """Helper to assert that a superuser is allowed access."""
         self.client.login(username=self.admin_user.username, password="password123")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200, f"URL {url} blocked superuser.")
         self.client.logout()
-
-    
 
     def test_admin_refund_management_permissions(self):
         url = reverse("payments:admin_refund_management")
