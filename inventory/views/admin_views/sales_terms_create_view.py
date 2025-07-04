@@ -6,7 +6,7 @@ from inventory.mixins import AdminRequiredMixin
 from inventory.forms import AdminSalesTermsForm
 
 class SalesTermsCreateView(AdminRequiredMixin, View):
-    template_name = "inventory/admin_terms_and_conditions_create.html"
+    template_name = "inventory/admin_sales_terms_create.html"
     form_class = AdminSalesTermsForm
 
     def get(self, request, *args, **kwargs):

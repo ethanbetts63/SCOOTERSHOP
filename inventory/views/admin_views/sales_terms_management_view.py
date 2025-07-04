@@ -6,7 +6,7 @@ from inventory.mixins import AdminRequiredMixin
 
 class SalesTermsManagementView(AdminRequiredMixin, ListView):
     model = SalesTerms
-    template_name = "inventory/admin_terms_and_conditions_management.html"
+    template_name = "inventory/admin_sales_terms_management.html"
     context_object_name = "terms_versions"
     paginate_by = 10
 
