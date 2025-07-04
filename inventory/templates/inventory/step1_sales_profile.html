@@ -1,4 +1,3 @@
-
 {% extends 'core/layout.html' %} 
 {% load static %}
 
@@ -110,12 +109,12 @@
             {% endif %}
 
             <div class="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
-                <a href="{{ temp_booking.motorcycle.get_absolute_url }}" class="text-sm font-medium text-gray-600 hover:text-indigo-500 transition duration-150 ease-in-out">
+                <a href="{{ temp_booking.motorcycle.get_absolute_url }}" class="text-sm font-medium text-gray-600 hover:text-green-500 transition duration-150 ease-in-out">
                     &larr; Back to Motorcycle
                 </a>
                 <button type="submit"
-                        class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-md shadow-md
-                               hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        class="px-6 py-3 bg-green-600 text-white font-semibold rounded-md shadow-md
+                               hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                     Next: Booking Details
                 </button>
             </div>

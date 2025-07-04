@@ -26,14 +26,14 @@
 
     <div class="mt-4 pt-4 border-t border-gray-300 space-y-2 text-right">
         {% if temp_booking.amount_paid and temp_booking.amount_paid > 0 %}
-        <p class="text-lg font-bold text-indigo-700">
+        <p class="text-lg font-bold text-green-600">
             Deposit: <span class="text-2xl">${{ temp_booking.amount_paid|floatformat:2 }}</span>
         </p>
         {% endif %}
 
         {% if temp_booking.motorcycle.price %}
         <p class="text-sm font-semibold text-gray-600">
-            Total Price: <span class="text-base">${{ temp_booking.motorcycle.price|floatformat:2 }}</span>
+            Total Price: <span class="text-base text-green-600">${{ temp_booking.motorcycle.price|floatformat:2 }}</span>
         </p>
         {% endif %}
     </div>
