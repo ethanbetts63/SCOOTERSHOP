@@ -29,14 +29,17 @@ class SalesTerms(models.Model):
         return f"v{self.version_number} - Created: {self.created_at.strftime('%d %b %Y')} ({status})"
 
     def save(self, *args, **kwargs):
+        # Assign a version number if creating a new instance
         if not self.pk and not self.version_number:
             last_version = SalesTerms.objects.all().order_by('version_number').last()
             self.version_number = (last_version.version_number + 1) if last_version else 1
 
+        # If the version being saved is marked as active...
         if self.is_active:
+            # Use a transaction to ensure this operation is atomic and safe
             with transaction.atomic():
+                # Find all OTHER versions that are currently active and set them to inactive.
                 SalesTerms.objects.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
-        
         super().save(*args, **kwargs)
 
     def clean(self):
