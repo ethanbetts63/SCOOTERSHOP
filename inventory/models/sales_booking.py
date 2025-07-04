@@ -99,6 +99,15 @@ class SalesBooking(models.Model):
         help_text="Any additional notes or messages provided by the customer.",
     )
 
+    sales_terms_version = models.ForeignKey(
+        "inventory.TermsAndConditions",
+        on_delete=models.PROTECT, 
+        related_name="sales_bookings", 
+        null=True, 
+        blank=True,
+        help_text="The specific version of the T&Cs the user agreed to."
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
         help_text="The date and time when this sales booking was created.",
