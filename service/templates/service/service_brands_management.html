@@ -59,7 +59,7 @@
 
         <div class="mb-8">
             <h3 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Add New Service Brand</h3>
-            <form method="post" enctype="multipart/form-data" id="addBrandForm" class="space-y-4">
+            <form method="post" id="addBrandForm" class="space-y-4">
                 {% csrf_token %}
                 {% if edit_brand %}
                     <input type="hidden" name="brand_id" value="{{ edit_brand.pk }}">
@@ -78,18 +78,7 @@
                      {% endif %}
                 </div>
 
-                <div class="form-group">
-                    <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-gray-800 mb-1">{{ form.image.label }}</label>
-                    {{ form.image }}
-                    {% if form.image.errors %}
-                        {% for error in form.image.errors %}
-                            <small class="text-red-500">{{ error }}</small>
-                        {% endfor %}
-                    {% endif %}
-                     {% if form.image.help_text %}
-                        <small class="text-gray-500">{{ form.image.help_text }}</small>
-                     {% endif %}
-                </div>
+                
 
                 {% if form.non_field_errors %}
                     <div class="form-field">
@@ -110,11 +99,7 @@
                     {% for brand in service_brands %}
                         <li class="flex items-center justify-between bg-gray-50 p-4 rounded-lg">
                             <div class="flex items-center">
-                                {% if brand.image %}
-                                    <div class="w-16 h-16 mr-4">
-                                        <img src="{{ brand.image.url }}" alt="{{ brand.name }} image" class="w-full h-full object-cover rounded-md">
-                                    </div>
-                                {% endif %}
+                                
                                 <h4 class="font-semibold text-gray-800">{{ brand.name }}</h4>
                             </div>
                             <div class="flex items-center space-x-2">
