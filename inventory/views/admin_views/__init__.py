@@ -19,3 +19,6 @@ from .sales_booking_action_view import *
 from .sales_FAQ_management_view import *
 from .sales_FAQ_create_update_view import *
 from .sales_FAQ_delete_view import *
+from .sales_terms_management_view import *
+from .sales_terms_create_view import *
+from .sales_terms_details_view import *

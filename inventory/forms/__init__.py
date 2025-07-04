@@ -8,3 +8,4 @@ from .admin_blocked_sales_date_form import *
 from .admin_sales_booking_action_form import *
 from .admin_sales_FAQ_form import *
 from .admin_featured_motorcycle_form import *
+from .admin_sales_terms_form import AdminSalesTermsForm

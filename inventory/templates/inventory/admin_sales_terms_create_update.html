@@ -1,0 +1,73 @@
+{% extends "dashboard/admin_layout.html" %}
+{% load static %}
+
+{% block extra_css %}
+    {{ block.super }}
+    <style>
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            border: 1px solid #ccc;
+            color: #000;
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+        }
+
+        .form-group input[type="checkbox"] {
+            width: auto;
+            height: auto;
+            padding: initial;
+            border: initial;
+            border-radius: initial;
+            box-shadow: none;
+        }
+    </style>
+{% endblock %}
+
+{% block admin_main_content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-lg rounded-lg p-6 md:p-8 max-w-4xl mx-auto">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">{{ page_title }}</h2>
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}" class="block text-gray-700 text-sm font-medium mb-2">
+                        {{ field.label }}
+                        {% if field.field.required %}
+                            <span class="text-red-500">*</span>
+                        {% endif %}
+                    </label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <div class="text-gray-600 text-xs italic mt-1">{{ field.help_text }}</div>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <div class="flex items-center justify-start space-x-4 mt-6">
+                {% if instance %}
+                    {# This is view-only mode for existing versions #}
+                    <a href="{% url 'inventory:terms_and_conditions_management' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Back to Management
+                    </a>
+                {% else %}
+                    {# This is create mode #}
+                    <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md">
+                        Create New Version
+                    </button>
+                    <a href="{% url 'inventory:terms_and_conditions_management' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Cancel
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

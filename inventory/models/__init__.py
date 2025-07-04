@@ -8,3 +8,4 @@ from .sales_profile import *
 from .temp_sales_booking import *
 from .sales_FAQ import *
 from .featured_motorcycle import *
+from .sales_terms import SalesTerms

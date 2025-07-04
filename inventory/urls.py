@@ -32,7 +32,10 @@ from .views.admin_views import (
     sales_FAQ_delete_view,
     featured_motorcycle_management,
     featured_motorcycle_create_update,
-    featured_motorcycle_delete_view
+    featured_motorcycle_delete_view,
+    SalesTermsManagementView,
+    SalesTermsCreateView,
+    SalesTermsDetailsView,
 )
 
 from .ajax import (
@@ -51,6 +54,7 @@ from .ajax import (
 app_name = "inventory"
 
 urlpatterns = [
+    # --- User Facing URLs ---
     path(
         "motorcycles/",
         motorcycle_list_view.MotorcycleListView.as_view(),
@@ -74,6 +78,7 @@ urlpatterns = [
         user_motorcycle_details_view.UserMotorcycleDetailsView.as_view(),
         name="motorcycle-detail",
     ),
+    # --- Booking Flow URLs ---
     path(
         "motorcycles/<int:pk>/initiate_booking/",
         initiate_sales_booking_process_view.InitiateBookingProcessView.as_view(),
@@ -99,11 +104,13 @@ urlpatterns = [
         step4_confirmation_view.Step4ConfirmationView.as_view(),
         name="step4_confirmation",
     ),
+    # --- Admin URLs ---
     path(
         "admin/settings/",
         inventory_settings_view.InventorySettingsView.as_view(),
         name="inventory_settings",
     ),
+    # Admin Motorcycle Management
     path(
         "admin/inventory/",
         inventory_management_view.InventoryManagementView.as_view(),
@@ -141,6 +148,7 @@ urlpatterns = [
         admin_motorcycle_details_view.AdminMotorcycleDetailsView.as_view(),
         name="admin_motorcycle_details",
     ),
+    # Admin Blocked Dates
     path(
         "admin/blocked-sales-dates/",
         blocked_sales_date_management_view.BlockedSalesDateManagementView.as_view(),
@@ -151,6 +159,7 @@ urlpatterns = [
         delete_blocked_sales_date.BlockedSalesDateDeleteView.as_view(),
         name="admin_blocked_sales_date_delete",
     ),
+    # Admin Sales Bookings
     path(
         "admin/sales-bookings/",
         sales_bookings_management_view.SalesBookingsManagementView.as_view(),
@@ -181,6 +190,7 @@ urlpatterns = [
         sales_booking_action_view.SalesBookingActionView.as_view(),
         name="admin_sales_booking_action",
     ),
+    # Admin Sales Profiles
     path(
         "admin/sales-profiles/",
         sales_profile_management_view.SalesProfileManagementView.as_view(),
@@ -206,6 +216,7 @@ urlpatterns = [
         sales_profile_details_view.SalesProfileDetailsView.as_view(),
         name="sales_profile_details",
     ),
+    # Admin Sales FAQs
     path(
         "admin/sales-faqs/",
         sales_FAQ_management_view.SalesFAQManagementView.as_view(),
@@ -226,6 +237,24 @@ urlpatterns = [
         sales_FAQ_delete_view.SalesFAQDeleteView.as_view(),
         name="sales_faq_delete",
     ),
+    # Admin Terms and Conditions
+    path(
+        "admin/terms-and-conditions/",
+        SalesTermsManagementView.as_view(),
+        name="terms_and_conditions_management",
+    ),
+    path(
+        "admin/terms-and-conditions/create/",
+        SalesTermsCreateView.as_view(),
+        name="terms_and_conditions_create",
+    ),
+    path(
+        "admin/terms-and-conditions/<int:pk>/",
+        SalesTermsDetailsView.as_view(),
+        name="terms_and_conditions_detail",
+    ),
+
+    # Admin Featured Motorcycles
     path(
         "admin/featured-motorcycles/",
         featured_motorcycle_management.FeaturedMotorcycleManagementView.as_view(),
@@ -246,6 +275,7 @@ urlpatterns = [
         featured_motorcycle_delete_view.FeaturedMotorcycleDeleteView.as_view(),
         name="delete_featured_motorcycle",
     ),
+    # --- AJAX URLs ---
     path(
         "ajax/get-motorcycle-list/",
         get_motorcycle_list,
