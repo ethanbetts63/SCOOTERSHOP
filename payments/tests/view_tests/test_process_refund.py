@@ -4,8 +4,6 @@ from django.contrib import messages
 from django.conf import settings
 from unittest.mock import patch, MagicMock
 from decimal import Decimal
-from django.utils import timezone
-from datetime import time, timedelta
 
 from payments.tests.test_helpers.model_factories import (
     RefundRequestFactory,
@@ -15,9 +13,7 @@ from payments.tests.test_helpers.model_factories import (
     UserFactory,
 )
 
-
 settings.STRIPE_SECRET_KEY = "sk_test_dummykey"
-
 
 class ProcessRefundViewTests(TestCase):
     @classmethod

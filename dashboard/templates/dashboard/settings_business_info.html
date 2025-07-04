@@ -2,100 +2,90 @@
 {% load static %}
 
 {% block extra_css %}
-{{ block.super }}
-    <link rel="stylesheet" href="{% static 'css/booking_styles.css' %}">
+<style>
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        border: 1px solid #ccc;
+        color: #000;
+        width: 100%;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+    }
+</style>
 {% endblock %}
 
 {% block admin_main_content %}
-<div class="service-booking-container">
-    <div class="booking-progress">
-        <h2>Business Information Settings</h2>
-    </div>
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-lg rounded-lg p-6 md:p-8 max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">
+            Business Information Settings
+        </h1>
 
-    <hr>
-
-    <div class="form-field">
-        <div class="booking-progress">
-            <h3 class="booking-section-title">Update Business Information</h3>
-        </div>
-
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
             {% csrf_token %}
 
-            <div class="form-field" style="flex-direction: row; justify-content: flex-end; margin-bottom: 20px;">
-                <button type="button" class="btn-secondary" id="editButton" style="margin-right: 10px;">Edit</button>
-                <button type="submit" id="saveButton">Save Changes</button>
-                <button type="button" class="btn-secondary" id="resetButton" style="margin-left: 10px;">Reset</button>
+            <div class="flex justify-end mb-4">
+                <button type="button" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l" id="editButton">Edit</button>
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4" id="saveButton">Save Changes</button>
+                <button type="button" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r" id="resetButton">Reset</button>
             </div>
 
-            <div class="form-field">
-                <h3 class="booking-section-title">Contact Information</h3>
-
-                <div class="form-field">
-                    <label for="{{ form.phone_number.id_for_label }}">
-                        Phone Number
-                    </label>
-                    {{ form.phone_number }}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Contact Information</h3>
+                    <div class="space-y-4">
+                        <div class="form-group">
+                            <label for="{{ form.phone_number.id_for_label }}" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                            {{ form.phone_number }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.email_address.id_for_label }}" class="block text-sm font-medium text-gray-700">Email Address</label>
+                            {{ form.email_address }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.storefront_address.id_for_label }}" class="block text-sm font-medium text-gray-700">Storefront Address</label>
+                            {{ form.storefront_address }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.google_places_place_id.id_for_label }}" class="block text-sm font-medium text-gray-700">Google Places Place ID</label>
+                            {{ form.google_places_place_id }}
+                        </div>
+                    </div>
                 </div>
 
-                <div class="form-field">
-                    <label for="{{ form.email_address.id_for_label }}">
-                        Email Address
-                    </label>
-                    {{ form.email_address }}
-                </div>
-
-                <div class="form-field">
-                    <label for="{{ form.storefront_address.id_for_label }}">
-                        Storefront Address
-                    </label>
-                    {{ form.storefront_address }}
-                </div>
-
-                <div class="form-field">
-                    <label for="{{ form.google_places_place_id.id_for_label }}">
-                        Google Places Place ID
-                    </label>
-                    {{ form.google_places_place_id }}
-                </div>
-            </div>
-
-            <div class="form-field">
-                <h3 class="booking-section-title">Business Hours</h3>
-
-                <div class="form-field">
-                    <label for="{{ form.opening_hours_monday.id_for_label }}">Monday</label>
-                    {{ form.opening_hours_monday }}
-                </div>
-
-                <div class="form-field">
-                    <label for="{{ form.opening_hours_tuesday.id_for_label }}">Tuesday</label>
-                    {{ form.opening_hours_tuesday }}
-                </div>
-
-                <div class="form-field">
-                    <label for="{{ form.opening_hours_wednesday.id_for_label }}">Wednesday</label>
-                    {{ form.opening_hours_wednesday }}
-                </div>
-
-                <div class="form-field">
-                    <label for="{{ form.opening_hours_thursday.id_for_label }}">Thursday</label>
-                    {{ form.opening_hours_thursday }}
-                </div>
-
-                <div class="form-field">
-                    <label for="{{ form.opening_hours_friday.id_for_label }}">Friday</label>
-                    {{ form.opening_hours_friday }}
-                </div>
-
-                <div class="form-field">
-                    <label for="{{ form.opening_hours_saturday.id_for_label }}">Saturday</label>
-                    {{ form.opening_hours_saturday }}
-                </div>
-
-                <div class="form-field">
-                    <label for="{{ form.opening_hours_sunday.id_for_label }}">Sunday</label>
-                    {{ form.opening_hours_sunday }}
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Business Hours</h3>
+                    <div class="space-y-4">
+                        <div class="form-group">
+                            <label for="{{ form.opening_hours_monday.id_for_label }}" class="block text-sm font-medium text-gray-700">Monday</label>
+                            {{ form.opening_hours_monday }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.opening_hours_tuesday.id_for_label }}" class="block text-sm font-medium text-gray-700">Tuesday</label>
+                            {{ form.opening_hours_tuesday }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.opening_hours_wednesday.id_for_label }}" class="block text-sm font-medium text-gray-700">Wednesday</label>
+                            {{ form.opening_hours_wednesday }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.opening_hours_thursday.id_for_label }}" class="block text-sm font-medium text-gray-700">Thursday</label>
+                            {{ form.opening_hours_thursday }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.opening_hours_friday.id_for_label }}" class="block text-sm font-medium text-gray-700">Friday</label>
+                            {{ form.opening_hours_friday }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.opening_hours_saturday.id_for_label }}" class="block text-sm font-medium text-gray-700">Saturday</label>
+                            {{ form.opening_hours_saturday }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.opening_hours_sunday.id_for_label }}" class="block text-sm font-medium text-gray-700">Sunday</label>
+                            {{ form.opening_hours_sunday }}
+                        </div>
+                    </div>
                 </div>
             </div>
         </form>
