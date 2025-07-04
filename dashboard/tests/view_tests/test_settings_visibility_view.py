@@ -1,7 +1,5 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from unittest.mock import patch, ANY
-from django.http import HttpResponse
 from dashboard.models import SiteSettings
 from dashboard.tests.test_helpers.model_factories import StaffUserFactory, SiteSettingsFactory
 
@@ -12,13 +10,11 @@ class SettingsVisibilityViewTest(TestCase):
         self.staff_user = StaffUserFactory()
         self.site_settings = SiteSettingsFactory()
 
-    @patch('dashboard.views.settings_visibility.render')
-    def test_settings_visibility_view_get(self, mock_render):
-        mock_render.return_value = HttpResponse()
+    def test_settings_visibility_view_get(self):
         self.client.login(username=self.staff_user.username, password='testpassword')
         response = self.client.get(reverse('dashboard:settings_visibility'))
         self.assertEqual(response.status_code, 200)
-        mock_render.assert_called_once_with(ANY, 'dashboard/settings_visibility.html', ANY)
+        self.assertTemplateUsed(response, 'dashboard/settings_visibility.html')
 
     def test_settings_visibility_view_post_valid(self):
         self.client.login(username=self.staff_user.username, password='testpassword')
@@ -41,7 +37,8 @@ class SettingsVisibilityViewTest(TestCase):
 
     def test_settings_visibility_view_post_invalid(self):
         self.client.login(username=self.staff_user.username, password='testpassword')
-        form_data = {'enable_service_booking': 'not-a-boolean'}  # Invalid data
+        form_data = {'enable_service_booking': 'not-a-boolean'}  # This will be treated as True by the form
         response = self.client.post(reverse('dashboard:settings_visibility'), data=form_data)
-        self.assertEqual(response.status_code, 302)  # Redirect on success
-        # No assertFormError here as it redirects on invalid data for boolean fields
+        self.assertEqual(response.status_code, 302)
+        updated_settings = SiteSettings.get_settings()
+        self.assertTrue(updated_settings.enable_service_booking)

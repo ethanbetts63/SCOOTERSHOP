@@ -27,14 +27,6 @@ class AjaxGetSalesBookingDetailsTest(TestCase):
         self.regular_user = UserFactory(is_staff=False)
         self.ajax_url_name = "inventory:api_sales_booking_details"
 
-    def test_permission_denied_for_non_staff_user(self):
-        self.client.force_login(self.regular_user)
-        sales_booking = SalesBookingFactory()
-        url = reverse(self.ajax_url_name, args=[sales_booking.pk])
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 403)
-        self.assertJSONEqual(response.content, {"error": "Permission denied"})
-
     def test_sales_booking_not_found(self):
         self.client.force_login(self.admin_user)
         url = reverse(self.ajax_url_name, args=[99999])

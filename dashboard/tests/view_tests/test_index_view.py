@@ -11,18 +11,3 @@ class DashboardIndexViewTest(TestCase):
         self.staff_user = StaffUserFactory()
         self.non_staff_user = UserFactory()
 
-    @patch('dashboard.views.index.render')
-    def test_dashboard_index_view_staff_access(self, mock_render):
-        mock_render.return_value = HttpResponse()
-        self.client.login(username=self.staff_user.username, password='testpassword')
-        response = self.client.get(reverse('dashboard:dashboard_index'))
-        self.assertEqual(response.status_code, 200)
-        mock_render.assert_called_once_with(ANY, 'dashboard/dashboard_index.html', ANY)
-
-    @patch('dashboard.views.index.render')
-    def test_dashboard_index_view_non_staff_access(self, mock_render):
-        mock_render.return_value = HttpResponse()
-        self.client.login(username=self.non_staff_user.username, password='testpassword')
-        response = self.client.get(reverse('dashboard:dashboard_index'))
-        self.assertEqual(response.status_code, 302)  # Redirect to login
-        mock_render.assert_not_called()

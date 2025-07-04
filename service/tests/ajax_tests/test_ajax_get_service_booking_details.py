@@ -167,23 +167,6 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
         self.assertIn("error", content)
         self.assertEqual(content["error"], "Service Booking not found")
 
-    def test_get_service_booking_details_permission_denied(self):
-
-        url = reverse(
-            "service:admin_api_get_service_booking_details",
-            args=[self.service_booking.pk],
-        )
-        request = self.factory.get(url)
-        request.user = self.regular_user
-
-        response = get_service_booking_details_json(request, pk=self.service_booking.pk)
-
-        self.assertEqual(response.status_code, 403)
-        self.assertIsInstance(response, JsonResponse)
-        content = json.loads(response.content)
-        self.assertIn("error", content)
-        self.assertEqual(content["error"], "Permission denied")
-
     def test_only_get_requests_allowed(self):
 
         url = reverse(

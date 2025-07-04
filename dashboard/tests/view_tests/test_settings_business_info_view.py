@@ -1,7 +1,5 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from unittest.mock import patch, ANY
-from django.http import HttpResponse
 from dashboard.models import SiteSettings
 from dashboard.tests.test_helpers.model_factories import StaffUserFactory, SiteSettingsFactory
 
@@ -12,13 +10,11 @@ class SettingsBusinessInfoViewTest(TestCase):
         self.staff_user = StaffUserFactory()
         self.site_settings = SiteSettingsFactory()
 
-    @patch('dashboard.views.settings_business_info.render')
-    def test_settings_business_info_view_get(self, mock_render):
-        mock_render.return_value = HttpResponse()
+    def test_settings_business_info_view_get(self):
         self.client.login(username=self.staff_user.username, password='testpassword')
         response = self.client.get(reverse('dashboard:settings_business_info'))
         self.assertEqual(response.status_code, 200)
-        mock_render.assert_called_once_with(ANY, 'dashboard/settings_business_info.html', ANY)
+        self.assertTemplateUsed(response, 'dashboard/settings_business_info.html')
 
     def test_settings_business_info_view_post_valid(self):
         self.client.login(username=self.staff_user.username, password='testpassword')
@@ -40,11 +36,10 @@ class SettingsBusinessInfoViewTest(TestCase):
         updated_settings = SiteSettings.get_settings()
         self.assertEqual(updated_settings.phone_number, '1111111111')
 
-    @patch('dashboard.views.settings_business_info.render')
-    def test_settings_business_info_view_post_invalid(self, mock_render):
-        mock_render.return_value = HttpResponse()
+    def test_settings_business_info_view_post_invalid(self):
         self.client.login(username=self.staff_user.username, password='testpassword')
         form_data = {'email_address': 'invalid-email'}  # Invalid data
         response = self.client.post(reverse('dashboard:settings_business_info'), data=form_data)
         self.assertEqual(response.status_code, 200)  # Stays on page with errors
-        mock_render.assert_called_once_with(ANY, 'dashboard/settings_business_info.html', ANY)
+        self.assertTemplateUsed(response, 'dashboard/settings_business_info.html')
+        self.assertTrue(len(response.context['form'].errors) > 0)

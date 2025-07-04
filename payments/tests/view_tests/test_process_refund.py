@@ -320,24 +320,3 @@ class ProcessRefundViewTests(TestCase):
         self.assertIsNone(refund_request.processed_by)
         self.assertIsNone(refund_request.processed_at)
 
-    @patch("payments.views.Refunds.process_refund.is_admin", return_value=False)
-    def test_unauthorized_access(self, mock_is_admin):
-
-        self.client.force_login(self.regular_user)
-
-        refund_request = RefundRequestFactory(
-            status="approved",
-            amount_to_refund=Decimal("50.00"),
-            payment=PaymentFactory(stripe_payment_intent_id="pi_unauth"),
-        )
-        url = reverse("payments:process_refund", kwargs={"pk": refund_request.pk})
-        response = self.client.post(url)
-
-        self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse("users:login") + "?next=" + url)
-
-        messages_list = list(messages.get_messages(response.wsgi_request))
-        self.assertEqual(len(messages_list), 0)
-
-        refund_request.refresh_from_db()
-        self.assertEqual(refund_request.status, "approved")

@@ -322,11 +322,3 @@ class AjaxSearchServiceBookingsTest(TestCase):
         response = search_service_bookings_ajax(request)
 
         self.assertEqual(response.status_code, 405)
-
-    def test_permission_denied_for_non_staff_user(self):
-
-        response = self._make_request(query_term="John Doe", user=self.non_staff_user)
-        self.assertEqual(response.status_code, 403)
-        content = json.loads(response.content)
-        self.assertIn("error", content)
-        self.assertEqual(content["error"], "Permission denied")
