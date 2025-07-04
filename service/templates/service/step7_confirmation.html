@@ -10,7 +10,7 @@
 
         {% if is_processing %}
             <div id="processing-message" class="text-center py-10">
-                <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mx-auto mb-4"></div>
+                <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500 mx-auto mb-4"></div>
                 <p class="text-xl text-gray-700">Your payment is being processed and your service booking is being finalized.</p>
                 <p class="text-gray-600 mt-2">Please do not close this page. We'll confirm your booking details shortly.</p>
             </div>
@@ -37,7 +37,7 @@
                             <p class="text-red-600 text-xl">
                                 We're having trouble confirming your service booking. Please check your email for a confirmation, or contact support with Payment Intent ID: <strong>${paymentIntentId}</strong>.
                             </p>
-                            <a href="${homeUrl}" class="inline-flex justify-center mt-4 py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <a href="${homeUrl}" class="inline-flex justify-center mt-4 py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                                 Return to Homepage
                             </a>
                         `;
@@ -66,7 +66,7 @@
                                         Error: ${data.message || 'Could not retrieve service booking status.'}
                                         Please contact support with Payment Intent ID: <strong>${paymentIntentId}</strong>.
                                     </p>
-                                    <a href="${homeUrl}" class="inline-flex justify-center mt-4 py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    <a href="${homeUrl}" class="inline-flex justify-center mt-4 py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                                         Return to Homepage
                                     </a>
                                 `;
@@ -80,7 +80,7 @@
                                     A network error occurred. Please refresh the page or contact support.
                                     Payment Intent ID: <strong>${paymentIntentId}</strong>.
                                 </p>
-                                <a href="${homeUrl}" class="inline-flex justify-center mt-4 py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <a href="${homeUrl}" class="inline-flex justify-center mt-4 py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                                     Return to Homepage
                                 </a>
                             `;
@@ -92,7 +92,7 @@
                         <div class="text-center mb-6">
                             <p class="text-lg text-gray-700">Your motorcycle service booking has been successfully confirmed.</p>
                             
-                            <p class="text-xl font-semibold text-gray-800 mt-2">Booking Reference: <span class="text-indigo-600">${booking.booking_reference}</span></p>
+                            <p class="text-xl font-semibold text-gray-800 mt-2">Booking Reference: <span class="text-green-600">${booking.booking_reference}</span></p>
                         </div>
 
                         <div class="border-t border-b border-gray-200 py-4 mb-6">
@@ -116,7 +116,7 @@
 
                         <div class="text-center mt-8">
                             <p class="text-gray-600">A confirmation email with all details has been sent to your registered email address.</p>
-                            <a href="${homeUrl}" class="inline-flex justify-center mt-4 py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <a href="${homeUrl}" class="inline-flex justify-center mt-4 py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                                 Return to Homepage
                             </a>
                         </div>
@@ -131,7 +131,7 @@
         {% else %}
             <div class="text-center mb-6">
                 <p class="text-lg text-gray-700">Your motorcycle service booking has been successfully confirmed.</p>
-                <p class="text-xl font-semibold text-gray-800 mt-2">Booking Reference: <span class="text-indigo-600">{{ service_booking.service_booking_reference }}</span></p>
+                <p class="text-xl font-semibold text-gray-800 mt-2">Booking Reference: <span class="text-green-600">{{ service_booking.service_booking_reference }}</span></p>
             </div>
 
             <div class="border-t border-b border-gray-200 py-4 mb-6">
@@ -155,7 +155,7 @@
 
             <div class="text-center mt-8">
                 <p class="text-gray-600">A confirmation email with all details has been sent to your registered email address.</p>
-                <a href="{% url 'core:index' %}" class="inline-flex justify-center mt-4 py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <a href="{% url 'core:index' %}" class="inline-flex justify-center mt-4 py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                     Return to Homepage
                 </a>
             </div>

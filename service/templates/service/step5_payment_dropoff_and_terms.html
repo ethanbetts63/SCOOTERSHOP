@@ -12,8 +12,8 @@
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
     .flatpickr-day.selected {
-        background: #4f46e5;
-        border-color: #4f46e5;
+        background: #16a34a; /* green-600 */
+        border-color: #16a34a;
     }
 </style>
 {% endblock %}
@@ -101,10 +101,10 @@
             </div>
             
             <div class="flex items-center justify-between p-6 bg-gray-50 rounded-b-lg">
-                <a href="{% url 'service:service_book_step4' %}" class="text-sm font-medium text-gray-600 hover:text-indigo-500 transition duration-150 ease-in-out">
+                <a href="{% url 'service:service_book_step4' %}" class="text-sm font-medium text-gray-600 hover:text-green-500 transition duration-150 ease-in-out">
                     &larr; Back
                 </a>
-                <button type="submit" id="submit-button" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <button type="submit" id="submit-button" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                     Continue &rarr;
                 </button>
             </div>
@@ -118,7 +118,7 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const standardClasses = ['mt-1', 'block', 'w-full', 'py-2', 'px-3', 'border', 'border-gray-400', 'rounded-md', 'shadow-sm', 'text-gray-900', 'focus:outline-none', 'focus:ring-indigo-500', 'focus:border-indigo-500', 'sm:text-sm'];
+    const standardClasses = ['mt-1', 'block', 'w-full', 'py-2', 'px-3', 'border', 'border-gray-400', 'rounded-md', 'shadow-sm', 'text-gray-900', 'focus:outline-none', 'focus:ring-green-500', 'focus:border-green-500', 'sm:text-sm'];
     const standardClassString = standardClasses.join(' ');
     
     const timeSelect = document.getElementById('{{ form.dropoff_time.id_for_label }}');
@@ -128,8 +128,8 @@ document.addEventListener('DOMContentLoaded', function() {
         timeSelect.innerHTML = `<option value="">Select a date first</option>`;
     }
 
-    document.querySelectorAll('input[type="radio"]').forEach(el => el.classList.add('h-4', 'w-4', 'text-indigo-600', 'border-gray-300', 'focus:ring-indigo-500'));
-    document.querySelectorAll('input[type="checkbox"]').forEach(el => el.classList.add('h-4', 'w-4', 'text-indigo-600', 'border-gray-300', 'rounded', 'focus:ring-indigo-500'));
+    document.querySelectorAll('input[type="radio"]').forEach(el => el.classList.add('h-4', 'w-4', 'text-green-600', 'border-gray-300', 'focus:ring-green-500'));
+    document.querySelectorAll('input[type="checkbox"]').forEach(el => el.classList.add('h-4', 'w-4', 'text-green-600', 'border-gray-300', 'rounded', 'focus:ring-green-500'));
     
     const dateInput = document.querySelector('input[name="dropoff_date"]');
     const getTimesUrl = '{{ get_times_url }}';
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
             altInput: true,
             altFormat: "F j, Y",
             dateFormat: "Y-m-d",
-            altInputClass: standardClassString, // Use flatpickr's option to style the new input
+            altInputClass: standardClassString,
             enable: availableDates,
             onChange: function(selectedDates, dateStr, instance) {
                 if (dateStr) {

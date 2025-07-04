@@ -18,7 +18,6 @@
         margin-top: 0.5rem;
         font-size: 0.875rem;
     }
-    /* Style for the new postal code input to match */
     #postal-code {
         border-radius: 0.375rem;
         border: 1px solid #9ca3af;
@@ -43,8 +42,8 @@
         <p class="text-gray-600 mb-6">Please enter your payment details below to finalize your booking.</p>
 
         {% if payment_already_succeeded %}
-        <div id="payment-success-message" class="rounded-md bg-blue-50 p-4">
-             <p class="text-sm font-medium text-blue-800">Your payment has already been successfully processed. Redirecting you to confirmation...</p>
+        <div id="payment-success-message" class="rounded-md bg-green-50 p-4">
+             <p class="text-sm font-medium text-green-800">Your payment has already been successfully processed. Redirecting you to confirmation...</p>
         </div>
         <script>
             window.setTimeout(() => {
@@ -63,14 +62,12 @@
                     <div id="card-errors" role="alert"></div>
                 </div>
 
-                <!-- NEW 4-DIGIT POSTAL CODE FIELD -->
                 <div>
                     <label for="postal-code" class="block text-sm font-medium text-gray-700 mb-1">
                         Postal Code
                     </label>
                     <input type="text" id="postal-code" name="postal-code" placeholder="2000" pattern="\d{4}" title="Please enter a 4-digit postal code." required>
                 </div>
-                <!-- END NEW POSTAL CODE FIELD -->
 
                 <div id="payment-message" style="display: none;" class="rounded-md bg-red-50 p-4">
                     <p class="text-sm text-red-700"></p>
@@ -78,7 +75,7 @@
             </div>
 
             <div class="pt-6 mt-6 border-t border-gray-200">
-                <button id="submit-button" class="w-full inline-flex justify-center py-3 px-4 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
+                <button id="submit-button" class="w-full inline-flex justify-center py-3 px-4 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50">
                     Pay {{ amount }} {{ currency }}
                 </button>
             </div>
@@ -90,7 +87,6 @@
 
 {% block extra_js %}
 <script>
-// Ensure this script only runs if the payment hasn't already succeeded on the server side
 if (!document.getElementById('payment-success-message')) {
     const stripePublishableKey = "{{ stripe_publishable_key }}";
     const clientSecret = "{{ client_secret }}";
@@ -98,14 +94,11 @@ if (!document.getElementById('payment-success-message')) {
     const stripe = Stripe(stripePublishableKey);
     const elements = stripe.elements();
 
-    // *** THE FIX 1: Hide the postal code from the Stripe element ***
-    // This prevents Stripe from enforcing its own validation, allowing us to use our own input.
     const card = elements.create('card', {
         hidePostalCode: true
     });
     card.mount('#card-element');
 
-    // Listen for changes in the card element and display errors
     card.on('change', function(event) {
         const displayError = document.getElementById('card-errors');
         displayError.textContent = event.error ? event.error.message : '';
@@ -128,14 +121,11 @@ if (!document.getElementById('payment-success-message')) {
         submitButton.textContent = 'Processing...';
         messageContainer.style.display = 'none';
 
-        // *** THE FIX 2: Get postal code from our custom input ***
         const postalCode = document.getElementById('postal-code').value;
 
-        // Confirm the payment with Stripe, passing our custom postal code
         const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
             payment_method: {
                 card: card,
-                // Pass the postal code in the billing_details
                 billing_details: {
                     address: {
                         postal_code: postalCode,
@@ -145,19 +135,15 @@ if (!document.getElementById('payment-success-message')) {
         });
 
         if (error) {
-            // If there's an error with the card payment itself
             showMessage(error.message);
             submitButton.disabled = false;
             submitButton.textContent = `Pay {{ amount }} {{ currency }}`;
         } else {
-            // If the card payment is successful on the client side
             if (paymentIntent.status === 'succeeded') {
-                // Redirect the user to the confirmation page.
                 const confirmationUrl = `{% url 'service:service_book_step7' %}?payment_intent_id=${paymentIntent.id}`;
                 window.location.href = confirmationUrl;
 
             } else {
-                // Handle other payment intent statuses if necessary
                 showMessage('Payment not successful. Status: ' + paymentIntent.status);
                 submitButton.disabled = false;
                 submitButton.textContent = `Pay {{ amount }} {{ currency }}`;

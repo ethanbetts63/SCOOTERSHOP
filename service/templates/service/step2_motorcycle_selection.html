@@ -43,10 +43,10 @@
             </div>
 
             <div class="flex items-center justify-between pt-6 border-t border-gray-200">
-                <a href="{% url 'service:service_book_step1' %}" class="text-sm font-medium text-gray-600 hover:text-indigo-500 transition duration-150 ease-in-out">
+                <a href="{% url 'service:service_book_step1' %}" class="text-sm font-medium text-gray-600 hover:text-green-500 transition duration-150 ease-in-out">
                     &larr; Previous Step
                 </a>
-                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                     Next Step &rarr;
                 </button>
             </div>
@@ -61,7 +61,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         const motorcycleSelect = document.getElementById('{{ form.selected_motorcycle.id_for_label }}');
         if (motorcycleSelect) {
-            motorcycleSelect.classList.add('mt-1', 'block', 'w-full', 'py-2', 'px-3', 'border', 'border-gray-400', 'rounded-md', 'shadow-sm', 'text-gray-900', 'focus:outline-none', 'focus:ring-indigo-500', 'focus:border-indigo-500', 'sm:text-sm');
+            motorcycleSelect.classList.add('mt-1', 'block', 'w-full', 'py-2', 'px-3', 'border', 'border-gray-400', 'rounded-md', 'shadow-sm', 'text-gray-900', 'focus:outline-none', 'focus:ring-green-500', 'focus:border-green-500', 'sm:text-sm');
         }
     });
 </script>
