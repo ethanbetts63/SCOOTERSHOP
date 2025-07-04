@@ -135,6 +135,14 @@
                 <div class="detail-label">Stock Number:</div>
                 <div class="detail-value">{{ motorcycle.stock_number|default:"N/A" }}</div>
             </div>
+            {% if motorcycle.youtube_link %}
+            <div class="detail-item md:col-span-2">
+                <div class="detail-label">YouTube Link:</div>
+                <div class="detail-value">
+                    <a href="{{ motorcycle.youtube_link }}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">{{ motorcycle.youtube_link }}</a>
+                </div>
+            </div>
+            {% endif %}
             <div class="detail-item md:col-span-2">
                 <div class="detail-label">Description:</div>
                 <div class="detail-value">{{ motorcycle.description|linebreaksbr|default:"N/A" }}</div>

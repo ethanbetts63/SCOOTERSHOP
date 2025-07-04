@@ -77,6 +77,7 @@ class Motorcycle(models.Model):
 
     description = models.TextField(null=True, blank=True)
     image = models.FileField(upload_to="motorcycles/", null=True, blank=True)
+    youtube_link = models.URLField(max_length=255, blank=True, null=True, help_text="An optional link to a YouTube video for this motorcycle.")
     date_posted = models.DateTimeField(auto_now_add=True)
     is_available = models.BooleanField(
         default=True, help_text="Is this bike generally available for sale?"

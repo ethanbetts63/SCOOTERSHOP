@@ -20,6 +20,7 @@ class MotorcycleForm(forms.ModelForm):
             "transmission",
             "description",
             "image",
+            "youtube_link",
             "is_available",
             "rego",
             "rego_exp",
@@ -93,6 +94,12 @@ class MotorcycleForm(forms.ModelForm):
                     "class": "form-input mt-1 block w-full text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300"
                 }
             ),
+            "youtube_link": forms.URLInput(
+                attrs={
+                    "class": "form-input mt-1 block w-full rounded-md border border-gray-300 shadow-sm text-gray-900",
+                    "placeholder": "https://www.youtube.com/watch?v=..."
+                }
+            ),
             "rego": forms.TextInput(
                 attrs={
                     "class": "form-input mt-1 block w-full rounded-md border border-gray-300 shadow-sm text-gray-900"
@@ -145,6 +152,7 @@ class MotorcycleForm(forms.ModelForm):
         self.fields["engine_number"].required = False
         self.fields["image"].required = False
         self.fields["quantity"].required = False
+        self.fields["youtube_link"].required = False
 
     def clean(self):
         cleaned_data = super().clean()
