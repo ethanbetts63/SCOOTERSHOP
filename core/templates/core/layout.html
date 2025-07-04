@@ -86,7 +86,11 @@
                                 style="color: #08E5D1;"
                                 {% endif %}
                             >
-                                Login/Register
+                                {% if settings.enable_user_accounts %}
+                                    Login/Register
+                                {% else %}
+                                    Login
+                                {% endif %}
                             </a>
                         {% endif %}
                     </li>
@@ -188,6 +192,14 @@
                                     {% else %}
                                         Contact Us
                                     {% endif %}
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if not settings.enable_user_accounts and not user.is_authenticated %}
+                            <li>
+                                <a href="{% url 'users:login' %}">
+                                    Login
                                 </a>
                             </li>
                         {% endif %}
