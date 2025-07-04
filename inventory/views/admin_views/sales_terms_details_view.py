@@ -5,7 +5,7 @@ from inventory.mixins import AdminRequiredMixin
 
 class SalesTermsDetailsView(AdminRequiredMixin, DetailView):
     model = SalesTerms
-    template_name = "inventory/admin_terms_and_conditions_detail.html"
+    template_name = "inventory/admin_sales_terms_details.html"
     context_object_name = "terms_version"
 
     def get_context_data(self, **kwargs):

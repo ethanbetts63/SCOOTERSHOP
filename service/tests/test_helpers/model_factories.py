@@ -160,7 +160,7 @@ class ServiceSettingsFactory(factory.django.DjangoModelFactory):
     other_brand_policy_text = factory.Faker("paragraph")
     enable_deposit = False
     deposit_calc_method = "FLAT_FEE"
-    deposit_flat_fee_amount = Decimal("0.00")
+    deposit_flat_fee_amount = Decimal("1.00")
     deposit_percentage = Decimal("0.00")
     enable_online_full_payment = False
     enable_online_deposit = True
