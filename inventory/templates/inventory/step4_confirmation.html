@@ -6,7 +6,7 @@
 {% block content %}
 <div class="container mx-auto px-4 py-8 max-w-3xl">
     <div class="bg-white shadow-lg rounded-lg p-6 md:p-8">
-        <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Your Sales Booking Confirmation</h2>
+        <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Your Sales Booking Request</h2>
 
         {% if is_processing %}
             <div id="processing-message" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6" role="alert">
@@ -55,13 +55,14 @@
 
         {% else %} 
             {% if sales_booking %}
-                <div class="mb-6 bg-green-50 border border-green-200 text-green-800 p-4 rounded-md">
+                <div class="mb-6 bg-green-50 border-l-4 border-green-400 text-green-800 p-4 rounded-md" role="alert">
                     {% if sales_booking.payment_status == 'deposit_paid' %}
-                        <p class="text-lg font-semibold mb-2">Your deposit has been confirmed!</p>
-                        <p class="text-base">The motorcycle ({{ sales_booking.motorcycle.year }} {{ sales_booking.motorcycle.brand }} {{ sales_booking.motorcycle.model }}) has been delisted from our website and is now reserved for you.</p>
+                        <p class="text-lg font-bold">Your deposit is confirmed and your appointment is requested!</p>
+                        <p class="text-base mt-1">Please note: Your requested appointment is not yet final.</p>
+                        <p class="text-base mt-2">Your motorcycle ({{ sales_booking.motorcycle.year }} {{ sales_booking.motorcycle.brand }} {{ sales_booking.motorcycle.model }}) has been marked as reserved.</p>
                         {% if sales_booking.appointment_date %}
-                        <p class="text-base mt-2">Your requested appointment date is <strong>{{ sales_booking.appointment_date|date:"D, M d, Y" }} at {{ sales_booking.appointment_time|time:"P" }}</strong>. Please note that this appointment is not yet confirmed.</p>
-                        <p class="text-base mt-1">You will receive a separate confirmation email after our admin team has reviewed your booking details and confirmed the appointment.</p>
+                        <p class="text-base mt-2">Your requested appointment is for <strong>{{ sales_booking.appointment_date|date:"D, M d, Y" }} at {{ sales_booking.appointment_time|time:"P" }}</strong>.</p>
+                        <p class="text-base mt-1">You will receive a separate confirmation email after our admin team has reviewed and confirmed your appointment time.</p>
                         {% else %}
                         <p class="text-base mt-2">Our team will be in touch shortly to finalize the details and arrange your viewing/pickup.</p>
                         {% endif %}
@@ -79,57 +80,61 @@
 
                 <div class="mb-6 p-4 border border-gray-200 rounded-md bg-gray-50">
                     <h3 class="text-xl font-semibold text-gray-700 mb-2">Booking Summary</h3>
-                    <table>
-                        <tr>
-                            <td class="font-medium text-gray-700">Booking Reference:</td>
-                            <td><strong>{{ sales_booking.sales_booking_reference }}</strong></td>
-                        </tr>
-                        <tr>
-                            <td class="font-medium text-gray-700">Customer Name:</td>
-                            <td>{{ sales_booking.sales_profile.name }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-medium text-gray-700">Motorcycle:</td>
-                            <td>{{ sales_booking.motorcycle.year }} {{ sales_booking.motorcycle.brand }} {{ sales_booking.motorcycle.model }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-medium text-gray-700">Motorcycle Price:</td>
-                            <td>{{ sales_booking.motorcycle_price|floatformat:2 }} {{ sales_booking.currency }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-medium text-gray-700">Payment Status:</td>
-                            <td>{{ sales_booking.payment_status }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-medium text-gray-700">Amount Paid:</td>
-                            <td>{{ sales_booking.amount_paid|floatformat:2 }} {{ sales_booking.currency }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-medium text-gray-700">Amount Owing:</td>
-                            <td class="font-bold text-red-600">{{ amount_owing|floatformat:2 }} {{ sales_booking.currency }}</td> 
-                        </tr>
-                        {% if sales_booking.appointment_date %}
-                        <tr>
-                            <td class="font-medium text-gray-700">Requested Appointment Date:</td>
-                            <td>{{ sales_booking.appointment_date|date:"F d, Y" }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-medium text-gray-700">Requested Appointment Time:</td>
-                            <td>{{ sales_booking.appointment_time|time:"P" }}</td>
-                        </tr>
-                        {% endif %}
-                        {% if sales_booking.customer_notes %}
-                        <tr>
-                            <td class="font-medium text-gray-700">Your Notes:</td>
-                            <td>{{ sales_booking.customer_notes }}</td>
-                        </tr>
-                        {% endif %}
+                    <table class="w-full">
+                        <tbody class="divide-y divide-gray-200">
+                            <tr class="py-2">
+                                <td class="font-medium text-gray-700 py-2">Booking Reference:</td>
+                                <td class="text-gray-900 font-semibold py-2">{{ sales_booking.sales_booking_reference }}</td>
+                            </tr>
+                            <tr class="py-2">
+                                <td class="font-medium text-gray-700 py-2">Customer Name:</td>
+                                <td class="text-gray-900 py-2">{{ sales_booking.sales_profile.name }}</td>
+                            </tr>
+                            <tr class="py-2">
+                                <td class="font-medium text-gray-700 py-2">Motorcycle:</td>
+                                <td class="text-gray-900 py-2">{{ sales_booking.motorcycle.year }} {{ sales_booking.motorcycle.brand }} {{ sales_booking.motorcycle.model }}</td>
+                            </tr>
+                            <tr class="py-2">
+                                <td class="font-medium text-gray-700 py-2">Payment Status:</td>
+                                <td class="text-gray-900 py-2">{{ sales_booking.get_payment_status_display }}</td>
+                            </tr>
+                            <tr class="py-2">
+                                <td class="font-medium text-gray-700 py-2">Amount Paid:</td>
+                                <td class="text-gray-900 py-2">{{ sales_booking.amount_paid|floatformat:2 }} {{ sales_booking.currency }}</td>
+                            </tr>
+                            <tr class="py-2">
+                                <td class="font-medium text-gray-700 py-2">Amount Owing:</td>
+                                <td class="font-bold text-green-600 py-2">{{ amount_owing|floatformat:2 }} {{ sales_booking.currency }}</td> 
+                            </tr>
+                            {% if sales_booking.appointment_date %}
+                            <tr class="py-2">
+                                <td class="font-medium text-gray-700 py-2">Requested Appointment Date:</td>
+                                <td class="text-gray-900 py-2">{{ sales_booking.appointment_date|date:"F d, Y" }}</td>
+                            </tr>
+                            <tr class="py-2">
+                                <td class="font-medium text-gray-700 py-2">Requested Appointment Time:</td>
+                                <td class="text-gray-900 py-2">{{ sales_booking.appointment_time|time:"P" }}</td>
+                            </tr>
+                            {% endif %}
+                             {% if settings.storefront_address %}
+                            <tr class="py-2">
+                                <td class="font-medium text-gray-700 align-top py-2">Store Address:</td>
+                                <td class="text-gray-900 py-2">{{ settings.storefront_address|linebreaksbr }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if sales_booking.customer_notes %}
+                            <tr class="py-2">
+                                <td class="font-medium text-gray-700 align-top py-2">Your Notes:</td>
+                                <td class="text-gray-900 py-2">{{ sales_booking.customer_notes }}</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
                     </table>
                 </div>
 
                 <div class="flex justify-center mt-8">
-                    <a href="{% url 'inventory:all' %}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                        Browse More Motorcycles
+                    <a href="{% url 'core:index' %}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        Finish
                     </a>
                 </div>
             {% endif %}
