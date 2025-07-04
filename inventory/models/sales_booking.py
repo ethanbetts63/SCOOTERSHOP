@@ -100,7 +100,7 @@ class SalesBooking(models.Model):
     )
 
     sales_terms_version = models.ForeignKey(
-        "inventory.TermsAndConditions",
+        "inventory.SalesTerms",
         on_delete=models.PROTECT, 
         related_name="sales_bookings", 
         null=True, 
