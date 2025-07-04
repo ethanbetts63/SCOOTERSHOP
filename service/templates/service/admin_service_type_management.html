@@ -59,97 +59,99 @@
 {% endblock %}
 
 {% block admin_main_content %}
-<div class="p-4">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Service Type Management</h1>
-        <a href="{% url 'service:add_service_type' %}"
-           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 btn-create">
-            Add New Service Type
-        </a>
-    </div>
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-lg rounded-lg p-6 md:p-8 max-w-7xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Service Type Management</h1>
+            <a href="{% url 'service:add_service_type' %}"
+               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 btn-create">
+                Add New Service Type
+            </a>
+        </div>
 
-    
-    <div class="bg-white shadow-md rounded-lg overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        ID
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Image
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Name
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Description
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Estimated Duration (Days) 
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Base Price
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Active
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                    </th>
-                </tr>
-            </thead>
-            <tbody id="service-types-table-body" class="bg-white divide-y divide-gray-200">
-                {% for service_type in service_types %}
+        
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
                     <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 table-cell-padding">
-                            {{ service_type.id }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
-                            {% if service_type.image %}
-                                <img src="{{ service_type.image.url }}" alt="{{ service_type.name }} image" class="service-type-image">
-                            {% else %}
-                                <span class="text-gray-400">No Image</span>
-                            {% endif %}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
-                            {{ service_type.name }}
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-500 table-cell-padding">
-                            {{ service_type.description|truncatechars:70 }} 
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
-                            {{ service_type.estimated_duration }} days 
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
-                            ${{ service_type.base_price }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
-                            {% if service_type.is_active %}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
-                            {% else %}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inactive</span>
-                            {% endif %}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium table-cell-padding">
-                            <div class="flex space-x-2">
-                                <a href="{% url 'service:edit_service_type' pk=service_type.pk %}" class="action-button btn-edit">Edit</a>
-                                <form action="{% url 'service:delete_service_type' pk=service_type.pk %}" method="post" class="inline">
-                                    {% csrf_token %}
-                                    <button type="submit" class="action-button btn-delete" onclick="return confirm('Are you sure you want to delete service type \'{{ service_type.name }}\'? This action cannot be undone.');">
-                                        Delete
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            ID
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Image
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Name
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Description
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Estimated Duration (Days) 
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Base Price
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Active
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                        </th>
                     </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="8" class="px-6 py-4 text-sm text-gray-500 text-center">No service types found.</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody id="service-types-table-body" class="bg-white divide-y divide-gray-200">
+                    {% for service_type in service_types %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 table-cell-padding">
+                                {{ service_type.id }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
+                                {% if service_type.image %}
+                                    <img src="{{ service_type.image.url }}" alt="{{ service_type.name }} image" class="service-type-image">
+                                {% else %}
+                                    <span class="text-gray-400">No Image</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
+                                {{ service_type.name }}
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-500 table-cell-padding">
+                                {{ service_type.description|truncatechars:70 }} 
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
+                                {{ service_type.estimated_duration }} days 
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
+                                ${{ service_type.base_price }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
+                                {% if service_type.is_active %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
+                                {% else %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium table-cell-padding">
+                                <div class="flex space-x-2">
+                                    <a href="{% url 'service:edit_service_type' pk=service_type.pk %}" class="action-button btn-edit">Edit</a>
+                                    <form action="{% url 'service:delete_service_type' pk=service_type.pk %}" method="post" class="inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="action-button btn-delete" onclick="return confirm('Are you sure you want to delete service type \'{{ service_type.name }}\'? This action cannot be undone.');">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="8" class="px-6 py-4 text-sm text-gray-500 text-center">No service types found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}
