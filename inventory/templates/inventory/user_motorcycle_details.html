@@ -1,236 +1,290 @@
 {% extends 'core/layout.html' %}
 {% load static %}
+{% load youtube %}
 
 {% block title %}{{ motorcycle.title }} - Details{% endblock %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'core/css/contact_styles.css' %}">
+    <link rel="stylesheet" href="{% static 'core/css/map_styles.css' %}">
+    <link rel="stylesheet" href="{% static 'core/css/about_styles.css' %}">
+    <!-- Plyr.io CSS -->
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <style>
+        /* Style to make the Plyr player match your site's theme */
+        :root {
+            --plyr-color-main: #22c55e; /* Your site's green color */
+        }
+        .plyr {
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+        /* Hide elements by default, to be shown by JS */
+        .media-item {
+            display: none;
+        }
+        .media-item.active {
+            display: block;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
-    <div class="container mx-auto px-4 py-8">
-        {% if motorcycle %}
-        <div class="bg-white rounded-2xl shadow-xl p-6 lg:p-10 mb-10">
-            <div class="text-center mb-8 pb-4 border-b border-gray-200">
-                <h1 class="text-4xl lg:text-5xl font-extrabold text-gray-800 tracking-tight mb-2">{{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }}</h1>
+<div class="container mx-auto px-4 py-8">
+    {% if motorcycle %}
+    <div class="bg-white rounded-2xl shadow-xl p-6 lg:p-10 mb-10">
+        <div class="text-center mb-8 pb-4 border-b border-gray-200">
+            <h1 class="text-4xl lg:text-5xl font-extrabold text-gray-800 tracking-tight mb-2">{{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }}</h1>
+            
+            <div class="mt-4">
+                {% if motorcycle.status == 'sold' %}
+                    <span class="inline-flex items-center rounded-full bg-gray-600 px-4 py-2 text-lg font-bold text-white">Sold</span>
+                {% elif motorcycle.status == 'reserved' %}
+                    <span class="inline-flex items-center rounded-full bg-red-500 px-4 py-2 text-lg font-bold text-white">Reserved</span>
+                {% else %}
+                    <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">{{ motorcycle.get_conditions_display }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+            <div class="flex flex-col items-center">
                 
-                <div class="mt-4">
-                    {% if motorcycle.status == 'sold' %}
-                        <span class="inline-flex items-center rounded-full bg-gray-600 px-4 py-2 text-lg font-bold text-white">
-                            Sold
-                        </span>
-                    {% elif motorcycle.status == 'reserved' %}
-                        <span class="inline-flex items-center rounded-full bg-red-500 px-4 py-2 text-lg font-bold text-white">
-                            Reserved
-                        </span>
-                    {% elif not motorcycle.is_available %}
-                        <span class="inline-flex items-center rounded-full bg-yellow-500 px-4 py-2 text-lg font-bold text-white">
-                            Unavailable
-                        </span>
-                    {% elif motorcycle.condition == 'new' and motorcycle.quantity <= 0 %}
-                        <span class="inline-flex items-center rounded-full bg-red-700 px-4 py-2 text-lg font-bold text-white">
-                            Out of Stock
-                        </span>
-                    {% else %}
-                        <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">
-                            {{ motorcycle.get_conditions_display }}
-                        </span>
+                <!-- YouTube Player Container -->
+                {% if motorcycle.youtube_link %}
+                <div id="video-player-container" class="media-item w-full shadow-lg rounded-xl overflow-hidden mb-6">
+                    <div class="plyr__video-embed" id="player">
+                        <iframe
+                          src="https://www.youtube.com/embed/{{ motorcycle.youtube_link|get_youtube_id }}?origin=https://plyr.io&amp;iv_load_policy=3&amp;modestbranding=1&amp;playsinline=1&amp;showinfo=0&amp;rel=0&amp;enablejsapi=1"
+                          allowfullscreen
+                          allowtransparency
+                          allow="autoplay"
+                        ></iframe>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Main Image Container -->
+                <div id="main-image-container" class="media-item w-full relative bg-gray-100 rounded-xl overflow-hidden shadow-md">
+                    <img id="main-bike-image"
+                         src="{% if motorcycle.image %}{{ motorcycle.image.url }}{% elif motorcycle.images.all %}{{ motorcycle.images.first.image.url }}{% else %}https://placehold.co/800x600/e2e8f0/333?text=No+Image{% endif %}"
+                         alt="{{ motorcycle.title }}"
+                         class="w-full h-96 object-cover rounded-xl transition-opacity duration-300 ease-in-out">
+                </div>
+
+                <!-- Thumbnails -->
+                <div class="flex space-x-3 mt-6 overflow-x-auto w-full justify-center p-2">
+                    {% if motorcycle.youtube_link %}
+                    <div class="thumbnail w-24 h-16 object-cover rounded-lg cursor-pointer border-2 border-transparent hover:border-red-500 transition-all duration-200" data-media-type="video">
+                        <div class="relative w-full h-full">
+                             <img src="https://img.youtube.com/vi/{{ motorcycle.youtube_link|get_youtube_id }}/0.jpg" class="w-full h-full object-cover rounded-md">
+                             <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40">
+                                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+                            </div>
+                        </div>
+                    </div>
                     {% endif %}
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-                <div class="flex flex-col items-center">
-                    <div class="w-full relative bg-gray-100 rounded-xl overflow-hidden shadow-md">
-                        <img id="main-bike-image"
-                             src="{% if motorcycle.image %}{{ motorcycle.image.url }}{% elif motorcycle.images.all %}{{ motorcycle.images.first.image.url }}{% else %}https://placehold.co/800x600/e2e8f0/333?text=No+Image{% endif %}"
-                             alt="{{ motorcycle.title }}"
-                             class="w-full h-96 object-cover rounded-xl transition-opacity duration-300 ease-in-out">
-                    </div>
-
-                    <div class="flex space-x-3 mt-6 overflow-x-auto w-full justify-center p-2">
-                        
-                        {% if motorcycle.image %}
-                            <img src="{{ motorcycle.image.url }}"
-                                 alt="{{ motorcycle.title }} - Main Image"
-                                 class="thumbnail w-24 h-16 object-cover rounded-lg cursor-pointer border-2 border-transparent hover:border-blue-500 transition-all duration-200 initial-active"
-                                 data-image-url="{{ motorcycle.image.url }}">
-                        {% endif %}
-
-                        
-                        {% for img in motorcycle.images.all %}
-                            <img src="{{ img.image.url }}"
-                                 alt="{{ motorcycle.title }} - Image {{ forloop.counter }}"
-                                 class="thumbnail w-24 h-16 object-cover rounded-lg cursor-pointer border-2 border-transparent hover:border-blue-500 transition-all duration-200"
-                                 data-image-url="{{ img.image.url }}">
-                        {% endfor %}
-
-                        
-                        {% if not motorcycle.image and not motorcycle.images.all %}
-                            <img src="https://placehold.co/800x600/e2e8f0/333?text=No+Image"
-                                 alt="No Image Available"
-                                 class="thumbnail w-24 h-16 object-cover rounded-lg border-2 border-blue-600">
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="flex flex-col justify-center">
-                    <div class="mb-6 text-center lg:text-left">
-                        <p class="text-4xl lg:text-5xl font-extrabold text-blue-700">
-                            {% if motorcycle.price %}
-                                {{ inventory_settings.currency_symbol }}{{ motorcycle.price|floatformat:2 }}
-                            {% else %}
-                                Price on request
-                            {% endif %}
-                        </p>
-                    </div>
-
-                    <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-3">Specifications</h2>
-                    <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-lg text-gray-700">
-                        <div class="flex items-center space-x-2">
-                            <i class="fas fa-calendar-alt text-blue-600"></i>
-                            <dt class="font-semibold">Year:</dt>
-                            <dd>{{ motorcycle.year }}</dd>
-                        </div>
-                        
-                        {% if 'New' not in motorcycle.get_conditions_display %}
-                        <div class="flex items-center space-x-2">
-                            <i class="fas fa-tachometer-alt text-blue-600"></i>
-                            <dt class="font-semibold">Odometer:</dt>
-                            <dd>{{ motorcycle.odometer|floatformat:0 }} km</dd>
-                        </div>
-                        {% endif %}
-
-                        <div class="flex items-center space-x-2">
-                            <i class="fas fa-cogs text-blue-600"></i>
-                            <dt class="font-semibold">Engine Size:</dt>
-                            <dd>{{ motorcycle.engine_size }} cc</dd>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <i class="fas fa-cogs text-blue-600"></i>
-                            <dt class="font-semibold">Transmission:</dt>
-                            <dd>{{ motorcycle.get_transmission_display }}</dd>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <i class="fas fa-chair text-blue-600"></i>
-                            <dt class="font-semibold">Seats:</dt>
-                            <dd>{{ motorcycle.seats|default:"N/A" }}</dd>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <i class="fas fa-barcode text-blue-600"></i>
-                            <dt class="font-semibold">Stock #:</dt>
-                            <dd>{{ motorcycle.stock_number|default:"N/A" }}</dd>
-                        </div>
-                        <div class="md:col-span-2 mt-4">
-                            <h3 class="text-xl font-bold text-gray-800 mb-2">Description:</h3>
-                            <p class="text-gray-700 leading-relaxed">{{ motorcycle.description|default:"No description available." }}</p>
-                        </div>
-                    </dl>
-                </div>
-            </div>
-
-            <div class="mt-10 pt-6 border-t border-gray-200 flex flex-col sm:flex-row justify-center items-center gap-4">
-                
-                {% if motorcycle.is_available %}
                     
-                    {% if inventory_settings.enable_reservation_by_deposit %}
-                        <form action="{% url 'inventory:initiate_booking' pk=motorcycle.pk %}" method="post" class="w-full sm:w-auto">
-                            {% csrf_token %}
-                            <input type="hidden" name="deposit_required_for_flow" value="true">
+                    {% if motorcycle.image %}
+                        <img src="{{ motorcycle.image.url }}"
+                             alt="{{ motorcycle.title }} - Main Image"
+                             class="thumbnail w-24 h-16 object-cover rounded-lg cursor-pointer border-2 border-transparent hover:border-blue-500 transition-all duration-200"
+                             data-media-type="image"
+                             data-image-url="{{ motorcycle.image.url }}">
+                    {% endif %}
+
+                    {% for img in motorcycle.images.all %}
+                        <img src="{{ img.image.url }}"
+                             alt="{{ motorcycle.title }} - Image {{ forloop.counter }}"
+                             class="thumbnail w-24 h-16 object-cover rounded-lg cursor-pointer border-2 border-transparent hover:border-blue-500 transition-all duration-200"
+                             data-media-type="image"
+                             data-image-url="{{ img.image.url }}">
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="flex flex-col justify-center">
+                <div class="mb-6 text-center lg:text-left">
+                    <p class="text-4xl lg:text-5xl font-extrabold text-blue-700">
+                        {% if motorcycle.price %}
+                            {{ inventory_settings.currency_symbol }}{{ motorcycle.price|floatformat:2 }}
+                        {% else %}
+                            Price on request
+                        {% endif %}
+                    </p>
+                </div>
+
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-3">Specifications</h2>
+                <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-lg text-gray-700">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-calendar-alt text-blue-600"></i>
+                        <dt class="font-semibold">Year:</dt>
+                        <dd>{{ motorcycle.year }}</dd>
+                    </div>
+                    
+                    {% if 'New' not in motorcycle.get_conditions_display %}
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-tachometer-alt text-blue-600"></i>
+                        <dt class="font-semibold">Odometer:</dt>
+                        <dd>{{ motorcycle.odometer|floatformat:0 }} km</dd>
+                    </div>
+                    {% endif %}
+
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-cogs text-blue-600"></i>
+                        <dt class="font-semibold">Engine Size:</dt>
+                        <dd>{{ motorcycle.engine_size }} cc</dd>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-cogs text-blue-600"></i>
+                        <dt class="font-semibold">Transmission:</dt>
+                        <dd>{{ motorcycle.get_transmission_display }}</dd>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-chair text-blue-600"></i>
+                        <dt class="font-semibold">Seats:</dt>
+                        <dd>{{ motorcycle.seats|default:"N/A" }}</dd>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-barcode text-blue-600"></i>
+                        <dt class="font-semibold">Stock #:</dt>
+                        <dd>{{ motorcycle.stock_number|default:"N/A" }}</dd>
+                    </div>
+                    <div class="md:col-span-2 mt-4">
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Description:</h3>
+                        <p class="text-gray-700 leading-relaxed">{{ motorcycle.description|default:"No description available." }}</p>
+                    </div>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mt-10 pt-6 border-t border-gray-200 flex flex-col sm:flex-row justify-center items-center gap-4">
+            {% if motorcycle.is_available %}
+                {% if inventory_settings.enable_reservation_by_deposit %}
+                    <form action="{% url 'inventory:initiate_booking' pk=motorcycle.pk %}" method="post" class="w-full sm:w-auto">
+                        {% csrf_token %}
+                        <input type="hidden" name="deposit_required_for_flow" value="true">
+                        <input type="hidden" name="request_viewing" value="false"> 
+                        <button type="submit"
+                                class="w-full px-8 py-4 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all transform hover:scale-105">
+                            <i class="fas fa-calendar-check mr-3 text-xl"></i>
+                            Reserve with Deposit
+                        </button>
+                    </form>
+                {% endif %}
+                {% if inventory_settings.enable_depositless_enquiry %}
+                    <form action="{% url 'inventory:initiate_booking' pk=motorcycle.pk %}" method="post" class="w-full sm:w-auto">
+                        {% csrf_token %}
+                        <input type="hidden" name="deposit_required_for_flow" value="false">
+                        {% if inventory_settings.enable_viewing_for_enquiry %}
+                            <input type="hidden" name="request_viewing" value="true"> 
+                            <button type="submit"
+                                    class="w-full px-8 py-4 border border-indigo-600 text-indigo-600 font-semibold rounded-full shadow-sm
+                                           hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all transform hover:scale-105">
+                                <i class="fas fa-question-circle mr-3 text-xl"></i>
+                                Submit Enquiry / Request Viewing
+                            </button>
+                        {% else %}
                             <input type="hidden" name="request_viewing" value="false"> 
                             <button type="submit"
-                                    class="w-full px-8 py-4 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all transform hover:scale-105">
-                                <i class="fas fa-calendar-check mr-3 text-xl"></i>
-                                Reserve with Deposit
+                                    class="w-full px-8 py-4 border border-gray-400 text-gray-700 font-semibold rounded-full shadow-sm
+                                           hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-all transform hover:scale-105">
+                                <i class="fas fa-question-circle mr-3 text-xl"></i>
+                                Submit Enquiry
                             </button>
-                        </form>
-                    {% endif %}
-    
-                    
-                    {% if inventory_settings.enable_depositless_enquiry %}
-                        <form action="{% url 'inventory:initiate_booking' pk=motorcycle.pk %}" method="post" class="w-full sm:w-auto">
-                            {% csrf_token %}
-                            <input type="hidden" name="deposit_required_for_flow" value="false">
-                            
-                            {% if inventory_settings.enable_viewing_for_enquiry %}
-                                <input type="hidden" name="request_viewing" value="true"> 
-                                <button type="submit"
-                                        class="w-full px-8 py-4 border border-indigo-600 text-indigo-600 font-semibold rounded-full shadow-sm
-                                               hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all transform hover:scale-105">
-                                    <i class="fas fa-question-circle mr-3 text-xl"></i>
-                                    Submit Enquiry / Request Viewing
-                                </button>
-                            {% else %}
-                                <input type="hidden" name="request_viewing" value="false"> 
-                                <button type="submit"
-                                        class="w-full px-8 py-4 border border-gray-400 text-gray-700 font-semibold rounded-full shadow-sm
-                                               hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-all transform hover:scale-105">
-                                    <i class="fas fa-question-circle mr-3 text-xl"></i>
-                                    Submit Enquiry
-                                </button>
-                            {% endif %}
-                        </form>
-                    {% endif %}
-                {% else %}
-                    
-                    <div class="text-center">
-                        {% if motorcycle.status == 'sold' %}
-                            <h3 class="text-2xl font-bold text-gray-800 mb-2">Sold</h3>
-                            <p class="text-gray-600">This motorcycle has been sold and is no longer available.</p>
-                        {% elif motorcycle.status == 'reserved' %}
-                            <h3 class="text-2xl font-bold text-gray-800 mb-2">Reserved</h3>
-                            <p class="text-gray-600">This motorcycle is currently reserved. Enquiries are not being taken at this time.</p>
-                        {% elif motorcycle.condition == 'new' and motorcycle.quantity <= 0 %}
-                            <h3 class="text-2xl font-bold text-gray-800 mb-2">Out of Stock</h3>
-                            <p class="text-gray-600">This motorcycle is not currently available. Please check back later or browse other models.</p>
-                        {% else %}
-                            <h3 class="text-2xl font-bold text-gray-800 mb-2">Unavailable</h3>
-                            <p class="text-gray-600">This motorcycle is not available for booking or enquiry at this time.</p>
                         {% endif %}
-                    </div>
+                    </form>
                 {% endif %}
-                
-            </div>
-
+            {% else %}
+                <div class="text-center">
+                    {% if motorcycle.status == 'sold' %}
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Sold</h3>
+                        <p class="text-gray-600">This motorcycle has been sold and is no longer available.</p>
+                    {% elif motorcycle.status == 'reserved' %}
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Reserved</h3>
+                        <p class="text-gray-600">This motorcycle is currently reserved. Enquiries are not being taken at this time.</p>
+                    {% else %}
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Unavailable</h3>
+                        <p class="text-gray-600">This motorcycle is not available for booking or enquiry at this time.</p>
+                    {% endif %}
+                </div>
+            {% endif %}
         </div>
-        {% endif %}
+    </div>
+    {% endif %}
 
-        {% with title=faq_title %}
-            {% include 'inventory/_sales_FAQ_include.html' %}
-        {% endwith %}
+    {% if featured_items %}
+        <div>
+            {% include 'inventory/_featured_include.html' %}
+        </div>
+    {% endif %}
+    
+    {% with title=faq_title %}
+        {% include 'inventory/_sales_FAQ_include.html' %}
+    {% endwith %}
 
-        {% if featured_items %}
-            <div>
-                {% include 'inventory/_featured_include.html' %}
-            </div>
-        {% endif %}
+    
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<!-- Plyr.io JavaScript -->
+<script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const playerContainer = document.getElementById('video-player-container');
+    const imageContainer = document.getElementById('main-image-container');
     const mainImage = document.getElementById('main-bike-image');
     const thumbnails = document.querySelectorAll('.thumbnail');
+    let player = null;
 
-    function setActiveThumbnail(selectedThumbnail) {
-        thumbnails.forEach(thumb => thumb.classList.remove('border-blue-600'));
-        if (selectedThumbnail) {
-            selectedThumbnail.classList.add('border-blue-600');
-            mainImage.src = selectedThumbnail.dataset.imageUrl || selectedThumbnail.src;
+    // Initialize the Plyr player if the container exists
+    if (playerContainer) {
+        player = new Plyr('#player');
+    }
+
+    function showMedia(mediaType, imageUrl = null) {
+        // Hide all media items
+        document.querySelectorAll('.media-item').forEach(item => item.classList.remove('active'));
+        
+        if (player) {
+            player.stop();
+        }
+
+        if (mediaType === 'video') {
+            if (playerContainer) {
+                playerContainer.classList.add('active');
+            }
+        } else if (mediaType === 'image') {
+            if (imageContainer) {
+                if(imageUrl) {
+                    mainImage.src = imageUrl;
+                }
+                imageContainer.classList.add('active');
+            }
         }
     }
 
-    if (mainImage && thumbnails.length > 0) {
-        thumbnails.forEach(thumbnail => {
-            thumbnail.addEventListener('click', function() {
-                setActiveThumbnail(this);
-            });
+    thumbnails.forEach(thumb => {
+        thumb.addEventListener('click', function() {
+            // Highlight the active thumbnail
+            thumbnails.forEach(t => t.classList.remove('border-red-500', 'border-blue-600'));
+            this.classList.add(this.dataset.mediaType === 'video' ? 'border-red-500' : 'border-blue-600');
+            
+            // Show the correct media
+            showMedia(this.dataset.mediaType, this.dataset.imageUrl);
         });
+    });
 
-        const initialActiveThumbnail = document.querySelector('.thumbnail.initial-active');
-        if (initialActiveThumbnail) {
-             setActiveThumbnail(initialActiveThumbnail);
-        } else if (thumbnails.length > 0) {
-            setActiveThumbnail(thumbnails[0]);
-        }
-    } else if (mainImage) {
-        mainImage.classList.add('border-2', 'border-blue-600');
+    // Set the initial state
+    const firstThumbnail = thumbnails.length > 0 ? thumbnails[0] : null;
+    if (firstThumbnail) {
+        firstThumbnail.click(); // Programmatically click the first thumbnail to set the initial state
+    } else if (imageContainer) {
+        // Fallback for when there are no thumbnails at all
+        imageContainer.classList.add('active');
     }
 });
 </script>
