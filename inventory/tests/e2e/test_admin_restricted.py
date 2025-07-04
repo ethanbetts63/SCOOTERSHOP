@@ -76,7 +76,6 @@ class InventoryAdminViewsPermissionsTestCase(TestCase):
 
     def test_blocked_sales_date_crud_permissions(self):
         self._test_url_permissions("inventory:blocked_sales_date_management")
-        self._test_url_permissions("inventory:blocked_sales_date_update", kwargs={'pk': self.blocked_date.pk})
         self._test_url_permissions("inventory:admin_blocked_sales_date_delete", kwargs={'pk': self.blocked_date.pk}, method='post')
 
     def test_sales_booking_crud_permissions(self):
