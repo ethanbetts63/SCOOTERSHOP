@@ -1,7 +1,6 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-import factory
 
 from ..test_helpers.model_factories import (
     UserFactory,
@@ -27,7 +26,6 @@ class InventoryAdminViewsPermissionsTestCase(TestCase):
         cls.regular_user = UserFactory(password="password123")
         cls.staff_user = StaffUserFactory()
 
-        # Ensure both conditions exist for the tests
         MotorcycleConditionFactory(name="new")
         MotorcycleConditionFactory(name="used")
 
@@ -87,8 +85,16 @@ class InventoryAdminViewsPermissionsTestCase(TestCase):
         self._test_url_permissions("inventory:sales_booking_create")
         self._test_url_permissions("inventory:sales_booking_update", kwargs={'pk': self.sales_booking.pk})
         self._test_url_permissions("inventory:sales_booking_details", kwargs={'pk': self.sales_booking.pk})
-        self._test_url_permissions("inventory:admin_sales_booking_action", kwargs={'pk': self.sales_booking.pk, 'action_type': 'confirm'}, method='post')
         self._test_url_permissions("inventory:admin_sales_booking_delete", kwargs={'pk': self.sales_booking.pk}, method='post')
+        url = reverse("inventory:admin_sales_booking_action", kwargs={'pk': self.sales_booking.pk, 'action_type': 'confirm'})
+        form_data = {
+            'action': 'confirm',
+            'sales_booking_id': self.sales_booking.pk
+        }
+        self.client.login(username=self.staff_user.username, password="password123")
+        response = self.client.post(url, data=form_data)
+        self.assertEqual(response.status_code, 302, f"The confirmation action did not redirect. It returned {response.status_code}")
+        self.assertRedirects(response, reverse("inventory:sales_bookings_management"))
 
     def test_sales_profile_crud_permissions(self):
         self._test_url_permissions("inventory:sales_profile_management")
@@ -107,12 +113,10 @@ class InventoryAdminViewsPermissionsTestCase(TestCase):
         self._test_url_permissions("inventory:featured_motorcycles")
         self._test_url_permissions("inventory:update_featured_motorcycle", kwargs={'pk': self.featured_motorcycle.pk})
         
-        # FIX: Changed "?condition=new" to "?category=new" to match the view's expectation
         add_url = reverse("inventory:add_featured_motorcycle") + "?category=new"
         self.client.login(username=self.staff_user.username, password="password123")
         response_staff_add = self.client.get(add_url)
         self.assertEqual(response_staff_add.status_code, 200)
         self.client.logout()
 
-        # Test delete view
         self._test_url_permissions("inventory:delete_featured_motorcycle", kwargs={'pk': self.featured_motorcycle.pk}, method='post')

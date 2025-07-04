@@ -6,11 +6,24 @@ from inventory.models import SalesBooking
 from inventory.forms import SalesBookingActionForm
 from inventory.utils.confirm_sales_booking import confirm_sales_booking
 from inventory.utils.reject_sales_booking import reject_sales_booking
+from django.shortcuts import redirect
+
 
 class SalesBookingActionView(AdminRequiredMixin, FormView):
     template_name = "inventory/admin_sales_booking_action.html"
     form_class = SalesBookingActionForm
     success_url = reverse_lazy("inventory:sales_bookings_management")
+
+    def post(self, request, *args, **kwargs):
+        print("--- VIEW: ENTERING post method ---")
+        form = self.get_form()
+        if form.is_valid():
+            print("--- VIEW: FORM IS VALID ---")
+            return self.form_valid(form)
+        else:
+            print("--- VIEW: FORM IS INVALID ---")
+            print(f"--- VIEW: Form errors: {form.errors.as_json()} ---")
+            return self.form_invalid(form)
 
     def get_initial(self):
         initial = super().get_initial()
@@ -64,36 +77,35 @@ class SalesBookingActionView(AdminRequiredMixin, FormView):
             SalesBooking.objects.get(pk=self.kwargs["pk"])
         except SalesBooking.DoesNotExist:
             messages.error(request, "The specified sales booking does not exist.")
-            return self.handle_no_permission()
+            return redirect("inventory:sales_bookings_management")
 
         action_type = self.kwargs.get("action_type")
         if action_type not in ["confirm", "reject"]:
             messages.error(request, "Invalid action type specified.")
-            return self.handle_no_permission()
+            return redirect("inventory:sales_bookings_management")
 
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
+        print("--- VIEW: ENTERING form_valid method ---")
         sales_booking_id = form.cleaned_data["sales_booking_id"]
         action = form.cleaned_data["action"]
-
-        form_data_for_utility = {
-            "message": form.cleaned_data.get("message"),
-            "send_notification": form.cleaned_data.get("send_notification", False),
-            "initiate_refund": form.cleaned_data.get("initiate_refund", False),
-            "refund_amount": form.cleaned_data.get("refund_amount"),
-        }
 
         if action == "confirm":
             result = confirm_sales_booking(
                 sales_booking_id=sales_booking_id,
-                requesting_user=self.request.user,
-                form_data=form_data_for_utility,
-                send_notification=form_data_for_utility["send_notification"],
+                message=form.cleaned_data.get("message"),
+                send_notification=form.cleaned_data.get("send_notification", False),
             )
             self.success_url = reverse_lazy("inventory:sales_bookings_management")
 
         elif action == "reject":
+            form_data_for_utility = {
+                "message": form.cleaned_data.get("message"),
+                "send_notification": form.cleaned_data.get("send_notification", False),
+                "initiate_refund": form.cleaned_data.get("initiate_refund", False),
+                "refund_amount": form.cleaned_data.get("refund_amount"),
+            }
             result = reject_sales_booking(
                 sales_booking_id=sales_booking_id,
                 requesting_user=self.request.user,
@@ -120,7 +132,6 @@ class SalesBookingActionView(AdminRequiredMixin, FormView):
             messages.success(self.request, result["message"])
         else:
             messages.error(self.request, result["message"])
-            if not ("refund_request_pk" in result and result["success"]):
-                return self.form_invalid(form)
+            return self.form_invalid(form)
 
         return super().form_valid(form)
