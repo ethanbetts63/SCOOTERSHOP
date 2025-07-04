@@ -142,13 +142,6 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "enable_featured_section",
-                    models.BooleanField(
-                        default=True,
-                        help_text="Enable a featured items or content section",
-                    ),
-                ),
-                (
                     "enable_privacy_policy_page",
                     models.BooleanField(
                         default=True, help_text="Enable the privacy policy page"
@@ -164,12 +157,6 @@ class Migration(migrations.Migration):
                     "enable_security_page",
                     models.BooleanField(
                         default=True, help_text="Enable the security page"
-                    ),
-                ),
-                (
-                    "enable_terms_page",
-                    models.BooleanField(
-                        default=True, help_text="Enable the terms and conditions page"
                     ),
                 ),
                 (

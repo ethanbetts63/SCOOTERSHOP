@@ -23,11 +23,9 @@ class SettingsVisibilityViewTest(TestCase):
             'enable_user_accounts': False,
             'enable_contact_page': False,
             'enable_map_display': False,
-            'enable_featured_section': False,
             'enable_privacy_policy_page': False,
             'enable_returns_page': False,
             'enable_security_page': False,
-            'enable_terms_page': False,
             'enable_google_places_reviews': False,
         }
         response = self.client.post(reverse('dashboard:settings_visibility'), data=form_data)

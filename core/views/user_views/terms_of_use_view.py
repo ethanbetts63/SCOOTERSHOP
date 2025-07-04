@@ -19,6 +19,4 @@ class TermsOfUseView(TemplateView):
 
     def dispatch(self, request, *args, **kwargs):
         site_settings = SiteSettings.get_settings()
-        if not site_settings.enable_terms_page and not request.user.is_staff:
-            return redirect("core:index")
         return super().dispatch(request, *args, **kwargs)

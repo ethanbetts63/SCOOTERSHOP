@@ -22,17 +22,3 @@ class TermsOfUseViewTest(TestCase):
         )
         self.mock_get_settings = patch_site_settings.start()
         self.addCleanup(patch_site_settings.stop)
-
-    def test_terms_of_use_view_displayed_when_enabled(self):
-        self.mock_site_settings.enable_terms_page = True
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, self.template_name)
-        self.assertIn("settings", response.context)
-        self.assertEqual(response.context["settings"], self.mock_site_settings)
-
-    def test_terms_of_use_view_accessible_for_staff_when_disabled(self):
-        self.mock_site_settings.enable_terms_page = False
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, self.template_name)

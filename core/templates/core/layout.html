@@ -192,18 +192,11 @@
                 <div class="footer-section">
                     <h3>Resources</h3>
                     <ul>
-                        {% if settings.enable_terms_page or user.is_staff %}
                             <li>
-                                <a href="{% url 'core:terms' %}"
-                                   {% if not settings.enable_terms_page and user.is_staff %}
-                                        style="color: #08E5D1;"
-                                   {% endif %}
-                                >
+                                <a href="{% url 'core:terms' %}">
                                     Terms of Use
                                 </a>
                             </li>
-                        {% endif %}
-
                         {% if settings.enable_privacy_policy_page or user.is_staff %}
                             <li>
                                 <a href="{% url 'core:privacy' %}"

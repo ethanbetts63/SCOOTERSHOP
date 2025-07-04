@@ -11,22 +11,21 @@ class SiteSettings(models.Model):
     enable_sales_new = models.BooleanField(default=True, help_text="Enable new motorcycle sales")
     enable_sales_used = models.BooleanField(default=True, help_text="Enable used motorcycle sales")
     enable_service_booking = models.BooleanField(default=True, help_text="Enable service booking functionality")
-    enable_user_accounts = models.BooleanField(default=True, help_text="Enable user account registration")
     enable_contact_page = models.BooleanField(default=True, help_text="Enable the contact us page")
     enable_map_display = models.BooleanField(default=True, help_text="Enable displaying a map (e.g., location map)")
-    enable_featured_section = models.BooleanField(default=True, help_text="Enable a featured items or content section")
     enable_privacy_policy_page = models.BooleanField(default=True, help_text="Enable the privacy policy page")
     enable_returns_page = models.BooleanField(default=True, help_text="Enable the returns page")
     enable_security_page = models.BooleanField(default=True, help_text="Enable the security page")
-    enable_terms_page = models.BooleanField(default=True, help_text="Enable the terms and conditions page")
     enable_google_places_reviews = models.BooleanField(default=True, help_text="Enable displaying Google Places reviews")
-
+    enable_user_accounts = models.BooleanField(default=True, help_text="Enable user account registration")
                                                      
     phone_number = models.CharField(max_length=20, blank=True, null=True, default='(08) 9433 4613')
     email_address = models.EmailField(blank=True, null=True, default='admin@scootershop.com.au')
     storefront_address = models.TextField(blank=True, null=True, default='Unit 2/95 Queen Victoria St, Fremantle WA, Australia')
     google_places_place_id = models.CharField(max_length=255, blank=True, null=True, help_text="Google Places Place ID for the storefront location", default="ChIJy_zrHmGhMioRisz6mis0SpQ")
-
+    youtube_link = models.CharField(max_length=255, blank=True, null=True)
+    instagram_link = models.CharField(max_length=255, blank=True, null=True)
+    facebook_link = models.CharField(max_length=255, blank=True, null=True) 
                     
     opening_hours_monday = models.CharField(max_length=100, blank=True, null=True, help_text="e.g. '9:00 AM - 5:00 PM' or 'Closed'", default='By Appointment Only')
     opening_hours_tuesday = models.CharField(max_length=100, blank=True, null=True, help_text="e.g. '9:00 AM - 5:00 PM' or 'Closed'", default='By Appointment Only')
