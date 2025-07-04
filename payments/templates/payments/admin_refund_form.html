@@ -3,19 +3,33 @@
 {% block extra_css %}
 {{ block.super }}
 <style>
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        border: 1px solid #ccc;
+        color: #000;
+        width: 100%;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+    }
+    .form-group .errorlist {
+        list-style-type: none;
+        padding: 0;
+        margin-top: 0.5rem;
+        color: #ef4444; /* red-500 */
+        font-size: 0.875rem;
+    }
+    .form-group .helptext {
+        font-size: 0.875rem;
+        color: #6b7280; /* gray-500 */
+        margin-top: 0.5rem;
+    }
     .required-indicator {
         color: red;
         margin-left: 5px;
     }
     .hidden {
         display: none;
-    }
-    .form-check-inline {
-        margin-right: 1.5rem;
-    }
-    .form-check-label {
-        font-weight: 600;
-        cursor: pointer;
     }
     .loader {
         border: 4px solid #f3f3f3;
@@ -42,22 +56,23 @@
 {% endblock %}
 
 {% block admin_main_content %}
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/service_type_styles.css' %}"> 
-
-    <div class="service-booking-container">
-        <div class="booking-progress">
-            <h2>{{ title }}</h2>
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-lg rounded-lg p-6 md:p-8 max-w-4xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">{{ title }}</h1>
+            <a href="{% url 'payments:admin_refund_management' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                Back to Refund Management
+            </a>
         </div>
         <p class="mb-4">Use this form to {% if refund_request %}edit{% else %}create{% endif %} a refund request.</p>
 
-        <form method="post" class="needs-validation" novalidate>
+        <form method="post" class="space-y-6" novalidate>
             {% csrf_token %}
 
             {% if form.non_field_errors %}
-                <div class="alert alert-danger" role="alert">
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
                     <strong>Form Errors:</strong>
-                    <ul>
+                    <ul class="list-disc pl-5 mt-2">
                         {% for error in form.non_field_errors %}
                             <li>{{ error }}</li>
                         {% endfor %}
@@ -65,94 +80,86 @@
                 </div>
             {% endif %}
 
-            <fieldset class="form-group border p-3 mb-4 rounded">
-                <legend class="w-auto px-2">Refund Request Details</legend>
+            <fieldset class="space-y-4">
+                <legend class="text-lg font-medium text-gray-900">Refund Request Details</legend>
 
-                <div class="form-group mb-4">
-                    <label class="form-label mb-2">Select Booking Type<span class="required-indicator">*</span></label>
-                    <div class="d-flex">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="booking_type_selector" id="serviceBookingRadio" value="service" {% if refund_request.service_booking %}checked{% endif %}>
-                            <label class="form-check-label" for="serviceBookingRadio">Service Booking</label>
+                <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Select Booking Type<span class="required-indicator">*</span></label>
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center">
+                            <input class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" type="radio" name="booking_type_selector" id="serviceBookingRadio" value="service" {% if refund_request.service_booking %}checked{% endif %}>
+                            <label for="serviceBookingRadio" class="ml-2 block text-sm text-gray-900">Service Booking</label>
                         </div>
-                        
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="booking_type_selector" id="salesBookingRadio" value="sales" {% if refund_request.sales_booking %}checked{% endif %}>
-                            <label class="form-check-label" for="salesBookingRadio">Sales Booking</label>
+                        <div class="flex items-center">
+                            <input class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" type="radio" name="booking_type_selector" id="salesBookingRadio" value="sales" {% if refund_request.sales_booking %}checked{% endif %}>
+                            <label for="salesBookingRadio" class="ml-2 block text-sm text-gray-900">Sales Booking</label>
                         </div>
                     </div>
                 </div>
 
-                <div id="serviceBookingSection" class="form-group mb-3 {% if not refund_request.service_booking %}hidden{% endif %}">
-                    <label for="{{ form.service_booking.id_for_label }}">
+                <div id="serviceBookingSection" class="form-group {% if not refund_request.service_booking %}hidden{% endif %}">
+                    <label for="{{ form.service_booking.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
                         {{ form.service_booking.label }}
                         {% if form.service_booking.field.required %}<span class="required-indicator">*</span>{% endif %}
                     </label>
                     {{ form.service_booking }}
-                    {% if form.service_booking.errors %}<div class="invalid-feedback d-block">{% for error in form.service_booking.errors %}{{ error }}{% endfor %}</div>{% endif %}
-                    <small class="form-text text-muted">{{ form.service_booking.help_text }}</small>
+                    {% if form.service_booking.errors %}<div class="text-red-500 text-xs mt-1">{% for error in form.service_booking.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    <p class="text-xs text-gray-500 mt-1">{{ form.service_booking.help_text }}</p>
                 </div>
                 
-                
-                <div id="salesBookingSection" class="form-group mb-3 {% if not refund_request.sales_booking %}hidden{% endif %}">
-                    <label for="{{ form.sales_booking.id_for_label }}">
+                <div id="salesBookingSection" class="form-group {% if not refund_request.sales_booking %}hidden{% endif %}">
+                    <label for="{{ form.sales_booking.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
                         {{ form.sales_booking.label }}
                         {% if form.sales_booking.field.required %}<span class="required-indicator">*</span>{% endif %}
                     </label>
                     {{ form.sales_booking }}
-                    {% if form.sales_booking.errors %}<div class="invalid-feedback d-block">{% for error in form.sales_booking.errors %}{{ error }}{% endfor %}</div>{% endif %}
-                    <small class="form-text text-muted">{{ form.sales_booking.help_text }}</small>
+                    {% if form.sales_booking.errors %}<div class="text-red-500 text-xs mt-1">{% for error in form.sales_booking.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    <p class="text-xs text-gray-500 mt-1">{{ form.sales_booking.help_text }}</p>
                 </div>
                 
-                
                 <div id="loader" class="loader hidden"></div>
-
-                
                 <div id="ajaxError" class="error-message hidden"></div>
+                <div id="serviceBookingDetails" class="booking-details-box hidden p-4 bg-gray-50 rounded-md"></div>
+                <div id="salesBookingDetails" class="booking-details-box hidden p-4 bg-gray-50 rounded-md"></div>
 
-                
-                <div id="serviceBookingDetails" class="booking-details-box hidden"></div>
-
-                
-                <div id="salesBookingDetails" class="booking-details-box hidden"></div>
-
-
-                <div class="form-group mb-3">
-                    <label for="{{ form.reason.id_for_label }}">
+                <div class="form-group">
+                    <label for="{{ form.reason.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
                         {{ form.reason.label }}
                         {% if form.reason.field.required %}<span class="required-indicator">*</span>{% endif %}
                     </label>
                     {{ form.reason }}
-                    {% if form.reason.errors %}<div class="invalid-feedback d-block">{% for error in form.reason.errors %}{{ error }}{% endfor %}</div>{% endif %}
-                    <small class="form-text text-muted">{{ form.reason.help_text }}</small>
+                    {% if form.reason.errors %}<div class="text-red-500 text-xs mt-1">{% for error in form.reason.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    <p class="text-xs text-gray-500 mt-1">{{ form.reason.help_text }}</p>
                 </div>
 
-                <div class="form-group mb-3">
-                    <label for="{{ form.staff_notes.id_for_label }}">
+                <div class="form-group">
+                    <label for="{{ form.staff_notes.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
                         {{ form.staff_notes.label }}
                         {% if form.staff_notes.field.required %}<span class="required-indicator">*</span>{% endif %}
                     </label>
                     {{ form.staff_notes }}
-                    {% if form.staff_notes.errors %}<div class="invalid-feedback d-block">{% for error in form.staff_notes.errors %}{{ error }}{% endfor %}</div>{% endif %}
-                    <small class="form-text text-muted">{{ form.staff_notes.help_text }}</small>
+                    {% if form.staff_notes.errors %}<div class="text-red-500 text-xs mt-1">{% for error in form.staff_notes.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    <p class="text-xs text-gray-500 mt-1">{{ form.staff_notes.help_text }}</p>
                 </div>
 
-                <div class="form-group mb-3">
-                    <label for="{{ form.amount_to_refund.id_for_label }}">
+                <div class="form-group">
+                    <label for="{{ form.amount_to_refund.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
                         {{ form.amount_to_refund.label }}
                         {% if form.amount_to_refund.field.required %}<span class="required-indicator">*</span>{% endif %}
                     </label>
                     {{ form.amount_to_refund }}
-                    {% if form.amount_to_refund.errors %}<div class="invalid-feedback d-block">{% for error in form.amount_to_refund.errors %}{{ error }}{% endfor %}</div>{% endif %}
-                    <small class="form-text text-muted">{{ form.amount_to_refund.help_text }}</small>
+                    {% if form.amount_to_refund.errors %}<div class="text-red-500 text-xs mt-1">{% for error in form.amount_to_refund.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    <p class="text-xs text-gray-500 mt-1">{{ form.amount_to_refund.help_text }}</p>
                 </div>
-
             </fieldset>
 
-            <button type="submit" class="btn btn-success">Save Refund Request</button>
-            <a href="{% url 'payments:admin_refund_management' %}" class="btn btn-secondary">Cancel</a>
+            <div class="flex items-center justify-start space-x-4 mt-6 border-t pt-6">
+                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Save Refund Request</button>
+                <a href="{% url 'payments:admin_refund_management' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
+            </div>
         </form>
     </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -215,7 +222,7 @@
 
                 if (container) {
                     detailsHtml = `
-                        <h5>${bookingType.charAt(0).toUpperCase() + bookingType.slice(1)} Booking Refund Details</h5>
+                        <h5 class="font-bold text-lg mb-2">${bookingType.charAt(0).toUpperCase() + bookingType.slice(1)} Booking Refund Details</h5>
                         <p><strong>Customer:</strong> ${data.customer_name}</p>
                         <p><strong>Booking Ref:</strong> ${data[bookingRefField]}</p>
                         <p><strong>Payment Amount:</strong> $${data.payment_amount}</p>
