@@ -12,7 +12,6 @@ def is_admin(user):
                     
 def login_view(request):
     settings = SiteSettings.get_settings()
-
     if request.method == "POST":
         username = request.POST["username"]
         password = request.POST["password"]
