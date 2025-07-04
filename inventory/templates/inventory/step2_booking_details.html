@@ -15,7 +15,7 @@
 
             {% if not temp_booking.deposit_required_for_flow %}
                 <div class="form-field">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">{{ form.request_viewing.label }}</label>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">{{ form.request_viewing.label }}<span class="text-red-500"> *</span></label>
                     <div class="mt-2 flex space-x-4">
                         {% for radio in form.request_viewing %}
                             <label class="inline-flex items-center">
@@ -38,7 +38,7 @@
 
             <div id="appointment-date-field" class="form-field" {% if not form.request_viewing.initial or form.request_viewing.initial.0 != 'yes' %}style="display: none;"{% endif %}>
                 <label for="{{ form.appointment_date.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">
-                    {{ form.appointment_date.label }}
+                    {{ form.appointment_date.label }}<span class="text-red-500"> *</span>
                 </label>
                 <input type="text"
                        id="{{ form.appointment_date.id_for_label }}"
@@ -59,7 +59,7 @@
 
             <div id="appointment-time-field" class="form-field" {% if not form.request_viewing.initial or form.request_viewing.initial.0 != 'yes' %}style="display: none;"{% endif %}>
                 <label for="{{ form.appointment_time.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">
-                    {{ form.appointment_time.label }}
+                    {{ form.appointment_time.label }}<span class="text-red-500"> *</span>
                 </label>
                 <select id="{{ form.appointment_time.id_for_label }}"
                         name="{{ form.appointment_time.html_name }}"
@@ -114,7 +114,7 @@
                     </div>
                     <div class="ml-3 text-sm">
                         <label for="{{ form.terms_accepted.id_for_label }}" class="font-medium text-gray-700">
-                            {{ form.terms_accepted.label }}
+                            {{ form.terms_accepted.label }}<span class="text-red-500"> *</span>
                         </label>
                         <p class="text-gray-500 text-xs italic mt-1">{{ form.terms_accepted.help_text }}</p>
                     </div>

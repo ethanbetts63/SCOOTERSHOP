@@ -27,7 +27,7 @@
                 {% for field in sales_profile_form %}
                     {% if field.name in "name email phone_number" %}
                         <div class="form-group">
-                            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+                            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}<span class="text-red-500"> *</span></label>
                             {{ field }}
                             {% if field.help_text %}
                                 <p class="mt-1 text-sm text-gray-500">{{ field.help_text }}</p>
@@ -46,7 +46,7 @@
                     {% for field in sales_profile_form %}
                         {% if field.name in "address_line_1 address_line_2 city state post_code country" %}
                             <div class="form-group">
-                                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+                                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}{% if field.field.required %}<span class="text-red-500"> *</span>{% endif %}</label>
                                 {{ field }}
                                 {% if field.help_text %}
                                     <p class="mt-1 text-sm text-gray-500">{{ field.help_text }}</p>
@@ -65,7 +65,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="form-group">
                         <label for="{{ sales_profile_form.drivers_license_number.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                            {{ sales_profile_form.drivers_license_number.label }}
+                            {{ sales_profile_form.drivers_license_number.label }}<span class="text-red-500"> *</span>
                         </label>
                         {{ sales_profile_form.drivers_license_number }}
                         {% for error in sales_profile_form.drivers_license_number.errors %}
@@ -74,7 +74,7 @@
                     </div>
                     <div class="form-group">
                         <label for="{{ sales_profile_form.drivers_license_expiry.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                            {{ sales_profile_form.drivers_license_expiry.label }}
+                            {{ sales_profile_form.drivers_license_expiry.label }}<span class="text-red-500"> *</span>
                         </label>
                         {{ sales_profile_form.drivers_license_expiry }}
                         {% for error in sales_profile_form.drivers_license_expiry.errors %}
@@ -83,7 +83,7 @@
                     </div>
                     <div class="form-group md:col-span-2">
                         <label for="{{ sales_profile_form.drivers_license_image.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                            {{ sales_profile_form.drivers_license_image.label }}
+                            {{ sales_profile_form.drivers_license_image.label }}<span class="text-red-500"> *</span>
                         </label>
                         {{ sales_profile_form.drivers_license_image }}
                         {% if sales_profile_form.drivers_license_image.help_text %}
@@ -95,7 +95,7 @@
                     </div>
                     <div class="form-group">
                         <label for="{{ sales_profile_form.date_of_birth.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                            {{ sales_profile_form.date_of_birth.label }}
+                            {{ sales_profile_form.date_of_birth.label }}<span class="text-red-500"> *</span>
                         </label>
                         {{ sales_profile_form.date_of_birth }}
                         {% if sales_profile_form.date_of_birth.help_text %}
