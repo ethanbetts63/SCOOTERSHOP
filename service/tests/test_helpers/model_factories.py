@@ -40,6 +40,7 @@ class UserFactory(factory.django.DjangoModelFactory):
     is_active = True
     is_staff = False
     is_superuser = False
+    password = factory.PostGenerationMethodCall('set_password', 'password123')
 
     phone_number = factory.Faker("phone_number")
     address_line_1 = factory.Faker("street_address")
@@ -48,6 +49,10 @@ class UserFactory(factory.django.DjangoModelFactory):
     state = factory.Faker("state_abbr")
     post_code = factory.Faker("postcode")
     country = factory.Faker("country_code")
+
+class StaffUserFactory(UserFactory):
+    is_staff = True
+    password = factory.PostGenerationMethodCall('set_password', 'password123')
 
 
 class ServiceBrandFactory(factory.django.DjangoModelFactory):

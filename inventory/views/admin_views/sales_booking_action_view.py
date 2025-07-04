@@ -6,8 +6,6 @@ from inventory.models import SalesBooking
 from inventory.forms import SalesBookingActionForm
 from inventory.utils.confirm_sales_booking import confirm_sales_booking
 from inventory.utils.reject_sales_booking import reject_sales_booking
-from django.contrib.auth.mixins import LoginRequiredMixin
-
 
 class SalesBookingActionView(AdminRequiredMixin, FormView):
     template_name = "inventory/admin_sales_booking_action.html"
