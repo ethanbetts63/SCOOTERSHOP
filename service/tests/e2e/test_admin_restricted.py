@@ -11,15 +11,39 @@ from service.tests.test_helpers.model_factories import (
     CustomerMotorcycleFactory,
 )
 
-class AdminViewsAccessTest(TestCase):
+class AdminViewsRedirectTestCase(TestCase):
+    """
+    Tests that all admin views redirect non-superuser users (including staff)
+    to the login page.
+    """
+
     def setUp(self):
+        """Set up the client, users, and necessary model instances for the tests."""
         self.client = Client()
-        self.regular_user = UserFactory(username="testuser", password="testpassword")
-        self.admin_user = UserFactory(
-            username="adminuser", password="testpassword", is_staff=True
+        self.login_url = reverse("users:login")
+
+        # Create a regular user (not staff, not superuser)
+        self.regular_user = UserFactory(
+            is_staff=False,
+            is_superuser=False,
+            password="password123"
         )
 
-        # Create instances for detail/delete views
+        # Create a staff user (staff, but not superuser)
+        self.staff_user = UserFactory(
+            is_staff=True,
+            is_superuser=False,
+            password="password123"
+        )
+        
+        # Create a superuser for sanity checks (should not be redirected)
+        self.admin_user = UserFactory(
+            is_staff=True,
+            is_superuser=True,
+            password="password123"
+        )
+
+        # Create instances of models needed for URLs with primary keys
         self.service_booking = ServiceBookingFactory()
         self.blocked_date = BlockedServiceDateFactory()
         self.service_brand = ServiceBrandFactory()
@@ -28,91 +52,240 @@ class AdminViewsAccessTest(TestCase):
         self.service_profile = ServiceProfileFactory()
         self.customer_motorcycle = CustomerMotorcycleFactory()
 
-        all_urls = [
-            ("service:service_booking_management", {}),
-            ("service:admin_service_booking_detail", {"pk": self.service_booking.pk}),
-            ("service:admin_create_service_booking", {}),
-            ("service:admin_edit_service_booking", {"pk": self.service_booking.pk}),
-            ("service:admin_delete_service_booking", {"pk": self.service_booking.pk}),
-            ("service:service_settings", {}),
-            ("service:blocked_service_dates_management", {}),
-            ("service:delete_blocked_service_date", {"pk": self.blocked_date.pk}),
-            ("service:service_brands_management", {}),
-            ("service:delete_service_brand", {"pk": self.service_brand.pk}),
-            ("service:service_types_management", {}),
-            ("service:add_service_type", {}),
-            ("service:edit_service_type", {"pk": self.service_type.pk}),
-            ("service:delete_service_type", {"pk": self.service_type.pk}),
-            ("service:service_faq_management", {}),
-            ("service:service_faq_create", {}),
-            ("service:service_faq_update", {"pk": self.service_faq.pk}),
-            ("service:service_faq_delete", {"pk": self.service_faq.pk}),
-            ("service:admin_service_profiles", {}),
-            ("service:admin_create_service_profile", {}),
-            ("service:admin_edit_service_profile", {"pk": self.service_profile.pk}),
-            ("service:admin_delete_service_profile", {"pk": self.service_profile.pk}),
-            ("service:admin_customer_motorcycle_management", {}),
-            ("service:admin_create_customer_motorcycle", {}),
-            (
-                "service:admin_edit_customer_motorcycle",
-                {"pk": self.customer_motorcycle.pk},
-            ),
-            (
-                "service:admin_delete_customer_motorcycle",
-                {"pk": self.customer_motorcycle.pk},
-            ),
-            ("service:admin_api_search_customer", {}),
-            (
-                "service:admin_api_get_customer_details",
-                {"profile_id": self.service_profile.pk},
-            ),
-            (
-                "service:admin_api_customer_motorcycles",
-                {"profile_id": self.service_profile.pk},
-            ),
-            (
-                "service:admin_api_get_motorcycle_details",
-                {"motorcycle_id": self.customer_motorcycle.pk},
-            ),
-            ("service:admin_api_service_date_availability", {}),
-            ("service:admin_api_dropoff_time_availability", {}),
-            ("service:admin_api_booking_precheck", {}),
-            (
-                "service:admin_api_get_service_booking_details",
-                {"pk": self.service_booking.pk},
-            ),
-            ("service:get_service_bookings_json", {}),
-            ("service:admin_api_search_bookings", {}),
-            ("service:admin_api_get_estimated_pickup_date", {}),
-        ]
+    def _assert_redirects_to_login(self, url, user):
+        """
+        Helper method to log in a user, make a request, and assert it redirects
+        to the login page.
+        """
+        self.client.login(username=user.username, password="password123")
+        response = self.client.get(url)
+        # Check for a 302 redirect status code
+        self.assertEqual(response.status_code, 302)
+        # Check that the redirect location is the login page
+        self.assertIn(self.login_url, response.url)
+        self.client.logout()
 
-        self.admin_cbv_urls = [u for u in all_urls if "_api_" not in u[0]]
-        self.admin_ajax_urls = [u for u in all_urls if "_api_" in u[0]]
+    # --- Tests for Regular User (Non-Staff) ---
 
-    def test_admin_cbv_views_for_regular_user(self):
-        self.client.login(username="testuser", password="testpassword")
-        for url_name, kwargs in self.admin_cbv_urls:
-            url = reverse(url_name, kwargs=kwargs)
-            response = self.client.get(url)
-            self.assertEqual(response.status_code, 302, f"URL {url_name} is not redirecting for regular user.")
+    def test_service_booking_management_redirects_regular_user(self):
+        url = reverse("service:service_booking_management")
+        self._assert_redirects_to_login(url, self.regular_user)
 
-    def test_admin_ajax_views_for_regular_user(self):
-        self.client.login(username="testuser", password="testpassword")
-        for url_name, kwargs in self.admin_ajax_urls:
-            url = reverse(url_name, kwargs=kwargs)
-            response = self.client.get(url)
-            self.assertIn(response.status_code, [401, 403], f"URL {url_name} is not returning 401/403 for regular user.")
+    def test_admin_service_booking_detail_redirects_regular_user(self):
+        url = reverse("service:admin_service_booking_detail", args=[self.service_booking.pk])
+        self._assert_redirects_to_login(url, self.regular_user)
 
-    def test_admin_cbv_views_for_admin_user(self):
-        self.client.login(username="adminuser", password="testpassword")
-        for url_name, kwargs in self.admin_cbv_urls:
-            url = reverse(url_name, kwargs=kwargs)
-            response = self.client.get(url)
-            self.assertNotEqual(response.status_code, 302, f"URL {url_name} is redirecting for admin user.")
+    def test_admin_create_service_booking_redirects_regular_user(self):
+        url = reverse("service:admin_create_service_booking")
+        self._assert_redirects_to_login(url, self.regular_user)
 
-    def test_admin_ajax_views_for_admin_user(self):
-        self.client.login(username="adminuser", password="testpassword")
-        for url_name, kwargs in self.admin_ajax_urls:
-            url = reverse(url_name, kwargs=kwargs)
-            response = self.client.get(url)
-            self.assertEqual(response.status_code, 200, f"URL {url_name} is not returning 200 for admin user.")
+    def test_admin_edit_service_booking_redirects_regular_user(self):
+        url = reverse("service:admin_edit_service_booking", args=[self.service_booking.pk])
+        self._assert_redirects_to_login(url, self.regular_user)
+
+    def test_admin_delete_service_booking_redirects_regular_user(self):
+        url = reverse("service:admin_delete_service_booking", args=[self.service_booking.pk])
+        self._assert_redirects_to_login(url, self.regular_user)
+
+    def test_service_settings_redirects_regular_user(self):
+        url = reverse("service:service_settings")
+        self._assert_redirects_to_login(url, self.regular_user)
+
+    def test_blocked_service_dates_management_redirects_regular_user(self):
+        url = reverse("service:blocked_service_dates_management")
+        self._assert_redirects_to_login(url, self.regular_user)
+
+    def test_delete_blocked_service_date_redirects_regular_user(self):
+        url = reverse("service:delete_blocked_service_date", args=[self.blocked_date.pk])
+        self._assert_redirects_to_login(url, self.regular_user)
+
+    def test_service_brands_management_redirects_regular_user(self):
+        url = reverse("service:service_brands_management")
+        self._assert_redirects_to_login(url, self.regular_user)
+
+    def test_delete_service_brand_redirects_regular_user(self):
+        url = reverse("service:delete_service_brand", args=[self.service_brand.pk])
+        self._assert_redirects_to_login(url, self.regular_user)
+
+    def test_service_types_management_redirects_regular_user(self):
+        url = reverse("service:service_types_management")
+        self._assert_redirects_to_login(url, self.regular_user)
+
+    def test_add_service_type_redirects_regular_user(self):
+        url = reverse("service:add_service_type")
+        self._assert_redirects_to_login(url, self.regular_user)
+
+    def test_edit_service_type_redirects_regular_user(self):
+        url = reverse("service:edit_service_type", args=[self.service_type.pk])
+        self._assert_redirects_to_login(url, self.regular_user)
+
+    def test_delete_service_type_redirects_regular_user(self):
+        url = reverse("service:delete_service_type", args=[self.service_type.pk])
+        self._assert_redirects_to_login(url, self.regular_user)
+
+    def test_service_faq_management_redirects_regular_user(self):
+        url = reverse("service:service_faq_management")
+        self._assert_redirects_to_login(url, self.regular_user)
+
+    def test_service_faq_create_redirects_regular_user(self):
+        url = reverse("service:service_faq_create")
+        self._assert_redirects_to_login(url, self.regular_user)
+
+    def test_service_faq_update_redirects_regular_user(self):
+        url = reverse("service:service_faq_update", args=[self.service_faq.pk])
+        self._assert_redirects_to_login(url, self.regular_user)
+
+    def test_service_faq_delete_redirects_regular_user(self):
+        url = reverse("service:service_faq_delete", args=[self.service_faq.pk])
+        self._assert_redirects_to_login(url, self.regular_user)
+
+    def test_admin_service_profiles_redirects_regular_user(self):
+        url = reverse("service:admin_service_profiles")
+        self._assert_redirects_to_login(url, self.regular_user)
+
+    def test_admin_create_service_profile_redirects_regular_user(self):
+        url = reverse("service:admin_create_service_profile")
+        self._assert_redirects_to_login(url, self.regular_user)
+
+    def test_admin_edit_service_profile_redirects_regular_user(self):
+        url = reverse("service:admin_edit_service_profile", args=[self.service_profile.pk])
+        self._assert_redirects_to_login(url, self.regular_user)
+
+    def test_admin_delete_service_profile_redirects_regular_user(self):
+        url = reverse("service:admin_delete_service_profile", args=[self.service_profile.pk])
+        self._assert_redirects_to_login(url, self.regular_user)
+
+    def test_admin_customer_motorcycle_management_redirects_regular_user(self):
+        url = reverse("service:admin_customer_motorcycle_management")
+        self._assert_redirects_to_login(url, self.regular_user)
+
+    def test_admin_create_customer_motorcycle_redirects_regular_user(self):
+        url = reverse("service:admin_create_customer_motorcycle")
+        self._assert_redirects_to_login(url, self.regular_user)
+
+    def test_admin_edit_customer_motorcycle_redirects_regular_user(self):
+        url = reverse("service:admin_edit_customer_motorcycle", args=[self.customer_motorcycle.pk])
+        self._assert_redirects_to_login(url, self.regular_user)
+
+    def test_admin_delete_customer_motorcycle_redirects_regular_user(self):
+        url = reverse("service:admin_delete_customer_motorcycle", args=[self.customer_motorcycle.pk])
+        self._assert_redirects_to_login(url, self.regular_user)
+
+
+    # --- Tests for Staff User (Non-Superuser) ---
+
+    def test_service_booking_management_redirects_staff_user(self):
+        url = reverse("service:service_booking_management")
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_admin_service_booking_detail_redirects_staff_user(self):
+        url = reverse("service:admin_service_booking_detail", args=[self.service_booking.pk])
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_admin_create_service_booking_redirects_staff_user(self):
+        url = reverse("service:admin_create_service_booking")
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_admin_edit_service_booking_redirects_staff_user(self):
+        url = reverse("service:admin_edit_service_booking", args=[self.service_booking.pk])
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_admin_delete_service_booking_redirects_staff_user(self):
+        url = reverse("service:admin_delete_service_booking", args=[self.service_booking.pk])
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_service_settings_redirects_staff_user(self):
+        url = reverse("service:service_settings")
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_blocked_service_dates_management_redirects_staff_user(self):
+        url = reverse("service:blocked_service_dates_management")
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_delete_blocked_service_date_redirects_staff_user(self):
+        url = reverse("service:delete_blocked_service_date", args=[self.blocked_date.pk])
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_service_brands_management_redirects_staff_user(self):
+        url = reverse("service:service_brands_management")
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_delete_service_brand_redirects_staff_user(self):
+        url = reverse("service:delete_service_brand", args=[self.service_brand.pk])
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_service_types_management_redirects_staff_user(self):
+        url = reverse("service:service_types_management")
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_add_service_type_redirects_staff_user(self):
+        url = reverse("service:add_service_type")
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_edit_service_type_redirects_staff_user(self):
+        url = reverse("service:edit_service_type", args=[self.service_type.pk])
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_delete_service_type_redirects_staff_user(self):
+        url = reverse("service:delete_service_type", args=[self.service_type.pk])
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_service_faq_management_redirects_staff_user(self):
+        url = reverse("service:service_faq_management")
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_service_faq_create_redirects_staff_user(self):
+        url = reverse("service:service_faq_create")
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_service_faq_update_redirects_staff_user(self):
+        url = reverse("service:service_faq_update", args=[self.service_faq.pk])
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_service_faq_delete_redirects_staff_user(self):
+        url = reverse("service:service_faq_delete", args=[self.service_faq.pk])
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_admin_service_profiles_redirects_staff_user(self):
+        url = reverse("service:admin_service_profiles")
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_admin_create_service_profile_redirects_staff_user(self):
+        url = reverse("service:admin_create_service_profile")
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_admin_edit_service_profile_redirects_staff_user(self):
+        url = reverse("service:admin_edit_service_profile", args=[self.service_profile.pk])
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_admin_delete_service_profile_redirects_staff_user(self):
+        url = reverse("service:admin_delete_service_profile", args=[self.service_profile.pk])
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_admin_customer_motorcycle_management_redirects_staff_user(self):
+        url = reverse("service:admin_customer_motorcycle_management")
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_admin_create_customer_motorcycle_redirects_staff_user(self):
+        url = reverse("service:admin_create_customer_motorcycle")
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_admin_edit_customer_motorcycle_redirects_staff_user(self):
+        url = reverse("service:admin_edit_customer_motorcycle", args=[self.customer_motorcycle.pk])
+        self._assert_redirects_to_login(url, self.staff_user)
+
+    def test_admin_delete_customer_motorcycle_redirects_staff_user(self):
+        url = reverse("service:admin_delete_customer_motorcycle", args=[self.customer_motorcycle.pk])
+        self._assert_redirects_to_login(url, self.staff_user)
+        
+    # --- Test for Superuser Access ---
+    
+    def test_superuser_can_access_admin_page(self):
+        """A quick check to ensure a superuser is NOT redirected."""
+        self.client.login(username=self.admin_user.username, password="password123")
+        url = reverse("service:service_booking_management")
+        response = self.client.get(url)
+        # Superuser should get a 200 OK, not a redirect
+        self.assertEqual(response.status_code, 200)
+        self.client.logout()
+
