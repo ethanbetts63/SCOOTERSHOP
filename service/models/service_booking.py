@@ -103,6 +103,15 @@ class ServiceBooking(models.Model):
     customer_notes = models.TextField(
         blank=True, null=True, help_text="Any additional notes from the customer."
     )
+    
+    service_terms_version = models.ForeignKey(
+        "service.ServiceTerms",
+        on_delete=models.PROTECT, 
+        related_name="service_bookings", 
+        null=True, 
+        blank=True,
+        help_text="The specific version of the Service T&Cs the user agreed to."
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

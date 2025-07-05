@@ -6,7 +6,7 @@ from service.mixins import AdminRequiredMixin  # Assuming a shared mixin
 from service.forms import AdminServiceTermsForm
 
 class ServiceTermsCreateView(AdminRequiredMixin, View):
-    template_name = "inventory/admin_service_terms_create.html"
+    template_name = "service/admin_service_terms_create.html"
     form_class = AdminServiceTermsForm
 
     def get(self, request, *args, **kwargs):
@@ -36,7 +36,7 @@ class ServiceTermsCreateView(AdminRequiredMixin, View):
                 request, f"New Service Terms Version {terms_version.version_number} created successfully and set as active."
             )
             # Assuming the URL name for the management view is 'service_terms_management'
-            return redirect(reverse("inventory:service_terms_management"))
+            return redirect(reverse("service:service_terms_management"))
         else:
             messages.error(request, "Please correct the errors below.")
             context = {

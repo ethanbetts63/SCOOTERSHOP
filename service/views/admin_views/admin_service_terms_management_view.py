@@ -5,7 +5,7 @@ from service.mixins import AdminRequiredMixin
 
 class ServiceTermsManagementView(AdminRequiredMixin, ListView):
     model = ServiceTerms
-    template_name = "inventory/admin_service_terms_management.html"
+    template_name = "service/admin_service_terms_management.html"
     context_object_name = "terms_versions"
     paginate_by = 10
 
