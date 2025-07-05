@@ -33,16 +33,6 @@ class InventorySettingsModelTest(TestCase):
             new_settings_attempt = InventorySettings()
             new_settings_attempt.save()
 
-    def test_enable_sales_system_field(self):
-
-        field = self.settings._meta.get_field("enable_sales_system")
-        self.assertIsInstance(self.settings.enable_sales_system, bool)
-        self.assertTrue(field.default)
-        self.assertEqual(
-            field.help_text,
-            "Globally enable or disable the sales booking and enquiry system.",
-        )
-
     def test_enable_depositless_enquiry_field(self):
 
         field = self.settings._meta.get_field("enable_depositless_enquiry")
@@ -100,16 +90,6 @@ class InventorySettingsModelTest(TestCase):
         ) as cm:
             settings_invalid.full_clean()
         self.assertIn("deposit_lifespan_days", cm.exception.message_dict)
-
-    def test_auto_refund_expired_deposits_field(self):
-
-        field = self.settings._meta.get_field("auto_refund_expired_deposits")
-        self.assertIsInstance(self.settings.auto_refund_expired_deposits, bool)
-        self.assertFalse(field.default)
-        self.assertEqual(
-            field.help_text,
-            "Automatically process a full refund for deposits if the reservation expires without confirmation/completion.",
-        )
 
     def test_sales_booking_open_days_field(self):
 
@@ -239,19 +219,6 @@ class InventorySettingsModelTest(TestCase):
         self.assertEqual(
             symbol_field.help_text,
             "The currency symbol for sales transactions (e.g., $).",
-        )
-
-    def test_terms_and_conditions_text_field(self):
-
-        field = self.settings._meta.get_field("terms_and_conditions_text")
-        self.assertIsInstance(
-            self.settings.terms_and_conditions_text, (str, type(None))
-        )
-        self.assertTrue(field.blank)
-        self.assertTrue(field.null)
-        self.assertEqual(
-            field.help_text,
-            "Custom terms and conditions text displayed during the sales/reservation process.",
         )
 
     def test_timestamps(self):

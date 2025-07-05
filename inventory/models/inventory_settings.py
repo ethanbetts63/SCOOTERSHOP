@@ -6,11 +6,6 @@ from datetime import time
 
 class InventorySettings(models.Model):
 
-    enable_sales_system = models.BooleanField(
-        default=True,
-        help_text="Globally enable or disable the sales booking and enquiry system.",
-    )
-
     enable_depositless_enquiry = models.BooleanField(
         default=True,
         help_text="Allow customers to submit an enquiry for a motorcycle without requiring a deposit.",
@@ -34,10 +29,6 @@ class InventorySettings(models.Model):
     deposit_lifespan_days = models.IntegerField(
         default=5,
         help_text="Number of days a deposit holds a motorcycle reservation. After this period, the reservation may expire.",
-    )
-    auto_refund_expired_deposits = models.BooleanField(
-        default=False,
-        help_text="Automatically process a full refund for deposits if the reservation expires without confirmation/completion.",
     )
 
     enable_sales_new_bikes = models.BooleanField(
@@ -98,12 +89,6 @@ class InventorySettings(models.Model):
         max_length=5,
         default="$",
         help_text="The currency symbol for sales transactions (e.g., $).",
-    )
-
-    terms_and_conditions_text = models.TextField(
-        blank=True,
-        null=True,
-        help_text="Custom terms and conditions text displayed during the sales/reservation process.",
     )
 
     created_at = models.DateTimeField(auto_now_add=True)

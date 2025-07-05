@@ -177,7 +177,6 @@ class InventorySettingsFactory(factory.django.DjangoModelFactory):
         model = InventorySettings
         django_get_or_create = ("pk",)
 
-    enable_sales_system = True
     enable_depositless_enquiry = True
     enable_reservation_by_deposit = True
     deposit_amount = factory.LazyFunction(
@@ -186,7 +185,6 @@ class InventorySettingsFactory(factory.django.DjangoModelFactory):
         )
     )
     deposit_lifespan_days = 5
-    auto_refund_expired_deposits = True
     enable_sales_new_bikes = True
     enable_sales_used_bikes = True
     require_drivers_license = False
@@ -199,7 +197,6 @@ class InventorySettingsFactory(factory.django.DjangoModelFactory):
     min_advance_booking_hours = 24
     currency_code = "AUD"
     currency_symbol = "$"
-    terms_and_conditions_text = factory.Faker("paragraph", nb_sentences=3)
     enable_viewing_for_enquiry = True
 
     @classmethod

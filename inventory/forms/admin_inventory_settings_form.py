@@ -8,12 +8,10 @@ class InventorySettingsForm(forms.ModelForm):
     class Meta:
         model = InventorySettings
         fields = [
-            "enable_sales_system",
             "enable_depositless_enquiry",
             "enable_reservation_by_deposit",
             "deposit_amount",
             "deposit_lifespan_days",
-            "auto_refund_expired_deposits",
             "enable_sales_new_bikes",
             "enable_sales_used_bikes",
             "require_drivers_license",
@@ -27,12 +25,8 @@ class InventorySettingsForm(forms.ModelForm):
             "send_sales_booking_to_mechanic_desk",
             "currency_code",
             "currency_symbol",
-            "terms_and_conditions_text",
         ]
         widgets = {
-            "enable_sales_system": forms.CheckboxInput(
-                attrs={"class": "form-check-input"}
-            ),
             "enable_depositless_enquiry": forms.CheckboxInput(
                 attrs={"class": "form-check-input"}
             ),
@@ -45,9 +39,7 @@ class InventorySettingsForm(forms.ModelForm):
             "deposit_lifespan_days": forms.NumberInput(
                 attrs={"class": "form-control", "min": "0"}
             ),
-            "auto_refund_expired_deposits": forms.CheckboxInput(
-                attrs={"class": "form-check-input"}
-            ),
+
             "enable_sales_new_bikes": forms.CheckboxInput(
                 attrs={"class": "form-check-input"}
             ),
@@ -97,9 +89,6 @@ class InventorySettingsForm(forms.ModelForm):
                     "maxlength": "5",
                     "placeholder": "e.g., $",
                 }
-            ),
-            "terms_and_conditions_text": forms.Textarea(
-                attrs={"class": "form-control", "rows": 5}
             ),
         }
 

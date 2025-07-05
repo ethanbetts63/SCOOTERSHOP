@@ -65,13 +65,6 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "enable_sales_system",
-                    models.BooleanField(
-                        default=True,
-                        help_text="Globally enable or disable the sales booking and enquiry system.",
-                    ),
-                ),
-                (
                     "enable_depositless_enquiry",
                     models.BooleanField(
                         default=True,
@@ -106,13 +99,6 @@ class Migration(migrations.Migration):
                     models.IntegerField(
                         default=5,
                         help_text="Number of days a deposit holds a motorcycle reservation. After this period, the reservation may expire.",
-                    ),
-                ),
-                (
-                    "auto_refund_expired_deposits",
-                    models.BooleanField(
-                        default=False,
-                        help_text="Automatically process a full refund for deposits if the reservation expires without confirmation/completion.",
                     ),
                 ),
                 (
@@ -200,14 +186,6 @@ class Migration(migrations.Migration):
                         default="$",
                         help_text="The currency symbol for sales transactions (e.g., $).",
                         max_length=5,
-                    ),
-                ),
-                (
-                    "terms_and_conditions_text",
-                    models.TextField(
-                        blank=True,
-                        help_text="Custom terms and conditions text displayed during the sales/reservation process.",
-                        null=True,
                     ),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
