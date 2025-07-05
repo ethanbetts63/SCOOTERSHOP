@@ -115,6 +115,12 @@
                                     <th>Phone Number:</th>
                                     <td>{{ enquiry.phone_number|default:"N/A" }}</td>
                                 </tr>
+                                {% if enquiry.motorcycle %}
+                                <tr>
+                                    <th>Motorcycle:</th>
+                                    <td>{{ enquiry.motorcycle }}</td>
+                                </tr>
+                                {% endif %}
                                 <tr>
                                     <th>Submitted At:</th>
                                     <td>{{ enquiry.created_at|date:"D, M d, Y H:i" }}</td>

@@ -20,6 +20,11 @@ class InventorySettings(models.Model):
         help_text="Allow customers to request a specific viewing/appointment date/time within the deposit-less enquiry flow.",
     )
 
+    enable_sales_enquiries = models.BooleanField(
+        default=True,
+        help_text="Allow customers to make a general enquiry about a motorcycle.",
+    )
+
     deposit_amount = models.DecimalField(
         max_digits=10,
         decimal_places=2,

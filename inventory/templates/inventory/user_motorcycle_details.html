@@ -165,7 +165,6 @@
                     <form action="{% url 'inventory:initiate_booking' pk=motorcycle.pk %}" method="post" class="w-full sm:w-auto">
                         {% csrf_token %}
                         <input type="hidden" name="deposit_required_for_flow" value="true">
-                        <input type="hidden" name="request_viewing" value="false"> 
                         <button type="submit"
                                 class="w-full px-8 py-4 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all transform hover:scale-105">
                             <i class="fas fa-calendar-check mr-3 text-xl"></i>
@@ -177,24 +176,20 @@
                     <form action="{% url 'inventory:initiate_booking' pk=motorcycle.pk %}" method="post" class="w-full sm:w-auto">
                         {% csrf_token %}
                         <input type="hidden" name="deposit_required_for_flow" value="false">
-                        {% if inventory_settings.enable_viewing_for_enquiry %}
-                            <input type="hidden" name="request_viewing" value="true"> 
-                            <button type="submit"
-                                    class="w-full px-8 py-4 border border-green-600 text-green-600 font-semibold rounded-full shadow-sm
-                                           hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all transform hover:scale-105">
-                                <i class="fas fa-question-circle mr-3 text-xl"></i>
-                                Submit Enquiry / Request Viewing
-                            </button>
-                        {% else %}
-                            <input type="hidden" name="request_viewing" value="false"> 
-                            <button type="submit"
-                                    class="w-full px-8 py-4 border border-gray-400 text-gray-700 font-semibold rounded-full shadow-sm
-                                           hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-all transform hover:scale-105">
-                                <i class="fas fa-question-circle mr-3 text-xl"></i>
-                                Submit Enquiry
-                            </button>
-                        {% endif %}
+                        <button type="submit"
+                                class="w-full px-8 py-4 border border-gray-400 text-gray-700 font-semibold rounded-full shadow-sm
+                                       hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-all transform hover:scale-105">
+                            <i class="fas fa-question-circle mr-3 text-xl"></i>
+                            Submit Enquiry
+                        </button>
                     </form>
+                {% endif %}
+                {% if inventory_settings.enable_sales_enquiries %}
+                <a href="{% url 'inventory:sales_enquiry' motorcycle_id=motorcycle.id %}"
+                   class="w-full sm:w-auto px-8 py-4 border border-gray-400 text-gray-700 font-semibold rounded-full shadow-sm hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-all transform hover:scale-105">
+                    <i class="fas fa-envelope mr-3 text-xl"></i>
+                    Enquire
+                </a>
                 {% endif %}
             {% else %}
                 <div class="text-center">

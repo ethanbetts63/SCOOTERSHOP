@@ -30,13 +30,17 @@
                     </tr>
                     <tr>
                         <td class="content">
-                            <p>Hi {% if sales_profile.name %}{{ sales_profile.name }}{% else %}there{% endif %},</p>
-                            <p>Thank you for your sales enquiry regarding the <strong>{{ booking.motorcycle.year }} {{ booking.motorcycle.brand }} {{ booking.motorcycle.model }}</strong>. We have received your message and a member of our team will get back to you as soon as possible.</p>
+                            <p>Hi {% if enquiry.name %}{{ enquiry.name }}{% else %}there{% endif %},</p>
+                            {% if enquiry.motorcycle %}
+                            <p>Thank you for your sales enquiry regarding the <strong>{{ enquiry.motorcycle.year }} {{ enquiry.motorcycle.brand }} {{ enquiry.motorcycle.model }}</strong>. We have received your message and a member of our team will get back to you as soon as possible.</p>
+                            {% else %}
+                            <p>Thank you for your enquiry. We have received your message and a member of our team will get back to you as soon as possible.</p>
+                            {% endif %}
                             
-                            {% if booking.customer_notes %}
+                            {% if enquiry.message %}
                             <div class="message-box">
                                 <p><strong>Your Message:</strong></p>
-                                <p><em>{{ booking.customer_notes }}</em></p>
+                                <p><em>{{ enquiry.message }}</em></p>
                             </div>
                             {% endif %}
                             

@@ -9,6 +9,7 @@ from .views.user_views import (
     step4_confirmation_view,
     user_motorcycle_details_view,
     SalesTermsView,
+    SalesEnquiryView
 )
 
 from .views.admin_views import (
@@ -78,6 +79,11 @@ urlpatterns = [
         "motorcycles/<int:pk>/",
         user_motorcycle_details_view.UserMotorcycleDetailsView.as_view(),
         name="motorcycle-detail",
+    ),
+    path(
+        "motorcycles/<int:motorcycle_id>/enquiry/",
+        SalesEnquiryView.as_view(),
+        name="sales_enquiry",
     ),
     path(
         "sales-terms/",

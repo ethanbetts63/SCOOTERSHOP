@@ -9,3 +9,4 @@ from .admin_sales_booking_action_form import *
 from .admin_sales_FAQ_form import *
 from .admin_featured_motorcycle_form import *
 from .admin_sales_terms_form import AdminSalesTermsForm
+from .sales_enquiry_form import *

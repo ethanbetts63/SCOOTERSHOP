@@ -85,11 +85,6 @@ class TempSalesBooking(models.Model):
         help_text="The ID of the Stripe Payment Intent associated with this booking, if applicable.",
     )
 
-    request_viewing = models.BooleanField(
-        default=False,
-        help_text="Indicates if the customer specifically requested a viewing/test drive in a deposit-less enquiry flow.",
-    )
-
     appointment_date = models.DateField(
         null=True,
         blank=True,

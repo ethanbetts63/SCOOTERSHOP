@@ -25,9 +25,6 @@ class InitiateBookingProcessView(View):
         )
         deposit_required_for_flow = deposit_required_for_flow_str.lower() == "true"
 
-        request_viewing_str = request.POST.get("request_viewing", "false")
-        request_viewing = request_viewing_str.lower() == "true"
-
         inventory_settings = InventorySettings.objects.first()
         if not inventory_settings:
             messages.error(
@@ -40,7 +37,6 @@ class InitiateBookingProcessView(View):
             temp_booking = TempSalesBooking(
                 motorcycle=motorcycle,
                 deposit_required_for_flow=deposit_required_for_flow,
-                request_viewing=request_viewing,
                 booking_status="pending_details",
             )
 
