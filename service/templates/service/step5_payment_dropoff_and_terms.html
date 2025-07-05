@@ -93,7 +93,11 @@
                            {{ form.service_terms_accepted }}
                         </div>
                         <div class="ml-3 text-sm">
-                            <label for="{{ form.service_terms_accepted.id_for_label }}" class="font-medium text-gray-700">{{ form.service_terms_accepted.label|safe }}{% if form.service_terms_accepted.field.required %}<span class="text-red-500">*</span>{% endif %}</label>
+                            <!-- UPDATED LABEL WITH NEW LINK -->
+                            <label for="{{ form.service_terms_accepted.id_for_label }}" class="font-medium text-gray-700">
+                                I have read and agree to the <a href="{% url 'service:service_booking_terms' %}" target="_blank" class="text-green-600 hover:underline">Service Booking Terms</a>
+                                {% if form.service_terms_accepted.field.required %}<span class="text-red-500">*</span>{% endif %}
+                            </label>
                         </div>
                     </div>
                     {% for error in form.service_terms_accepted.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}

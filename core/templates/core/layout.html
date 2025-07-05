@@ -213,11 +213,17 @@
                 <div class="footer-section">
                     <h3>Resources</h3>
                     <ul>
-                            <li>
-                                <a href="{% url 'core:terms' %}">
-                                    Terms of Use
-                                </a>
-                            </li>
+                        <li>
+                            <a href="{% url 'core:terms' %}">
+                                Terms of Use
+                            </a>
+                        </li>
+                        <!-- NEW LINK ADDED HERE -->
+                        <li>
+                            <a href="{% url 'service:service_booking_terms' %}">
+                                Service Booking Terms
+                            </a>
+                        </li>
                         {% if settings.enable_privacy_policy_page or user.is_staff %}
                             <li>
                                 <a href="{% url 'core:privacy' %}"

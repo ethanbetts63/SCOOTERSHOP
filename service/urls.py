@@ -67,7 +67,11 @@ urlpatterns = [
         user_views.Step7StatusCheckView.as_view(),
         name="service_booking_status_check",
     ),
-
+    path(
+        "booking-terms/",
+        user_views.ServiceTermsView.as_view(),
+        name="service_booking_terms",
+    ),
     # Admin - Booking Management
     path(
         "service-booking-management/",

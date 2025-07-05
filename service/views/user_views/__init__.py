@@ -1,3 +1,4 @@
+from .service_terms_view import ServiceTermsView
 from .service import *
 from .step1_service_details_view import *
 from .step2_motorcycle_selection_view import *
