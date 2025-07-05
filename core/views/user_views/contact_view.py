@@ -4,8 +4,7 @@ from django.conf import settings
 from dashboard.models import SiteSettings
 from django.contrib import messages
 from core.forms.enquiry_form import EnquiryForm
-from django.core.mail import send_mail
-
+from mailer.utils import send_templated_email
 
 class ContactView(TemplateView):
     template_name = "core/information/contact.html"
