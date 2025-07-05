@@ -38,7 +38,6 @@ class TestLoggedInOnlinePaymentFlow(TestCase):
         self.client = Client()
         SiteSettings.objects.create(enable_service_booking=True)
         self.service_settings = ServiceSettingsFactory(
-            enable_service_booking=True,
             enable_online_full_payment=True,
             booking_advance_notice=1,
             drop_off_start_time=datetime.time(9, 0),

@@ -36,7 +36,6 @@ class TestAnonymousDepositPaymentFactoryDataFlow(TestCase):
         SiteSettings.objects.create(enable_service_booking=True)
         self.deposit_amount = Decimal("75.00")
         self.service_settings = ServiceSettingsFactory(
-            enable_service_booking=True,
             enable_deposit=True,
             enable_online_deposit=True,
             deposit_calc_method="FLAT_FEE",

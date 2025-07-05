@@ -1,0 +1,62 @@
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Enquiry Has Been Received</title>
+    <style type="text/css">
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333333; background-color: #f4f4f4; margin: 0; padding: 0; }
+        .container { width: 100%; max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        .header { background-color: #007bff; color: #ffffff; padding: 20px; text-align: center; border-top-left-radius: 8px; border-top-right-radius: 8px; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .content { padding: 20px; }
+        .footer { text-align: center; padding: 20px; font-size: 12px; color: #777777; }
+        .button { display: inline-block; background-color: #28a745; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 20px; }
+        .message-box { border: 1px solid #dddddd; padding: 15px; margin-top: 15px; background-color: #f9f9f9; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+            <td style="padding: 20px 0; text-align: center;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="container">
+                    <tr>
+                        <td class="header">
+                            <h1>Enquiry Received</h1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="content">
+                            <p>Hi {% if enquiry.name %}{{ enquiry.name }}{% else %}there{% endif %},</p>
+                            <p>Thank you for your enquiry. We have received your message and will get back to you shortly.</p>
+                            
+                            {% if enquiry.message %}
+                            <div class="message-box">
+                                <p><strong>Your Message:</strong></p>
+                                <p><em>{{ enquiry.message }}</em></p>
+                            </div>
+                            {% endif %}
+                            
+                            <p>Best regards,</p>
+                            <p>The SCOOTER_SHOP Team</p>
+
+                            <p style="text-align: center;">
+                                <a href="{% url 'core:index' %}" class="button">Visit Our Website</a>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="footer">
+                            <p>&copy; {% now "Y" %} SCOOTER_SHOP. All rights reserved.</p>
+                            <p>This is an automated email, please do not reply.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
