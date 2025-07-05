@@ -45,16 +45,6 @@ class Step3CustomerMotorcycleView(View):
         context = {
             "form": form,
             "temp_booking": self.temp_booking,
-            "other_brand_policy_text": (
-                self.service_settings.other_brand_policy_text
-                if self.service_settings
-                else ""
-            ),
-            "enable_service_brands": (
-                self.service_settings.enable_service_brands
-                if self.service_settings
-                else False
-            ),
             "step": 3,
             "total_steps": 7,
         }
@@ -87,16 +77,7 @@ class Step3CustomerMotorcycleView(View):
             context = {
                 "form": form,
                 "temp_booking": self.temp_booking,
-                "other_brand_policy_text": (
-                    self.service_settings.other_brand_policy_text
-                    if self.service_settings
-                    else ""
-                ),
-                "enable_service_brands": (
-                    self.service_settings.enable_service_brands
-                    if self.service_settings
-                    else False
-                ),
+
                 "step": 3,
                 "total_steps": 7,
             }

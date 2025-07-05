@@ -353,7 +353,6 @@ class ServiceSettingsFactory(factory.django.DjangoModelFactory):
         model = ServiceSettings
         django_get_or_create = ("pk",)
 
-    enable_service_booking = True
     booking_advance_notice = 1
     max_visible_slots_per_day = 6
     booking_open_days = "Mon,Tue,Wed,Thu,Fri"
@@ -366,8 +365,6 @@ class ServiceSettingsFactory(factory.django.DjangoModelFactory):
     allow_after_hours_dropoff = False
     after_hours_dropoff_disclaimer = factory.Faker("paragraph", nb_sentences=3)
 
-    enable_service_brands = True
-    other_brand_policy_text = factory.Faker("paragraph")
     enable_deposit = False
     deposit_calc_method = "FLAT_FEE"
     deposit_flat_fee_amount = Decimal("0.00")

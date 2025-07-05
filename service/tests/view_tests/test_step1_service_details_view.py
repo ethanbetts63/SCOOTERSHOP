@@ -64,7 +64,6 @@ class Step1ServiceDetailsViewTest(TestCase):
         CustomerMotorcycle.objects.all().delete()
 
         self.service_settings = ServiceSettingsFactory(
-            enable_service_booking=True,
             booking_advance_notice=1,
             booking_open_days="Mon,Tue,Wed,Thu,Fri,Sat,Sun",
         )
@@ -97,7 +96,6 @@ class Step1ServiceDetailsViewTest(TestCase):
 
     @patch("service.views.user_views.step1_service_details_view.ServiceDetailsForm")
     def test_service_booking_disabled(self, MockServiceDetailsForm):
-        self.service_settings.enable_service_booking = False
         self.service_settings.save()
 
         mock_form_instance = MockServiceDetailsForm.return_value

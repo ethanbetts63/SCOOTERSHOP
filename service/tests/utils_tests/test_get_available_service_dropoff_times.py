@@ -55,7 +55,6 @@ class GetAvailableDropoffTimesTest(TestCase):
         ServiceBooking.objects.all().delete()
 
         self.service_settings = ServiceSettingsFactory(
-            enable_service_booking=True,
             drop_off_start_time=datetime.time(9, 0),
             drop_off_end_time=datetime.time(17, 0),
             drop_off_spacing_mins=30,

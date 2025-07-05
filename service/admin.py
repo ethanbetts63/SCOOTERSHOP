@@ -115,13 +115,11 @@ class ServiceBrandAdmin(admin.ModelAdmin):
 @admin.register(ServiceSettings)
 class ServiceSettingsAdmin(admin.ModelAdmin):
     list_display = (
-        "enable_service_booking",
         "enable_deposit",
         "currency_code",
     )
 
     list_filter = (
-        "enable_service_booking",
         "enable_deposit",
     )
 

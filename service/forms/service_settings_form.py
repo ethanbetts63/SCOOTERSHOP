@@ -8,7 +8,6 @@ class ServiceBookingSettingsForm(forms.ModelForm):
     class Meta:
         model = ServiceSettings
         fields = [
-            "enable_service_booking",
             "booking_advance_notice",
             "max_visible_slots_per_day",
             "booking_open_days",
@@ -19,8 +18,6 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             "latest_same_day_dropoff_time",
             "allow_after_hours_dropoff",
             "after_hours_dropoff_disclaimer",
-            "enable_service_brands",
-            "other_brand_policy_text",
             "enable_deposit",
             "deposit_calc_method",
             "deposit_flat_fee_amount",
@@ -32,9 +29,6 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             "currency_symbol",
         ]
         widgets = {
-            "enable_service_booking": forms.CheckboxInput(
-                attrs={"class": "form-check-input"}
-            ),
             "booking_advance_notice": forms.NumberInput(
                 attrs={"class": "form-control", "min": "0"}
             ),
@@ -63,12 +57,6 @@ class ServiceBookingSettingsForm(forms.ModelForm):
                 attrs={"class": "form-check-input"}
             ),
             "after_hours_dropoff_disclaimer": forms.Textarea(
-                attrs={"class": "form-control", "rows": 3}
-            ),
-            "enable_service_brands": forms.CheckboxInput(
-                attrs={"class": "form-check-input"}
-            ),
-            "other_brand_policy_text": forms.Textarea(
                 attrs={"class": "form-control", "rows": 3}
             ),
             "enable_deposit": forms.CheckboxInput(attrs={"class": "form-check-input"}),

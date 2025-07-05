@@ -341,20 +341,7 @@ class Migration(migrations.Migration):
                         help_text="Important disclaimer text displayed to users when after-hours drop-off is selected, outlining risks/conditions.",
                     ),
                 ),
-                (
-                    "enable_service_brands",
-                    models.BooleanField(
-                        default=True,
-                        help_text="Enable filtering or special handling by motorcycle brand.",
-                    ),
-                ),
-                (
-                    "other_brand_policy_text",
-                    models.TextField(
-                        blank=True,
-                        help_text="Policy text displayed to users when booking for an 'Other' brand motorcycle (e.g., regarding review, potential rejection, and refund policy).",
-                    ),
-                ),
+
                 (
                     "enable_deposit",
                     models.BooleanField(

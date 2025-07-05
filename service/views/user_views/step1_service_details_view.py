@@ -39,10 +39,6 @@ class Step1ServiceDetailsView(View):
 
             now_in_perth = timezone.localtime(timezone.now())
 
-            if service_settings and not service_settings.enable_service_booking:
-                messages.error(request, "Service bookings are currently disabled.")
-                errors_exist = True
-
             if service_settings and service_settings.booking_advance_notice is not None:
                 min_allowed_service_date = (
                     now_in_perth

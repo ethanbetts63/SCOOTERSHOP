@@ -6,10 +6,6 @@ from datetime import time
 
 
 class ServiceSettings(models.Model):
-
-    enable_service_booking = models.BooleanField(
-        default=True, help_text="Globally enable or disable the service booking system."
-    )
     booking_advance_notice = models.IntegerField(
         default=1,
         help_text="Minimum number of days notice required for a booking (e.g., 1 for next day).",
@@ -56,15 +52,6 @@ class ServiceSettings(models.Model):
     after_hours_dropoff_disclaimer = models.TextField(
         blank=True,
         help_text="Important disclaimer text displayed to users when after-hours drop-off is selected, outlining risks/conditions.",
-    )
-
-    enable_service_brands = models.BooleanField(
-        default=True,
-        help_text="Enable filtering or special handling by motorcycle brand.",
-    )
-    other_brand_policy_text = models.TextField(
-        blank=True,
-        help_text="Policy text displayed to users when booking for an 'Other' brand motorcycle (e.g., regarding review, potential rejection, and refund policy).",
     )
 
     enable_deposit = models.BooleanField(
