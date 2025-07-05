@@ -20,6 +20,7 @@ from ..test_helpers.model_factories import (
     ServiceSettingsFactory,
     ServiceTypeFactory,
     ServiceBrandFactory,
+    ServiceTermsFactory,
 )
 
 
@@ -49,6 +50,7 @@ class TestAnonymousFullOnlinePaymentFlow(TestCase):
         )
         ServiceBrandFactory(name="Yamaha")
         stripe.api_key = settings.STRIPE_SECRET_KEY
+        ServiceTermsFactory(is_active=True)
 
     def test_anonymous_user_full_online_payment_flow(self):
         service_page_url = reverse("service:service")

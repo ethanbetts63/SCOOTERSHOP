@@ -27,6 +27,7 @@ from ..test_helpers.model_factories import (
     CustomerMotorcycleFactory,
     ServiceTypeFactory,
     ServiceSettingsFactory,
+    ServiceTermsFactory,
 )
 
 User = get_user_model()
@@ -55,6 +56,7 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
             drop_off_end_time=time(17, 0),
         )
         cls.service_type = ServiceTypeFactory(base_price=Decimal("250.00"))
+        cls.service_terms = ServiceTermsFactory(is_active=True)
         cls.base_url = reverse("service:service_book_step5")
 
     def setUp(self):

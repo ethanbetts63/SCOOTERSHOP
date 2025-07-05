@@ -23,6 +23,7 @@ from ..test_helpers.model_factories import (
     UserFactory,
     ServiceProfileFactory,
     CustomerMotorcycleFactory,
+    ServiceTermsFactory,
 )
 
 
@@ -63,6 +64,7 @@ class TestLoggedInOnlinePaymentFlow(TestCase):
         ServiceBrandFactory(name="Ducati")
         self.client.force_login(self.user)
         stripe.api_key = settings.STRIPE_SECRET_KEY
+        ServiceTermsFactory(is_active=True)
 
     def test_logged_in_user_online_payment_flow(self):
         service_page_url = reverse("service:service")

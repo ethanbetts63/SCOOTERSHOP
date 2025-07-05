@@ -20,6 +20,7 @@ from ..test_helpers.model_factories import (
     ServiceSettingsFactory,
     ServiceTypeFactory,
     ServiceBrandFactory,
+    ServiceTermsFactory,
 )
 
 
@@ -51,6 +52,7 @@ class TestAnonymousDepositPaymentFactoryDataFlow(TestCase):
         )
         ServiceBrandFactory(name="Triumph")
         stripe.api_key = settings.STRIPE_SECRET_KEY
+        ServiceTermsFactory(is_active=True)
 
     def test_anonymous_user_deposit_payment_flow_with_factory_data(self):
         service_page_url = reverse("service:service")

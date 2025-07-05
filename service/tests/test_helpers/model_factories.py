@@ -17,6 +17,7 @@ from service.models import (
     TempServiceBooking,
     ServiceBrand,
     ServiceFAQ,
+    ServiceTerms,
 )
 
 from payments.models import Payment, RefundPolicySettings
@@ -351,3 +352,12 @@ class ServiceFAQFactory(factory.django.DjangoModelFactory):
                 setattr(obj, k, v)
             obj.save()
         return obj
+
+
+class ServiceTermsFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ServiceTerms
+
+    content = factory.Faker("paragraph")
+    version_number = factory.Sequence(lambda n: n + 1)
+    is_active = True

@@ -14,6 +14,7 @@ from ..test_helpers.model_factories import (
     ServiceSettingsFactory,
     ServiceTypeFactory,
     ServiceBrandFactory,
+    ServiceTermsFactory,
 )
 
 
@@ -38,6 +39,7 @@ class TestAnonymousInStorePaymentFlow(TestCase):
             name="Anonymous Basic Service", base_price=Decimal("150.00"), is_active=True
         )
         ServiceBrandFactory(name="Honda")
+        ServiceTermsFactory(is_active=True)
 
     def test_anonymous_user_in_store_payment_flow(self):
         service_page_url = reverse("service:service")

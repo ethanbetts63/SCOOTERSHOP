@@ -17,6 +17,7 @@ from ..test_helpers.model_factories import (
     UserFactory,
     ServiceProfileFactory,
     CustomerMotorcycleFactory,
+    ServiceTermsFactory,
 )
 
 
@@ -54,6 +55,7 @@ class TestLoggedInUserInStorePaymentFlow(TestCase):
         )
         ServiceBrandFactory(name="Kawasaki")
         self.client.force_login(self.user)
+        ServiceTermsFactory(is_active=True)
 
     def test_logged_in_user_with_existing_bike_flow(self):
         step1_url = reverse("service:service_book_step1")
