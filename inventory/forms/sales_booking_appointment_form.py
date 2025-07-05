@@ -3,15 +3,6 @@ from datetime import date, timedelta
 
 
 class BookingAppointmentForm(forms.Form):
-
-    request_viewing = forms.ChoiceField(
-        choices=[("yes", "Yes"), ("no", "No")],
-        widget=forms.RadioSelect(),
-        initial="no",
-        required=True,
-        label="I would like to book a viewing/test drive",
-        help_text="Select 'Yes' to request a specific date and time for a viewing or test drive, or 'No' to submit a general enquiry.",
-    )
     appointment_date = forms.DateField(
         required=False,
         widget=forms.DateInput(attrs={"type": "date"}),
@@ -43,19 +34,12 @@ class BookingAppointmentForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         if self.deposit_required_for_flow:
-            self.fields["request_viewing"].widget = forms.HiddenInput()
-            self.fields["request_viewing"].initial = "yes"
-            self.fields["request_viewing"].required = False
             self.fields["appointment_date"].required = True
             self.fields["appointment_time"].required = True
         elif (
             self.inventory_settings
             and not self.inventory_settings.enable_viewing_for_enquiry
         ):
-
-            self.fields["request_viewing"].widget = forms.HiddenInput()
-            self.fields["request_viewing"].initial = "no"
-            self.fields["request_viewing"].required = False
             self.fields["appointment_date"].widget = forms.HiddenInput()
             self.fields["appointment_time"].widget = forms.HiddenInput()
             self.fields["appointment_date"].required = False
@@ -77,18 +61,13 @@ class BookingAppointmentForm(forms.Form):
                 "%Y-%m-%d"
             )
 
-    def clean_request_viewing(self):
-
-        return self.cleaned_data["request_viewing"] == "yes"
-
     def clean(self):
         cleaned_data = super().clean()
-        request_viewing = cleaned_data.get("request_viewing")
         appointment_date = cleaned_data.get("appointment_date")
         appointment_time = cleaned_data.get("appointment_time")
         terms_accepted = cleaned_data.get("terms_accepted")
 
-        is_appointment_required = self.deposit_required_for_flow or request_viewing
+        is_appointment_required = self.deposit_required_for_flow 
 
         if is_appointment_required:
             if not appointment_date:

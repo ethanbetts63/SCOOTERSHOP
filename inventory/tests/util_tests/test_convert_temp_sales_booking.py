@@ -48,7 +48,6 @@ class ConvertTempSalesBookingUtilTest(TestCase):
             sales_profile=self.sales_profile,
             amount_paid=Decimal("0.00"),
             payment_status="unpaid",
-            request_viewing=True,
             appointment_date=datetime.date(2025, 7, 1),
             appointment_time=datetime.time(10, 0),
             customer_notes="Initial enquiry",
@@ -72,7 +71,6 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         self.assertEqual(sales_booking.payment_status, "unpaid")
         self.assertEqual(sales_booking.currency, self.inventory_settings.currency_code)
         self.assertEqual(sales_booking.booking_status, "pending_confirmation")
-        self.assertEqual(sales_booking.request_viewing, True)
         self.assertEqual(sales_booking.appointment_date, datetime.date(2025, 7, 1))
         self.assertEqual(sales_booking.appointment_time, datetime.time(10, 0))
         self.assertEqual(sales_booking.customer_notes, "Initial enquiry")
@@ -184,26 +182,6 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         self.assertEqual(sales_booking.currency, "AUD")
 
         self.inventory_settings = InventorySettingsFactory(pk=1)
-
-    def test_conversion_request_viewing_false(self):
-
-        temp_booking = TempSalesBookingFactory(
-            motorcycle=self.motorcycle,
-            sales_profile=self.sales_profile,
-            request_viewing=False,
-            appointment_date=None,
-            appointment_time=None,
-        )
-
-        sales_booking = convert_temp_sales_booking(
-            temp_booking=temp_booking,
-            booking_payment_status="unpaid",
-            amount_paid_on_booking=Decimal("0.00"),
-        )
-
-        self.assertFalse(sales_booking.request_viewing)
-        self.assertIsNone(sales_booking.appointment_date)
-        self.assertIsNone(sales_booking.appointment_time)
 
     def test_conversion_handles_exception(self):
 

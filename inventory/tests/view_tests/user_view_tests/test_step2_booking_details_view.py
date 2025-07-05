@@ -35,7 +35,6 @@ class Step2BookingDetailsViewTest(TestCase):
             "sales_profile": self.sales_profile,
             "booking_status": "pending_details",
             "deposit_required_for_flow": self.inventory_settings.enable_reservation_by_deposit,
-            "request_viewing": False,
             "appointment_date": None,
             "appointment_time": None,
             "customer_notes": "",
@@ -93,7 +92,6 @@ class Step2BookingDetailsViewTest(TestCase):
         test_time = datetime.time(10, 30)
         temp_booking = self._create_temp_booking_in_session(
             self.client,
-            request_viewing=True,
             appointment_date=test_date,
             appointment_time=test_time,
             customer_notes="Test notes for viewing.",
@@ -113,7 +111,6 @@ class Step2BookingDetailsViewTest(TestCase):
         form = response.context["form"]
         self.assertTrue(isinstance(form, BookingAppointmentForm))
 
-        self.assertEqual(form["request_viewing"].value(), "yes")
         self.assertEqual(form["appointment_date"].value(), test_date)
         self.assertEqual(form["appointment_time"].value(), test_time)
         self.assertEqual(form["customer_notes"].value(), "Test notes for viewing.")
@@ -189,7 +186,6 @@ class Step2BookingDetailsViewTest(TestCase):
         post_date = datetime.date.today() + datetime.timedelta(days=10)
         post_time = datetime.time(14, 0)
         post_data = {
-            "request_viewing": "yes",
             "appointment_date": post_date.strftime("%Y-%m-%d"),
             "appointment_time": post_time.strftime("%H:%M"),
             "customer_notes": "Looking forward to the viewing.",
@@ -206,7 +202,6 @@ class Step2BookingDetailsViewTest(TestCase):
         mock_convert_temp_sales_booking.assert_not_called()
 
         temp_booking.refresh_from_db()
-        self.assertTrue(temp_booking.request_viewing)
         self.assertEqual(temp_booking.appointment_date, post_date)
         self.assertEqual(temp_booking.appointment_time, post_time)
         self.assertEqual(temp_booking.customer_notes, "Looking forward to the viewing.")
@@ -218,7 +213,6 @@ class Step2BookingDetailsViewTest(TestCase):
         temp_booking = self._create_temp_booking_in_session(self.client)
 
         post_data = {
-            "request_viewing": "yes",
             "appointment_date": (
                 datetime.date.today() + datetime.timedelta(days=1)
             ).strftime("%Y-%m-%d"),
@@ -239,9 +233,6 @@ class Step2BookingDetailsViewTest(TestCase):
         temp_booking_before_post = temp_booking
         temp_booking.refresh_from_db()
         self.assertEqual(
-            temp_booking.request_viewing, temp_booking_before_post.request_viewing
-        )
-        self.assertEqual(
             temp_booking.appointment_date, temp_booking_before_post.appointment_date
         )
         self.assertEqual(
@@ -254,7 +245,6 @@ class Step2BookingDetailsViewTest(TestCase):
         temp_booking = self._create_temp_booking_in_session(self.client)
 
         post_data = {
-            "request_viewing": "yes",
             "appointment_date": "2023/12/30",
             "appointment_time": "25:00",
             "customer_notes": "Bad date/time test.",
@@ -274,7 +264,6 @@ class Step2BookingDetailsViewTest(TestCase):
         temp_booking = self._create_temp_booking_in_session(self.client)
 
         post_data = {
-            "request_viewing": "yes",
             "appointment_date": "",
             "appointment_time": "",
             "customer_notes": "Viewing requested but no details.",

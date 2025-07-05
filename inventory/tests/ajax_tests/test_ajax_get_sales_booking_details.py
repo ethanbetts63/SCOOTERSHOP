@@ -61,7 +61,6 @@ class AjaxGetSalesBookingDetailsTest(TestCase):
             motorcycle=motorcycle,
             payment=payment,
             customer_notes="Test notes",
-            request_viewing=True,
             appointment_date=datetime.date(2025, 1, 15),
             appointment_time=datetime.time(10, 0),
         )
@@ -88,7 +87,6 @@ class AjaxGetSalesBookingDetailsTest(TestCase):
         )
         self.assertEqual(json_response["payment_amount"], 200.00)
         self.assertEqual(json_response["customer_notes"], "Test notes")
-        self.assertTrue(json_response["request_viewing"])
         self.assertEqual(json_response["appointment_date"], "2025-01-15")
         self.assertEqual(json_response["appointment_time"], "10:00")
         self.assertEqual(json_response["entitled_refund_amount"], 100.00)
@@ -199,7 +197,6 @@ class AjaxGetSalesBookingDetailsTest(TestCase):
             appointment_date=None,
             appointment_time=None,
             customer_notes=None,
-            request_viewing=False,
         )
 
         self.client.force_login(self.admin_user)
@@ -210,7 +207,6 @@ class AjaxGetSalesBookingDetailsTest(TestCase):
         self.assertEqual(json_response["appointment_date"], "N/A")
         self.assertEqual(json_response["appointment_time"], "N/A")
         self.assertEqual(json_response["customer_notes"], "")
-        self.assertFalse(json_response["request_viewing"])
 
     @mock.patch(
         "inventory.ajax.ajax_get_sales_booking_details.calculate_sales_refund_amount"

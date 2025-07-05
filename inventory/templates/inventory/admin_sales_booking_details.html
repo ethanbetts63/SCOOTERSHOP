@@ -84,10 +84,6 @@
                 <div class="detail-value">${{ sales_booking.amount_paid|floatformat:2 }} {{ sales_booking.currency }}</div>
             </div>
             <div class="detail-item">
-                <div class="detail-label">Requested Viewing:</div>
-                <div class="detail-value">{{ sales_booking.request_viewing|yesno:"Yes,No" }}</div>
-            </div>
-            <div class="detail-item">
                 <div class="detail-label">Appointment Date:</div>
                 <div class="detail-value">
                     {% if sales_booking.appointment_date %}

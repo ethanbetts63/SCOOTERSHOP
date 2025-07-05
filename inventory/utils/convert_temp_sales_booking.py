@@ -33,7 +33,6 @@ def convert_temp_sales_booking(
                 booking_status="pending_confirmation",
                 customer_notes=temp_booking.customer_notes,
                 payment=payment_obj,
-                request_viewing=temp_booking.request_viewing,
                 sales_terms_version=temp_booking.sales_terms_version,
             )
 

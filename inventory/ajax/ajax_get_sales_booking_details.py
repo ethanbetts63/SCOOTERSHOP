@@ -102,7 +102,6 @@ def get_sales_booking_details_json(request, pk):
             "customer_notes": (
                 sales_booking.customer_notes if sales_booking.customer_notes else ""
             ),
-            "request_viewing": sales_booking.request_viewing,
             "appointment_date": (
                 sales_booking.appointment_date.strftime("%Y-%m-%d")
                 if sales_booking.appointment_date

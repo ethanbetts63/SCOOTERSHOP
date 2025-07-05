@@ -22,7 +22,6 @@ class AdminSalesBookingForm(forms.ModelForm):
             "payment_status",
             "amount_paid",
             "currency",
-            "request_viewing",
             "appointment_date",
             "appointment_time",
             "customer_notes",
@@ -34,9 +33,6 @@ class AdminSalesBookingForm(forms.ModelForm):
                 attrs={"class": "form-control", "step": "0.01"}
             ),
             "currency": forms.TextInput(attrs={"class": "form-control"}),
-            "request_viewing": forms.CheckboxInput(
-                attrs={"class": "form-checkbox h-5 w-5 text-blue-600"}
-            ),
             "appointment_date": forms.DateInput(
                 attrs={
                     "class": "form-control flatpickr-admin-date-input",
@@ -58,7 +54,6 @@ class AdminSalesBookingForm(forms.ModelForm):
             "payment_status": _("Payment Status"),
             "amount_paid": _("Amount Paid"),
             "currency": _("Currency"),
-            "request_viewing": _("Requested Viewing/Test Drive"),
             "appointment_date": _("Appointment Date"),
             "appointment_time": _("Appointment Time"),
             "customer_notes": _("Customer Notes"),
@@ -143,8 +138,6 @@ class AdminSalesBookingForm(forms.ModelForm):
         booking_status = cleaned_data.get("booking_status")
         payment_status = cleaned_data.get("payment_status")
         amount_paid = cleaned_data.get("amount_paid")
-        request_viewing = cleaned_data.get("request_viewing")
-
         inventory_settings = InventorySettings.objects.first()
 
         if appointment_date and appointment_date < date.today():
@@ -228,13 +221,6 @@ class AdminSalesBookingForm(forms.ModelForm):
                 and warning_message_text not in self._warnings
             ):
                 self._warnings.append(warning_message_text)
-
-        if request_viewing and not (appointment_date and appointment_time):
-            self._warnings.append(
-                _(
-                    "Warning: 'Requested Viewing/Test Drive' is checked, but no appointment date or time is set."
-                )
-            )
 
         return cleaned_data
 

@@ -25,7 +25,6 @@ class InitiateBookingProcessViewTest(TestCase):
 
         data = {
             "deposit_required_for_flow": "true",
-            "request_viewing": "false",
         }
         response = self.client.post(self.initiate_booking_url, data)
 
@@ -37,7 +36,6 @@ class InitiateBookingProcessViewTest(TestCase):
 
         self.assertEqual(temp_booking.motorcycle, self.motorcycle)
         self.assertTrue(temp_booking.deposit_required_for_flow)
-        self.assertFalse(temp_booking.request_viewing)
         self.assertEqual(temp_booking.booking_status, "pending_details")
 
         self.assertRedirects(response, reverse("inventory:step1_sales_profile"))
@@ -55,7 +53,6 @@ class InitiateBookingProcessViewTest(TestCase):
 
         data = {
             "deposit_required_for_flow": "false",
-            "request_viewing": "false",
         }
         response = self.client.post(self.initiate_booking_url, data)
 
@@ -66,7 +63,6 @@ class InitiateBookingProcessViewTest(TestCase):
         temp_booking = TempSalesBooking.objects.latest("created_at")
         self.assertEqual(temp_booking.motorcycle, self.motorcycle)
         self.assertFalse(temp_booking.deposit_required_for_flow)
-        self.assertFalse(temp_booking.request_viewing)
         self.assertEqual(temp_booking.booking_status, "pending_details")
 
         self.assertRedirects(response, reverse("inventory:step1_sales_profile"))
@@ -83,7 +79,6 @@ class InitiateBookingProcessViewTest(TestCase):
 
         data = {
             "deposit_required_for_flow": "false",
-            "request_viewing": "true",
         }
         response = self.client.post(self.initiate_booking_url, data)
 
@@ -94,7 +89,6 @@ class InitiateBookingProcessViewTest(TestCase):
         temp_booking = TempSalesBooking.objects.latest("created_at")
         self.assertEqual(temp_booking.motorcycle, self.motorcycle)
         self.assertFalse(temp_booking.deposit_required_for_flow)
-        self.assertTrue(temp_booking.request_viewing)
         self.assertEqual(temp_booking.booking_status, "pending_details")
 
         self.assertRedirects(response, reverse("inventory:step1_sales_profile"))
@@ -112,7 +106,6 @@ class InitiateBookingProcessViewTest(TestCase):
 
         data = {
             "deposit_required_for_flow": "false",
-            "request_viewing": "false",
         }
         response = self.client.post(url, data)
 

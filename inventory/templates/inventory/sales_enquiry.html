@@ -1,12 +1,94 @@
 {% extends 'core/layout.html' %}
+{% load static %}
+
+{% block title %}Sales Enquiry for {{ motorcycle.title }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'core/css/contact_styles.css' %}">
+{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h2>Sales Enquiry for {{ motorcycle.name }}</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Submit Enquiry</button>
-    </form>
+<div class="container mx-auto px-2 pt-4 pb-8">
+    <div class="text-center mb-10">
+        <h1 class="text-4xl font-extrabold text-white tracking-tight">Sales Enquiry</h1>
+        <p class="text-lg text-gray-300 mt-2">Submit your enquiry for the motorcycle below.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg h-full">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6">Your Details</h3>
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                {{ form.motorcycle.as_hidden }}
+
+                {% if form.non_field_errors %}
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        {% for error in form.non_field_errors %}
+                            <span class="block sm:inline">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <input type="text" name="{{ form.name.name }}" id="{{ form.name.id_for_label }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-black" value="{{ form.name.value|default:'' }}">
+                        {% for error in form.name.errors %}
+                            <p class="text-red-600 text-sm italic mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    <div>
+                        <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-black" value="{{ form.email.value|default:'' }}">
+                        {% for error in form.email.errors %}
+                            <p class="text-red-600 text-sm italic mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div>
+                    <label for="{{ form.phone_number.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Phone Number (Optional)</label>
+                    <input type="text" name="{{ form.phone_number.name }}" id="{{ form.phone_number.id_for_label }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-black" value="{{ form.phone_number.value|default:'' }}">
+                    {% for error in form.phone_number.errors %}
+                        <p class="text-red-600 text-sm italic mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div>
+                    <label for="{{ form.message.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                    <textarea name="{{ form.message.name }}" id="{{ form.message.id_for_label }}" rows="5" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-black">{{ form.message.value|default:'' }}</textarea>
+                    {% for error in form.message.errors %}
+                        <p class="text-red-600 text-sm italic mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div>
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105">
+                        Submit Enquiry
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="bg-gray-800 p-8 rounded-2xl shadow-lg text-gray-300 flex flex-col h-full">
+            <div class="flex-grow">
+                <h3 class="text-2xl font-bold text-white mb-4">Enquiry for:</h3>
+                <div class="flex items-center space-x-4">
+                    <img src="{% if motorcycle.image %}{{ motorcycle.image.url }}{% elif motorcycle.images.all %}{{ motorcycle.images.first.image.url }}{% else %}https://placehold.co/800x600/e2e8f0/333?text=No+Image{% endif %}" alt="{{ motorcycle.title }}" class="w-32 h-32 object-cover rounded-lg">
+                    <div>
+                        <h4 class="text-xl font-bold text-white">{{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }}</h4>
+                        <p class="text-lg text-gray-400">{{ motorcycle.get_conditions_display }}</p>
+                        <p class="text-2xl font-extrabold text-green-400 mt-2">
+                            {% if motorcycle.price %}
+                                {{ inventory_settings.currency_symbol }}{{ motorcycle.price|floatformat:2 }}
+                            {% else %}
+                                Price on request
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

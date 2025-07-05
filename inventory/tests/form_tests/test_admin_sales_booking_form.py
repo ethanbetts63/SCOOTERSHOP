@@ -41,7 +41,6 @@ class AdminSalesBookingFormTest(TestCase):
             "payment_status": "deposit_paid",
             "amount_paid": "100.00",
             "currency": "AUD",
-            "request_viewing": True,
             "appointment_date": date.today() + timedelta(days=5),
             "appointment_time": time(14, 30),
             "customer_notes": "This is a test note.",
@@ -270,7 +269,6 @@ class AdminSalesBookingFormTest(TestCase):
             "payment_status": "unpaid",
             "amount_paid": "0.00",
             "currency": "AUD",
-            "request_viewing": True,
             "appointment_date": "",
             "appointment_time": "",
         }

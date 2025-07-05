@@ -52,7 +52,6 @@ class Step2BookingDetailsView(View):
             return redirect(reverse("core:index"))
 
         initial_data = {
-            "request_viewing": "yes" if temp_booking.request_viewing else "no",
             "appointment_date": temp_booking.appointment_date,
             "appointment_time": temp_booking.appointment_time,
             "customer_notes": temp_booking.customer_notes,
@@ -130,13 +129,11 @@ class Step2BookingDetailsView(View):
                     return redirect(reverse("core:index"))
 
                 customer_notes = form.cleaned_data.get("customer_notes")
-                request_viewing = form.cleaned_data.get("request_viewing")
                 appointment_date = form.cleaned_data.get("appointment_date")
                 appointment_time = form.cleaned_data.get("appointment_time")
                 terms_accepted = form.cleaned_data.get("terms_accepted")
 
                 temp_booking.customer_notes = customer_notes
-                temp_booking.request_viewing = request_viewing
                 temp_booking.appointment_date = appointment_date
                 temp_booking.appointment_time = appointment_time
                 temp_booking.terms_accepted = terms_accepted

@@ -585,8 +585,6 @@ class TempSalesBookingFactory(factory.django.DjangoModelFactory):
         "random_element", elements=[choice[0] for choice in TEMP_BOOKING_STATUS_CHOICES]
     )
     deposit_required_for_flow = factory.Faker("boolean")
-    request_viewing = factory.Faker("boolean")
-
 
 class SalesBookingFactory(factory.django.DjangoModelFactory):
     class Meta:

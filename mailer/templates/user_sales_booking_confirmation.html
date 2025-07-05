@@ -126,17 +126,11 @@
                                     <th>Requested Appointment Time:</th>
                                     <td>{{ booking.appointment_time|time:"P" }}</td>
                                 </tr>
-                                {% elif booking.request_viewing %}
                                 <tr>
                                     <th>Request Type:</th>
-                                    <td>Viewing/Test Drive Enquiry</td>
+                                    <td>Viewing Enquiry</td>
                                 </tr>
-                                {% else %}
-                                <tr>
-                                    <th>Request Type:</th>
-                                    <td>General Sales Enquiry</td>
-                                </tr>
-                                {% endif %}
+
                                 {% if booking.amount_paid > 0 %}
                                 <tr>
                                     <th>Amount Paid:</th>

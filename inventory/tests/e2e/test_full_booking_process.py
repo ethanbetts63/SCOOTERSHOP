@@ -69,7 +69,6 @@ class TestEnquiryFlows(TestCase):
         self.assertRedirects(response, step2_url)
 
         appointment_data = {
-            "request_viewing": "yes",
             "appointment_date": "2025-10-20",
             "appointment_time": "10:00",
             "terms_accepted": "on",
@@ -121,7 +120,6 @@ class TestEnquiryFlows(TestCase):
         self.assertRedirects(response, step2_url)
 
         enquiry_data = {
-            "request_viewing": "no",
             "terms_accepted": "on",
             "customer_notes": "Just wondering about the service history.",
         }
@@ -196,7 +194,6 @@ class TestDepositFlows(TestCase):
         self.client.post(step1_url, updated_profile_data)
 
         appointment_data = {
-            "request_viewing": "yes",
             "appointment_date": "2025-09-15",
             "appointment_time": "14:00",
             "terms_accepted": "on",
@@ -204,7 +201,6 @@ class TestDepositFlows(TestCase):
         self.client.post(step2_url, appointment_data)
         self.client.get(step2_url)
         updated_appointment_data = {
-            "request_viewing": "yes",
             "appointment_date": "2025-09-20",
             "appointment_time": "09:00",
             "terms_accepted": "on",
@@ -274,7 +270,6 @@ class TestDepositFlows(TestCase):
         self.client.post(step1_url, updated_profile_data)
 
         updated_appointment_data = {
-            "request_viewing": "yes",
             "appointment_date": "2025-09-20",
             "appointment_time": "09:00",
             "terms_accepted": "on",
@@ -293,7 +288,6 @@ class TestDepositFlows(TestCase):
         self.client.post(step1_url, updated_profile_data)
 
         new_appointment_data = {
-            "request_viewing": "yes",
             "appointment_date": "2025-11-01",
             "appointment_time": "10:00",
             "terms_accepted": "on",
@@ -374,7 +368,6 @@ class TestDepositFlows(TestCase):
         anon_client.post(step1_url, updated_profile_data)
 
         appointment_data = {
-            "request_viewing": "yes",
             "appointment_date": "2025-09-16",
             "appointment_time": "11:00",
             "terms_accepted": "on",
@@ -386,7 +379,6 @@ class TestDepositFlows(TestCase):
         self.assertContains(response, "2025-09-16", count=1)
 
         updated_appointment_data = {
-            "request_viewing": "yes",
             "appointment_date": "2025-09-16",
             "appointment_time": "15:30",
             "terms_accepted": "on",

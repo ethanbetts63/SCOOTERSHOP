@@ -13,30 +13,7 @@
         <form method="post" action="{% url 'inventory:step2_booking_details_and_appointment' %}" class="space-y-6">
             {% csrf_token %}
 
-            {% if not temp_booking.deposit_required_for_flow %}
-                <div class="form-field">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">{{ form.request_viewing.label }}<span class="text-red-500"> *</span></label>
-                    <div class="mt-2 flex space-x-4">
-                        {% for radio in form.request_viewing %}
-                            <label class="inline-flex items-center">
-                                {{ radio.tag }}
-                                <span class="ml-2 text-gray-700">{{ radio.choice_label }}</span>
-                            </label>
-                        {% endfor %}
-                    </div>
-                    <p class="text-gray-500 text-xs italic mt-1">{{ form.request_viewing.help_text }}</p>
-                    {% if form.request_viewing.errors %}
-                        <div class="text-red-500 text-xs italic mt-2">
-                            {% for error in form.request_viewing.errors %}
-                                <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-            {% endif %}
-            {{ form.request_viewing.as_hidden }}
-
-            <div id="appointment-date-field" class="form-field" {% if not form.request_viewing.initial or form.request_viewing.initial.0 != 'yes' %}style="display: none;"{% endif %}>
+            <div id="appointment-date-field" class="form-field">
                 <label for="{{ form.appointment_date.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">
                     {{ form.appointment_date.label }}<span class="text-red-500"> *</span>
                 </label>
@@ -57,7 +34,7 @@
                 {% endif %}
             </div>
 
-            <div id="appointment-time-field" class="form-field" {% if not form.request_viewing.initial or form.request_viewing.initial.0 != 'yes' %}style="display: none;"{% endif %}>
+            <div id="appointment-time-field" class="form-field">
                 <label for="{{ form.appointment_time.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">
                     {{ form.appointment_time.label }}<span class="text-red-500"> *</span>
                 </label>
@@ -135,7 +112,7 @@
                     {% if temp_booking.deposit_required_for_flow %}
                         Proceed to Payment
                     {% else %}
-                        Submit Enquiry
+                        Book Viewing
                     {% endif %}
                 </button>
             </div>
@@ -155,11 +132,7 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
-    // JS remains the same, no logic changes needed here
     document.addEventListener('DOMContentLoaded', function() {
-        const requestViewingRadios = document.querySelectorAll('input[name="request_viewing"]');
-        const appointmentDateField = document.getElementById('appointment-date-field');
-        const appointmentTimeField = document.getElementById('appointment-time-field');
         const appointmentDatePickerInput = document.getElementById('id_appointment_date');
         const appointmentTimeSelect = document.getElementById('id_appointment_time');
         const loadingTimesDiv = document.getElementById('loading-times');
@@ -193,36 +166,6 @@
                 }
             }
         });
-
-        function toggleAppointmentFields() {
-            let requestViewingValue = 'no';
-            if (!depositRequiredForFlow) {
-                for (const radio of requestViewingRadios) {
-                    if (radio.checked) {
-                        requestViewingValue = radio.value;
-                        break;
-                    }
-                }
-            } else {
-                requestViewingValue = 'yes';
-            }
-
-            if (depositRequiredForFlow || requestViewingValue === 'yes') {
-                appointmentDateField.style.display = 'block';
-                appointmentTimeField.style.display = 'block';
-                if (appointmentDatePickerInput.value) {
-                    fetchAvailableTimes(appointmentDatePickerInput.value);
-                } else {
-                    appointmentTimeSelect.disabled = true;
-                }
-            } else {
-                appointmentDateField.style.display = 'none';
-                appointmentTimeField.style.display = 'none';
-                appointmentDatePicker.clear();
-                appointmentTimeSelect.innerHTML = '<option value="">Select a time</option>';
-                appointmentTimeSelect.disabled = true;
-            }
-        }
 
         async function fetchAvailableTimes(selectedDate) {
             loadingTimesDiv.style.display = 'block';
@@ -264,15 +207,7 @@
             }
         }
 
-        if (!depositRequiredForFlow) {
-            requestViewingRadios.forEach(radio => {
-                radio.addEventListener('change', toggleAppointmentFields);
-            });
-        }
-        
-        toggleAppointmentFields();
-
-        if (appointmentDatePickerInput.value && (depositRequiredForFlow || (document.querySelector('input[name="request_viewing"]:checked') && document.querySelector('input[name="request_viewing"]:checked').value === 'yes'))) {
+        if (appointmentDatePickerInput.value) {
             fetchAvailableTimes(appointmentDatePickerInput.value);
         }
     });

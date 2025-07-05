@@ -54,8 +54,6 @@ class TestPaymentEdgeCases(TestCase):
         self.client.post(step1_url, profile_data)
 
         step2_url = reverse("inventory:step2_booking_details_and_appointment")
-        appointment_data = {"request_viewing": "no", "terms_accepted": "on"}
-        self.client.post(step2_url, appointment_data)
 
         step3_url = reverse("inventory:step3_payment")
         self.client.get(step3_url)
