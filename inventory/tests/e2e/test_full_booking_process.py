@@ -13,6 +13,7 @@ from ..test_helpers.model_factories import (
     InventorySettingsFactory,
     MotorcycleFactory,
     UserFactory,
+    SalesTermsFactory,
 )
 from payments.webhook_handlers.sales_handlers import handle_sales_booking_succeeded
 
@@ -35,6 +36,7 @@ class TestEnquiryFlows(TestCase):
         self.another_motorcycle = MotorcycleFactory(
             is_available=True, status="available", price=Decimal("8000.00")
         )
+        self.sales_terms = SalesTermsFactory(is_active=True)
 
     def test_enquiry_with_appointment_flow(self):
         initiate_url = reverse(
@@ -166,6 +168,7 @@ class TestDepositFlows(TestCase):
             brand="Ducati",
             model="Panigale",
         )
+        self.sales_terms = SalesTermsFactory(is_active=True)
         stripe.api_key = settings.STRIPE_SECRET_KEY
 
     def test_logged_in_deposit_flow_with_updates(self):
@@ -380,7 +383,7 @@ class TestDepositFlows(TestCase):
 
         response = anon_client.get(step2_url)
         self.assertEqual(response.status_code, 200)
-        
+        self.assertContains(response, "2025-09-16", count=1)
 
         updated_appointment_data = {
             "request_viewing": "yes",
