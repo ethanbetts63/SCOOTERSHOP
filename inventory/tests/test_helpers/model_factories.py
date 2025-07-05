@@ -178,7 +178,7 @@ class InventorySettingsFactory(factory.django.DjangoModelFactory):
         model = InventorySettings
         django_get_or_create = ("pk",)
 
-    enable_depositless_enquiry = True
+    enable_depositless_viewing = True
     enable_reservation_by_deposit = True
     deposit_amount = factory.LazyFunction(
         lambda: fake.pydecimal(

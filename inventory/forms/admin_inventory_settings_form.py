@@ -8,7 +8,7 @@ class InventorySettingsForm(forms.ModelForm):
     class Meta:
         model = InventorySettings
         fields = [
-            "enable_depositless_enquiry",
+            "enable_depositless_viewing",
             "enable_reservation_by_deposit",
             "enable_sales_enquiries",
             "deposit_amount",
@@ -28,7 +28,7 @@ class InventorySettingsForm(forms.ModelForm):
             "currency_symbol",
         ]
         widgets = {
-            "enable_depositless_enquiry": forms.CheckboxInput(
+            "enable_depositless_viewing": forms.CheckboxInput(
                 attrs={"class": "form-check-input"}
             ),
             "enable_reservation_by_deposit": forms.CheckboxInput(

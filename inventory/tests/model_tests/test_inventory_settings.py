@@ -33,10 +33,10 @@ class InventorySettingsModelTest(TestCase):
             new_settings_attempt = InventorySettings()
             new_settings_attempt.save()
 
-    def test_enable_depositless_enquiry_field(self):
+    def test_enable_depositless_viewing_field(self):
 
-        field = self.settings._meta.get_field("enable_depositless_enquiry")
-        self.assertIsInstance(self.settings.enable_depositless_enquiry, bool)
+        field = self.settings._meta.get_field("enable_depositless_viewing")
+        self.assertIsInstance(self.settings.enable_depositless_viewing, bool)
         self.assertTrue(field.default)
         self.assertEqual(
             field.help_text,

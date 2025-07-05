@@ -6,9 +6,9 @@ from datetime import time
 
 class InventorySettings(models.Model):
 
-    enable_depositless_enquiry = models.BooleanField(
+    enable_depositless_viewing = models.BooleanField(
         default=True,
-        help_text="Allow customers to submit an enquiry for a motorcycle without requiring a deposit.",
+        help_text="Allow customers to submit an appointment request for a motorcycle viewing without requiring a deposit.",
     )
     enable_reservation_by_deposit = models.BooleanField(
         default=True,
