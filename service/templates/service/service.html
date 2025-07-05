@@ -6,86 +6,41 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/service_styles.css' %}">
 <link rel="stylesheet" href="{% static 'core/css/book_include_styles.css' %}">
-<style>
-    .service-tile {
-        display: flex;
-        background-color: #ffffff; /* White background for the details part */
-        border-radius: 0.5rem; /* rounded-lg */
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        overflow: hidden;
-    }
-    .service-tile:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
-    }
-    .service-tile-image-wrapper {
-        flex-shrink: 0;
-        width: 12rem; /* w-48 */
-        background-color: #1f2937; /* bg-gray-800 */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 1.5rem; /* p-6 */
-    }
-    .service-tile-image {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-    }
-    .service-tile-content {
-        padding: 1.5rem; /* p-6 */
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-    }
-    .service-tile-title {
-        font-size: 1.25rem; /* text-xl */
-        font-weight: 700; /* font-bold */
-        color: #111827; /* text-gray-900 */
-        margin-bottom: 0.5rem; /* mb-2 */
-    }
-    .service-tile-description {
-        color: #4b5563; /* text-gray-600 */
-        margin-bottom: 1rem; /* mb-4 */
-        flex-grow: 1;
-    }
-    .service-tile-price {
-        color: #059669; /* text-emerald-600 */
-        font-weight: 600; /* font-semibold */
-        margin-top: auto;
-    }
-</style>
 {% endblock %}
 
 {% block content %}
 
-<div class="container mx-auto px-4 mt-8 mb-12">
+<div class="container mx-auto px-4 mt-8 mb-0">
     {% include 'service/step1_service_details_include.html' %}
 </div>
 
 <!-- Service Types Section -->
-<div class="container mx-auto px-4 py-12">
+<div class="container mx-auto px-4 pt-8 pb-12">
     <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-12">Our Services</h2>
 
-    <div class="grid grid-cols-1 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {% for service_type in service_types %}
-        <div class="service-tile">
-            <div class="service-tile-image-wrapper">
-                {% if service_type.image %}
-                <img src="{{ service_type.image.url }}" alt="{{ service_type.name }}" class="service-tile-image">
-                {% endif %}
-            </div>
-            <div class="service-tile-content">
-                <h3 class="service-tile-title">{{ service_type.name }}</h3>
-                <p class="service-tile-description">{{ service_type.description }}</p>
-                {% if service_type.base_price %}
-                <p class="service-tile-price">Starting from ${{ service_type.base_price }}</p>
-                {% endif %}
+        <!-- Outer container with dark background and padding to create the "border" effect -->
+        <div class="bg-gray-800 rounded-xl p-4 shadow-lg hover:shadow-2xl transition-shadow duration-300">
+            <div class="flex flex-col md:flex-row gap-4 h-full">
+                <!-- Image Section -->
+                <div class="md:w-48 flex-shrink-0 flex items-center justify-center bg-gray-700 rounded-lg p-2">
+                    {% if service_type.image %}
+                    <img src="{{ service_type.image.url }}" alt="{{ service_type.name }}" class="w-full h-auto object-contain max-h-32 md:max-h-full">
+                    {% endif %}
+                </div>
+                <!-- Content Section (White Tile) -->
+                <div class="bg-white rounded-lg p-6 flex-grow flex flex-col">
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">{{ service_type.name }}</h3>
+                    <p class="text-gray-600 mb-4 flex-grow">{{ service_type.description }}</p>
+                    {% if service_type.base_price %}
+                    <p class="text-emerald-600 font-semibold mt-auto text-lg">Starting from ${{ service_type.base_price }}</p>
+                    {% endif %}
+                </div>
             </div>
         </div>
         {% empty %}
-        <div class="bg-gray-800 rounded-lg p-8 text-center">
+        <div class="lg:col-span-2 bg-gray-800 rounded-lg p-8 text-center">
             <h3 class="text-xl font-bold text-white">More Services Available</h3>
             <p class="text-gray-300 mt-2">We offer comprehensive servicing for all scooter makes and models. Please contact us for more information about your specific needs.</p>
         </div>
