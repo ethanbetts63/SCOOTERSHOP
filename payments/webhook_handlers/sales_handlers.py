@@ -76,7 +76,7 @@ def handle_sales_booking_succeeded(payment_obj: Payment, payment_intent_data: di
             send_templated_email(
                 recipient_list=[user_email],
                 subject=f"Your Sales Booking Confirmation - {sales_booking.sales_booking_reference}",
-                template_name="sales_booking_confirmation_user.html",
+                template_name="user_sales_booking_confirmation.html",
                 context=email_context,
                 booking=sales_booking,
                 profile=sales_profile,
@@ -86,7 +86,7 @@ def handle_sales_booking_succeeded(payment_obj: Payment, payment_intent_data: di
             send_templated_email(
                 recipient_list=[settings.ADMIN_EMAIL],
                 subject=f"New Sales Booking (Online) - {sales_booking.sales_booking_reference}",
-                template_name="sales_booking_confirmation_admin.html",
+                template_name="admin_sales_booking_confirmation.html",
                 context=email_context,
                 booking=sales_booking,
                 profile=sales_profile,

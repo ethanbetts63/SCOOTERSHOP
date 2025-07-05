@@ -158,10 +158,10 @@ class Step2BookingDetailsView(View):
                     )
 
                     if converted_sales_booking.appointment_date:
-                        template_name = "sales_booking_confirmation_user.html"
+                        template_name = "user_sales_booking_confirmation.html"
                         subject = f"Your Motorcycle Appointment Request - {converted_sales_booking.sales_booking_reference}"
                     else:
-                        template_name = "sales_enquiry_confirmation_user.html"
+                        template_name = "user_sales_enquiry_confirmation.html"
                         subject = f"Your Motorcycle Enquiry Received - {converted_sales_booking.sales_booking_reference}"
 
                     email_context = {
@@ -188,7 +188,7 @@ class Step2BookingDetailsView(View):
                             send_templated_email(
                                 recipient_list=[settings.ADMIN_EMAIL],
                                 subject=f"New Sales Enquiry (Online) - {converted_sales_booking.sales_booking_reference}",
-                                template_name="sales_booking_confirmation_admin.html",
+                                template_name="admin_sales_booking_confirmation.html",
                                 context=email_context,
                                 booking=converted_sales_booking,
                                 profile=converted_sales_booking.sales_profile,

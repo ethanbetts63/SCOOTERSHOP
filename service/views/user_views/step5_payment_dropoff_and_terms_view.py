@@ -155,7 +155,7 @@ class Step5PaymentDropoffAndTermsView(View):
                             send_templated_email(
                                 recipient_list=[user_email],
                                 subject=f"Your Service Booking Confirmed! Ref: {final_service_booking.service_booking_reference}",
-                                template_name="emails/service_booking_confirmation_user.html",
+                                template_name="emails/user_service_booking_confirmation.html",
                                 context={},
                                 booking=final_service_booking,
                                 profile=final_service_booking.service_profile,
@@ -181,7 +181,7 @@ class Step5PaymentDropoffAndTermsView(View):
                             send_templated_email(
                                 recipient_list=[admin_email],
                                 subject=f"NEW SERVICE BOOKING: {final_service_booking.service_booking_reference} (In-Store Payment)",
-                                template_name="emails/service_booking_confirmation_admin.html",
+                                template_name="emails/admin_service_booking_confirmation.html",
                                 context={},
                                 booking=final_service_booking,
                                 profile=final_service_booking.service_profile,

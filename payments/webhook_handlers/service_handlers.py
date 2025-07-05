@@ -49,7 +49,7 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
             send_templated_email(
                 recipient_list=[user_email],
                 subject=f"Your Service Booking Confirmation - {service_booking.service_booking_reference}",
-                template_name="emails/service_booking_confirmation_user.html",
+                template_name="emails/user_service_booking_confirmation.html",
                 context={},
                 booking=service_booking,
                 profile=service_profile,
@@ -59,7 +59,7 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
             send_templated_email(
                 recipient_list=[settings.ADMIN_EMAIL],
                 subject=f"New Service Booking (Online) - {service_booking.service_booking_reference}",
-                template_name="emails/service_booking_confirmation_admin.html",
+                template_name="emails/admin_service_booking_confirmation.html",
                 context={},
                 booking=service_booking,
                 profile=service_profile,

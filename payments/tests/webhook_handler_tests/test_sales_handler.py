@@ -91,7 +91,7 @@ class SalesWebhookHandlerTest(TestCase):
             mock_send_email.assert_any_call(
                 recipient_list=[self.user.email],
                 subject=f"Your Sales Booking Confirmation - {sales_booking.sales_booking_reference}",
-                template_name="sales_booking_confirmation_user.html",
+                template_name="user_sales_booking_confirmation.html",
                 context=mock.ANY,
                 booking=sales_booking,
                 profile=self.sales_profile,
@@ -100,7 +100,7 @@ class SalesWebhookHandlerTest(TestCase):
             mock_send_email.assert_any_call(
                 recipient_list=[settings.ADMIN_EMAIL],
                 subject=f"New Sales Booking (Online) - {sales_booking.sales_booking_reference}",
-                template_name="sales_booking_confirmation_admin.html",
+                template_name="admin_sales_booking_confirmation.html",
                 context=mock.ANY,
                 booking=sales_booking,
                 profile=self.sales_profile,
