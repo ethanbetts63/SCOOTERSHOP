@@ -156,6 +156,14 @@
             <span class="detail-value" id="customerNotes"></span>
         </div>
 
+        <!-- NEW SECTION FOR SERVICE TERMS -->
+        <div class="section-header">Terms and Conditions</div>
+        <div class="detail-group">
+            <span class="detail-label">Terms Version Accepted:</span>
+            <span class="detail-value" id="serviceTermsVersion"></span>
+        </div>
+        <!-- END NEW SECTION -->
+
         <div class="section-header">Motorcycle Details</div>
         <div class="detail-group">
             <span class="detail-label">Year:</span>
@@ -235,7 +243,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const bookingPk = '{{ booking_pk }}'; 
     const apiUrl = "{% url 'service:admin_api_get_service_booking_details' pk=0 %}".replace('/0/', `/${bookingPk}/`);
 
-    // --- New Delete Button Logic ---
     const deleteButton = document.getElementById('deleteButton');
     const deleteForm = document.getElementById('deleteForm');
 
@@ -246,7 +253,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    // --- End of New Logic ---
 
     const loadingMessage = document.getElementById('loadingMessage');
     const errorMessage = document.getElementById('errorMessage');
@@ -272,6 +278,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
+            // --- Existing fields ---
             document.getElementById('bookingReference').textContent = data.service_booking_reference || 'N/A';
             document.getElementById('customerName').textContent = data.customer_name || 'N/A';
             document.getElementById('serviceDate').textContent = data.service_date || 'N/A';
@@ -280,6 +287,19 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('estimatedPickupDate').textContent = data.estimated_pickup_date || 'N/A';
             document.getElementById('bookingStatus').textContent = data.booking_status || 'N/A';
             document.getElementById('customerNotes').textContent = data.customer_notes || 'N/A';
+
+            // --- NEW JAVASCRIPT LOGIC ---
+            const serviceTermsVersionEl = document.getElementById('serviceTermsVersion');
+            if (data.service_terms_details && data.service_terms_details.pk) {
+                const termsLink = document.createElement('a');
+                termsLink.href = `{% url 'service:service_terms_detail' pk=0 %}`.replace('0', data.service_terms_details.pk);
+                termsLink.className = 'text-blue-600 hover:underline';
+                termsLink.textContent = `Version ${data.service_terms_details.version_number}`;
+                serviceTermsVersionEl.appendChild(termsLink);
+            } else {
+                serviceTermsVersionEl.textContent = 'N/A';
+            }
+            // --- END NEW JAVASCRIPT LOGIC ---
 
             document.getElementById('motorcycleYear').textContent = data.motorcycle_details.year || 'N/A';
             document.getElementById('motorcycleBrand').textContent = data.motorcycle_details.brand || 'N/A';
