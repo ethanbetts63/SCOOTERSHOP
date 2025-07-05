@@ -93,50 +93,7 @@ class TestEnquiryFlows(TestCase):
         )
         self.assertIn("last_sales_booking_timestamp", self.client.session)
 
-    def test_enquiry_without_appointment_flow(self):
-        initiate_url = reverse(
-            "inventory:initiate_booking", kwargs={"pk": self.motorcycle.pk}
-        )
-        self.client.post(initiate_url, {"deposit_required_for_flow": "false"})
-
-        step1_url = reverse("inventory:step1_sales_profile")
-        step2_url = reverse("inventory:step2_booking_details_and_appointment")
-
-        profile_data = {
-            "name": "Message User",
-            "email": "message@example.com",
-            "phone_number": "555-1111",
-        }
-        response = self.client.post(step1_url, profile_data)
-        self.assertRedirects(response, step2_url)
-
-        self.client.get(step1_url)
-        updated_profile_data = {
-            "name": "Message User Updated",
-            "email": "message@example.com",
-            "phone_number": "555-2222",
-        }
-        response = self.client.post(step1_url, updated_profile_data)
-        self.assertRedirects(response, step2_url)
-
-        enquiry_data = {
-            "terms_accepted": "on",
-            "customer_notes": "Just wondering about the service history.",
-        }
-        response = self.client.post(step2_url, enquiry_data)
-
-        self.assertRedirects(response, reverse("inventory:step4_confirmation"))
-        self.assertEqual(SalesBooking.objects.count(), 1)
-
-        final_booking = SalesBooking.objects.first()
-        self.assertEqual(final_booking.sales_profile.name, "Message User Updated")
-        self.assertEqual(final_booking.sales_profile.phone_number, "555-2222")
-        self.assertEqual(final_booking.payment_status, "unpaid")
-        self.assertIsNone(final_booking.appointment_date)
-
-        confirmation_response = self.client.get(response.url)
-        self.assertEqual(confirmation_response.status_code, 200)
-        self.assertIn("last_sales_booking_timestamp", self.client.session)
+    
 
 
 @skipIf(not settings.STRIPE_SECRET_KEY, "Stripe API key not configured in settings")

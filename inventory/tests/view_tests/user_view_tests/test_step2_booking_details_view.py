@@ -11,6 +11,7 @@ from ...test_helpers.model_factories import (
     InventorySettingsFactory,
     MotorcycleFactory,
     SalesProfileFactory,
+    SalesTermsFactory,
 )
 
 
@@ -25,6 +26,7 @@ class Step2BookingDetailsViewTest(TestCase):
             enable_viewing_for_enquiry=True,
             enable_reservation_by_deposit=True,
         )
+        cls.sales_terms = SalesTermsFactory(is_active=True)
 
         cls.motorcycle = MotorcycleFactory()
         cls.sales_profile = SalesProfileFactory()

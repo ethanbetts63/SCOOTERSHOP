@@ -33,20 +33,11 @@ class BookingAppointmentForm(forms.Form):
         self.inventory_settings = kwargs.pop("inventory_settings", None)
         super().__init__(*args, **kwargs)
 
-        if self.deposit_required_for_flow:
-            self.fields["appointment_date"].required = True
-            self.fields["appointment_time"].required = True
-        elif (
-            self.inventory_settings
-            and not self.inventory_settings.enable_viewing_for_enquiry
-        ):
-            self.fields["appointment_date"].widget = forms.HiddenInput()
-            self.fields["appointment_time"].widget = forms.HiddenInput()
-            self.fields["appointment_date"].required = False
-            self.fields["appointment_time"].required = False
+        # Appointment date and time are always required for this form
+        self.fields["appointment_date"].required = True
+        self.fields["appointment_time"].required = True
 
         if self.inventory_settings:
-
             min_date = date.today() + timedelta(
                 hours=self.inventory_settings.min_advance_booking_hours
             )
@@ -67,23 +58,24 @@ class BookingAppointmentForm(forms.Form):
         appointment_time = cleaned_data.get("appointment_time")
         terms_accepted = cleaned_data.get("terms_accepted")
 
-        is_appointment_required = self.deposit_required_for_flow 
+        # Appointment date and time are always required for this form
+        if not appointment_date:
+            self.add_error(
+                "appointment_date",
+                "This field is required.",
+            )
+        if not appointment_time:
+            self.add_error(
+                "appointment_time",
+                "This field is required.",
+            )
 
-        if is_appointment_required:
-            if not appointment_date:
-                self.add_error(
-                    "appointment_date",
-                    "This field is required for your selected option.",
-                )
-            if not appointment_time:
-                self.add_error(
-                    "appointment_time",
-                    "This field is required for your selected option.",
-                )
-        else:
+        if not terms_accepted:
+            self.add_error(
+                "terms_accepted", "You must accept the terms and conditions."
+            )
 
-            cleaned_data["appointment_date"] = None
-            cleaned_data["appointment_time"] = None
+        return cleaned_data
 
         if not terms_accepted:
             self.add_error(

@@ -138,6 +138,7 @@ class Step2BookingDetailsView(View):
                 temp_booking.appointment_time = appointment_time
                 temp_booking.terms_accepted = terms_accepted
                 temp_booking.sales_terms_version = active_terms
+                temp_booking.request_viewing = True # Always true for this flow
                 temp_booking.save()
 
                 if temp_booking.deposit_required_for_flow:
@@ -154,12 +155,8 @@ class Step2BookingDetailsView(View):
                         payment_obj=None,
                     )
 
-                    if converted_sales_booking.appointment_date:
-                        template_name = "user_sales_booking_confirmation.html"
-                        subject = f"Your Motorcycle Appointment Request - {converted_sales_booking.sales_booking_reference}"
-                    else:
-                        template_name = "user_sales_enquiry_confirmation.html"
-                        subject = f"Your Motorcycle Enquiry Received - {converted_sales_booking.sales_booking_reference}"
+                    template_name = "user_sales_booking_confirmation.html"
+                    subject = f"Your Motorcycle Appointment Request - {converted_sales_booking.sales_booking_reference}"
 
                     email_context = {
                         "booking": converted_sales_booking,
@@ -202,7 +199,7 @@ class Step2BookingDetailsView(View):
                     set_recent_booking_flag(request)
                     messages.success(
                         request,
-                        "Your enquiry has been submitted. We will get back to you shortly!",
+                        "Your viewing request has been submitted. We will get back to you shortly!",
                     )
                     return redirect(reverse("inventory:step4_confirmation"))
         else:

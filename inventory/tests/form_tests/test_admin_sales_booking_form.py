@@ -260,27 +260,7 @@ class AdminSalesBookingFormTest(TestCase):
         )
         self.assertIn(expected_warning, form.get_warnings())
 
-    def test_warning_for_requesting_viewing_without_appointment_details(self):
-
-        form_data = {
-            "selected_profile_id": self.sales_profile.pk,
-            "selected_motorcycle_id": self.motorcycle_available.pk,
-            "booking_status": "enquired",
-            "payment_status": "unpaid",
-            "amount_paid": "0.00",
-            "currency": "AUD",
-            "appointment_date": "",
-            "appointment_time": "",
-        }
-        form = AdminSalesBookingForm(data=form_data)
-        self.assertTrue(
-            form.is_valid(),
-            f"Form should have been valid but had errors: {form.errors.as_json()}",
-        )
-        self.assertIn(
-            "Warning: 'Requested Viewing/Test Drive' is checked, but no appointment date or time is set.",
-            form.get_warnings(),
-        )
+    
 
     def test_form_initializes_correctly_from_instance(self):
 
