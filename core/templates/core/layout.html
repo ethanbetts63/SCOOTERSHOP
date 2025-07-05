@@ -174,11 +174,17 @@
                         {% endif %}
 
 
-                        <li>
-                            <a href="{% url 'payments:user_refund_request' %}">
-                                Refunds
-                            </a>
-                        </li>
+                        {% if settings.enable_refunds or user.is_staff %}
+                            <li>
+                                <a href="{% url 'payments:user_refund_request' %}"
+                                   {% if not settings.enable_refunds and user.is_staff %}
+                                        style="color: #08E5D1;"
+                                   {% endif %}
+                                >
+                                    Refunds
+                                </a>
+                            </li>
+                        {% endif %}
 
                         {% if settings.enable_contact_page or user.is_staff %}
                             <li>
