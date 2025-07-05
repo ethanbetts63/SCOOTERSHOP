@@ -113,6 +113,13 @@
                         <small class="block text-gray-500 form-text">Allow users to access the security page.</small>
                     </div>
                 </div>
+                <div class="form-check">
+                    {{ form.enable_refunds }}
+                    <div>
+                        <label class="form-check-label" for="{{ form.enable_refunds.id_for_label }}">Enable Refunds Page</label>
+                        <small class="block text-gray-500 form-text">Allow users to access the refunds request page.</small>
+                    </div>
+                </div>
             </div>
 
             <div class="space-y-4 pt-6">

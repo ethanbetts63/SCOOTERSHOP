@@ -1,13 +1,8 @@
 from django.db import models
-from datetime import time
 from django.core.exceptions import ImproperlyConfigured
 
                                                                 
-class SiteSettings(models.Model):
-    """
-    Model for storing site-wide settings and configuration options
-    """
-                                                                        
+class SiteSettings(models.Model):                                                               
     enable_sales_new = models.BooleanField(default=True, help_text="Enable new motorcycle sales")
     enable_sales_used = models.BooleanField(default=True, help_text="Enable used motorcycle sales")
     enable_service_booking = models.BooleanField(default=True, help_text="Enable service booking functionality")
