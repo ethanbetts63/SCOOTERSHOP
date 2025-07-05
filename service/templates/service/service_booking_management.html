@@ -147,8 +147,8 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         {% for booking in bookings %}
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 table-cell-padding">{{ booking.customer.get_full_name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ booking.motorcycle }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 table-cell-padding">{{ booking.service_profile.name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ booking.customer_motorcycle.year }} {{ booking.customer_motorcycle.brand }} {{ booking.customer_motorcycle.model }} ({{ booking.customer_motorcycle.rego }})</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ booking.service_type.name }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ booking.service_date|date:"d M Y" }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ booking.get_booking_status_display }}</td>

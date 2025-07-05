@@ -61,8 +61,7 @@ class CustomerMotorcycle(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        owner_info = self.service_profile.name if self.service_profile else "N/A"
-        return f"{self.year} {self.brand} {self.model} (Owner: {owner_info})"
+        return f"{self.year} {self.brand} {self.model}"
 
     def clean(self):
         super().clean()

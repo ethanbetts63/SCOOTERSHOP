@@ -11,7 +11,7 @@ class ServiceBookingManagementView(AdminRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
 
-        bookings = ServiceBooking.objects.all().order_by("-dropoff_date")
+        bookings = ServiceBooking.objects.select_related('service_profile', 'customer_motorcycle', 'service_type').all().order_by("-dropoff_date")
 
         context = {
             "page_title": "Manage Service Bookings",
