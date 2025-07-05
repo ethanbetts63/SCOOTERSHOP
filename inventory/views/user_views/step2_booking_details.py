@@ -9,7 +9,7 @@ import json
 from inventory.utils.booking_protection import set_recent_booking_flag
 
 
-from inventory.models import TempSalesBooking, InventorySettings
+from inventory.models import TempSalesBooking, InventorySettings, SalesTerms
 from inventory.forms.sales_booking_appointment_form import BookingAppointmentForm
 from inventory.utils.get_sales_appointment_date_info import (
     get_sales_appointment_date_info,
@@ -124,6 +124,11 @@ class Step2BookingDetailsView(View):
 
         if form.is_valid():
             with transaction.atomic():
+                active_terms = SalesTerms.objects.filter(is_active=True).first()
+                if not active_terms:
+                    messages.error(request, "No active sales terms found. Please contact an administrator.")
+                    return redirect(reverse("core:index"))
+
                 customer_notes = form.cleaned_data.get("customer_notes")
                 request_viewing = form.cleaned_data.get("request_viewing")
                 appointment_date = form.cleaned_data.get("appointment_date")
@@ -135,6 +140,7 @@ class Step2BookingDetailsView(View):
                 temp_booking.appointment_date = appointment_date
                 temp_booking.appointment_time = appointment_time
                 temp_booking.terms_accepted = terms_accepted
+                temp_booking.sales_terms_version = active_terms
                 temp_booking.save()
 
                 if temp_booking.deposit_required_for_flow:

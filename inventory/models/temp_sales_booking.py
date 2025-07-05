@@ -110,6 +110,14 @@ class TempSalesBooking(models.Model):
         default=False,
         help_text="Indicates if the customer accepted the terms and conditions.",
     )
+    sales_terms_version = models.ForeignKey(
+        "inventory.SalesTerms",
+        on_delete=models.PROTECT,
+        related_name="temp_sales_bookings",
+        null=True,
+        blank=True,
+        help_text="The specific version of the T&Cs the user agreed to.",
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         help_text="The date and time when this temporary booking was created.",
