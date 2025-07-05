@@ -24,7 +24,7 @@
         <div class="bg-gray-800 rounded-xl p-4 shadow-lg hover:shadow-2xl transition-shadow duration-300">
             <div class="flex flex-col md:flex-row gap-4 h-full">
                 <!-- Image Section -->
-                <div class="md:w-48 flex-shrink-0 flex items-center justify-center bg-gray-700 rounded-lg p-2">
+                <div class="md:w-48 flex-shrink-0 flex items-center justify-center bg-gray-800 rounded-lg p-2">
                     {% if service_type.image %}
                     <img src="{{ service_type.image.url }}" alt="{{ service_type.name }}" class="w-full h-auto object-contain max-h-32 md:max-h-full">
                     {% endif %}
@@ -34,7 +34,7 @@
                     <h3 class="text-xl font-bold text-gray-900 mb-2">{{ service_type.name }}</h3>
                     <p class="text-gray-600 mb-4 flex-grow">{{ service_type.description }}</p>
                     {% if service_type.base_price %}
-                    <p class="text-emerald-600 font-semibold mt-auto text-lg">Starting from ${{ service_type.base_price }}</p>
+                    <p class="text-gray-800 font-semibold mt-auto text-lg">Starting from ${{ service_type.base_price }}</p>
                     {% endif %}
                 </div>
             </div>
