@@ -65,6 +65,104 @@
     .btn-reject:hover {
         background-color: #d97706;
     }
+
+    /* Custom styles for improved readability */
+    body {
+        color: #1f2937; /* gray-800 */
+    }
+    .text-gray-500 {
+        color: #4b5563; /* gray-600 */
+    }
+    .text-gray-700 {
+        color: #374151; /* gray-700 */
+    }
+    .text-gray-800 {
+        color: #1f2937; /* gray-800 */
+    }
+    .text-gray-900 {
+        color: #111827; /* gray-900 */
+    }
+    .border-gray-200 {
+        border-color: #d1d5db; /* gray-300 */
+    }
+    .border-gray-300 {
+        border-color: #9ca3af; /* gray-400 */
+    }
+    .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+        border-color: #d1d5db; /* gray-300 */
+    }
+    .bg-gray-50 {
+        background-color: #f9fafb; /* gray-50 */
+    }
+
+    /* FullCalendar custom styling */
+    .fc-toolbar-title {
+        color: #1f2937; /* gray-800 */
+    }
+    .fc-daygrid-day-number,
+    .fc-col-header-cell-cushion {
+        color: #1f2937; /* gray-800 */
+    }
+    .fc-day-today {
+        background: #eff6ff !important; /* blue-50 */
+    }
+    .fc-event {
+        border: 1px solid #1e40af; /* blue-800 */
+    }
+    .fc-event-main {
+        color: #1f2937; /* gray-800 */
+    }
+
+    /* Calendar event specific styles */
+    .calendar-tile-base {
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-size: 0.75rem;
+        line-height: 1.2;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        margin-bottom: 1px;
+    }
+
+    .booking-title {
+        font-weight: 600;
+        color: #1f2937; /* Dark gray for titles */
+    }
+
+    .booking-details {
+        color: #4b5563; /* Medium gray for details */
+    }
+
+    /* Status-based colors (example, adjust as needed) */
+    .status-confirmed {
+        background-color: #d1fae5; /* green-100 */
+        border-color: #34d399; /* green-400 */
+        color: #065f46; /* green-800 */
+    }
+    .status-pending_confirmation {
+        background-color: #fffbeb; /* yellow-100 */
+        border-color: #fcd34d; /* yellow-400 */
+        color: #92400e; /* yellow-800 */
+    }
+    .status-cancelled,
+    .status-declined,
+    .status-no_show,
+    .status-declined_refunded {
+        background-color: #fee2e2; /* red-100 */
+        border-color: #f87171; /* red-400 */
+        color: #991b1b; /* red-800 */
+    }
+    .status-completed {
+        background-color: #e0f2fe; /* blue-100 */
+        border-color: #60a5fa; /* blue-400 */
+        color: #1e40af; /* blue-800 */
+    }
+    .status-enquired {
+        background-color: #e0e7ff; /* indigo-100 */
+        border-color: #818cf8; /* indigo-400 */
+        color: #4338ca; /* indigo-800 */
+    }
 </style>
 {% endblock %}
 
