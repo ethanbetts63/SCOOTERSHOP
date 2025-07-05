@@ -33,6 +33,19 @@
         <form method="post" class="space-y-6">
             {% csrf_token %}
 
+            <!-- Display Non-Field Errors -->
+            {% if form.non_field_errors %}
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <strong class="font-bold">Error:</strong>
+                    <span class="block sm:inline">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </span>
+                </div>
+            {% endif %}
+
+
             {% for field in form %}
                 <div class="form-group">
                     <label for="{{ field.id_for_label }}" class="block text-gray-700 text-sm font-medium mb-2">

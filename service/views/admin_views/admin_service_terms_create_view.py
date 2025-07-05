@@ -37,7 +37,7 @@ class ServiceTermsCreateView(AdminRequiredMixin, View):
             )
             # Assuming the URL name for the management view is 'service_terms_management'
             return redirect(reverse("service:service_terms_management"))
-        else:
+        else:        
             messages.error(request, "Please correct the errors below.")
             context = {
                 "form": form,

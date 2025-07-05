@@ -73,7 +73,7 @@
                         {% for version in terms_versions %}
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 table-cell-padding">
-                                    <a href="{% url 'inventory:service_terms_detail' pk=version.pk %}" class="text-blue-600 hover:underline">
+                                    <a href="{% url 'service:service_terms_detail' pk=version.pk %}" class="text-blue-600 hover:underline">
                                         Version {{ version.version_number }}
                                     </a>
                                 </td>

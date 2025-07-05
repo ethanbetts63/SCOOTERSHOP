@@ -14,8 +14,8 @@ class ServiceTerms(models.Model):
         help_text="A unique version number for tracking. Automatically assigned on creation."
     )
     is_active = models.BooleanField(
-        default=False,
-        help_text="Is this the currently active version to be shown to new customers?"
+        default=True,
+        help_text="Is this the currently active version to be shown to new customers? New versions are active by default."
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
