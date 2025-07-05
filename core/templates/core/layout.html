@@ -218,10 +218,14 @@
                                 Terms of Use
                             </a>
                         </li>
-                        <!-- NEW LINK ADDED HERE -->
                         <li>
                             <a href="{% url 'service:service_booking_terms' %}">
                                 Service Booking Terms
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'inventory:sales_terms' %}">
+                                Sales Booking Terms
                             </a>
                         </li>
                         {% if settings.enable_privacy_policy_page or user.is_staff %}

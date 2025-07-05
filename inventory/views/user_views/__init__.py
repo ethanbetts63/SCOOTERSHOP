@@ -1,3 +1,4 @@
+from .sales_terms_view import *
 from .motorcycle_list_view import *
 from .user_motorcycle_details_view import *
 from .initiate_sales_booking_process_view import *

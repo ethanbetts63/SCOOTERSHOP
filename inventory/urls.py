@@ -8,6 +8,7 @@ from .views.user_views import (
     step3_payment_view,
     step4_confirmation_view,
     user_motorcycle_details_view,
+    SalesTermsView,
 )
 
 from .views.admin_views import (
@@ -78,7 +79,11 @@ urlpatterns = [
         user_motorcycle_details_view.UserMotorcycleDetailsView.as_view(),
         name="motorcycle-detail",
     ),
-    # --- Booking Flow URLs ---
+    path(
+        "sales-terms/",
+        SalesTermsView.as_view(),
+        name="sales_terms",
+    ),
     path(
         "motorcycles/<int:pk>/initiate_booking/",
         initiate_sales_booking_process_view.InitiateBookingProcessView.as_view(),

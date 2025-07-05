@@ -114,9 +114,8 @@
                     </div>
                     <div class="ml-3 text-sm">
                         <label for="{{ form.terms_accepted.id_for_label }}" class="font-medium text-gray-700">
-                            {{ form.terms_accepted.label }}<span class="text-red-500"> *</span>
+                            I have read and agree to the <a href="{% url 'inventory:sales_terms' %}" target="_blank" class="text-green-600 hover:underline">Sales Terms & Conditions</a><span class="text-red-500"> *</span>
                         </label>
-                        <p class="text-gray-500 text-xs italic mt-1">{{ form.terms_accepted.help_text }}</p>
                     </div>
                 </div>
                 {% if form.terms_accepted.errors %}
@@ -124,12 +123,6 @@
                         {% for error in form.terms_accepted.errors %}
                             <p>{{ error }}</p>
                         {% endfor %}
-                    </div>
-                {% endif %}
-                {% if inventory_settings.terms_and_conditions_text %}
-                    <div class="mt-4 p-4 border border-gray-200 rounded-md bg-gray-50 max-h-48 overflow-y-auto text-sm text-gray-700">
-                        <h4 class="font-semibold mb-2">Our Terms and Conditions:</h4>
-                        <p>{{ inventory_settings.terms_and_conditions_text|linebreaksbr }}</p>
                     </div>
                 {% endif %}
             </div>
