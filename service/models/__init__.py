@@ -7,3 +7,4 @@ from .service_settings import ServiceSettings
 from .service_type import ServiceType
 from .temp_service_booking import TempServiceBooking
 from .service_FAQ import ServiceFAQ
+from .service_terms import ServiceTerms

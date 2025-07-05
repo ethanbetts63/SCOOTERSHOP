@@ -13,3 +13,4 @@ from .service_settings_form import *
 from .service_brand_form import *
 from .admin_service_type_form import *
 from .admin_service_faq_form import *
+from .admin_service_terms_form import *

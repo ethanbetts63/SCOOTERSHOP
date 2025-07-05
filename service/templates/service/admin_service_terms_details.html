@@ -1,0 +1,60 @@
+{% extends "dashboard/admin_layout.html" %}
+{% load static %}
+
+{% block extra_css %}
+    {{ block.super }}
+    <style>
+        .details-card {
+            background-color: #fff;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .details-header {
+            border-bottom: 1px solid #e5e7eb; /* gray-200 */
+        }
+        .details-content {
+            background-color: #f9fafb; /* gray-50 */
+            border: 1px solid #e5e7eb; /* gray-200 */
+            border-radius: 0.375rem;
+        }
+    </style>
+{% endblock %}
+
+{% block admin_main_content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="details-card max-w-5xl mx-auto">
+        <div class="details-header p-6 flex justify-between items-start">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">{{ page_title }}</h2>
+                <div class="mt-2 flex items-center space-x-4 text-sm text-gray-500">
+                    <span>
+                        <strong>Created:</strong> {{ terms_version.created_at|date:"d M Y, H:i" }}
+                    </span>
+                    <span class="flex items-center">
+                        <strong>Status:</strong> 
+                        {% if terms_version.is_active %}
+                            <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Active
+                            </span>
+                        {% else %}
+                            <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                Archived
+                            </span>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            <a href="{% url 'inventory:service_terms_management' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                Back to Management
+            </a>
+        </div>
+        
+        <div class="p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Terms Content:</h3>
+            <div class="details-content p-4 prose max-w-none text-gray-800">
+                {{ terms_version.content|linebreaksbr }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

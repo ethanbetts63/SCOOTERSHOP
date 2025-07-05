@@ -20,3 +20,6 @@ from .admin_service_booking_create_update import *
 from .admin_service_FAQ_create_update_view import *
 from .admin_service_FAQ_management_view import *
 from .admin_service_FAQ_delete_view import *
+from .admin_service_terms_create_view import *
+from .admin_service_terms_management_view import *
+from .admin_service_terms_details_view import *
