@@ -15,5 +15,5 @@ class SalesEnquiryView(View):
         if form.is_valid():
             form.save()
             # Redirect to a success page or back to the motorcycle detail page
-            return redirect('motorcycle_detail', pk=motorcycle_id)
+            return redirect('inventory:motorcycle-detail', pk=motorcycle_id)
         return render(request, 'inventory/sales_enquiry.html', {'form': form, 'motorcycle': motorcycle})

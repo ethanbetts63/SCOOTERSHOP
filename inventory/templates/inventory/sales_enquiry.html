@@ -73,7 +73,7 @@
         <div class="bg-gray-800 p-8 rounded-2xl shadow-lg text-gray-300 flex flex-col h-full">
             <div class="flex-grow">
                 <h3 class="text-2xl font-bold text-white mb-4">Enquiry for:</h3>
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-4 mb-6">
                     <img src="{% if motorcycle.image %}{{ motorcycle.image.url }}{% elif motorcycle.images.all %}{{ motorcycle.images.first.image.url }}{% else %}https://placehold.co/800x600/e2e8f0/333?text=No+Image{% endif %}" alt="{{ motorcycle.title }}" class="w-32 h-32 object-cover rounded-lg">
                     <div>
                         <h4 class="text-xl font-bold text-white">{{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }}</h4>
@@ -87,6 +87,47 @@
                         </p>
                     </div>
                 </div>
+
+                <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-lg text-gray-300">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-calendar-alt text-green-400"></i>
+                        <dt class="font-semibold">Year:</dt>
+                        <dd>{{ motorcycle.year }}</dd>
+                    </div>
+                    
+                    {% if 'New' not in motorcycle.get_conditions_display %}
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-tachometer-alt text-green-400"></i>
+                        <dt class="font-semibold">Odometer:</dt>
+                        <dd>{{ motorcycle.odometer|floatformat:0 }} km</dd>
+                    </div>
+                    {% endif %}
+
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-cogs text-green-400"></i>
+                        <dt class="font-semibold">Engine Size:</dt>
+                        <dd>{{ motorcycle.engine_size }} cc</dd>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-cogs text-green-400"></i>
+                        <dt class="font-semibold">Transmission:</dt>
+                        <dd>{{ motorcycle.get_transmission_display }}</dd>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-chair text-green-400"></i>
+                        <dt class="font-semibold">Seats:</dt>
+                        <dd>{{ motorcycle.seats|default:"N/A" }}</dd>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-barcode text-green-400"></i>
+                        <dt class="font-semibold">Stock #:</dt>
+                        <dd>{{ motorcycle.stock_number|default:"N/A" }}</dd>
+                    </div>
+                    <div class="md:col-span-2 mt-4">
+                        <h3 class="text-xl font-bold text-white mb-2">Description:</h3>
+                        <p class="text-gray-400 leading-relaxed">{{ motorcycle.description|default:"No description available." }}</p>
+                    </div>
+                </dl>
             </div>
         </div>
     </div>
