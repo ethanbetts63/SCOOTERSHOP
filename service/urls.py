@@ -20,6 +20,7 @@ from service.ajax import (
 app_name = "service"
 
 urlpatterns = [
+    # User-facing URLs
     path("", user_views.service, name="service"),
     path(
         "service-book/get-available-times/",
@@ -66,6 +67,8 @@ urlpatterns = [
         user_views.Step7StatusCheckView.as_view(),
         name="service_booking_status_check",
     ),
+
+    # Admin - Booking Management
     path(
         "service-booking-management/",
         admin_views.ServiceBookingManagementView.as_view(),
@@ -91,10 +94,27 @@ urlpatterns = [
         admin_views.AdminServiceBookingDeleteView.as_view(),
         name="admin_delete_service_booking",
     ),
+
+    # Admin - Settings & Configuration
     path(
         "service-settings/",
         admin_views.ServiceSettingsView.as_view(),
         name="service_settings",
+    ),
+    path(
+        "service-terms/",
+        admin_views.ServiceTermsManagementView.as_view(),
+        name="service_terms_management",
+    ),
+    path(
+        "service-terms/create/",
+        admin_views.ServiceTermsCreateView.as_view(),
+        name="service_terms_create",
+    ),
+    path(
+        "service-terms/<int:pk>/",
+        admin_views.ServiceTermsDetailsView.as_view(),
+        name="service_terms_detail",
     ),
     path(
         "blocked-dates/",
@@ -156,6 +176,8 @@ urlpatterns = [
         admin_views.ServiceFAQDeleteView.as_view(),
         name="service_faq_delete",
     ),
+
+    # Admin - Profile & Motorcycle Management
     path(
         "admin/service-profiles/",
         admin_views.ServiceProfileManagementView.as_view(),
@@ -196,6 +218,8 @@ urlpatterns = [
         admin_views.CustomerMotorcycleDeleteView.as_view(),
         name="admin_delete_customer_motorcycle",
     ),
+
+    # Admin - AJAX APIs
     path(
         "admin/api/search-customer/",
         ajax_search_service_profiles.search_customer_profiles_ajax,
