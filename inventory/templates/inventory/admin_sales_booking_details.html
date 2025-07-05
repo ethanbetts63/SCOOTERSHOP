@@ -54,7 +54,7 @@
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">{{ page_title|default:"Sales Booking Details" }}</h1>
         <div class="flex space-x-2">
-            <a href="" class="action-button btn-edit">Edit Booking</a>
+            <a href="{% url 'inventory:sales_booking_update' pk=sales_booking.pk %}" class="action-button btn-edit">Edit Booking</a>
             <form action="{% url 'inventory:admin_sales_booking_delete' pk=sales_booking.pk %}" method="post" class="inline">
                 {% csrf_token %}
                 <button type="submit" class="action-button btn-delete" onclick="return confirm('Are you sure you want to delete sales booking {{ sales_booking.sales_booking_reference }}? This action cannot be undone.');">
@@ -127,6 +127,24 @@
             {% endif %}
         </div>
 
+        <!-- NEW SECTION FOR TERMS AND CONDITIONS -->
+        <h2 class="text-xl font-semibold text-gray-800 mt-6 mb-4">Terms and Conditions</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="detail-item">
+                <div class="detail-label">Terms Version Accepted:</div>
+                <div class="detail-value">
+                    {% if sales_booking.sales_terms_version %}
+                        <a href="{% url 'inventory:terms_and_conditions_detail' pk=sales_booking.sales_terms_version.pk %}" class="text-blue-600 hover:underline">
+                            Version {{ sales_booking.sales_terms_version.version_number }}
+                        </a>
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <!-- END NEW SECTION -->
+
         <h2 class="text-xl font-semibold text-gray-800 mt-6 mb-4">Associated Motorcycle</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="detail-item">
@@ -154,7 +172,7 @@
             <div class="detail-item">
                 <div class="detail-label">Customer Name:</div>
                 <div class="detail-value">
-                     <a href="" class="text-blue-600 hover:underline">
+                     <a href="{% url 'inventory:sales_profile_details' pk=sales_booking.sales_profile.pk %}" class="text-blue-600 hover:underline">
                         {{ sales_booking.sales_profile.name|default:"N/A" }}
                     </a>
                 </div>
