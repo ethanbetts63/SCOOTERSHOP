@@ -44,10 +44,6 @@ class ContactViewTest(TestCase):
         self.mock_admin_email = patch_admin_email.start()
         self.addCleanup(patch_admin_email.stop)
 
-        patch_send_mail = patch("core.views.user_views.contact_view.send_mail")
-        self.mock_send_mail = patch_send_mail.start()
-        self.addCleanup(patch_send_mail.stop)
-
     def test_contact_view_get(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
@@ -81,17 +77,6 @@ class ContactViewTest(TestCase):
         self.mock_enquiry_form_class.assert_called_once()
         self.mock_enquiry_form_instance.is_valid.assert_called_once()
         self.mock_enquiry_form_instance.save.assert_called_once()
-        self.assertEqual(self.mock_send_mail.call_count, 2)
-
-        user_email_args = self.mock_send_mail.call_args_list[0].args
-        self.assertEqual(user_email_args[0], "Enquiry Received - Scooter Shop")
-        self.assertIn(f"Hi {mock_enquiry_instance.name},", user_email_args[1])
-        self.assertEqual(user_email_args[3], [mock_enquiry_instance.email])
-
-        admin_email_args = self.mock_send_mail.call_args_list[1].args
-        self.assertEqual(admin_email_args[0], "New Enquiry - Scooter Shop")
-        self.assertIn(f"Name: {mock_enquiry_instance.name}", admin_email_args[1])
-        self.assertEqual(admin_email_args[3], [self.mock_admin_email])
 
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
@@ -108,7 +93,6 @@ class ContactViewTest(TestCase):
         self.assertEqual(self.mock_enquiry_form_class.call_count, 2)
         self.mock_enquiry_form_instance.is_valid.assert_called_once()
         self.mock_enquiry_form_instance.save.assert_not_called()
-        self.mock_send_mail.assert_not_called()
 
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)

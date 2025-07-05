@@ -35,9 +35,6 @@ class BookingAppointmentForm(forms.Form):
         required=True,
         label="I accept the Terms and Conditions",
         widget=forms.CheckboxInput(),
-        error_messages={
-            "required": "You must accept the terms and conditions to proceed."
-        },
     )
 
     def __init__(self, *args, **kwargs):

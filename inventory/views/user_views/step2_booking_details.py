@@ -89,8 +89,10 @@ class Step2BookingDetailsView(View):
 
     def post(self, request, *args, **kwargs):
         temp_booking_uuid = request.session.get("temp_sales_booking_uuid")
+        print(f"DEBUG: Step2 POST - Initial temp_sales_booking_uuid: {temp_booking_uuid}")
 
         if not temp_booking_uuid:
+            print("DEBUG: Step2 POST - No temp_sales_booking_uuid found, redirecting to index.")
             messages.error(
                 request,
                 "Your booking session has expired or is invalid. Please start again.",
@@ -123,6 +125,7 @@ class Step2BookingDetailsView(View):
         )
 
         if form.is_valid():
+            print("DEBUG: Step2 POST - Form is valid.")
             with transaction.atomic():
                 active_terms = SalesTerms.objects.filter(is_active=True).first()
                 if not active_terms:
@@ -144,11 +147,13 @@ class Step2BookingDetailsView(View):
                 temp_booking.save()
 
                 if temp_booking.deposit_required_for_flow:
+                    print("DEBUG: Step2 POST - Deposit required, redirecting to step3_payment.")
                     messages.success(
                         request, "Booking details saved. Proceed to payment."
                     )
                     return redirect(reverse("inventory:step3_payment"))
                 else:
+                    print("DEBUG: Step2 POST - No deposit required, converting to sales booking and redirecting to step4_confirmation.")
                     converted_sales_booking = convert_temp_sales_booking(
                         temp_booking=temp_booking,
                         booking_payment_status="unpaid",
@@ -209,6 +214,7 @@ class Step2BookingDetailsView(View):
                     )
                     return redirect(reverse("inventory:step4_confirmation"))
         else:
+            print(f"DEBUG: Step2 POST - Form is NOT valid. Errors: {form.errors.as_json()}")
             min_date_obj, max_date_obj, blocked_dates_list = (
                 get_sales_appointment_date_info(
                     inventory_settings, temp_booking.deposit_required_for_flow

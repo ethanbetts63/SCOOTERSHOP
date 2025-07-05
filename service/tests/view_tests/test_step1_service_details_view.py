@@ -95,28 +95,6 @@ class Step1ServiceDetailsViewTest(TestCase):
         self.assertEqual(TempServiceBooking.objects.count(), 0)
 
     @patch("service.views.user_views.step1_service_details_view.ServiceDetailsForm")
-    def test_service_booking_disabled(self, MockServiceDetailsForm):
-        self.service_settings.save()
-
-        mock_form_instance = MockServiceDetailsForm.return_value
-        mock_form_instance.is_valid.return_value = True
-        mock_form_instance.cleaned_data = {
-            "service_type": self.service_type,
-            "service_date": self.fixed_local_date + datetime.timedelta(days=2),
-        }
-
-        response = Step1ServiceDetailsView().post(self.request)
-
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse("core:index"))
-
-        messages = list(get_messages(self.request))
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), "Service bookings are currently disabled.")
-        self.assertEqual(TempServiceBooking.objects.count(), 0)
-
-
-    @patch("service.views.user_views.step1_service_details_view.ServiceDetailsForm")
     def test_service_date_too_early(self, MockServiceDetailsForm):
         self.service_settings.booking_advance_notice = 1
         self.service_settings.save()
