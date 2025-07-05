@@ -10,6 +10,7 @@ class InventorySettingsForm(forms.ModelForm):
         fields = [
             "enable_depositless_enquiry",
             "enable_reservation_by_deposit",
+            "enable_sales_enquiries",
             "deposit_amount",
             "deposit_lifespan_days",
             "enable_sales_new_bikes",
@@ -31,6 +32,9 @@ class InventorySettingsForm(forms.ModelForm):
                 attrs={"class": "form-check-input"}
             ),
             "enable_reservation_by_deposit": forms.CheckboxInput(
+                attrs={"class": "form-check-input"}
+            ),
+            "enable_sales_enquiries": forms.CheckboxInput(
                 attrs={"class": "form-check-input"}
             ),
             "deposit_amount": forms.NumberInput(
