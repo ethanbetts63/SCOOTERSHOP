@@ -159,15 +159,15 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="mt-10 pt-6 border-t border-gray-200 flex flex-col sm:flex-row justify-center items-center gap-4">
+        <div class="mt-10 pt-8 border-t border-gray-200 flex flex-col sm:flex-row justify-center items-center flex-wrap gap-4">
             {% if motorcycle.is_available %}
                 {% if inventory_settings.enable_reservation_by_deposit %}
                     <form action="{% url 'inventory:initiate_booking' pk=motorcycle.pk %}" method="post" class="w-full sm:w-auto">
                         {% csrf_token %}
                         <input type="hidden" name="deposit_required_for_flow" value="true">
                         <button type="submit"
-                                class="w-full px-8 py-4 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all transform hover:scale-105">
-                            <i class="fas fa-calendar-check mr-3 text-xl"></i>
+                                class="w-full flex items-center justify-center px-6 py-3 border border-transparent text-base font-bold rounded-full shadow-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
+                            <i class="fas fa-calendar-check mr-2"></i>
                             Reserve with Deposit
                         </button>
                     </form>
@@ -177,17 +177,16 @@
                         {% csrf_token %}
                         <input type="hidden" name="deposit_required_for_flow" value="false">
                         <button type="submit"
-                                class="w-full px-8 py-4 border border-gray-400 text-gray-700 font-semibold rounded-full shadow-sm
-                                       hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-all transform hover:scale-105">
-                            <i class="fas fa-question-circle mr-3 text-xl"></i>
+                                class="w-full flex items-center justify-center px-6 py-3 border border-transparent text-base font-bold rounded-full shadow-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
+                            <i class="fas fa-question-circle mr-2"></i>
                             Book a viewing
                         </button>
                     </form>
                 {% endif %}
                 {% if inventory_settings.enable_sales_enquiries %}
                 <a href="{% url 'inventory:sales_enquiry' motorcycle_id=motorcycle.id %}"
-                   class="w-full sm:w-auto px-8 py-4 border border-gray-400 text-gray-700 font-semibold rounded-full shadow-sm hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-all transform hover:scale-105">
-                    <i class="fas fa-envelope mr-3 text-xl"></i>
+                   class="w-full sm:w-auto flex items-center justify-center px-6 py-3 border border-transparent text-base font-bold rounded-full shadow-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
+                    <i class="fas fa-envelope mr-2"></i>
                     Enquire
                 </a>
                 {% endif %}
