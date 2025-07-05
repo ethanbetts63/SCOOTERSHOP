@@ -79,7 +79,7 @@
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="container">
                     <tr>
                         <td class="header">
-                            <h1>Your Sales Booking Is Not Confirmed!</h1>
+                            <h1>Your Sales Booking Is Not Confirmed But your deposit is!</h1>
                         </td>
                     </tr>
                     <tr>
@@ -87,7 +87,7 @@
                             <p>Hi {% if sales_profile.name %}{{ sales_profile.name }}{% else %}there{% endif %},</p>
                             {% if is_deposit_confirmed %}
                             <p>
-                                Your deposit has been confirmed for the motorcycle! The bike ({{ booking.motorcycle.brand }} {{ booking.motorcycle.model }})
+                                Your deposit has been confirmed! The bike ({{ booking.motorcycle.brand }} {{ booking.motorcycle.model }})
                                 will be displayed as reserved on our website and will be reserved for you until your deposit expires or the sale is completed.
                             </p>
                             {% else %}
