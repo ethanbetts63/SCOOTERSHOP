@@ -95,6 +95,14 @@
     .fc-event-main {
         color: #1f2937; /* gray-800 */
     }
+
+    /* Search input styling */
+    #search_query {
+        color: #1f2937; /* gray-800 */
+    }
+    #search_query::placeholder {
+        color: #6b7280; /* gray-500 */
+    }
 </style>
 {% endblock %}
 
@@ -117,7 +125,7 @@
                     Search
                 </button>
                 {% if search_term %}
-                    <a href="{% url 'service:admin_service_booking_management' %}"
+                    <a href="{% url 'service:service_booking_management' %}"
                        class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                         Clear
                     </a>
