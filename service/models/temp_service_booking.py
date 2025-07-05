@@ -45,6 +45,14 @@ class TempServiceBooking(models.Model):
         blank=True,
         help_text="The selected payment option for this booking.",
     )
+    service_terms_version = models.ForeignKey(
+        "service.ServiceTerms",
+        on_delete=models.PROTECT,
+        related_name="temp_service_bookings",
+        null=True,
+        blank=True,
+        help_text="The specific version of the Service T&Cs the user agreed to.",
+    )
 
     service_date = models.DateField(help_text="Requested date for the service.")
     dropoff_date = models.DateField(

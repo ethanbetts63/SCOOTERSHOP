@@ -43,6 +43,7 @@ def convert_temp_service_booking(
                 estimated_pickup_date=temp_booking.estimated_pickup_date,
                 booking_status="confirmed",
                 customer_notes=temp_booking.customer_notes,
+                service_terms_version=temp_booking.service_terms_version,
                 payment=payment_obj,
             )
 

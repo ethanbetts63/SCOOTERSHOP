@@ -6,7 +6,7 @@ from decimal import Decimal
 from django.conf import settings
 import json
 from service.forms.step5_payment_choice_and_terms_form import PaymentOptionForm
-from service.models import TempServiceBooking, ServiceSettings, ServiceFAQ
+from service.models import TempServiceBooking, ServiceSettings, ServiceFAQ, ServiceTerms
 from service.utils.convert_temp_service_booking import convert_temp_service_booking
 from service.utils.get_drop_off_date_availability import get_drop_off_date_availability
 from service.utils.calculate_service_total import calculate_service_total
@@ -104,11 +104,17 @@ class Step5PaymentDropoffAndTermsView(View):
         form = self.form_class(request.POST, **self.get_form_kwargs())
 
         if form.is_valid():
+            active_terms = ServiceTerms.objects.filter(is_active=True).first()
+            if not active_terms:
+                messages.error(request, "No active service terms found. Please contact an administrator.")
+                return redirect(reverse("service:service"))
+
             self.temp_booking.dropoff_date = form.cleaned_data["dropoff_date"]
             self.temp_booking.dropoff_time = form.cleaned_data["dropoff_time"]
             self.temp_booking.payment_method = form.cleaned_data["payment_method"]
+            self.temp_booking.service_terms_version = active_terms
             self.temp_booking.save(
-                update_fields=["dropoff_date", "dropoff_time", "payment_method"]
+                update_fields=["dropoff_date", "dropoff_time", "payment_method", "service_terms_version"]
             )
 
             self.temp_booking.calculated_total = calculate_service_total(
