@@ -109,8 +109,8 @@ def reject_sales_booking(
                     subject=customer_email_subject,
                     template_name=customer_email_template,
                     context=email_context,
-                    sales_profile=booking.sales_profile,
-                    sales_booking=booking,
+                    profile=booking.sales_profile,
+                    booking=booking,
                 )
 
                 admin_email_subject = (
@@ -122,8 +122,8 @@ def reject_sales_booking(
                     subject=admin_email_subject,
                     template_name=admin_email_template,
                     context=email_context,
-                    sales_profile=booking.sales_profile,
-                    sales_booking=booking,
+                    profile=booking.sales_profile,
+                    booking=booking,
                 )
 
             success_message = "Sales booking rejected successfully."
