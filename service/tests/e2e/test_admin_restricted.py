@@ -10,7 +10,7 @@ from service.tests.test_helpers.model_factories import (
     BlockedServiceDateFactory,
     ServiceBrandFactory,
     ServiceTypeFactory,
-    ServiceFAQFactory,
+    ServicefaqFactory,
     ServiceProfileFactory,
     CustomerMotorcycleFactory,
 )
@@ -38,7 +38,7 @@ class ServiceAdminViewsPermissionsTestCase(TestCase):
         cls.blocked_date = BlockedServiceDateFactory()
         cls.service_brand = ServiceBrandFactory()
         cls.service_type = ServiceTypeFactory()
-        cls.faq = ServiceFAQFactory()
+        cls.faq = ServicefaqFactory()
 
     def _test_url_permissions(self, url_name, kwargs=None, method='get', data=None):
         url = reverse(url_name, kwargs=kwargs)

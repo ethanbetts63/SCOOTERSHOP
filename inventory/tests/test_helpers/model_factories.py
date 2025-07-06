@@ -18,7 +18,7 @@ from inventory.models import (
     SalesProfile,
     SalesTerms,
     TempSalesBooking,
-    SalesFAQ,
+    Salesfaq,
     FeaturedMotorcycle,
 )
 
@@ -312,13 +312,13 @@ class BlockedSalesDateFactory(factory.django.DjangoModelFactory):
     description = factory.Faker("sentence")
 
 
-class SalesFAQFactory(factory.django.DjangoModelFactory):
+class SalesfaqFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = SalesFAQ
+        model = Salesfaq
 
     booking_step = factory.Faker(
         "random_element",
-        elements=[choice[0] for choice in SalesFAQ.BOOKING_STEP_CHOICES],
+        elements=[choice[0] for choice in Salesfaq.BOOKING_STEP_CHOICES],
     )
     question = factory.Faker("sentence", nb_words=6)
     answer = factory.Faker("paragraph", nb_sentences=3)

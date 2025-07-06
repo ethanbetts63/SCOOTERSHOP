@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class ServiceFAQ(models.Model):
+class Servicefaq(models.Model):
 
     BOOKING_STEP_CHOICES = [
         ("service_page", "Main Service Page"),
@@ -18,25 +18,25 @@ class ServiceFAQ(models.Model):
     booking_step = models.CharField(
         max_length=20,
         choices=BOOKING_STEP_CHOICES,
-        help_text="The step in the service booking process where this FAQ should be displayed.",
+        help_text="The step in the service booking process where this faq should be displayed.",
     )
     question = models.CharField(
         max_length=255, help_text="The frequently asked question."
     )
     answer = models.TextField(help_text="The answer to the question.")
     is_active = models.BooleanField(
-        default=True, help_text="Designates whether this FAQ is publicly visible."
+        default=True, help_text="Designates whether this faq is publicly visible."
     )
     display_order = models.PositiveIntegerField(
         default=0,
-        help_text="The order in which the FAQ appears. Lower numbers are displayed first.",
+        help_text="The order in which the faq appears. Lower numbers are displayed first.",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Service FAQ"
-        verbose_name_plural = "Service FAQs"
+        verbose_name = "Service faq"
+        verbose_name_plural = "Service faqs"
         ordering = ["booking_step", "display_order", "question"]
 
     def __str__(self):

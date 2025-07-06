@@ -1,11 +1,11 @@
 from django import forms
-from service.models import ServiceFAQ
+from service.models import Servicefaq
 
 
-class AdminServiceFAQForm(forms.ModelForm):
+class AdminServicefaqForm(forms.ModelForm):
 
     class Meta:
-        model = ServiceFAQ
+        model = Servicefaq
         fields = [
             "booking_step",
             "question",
@@ -48,11 +48,11 @@ class AdminServiceFAQForm(forms.ModelForm):
             "question": "Question",
             "answer": "Answer",
             "display_order": "Display Order",
-            "is_active": "Is this FAQ active and visible?",
+            "is_active": "Is this faq active and visible?",
         }
         help_texts = {
-            "display_order": "FAQs with lower numbers will be shown first.",
-            "is_active": "If unchecked, this FAQ will not be displayed anywhere on the site.",
+            "display_order": "faqs with lower numbers will be shown first.",
+            "is_active": "If unchecked, this faq will not be displayed anywhere on the site.",
         }
 
     def __init__(self, *args, **kwargs):

@@ -16,7 +16,7 @@ from service.models import (
     ServiceType,
     TempServiceBooking,
     ServiceBrand,
-    ServiceFAQ,
+    Servicefaq,
     ServiceTerms,
 )
 
@@ -327,13 +327,13 @@ class RefundPolicySettingsFactory(factory.django.DjangoModelFactory):
         lambda: Decimal(fake.random_element(["0.30", "0.40"]))
     )
 
-class ServiceFAQFactory(factory.django.DjangoModelFactory):
+class ServicefaqFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = ServiceFAQ
+        model = Servicefaq
 
     booking_step = factory.Faker(
         "random_element",
-        elements=[choice[0] for choice in ServiceFAQ.BOOKING_STEP_CHOICES],
+        elements=[choice[0] for choice in Servicefaq.BOOKING_STEP_CHOICES],
     )
     question = factory.Faker("sentence")
     answer = factory.Faker("paragraph")

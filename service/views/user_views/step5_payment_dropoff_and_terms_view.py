@@ -6,7 +6,7 @@ from decimal import Decimal
 from django.conf import settings
 import json
 from service.forms.step5_payment_choice_and_terms_form import PaymentOptionForm
-from service.models import TempServiceBooking, ServiceSettings, ServiceFAQ, ServiceTerms
+from service.models import TempServiceBooking, ServiceSettings, Servicefaq, ServiceTerms
 from service.utils.convert_temp_service_booking import convert_temp_service_booking
 from service.utils.get_drop_off_date_availability import get_drop_off_date_availability
 from service.utils.calculate_service_total import calculate_service_total
@@ -72,7 +72,7 @@ class Step5PaymentDropoffAndTermsView(View):
         available_dropoff_dates = get_drop_off_date_availability(
             self.temp_booking, self.service_settings
         )
-        service_faqs = ServiceFAQ.objects.filter(is_active=True)
+        service_faqs = Servicefaq.objects.filter(is_active=True)
         context = {
             "temp_booking": self.temp_booking,
             "service_settings": self.service_settings,

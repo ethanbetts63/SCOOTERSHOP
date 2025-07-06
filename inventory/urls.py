@@ -29,9 +29,9 @@ from .views.admin_views import (
     delete_blocked_sales_date,
     delete_sales_booking,
     delete_sales_profile,
-    sales_FAQ_management_view,
-    sales_FAQ_create_update_view,
-    sales_FAQ_delete_view,
+    sales_faq_management_view,
+    sales_faq_create_update_view,
+    sales_faq_delete_view,
     featured_motorcycle_management,
     featured_motorcycle_create_update,
     featured_motorcycle_delete_view,
@@ -228,25 +228,25 @@ urlpatterns = [
         sales_profile_details_view.SalesProfileDetailsView.as_view(),
         name="sales_profile_details",
     ),
-    # Admin Sales FAQs
+    # Admin Sales faqs
     path(
         "admin/sales-faqs/",
-        sales_FAQ_management_view.SalesFAQManagementView.as_view(),
+        sales_faq_management_view.SalesfaqManagementView.as_view(),
         name="sales_faq_management",
     ),
     path(
         "admin/sales-faqs/create/",
-        sales_FAQ_create_update_view.SalesFAQCreateUpdateView.as_view(),
+        sales_faq_create_update_view.SalesfaqCreateUpdateView.as_view(),
         name="sales_faq_create",
     ),
     path(
         "admin/sales-faqs/<int:pk>/update/",
-        sales_FAQ_create_update_view.SalesFAQCreateUpdateView.as_view(),
+        sales_faq_create_update_view.SalesfaqCreateUpdateView.as_view(),
         name="sales_faq_update",
     ),
     path(
         "admin/sales-faqs/<int:pk>/delete/",
-        sales_FAQ_delete_view.SalesFAQDeleteView.as_view(),
+        sales_faq_delete_view.SalesfaqDeleteView.as_view(),
         name="sales_faq_delete",
     ),
     # Admin Terms and Conditions

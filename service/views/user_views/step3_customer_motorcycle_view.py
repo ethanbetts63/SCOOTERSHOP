@@ -3,7 +3,7 @@ from django.views import View
 from django.urls import reverse
 from django.contrib import messages
 
-from service.models import TempServiceBooking, ServiceSettings, ServiceFAQ
+from service.models import TempServiceBooking, ServiceSettings, Servicefaq
 from service.forms.step3_customer_motorcycle_form import CustomerMotorcycleForm
 
 
@@ -43,7 +43,7 @@ class Step3CustomerMotorcycleView(View):
         else:
             form = CustomerMotorcycleForm()
 
-        service_faqs = ServiceFAQ.objects.filter(is_active=True)
+        service_faqs = Servicefaq.objects.filter(is_active=True)
         context = {
             "form": form,
             "temp_booking": self.temp_booking,
@@ -77,7 +77,7 @@ class Step3CustomerMotorcycleView(View):
 
             return redirect(reverse("service:service_book_step4"))
         else:
-            service_faqs = ServiceFAQ.objects.filter(is_active=True)
+            service_faqs = Servicefaq.objects.filter(is_active=True)
             context = {
                 "form": form,
                 "temp_booking": self.temp_booking,

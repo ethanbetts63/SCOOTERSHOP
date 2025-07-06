@@ -6,7 +6,7 @@ from service.forms import MotorcycleSelectionForm, ADD_NEW_MOTORCYCLE_OPTION
 from service.models import (
     TempServiceBooking,
     CustomerMotorcycle,
-    ServiceFAQ,
+    Servicefaq,
 )
 
 
@@ -41,7 +41,7 @@ class Step2MotorcycleSelectionView(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
         form = MotorcycleSelectionForm(service_profile=self.service_profile)
-        service_faqs = ServiceFAQ.objects.filter(is_active=True)
+        service_faqs = Servicefaq.objects.filter(is_active=True)
         context = {
             "form": form,
             "temp_booking": self.temp_booking,
@@ -75,7 +75,7 @@ class Step2MotorcycleSelectionView(LoginRequiredMixin, View):
                         "selected_motorcycle", "Invalid motorcycle selection."
                     )
 
-        service_faqs = ServiceFAQ.objects.filter(is_active=True)
+        service_faqs = Servicefaq.objects.filter(is_active=True)
         context = {
             "form": form,
             "temp_booking": self.temp_booking,

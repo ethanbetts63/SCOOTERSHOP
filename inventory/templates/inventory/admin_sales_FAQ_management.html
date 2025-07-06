@@ -67,9 +67,9 @@
 <div class="container mx-auto px-4 py-8">
     <div class="bg-white shadow-lg rounded-lg p-6 md:p-8 max-w-7xl mx-auto">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold text-gray-800">{{ page_title|default:"Sales FAQs Management" }}</h1>
+            <h1 class="text-2xl font-bold text-gray-800">{{ page_title|default:"Sales faqs Management" }}</h1>
             <a href="{% url 'inventory:sales_faq_create' %}" class="action-button btn-create">
-                Create New FAQ
+                Create New faq
             </a>
         </div>
 
@@ -105,7 +105,7 @@
                                         <a href="{% url 'inventory:sales_faq_update' pk=faq.pk %}" class="action-button btn-edit">Edit</a>
                                         <form action="{% url 'inventory:sales_faq_delete' pk=faq.pk %}" method="post" class="inline">
                                             {% csrf_token %}
-                                            <button type="submit" class="action-button btn-delete" onclick="return confirm('Are you sure you want to delete this FAQ?');">
+                                            <button type="submit" class="action-button btn-delete" onclick="return confirm('Are you sure you want to delete this faq?');">
                                                 Delete
                                             </button>
                                         </form>
@@ -139,8 +139,8 @@
             {% endif %}
         {% else %}
              <div class="text-center py-10">
-                <p class="text-gray-600 font-semibold">No Sales FAQs found.</p>
-                <p class="text-gray-500 mt-2">There are currently no Sales FAQs in the system. Get started by creating one.</p>
+                <p class="text-gray-600 font-semibold">No Sales faqs found.</p>
+                <p class="text-gray-500 mt-2">There are currently no Sales faqs in the system. Get started by creating one.</p>
             </div>
         {% endif %}
     </div>

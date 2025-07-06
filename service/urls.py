@@ -162,22 +162,22 @@ urlpatterns = [
     ),
     path(
         "admin/service-faqs/",
-        admin_views.ServiceFAQManagementView.as_view(),
+        admin_views.ServicefaqManagementView.as_view(),
         name="service_faq_management",
     ),
     path(
         "admin/service-faqs/create/",
-        admin_views.ServiceFAQCreateUpdateView.as_view(),
+        admin_views.ServicefaqCreateUpdateView.as_view(),
         name="service_faq_create",
     ),
     path(
         "admin/service-faqs/<int:pk>/update/",
-        admin_views.ServiceFAQCreateUpdateView.as_view(),
+        admin_views.ServicefaqCreateUpdateView.as_view(),
         name="service_faq_update",
     ),
     path(
         "admin/service-faqs/<int:pk>/delete/",
-        admin_views.ServiceFAQDeleteView.as_view(),
+        admin_views.ServicefaqDeleteView.as_view(),
         name="service_faq_delete",
     ),
 

@@ -18,8 +18,8 @@ class SiteSettings(models.Model):
     display_phone_number = models.BooleanField(default=False, help_text="Display the phone number on the website.")
     display_address = models.BooleanField(default=True, help_text="Display the storefront address on the website.")
     display_opening_hours = models.BooleanField(default=True, help_text="Display the opening hours on the website.")
-    enable_faq_service = models.BooleanField(default=True, help_text="Enable the FAQ section for services.")
-    enable_faq_sales = models.BooleanField(default=True, help_text="Enable the FAQ section for sales.")
+    enable_faq_service = models.BooleanField(default=True, help_text="Enable the faq section for services.")
+    enable_faq_sales = models.BooleanField(default=True, help_text="Enable the faq section for sales.")
     enable_refunds = models.BooleanField(default=False, help_text="Enable the refunds page.")
                                                      
     phone_number = models.CharField(max_length=20, blank=True, null=True, default='(08) 9433 4613')

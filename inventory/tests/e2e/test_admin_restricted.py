@@ -9,7 +9,7 @@ from ..test_helpers.model_factories import (
     SalesBookingFactory,
     SalesProfileFactory,
     BlockedSalesDateFactory,
-    SalesFAQFactory,
+    SalesfaqFactory,
     FeaturedMotorcycleFactory,
     InventorySettingsFactory,
     MotorcycleConditionFactory,
@@ -33,7 +33,7 @@ class InventoryAdminViewsPermissionsTestCase(TestCase):
         cls.sales_profile = SalesProfileFactory()
         cls.sales_booking = SalesBookingFactory(motorcycle=cls.motorcycle)
         cls.blocked_date = BlockedSalesDateFactory()
-        cls.faq = SalesFAQFactory()
+        cls.faq = SalesfaqFactory()
         cls.featured_motorcycle = FeaturedMotorcycleFactory(motorcycle=cls.motorcycle)
         InventorySettingsFactory()
 

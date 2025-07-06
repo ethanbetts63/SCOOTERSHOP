@@ -10,7 +10,7 @@ from payments.models import Payment
 from service.models import (
     TempServiceBooking,
     ServiceSettings,
-    ServiceFAQ,
+    Servicefaq,
 )
 from service.utils.get_service_date_availibility import get_service_date_availability
 from service.utils.booking_protection import check_and_manage_recent_booking_flag
@@ -181,7 +181,7 @@ class Step6PaymentView(View):
                             "currency": currency.upper(),
                             "temp_booking": temp_booking,
                             "stripe_publishable_key": settings.STRIPE_PUBLISHABLE_KEY,
-                            "service_faqs": ServiceFAQ.objects.filter(is_active=True),
+                            "service_faqs": Servicefaq.objects.filter(is_active=True),
                         }
                         return render(request, "service/step6_payment.html", context)
                     elif not is_modifiable_or_in_progress and intent.status not in [
@@ -260,7 +260,7 @@ class Step6PaymentView(View):
             "currency": currency.upper(),
             "temp_booking": temp_booking,
             "stripe_publishable_key": settings.STRIPE_PUBLISHABLE_KEY,
-            "service_faqs": ServiceFAQ.objects.filter(is_active=True),
+            "service_faqs": Servicefaq.objects.filter(is_active=True),
         }
         return render(request, "service/step6_payment.html", context)
 

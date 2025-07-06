@@ -3,25 +3,25 @@ from django.views import View
 from django.urls import reverse
 from django.contrib import messages
 from inventory.mixins import AdminRequiredMixin
-from service.forms import AdminServiceFAQForm
-from service.models import ServiceFAQ
+from service.forms import AdminServicefaqForm
+from service.models import Servicefaq
 
 
-class ServiceFAQCreateUpdateView(AdminRequiredMixin, View):
+class ServicefaqCreateUpdateView(AdminRequiredMixin, View):
 
     template_name = "service/admin_service_faq_create_update.html"
-    form_class = AdminServiceFAQForm
+    form_class = AdminServicefaqForm
 
     def get(self, request, pk=None, *args, **kwargs):
 
         if pk:
-            instance = get_object_or_404(ServiceFAQ, pk=pk)
+            instance = get_object_or_404(Servicefaq, pk=pk)
             form = self.form_class(instance=instance)
-            page_title = "Edit Service FAQ"
+            page_title = "Edit Service faq"
         else:
             instance = None
             form = self.form_class()
-            page_title = "Create Service FAQ"
+            page_title = "Create Service faq"
 
         context = {"form": form, "is_edit_mode": bool(pk), "page_title": page_title}
         return render(request, self.template_name, context)
@@ -29,7 +29,7 @@ class ServiceFAQCreateUpdateView(AdminRequiredMixin, View):
     def post(self, request, pk=None, *args, **kwargs):
 
         if pk:
-            instance = get_object_or_404(ServiceFAQ, pk=pk)
+            instance = get_object_or_404(Servicefaq, pk=pk)
             form = self.form_class(request.POST, instance=instance)
         else:
             instance = None
@@ -40,12 +40,12 @@ class ServiceFAQCreateUpdateView(AdminRequiredMixin, View):
             if pk:
                 messages.success(
                     request,
-                    f"Service FAQ '{faq.question[:50]}...' updated successfully.",
+                    f"Service faq '{faq.question[:50]}...' updated successfully.",
                 )
             else:
                 messages.success(
                     request,
-                    f"Service FAQ '{faq.question[:50]}...' created successfully.",
+                    f"Service faq '{faq.question[:50]}...' created successfully.",
                 )
             return redirect(reverse("service:service_faq_management"))
         else:
@@ -53,6 +53,6 @@ class ServiceFAQCreateUpdateView(AdminRequiredMixin, View):
             context = {
                 "form": form,
                 "is_edit_mode": bool(pk),
-                "page_title": "Edit Service FAQ" if pk else "Create Service FAQ",
+                "page_title": "Edit Service faq" if pk else "Create Service faq",
             }
             return render(request, self.template_name, context)

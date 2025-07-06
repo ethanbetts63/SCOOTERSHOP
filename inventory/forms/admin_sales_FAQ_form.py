@@ -1,11 +1,11 @@
 from django import forms
-from inventory.models import SalesFAQ
+from inventory.models import Salesfaq
 
 
-class AdminSalesFAQForm(forms.ModelForm):
+class AdminSalesfaqForm(forms.ModelForm):
 
     class Meta:
-        model = SalesFAQ
+        model = Salesfaq
         fields = [
             "booking_step",
             "question",
@@ -36,11 +36,11 @@ class AdminSalesFAQForm(forms.ModelForm):
             "question": "Question",
             "answer": "Answer",
             "display_order": "Display Order",
-            "is_active": "Is this FAQ active and visible?",
+            "is_active": "Is this faq active and visible?",
         }
         help_texts = {
-            "display_order": "FAQs with lower numbers will be shown first.",
-            "is_active": "If unchecked, this FAQ will not be displayed anywhere on the site.",
+            "display_order": "faqs with lower numbers will be shown first.",
+            "is_active": "If unchecked, this faq will not be displayed anywhere on the site.",
         }
 
     def __init__(self, *args, **kwargs):

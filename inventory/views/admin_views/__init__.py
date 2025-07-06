@@ -16,9 +16,9 @@ from .delete_motorcycle import *
 from .delete_sales_booking import *
 from .delete_motorcycle import *
 from .sales_booking_action_view import *
-from .sales_FAQ_management_view import *
-from .sales_FAQ_create_update_view import *
-from .sales_FAQ_delete_view import *
+from .sales_faq_management_view import *
+from .sales_faq_create_update_view import *
+from .sales_faq_delete_view import *
 from .sales_terms_management_view import *
 from .sales_terms_create_view import *
 from .sales_terms_details_view import *

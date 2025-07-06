@@ -3,19 +3,19 @@ from django.views import View
 from django.urls import reverse
 from django.contrib import messages
 from inventory.mixins import AdminRequiredMixin
-from inventory.forms import AdminSalesFAQForm
-from inventory.models import SalesFAQ
+from inventory.forms import AdminSalesfaqForm
+from inventory.models import Salesfaq
 
 
-class SalesFAQCreateUpdateView(AdminRequiredMixin, View):
+class SalesfaqCreateUpdateView(AdminRequiredMixin, View):
 
     template_name = "inventory/admin_sales_faq_create_update.html"
-    form_class = AdminSalesFAQForm
+    form_class = AdminSalesfaqForm
 
     def get(self, request, pk=None, *args, **kwargs):
 
         if pk:
-            instance = get_object_or_404(SalesFAQ, pk=pk)
+            instance = get_object_or_404(Salesfaq, pk=pk)
             form = self.form_class(instance=instance)
         else:
             instance = None
@@ -24,14 +24,14 @@ class SalesFAQCreateUpdateView(AdminRequiredMixin, View):
         context = {
             "form": form,
             "is_edit_mode": bool(pk),
-            "page_title": "Edit Sales FAQ" if pk else "Create Sales FAQ",
+            "page_title": "Edit Sales faq" if pk else "Create Sales faq",
         }
         return render(request, self.template_name, context)
 
     def post(self, request, pk=None, *args, **kwargs):
 
         if pk:
-            instance = get_object_or_404(SalesFAQ, pk=pk)
+            instance = get_object_or_404(Salesfaq, pk=pk)
             form = self.form_class(request.POST, instance=instance)
         else:
             instance = None
@@ -41,11 +41,11 @@ class SalesFAQCreateUpdateView(AdminRequiredMixin, View):
             faq = form.save()
             if pk:
                 messages.success(
-                    request, f"Sales FAQ '{faq.question[:50]}...' updated successfully."
+                    request, f"Sales faq '{faq.question[:50]}...' updated successfully."
                 )
             else:
                 messages.success(
-                    request, f"Sales FAQ '{faq.question[:50]}...' created successfully."
+                    request, f"Sales faq '{faq.question[:50]}...' created successfully."
                 )
             return redirect(reverse("inventory:sales_faq_management"))
         else:
@@ -53,6 +53,6 @@ class SalesFAQCreateUpdateView(AdminRequiredMixin, View):
             context = {
                 "form": form,
                 "is_edit_mode": bool(pk),
-                "page_title": "Edit Sales FAQ" if pk else "Create Sales FAQ",
+                "page_title": "Edit Sales faq" if pk else "Create Sales faq",
             }
             return render(request, self.template_name, context)
