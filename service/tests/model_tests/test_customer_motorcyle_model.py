@@ -38,7 +38,7 @@ class CustomerMotorcycleModelTest(TestCase):
     def test_str_method(self):
 
         expected_str = (
-            f"{self.customer_motorcycle.year} {self.customer_motorcycle.brand} {self.customer_motorcycle.model} "
+            f"{self.customer_motorcycle.year} {self.customer_motorcycle.brand} {self.customer_motorcycle.model}"
         )
         self.assertEqual(str(self.customer_motorcycle), expected_str)
 
