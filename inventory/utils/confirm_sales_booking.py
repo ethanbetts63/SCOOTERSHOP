@@ -59,8 +59,8 @@ def confirm_sales_booking(sales_booking_id, message=None, send_notification=True
                     subject=customer_email_subject,
                     template_name=customer_email_template,
                     context=email_context,
-                    sales_profile=booking.sales_profile,
-                    sales_booking=booking,
+                    profile=booking.sales_profile,
+                    booking=booking,
                 )
                 print("--- 7. SUCCESSFULLY sent CUSTOMER email ---")
 
@@ -75,8 +75,8 @@ def confirm_sales_booking(sales_booking_id, message=None, send_notification=True
                     subject=admin_email_subject,
                     template_name=admin_email_template,
                     context=email_context,
-                    sales_profile=booking.sales_profile,
-                    sales_booking=booking,
+                    profile=booking.sales_profile,
+                    booking=booking,
                 )
                 print("--- 9. SUCCESSFULLY sent ADMIN email ---")
 
