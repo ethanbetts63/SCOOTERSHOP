@@ -49,6 +49,11 @@
         <div class="enquiry-detail-item">
             <strong>Date:</strong> {{ enquiry.created_at|date:"Y-m-d H:i" }}
         </div>
+        {% if enquiry.motorcycle %}
+        <div class="enquiry-detail-item">
+            <strong>Motorcycle:</strong> {{ enquiry.motorcycle }}
+        </div>
+        {% endif %}
         <div class="enquiry-detail-item">
             <strong>Message:</strong>
             <div class="enquiry-message">

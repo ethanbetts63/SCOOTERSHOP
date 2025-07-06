@@ -32,7 +32,14 @@
                         <td class="content">
                             <p>Hi {% if enquiry.name %}{{ enquiry.name }}{% else %}there{% endif %},</p>
                             <p>Thank you for your enquiry. We have received your message and will get back to you shortly.</p>
-                            
+
+                            {% if enquiry.motorcycle %}
+                            <div class="message-box">
+                                <p><strong>Regarding Motorcycle:</strong></p>
+                                <p>{{ enquiry.motorcycle }}</p>
+                            </div>
+                            {% endif %}
+
                             {% if enquiry.message %}
                             <div class="message-box">
                                 <p><strong>Your Message:</strong></p>
