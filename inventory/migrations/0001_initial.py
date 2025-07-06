@@ -68,7 +68,7 @@ class Migration(migrations.Migration):
                     "enable_depositless_enquiry",
                     models.BooleanField(
                         default=True,
-                        help_text="Allow customers to submit an enquiry for a motorcycle without requiring a deposit.",
+                        help_text="Allow customers to submit an appointment request for a motorcycle viewing without requiring a deposit.",
                     ),
                 ),
                 (

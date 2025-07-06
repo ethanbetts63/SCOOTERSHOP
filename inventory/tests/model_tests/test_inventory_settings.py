@@ -40,7 +40,7 @@ class InventorySettingsModelTest(TestCase):
         self.assertTrue(field.default)
         self.assertEqual(
             field.help_text,
-            "Allow customers to submit an enquiry for a motorcycle without requiring a deposit.",
+            "Allow customers to submit an appointment request for a motorcycle viewing without requiring a deposit.",
         )
 
     def test_enable_reservation_by_deposit_field(self):

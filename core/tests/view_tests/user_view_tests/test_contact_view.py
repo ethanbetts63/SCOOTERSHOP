@@ -1,9 +1,10 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, call
 from core.forms.enquiry_form import EnquiryForm
 from dashboard.models import SiteSettings
 from django.contrib.messages import get_messages
+from core.models import Enquiry
 
 
 class ContactViewTest(TestCase):
@@ -30,19 +31,15 @@ class ContactViewTest(TestCase):
         self.mock_get_settings = patch_site_settings.start()
         self.addCleanup(patch_site_settings.stop)
 
-        self.mock_enquiry_form_instance = MagicMock(spec=EnquiryForm)
-        patch_enquiry_form = patch(
-            "core.views.user_views.contact_view.EnquiryForm",
-            return_value=self.mock_enquiry_form_instance,
-        )
-        self.mock_enquiry_form_class = patch_enquiry_form.start()
-        self.addCleanup(patch_enquiry_form.stop)
-
         patch_admin_email = patch(
             "django.conf.settings.ADMIN_EMAIL", "admin@example.com"
         )
         self.mock_admin_email = patch_admin_email.start()
         self.addCleanup(patch_admin_email.stop)
+
+        patch_send_email = patch("core.views.user_views.contact_view.send_templated_email")
+        self.mock_send_email = patch_send_email.start()
+        self.addCleanup(patch_send_email.stop)
 
     def test_contact_view_get(self):
         response = self.client.get(self.url)
@@ -53,30 +50,40 @@ class ContactViewTest(TestCase):
         self.assertIn("google_api_key", response.context)
         self.assertEqual(response.context["google_api_key"], "test_api_key")
         self.assertIn("form", response.context)
-        self.assertEqual(response.context["form"], self.mock_enquiry_form_instance)
+        self.assertIsInstance(response.context["form"], EnquiryForm)
 
     def test_contact_view_post_valid_form(self):
-        self.mock_enquiry_form_instance.is_valid.return_value = True
-        mock_enquiry_instance = MagicMock()
-        mock_enquiry_instance.name = "Test User"
-        mock_enquiry_instance.email = "test@example.com"
-        mock_enquiry_instance.message = "Test message"
-        mock_enquiry_instance.phone_number = "1234567890"
-        self.mock_enquiry_form_instance.save.return_value = mock_enquiry_instance
+        form_data = {
+            "name": "Test User",
+            "email": "test@example.com",
+            "message": "Test message",
+            "phone_number": "1234567890",
+        }
+        response = self.client.post(self.url, form_data)
 
-        response = self.client.post(
-            self.url,
-            {
-                "name": "Test User",
-                "email": "test@example.com",
-                "message": "Test message",
-                "phone_number": "1234567890",
-            },
+        self.assertEqual(Enquiry.objects.count(), 1)
+        enquiry = Enquiry.objects.first()
+        self.assertEqual(enquiry.name, "Test User")
+
+        self.assertEqual(self.mock_send_email.call_count, 2)
+
+        customer_call = call(
+            recipient_list=[enquiry.email],
+            subject="Enquiry Received - Scooter Shop",
+            template_name="user_general_enquiry_notification.html",
+            context={"enquiry": enquiry},
+            booking=enquiry,
+            profile=enquiry,
         )
-
-        self.mock_enquiry_form_class.assert_called_once()
-        self.mock_enquiry_form_instance.is_valid.assert_called_once()
-        self.mock_enquiry_form_instance.save.assert_called_once()
+        admin_call = call(
+            recipient_list=["admin@example.com"],
+            subject="New Enquiry - Scooter Shop",
+            template_name="admin_general_enquiry_notification.html",
+            context={"enquiry": enquiry},
+            booking=enquiry,
+            profile=enquiry,
+        )
+        self.mock_send_email.assert_has_calls([customer_call, admin_call], any_order=True)
 
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
@@ -84,15 +91,11 @@ class ContactViewTest(TestCase):
         self.assertRedirects(response, self.url)
 
     def test_contact_view_post_invalid_form(self):
-        self.mock_enquiry_form_instance.is_valid.return_value = False
+        form_data = {"name": "", "email": "invalid-email", "message": ""}
+        response = self.client.post(self.url, form_data)
 
-        response = self.client.post(
-            self.url, {"name": "", "email": "invalid-email", "message": ""}
-        )
-
-        self.assertEqual(self.mock_enquiry_form_class.call_count, 2)
-        self.mock_enquiry_form_instance.is_valid.assert_called_once()
-        self.mock_enquiry_form_instance.save.assert_not_called()
+        self.assertEqual(Enquiry.objects.count(), 0)
+        self.mock_send_email.assert_not_called()
 
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
@@ -102,4 +105,6 @@ class ContactViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "core/information/contact.html")
-        self.assertEqual(response.context["form"], self.mock_enquiry_form_instance)
+        form = response.context["form"]
+        self.assertIsInstance(form, EnquiryForm)
+        self.assertTrue(form.errors)

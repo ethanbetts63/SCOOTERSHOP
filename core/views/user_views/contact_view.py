@@ -55,4 +55,6 @@ class ContactView(TemplateView):
                 request,
                 "There was an error with your submission. Please correct the errors below.",
             )
-            return self.get(request, *args, **kwargs)
+            context = self.get_context_data(**kwargs)
+            context['form'] = form
+            return self.render_to_response(context)

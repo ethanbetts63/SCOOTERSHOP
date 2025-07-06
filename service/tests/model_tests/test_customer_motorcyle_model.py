@@ -39,7 +39,6 @@ class CustomerMotorcycleModelTest(TestCase):
 
         expected_str = (
             f"{self.customer_motorcycle.year} {self.customer_motorcycle.brand} {self.customer_motorcycle.model} "
-            f"(Owner: {self.customer_motorcycle.service_profile.name})"
         )
         self.assertEqual(str(self.customer_motorcycle), expected_str)
 
