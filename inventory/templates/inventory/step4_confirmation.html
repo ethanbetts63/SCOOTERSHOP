@@ -20,13 +20,19 @@
             </div>
 
             <script>
-                // Polling for booking status
                 const paymentIntentId = "{{ payment_intent_id }}";
                 const checkStatusUrl = "{% url 'inventory:ajax_sales_payment_status_check' %}";
+                let errorCount = 0;
+                const maxErrors = 3;
 
                 function pollBookingStatus() {
                     fetch(`${checkStatusUrl}?payment_intent_id=${paymentIntentId}`)
-                        .then(response => response.json())
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
                         .then(data => {
                             if (data.status === 'ready') {
                                 window.location.href = window.location.pathname + '?payment_intent_id=' + paymentIntentId;
@@ -41,10 +47,15 @@
                         })
                         .catch(error => {
                             console.error('Error polling booking status:', error);
-                            const messageDiv = document.getElementById('processing-message');
-                            messageDiv.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
-                            messageDiv.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
-                            messageDiv.innerHTML = `<p>An error occurred while checking status. Please try refreshing or contact support.</p>`;
+                            errorCount++;
+                            if (errorCount >= maxErrors) {
+                                const messageDiv = document.getElementById('processing-message');
+                                messageDiv.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
+                                messageDiv.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
+                                messageDiv.innerHTML = `<p>An error occurred while checking status. Please try refreshing or contact support.</p>`;
+                            } else {
+                                setTimeout(pollBookingStatus, 3000); // Retry on error
+                            }
                         });
                 }
 
