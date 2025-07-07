@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 from inventory.models import Motorcycle
 
 
@@ -15,3 +16,6 @@ class Enquiry(models.Model):
 
     def __str__(self):
         return f"Enquiry from {self.name} ({self.email})"
+
+    def get_absolute_url(self):
+        return reverse('core:admin_enquiry_details', args=[str(self.id)])

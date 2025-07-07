@@ -1,26 +1,34 @@
 {% extends "dashboard/admin_layout.html" %}
 
 {% block admin_main_content %}
-    <h1>Admin Dashboard</h1>
-    <p>Welcome to the Scootershop Australia admin dashboard.</p>
-    
-    <div class="dashboard-overview">
-        <div class="dashboard-card">
-            <h3>Website Overview</h3>
-            <p>This is a placeholder for website statistics and information.</p>
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">{{ page_title }}</h1>
+
+    <div class="bg-white shadow-lg rounded-lg p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold text-gray-700">Notifications</h2>
+            {% if notifications %}
+            <form action="{% url 'dashboard:clear_notifications' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="action-button btn-delete">Clear All</button>
+            </form>
+            {% endif %}
         </div>
-        
-        <div class="dashboard-card">
-            <h3>Recent Activity</h3>
-            <p>This is a placeholder for recent site activity.</p>
-        </div>
-        
-        <div class="dashboard-card">
-            <h3>Quick Actions</h3>
-            <ul>
-                <li><a href="{% url 'dashboard:settings_business_info' %}">Update Business Information</a></li>
-                <li><a href="{% url 'dashboard:settings_visibility' %}">Change Site Visibility</a></li>
+
+        {% if notifications %}
+            <ul class="divide-y divide-gray-200">
+                {% for notification in notifications %}
+                    <li class="py-4 flex justify-between items-center">
+                        <a href="{{ notification.content_object.get_absolute_url }}" class="text-blue-600 hover:underline">
+                            {{ notification.message }}
+                        </a>
+                        <span class="text-sm text-gray-500">{{ notification.created_at|timesince }} ago</span>
+                    </li>
+                {% endfor %}
             </ul>
-        </div>
+        {% else %}
+            <p class="text-gray-500">No new notifications.</p>
+        {% endif %}
     </div>
+</div>
 {% endblock %}
