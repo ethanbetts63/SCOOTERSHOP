@@ -18,7 +18,7 @@ def create_sales_booking_notification(sender, instance, created, **kwargs):
 @receiver(post_save, sender=ServiceBooking)
 def create_service_booking_notification(sender, instance, created, **kwargs):
     if created:
-        message = f"New service booking for {instance.customer_name}"
+        message = f"New service booking for {instance.service_profile.name}"
         Notification.objects.create(content_object=instance, message=message)
 
 @receiver(post_save, sender=Enquiry)
