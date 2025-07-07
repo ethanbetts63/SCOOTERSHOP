@@ -17,11 +17,15 @@ def send_templated_email(
     template_name,
     context,
     booking,
-    profile,                                               
+    profile,
     from_email=None,
 ):
     if not recipient_list:
         return False
+
+    # Skip logging for admin emails
+    if settings.ADMIN_EMAIL in recipient_list:
+        return
 
     sender_email = from_email if from_email else settings.DEFAULT_FROM_EMAIL
 
@@ -47,7 +51,7 @@ def send_templated_email(
     except Exception as e:
         EmailLog.objects.create(
             sender=sender_email, recipient=", ".join(recipient_list), subject=subject,
-            template_name=template_name, status='FAILED',
+            status='FAILED',
             error_message=f"Template rendering failed: {e}", user=user,
             service_profile=service_profile,
             sales_profile=sales_profile,
@@ -70,32 +74,13 @@ def send_templated_email(
         success = False
     finally:
         try:
-            # Prepare context for logging, ensuring it's serializable
-            log_context = None
-            try:
-                # Create a copy to avoid modifying the original context
-                context_for_log = context.copy()
-                # Remove non-serializable or bulky items if they exist
-                if 'booking' in context_for_log:
-                    del context_for_log['booking']
-                if 'profile' in context_for_log:
-                    del context_for_log['profile']
-                if 'user' in context_for_log:
-                    del context_for_log['user']
-
-                log_context = json.loads(json.dumps(context_for_log, cls=DjangoJSONEncoder))
-            except Exception:
-                # If context serialization fails, log without it or with an error placeholder
-                log_context = {"error": "Context not serializable"}
-
             with transaction.atomic():
                 log_entry = EmailLog(
                     timestamp=timezone.now(),
                     sender=sender_email,
                     recipient=", ".join(recipient_list),
                     subject=subject,
-                    template_name=template_name,
-                    context=log_context,
+                    html_content=html_content,
                     status=email_status,
                     error_message=error_msg,
                     user=user,
@@ -106,8 +91,6 @@ def send_templated_email(
                 )
                 log_entry.save()
         except Exception as log_e:
-            # For debugging: at least print the error
-            # In production, you might use proper logging
             print(f"Failed to create email log: {log_e}")
 
     return success

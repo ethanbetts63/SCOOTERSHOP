@@ -29,13 +29,8 @@ class EmailLog(models.Model):
         max_length=255,
         help_text="The subject line of the email."
     )
-    template_name = models.CharField(
-        max_length=255,
-        help_text="The name of the template used to render the email.",
-        blank=True, null=True
-    )
-    context = models.JSONField(
-        help_text="The context dictionary used to render the email.",
+    html_content = models.TextField(
+        help_text="The HTML content of the email.",
         blank=True, null=True
     )
     status = models.CharField(

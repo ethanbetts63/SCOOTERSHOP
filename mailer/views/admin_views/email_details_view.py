@@ -13,11 +13,5 @@ class EmailDetailView(AdminRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context["page_title"] = "Email Details"
         email_log = self.get_object()
-        if email_log.template_name and email_log.context:
-            try:
-                template = Template(open(f'mailer/templates/{email_log.template_name}').read())
-                rendered_email = template.render(Context(email_log.context))
-                context['rendered_email'] = rendered_email
-            except Exception as e:
-                context['rendered_email'] = f"<p>Error rendering email: {e}</p>"
+        context['rendered_email'] = email_log.html_content
         return context
