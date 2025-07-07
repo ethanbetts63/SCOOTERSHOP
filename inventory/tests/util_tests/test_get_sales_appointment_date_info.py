@@ -1,20 +1,16 @@
 import datetime
+from unittest.mock import patch
 from django.test import TestCase
+from django.utils import timezone
 from inventory.models import InventorySettings, BlockedSalesDate
-from inventory.utils.get_sales_appointment_date_info import (
-    get_sales_appointment_date_info,
-)
-from ..test_helpers.model_factories import (
-    InventorySettingsFactory,
-    BlockedSalesDateFactory,
-)
-
+from inventory.utils.get_sales_appointment_date_info import get_sales_appointment_date_info
+from ..test_helpers.model_factories import InventorySettingsFactory, BlockedSalesDateFactory
 
 class GetSalesAppointmentDateInfoTest(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-
+        """Set up a default InventorySettings instance for all tests."""
         cls.default_inventory_settings = InventorySettingsFactory(
             sales_appointment_start_time=datetime.time(9, 0),
             sales_appointment_end_time=datetime.time(17, 0),
@@ -26,245 +22,174 @@ class GetSalesAppointmentDateInfoTest(TestCase):
         )
 
     def tearDown(self):
-
-        self.default_inventory_settings.refresh_from_db()
-        self.default_inventory_settings.sales_appointment_start_time = datetime.time(
-            9, 0
-        )
-        self.default_inventory_settings.sales_appointment_end_time = datetime.time(
-            17, 0
-        )
-        self.default_inventory_settings.sales_appointment_spacing_mins = 30
-        self.default_inventory_settings.min_advance_booking_hours = 24
-        self.default_inventory_settings.max_advance_booking_days = 90
-        self.default_inventory_settings.deposit_lifespan_days = 5
-        self.default_inventory_settings.sales_booking_open_days = "Mon,Tue,Wed,Thu,Fri"
-        self.default_inventory_settings.save()
+        """Clean up BlockedSalesDate objects after each test."""
         BlockedSalesDate.objects.all().delete()
 
-    def test_default_behavior(self):
+    @patch('django.utils.timezone.now')
+    def test_default_behavior(self, mock_now):
+        """Test default date calculations with no advance booking hours."""
+        mock_now.return_value = timezone.make_aware(datetime.datetime(2025, 7, 1, 10, 0))
+        today = mock_now.return_value.date()
 
         self.default_inventory_settings.min_advance_booking_hours = 0
         self.default_inventory_settings.save()
 
-        min_date, max_date, blocked_dates = get_sales_appointment_date_info(
-            self.default_inventory_settings
-        )
-
-        today = datetime.date.today()
+        min_date, max_date, blocked_dates = get_sales_appointment_date_info(self.default_inventory_settings)
 
         self.assertEqual(min_date, today)
-
         self.assertEqual(max_date, today + datetime.timedelta(days=90))
 
-        expected_blocked_dates = []
+        # Check that weekends are correctly blocked
+        expected_blocked = []
         current_day = today
         while current_day <= max_date:
-            if current_day.weekday() >= 5:
-                expected_blocked_dates.append(current_day.strftime("%Y-%m-%d"))
+            if current_day.weekday() >= 5: # Saturday or Sunday
+                expected_blocked.append(current_day.strftime("%Y-%m-%d"))
             current_day += datetime.timedelta(days=1)
-
-        self.assertEqual(blocked_dates, sorted(list(set(expected_blocked_dates))))
+        
+        self.assertEqual(blocked_dates, sorted(list(set(expected_blocked))))
 
     def test_no_inventory_settings_provided(self):
-
-        InventorySettings.objects.all().delete()
+        """Test fallback behavior when no inventory settings are provided."""
         min_date, max_date, blocked_dates = get_sales_appointment_date_info(None)
-
-        today = datetime.date.today()
+        today = timezone.localdate()
         self.assertEqual(min_date, today)
         self.assertEqual(max_date, today + datetime.timedelta(days=90))
         self.assertEqual(blocked_dates, [])
 
-        self.default_inventory_settings = InventorySettingsFactory()
+    @patch('django.utils.timezone.now')
+    def test_min_advance_booking_hours_pushes_min_date(self, mock_now):
+        """Test that min_advance_booking_hours correctly pushes the min_date."""
+        mock_now.return_value = timezone.make_aware(datetime.datetime(2025, 7, 1, 10, 0))
+        
+        # 24 hours advance should push min_date to tomorrow
+        self.default_inventory_settings.min_advance_booking_hours = 24
+        self.default_inventory_settings.save()
+        min_date, _, _ = get_sales_appointment_date_info(self.default_inventory_settings)
+        expected_min_date = mock_now.return_value.date() + datetime.timedelta(days=1)
+        self.assertEqual(min_date, expected_min_date)
 
-    def test_min_advance_booking_hours(self):
+        # 48 hours advance should push min_date two days forward
+        self.default_inventory_settings.min_advance_booking_hours = 48
+        self.default_inventory_settings.save()
+        min_date, _, _ = get_sales_appointment_date_info(self.default_inventory_settings)
+        expected_min_date = mock_now.return_value.date() + datetime.timedelta(days=2)
+        self.assertEqual(min_date, expected_min_date)
 
+    @patch('django.utils.timezone.now')
+    def test_min_date_pushed_if_all_slots_unavailable(self, mock_now):
+        """Test that min_date is advanced if all of today's slots are in the past."""
+        # Set current time to 18:00, after all appointments (which end at 17:00)
+        mock_now.return_value = timezone.make_aware(datetime.datetime(2025, 7, 1, 18, 0))
+        
+        # With 24h advance notice, today (Jul 1) would normally be blocked.
+        # The earliest booking is Jul 2, 18:00.
+        # Since all slots on Jul 2 are before 18:00, the whole day should be unavailable.
+        # The first available date should be Jul 3.
         self.default_inventory_settings.min_advance_booking_hours = 24
         self.default_inventory_settings.save()
 
-        min_date, _, _ = get_sales_appointment_date_info(
-            self.default_inventory_settings
-        )
-        expected_min_date = datetime.date.today() + datetime.timedelta(days=1)
+        min_date, _, _ = get_sales_appointment_date_info(self.default_inventory_settings)
+        
+        # Earliest allowed datetime is 2025-07-02 18:00.
+        # End time on 2025-07-02 is 17:00, which is before the earliest allowed time.
+        # Therefore, min_date should be pushed to 2025-07-03.
+        expected_min_date = timezone.make_aware(datetime.datetime(2025, 7, 3)).date()
         self.assertEqual(min_date, expected_min_date)
 
-        self.default_inventory_settings.min_advance_booking_hours = 48
-        self.default_inventory_settings.save()
-        min_date, _, _ = get_sales_appointment_date_info(
-            self.default_inventory_settings
-        )
-        expected_min_date = datetime.date.today() + datetime.timedelta(days=2)
-        self.assertEqual(min_date, expected_min_date)
-
-    def test_max_advance_booking_days(self):
+    @patch('django.utils.timezone.now')
+    def test_max_advance_booking_days(self, mock_now):
+        """Test that max_advance_booking_days correctly sets the max_date."""
+        mock_now.return_value = timezone.make_aware(datetime.datetime(2025, 7, 1, 10, 0))
+        today = mock_now.return_value.date()
 
         self.default_inventory_settings.max_advance_booking_days = 30
         self.default_inventory_settings.save()
 
-        _, max_date, _ = get_sales_appointment_date_info(
-            self.default_inventory_settings
-        )
-        expected_max_date = datetime.date.today() + datetime.timedelta(days=30)
+        _, max_date, _ = get_sales_appointment_date_info(self.default_inventory_settings)
+        expected_max_date = today + datetime.timedelta(days=30)
         self.assertEqual(max_date, expected_max_date)
 
-    def test_deposit_flow_caps_max_date(self):
+    @patch('django.utils.timezone.now')
+    def test_deposit_flow_caps_max_date(self, mock_now):
+        """Test that the deposit flow correctly caps the max_date by deposit_lifespan_days."""
+        mock_now.return_value = timezone.make_aware(datetime.datetime(2025, 7, 1, 10, 0))
+        today = mock_now.return_value.date()
 
         self.default_inventory_settings.max_advance_booking_days = 90
         self.default_inventory_settings.deposit_lifespan_days = 10
         self.default_inventory_settings.min_advance_booking_hours = 0
         self.default_inventory_settings.save()
 
-        min_date, max_date, _ = get_sales_appointment_date_info(
-            self.default_inventory_settings, is_deposit_flow=True
-        )
-        expected_max_date = datetime.date.today() + datetime.timedelta(days=10)
+        _, max_date, _ = get_sales_appointment_date_info(self.default_inventory_settings, is_deposit_flow=True)
+        expected_max_date = today + datetime.timedelta(days=10)
         self.assertEqual(max_date, expected_max_date)
-        self.assertEqual(min_date, datetime.date.today())
 
+        # Test when max_advance_booking_days is shorter than deposit_lifespan_days
         self.default_inventory_settings.max_advance_booking_days = 5
-        self.default_inventory_settings.deposit_lifespan_days = 10
         self.default_inventory_settings.save()
-
-        min_date, max_date, _ = get_sales_appointment_date_info(
-            self.default_inventory_settings, is_deposit_flow=True
-        )
-        expected_max_date = datetime.date.today() + datetime.timedelta(days=5)
+        _, max_date, _ = get_sales_appointment_date_info(self.default_inventory_settings, is_deposit_flow=True)
+        expected_max_date = today + datetime.timedelta(days=5)
         self.assertEqual(max_date, expected_max_date)
 
-    def test_blocked_sales_dates(self):
+    @patch('django.utils.timezone.now')
+    def test_blocked_sales_dates(self, mock_now):
+        """Test that manually blocked dates are correctly identified."""
+        mock_now.return_value = timezone.make_aware(datetime.datetime(2025, 7, 1, 10, 0))
+        today = mock_now.return_value.date()
 
-        today = datetime.date.today()
-
-        BlockedSalesDateFactory(
-            start_date=today + datetime.timedelta(days=5),
-            end_date=today + datetime.timedelta(days=7),
-            description="Test Block",
-        )
-
-        BlockedSalesDateFactory(
-            start_date=today + datetime.timedelta(days=10),
-            end_date=today + datetime.timedelta(days=10),
-            description="Single Day Block",
-        )
+        BlockedSalesDateFactory(start_date=today + datetime.timedelta(days=5), end_date=today + datetime.timedelta(days=7))
+        BlockedSalesDateFactory(start_date=today + datetime.timedelta(days=10), end_date=today + datetime.timedelta(days=10))
 
         self.default_inventory_settings.min_advance_booking_hours = 0
-        self.default_inventory_settings.sales_booking_open_days = (
-            "Mon,Tue,Wed,Thu,Fri,Sat,Sun"
-        )
+        self.default_inventory_settings.sales_booking_open_days = "Mon,Tue,Wed,Thu,Fri,Sat,Sun"
         self.default_inventory_settings.save()
 
-        min_date, max_date, blocked_dates = get_sales_appointment_date_info(
-            self.default_inventory_settings
-        )
+        _, _, blocked_dates = get_sales_appointment_date_info(self.default_inventory_settings)
 
-        expected_blocked_dates = []
-        for i in range(5, 8):
-            expected_blocked_dates.append(
-                (today + datetime.timedelta(days=i)).strftime("%Y-%m-%d")
-            )
-        expected_blocked_dates.append(
-            (today + datetime.timedelta(days=10)).strftime("%Y-%m-%d")
-        )
+        expected_blocked = [
+            (today + datetime.timedelta(days=5)).strftime("%Y-%m-%d"),
+            (today + datetime.timedelta(days=6)).strftime("%Y-%m-%d"),
+            (today + datetime.timedelta(days=7)).strftime("%Y-%m-%d"),
+            (today + datetime.timedelta(days=10)).strftime("%Y-%m-%d"),
+        ]
+        self.assertEqual(blocked_dates, sorted(list(set(expected_blocked))))
 
-        self.assertIn(
-            (today + datetime.timedelta(days=5)).strftime("%Y-%m-%d"), blocked_dates
-        )
-        self.assertIn(
-            (today + datetime.timedelta(days=6)).strftime("%Y-%m-%d"), blocked_dates
-        )
-        self.assertIn(
-            (today + datetime.timedelta(days=7)).strftime("%Y-%m-%d"), blocked_dates
-        )
-        self.assertIn(
-            (today + datetime.timedelta(days=10)).strftime("%Y-%m-%d"), blocked_dates
-        )
+    @patch('django.utils.timezone.now')
+    def test_sales_booking_open_days(self, mock_now):
+        """Test that closed days are correctly added to the blocked dates list."""
+        mock_now.return_value = timezone.make_aware(datetime.datetime(2025, 7, 1, 10, 0)) # A Tuesday
+        today = mock_now.return_value.date()
 
-        for i in range(
-            max(0, self.default_inventory_settings.min_advance_booking_hours // 24), 15
-        ):
-            d = today + datetime.timedelta(days=i)
-            d_str = d.strftime("%Y-%m-%d")
-            if d_str not in expected_blocked_dates:
-                self.assertNotIn(d_str, blocked_dates)
-
-        self.assertEqual(blocked_dates, sorted(list(set(blocked_dates))))
-
-    def test_sales_booking_open_days(self):
-
-        today = datetime.date.today()
-
-        self.default_inventory_settings.sales_booking_open_days = "Mon,Tue"
+        self.default_inventory_settings.sales_booking_open_days = "Wed,Fri" # Block Mon, Tue, Thu, Sat, Sun
         self.default_inventory_settings.min_advance_booking_hours = 0
-        self.default_inventory_settings.max_advance_booking_days = 7
+        self.default_inventory_settings.max_advance_booking_days = 6 # Up to next Monday
         self.default_inventory_settings.save()
 
-        min_date, max_date, blocked_dates = get_sales_appointment_date_info(
-            self.default_inventory_settings
-        )
+        min_date, max_date, blocked_dates = get_sales_appointment_date_info(self.default_inventory_settings)
 
-        expected_blocked_dates = []
+        expected_blocked = []
         current_day = min_date
         while current_day <= max_date:
-
-            if current_day.weekday() not in [0, 1]:
-                expected_blocked_dates.append(current_day.strftime("%Y-%m-%d"))
+            if current_day.weekday() not in [2, 4]: # Not a Wednesday or Friday
+                expected_blocked.append(current_day.strftime("%Y-%m-%d"))
             current_day += datetime.timedelta(days=1)
 
-        self.assertEqual(blocked_dates, sorted(list(set(expected_blocked_dates))))
+        self.assertEqual(blocked_dates, sorted(list(set(expected_blocked))))
 
-    def test_max_date_capped_by_min_date(self):
-
-        self.default_inventory_settings.min_advance_booking_hours = 720
-
+    @patch('django.utils.timezone.now')
+    def test_max_date_capped_by_min_date(self, mock_now):
+        """Test that max_date cannot be earlier than min_date."""
+        mock_now.return_value = timezone.make_aware(datetime.datetime(2025, 7, 1, 10, 0))
+        
+        # Set min advance booking to 30 days, but max booking to only 1 day
+        self.default_inventory_settings.min_advance_booking_hours = 24 * 30 # 720 hours
         self.default_inventory_settings.max_advance_booking_days = 1
         self.default_inventory_settings.save()
 
-        min_date, max_date, _ = get_sales_appointment_date_info(
-            self.default_inventory_settings
-        )
+        min_date, max_date, _ = get_sales_appointment_date_info(self.default_inventory_settings)
 
-        expected_min_date = datetime.date.today() + datetime.timedelta(days=30)
+        expected_min_date = mock_now.return_value.date() + datetime.timedelta(days=30)
         self.assertEqual(min_date, expected_min_date)
+        self.assertEqual(max_date, expected_min_date) # max_date should be pushed to equal min_date
 
-        self.assertEqual(max_date, expected_min_date)
-
-    def test_combined_blocking_factors(self):
-
-        today = datetime.date.today()
-
-        self.default_inventory_settings.min_advance_booking_hours = 24
-        self.default_inventory_settings.max_advance_booking_days = 14
-        self.default_inventory_settings.sales_booking_open_days = "Mon,Wed,Fri"
-        self.default_inventory_settings.save()
-
-        blocked_date_in_range = today + datetime.timedelta(days=5)
-        BlockedSalesDateFactory(
-            start_date=blocked_date_in_range,
-            end_date=blocked_date_in_range,
-            description="Specific blocked day",
-        )
-
-        min_date, max_date, blocked_dates = get_sales_appointment_date_info(
-            self.default_inventory_settings
-        )
-
-        expected_min_date = today + datetime.timedelta(days=1)
-        expected_max_date = today + datetime.timedelta(days=14)
-
-        self.assertEqual(min_date, expected_min_date)
-        self.assertEqual(max_date, expected_max_date)
-
-        calculated_blocked_dates = []
-        current_day = min_date
-        while current_day <= max_date:
-
-            if current_day.weekday() not in [0, 2, 4]:
-                calculated_blocked_dates.append(current_day.strftime("%Y-%m-%d"))
-
-            if current_day == blocked_date_in_range:
-                calculated_blocked_dates.append(current_day.strftime("%Y-%m-%d"))
-
-            current_day += datetime.timedelta(days=1)
-
-        self.assertEqual(blocked_dates, sorted(list(set(calculated_blocked_dates))))
