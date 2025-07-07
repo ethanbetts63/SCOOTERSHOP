@@ -2,7 +2,6 @@
 {% load static %}
 
 {% block extra_css %}
-{{ block.super }}
 <style>
     .detail-item {
         margin-bottom: 1rem;
@@ -50,10 +49,13 @@
 {% endblock %}
 
 {% block admin_main_content %}
-<div class="p-4">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">{{ page_title|default:"Sales Booking Details" }}</h1>
-        <div class="flex space-x-2">
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-lg rounded-lg p-6 md:p-8 max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">
+            {{ page_title|default:"Sales Booking Details" }}
+        </h1>
+
+        <div class="flex justify-end items-center mb-6 space-x-2">
             <a href="{% url 'inventory:sales_booking_update' pk=sales_booking.pk %}" class="action-button btn-edit">Edit Booking</a>
             <form action="{% url 'inventory:admin_sales_booking_delete' pk=sales_booking.pk %}" method="post" class="inline">
                 {% csrf_token %}
@@ -62,10 +64,8 @@
                 </button>
             </form>
         </div>
-    </div>
 
-    <div class="bg-white shadow-md rounded-lg p-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">Booking Information</h2>
+        <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Booking Information</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="detail-item">
                 <div class="detail-label">Sales Booking Reference:</div>
@@ -123,8 +123,7 @@
             {% endif %}
         </div>
 
-        <!-- NEW SECTION FOR TERMS AND CONDITIONS -->
-        <h2 class="text-xl font-semibold text-gray-800 mt-6 mb-4">Terms and Conditions</h2>
+        <h2 class="text-xl font-semibold text-gray-700 mt-6 mb-4 border-b pb-2">Terms and Conditions</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="detail-item">
                 <div class="detail-label">Terms Version Accepted:</div>
@@ -139,9 +138,8 @@
                 </div>
             </div>
         </div>
-        <!-- END NEW SECTION -->
 
-        <h2 class="text-xl font-semibold text-gray-800 mt-6 mb-4">Associated Motorcycle</h2>
+        <h2 class="text-xl font-semibold text-gray-700 mt-6 mb-4 border-b pb-2">Associated Motorcycle</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="detail-item">
                 <div class="detail-label">Motorcycle:</div>
@@ -163,7 +161,7 @@
             {% endif %}
         </div>
 
-        <h2 class="text-xl font-semibold text-gray-800 mt-6 mb-4">Associated Sales Profile</h2>
+        <h2 class="text-xl font-semibold text-gray-700 mt-6 mb-4 border-b pb-2">Associated Sales Profile</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="detail-item">
                 <div class="detail-label">Customer Name:</div>
@@ -226,12 +224,12 @@
                 <div class="detail-value">{{ sales_booking.sales_profile.date_of_birth|date:"M d, Y"|default:"N/A" }}</div>
             </div>
         </div>
-    </div>
 
-    <div class="mt-6 text-center">
-        <a href="{% url 'inventory:sales_bookings_management' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-            Back to Sales Bookings
-        </a>
+        <div class="mt-8 text-center">
+            <a href="{% url 'inventory:sales_bookings_management' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                Back to Sales Bookings
+            </a>
+        </div>
     </div>
 </div>
 {% endblock %}
