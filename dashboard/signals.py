@@ -30,5 +30,10 @@ def create_enquiry_notification(sender, instance, created, **kwargs):
 @receiver(post_save, sender=RefundRequest)
 def create_refund_notification(sender, instance, created, **kwargs):
     if created:
-        message = f"New refund request for {instance.payment.customer}"
+        customer_name = "Unknown Customer"
+        if instance.payment.sales_customer_profile:
+            customer_name = instance.payment.sales_customer_profile.name
+        elif instance.payment.service_customer_profile:
+            customer_name = instance.payment.service_customer_profile.name
+        message = f"New refund request for {customer_name}"
         Notification.objects.create(content_object=instance, message=message)
