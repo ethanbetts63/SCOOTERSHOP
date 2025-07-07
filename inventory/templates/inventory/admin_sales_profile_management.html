@@ -68,7 +68,7 @@
                 <label for="search_query" class="font-medium text-gray-700">Search Profiles:</label>
                 <input type="text" name="q" id="search_query"
                        value="{{ search_term }}"
-                       placeholder="Search by name, email, phone, address"
+                       placeholder="Search by name, email, or phone"
                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                 <button type="submit"
                         class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
@@ -92,7 +92,6 @@
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
@@ -107,17 +106,6 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ profile.email }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ profile.phone_number }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
-                                    {{ profile.address_line_1|default_if_none:"" }}
-                                    {% if profile.city %}, {{ profile.city }}{% endif %}
-                                    {% if profile.state %}, {{ profile.state }}{% endif %}
-                                    {% if profile.post_code %}, {{ profile.post_code }}{% endif %}
-                                    {% if profile.country %}, {{ profile.country }}{% endif %}
-                                    
-                                    {% if not profile.address_line_1 and not profile.address_line_2 and not profile.city and not profile.state and not profile.post_code and not profile.country %}
-                                        N/A
-                                    {% endif %}
-                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ profile.created_at|date:"M d, Y H:i" }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium table-cell-padding">
                                     <div class="flex space-x-2">

@@ -50,12 +50,13 @@
 {% endblock %}
 
 {% block admin_main_content %}
-<div class="p-4">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">{{ page_title|default:"Sales Profile Details" }}</h1>
-        <div class="flex space-x-2">
-            
-            
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-lg rounded-lg p-6 md:p-8 max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">
+            {{ page_title|default:"Sales Profile Details" }}
+        </h1>
+
+        <div class="flex justify-end items-center mb-6 space-x-2">
             <a href="{% url 'inventory:sales_profile_update' pk=sales_profile.pk %}" class="action-button btn-edit">Edit Profile</a>
             <form action="{% url 'inventory:admin_sales_profile_delete' pk=sales_profile.pk %}" method="post" class="inline">
                 {% csrf_token %}
@@ -64,10 +65,8 @@
                 </button>
             </form>
         </div>
-    </div>
 
-    <div class="bg-white shadow-md rounded-lg p-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">Customer Information</h2>
+        <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Customer Information</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="detail-item">
                 <div class="detail-label">Name:</div>
@@ -99,7 +98,7 @@
             </div>
         </div>
 
-        <h2 class="text-xl font-semibold text-gray-800 mt-6 mb-4">Driver's License Details</h2>
+        <h2 class="text-xl font-semibold text-gray-700 mt-6 mb-4 border-b pb-2">Driver's License Details</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="detail-item">
                 <div class="detail-label">License Number:</div>
@@ -117,7 +116,7 @@
             {% endif %}
         </div>
 
-        <h2 class="text-xl font-semibold text-gray-800 mt-6 mb-4">Timestamps</h2>
+        <h2 class="text-xl font-semibold text-gray-700 mt-6 mb-4 border-b pb-2">Timestamps</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="detail-item">
                 <div class="detail-label">Created At:</div>
@@ -128,12 +127,12 @@
                 <div class="detail-value">{{ sales_profile.updated_at|date:"M d, Y H:i" }}</div>
             </div>
         </div>
-    </div>
 
-    <div class="mt-6 text-center">
-        <a href="{% url 'inventory:sales_profile_management' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-            Back to Sales Profiles
-        </a>
+        <div class="mt-8 text-center">
+            <a href="{% url 'inventory:sales_profile_management' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                Back to Sales Profiles
+            </a>
+        </div>
     </div>
 </div>
 {% endblock %}
