@@ -61,7 +61,7 @@ def handle_sales_booking_succeeded(payment_obj: Payment, payment_intent_data: di
 
         sales_profile = sales_booking.sales_profile
         email_context = {
-            "sales_booking": sales_booking,
+            "booking": sales_booking,
             "user": (
                 sales_profile.user if sales_profile and sales_profile.user else None
             ),
