@@ -26,7 +26,7 @@
 {% endblock %}
 
 {% block admin_main_content %}
-<div class="container mx-auto px-4 py-8">
+<div class="container mx-auto py-8">
     <div class="bg-white shadow-lg rounded-lg p-6 md:p-8 max-w-4xl mx-auto">
         <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">{{ page_title|default:"Enquiry Management" }}</h1>
 
@@ -37,23 +37,23 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Motorcycle</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            <th scope="col" class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th scope="col" class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th scope="col" class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Motorcycle</th>
+                            <th scope="col" class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message</th>
+                            <th scope="col" class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th scope="col" class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         {% for enquiry in enquiries %}
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ enquiry.name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ enquiry.email }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ enquiry.motorcycle|default:"N/A" }}</td>
-                                <td class="px-6 py-4 whitespace-normal text-sm text-gray-500">{{ enquiry.message|truncatechars:100 }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ enquiry.created_at|date:"Y-m-d H:i" }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <td class="px-2 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ enquiry.name }}</td>
+                                <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500">{{ enquiry.email }}</td>
+                                <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500">{{ enquiry.motorcycle|default:"N/A" }}</td>
+                                <td class="px-2 py-4 whitespace-normal text-sm text-gray-500">{{ enquiry.message|truncatechars:100 }}</td>
+                                <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500">{{ enquiry.created_at|date:"Y-m-d H:i" }}</td>
+                                <td class="px-2 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex flex-wrap gap-2">
                                         <a href="{% url 'core:enquiry_detail' pk=enquiry.pk %}" class="action-button btn-view">View</a>
                                         <form action="{% url 'core:enquiry_delete' pk=enquiry.pk %}" method="post" class="inline">
