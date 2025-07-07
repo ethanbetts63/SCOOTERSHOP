@@ -14,7 +14,6 @@ class SiteSettings(models.Model):
     enable_google_places_reviews = models.BooleanField(default=True, help_text="Enable displaying Google Places reviews")
     enable_user_accounts = models.BooleanField(default=True, help_text="Enable user account registration")
 
-    # New visibility fields
     display_phone_number = models.BooleanField(default=False, help_text="Display the phone number on the website.")
     display_address = models.BooleanField(default=True, help_text="Display the storefront address on the website.")
     display_opening_hours = models.BooleanField(default=True, help_text="Display the opening hours on the website.")
