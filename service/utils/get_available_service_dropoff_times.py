@@ -10,11 +10,11 @@ def get_available_dropoff_times(selected_date):
 
         return []
 
-    allow_after_hours_dropoff = service_settings.allow_after_hours_dropoff
+    enable_after_hours_dropoff = service_settings.enable_after_hours_dropoff
 
     now = timezone.now()
 
-    if allow_after_hours_dropoff:
+    if enable_after_hours_dropoff:
 
         start_time_obj = datetime.time(0, 0)
         end_time_obj = datetime.time(23, 59)
@@ -46,7 +46,7 @@ def get_available_dropoff_times(selected_date):
     while current_slot_datetime <= end_slot_datetime:
 
         if (
-            not allow_after_hours_dropoff
+            not enable_after_hours_dropoff
             and selected_date <= today_local
             and current_slot_datetime < now
         ):

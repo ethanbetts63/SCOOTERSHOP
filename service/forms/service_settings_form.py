@@ -16,7 +16,7 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             "drop_off_spacing_mins",
             "max_advance_dropoff_days",
             "latest_same_day_dropoff_time",
-            "allow_after_hours_dropoff",
+            "enable_after_hours_dropoff",
             "after_hours_dropoff_disclaimer",
             "deposit_calc_method",
             "deposit_flat_fee_amount",
@@ -52,7 +52,7 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             "latest_same_day_dropoff_time": forms.TimeInput(
                 attrs={"class": "form-control", "type": "time"}
             ),
-            "allow_after_hours_dropoff": forms.CheckboxInput(
+            "enable_after_hours_dropoff": forms.CheckboxInput(
                 attrs={"class": "form-check-input"}
             ),
             "after_hours_dropoff_disclaimer": forms.Textarea(

@@ -8,7 +8,7 @@ def get_drop_off_date_availability(temp_booking, service_settings):
     today = timezone.localdate(timezone.now())
     service_date = temp_booking.service_date
     max_advance_days = service_settings.max_advance_dropoff_days
-    allow_after_hours_dropoff = service_settings.allow_after_hours_dropoff
+    enable_after_hours_dropoff = service_settings.enable_after_hours_dropoff
     booking_open_days_str = service_settings.booking_open_days
 
     day_name_to_weekday_num = {
@@ -59,7 +59,7 @@ def get_drop_off_date_availability(temp_booking, service_settings):
 
         if current_date not in blocked_date_set:
 
-            if not allow_after_hours_dropoff:
+            if not enable_after_hours_dropoff:
                 if current_date.weekday() in booking_open_weekdays:
                     available_dates.append(current_date.strftime("%Y-%m-%d"))
             else:

@@ -22,7 +22,7 @@ class ServiceBookingSettingsFormTest(TestCase):
             "drop_off_spacing_mins": 30,
             "max_advance_dropoff_days": 7,
             "latest_same_day_dropoff_time": time(12, 0),
-            "allow_after_hours_dropoff": False,
+            "enable_after_hours_dropoff": False,
             "after_hours_dropoff_disclaimer": "Motorcycle drop-off outside of opening hours is at your own risk.",
             "deposit_calc_method": "FLAT_FEE",
             "deposit_flat_fee_amount": Decimal("25.00"),
@@ -56,7 +56,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.service_settings.drop_off_spacing_mins = 60
         self.service_settings.max_advance_dropoff_days = 10
         self.service_settings.latest_same_day_dropoff_time = time(13, 0)
-        self.service_settings.allow_after_hours_dropoff = True
+        self.service_settings.enable_after_hours_dropoff = True
         self.service_settings.after_hours_dropoff_disclaimer = "Test disclaimer."
 
         self.service_settings.save()
@@ -70,7 +70,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertEqual(form.initial["drop_off_spacing_mins"], 60)
         self.assertEqual(form.initial["max_advance_dropoff_days"], 10)
         self.assertEqual(form.initial["latest_same_day_dropoff_time"], time(13, 0))
-        self.assertEqual(form.initial["allow_after_hours_dropoff"], True)
+        self.assertEqual(form.initial["enable_after_hours_dropoff"], True)
         self.assertEqual(
             form.initial["after_hours_dropoff_disclaimer"], "Test disclaimer."
         )
@@ -86,7 +86,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         data["drop_off_spacing_mins"] = 45
         data["max_advance_dropoff_days"] = 15
         data["latest_same_day_dropoff_time"] = time(14, 0)
-        data["allow_after_hours_dropoff"] = True
+        data["enable_after_hours_dropoff"] = True
         data["after_hours_dropoff_disclaimer"] = "Updated disclaimer text."
 
         form = ServiceBookingSettingsForm(data=data, instance=self.service_settings)
@@ -101,7 +101,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertEqual(saved_settings.drop_off_spacing_mins, 45)
         self.assertEqual(saved_settings.max_advance_dropoff_days, 15)
         self.assertEqual(saved_settings.latest_same_day_dropoff_time, time(14, 0))
-        self.assertEqual(saved_settings.allow_after_hours_dropoff, True)
+        self.assertEqual(saved_settings.enable_after_hours_dropoff, True)
         self.assertEqual(
             saved_settings.after_hours_dropoff_disclaimer, "Updated disclaimer text."
         )

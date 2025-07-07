@@ -59,7 +59,7 @@ class GetAvailableDropoffTimesTest(TestCase):
             drop_off_end_time=datetime.time(17, 0),
             drop_off_spacing_mins=30,
             latest_same_day_dropoff_time=datetime.time(17, 0),
-            allow_after_hours_dropoff=False,
+            enable_after_hours_dropoff=False,
         )
 
     def test_no_service_settings(self):
@@ -153,9 +153,9 @@ class GetAvailableDropoffTimesTest(TestCase):
         available_times = get_available_dropoff_times(test_date)
         self.assertEqual(available_times, expected_times)
 
-    def test_allow_after_hours_dropoff_true(self):
+    def test_enable_after_hours_dropoff_true(self):
 
-        self.service_settings.allow_after_hours_dropoff = True
+        self.service_settings.enable_after_hours_dropoff = True
         self.service_settings.drop_off_spacing_mins = 60
 
         self.service_settings.drop_off_start_time = datetime.time(0, 0)
@@ -167,10 +167,10 @@ class GetAvailableDropoffTimesTest(TestCase):
         available_times = get_available_dropoff_times(self.fixed_local_date)
         self.assertEqual(available_times, expected_times)
 
-    def test_allow_after_hours_dropoff_true_with_booking(self):
+    def test_enable_after_hours_dropoff_true_with_booking(self):
 
         test_date = self.fixed_local_date + datetime.timedelta(days=1)
-        self.service_settings.allow_after_hours_dropoff = True
+        self.service_settings.enable_after_hours_dropoff = True
         self.service_settings.drop_off_spacing_mins = 60
 
         self.service_settings.drop_off_start_time = datetime.time(0, 0)
@@ -215,7 +215,7 @@ class GetAvailableDropoffTimesTest(TestCase):
     def test_selected_date_in_past_no_after_hours(self):
 
         past_date = self.fixed_local_date - datetime.timedelta(days=7)
-        self.service_settings.allow_after_hours_dropoff = False
+        self.service_settings.enable_after_hours_dropoff = False
         self.service_settings.save()
 
         available_times = get_available_dropoff_times(past_date)

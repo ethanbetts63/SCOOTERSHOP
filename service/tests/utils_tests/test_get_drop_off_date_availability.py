@@ -54,7 +54,7 @@ class GetDropOffDateAvailabilityTest(TestCase):
 
         self.service_settings = ServiceSettingsFactory(
             max_advance_dropoff_days=7,
-            allow_after_hours_dropoff=False,
+            enable_after_hours_dropoff=False,
             booking_open_days="Mon,Tue,Wed,Thu,Fri,Sat,Sun",
         )
 
@@ -66,7 +66,7 @@ class GetDropOffDateAvailabilityTest(TestCase):
 
         self.service_settings.max_advance_dropoff_days = 7
         self.service_settings.booking_open_days = "Mon,Tue,Wed,Thu,Fri,Sat,Sun"
-        self.service_settings.allow_after_hours_dropoff = False
+        self.service_settings.enable_after_hours_dropoff = False
         self.service_settings.save()
 
         self.temp_booking.service_date = self.fixed_local_date + datetime.timedelta(
@@ -162,9 +162,9 @@ class GetDropOffDateAvailabilityTest(TestCase):
         )
         self.assertEqual(available_dates, expected_dates)
 
-    def test_allow_after_hours_dropoff_true_ignores_open_days(self):
+    def test_enable_after_hours_dropoff_true_ignores_open_days(self):
 
-        self.service_settings.allow_after_hours_dropoff = True
+        self.service_settings.enable_after_hours_dropoff = True
         self.service_settings.booking_open_days = "Mon,Tue"
         self.service_settings.save()
 
@@ -179,9 +179,9 @@ class GetDropOffDateAvailabilityTest(TestCase):
         )
         self.assertEqual(available_dates, expected_dates)
 
-    def test_allow_after_hours_dropoff_false_respects_open_days(self):
+    def test_enable_after_hours_dropoff_false_respects_open_days(self):
 
-        self.service_settings.allow_after_hours_dropoff = False
+        self.service_settings.enable_after_hours_dropoff = False
         self.service_settings.booking_open_days = "Mon,Tue"
         self.service_settings.save()
 
@@ -232,7 +232,7 @@ class GetDropOffDateAvailabilityTest(TestCase):
     def test_empty_booking_open_days_no_after_hours(self):
 
         self.service_settings.booking_open_days = "Mon,Tue,Wed,Thu,Fri,Sat,Sun"
-        self.service_settings.allow_after_hours_dropoff = False
+        self.service_settings.enable_after_hours_dropoff = False
         self.service_settings.save()
 
         self.temp_booking.service_date = self.fixed_local_date + datetime.timedelta(
@@ -242,7 +242,7 @@ class GetDropOffDateAvailabilityTest(TestCase):
 
         dummy_settings = ServiceSettings(
             max_advance_dropoff_days=self.service_settings.max_advance_dropoff_days,
-            allow_after_hours_dropoff=False,
+            enable_after_hours_dropoff=False,
             booking_open_days="",
         )
 
