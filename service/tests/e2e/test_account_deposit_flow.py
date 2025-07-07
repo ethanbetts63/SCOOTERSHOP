@@ -40,7 +40,6 @@ class TestLoggedInDepositPaymentFlow(TestCase):
         self.deposit_amount = Decimal("75.00")
         self.service_settings = ServiceSettingsFactory(
             enable_online_deposit=True,
-            enable_online_deposit=True,
             deposit_calc_method="FLAT_FEE",
             deposit_flat_fee_amount=self.deposit_amount,
             booking_advance_notice=1,

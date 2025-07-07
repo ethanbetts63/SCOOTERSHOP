@@ -46,7 +46,6 @@ class Step5PaymentDropoffAndTermsViewTest(TestCase):
             enable_online_full_payment=True,
             enable_online_deposit=True,
             enable_instore_full_payment=True,
-            enable_deposit=True,
             deposit_calc_method="FLAT_FEE",
             deposit_flat_fee_amount=Decimal("50.00"),
             currency_symbol="$",

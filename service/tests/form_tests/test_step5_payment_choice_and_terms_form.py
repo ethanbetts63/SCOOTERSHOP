@@ -21,7 +21,7 @@ class PaymentOptionFormTest(TestCase):
     def setUpTestData(cls):
 
         cls.default_settings = ServiceSettingsFactory(
-            enable_deposit=True,
+            enable_online_deposit=True,
             deposit_calc_method="FLAT_FEE",
             deposit_flat_fee_amount=Decimal("50.00"),
             enable_online_full_payment=True,
@@ -31,7 +31,7 @@ class PaymentOptionFormTest(TestCase):
 
         cls.deposit_only_settings = ServiceSettingsFactory(
             pk=2,
-            enable_deposit=True,
+            enable_online_deposit=True,
             deposit_calc_method="FLAT_FEE",
             deposit_flat_fee_amount=Decimal("25.00"),
             enable_online_full_payment=False,
@@ -65,7 +65,7 @@ class PaymentOptionFormTest(TestCase):
 
         cls.deposit_percentage_settings = ServiceSettingsFactory(
             pk=6,
-            enable_deposit=True,
+            enable_online_deposit=True,
             deposit_calc_method="PERCENTAGE",
             deposit_percentage=Decimal("0.20"),
             enable_online_full_payment=False,
