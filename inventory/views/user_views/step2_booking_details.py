@@ -7,8 +7,6 @@ from django.conf import settings
 from decimal import Decimal
 import json
 from inventory.utils.booking_protection import set_recent_booking_flag
-
-
 from inventory.models import TempSalesBooking, InventorySettings, SalesTerms
 from inventory.forms.sales_booking_appointment_form import BookingAppointmentForm
 from inventory.utils.get_sales_appointment_date_info import (

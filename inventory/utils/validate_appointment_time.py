@@ -22,18 +22,10 @@ def validate_appointment_time(
             f"Appointments are only available between {start_time.strftime('%I:%M %p')} and {end_time.strftime('%I:%M %p')}."
         )
 
-    now_aware = timezone.now()
     appointment_datetime_aware = timezone.make_aware(
         datetime.combine(appointment_date, appointment_time),
         timezone=timezone.get_current_timezone(),
     )
-    min_advance_hours = inventory_settings.min_advance_booking_hours
-
-    earliest_allowed_datetime = now_aware + timedelta(hours=min_advance_hours)
-    if appointment_datetime_aware <= earliest_allowed_datetime:
-        errors.append(
-            f"The selected time is too soon. Appointments require at least {min_advance_hours} hours notice from the current time."
-        )
 
     for booked_time_obj in existing_booked_times:
         booked_datetime_aware = timezone.make_aware(
