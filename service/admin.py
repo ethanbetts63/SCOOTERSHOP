@@ -8,6 +8,8 @@ from service.models import (
     ServiceSettings,
     BlockedServiceDate,
     TempServiceBooking,
+    Servicefaq,
+    ServiceTerms,
 )
 
 
@@ -158,3 +160,17 @@ class TempServiceBookingAdmin(admin.ModelAdmin):
         return obj.service_profile.name if obj.service_profile else "N/A"
 
     service_profile_name.short_description = "Customer Name (Temp)"
+
+
+@admin.register(Servicefaq)
+class ServicefaqAdmin(admin.ModelAdmin):
+    list_display = ("question", "booking_step", "is_active", "display_order")
+    list_filter = ("booking_step", "is_active")
+    search_fields = ("question", "answer")
+
+
+@admin.register(ServiceTerms)
+class ServiceTermsAdmin(admin.ModelAdmin):
+    list_display = ("version_number", "is_active", "created_at")
+    list_filter = ("is_active",)
+    search_fields = ("content",)
