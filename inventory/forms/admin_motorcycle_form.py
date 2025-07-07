@@ -138,6 +138,7 @@ class MotorcycleForm(forms.ModelForm):
         self.fields["is_available"].required = False
 
         self.fields["status"].required = True
+        self.fields["conditions"].required = True
         self.fields["price"].required = False
         self.fields["description"].required = False
         self.fields["seats"].required = False

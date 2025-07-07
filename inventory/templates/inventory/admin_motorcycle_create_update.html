@@ -16,6 +16,14 @@
     .quantity-field-container {
         display: none;
     }
+    .condition-checkbox-list label {
+        color: #1f2937; /* Dark gray text for better readability */
+        margin-left: 0.5rem;
+    }
+    .condition-checkbox-list li {
+        display: flex;
+        align-items: center;
+    }
 </style>
 {% endblock %}
 
@@ -126,7 +134,8 @@
         function toggleQuantityField() {
             let isNewSelected = false;
             conditionsCheckboxes.forEach(checkbox => {
-                if (checkbox.checked && (checkbox.nextSibling.textContent.trim().toLowerCase() === 'new' || checkbox.dataset.conditionName === 'new')) {
+                // Check the label text associated with the checkbox
+                if (checkbox.checked && checkbox.parentElement.textContent.trim().toLowerCase() === 'new') {
                     isNewSelected = true;
                 }
             });
@@ -145,6 +154,7 @@
             checkbox.addEventListener('change', toggleQuantityField);
         });
 
+        // Initial check on page load
         toggleQuantityField();
     });
 </script>
