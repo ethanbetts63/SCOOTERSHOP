@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Sales Booking for {{ motorcycle.title }} is Confirmed!</title>
+    <title>Your Sales Booking for {% if motorcycle.title %}{{ motorcycle.title }}{% else %}motorcycle.title VARIABLE DID NOT LOAD{% endif %} is Confirmed!</title>
     <style type="text/css">
         body {
             font-family: Arial, sans-serif;
@@ -92,42 +92,42 @@
                     </tr>
                     <tr>
                         <td class="content">
-                            <p>Hi {% if sales_profile.name %}{{ sales_profile.name }}{% else %}there{% endif %},</p>
-                            <p>Great news! Your sales booking for the <strong>{{ motorcycle.title }}</strong> has been confirmed.</p>
+                            <p>Hi {% if sales_profile.name %}{{ sales_profile.name }}{% else %}sales_profile.name VARIABLE DID NOT LOAD{% endif %},</p>
+                            <p>Great news! Your sales booking for the <strong>{% if motorcycle.title %}{{ motorcycle.title }}{% else %}motorcycle.title VARIABLE DID NOT LOAD{% endif %}</strong> has been confirmed.</p>
 
                             <div class="section-title">Your Booking Details</div>
                             <table>
                                 <tr>
                                     <th>Booking Reference:</th>
-                                    <td><strong>{{ booking.sales_booking_reference }}</strong></td>
+                                    <td><strong>{% if booking.sales_booking_reference %}{{ booking.sales_booking_reference }}{% else %}booking.sales_booking_reference VARIABLE DID NOT LOAD{% endif %}</strong></td>
                                 </tr>
                                 <tr>
                                     <th>Motorcycle:</th>
-                                    <td>{{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }}</td>
+                                    <td>{% if motorcycle.year %}{{ motorcycle.year }}{% else %}motorcycle.year VARIABLE DID NOT LOAD{% endif %} {% if motorcycle.brand %}{{ motorcycle.brand }}{% else %}motorcycle.brand VARIABLE DID NOT LOAD{% endif %} {% if motorcycle.model %}{{ motorcycle.model }}{% else %}motorcycle.model VARIABLE DID NOT LOAD{% endif %}</td>
                                 </tr>
                                 <tr>
                                     <th>Status:</th>
-                                    <td>{{ booking.get_booking_status_display }}</td>
+                                    <td>{% if booking.get_booking_status_display %}{{ booking.get_booking_status_display }}{% else %}booking.get_booking_status_display VARIABLE DID NOT LOAD{% endif %}</td>
                                 </tr>
                                 {% if booking.appointment_date and booking.appointment_time %}
                                 <tr>
                                     <th>Appointment Date/Time:</th>
-                                    <td>{{ booking.appointment_date|date:"D, M d, Y" }} at {{ booking.appointment_time|time:"P" }}</td>
+                                    <td>{% if booking.appointment_date %}{{ booking.appointment_date|date:"D, M d, Y" }}{% else %}booking.appointment_date VARIABLE DID NOT LOAD{% endif %} at {% if booking.appointment_time %}{{ booking.appointment_time|time:"P" }}{% else %}booking.appointment_time VARIABLE DID NOT LOAD{% endif %}</td>
                                 </tr>
                                 {% endif %}
                                 {% if booking.customer_notes %}
                                 <tr>
                                     <th>Your Notes:</th>
-                                    <td>{{ booking.customer_notes|default:"-" }}</td>
+                                    <td>{% if booking.customer_notes %}{{ booking.customer_notes }}{% else %}-{% endif %}</td>
                                 </tr>
                                 {% endif %}
                                 <tr>
                                     <th>Amount Paid:</th>
-                                    <td>{{ booking.amount_paid|floatformat:2 }} {{ booking.currency }}</td>
+                                    <td>{% if booking.amount_paid %}{{ booking.amount_paid|floatformat:2 }}{% else %}booking.amount_paid VARIABLE DID NOT LOAD{% endif %} {% if booking.currency %}{{ booking.currency }}{% else %}booking.currency VARIABLE DID NOT LOAD{% endif %}</td>
                                 </tr>
                                 <tr>
                                     <th>Payment Status:</th>
-                                    <td>{{ booking.get_payment_status_display }}</td>
+                                    <td>{% if booking.get_payment_status_display %}{{ booking.get_payment_status_display }}{% else %}booking.get_payment_status_display VARIABLE DID NOT LOAD{% endif %}</td>
                                 </tr>
                             </table>
 

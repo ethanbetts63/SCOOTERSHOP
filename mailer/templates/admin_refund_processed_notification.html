@@ -35,23 +35,23 @@
         <div class="content">
             <p>Hi Admin,</p>
 
-            <p>A Stripe refund has been successfully processed for booking <strong>{{ booking_reference }}</strong>.</p>
+            <p>A Stripe refund has been successfully processed for booking <strong>{% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}</strong>.</p>
 
             <div class="info">
-                <p><strong>Booking Reference:</strong> {{ booking_reference }}</p>
-                <p><strong>Refund Amount:</strong> {{ refunded_amount }} AUD</p>
+                <p><strong>Booking Reference:</strong> {% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}</p>
+                <p><strong>Refund Amount:</strong> {% if refunded_amount %}{{ refunded_amount }}{% else %}refunded_amount VARIABLE DID NOT LOAD{% endif %} AUD</p>
                 {% if stripe_refund_id %}
                 <p><strong>Stripe Refund ID:</strong> {{ stripe_refund_id }}</p>
                 {% endif %}
-                <p><strong>Payment ID:</strong> {{ payment_id }}</p>
-                <p><strong>Payment Intent ID:</strong> {{ payment_intent_id }}</p>
+                <p><strong>Payment ID:</strong> {% if payment_id %}{{ payment_id }}{% else %}payment_id VARIABLE DID NOT LOAD{% endif %}</p>
+                <p><strong>Payment Intent ID:</strong> {% if payment_intent_id %}{{ payment_intent_id }}{% else %}payment_intent_id VARIABLE DID NOT LOAD{% endif %}</p>
                 {% if refund_request %}
-                <p><strong>Refund Request ID:</strong> {{ refund_request.pk }}</p>
-                <p><strong>Refund Request Status:</strong> {{ refund_request.get_status_display }}</p>
+                <p><strong>Refund Request ID:</strong> {% if refund_request.pk %}{{ refund_request.pk }}{% else %}refund_request.pk VARIABLE DID NOT LOAD{% endif %}</p>
+                <p><strong>Refund Request Status:</strong> {% if refund_request.get_status_display %}{{ refund_request.get_status_display }}{% else %}refund_request.get_status_display VARIABLE DID NOT LOAD{% endif %}</p>
                 <p><strong>Refund Initiated By Admin:</strong> {% if refund_request.is_admin_initiated %}Yes{% else %}No{% endif %}</p>
                 {% endif %}
-                <p><strong>Final Refund Status:</strong> {{ status }}</p>
-                <p><strong>Event Type:</strong> {{ event_type }}</p>
+                <p><strong>Final Refund Status:</strong> {% if status %}{{ status }}{% else %}status VARIABLE DID NOT LOAD{% endif %}</p>
+                <p><strong>Event Type:</strong> {% if event_type %}{{ event_type }}{% else %}event_type VARIABLE DID NOT LOAD{% endif %}</p>
             </div>
 
             

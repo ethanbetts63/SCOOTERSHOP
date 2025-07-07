@@ -35,12 +35,12 @@
         </div>
 
         <div class="content">
-            <p>Hi {% if driver_profile and driver_profile.name %}{{ driver_profile.name }}{% elif service_profile and service_profile.name %}{{ service_profile.name }}{% elif sales_profile and sales_profile.name %}{{ sales_profile.name }}{% else %}there{% endif %},</p>
+            <p>Hi {% if driver_profile and driver_profile.name %}{{ driver_profile.name }}{% elif service_profile and service_profile.name %}{{ service_profile.name }}{% elif sales_profile and sales_profile.name %}{{ sales_profile.name }}{% else %}customer name VARIABLE DID NOT LOAD{% endif %},</p>
 
-            <p>This email confirms that your refund request for booking <strong>{{ booking_reference }}</strong> has been processed.</p>
+            <p>This email confirms that your refund request for booking <strong>{% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}</strong> has been processed.</p>
 
             <div class="highlight">
-                <p>A refund of <strong>{{ refunded_amount }} AUD</strong> has been issued to your original payment method.</p>
+                <p>A refund of <strong>{% if refunded_amount %}{{ refunded_amount }}{% else %}refunded_amount VARIABLE DID NOT LOAD{% endif %} AUD</strong> has been issued to your original payment method.</p>
             </div>
 
             
@@ -53,7 +53,7 @@
             <p>You can review our refund policy here: <a href="{{ refund_policy_link }}" class="link">Refund Policy</a>.</p>
             {% endif %}
 
-            <p>If you have any questions, please do not hesitate to contact us at <a href="mailto:{{ admin_email }}">{{ admin_email }}</a>.</p>
+            <p>If you have any questions, please do not hesitate to contact us at <a href="mailto:{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}">{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}</a>.</p>
 
             <p>Thank you for your patience.</p>
             <p>Sincerely,</p>

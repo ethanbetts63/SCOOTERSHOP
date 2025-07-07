@@ -27,11 +27,11 @@
 
         <div class="content">
             
-            <p>Dear {% if refund_request.driver_profile and refund_request.driver_profile.name %}{{ refund_request.driver_profile.name }}{% elif refund_request.service_profile and refund_request.service_profile.name %}{{ refund_request.service_profile.name }}{% else %}customer{% endif %},</p>
-            <p>We regret to inform you that your refund request for booking <strong>{{ booking_reference }}</strong> has been rejected.</p>
+            <p>Dear {% if refund_request.driver_profile and refund_request.driver_profile.name %}{{ refund_request.driver_profile.name }}{% elif refund_request.service_profile and refund_request.service_profile.name %}{{ refund_request.service_profile.name }}{% else %}customer name VARIABLE DID NOT LOAD{% endif %},</p>
+            <p>We regret to inform you that your refund request for booking <strong>{% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}</strong> has been rejected.</p>
 
             <div class="highlight">
-                <strong>Booking Reference:</strong> {{ booking_reference }}<br>
+                <strong>Booking Reference:</strong> {% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}<br>
                 {% if refund_request.rejection_reason %}
                     <strong>Reason for Rejection:</strong> {{ refund_request.rejection_reason }}
                 {% else %}
@@ -39,7 +39,7 @@
                 {% endif %}
             </div>
 
-            <p>If you have any questions regarding this decision, please refer to our <a href="{{ refund_policy_link }}">Refund Policy</a> or contact us directly at <a href="mailto:{{ admin_email }}">{{ admin_email }}</a>.</p>
+            <p>If you have any questions regarding this decision, please refer to our <a href="{% if refund_policy_link %}{{ refund_policy_link }}{% else %}refund_policy_link VARIABLE DID NOT LOAD{% endif %}">Refund Policy</a> or contact us directly at <a href="mailto:{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}">{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}</a>.</p>
 
             <p>Thank you for your understanding.</p>
             <p>Sincerely,</p>

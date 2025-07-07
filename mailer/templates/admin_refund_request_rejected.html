@@ -40,21 +40,15 @@
         <div class="content">
             <p>Dear Administrator,</p>
             <p>This is to confirm that the refund request for booking <strong>
-                {% if refund_request.service_booking %}{{ refund_request.service_booking.service_booking_reference }}
-                {% elif refund_request.sales_booking %}{{ refund_request.sales_booking.sales_booking_reference }}
-                {% else %}N/A
-                {% endif %}
+                {% if refund_request.service_booking %}{{ refund_request.service_booking.service_booking_reference }}{% elif refund_request.sales_booking %}{{ refund_request.sales_booking.sales_booking_reference }}{% else %}booking reference VARIABLE DID NOT LOAD{% endif %}
             </strong> has been marked as rejected.</p>
 
             <div class="highlight">
-                <strong>Refund Request ID:</strong> {{ refund_request.pk }}<br>
+                <strong>Refund Request ID:</strong> {% if refund_request.pk %}{{ refund_request.pk }}{% else %}refund_request.pk VARIABLE DID NOT LOAD{% endif %}<br>
                 <strong>Booking Reference:</strong> 
-                {% if refund_request.service_booking %}{{ refund_request.service_booking.service_booking_reference }}
-                {% elif refund_request.sales_booking %}{{ refund_request.sales_booking.sales_booking_reference }}
-                {% else %}N/A
-                {% endif %}<br>
-                <strong>Processed By:</strong> {{ refund_request.processed_by.get_full_name|default:refund_request.processed_by.username }}<br>
-                <strong>Processed At:</strong> {{ refund_request.processed_at|date:"D, d M Y H:i" }}
+                {% if refund_request.service_booking %}{{ refund_request.service_booking.service_booking_reference }}{% elif refund_request.sales_booking %}{{ refund_request.sales_booking.sales_booking_reference }}{% else %}booking reference VARIABLE DID NOT LOAD{% endif %}<br>
+                <strong>Processed By:</strong> {% if refund_request.processed_by %}{{ refund_request.processed_by.get_full_name|default:refund_request.processed_by.username }}{% else %}refund_request.processed_by VARIABLE DID NOT LOAD{% endif %}<br>
+                <strong>Processed At:</strong> {% if refund_request.processed_at %}{{ refund_request.processed_at|date:"D, d M Y H:i" }}{% else %}refund_request.processed_at VARIABLE DID NOT LOAD{% endif %}
             </div>
 
             <h3>Booking Details:</h3>
@@ -62,52 +56,52 @@
                 {% if refund_request.service_booking %}
                 <tr>
                     <th>Motorcycle:</th>
-                    <td>{{ refund_request.service_booking.customer_motorcycle.name }}</td>
+                    <td>{% if refund_request.service_booking.customer_motorcycle.name %}{{ refund_request.service_booking.customer_motorcycle.name }}{% else %}motorcycle name VARIABLE DID NOT LOAD{% endif %}</td>
                 </tr>
                 <tr>
                     <th>Service Date:</th>
-                    <td>{{ refund_request.service_booking.service_date|date:"D, d M Y" }}</td>
+                    <td>{% if refund_request.service_booking.service_date %}{{ refund_request.service_booking.service_date|date:"D, d M Y" }}{% else %}service_date VARIABLE DID NOT LOAD{% endif %}</td>
                 </tr>
                 <tr>
                     <th>Drop-off:</th>
-                    <td>{{ refund_request.service_booking.dropoff_date|date:"D, d M Y" }} at {{ refund_request.service_booking.dropoff_time|time:"H:i" }}</td>
+                    <td>{% if refund_request.service_booking.dropoff_date %}{{ refund_request.service_booking.dropoff_date|date:"D, d M Y" }}{% else %}dropoff_date VARIABLE DID NOT LOAD{% endif %} at {% if refund_request.service_booking.dropoff_time %}{{ refund_request.service_booking.dropoff_time|time:"H:i" }}{% else %}dropoff_time VARIABLE DID NOT LOAD{% endif %}</td>
                 </tr>
                 <tr>
                     <th>Original Total Paid:</th>
-                    <td>{{ refund_request.payment.amount|floatformat:2 }} {{ refund_request.payment.currency }}</td>
+                    <td>{% if refund_request.payment.amount %}{{ refund_request.payment.amount|floatformat:2 }}{% else %}payment amount VARIABLE DID NOT LOAD{% endif %} {% if refund_request.payment.currency %}{{ refund_request.payment.currency }}{% else %}currency VARIABLE DID NOT LOAD{% endif %}</td>
                 </tr>
                 <tr>
                     <th>Current Booking Status:</th>
-                    <td>{{ refund_request.service_booking.get_status_display }}</td>
+                    <td>{% if refund_request.service_booking.get_status_display %}{{ refund_request.service_booking.get_status_display }}{% else %}booking status VARIABLE DID NOT LOAD{% endif %}</td>
                 </tr>
                 <tr>
                     <th>Current Payment Status:</th>
-                    <td>{{ refund_request.service_booking.get_payment_status_display }}</td>
+                    <td>{% if refund_request.service_booking.get_payment_status_display %}{{ refund_request.service_booking.get_payment_status_display }}{% else %}payment status VARIABLE DID NOT LOAD{% endif %}</td>
                 </tr>
                 {% elif refund_request.sales_booking %}
                 <tr>
                     <th>Motorcycle:</th>
-                    <td>{{ refund_request.sales_booking.motorcycle.name }}</td>
+                    <td>{% if refund_request.sales_booking.motorcycle.name %}{{ refund_request.sales_booking.motorcycle.name }}{% else %}motorcycle name VARIABLE DID NOT LOAD{% endif %}</td>
                 </tr>
                 <tr>
                     <th>Appointment Date:</th>
-                    <td>{{ refund_request.sales_booking.appointment_date|date:"D, d M Y" }}</td>
+                    <td>{% if refund_request.sales_booking.appointment_date %}{{ refund_request.sales_booking.appointment_date|date:"D, d M Y" }}{% else %}appointment_date VARIABLE DID NOT LOAD{% endif %}</td>
                 </tr>
                 <tr>
                     <th>Appointment Time:</th>
-                    <td>{{ refund_request.sales_booking.appointment_time|time:"H:i" }}</td>
+                    <td>{% if refund_request.sales_booking.appointment_time %}{{ refund_request.sales_booking.appointment_time|time:"H:i" }}{% else %}appointment_time VARIABLE DID NOT LOAD{% endif %}</td>
                 </tr>
                 <tr>
                     <th>Original Total Paid:</th>
-                    <td>{{ refund_request.payment.amount|floatformat:2 }} {{ refund_request.payment.currency }}</td>
+                    <td>{% if refund_request.payment.amount %}{{ refund_request.payment.amount|floatformat:2 }}{% else %}payment amount VARIABLE DID NOT LOAD{% endif %} {% if refund_request.payment.currency %}{{ refund_request.payment.currency }}{% else %}currency VARIABLE DID NOT LOAD{% endif %}</td>
                 </tr>
                 <tr>
                     <th>Current Booking Status:</th>
-                    <td>{{ refund_request.sales_booking.get_booking_status_display }}</td>
+                    <td>{% if refund_request.sales_booking.get_booking_status_display %}{{ refund_request.sales_booking.get_booking_status_display }}{% else %}booking status VARIABLE DID NOT LOAD{% endif %}</td>
                 </tr>
                 <tr>
                     <th>Current Payment Status:</th>
-                    <td>{{ refund_request.sales_booking.get_payment_status_display }}</td>
+                    <td>{% if refund_request.sales_booking.get_payment_status_display %}{{ refund_request.sales_booking.get_payment_status_display }}{% else %}payment status VARIABLE DID NOT LOAD{% endif %}</td>
                 </tr>
                 {% else %}
                 <tr>
@@ -120,15 +114,15 @@
             <table class="details-table">
                 <tr>
                     <th>Reason Provided by User:</th>
-                    <td>{{ refund_request.reason|default:"No reason provided by user." }}</td>
+                    <td>{% if refund_request.reason %}{{ refund_request.reason }}{% else %}reason VARIABLE DID NOT LOAD{% endif %}</td>
                 </tr>
                 <tr>
                     <th>Staff Notes:</th>
-                    <td>{{ refund_request.staff_notes|default:"No staff notes." }}</td>
+                    <td>{% if refund_request.staff_notes %}{{ refund_request.staff_notes }}{% else %}staff_notes VARIABLE DID NOT LOAD{% endif %}</td>
                 </tr>
                 <tr>
                     <th>Rejection Reason:</th>
-                    <td>{{ refund_request.rejection_reason|default:"No specific rejection reason provided." }}</td>
+                    <td>{% if refund_request.rejection_reason %}{{ refund_request.rejection_reason }}{% else %}rejection_reason VARIABLE DID NOT LOAD{% endif %}</td>
                 </tr>
             </table>
 

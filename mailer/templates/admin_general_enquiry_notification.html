@@ -105,15 +105,15 @@
                             <table>
                                 <tr>
                                     <th>Name:</th>
-                                    <td>{{ enquiry.name|default:"N/A" }}</td>
+                                    <td>{% if enquiry.name %}{{ enquiry.name }}{% else %}enquiry.name VARIABLE DID NOT LOAD{% endif %}</td>
                                 </tr>
                                 <tr>
                                     <th>Email:</th>
-                                    <td>{{ enquiry.email|default:"N/A" }}</td>
+                                    <td>{% if enquiry.email %}{{ enquiry.email }}{% else %}enquiry.email VARIABLE DID NOT LOAD{% endif %}</td>
                                 </tr>
                                 <tr>
                                     <th>Phone Number:</th>
-                                    <td>{{ enquiry.phone_number|default:"N/A" }}</td>
+                                    <td>{% if enquiry.phone_number %}{{ enquiry.phone_number }}{% else %}enquiry.phone_number VARIABLE DID NOT LOAD{% endif %}</td>
                                 </tr>
                                 {% if enquiry.motorcycle %}
                                 <tr>
@@ -123,12 +123,12 @@
                                 {% endif %}
                                 <tr>
                                     <th>Submitted At:</th>
-                                    <td>{{ enquiry.created_at|date:"D, M d, Y H:i" }}</td>
+                                    <td>{% if enquiry.created_at %}{{ enquiry.created_at|date:"D, M d, Y H:i" }}{% else %}enquiry.created_at VARIABLE DID NOT LOAD{% endif %}</td>
                                 </tr>
                             </table>
 
                             <div class="section-title">Message</div>
-                            <p style="white-space: pre-wrap;">{{ enquiry.message|default:"No message provided." }}</p>
+                            <p style="white-space: pre-wrap;">{% if enquiry.message %}{{ enquiry.message }}{% else %}enquiry.message VARIABLE DID NOT LOAD{% endif %}</p>
 
                             
                         </td>

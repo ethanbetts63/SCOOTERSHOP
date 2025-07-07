@@ -26,9 +26,9 @@
 
         <div class="content">
             
-            <p>Hi {% if refund_request.driver_profile and refund_request.driver_profile.name %}{{ refund_request.driver_profile.name }}{% elif refund_request.service_profile and refund_request.service_profile.name %}{{ refund_request.service_profile.name }}{% else %}there{% endif %},</p>
+            <p>Hi {% if refund_request.driver_profile and refund_request.driver_profile.name %}{{ refund_request.driver_profile.name }}{% elif refund_request.service_profile and refund_request.service_profile.name %}{{ refund_request.service_profile.name }}{% else %}customer name VARIABLE DID NOT LOAD{% endif %},</p>
 
-            <p>This is an automated notification regarding your recent refund request for booking <strong>{{ booking_reference }}</strong>.</p>
+            <p>This is an automated notification regarding your recent refund request for booking <strong>{% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}</strong>.</p>
 
             <div class="highlight">
                 <p>We regret to inform you that your refund request was not verified within the required 24-hour time window. As a result, this request will not be processed further and has been automatically removed from our system.</p>
@@ -36,7 +36,7 @@
 
             <p>If you still wish to request a refund, please submit a new refund request through our website. You will then receive an automated email requiring verification to ensure the request's legitimacy. Please ensure you complete this verification step within 24 hours of submitting the new request.</p>
 
-            <p>If you have any questions, please do not hesitate to contact us at <a href="mailto:{{ admin_email }}">{{ admin_email }}</a>.</p>
+            <p>If you have any questions, please do not hesitate to contact us at <a href="mailto:{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}">{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}</a>.</p>
 
             <p>Thank you for your understanding.</p>
             <p>Sincerely,</p>

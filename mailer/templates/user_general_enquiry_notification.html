@@ -30,7 +30,7 @@
                     </tr>
                     <tr>
                         <td class="content">
-                            <p>Hi {% if enquiry.name %}{{ enquiry.name }}{% else %}there{% endif %},</p>
+                            <p>Hi {% if enquiry.name %}{{ enquiry.name }}{% else %}enquiry.name VARIABLE DID NOT LOAD{% endif %},</p>
                             <p>Thank you for your enquiry. We have received your message and will get back to you shortly.</p>
 
                             {% if enquiry.motorcycle %}

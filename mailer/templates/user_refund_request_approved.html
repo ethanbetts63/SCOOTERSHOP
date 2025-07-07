@@ -26,17 +26,17 @@
 
         <div class="content">
             
-            <p>Hi {% if refund_request.driver_profile and refund_request.driver_profile.name %}{{ refund_request.driver_profile.name }}{% elif refund_request.service_profile and refund_request.service_profile.name %}{{ refund_request.service_profile.name }}{% else %}there{% endif %},</p>
-            <p>We are pleased to inform you that your refund request for booking <strong>{{ booking_reference }}</strong> has been approved and processed.</p>
+            <p>Hi {% if refund_request.driver_profile and refund_request.driver_profile.name %}{{ refund_request.driver_profile.name }}{% elif refund_request.service_profile and refund_request.service_profile.name %}{{ refund_request.service_profile.name }}{% else %}customer name VARIABLE DID NOT LOAD{% endif %},</p>
+            <p>We are pleased to inform you that your refund request for booking <strong>{% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}</strong> has been approved and processed.</p>
 
             <div class="highlight">
-                <strong>Refund Amount:</strong> {{ refund_request.amount_to_refund|floatformat:2 }} {{ refund_request.payment.currency }}<br>
-                <strong>Booking Reference:</strong> {{ booking_reference }}
+                <strong>Refund Amount:</strong> {% if refund_request.amount_to_refund %}{{ refund_request.amount_to_refund|floatformat:2 }}{% else %}refund_request.amount_to_refund VARIABLE DID NOT LOAD{% endif %} {% if refund_request.payment.currency %}{{ refund_request.payment.currency }}{% else %}currency VARIABLE DID NOT LOAD{% endif %}<br>
+                <strong>Booking Reference:</strong> {% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}
             </div>
 
             <p>The refunded amount should appear in your account within 5-10 business days, depending on your bank's processing times.</p>
 
-            <p>If you have any questions regarding the refund process, please refer to our <a href="{{ refund_policy_link }}">Refund Policy</a> or contact us directly at <a href="mailto:{{ admin_email }}">{{ admin_email }}</a>.</p>
+            <p>If you have any questions regarding the refund process, please refer to our <a href="{% if refund_policy_link %}{{ refund_policy_link }}{% else %}refund_policy_link VARIABLE DID NOT LOAD{% endif %}">Refund Policy</a> or contact us directly at <a href="mailto:{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}">{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}</a>.</p>
 
             <p>Thank you for your patience.</p>
             <p>Sincerely,</p>
