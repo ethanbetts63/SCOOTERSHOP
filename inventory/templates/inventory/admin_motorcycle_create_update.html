@@ -48,11 +48,14 @@
     .quantity-field-container {
         display: none;
     }
-    .condition-checkbox-list label {
-        color: #1f2937; /* Dark gray text for better readability */
+    
+    /* Correctly target the labels within the 'conditions' checkbox list by its ID */
+    #id_conditions label {
+        color: #111827; /* Dark text (gray-900) for maximum readability */
         margin-left: 0.5rem;
+        font-weight: normal;
     }
-    .condition-checkbox-list li {
+    #id_conditions li {
         display: flex;
         align-items: center;
         margin-bottom: 0.25rem;
@@ -149,7 +152,8 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const conditionsCheckboxes = document.querySelectorAll('.condition-checkbox-list input[type="checkbox"]');
+        // Correctly select checkboxes using the ID of the generated <ul>
+        const conditionsCheckboxes = document.querySelectorAll('#id_conditions input[type="checkbox"]');
         const quantityFieldContainer = document.getElementById('quantity-field-container');
         const quantityInputField = document.getElementById('id_quantity');
 
