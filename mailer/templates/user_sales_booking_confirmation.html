@@ -84,39 +84,54 @@
                     </tr>
                     <tr>
                         <td class="content">
-                            <p>Hi {% if sales_profile.name %}{{ sales_profile.name }}{% else %}there{% endif %},</p>
+                            <p>Hi {% if sales_profile and sales_profile.name %}{{ sales_profile.name }}{% else %}there (sales_profile.name DID NOT LOAD){% endif %},</p>
                             {% if is_deposit_confirmed %}
                             <p>
-                                Your deposit has been confirmed! The bike ({{ booking.motorcycle.brand }} {{ booking.motorcycle.model }})
-                                will be displayed as reserved on our website and will be reserved for you until your deposit expires or the sale is completed.
+                                Your deposit has been confirmed! 
+                                {% if booking.motorcycle.brand and booking.motorcycle.model %}
+                                    The bike ({{ booking.motorcycle.brand }} {{ booking.motorcycle.model }})
+                                    will be displayed as reserved on our website and will be reserved for you until your deposit expires or the sale is completed.
+                                {% else %}
+                                    motorcycle.brand or motorcycle.model VARIABLE DID NOT LOAD
+                                {% endif %}
                             </p>
                             {% else %}
                             <p>Thank you for your sales enquiry regarding the motorcycle. We have received your request.</p>
                             {% endif %}
 
-                            {% if booking.appointment_date %}
+                            {% if booking.appointment_date and booking.appointment_time %}
                             <p>Your requested appointment date is <strong>{{ booking.appointment_date|date:"D, M d, Y" }} at {{ booking.appointment_time|time:"P" }}</strong>. Please note that this appointment is not yet confirmed.</p>
                             <p>IMPORTANT: You will receive a separate confirmation email after our admin team has reviewed your booking details and confirmed the appointment. </p>
                             {% else %}
-                            <p>Our admin team will get back to you as soon as possible to discuss your enquiry further and confirm and appointments.</p>
+                            <p>Our admin team will get back to you as soon as possible to discuss your enquiry further and confirm and appointments. (booking.appointment_date or booking.appointment_time DID NOT LOAD)</p>
                             {% endif %}
 
                             <h2>Booking Details</h2>
                             <table>
                                 <tr>
                                     <th>Booking Reference:</th>
-                                    <td><strong>{{ booking.sales_booking_reference }}</strong></td>
+                                    <td><strong>{% if booking.sales_booking_reference %}{{ booking.sales_booking_reference }}{% else %}booking.sales_booking_reference VARIABLE DID NOT LOAD{% endif %}</strong></td>
                                 </tr>
                                 {% if booking.motorcycle %}
                                 <tr>
                                     <th>Motorcycle:</th>
-                                    <td>{{ booking.motorcycle.year }} {{ booking.motorcycle.brand }} {{ booking.motorcycle.model }}</td>
+                                    <td>
+                                        {% if booking.motorcycle.year %}{{ booking.motorcycle.year }}{% else %}year DID NOT LOAD, {% endif %}
+                                        {% if booking.motorcycle.brand %}{{ booking.motorcycle.brand }}{% else %}brand DID NOT LOAD, {% endif %}
+                                        {% if booking.motorcycle.model %}{{ booking.motorcycle.model }}{% else %}model DID NOT LOAD{% endif %}
+                                    </td>
                                 </tr>
                                 <tr>
                                     <th>Motorcycle Price:</th>
-                                    <td>{{ booking.motorcycle.price|floatformat:2 }} {{ booking.currency }}</td>
+                                    <td>
+                                        {% if booking.motorcycle.price %}{{ booking.motorcycle.price|floatformat:2 }}{% else %}price DID NOT LOAD {% endif %}
+                                        {% if booking.currency %}{{ booking.currency }}{% else %}currency DID NOT LOAD{% endif %}
+                                    </td>
                                 </tr>
+                                {% else %}
+                                <tr><td colspan="2">booking.motorcycle VARIABLE DID NOT LOAD</td></tr>
                                 {% endif %}
+                                
                                 {% if booking.appointment_date %}
                                 <tr>
                                     <th>Requested Appointment Date:</th>
@@ -130,21 +145,31 @@
                                     <th>Request Type:</th>
                                     <td>Viewing Enquiry</td>
                                 </tr>
+                                {% endif %}
 
                                 {% if booking.amount_paid > 0 %}
                                 <tr>
                                     <th>Amount Paid:</th>
-                                    <td>{{ booking.amount_paid|floatformat:2 }} {{ booking.currency }}</td>
+                                    <td>
+                                        {% if booking.amount_paid %}{{ booking.amount_paid|floatformat:2 }}{% else %}amount_paid DID NOT LOAD {% endif %}
+                                        {% if booking.currency %}{{ booking.currency }}{% else %}currency DID NOT LOAD{% endif %}
+                                    </td>
                                 </tr>
                                 <tr>
                                     <th>Payment Status:</th>
-                                    <td>{{ booking.get_payment_status_display }}</td>
+                                    <td>{% if booking.get_payment_status_display %}{{ booking.get_payment_status_display }}{% else %}get_payment_status_display DID NOT LOAD{% endif %}</td>
                                 </tr>
                                 {% endif %}
+                                
                                 {% if booking.customer_notes %}
                                 <tr>
                                     <th>Your Notes:</th>
                                     <td>{{ booking.customer_notes }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <th>Your Notes:</th>
+                                    <td>(booking.customer_notes DID NOT LOAD OR NO NOTES PROVIDED)</td>
                                 </tr>
                                 {% endif %}
                             </table>
