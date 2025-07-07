@@ -70,17 +70,44 @@ def send_templated_email(
         success = False
     finally:
         try:
+            # Prepare context for logging, ensuring it's serializable
+            log_context = None
+            try:
+                # Create a copy to avoid modifying the original context
+                context_for_log = context.copy()
+                # Remove non-serializable or bulky items if they exist
+                if 'booking' in context_for_log:
+                    del context_for_log['booking']
+                if 'profile' in context_for_log:
+                    del context_for_log['profile']
+                if 'user' in context_for_log:
+                    del context_for_log['user']
+
+                log_context = json.loads(json.dumps(context_for_log, cls=DjangoJSONEncoder))
+            except Exception:
+                # If context serialization fails, log without it or with an error placeholder
+                log_context = {"error": "Context not serializable"}
+
             with transaction.atomic():
-                EmailLog.objects.create(
-                    timestamp=timezone.now(), sender=sender_email,
-                    recipient=", ".join(recipient_list), subject=subject,
-                    template_name=template_name, context=json.loads(json.dumps(context, cls=DjangoJSONEncoder)), status=email_status, error_message=error_msg,
+                log_entry = EmailLog(
+                    timestamp=timezone.now(),
+                    sender=sender_email,
+                    recipient=", ".join(recipient_list),
+                    subject=subject,
+                    template_name=template_name,
+                    context=log_context,
+                    status=email_status,
+                    error_message=error_msg,
                     user=user,
-                    service_profile=service_profile, sales_profile=sales_profile,
+                    service_profile=service_profile,
+                    sales_profile=sales_profile,
                     service_booking=service_booking_obj,
                     sales_booking=sales_booking_obj,
                 )
+                log_entry.save()
         except Exception as log_e:
-            pass
+            # For debugging: at least print the error
+            # In production, you might use proper logging
+            print(f"Failed to create email log: {log_e}")
 
     return success
