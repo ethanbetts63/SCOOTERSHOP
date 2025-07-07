@@ -54,9 +54,7 @@ class ServiceSettings(models.Model):
         help_text="Important disclaimer text displayed to users when after-hours drop-off is selected, outlining risks/conditions.",
     )
 
-    enable_deposit = models.BooleanField(
-        default=False, help_text="Enable deposit requirement for bookings."
-    )
+    
     DEPOSIT_CALC_CHOICES = [
         ("FLAT_FEE", "Flat Fee"),
         ("PERCENTAGE", "Percentage of Booking Total"),

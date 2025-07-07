@@ -24,7 +24,6 @@ class ServiceBookingSettingsFormTest(TestCase):
             "latest_same_day_dropoff_time": time(12, 0),
             "allow_after_hours_dropoff": False,
             "after_hours_dropoff_disclaimer": "Motorcycle drop-off outside of opening hours is at your own risk.",
-            "enable_deposit": True,
             "deposit_calc_method": "FLAT_FEE",
             "deposit_flat_fee_amount": Decimal("25.00"),
             "deposit_percentage": Decimal("0.00"),
@@ -158,7 +157,7 @@ class ServiceBookingSettingsFormTest(TestCase):
     def test_deposit_calc_method_flat_fee_requires_amount(self):
 
         data = self.valid_data.copy()
-        data["enable_deposit"] = True
+        data["enable_online_deposit"] = True
         data["deposit_calc_method"] = "FLAT_FEE"
         data["deposit_flat_fee_amount"] = ""
 
@@ -170,7 +169,7 @@ class ServiceBookingSettingsFormTest(TestCase):
     def test_deposit_calc_method_percentage_requires_percentage(self):
 
         data = self.valid_data.copy()
-        data["enable_deposit"] = True
+        data["enable_online_deposit"] = True
         data["deposit_calc_method"] = "PERCENTAGE"
         data["deposit_percentage"] = ""
 

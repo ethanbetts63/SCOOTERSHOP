@@ -5,7 +5,7 @@ from service.models import ServiceSettings
 def calculate_service_deposit(temp_booking):
     service_settings = ServiceSettings.objects.first()
 
-    if not service_settings or not service_settings.enable_deposit:
+    if not service_settings or not service_settings.enable_online_deposit:
         return decimal.Decimal("0.00")
 
     total_amount = temp_booking.service_type.base_price

@@ -35,7 +35,6 @@ class PaymentOptionForm(forms.Form):
         payment_choices = []
         if (
             self.service_settings.enable_online_deposit
-            and self.service_settings.enable_deposit
         ):
             deposit_display = "Pay Deposit Online"
             if (

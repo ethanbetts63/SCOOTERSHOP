@@ -41,7 +41,7 @@ class PaymentOptionFormTest(TestCase):
 
         cls.full_online_only_settings = ServiceSettingsFactory(
             pk=3,
-            enable_deposit=False,
+            enable_online_deposit=False,
             enable_online_full_payment=True,
             enable_instore_full_payment=False,
             currency_symbol="$",
@@ -49,7 +49,7 @@ class PaymentOptionFormTest(TestCase):
 
         cls.instore_only_settings = ServiceSettingsFactory(
             pk=4,
-            enable_deposit=False,
+            enable_online_deposit=False,
             enable_online_full_payment=False,
             enable_instore_full_payment=True,
             currency_symbol="$",
@@ -57,7 +57,7 @@ class PaymentOptionFormTest(TestCase):
 
         cls.no_payment_settings = ServiceSettingsFactory(
             pk=5,
-            enable_deposit=False,
+            enable_online_deposit=False,
             enable_online_full_payment=False,
             enable_instore_full_payment=False,
             currency_symbol="$",

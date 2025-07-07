@@ -117,12 +117,12 @@ class ServiceBrandAdmin(admin.ModelAdmin):
 @admin.register(ServiceSettings)
 class ServiceSettingsAdmin(admin.ModelAdmin):
     list_display = (
-        "enable_deposit",
+        "enable_online_deposit",
         "currency_code",
     )
 
     list_filter = (
-        "enable_deposit",
+        "enable_online_deposit",
     )
 
     def has_add_permission(self, request):

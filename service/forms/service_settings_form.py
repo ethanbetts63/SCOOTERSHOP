@@ -18,7 +18,6 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             "latest_same_day_dropoff_time",
             "allow_after_hours_dropoff",
             "after_hours_dropoff_disclaimer",
-            "enable_deposit",
             "deposit_calc_method",
             "deposit_flat_fee_amount",
             "deposit_percentage",
@@ -59,7 +58,6 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             "after_hours_dropoff_disclaimer": forms.Textarea(
                 attrs={"class": "form-control", "rows": 3}
             ),
-            "enable_deposit": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "deposit_calc_method": forms.Select(attrs={"class": "form-control"}),
             "deposit_flat_fee_amount": forms.NumberInput(
                 attrs={"class": "form-control", "step": "0.01", "min": "1"}
@@ -145,12 +143,12 @@ class ServiceBookingSettingsForm(forms.ModelForm):
                 _("Ensure deposit percentage is between 0.00% and 100.00%."),
             )
 
-        enable_deposit = cleaned_data.get("enable_deposit")
+        enable_online_deposit = cleaned_data.get("enable_online_deposit")
         deposit_calc_method = cleaned_data.get("deposit_calc_method")
         deposit_flat_fee_amount = cleaned_data.get("deposit_flat_fee_amount")
 
         if (
-            enable_deposit
+            enable_online_deposit
             and deposit_calc_method == "FLAT_FEE"
             and deposit_flat_fee_amount is not None
             and deposit_flat_fee_amount < 1
