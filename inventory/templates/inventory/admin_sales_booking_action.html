@@ -59,7 +59,7 @@
                     </label>
                     <textarea name="{{ form.message.name }}" id="{{ form.message.id_for_label }}" 
                               rows="4" 
-                              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm form-input-text"
+                              class="block w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm form-input-text"
                               placeholder="{{ form.message.field.widget.attrs.placeholder|default:'Provide a reason or message for this action...' }}"
                               >{% if form.message.value %}{{ form.message.value }}{% endif %}</textarea>
                     {% if form.message.help_text %}
@@ -128,7 +128,7 @@
                                   <span class="text-gray-500 sm:text-sm">$</span>
                                 </div>
                                 <input type="number" step="0.01" name="{{ form.refund_amount.name }}" id="{{ form.refund_amount.id_for_label }}" 
-                                       class="block w-full rounded-md border-gray-300 pl-7 pr-12 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm form-input-text"
+                                       class="block w-full rounded-md border border-gray-300 pl-7 pr-12 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm form-input-text"
                                        value="{% if form.refund_amount.value %}{{ form.refund_amount.value|floatformat:2 }}{% elif booking.amount_paid %}{{ booking.amount_paid|floatformat:2 }}{% endif %}">
                                 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                                   <span class="text-gray-500 sm:text-sm" id="currency">USD</span>
