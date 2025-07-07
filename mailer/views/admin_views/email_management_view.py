@@ -1,7 +1,7 @@
 from django.views.generic import ListView
 from mailer.models import EmailLog
 from core.mixins import AdminRequiredMixin
-from dashboard.models import SiteSettings
+from django.conf import settings
 
 
 class EmailManagementView(AdminRequiredMixin, ListView):
@@ -11,8 +11,7 @@ class EmailManagementView(AdminRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        site_settings = SiteSettings.objects.first()
-        admin_email = site_settings.admin_email if site_settings else None
+        admin_email = settings.ADMIN_EMAIL
         queryset = EmailLog.objects.all()
         if admin_email:
             queryset = queryset.exclude(recipient=admin_email)
