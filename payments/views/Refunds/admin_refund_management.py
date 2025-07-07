@@ -59,11 +59,18 @@ class AdminRefundManagement(AdminRequiredMixin, ListView):
                 }
 
                 if recipient_email:
+                    user_email_context = {
+                        "refund_request": refund_request,
+                        "booking_reference": booking_reference_for_email,
+                        "admin_email": getattr(
+                            settings, "ADMIN_EMAIL", settings.DEFAULT_FROM_EMAIL
+                        ),
+                    }
                     send_templated_email(
                         recipient_list=[recipient_email],
                         subject=f"Important: Your Refund Request for Booking {booking_reference_for_email} Has Expired",
-                        template_name=email_template_name,
-                        context=admin_email_context,
+                        template_name="user_refund_request_expired_unverified.html",
+                        context=user_email_context,
                         booking=booking_object,
                         service_profile=(
                             customer_profile_object

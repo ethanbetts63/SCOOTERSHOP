@@ -151,20 +151,18 @@ class Step5PaymentDropoffAndTermsView(View):
 
                     user_email = final_service_booking.service_profile.email
                     if user_email:
-                        try:
-                            send_templated_email(
-                                recipient_list=[user_email],
-                                subject=f"Your Service Booking Confirmed! Ref: {final_service_booking.service_booking_reference}",
-                                template_name="emails/user_service_booking_confirmation.html",
-                                context={},
-                                booking=final_service_booking,
-                                profile=final_service_booking.service_profile,
-                            )
-                            messages.info(
-                                request,
-                                "Booking confirmed, but failed to send confirmation email.",
-                            )
-                        except Exception:
+                        email_sent = send_templated_email(
+                            recipient_list=[user_email],
+                            subject=f"Your Service Booking Confirmed! Ref: {final_service_booking.service_booking_reference}",
+                            template_name="user_service_booking_confirmation.html",
+                            context={
+                                "booking": final_service_booking,
+                                "profile": final_service_booking.service_profile,
+                            },
+                            booking=final_service_booking,
+                            profile=final_service_booking.service_profile,
+                        )
+                        if not email_sent:
                             messages.warning(
                                 request,
                                 "Booking confirmed, but failed to send confirmation email.",
@@ -177,17 +175,22 @@ class Step5PaymentDropoffAndTermsView(View):
 
                     admin_email = getattr(settings, "ADMIN_EMAIL", "admin@example.com")
                     if admin_email:
-                        try:
-                            send_templated_email(
-                                recipient_list=[admin_email],
-                                subject=f"NEW SERVICE BOOKING: {final_service_booking.service_booking_reference} (In-Store Payment)",
-                                template_name="emails/admin_service_booking_confirmation.html",
-                                context={},
-                                booking=final_service_booking,
-                                profile=final_service_booking.service_profile,
+                        admin_email_sent = send_templated_email(
+                            recipient_list=[admin_email],
+                            subject=f"NEW SERVICE BOOKING: {final_service_booking.service_booking_reference} (In-Store Payment)",
+                            template_name="admin_service_booking_confirmation.html",
+                            context={
+                                "booking": final_service_booking,
+                                "profile": final_service_booking.service_profile,
+                            },
+                            booking=final_service_booking,
+                            profile=final_service_booking.service_profile,
+                        )
+                        if not admin_email_sent:
+                            messages.warning(
+                                request,
+                                "Booking confirmed, but failed to send admin confirmation email.",
                             )
-                        except Exception:
-                            pass
 
                     return redirect(reverse("service:service_book_step7"))
 
