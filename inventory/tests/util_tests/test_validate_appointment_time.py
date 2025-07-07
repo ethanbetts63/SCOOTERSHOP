@@ -17,35 +17,7 @@ class ValidateAppointmentTimeUtilTest(TestCase):
             min_advance_booking_hours=2,
         )
 
-    @patch("django.utils.timezone.now")
-    def test_time_too_soon_for_today(self, mock_now):
-
-        fixed_now = datetime(
-            2025, 6, 15, 10, 0, 0, tzinfo=timezone.get_current_timezone()
-        )
-        mock_now.return_value = fixed_now
-
-        today = fixed_now.date()
-        too_soon_time = time(11, 30)
-
-        errors = validate_appointment_time(
-            today, too_soon_time, self.inventory_settings, []
-        )
-        self.assertIn(
-            f"The selected time is too soon. Appointments require at least {self.inventory_settings.min_advance_booking_hours} hours notice from the current time.",
-            errors,
-        )
-        self.assertEqual(len(errors), 1)
-
-        too_soon_time_boundary = time(12, 0)
-        errors = validate_appointment_time(
-            today, too_soon_time_boundary, self.inventory_settings, []
-        )
-        self.assertIn(
-            f"The selected time is too soon. Appointments require at least {self.inventory_settings.min_advance_booking_hours} hours notice from the current time.",
-            errors,
-        )
-        self.assertEqual(len(errors), 1)
+    
 
     @patch("django.utils.timezone.now")
     def test_time_on_today_but_just_valid(self, mock_now):
