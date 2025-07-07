@@ -20,6 +20,7 @@ class MotorcycleFormTest(TestCase):
     def test_init_method_required_fields(self):
         form = MotorcycleForm()
         self.assertTrue(form.fields["status"].required)
+        self.assertTrue(form.fields["conditions"].required)
         self.assertFalse(form.fields["price"].required)
         self.assertFalse(form.fields["description"].required)
         self.assertFalse(form.fields["seats"].required)
@@ -44,7 +45,7 @@ class MotorcycleFormTest(TestCase):
             "is_available": True,
             "transmission": "automatic",
             "stock_number": "STK001",
-            "conditions": [],
+            "conditions": [self.condition_used.pk],
         }
         form = MotorcycleForm(data=data)
         self.assertTrue(form.is_valid(), form.errors.as_json())
@@ -64,7 +65,7 @@ class MotorcycleFormTest(TestCase):
             "is_available": True,
             "transmission": "automatic",
             "stock_number": "STK001",
-            "conditions": [],
+            "conditions": [self.condition_used.pk],
         }
 
         data_invalid_low_year = base_data.copy()
@@ -104,7 +105,7 @@ class MotorcycleFormTest(TestCase):
             "transmission": "automatic",
             "stock_number": "STK001",
             "rego": "abc123",
-            "conditions": [],
+            "conditions": [self.condition_used.pk],
         }
         form = MotorcycleForm(data=data_rego)
         self.assertTrue(form.is_valid(), form.errors.as_json())
@@ -183,7 +184,7 @@ class MotorcycleFormTest(TestCase):
             "is_available": True,
             "transmission": "manual",
             "stock_number": "STK001",
-            "conditions": [],
+            "conditions": [self.condition_used.pk],
             "quantity": 1,
         }
         form = MotorcycleForm(data=data_full)
@@ -206,7 +207,7 @@ class MotorcycleFormTest(TestCase):
             "is_available": True,
             "transmission": "manual",
             "stock_number": "STK002",
-            "conditions": [],
+            "conditions": [self.condition_used.pk],
             "quantity": 1,
         }
         form_no_details = MotorcycleForm(data=data_no_details)
