@@ -1,0 +1,67 @@
+{% extends "dashboard/admin_layout.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} - Scootershop Australia{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .email-detail-card {
+        background-color: #fff;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .email-detail-item {
+        margin-bottom: 1rem;
+        color: #333;
+    }
+    .email-detail-item strong {
+        display: inline-block;
+        min-width: 100px;
+        color: #222;
+    }
+    .email-render-view {
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+        background-color: #f9fafb;
+    }
+</style>
+{% endblock %}
+
+{% block admin_main_content %}
+<div class="p-4 sm:p-6 lg:p-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">{{ page_title }}</h1>
+        <a href="{% url 'mailer:email_management' %}" class="action-button btn-secondary">Back to Email Logs</a>
+    </div>
+
+    <div class="email-detail-card">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Email Details</h2>
+        <div class="email-detail-item">
+            <strong>Recipient:</strong> {{ email.recipient }}
+        </div>
+        <div class="email-detail-item">
+            <strong>Subject:</strong> {{ email.subject }}
+        </div>
+        <div class="email-detail-item">
+            <strong>Status:</strong> {{ email.status }}
+        </div>
+        <div class="email-detail-item">
+            <strong>Timestamp:</strong> {{ email.timestamp|date:"Y-m-d H:i" }}
+        </div>
+        <div class="email-detail-item">
+            <strong>Template:</strong> {{ email.template_name }}
+        </div>
+    </div>
+
+    <div class="email-render-view">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Rendered Email</h2>
+        {{ rendered_email|safe }}
+    </div>
+
+</div>
+{% endblock %}

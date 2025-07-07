@@ -11,7 +11,8 @@ urlpatterns = [
     
     path('dashboard/', include('dashboard.urls', namespace='dashboard')),
     path('', include('core.urls', namespace='core')),
-    path('payments/', include('payments.urls', namespace="payments"))
+    path('payments/', include('payments.urls', namespace="payments")),
+    path('mailer/', include('mailer.urls', namespace='mailer'))
 ]
 
 if settings.DEBUG:
