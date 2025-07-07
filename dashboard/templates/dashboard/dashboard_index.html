@@ -1,33 +1,97 @@
 {% extends "dashboard/admin_layout.html" %}
+{% load static %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .action-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 16px;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        transition: all 0.15s ease-in-out;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    .action-button:hover {
+        opacity: 0.9;
+    }
+    .btn-view {
+        color: #ffffff;
+        background-color: #3b82f6; /* blue-500 */
+        border: 1px solid #2563eb; /* blue-600 */
+    }
+    .btn-view:hover {
+        background-color: #2563eb;
+    }
+    .btn-clear-all {
+        color: #ffffff;
+        background-color: #ef4444; /* red-500 */
+        border: 1px solid #dc2626; /* red-600 */
+    }
+    .btn-clear-all:hover {
+        background-color: #dc2626;
+    }
+</style>
+{% endblock %}
 
 {% block admin_main_content %}
 <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold text-gray-800 mb-6">{{ page_title }}</h1>
-
-    <div class="bg-white shadow-lg rounded-lg p-6">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-semibold text-gray-700">Notifications</h2>
+    <div class="bg-white shadow-lg rounded-lg p-6 md:p-8 max-w-7xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">{{ page_title|default:"Notifications" }}</h1>
             {% if notifications %}
             <form action="{% url 'dashboard:clear_notifications' %}" method="post">
                 {% csrf_token %}
-                <button type="submit" class="action-button btn-delete">Clear All</button>
+                <button type="submit" class="action-button btn-clear-all">Clear All Notifications</button>
             </form>
             {% endif %}
         </div>
 
         {% if notifications %}
-            <ul class="divide-y divide-gray-200">
-                {% for notification in notifications %}
-                    <li class="py-4 flex justify-between items-center">
-                        <a href="{{ notification.content_object.get_absolute_url }}" class="text-blue-600 hover:underline">
-                            {{ notification.message }}
-                        </a>
-                        <span class="text-sm text-gray-500">{{ notification.created_at|timesince }} ago</span>
-                    </li>
-                {% endfor %}
-            </ul>
+            <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Received</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for notification in notifications %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {{ notification.message }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ notification.created_at|timesince }} ago</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex space-x-2">
+                                        {% if notification.content_type.model == 'salesbooking' %}
+                                            <a href="{% url 'inventory:sales_bookings_management' %}" class="action-button btn-view">View</a>
+                                        {% elif notification.content_type.model == 'servicebooking' %}
+                                            <a href="{% url 'service:service_booking_management' %}" class="action-button btn-view">View</a>
+                                        {% elif notification.content_type.model == 'enquiry' %}
+                                            <a href="{% url 'core:enquiry_management' %}" class="action-button btn-view">View</a>
+                                        {% elif notification.content_type.model == 'refundrequest' %}
+                                            <a href="{% url 'payments:admin_refund_management' %}" class="action-button btn-view">View</a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         {% else %}
-            <p class="text-gray-500">No new notifications.</p>
+             <div class="text-center py-10">
+                <p class="text-gray-600 font-semibold">No new notifications.</p>
+                <p class="text-gray-500 mt-2">You're all caught up!</p>
+            </div>
         {% endif %}
     </div>
 </div>

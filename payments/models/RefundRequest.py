@@ -1,6 +1,5 @@
 from django.db import models
 from django.conf import settings
-from django.urls import reverse
 from payments.models.PaymentModel import Payment
 import uuid
 from django.utils import timezone
@@ -148,9 +147,6 @@ class RefundRequest(models.Model):
         elif self.sales_booking:
             booking_ref = f"Sales Booking {self.sales_booking.sales_booking_reference}"
         return f"Refund Request for {booking_ref} - Status: {self.status}"
-
-    def get_absolute_url(self):
-        return reverse('payments:admin_refund_details', args=[str(self.id)])
 
     def save(self, *args, **kwargs):
 
