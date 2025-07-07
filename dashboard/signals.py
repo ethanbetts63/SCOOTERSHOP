@@ -29,7 +29,7 @@ def create_enquiry_notification(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=RefundRequest)
 def create_refund_notification(sender, instance, created, **kwargs):
-    if created:
+    if created and instance.payment:
         customer_name = "Unknown Customer"
         if instance.payment.sales_customer_profile:
             customer_name = instance.payment.sales_customer_profile.name
