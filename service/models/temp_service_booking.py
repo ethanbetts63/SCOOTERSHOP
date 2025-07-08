@@ -65,6 +65,11 @@ class TempServiceBooking(models.Model):
         null=True, blank=True, help_text="Estimated pickup date set by admin."
     )
 
+    after_hours_drop_off = models.BooleanField(
+        default=False,
+        help_text="Stores the user's choice for after-hours drop-off."
+    )
+
     customer_notes = models.TextField(
         blank=True, null=True, help_text="Any additional notes from the customer."
     )

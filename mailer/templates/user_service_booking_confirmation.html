@@ -109,8 +109,20 @@
                                 </tr>
                                 <tr>
                                     <th>Drop-off Date/Time:</th>
-                                    <td>{% if booking.dropoff_date %}{{ booking.dropoff_date|date:"D, M d, Y" }}{% else %}booking.dropoff_date VARIABLE DID NOT LOAD{% endif %} at {% if booking.dropoff_time %}{{ booking.dropoff_time|time:"P" }}{% else %}booking.dropoff_time VARIABLE DID NOT LOAD{% endif %}</td>
+                                    <td>
+                                        {% if booking.after_hours_drop_off %}
+                                            <strong>After-Hours Drop-Off</strong>
+                                        {% else %}
+                                            {% if booking.dropoff_date %}{{ booking.dropoff_date|date:"D, M d, Y" }}{% else %}booking.dropoff_date VARIABLE DID NOT LOAD{% endif %} at {% if booking.dropoff_time %}{{ booking.dropoff_time|time:"P" }}{% else %}booking.dropoff_time VARIABLE DID NOT LOAD{% endif %}
+                                        {% endif %}
+                                    </td>
                                 </tr>
+                                {% if booking.after_hours_drop_off %}
+                                <tr>
+                                    <th>After-Hours Instructions:</th>
+                                    <td>{{ after_hours_drop_off_instructions|linebreaksbr }}</td>
+                                </tr>
+                                {% endif %}
                                 {% if booking.estimated_pickup_date %}
                                 <tr>
                                     <th>Estimated Pick-up Date:</th>

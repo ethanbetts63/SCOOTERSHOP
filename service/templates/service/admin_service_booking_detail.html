@@ -105,6 +105,10 @@
                     <div class="detail-value" id="dropoffTime"></div>
                 </div>
                 <div class="detail-item">
+                    <div class="detail-label">After-Hours Drop-off:</div>
+                    <div class="detail-value" id="afterHoursDropoff"></div>
+                </div>
+                <div class="detail-item">
                     <div class="detail-label">Estimated Pick-up Date:</div>
                     <div class="detail-value" id="estimatedPickupDate"></div>
                 </div>
@@ -254,6 +258,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('serviceDate').textContent = data.service_date || 'N/A';
             document.getElementById('dropoffDate').textContent = data.dropoff_date || 'N/A';
             document.getElementById('dropoffTime').textContent = data.dropoff_time || 'N/A';
+            document.getElementById('afterHoursDropoff').textContent = data.after_hours_drop_off ? 'Yes' : 'No';
             document.getElementById('estimatedPickupDate').textContent = data.estimated_pickup_date || 'N/A';
             document.getElementById('bookingStatus').textContent = data.booking_status || 'N/A';
             document.getElementById('customerNotes').textContent = data.customer_notes || 'N/A';

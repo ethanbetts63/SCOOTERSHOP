@@ -14,7 +14,7 @@ class PaymentOptionForm(forms.Form):
         required=True,
     )
     dropoff_time = forms.TimeField(
-        label="Preferred Drop-off Time", widget=forms.Select, required=True
+        label="Preferred Drop-off Time", widget=forms.Select, required=False
     )
     payment_method = forms.ChoiceField(
         label="How would you like to pay?",
@@ -26,6 +26,12 @@ class PaymentOptionForm(forms.Form):
         label="I agree to the <a href='#' target='_blank'>service terms and conditions</a>.",
         required=True,
         widget=forms.CheckboxInput,
+    )
+    after_hours_drop_off_choice = forms.BooleanField(
+        label="Opt for After-Hours Drop-Off",
+        required=False,
+        widget=forms.CheckboxInput,
+        help_text="Select this if you intend to use our 24/7 key drop-off box."
     )
 
     def __init__(self, *args, **kwargs):
@@ -61,35 +67,13 @@ class PaymentOptionForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-        dropoff_date = cleaned_data.get("dropoff_date")
-        dropoff_time = cleaned_data.get("dropoff_time")
-        service_date = self.temp_booking.service_date
-        if not all([dropoff_date, dropoff_time, service_date]):
-            return cleaned_data
-        if dropoff_date > service_date:
-            self.add_error(
-                "dropoff_date", "Drop-off date cannot be after the service date."
-            )
-        max_advance_days = self.service_settings.max_advance_dropoff_days
-        earliest_allowed_date = service_date - timedelta(days=max_advance_days)
-        if dropoff_date < earliest_allowed_date:
-            self.add_error(
-                "dropoff_date",
-                f"Drop-off cannot be scheduled more than {max_advance_days} days in advance of the service.",
-            )
-        today = timezone.localdate(timezone.now())
-        if dropoff_date == today:
-            latest_time = self.service_settings.latest_same_day_dropoff_time
-            if dropoff_time > latest_time:
-                self.add_error(
-                    "dropoff_time",
-                    f"For same-day service, drop-off must be no later than {latest_time.strftime('%I:%M %p')}.",
-                )
-        if dropoff_date == today:
-            now_time = timezone.localtime(timezone.now()).time()
-            if dropoff_time < now_time:
-                self.add_error(
-                    "dropoff_time",
-                    "You cannot select a drop-off time that has already passed today.",
-                )
+        after_hours_drop_off = cleaned_data.get('after_hours_drop_off_choice')
+        dropoff_time = cleaned_data.get('dropoff_time')
+
+        if not after_hours_drop_off and not dropoff_time:
+            self.add_error('dropoff_time', 'This field is required if you are not using the after-hours drop-off.')
+
+        if after_hours_drop_off and dropoff_time:
+            self.add_error('dropoff_time', 'Please do not select a time if you are using the after-hours drop-off.')
+        
         return cleaned_data

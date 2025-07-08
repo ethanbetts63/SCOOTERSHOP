@@ -84,6 +84,8 @@ class Step5PaymentDropoffAndTermsView(View):
                 self.service_settings.max_advance_dropoff_days == 0
             ),
             "service_faqs": service_faqs,
+            "enable_after_hours_drop_off": self.service_settings.enable_after_hours_dropoff,
+            "after_hours_drop_off_instructions": self.service_settings.after_hours_drop_off_instructions,
         }
         context.update(kwargs)
         return context
@@ -110,11 +112,12 @@ class Step5PaymentDropoffAndTermsView(View):
                 return redirect(reverse("service:service"))
 
             self.temp_booking.dropoff_date = form.cleaned_data["dropoff_date"]
-            self.temp_booking.dropoff_time = form.cleaned_data["dropoff_time"]
+            self.temp_booking.dropoff_time = form.cleaned_data.get("dropoff_time")
             self.temp_booking.payment_method = form.cleaned_data["payment_method"]
+            self.temp_booking.after_hours_drop_off = form.cleaned_data.get("after_hours_drop_off_choice", False)
             self.temp_booking.service_terms_version = active_terms
             self.temp_booking.save(
-                update_fields=["dropoff_date", "dropoff_time", "payment_method", "service_terms_version"]
+                update_fields=["dropoff_date", "dropoff_time", "payment_method", "service_terms_version", "after_hours_drop_off"]
             )
 
             self.temp_booking.calculated_total = calculate_service_total(

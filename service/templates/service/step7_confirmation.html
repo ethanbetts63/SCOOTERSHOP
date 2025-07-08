@@ -138,8 +138,20 @@
                         </tr>
                         <tr class="py-2">
                             <td class="font-medium text-gray-700 py-2">Drop-off:</td>
-                            <td class="text-gray-900 py-2">{{ service_booking.dropoff_date|date:"D, M d, Y" }} at {{ service_booking.dropoff_time|time:"P" }}</td>
+                            <td class="text-gray-900 py-2">
+                                {% if service_booking.after_hours_drop_off %}
+                                    <strong>After-Hours Drop-Off</strong>
+                                {% else %}
+                                    {{ service_booking.dropoff_date|date:"D, M d, Y" }} at {{ service_booking.dropoff_time|time:"P" }}
+                                {% endif %}
+                            </td>
                         </tr>
+                        {% if service_booking.after_hours_drop_off %}
+                        <tr class="py-2">
+                            <td class="font-medium text-gray-700 align-top py-2">Instructions:</td>
+                            <td class="text-gray-900 py-2">{{ after_hours_drop_off_instructions|linebreaksbr }}</td>
+                        </tr>
+                        {% endif %}
                         <tr class="py-2">
                             <td class="font-medium text-gray-700 py-2">Payment Status:</td>
                             <td class="text-gray-900 py-2 capitalize">{{ payment_status }}</td>

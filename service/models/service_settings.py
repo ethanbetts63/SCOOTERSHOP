@@ -53,6 +53,10 @@ class ServiceSettings(models.Model):
         blank=True,
         help_text="Important disclaimer text displayed to users when after-hours drop-off is selected, outlining risks/conditions.",
     )
+    after_hours_drop_off_instructions = models.TextField(
+        blank=True,
+        help_text="Instructions for customers on how to use the after-hours drop-off (e.g., key box location, how to secure the vehicle).",
+    )
 
     
     DEPOSIT_CALC_CHOICES = [

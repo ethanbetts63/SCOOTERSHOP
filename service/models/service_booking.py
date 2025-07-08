@@ -97,6 +97,11 @@ class ServiceBooking(models.Model):
         blank=True, null=True, help_text="Estimated pickup date set by admin."
     )
 
+    after_hours_drop_off = models.BooleanField(
+        default=False,
+        help_text="Indicates if the customer chose the after-hours drop-off option."
+    )
+
     booking_status = models.CharField(
         max_length=30, choices=BOOKING_STATUS_CHOICES, default="PENDING_CONFIRMATION"
     )

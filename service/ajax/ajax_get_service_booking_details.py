@@ -91,9 +91,13 @@ def get_service_booking_details_json(request, pk):
                 service_booking.payment.refund_policy_snapshot
             )
 
-        cancellation_datetime = datetime.combine(
-            service_booking.dropoff_date, service_booking.dropoff_time
-        )
+        cancellation_datetime = datetime.now()
+        if service_booking.dropoff_date:
+            dropoff_time_for_calc = service_booking.dropoff_time or time(0, 0)
+            cancellation_datetime = datetime.combine(
+                service_booking.dropoff_date, dropoff_time_for_calc
+            )
+
         if timezone.is_aware(timezone.now()):
             cancellation_datetime = timezone.make_aware(cancellation_datetime)
 
@@ -109,7 +113,12 @@ def get_service_booking_details_json(request, pk):
             "customer_name": customer_name,
             "service_date": service_booking.service_date.strftime("%Y-%m-%d"),
             "dropoff_date": service_booking.dropoff_date.strftime("%Y-%m-%d"),
-            "dropoff_time": service_booking.dropoff_time.strftime("%H:%M"),
+            "dropoff_time": (
+                service_booking.dropoff_time.strftime("%H:%M")
+                if service_booking.dropoff_time
+                else "N/A"
+            ),
+            "after_hours_drop_off": service_booking.after_hours_drop_off,
             "estimated_pickup_date": (
                 service_booking.estimated_pickup_date.strftime("%Y-%m-%d")
                 if service_booking.estimated_pickup_date
@@ -129,6 +138,20 @@ def get_service_booking_details_json(request, pk):
             "customer_notes": (
                 service_booking.customer_notes if service_booking.customer_notes else ""
             ),
+            "service_terms_details": {
+                "pk": (
+                    service_booking.service_terms_version.pk
+                    if service_booking.service_terms_version
+                    else None
+                ),
+                "version_number": (
+                    service_booking.service_terms_version.version_number
+                    if service_booking.service_terms_version
+                    else "N/A"
+                ),
+            }
+            if service_booking.service_terms_version
+            else None,
             "entitled_refund_amount": float(
                 refund_calculation_results["entitled_amount"]
             ),
