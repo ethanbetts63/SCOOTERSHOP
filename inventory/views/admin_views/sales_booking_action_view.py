@@ -15,14 +15,10 @@ class SalesBookingActionView(AdminRequiredMixin, FormView):
     success_url = reverse_lazy("inventory:sales_bookings_management")
 
     def post(self, request, *args, **kwargs):
-        print("--- VIEW: ENTERING post method ---")
         form = self.get_form()
         if form.is_valid():
-            print("--- VIEW: FORM IS VALID ---")
             return self.form_valid(form)
         else:
-            print("--- VIEW: FORM IS INVALID ---")
-            print(f"--- VIEW: Form errors: {form.errors.as_json()} ---")
             return self.form_invalid(form)
 
     def get_initial(self):
@@ -87,7 +83,6 @@ class SalesBookingActionView(AdminRequiredMixin, FormView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        print("--- VIEW: ENTERING form_valid method ---")
         sales_booking_id = form.cleaned_data["sales_booking_id"]
         action = form.cleaned_data["action"]
 

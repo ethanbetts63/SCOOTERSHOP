@@ -25,7 +25,6 @@ def confirm_sales_booking(sales_booking_id, message=None, send_notification=True
                         motorcycle.is_available = False
                         motorcycle.status = "reserved"
                         motorcycle.save()
-                        print("--- 4b. USED motorcycle status updated and saved ---")
             else:
                 return {
                     "success": False,

@@ -8,8 +8,6 @@ from django.utils import timezone
 from mailer.models.EmailLog_model import EmailLog
 from service.models import ServiceBooking, ServiceProfile
 from inventory.models import SalesBooking, SalesProfile
-from django.core.serializers.json import DjangoJSONEncoder
-import json
 
 def send_templated_email(
     recipient_list,

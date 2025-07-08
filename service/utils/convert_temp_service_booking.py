@@ -40,6 +40,7 @@ def convert_temp_service_booking(
                 service_date=temp_booking.service_date,
                 dropoff_date=temp_booking.dropoff_date,
                 dropoff_time=temp_booking.dropoff_time,
+                after_hours_drop_off=temp_booking.after_hours_drop_off,    
                 estimated_pickup_date=temp_booking.estimated_pickup_date,
                 booking_status="confirmed",
                 customer_notes=temp_booking.customer_notes,
