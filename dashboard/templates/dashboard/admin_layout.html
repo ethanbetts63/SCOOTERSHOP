@@ -54,35 +54,37 @@
                     </div>
                 </div>
 
+                <!-- REORDERED INVENTORY SECTION -->
                 <div class="pt-4">
                     <h3 class="admin-nav-heading">Inventory</h3>
                     <div class="mt-2 space-y-1">
+                        <a href="{% url 'inventory:sales_bookings_management' %}" class="admin-nav-link">Sales Bookings</a>
                         <a href="{% url 'inventory:admin_motorcycle_create' %}" class="admin-nav-link">Add Motorcycle</a>
                         <a href="{% url 'inventory:admin_new_motorcycle_management' %}" class="admin-nav-link">New Motorcycle Mngmt</a>
                         <a href="{% url 'inventory:admin_used_motorcycle_management' %}" class="admin-nav-link">Used Motorcycle Mngmt</a>
-                        <a href="{% url 'inventory:sales_bookings_management' %}" class="admin-nav-link">Sales Bookings</a>
+                        <a href="{% url 'inventory:featured_motorcycles' %}" class="admin-nav-link">Featured Motorcycles</a>
                         <a href="{% url 'inventory:sales_profile_management' %}" class="admin-nav-link">Sales Profiles</a>
+                        <a href="{% url 'inventory:inventory_settings' %}" class="admin-nav-link">Inventory Settings</a>
                         <a href="{% url 'inventory:sales_faq_management' %}" class="admin-nav-link">Sales FAQ's</a>
                         <a href="{% url 'inventory:terms_and_conditions_management' %}" class="admin-nav-link">Sales T&Cs</a>
                         <a href="{% url 'inventory:blocked_sales_date_management' %}" class="admin-nav-link">Blocked Sales Dates</a>
-                        <a href="{% url 'inventory:inventory_settings' %}" class="admin-nav-link">Inventory Settings</a>
-                        <a href="{% url 'inventory:featured_motorcycles' %}" class="admin-nav-link">Featured Motorcycles</a>
                     </div>
                 </div>
 
+                <!-- REORDERED SERVICE SECTION -->
                 <div class="pt-4">
                     <h3 class="admin-nav-heading">Service</h3>
                     <div class="mt-2 space-y-1">
                         <a href="{% url 'service:service_booking_management' %}" class="admin-nav-link">Service Bookings</a>
                         <a href="{% url 'service:admin_create_service_booking' %}" class="admin-nav-link">Create Service Booking</a>
-                        <a href="{% url 'service:admin_service_profiles' %}" class="admin-nav-link">Service Profiles</a>
                         <a href="{% url 'service:admin_customer_motorcycle_management' %}" class="admin-nav-link">Customer Motorcycles</a>
+                        <a href="{% url 'service:admin_service_profiles' %}" class="admin-nav-link">Service Profiles</a>
                         <a href="{% url 'service:service_settings' %}" class="admin-nav-link">Service Settings</a>
                         <a href="{% url 'service:service_types_management' %}" class="admin-nav-link">Service Types</a>
                         <a href="{% url 'service:service_brands_management' %}" class="admin-nav-link">Service Brands</a>
-                        <a href="{% url 'service:blocked_service_dates_management' %}" class="admin-nav-link">Blocked Service Dates</a>
                         <a href="{% url 'service:service_faq_management' %}" class="admin-nav-link">Service FAQ's</a> 
                         <a href="{% url 'service:service_terms_management' %}" class="admin-nav-link">Service T&Cs</a>
+                        <a href="{% url 'service:blocked_service_dates_management' %}" class="admin-nav-link">Blocked Service Dates</a>
                     </div>
                 </div>
 
