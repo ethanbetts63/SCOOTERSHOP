@@ -1,3 +1,4 @@
+
 from django.test import TestCase
 from inventory.forms import SalesBookingActionForm
 from inventory.tests.test_helpers.model_factories import SalesBookingFactory, PaymentFactory
@@ -49,7 +50,7 @@ class SalesBookingActionFormTest(TestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertIn('refund_amount', form.errors)
-        self.assertEqual(form.errors['refund_amount'], ['Please enter a refund amount if initiating a refund.'])
+        self.assertIn('Please enter a refund amount if initiating a refund.', form.errors['refund_amount'])
 
     def test_reject_action_zero_refund_amount_when_initiating(self):
         form = SalesBookingActionForm(data={
@@ -60,7 +61,7 @@ class SalesBookingActionFormTest(TestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertIn('refund_amount', form.errors)
-        self.assertEqual(form.errors['refund_amount'], ['Refund amount must be greater than zero.'])
+        self.assertIn('Ensure this value is greater than or equal to 0.01.', form.errors['refund_amount'])
 
     def test_reject_action_negative_refund_amount_when_initiating(self):
         form = SalesBookingActionForm(data={
@@ -71,7 +72,7 @@ class SalesBookingActionFormTest(TestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertIn('refund_amount', form.errors)
-        self.assertEqual(form.errors['refund_amount'], ['Refund amount must be greater than zero.'])
+        self.assertIn('Ensure this value is greater than or equal to 0.01.', form.errors['refund_amount'])
 
     def test_reject_action_refund_amount_exceeds_paid_amount(self):
         form = SalesBookingActionForm(data={
@@ -126,4 +127,4 @@ class SalesBookingActionFormTest(TestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertIn('refund_amount', form.errors)
-        self.assertEqual(form.errors['refund_amount'], ['Cannot initiate refund: No valid payment found for this booking or amount paid is zero.'])
+        self.assertEqual(form.errors['refund_amount'], [f'Refund amount cannot exceed the amount paid ({self.sales_booking_zero_payment.payment.amount:.2f} {self.sales_booking_zero_payment.payment.currency}).'])

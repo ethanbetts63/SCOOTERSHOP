@@ -69,7 +69,7 @@ class CustomerMotorcycleForm(forms.ModelForm):
         labels = {
             "model": _("Model"),
             "year": _("Year"),
-            "engine_size": _("Engine Size"),
+            "engine_size": _("Engine Size (cc)"),
             "rego": _("Registration Number"),
             "vin_number": _("VIN Number"),
             "odometer": _("Odometer Reading (km)"),
