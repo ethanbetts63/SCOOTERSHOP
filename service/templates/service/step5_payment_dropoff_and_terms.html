@@ -54,7 +54,7 @@
             <div class="p-6">
                 <fieldset>
                     <legend class="text-lg font-medium text-gray-900">Drop-off Details</legend>
-                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="mt-4 grid grid-cols-1 gap-6">
                         
                         <div>
                             <label for="{{ form.dropoff_date.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.dropoff_date.label }}{% if form.dropoff_date.field.required %}<span class="text-red-500">*</span>{% endif %}</label>
@@ -62,6 +62,20 @@
                             {% for error in form.dropoff_date.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
                         </div>
                         
+                        {% if form.after_hours_drop_off_choice %}
+                        <div class="relative flex items-start">
+                            <div class="flex items-center h-5">
+                               {{ form.after_hours_drop_off_choice }}
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="{{ form.after_hours_drop_off_choice.id_for_label }}" class="font-medium text-gray-700">{{ form.after_hours_drop_off_choice.label }}</label>
+                                {% if form.after_hours_drop_off_choice.help_text %}
+                                <p class="text-xs text-gray-500">{{ form.after_hours_drop_off_choice.help_text }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+
                         <div>
                             <label for="{{ form.dropoff_time.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.dropoff_time.label }}{% if form.dropoff_time.field.required %}<span class="text-red-500">*</span>{% endif %}</label>
                             {{ form.dropoff_time }}
@@ -201,6 +215,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const paymentRadios = document.querySelectorAll('input[name="{{ form.payment_method.html_name }}"]');
     const submitButton = document.getElementById('submit-button');
+    const afterHoursCheckbox = document.getElementById('{{ form.after_hours_drop_off_choice.id_for_label }}');
+
+    function toggleTimeSelect() {
+        if (afterHoursCheckbox && afterHoursCheckbox.checked) {
+            timeSelect.disabled = true;
+            timeSelect.parentElement.style.display = 'none';
+        } else {
+            timeSelect.disabled = false;
+            timeSelect.parentElement.style.display = 'block';
+        }
+    }
+
+    if (afterHoursCheckbox) {
+        afterHoursCheckbox.addEventListener('change', toggleTimeSelect);
+        toggleTimeSelect(); 
+    }
 
     function updateButtonText() {
         const selectedValue = document.querySelector('input[name="{{ form.payment_method.html_name }}"]:checked')?.value;

@@ -65,6 +65,9 @@ class PaymentOptionForm(forms.Form):
         if len(payment_choices) == 1:
             self.fields["payment_method"].initial = payment_choices[0][0]
 
+        if not self.service_settings.enable_after_hours_dropoff:
+            del self.fields['after_hours_drop_off_choice']
+
     def clean(self):
         cleaned_data = super().clean()
         after_hours_drop_off = cleaned_data.get('after_hours_drop_off_choice')
