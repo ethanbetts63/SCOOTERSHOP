@@ -1,4 +1,3 @@
-
 from django.test import TestCase
 from unittest.mock import patch
 from inventory.utils.confirm_sales_booking import confirm_sales_booking
@@ -7,7 +6,7 @@ from inventory.tests.test_helpers.model_factories import SalesBookingFactory, Mo
 class ConfirmSalesBookingTests(TestCase):
 
     def setUp(self):
-        self.motorcycle = MotorcycleFactory(quantity=1, condition='new')
+        self.motorcycle = MotorcycleFactory(quantity=1, condition='new', status='available')
         self.sales_booking = SalesBookingFactory(motorcycle=self.motorcycle)
 
     @patch('inventory.utils.confirm_sales_booking.send_templated_email')
@@ -39,7 +38,7 @@ class ConfirmSalesBookingTests(TestCase):
 
     @patch('inventory.utils.confirm_sales_booking.send_templated_email')
     def test_confirm_sales_booking_used_motorcycle(self, mock_send_email):
-        used_motorcycle = MotorcycleFactory(condition='used', is_available=True)
+        used_motorcycle = MotorcycleFactory(condition='used', is_available=True, status='available')
         used_booking = SalesBookingFactory(motorcycle=used_motorcycle)
         used_motorcycle.condition = 'used'
         used_motorcycle.save()
