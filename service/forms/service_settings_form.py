@@ -162,4 +162,20 @@ class ServiceBookingSettingsForm(forms.ModelForm):
                 _("If deposit is enabled as a flat fee, the amount must be at least 1.00."),
             )
 
+        enable_after_hours_dropoff = cleaned_data.get("enable_after_hours_dropoff")
+        after_hours_disclaimer = cleaned_data.get("after_hours_dropoff_disclaimer")
+        after_hours_instructions = cleaned_data.get("after_hours_drop_off_instructions")
+
+        if enable_after_hours_dropoff:
+            if not after_hours_disclaimer:
+                self.add_error(
+                    "after_hours_dropoff_disclaimer",
+                    _("This field is required when after-hours drop-off is enabled."),
+                )
+            if not after_hours_instructions:
+                self.add_error(
+                    "after_hours_drop_off_instructions",
+                    _("This field is required when after-hours drop-off is enabled."),
+                )
+
         return cleaned_data
