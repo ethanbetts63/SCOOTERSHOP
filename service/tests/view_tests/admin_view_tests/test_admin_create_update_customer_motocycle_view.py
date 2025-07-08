@@ -5,7 +5,7 @@ from service.models import CustomerMotorcycle
 from service.forms import AdminCustomerMotorcycleForm
 
 
-from ..test_helpers.model_factories import (
+from ...test_helpers.model_factories import (
     UserFactory,
     CustomerMotorcycleFactory,
     ServiceProfileFactory,

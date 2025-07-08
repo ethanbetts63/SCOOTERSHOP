@@ -20,7 +20,7 @@ from service.forms.step5_payment_choice_and_terms_form import (
     PAYMENT_OPTION_FULL_ONLINE,
     PAYMENT_OPTION_INSTORE,
 )
-from ..test_helpers.model_factories import (
+from ...test_helpers.model_factories import (
     UserFactory,
     ServiceProfileFactory,
     TempServiceBookingFactory,

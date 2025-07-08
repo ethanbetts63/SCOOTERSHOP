@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from service.models import ServiceBooking
 from payments.models import Payment
-from ..test_helpers.model_factories import (
+from ...test_helpers.model_factories import (
     UserFactory,
     ServiceBookingFactory,
     PaymentFactory,

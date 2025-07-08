@@ -6,7 +6,7 @@ import datetime
 import uuid
 from service.forms.step4_service_profile_form import ServiceBookingUserForm
 from service.models import TempServiceBooking, ServiceProfile, CustomerMotorcycle
-from ..test_helpers.model_factories import (
+from ...test_helpers.model_factories import (
     UserFactory,
     ServiceProfileFactory,
     TempServiceBookingFactory,

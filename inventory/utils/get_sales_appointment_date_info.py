@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 from django.utils import timezone
 from inventory.models import InventorySettings, BlockedSalesDate
 
@@ -8,7 +8,6 @@ def get_sales_appointment_date_info(
 ):
 
     if not inventory_settings:
-        # Fallback for when settings are not configured
         return timezone.localdate(), timezone.localdate() + timedelta(days=90), []
 
     now = timezone.now()
@@ -17,9 +16,6 @@ def get_sales_appointment_date_info(
     earliest_allowed_datetime = now + timedelta(hours=min_advance_hours)
     min_date = earliest_allowed_datetime.date()
 
-    # If the last possible appointment on the calculated min_date is earlier than
-    # the earliest allowed time, it means no slots are available for that entire day.
-    # In this case, we should push the minimum bookable date to the next day.
     if inventory_settings.sales_appointment_end_time:
         end_time_on_min_date = timezone.make_aware(
             datetime.combine(min_date, inventory_settings.sales_appointment_end_time),

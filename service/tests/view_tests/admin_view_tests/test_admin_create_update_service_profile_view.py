@@ -5,7 +5,7 @@ from django.contrib import messages
 
 from service.models import ServiceProfile
 from service.forms import AdminServiceProfileForm
-from ..test_helpers.model_factories import UserFactory, ServiceProfileFactory
+from ...test_helpers.model_factories import UserFactory, ServiceProfileFactory
 
 
 class ServiceProfileCreateUpdateViewTest(TestCase):

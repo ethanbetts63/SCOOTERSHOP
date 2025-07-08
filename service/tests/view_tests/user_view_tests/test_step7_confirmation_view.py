@@ -5,7 +5,7 @@ import uuid
 
 from service.models import ServiceBooking, TempServiceBooking
 from payments.models import Payment
-from ..test_helpers.model_factories import (
+from ...test_helpers.model_factories import (
     UserFactory,
     ServiceBookingFactory,
     PaymentFactory,

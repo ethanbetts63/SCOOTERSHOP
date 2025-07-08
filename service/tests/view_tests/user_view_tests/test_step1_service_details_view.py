@@ -17,7 +17,7 @@ from service.models import (
     CustomerMotorcycle,
 )
 
-from ..test_helpers.model_factories import (
+from ...test_helpers.model_factories import (
     ServiceSettingsFactory,
     ServiceTypeFactory,
     TempServiceBookingFactory,

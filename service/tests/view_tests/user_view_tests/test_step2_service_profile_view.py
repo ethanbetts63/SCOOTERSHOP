@@ -12,7 +12,7 @@ from service.forms import MotorcycleSelectionForm, ADD_NEW_MOTORCYCLE_OPTION
 
 
 from service.models import TempServiceBooking, CustomerMotorcycle
-from ..test_helpers.model_factories import (
+from ...test_helpers.model_factories import (
     UserFactory,
     ServiceProfileFactory,
     TempServiceBookingFactory,
