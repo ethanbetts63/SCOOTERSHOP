@@ -18,32 +18,33 @@
             <div class="max-w-7xl mx-auto px-4">
                 <div class="flex justify-between items-center h-24">
                     
-                    <div class="flex-shrink-0">
-                        <a href="{% url 'core:index' %}">
-                            <img class="h-20 w-auto" src="{% static 'images/logo_scootershop_tight_crop.png' %}" alt="Scooter Shop Logo">
-                        </a>
-                    </div>
-                    
-                    <div class="hidden lg:flex items-center space-x-4">
-                        {% if settings.enable_sales_new or user.is_staff %}
-                            <a href="{% url 'inventory:new' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">New Bikes</a>
-                        {% endif %}
-                        {% if settings.enable_sales_used or user.is_staff %}
-                            <a href="{% url 'inventory:used' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Used Bikes</a>
-                        {% endif %}
-                        {% if settings.enable_service_booking or user.is_staff %}
-                            <a href="{% url 'service:service' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Service Booking</a>
-                        {% endif %}
-                        {% if settings.enable_contact_page or user.is_staff %}
-                             <a href="{% url 'core:contact' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Contact Us</a>
-                        {% endif %}
-                        {% if settings.enable_user_accounts or user.is_staff %}
-                            {% if user.is_authenticated %}
-                                <a href="{% url 'users:logout' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Logout</a>
-                            {% else %}
-                                <a href="{% url 'users:login' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Login/Register</a>
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <a href="{% url 'core:index' %}">
+                                <img class="h-20 w-auto" src="{% static 'images/logo_scootershop_tight_crop.png' %}" alt="Scooter Shop Logo">
+                            </a>
+                        </div>
+                        <div class="hidden lg:flex items-baseline space-x-4 ml-10">
+                            {% if settings.enable_sales_new or user.is_staff %}
+                                <a href="{% url 'inventory:new' %}" class="px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">New Bikes</a>
                             {% endif %}
-                        {% endif %}
+                            {% if settings.enable_sales_used or user.is_staff %}
+                                <a href="{% url 'inventory:used' %}" class="px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Used Bikes</a>
+                            {% endif %}
+                            {% if settings.enable_service_booking or user.is_staff %}
+                                <a href="{% url 'service:service' %}" class="px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Service Booking</a>
+                            {% endif %}
+                            {% if settings.enable_contact_page or user.is_staff %}
+                                 <a href="{% url 'core:contact' %}" class="px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Contact Us</a>
+                            {% endif %}
+                            {% if settings.enable_user_accounts or user.is_staff %}
+                                {% if user.is_authenticated %}
+                                    <a href="{% url 'users:logout' %}" class="px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Logout</a>
+                                {% else %}
+                                    <a href="{% url 'users:login' %}" class="px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Login/Register</a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
                     </div>
 
                     <div class="hidden lg:flex items-center space-x-4">
