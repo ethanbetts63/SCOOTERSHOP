@@ -4,7 +4,10 @@ from inventory.models import Motorcycle, InventorySettings
 from inventory.utils.get_motorcycle_details import get_motorcycle_details
 from inventory.utils.get_sales_faqs import get_faqs_for_step
 from inventory.utils import get_featured_motorcycles
-from inventory.utils.has_available_date import has_available_date
+from inventory.utils.has_available_date import (
+    has_available_date_for_deposit_flow,
+    has_available_date_for_viewing_flow
+)
 
 
 class UserMotorcycleDetailsView(DetailView):
@@ -27,15 +30,9 @@ class UserMotorcycleDetailsView(DetailView):
         inventory_settings = InventorySettings.objects.first()
         context["inventory_settings"] = inventory_settings
 
-        # Use the utility function to get the result.
-        is_available = has_available_date(inventory_settings)
-        
-        # --- DEBUG PRINT STATEMENT ---
-        # This will print the result to your runserver console.
-        print(f"--- DEBUG: has_available_date() returned: {is_available} ---")
-        # --- END DEBUG ---
-
-        context['is_appointment_date_available'] = is_available
+        # Check availability for each flow type separately
+        context['can_reserve_with_deposit'] = has_available_date_for_deposit_flow(inventory_settings)
+        context['can_book_viewing'] = has_available_date_for_viewing_flow(inventory_settings)
 
         context["sales_faqs"] = get_faqs_for_step("general")
         context["faq_title"] = "Questions About Our Motorcycles"        
@@ -45,16 +42,13 @@ class UserMotorcycleDetailsView(DetailView):
             if primary_condition in ['new', 'used']:
                 category = primary_condition
         
-        # If no category found yet, check the simple field
         if not category and motorcycle.condition in ['new', 'used']:
             category = motorcycle.condition
 
         
         if category:
             featured_items = get_featured_motorcycles(category)
-
             featured_items_after_exclude = featured_items.exclude(motorcycle=motorcycle)
-            
             context['featured_items'] = featured_items_after_exclude
             context['section_title'] = f"Other Featured {category.title()} Motorcycles"
             context['category'] = category
