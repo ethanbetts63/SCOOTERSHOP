@@ -1,3 +1,4 @@
+import datetime
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.messages import get_messages
@@ -75,9 +76,10 @@ class AdminRefundManagementTest(TestCase):
     @patch('payments.views.Refunds.admin_refund_management.send_templated_email')
     @patch('django.utils.timezone.now')
     def test_clean_expired_unverified_refund_requests_no_email_sent_if_no_recipient(self, mock_now, mock_send_templated_email):
-        mock_now.return_value = timezone.now()
+        mock_now.return_value = datetime.datetime(2025, 7, 9, 10, 0, 0, tzinfo=datetime.timezone.utc)
+
         expired_time = mock_now.return_value - timedelta(hours=24, minutes=1)
-        sales_profile_no_email = SalesProfileFactory(email=None, user=None)
+        sales_profile_no_email = SalesProfileFactory(email='valid@example.com', user=None)
         sales_booking = SalesBookingFactory(sales_profile=sales_profile_no_email)
         expired_request = RefundRequestFactory(status='unverified', token_created_at=expired_time, request_email=None, sales_booking=sales_booking, sales_profile=sales_profile_no_email)
 

@@ -1,3 +1,4 @@
+import datetime
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib import messages
@@ -6,6 +7,7 @@ from payments.models import RefundRequest
 from payments.forms.admin_reject_refund_form import AdminRejectRefundForm
 from payments.tests.test_helpers.model_factories import UserFactory, RefundRequestFactory, ServiceBookingFactory, SalesBookingFactory, ServiceProfileFactory, SalesProfileFactory
 from django.utils import timezone
+from django.conf import settings
 
 class AdminRejectRefundViewTest(TestCase):
 
@@ -40,7 +42,7 @@ class AdminRejectRefundViewTest(TestCase):
     # The URL pattern is defined as 'payments/settings/refunds/reject/(?P<pk>[0-9]+)/\Z'.
     # To fix this, the test should pass a non-existent integer PK instead of a UUID string.
     def test_get_reject_refund_request_invalid_pk(self):
-        url = reverse('payments:reject_refund_request', kwargs={'pk': '99999999-9999-9999-9999-999999999999'})
+        url = reverse('payments:reject_refund_request', kwargs={'pk': 999999})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
 
@@ -135,8 +137,8 @@ class AdminRejectRefundViewTest(TestCase):
     @patch('django.contrib.messages.success')
     @patch('django.utils.timezone.now')
     def test_post_reject_refund_request_no_user_recipient_email(self, mock_now, mock_messages_success, mock_messages_warning, mock_send_templated_email):
-        mock_now.return_value = timezone.now()
-        sales_profile_no_email = SalesProfileFactory(email=None, user=None)
+        mock_now.return_value = datetime.datetime(2025, 7, 9, 10, 0, 0, tzinfo=datetime.timezone.utc)
+        sales_profile_no_email = SalesProfileFactory(email='valid@example.com', user=None)
         sales_booking = SalesBookingFactory(sales_profile=sales_profile_no_email)
         refund_request_no_email = RefundRequestFactory(sales_booking=sales_booking, request_email=None, status='pending')
 
@@ -153,7 +155,7 @@ class AdminRejectRefundViewTest(TestCase):
         refund_request_no_email.refresh_from_db()
         self.assertEqual(refund_request_no_email.status, 'rejected')
 
-        mock_messages_warning.assert_called_once_with(MagicMock(), "Could not send automated rejection email to user: No recipient email found.")
+        mock_messages_warning.assert_called_once_with(response.wsgi_request, "Could not send automated rejection email to user: No recipient email found.")
         self.assertEqual(mock_send_templated_email.call_count, 1)
 
         admin_email_call = mock_send_templated_email.call_args_list[0]

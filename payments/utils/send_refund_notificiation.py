@@ -81,7 +81,7 @@ def send_refund_notifications(
             ),
         )
 
-    if settings.ADMIN_EMAIL:
+    if getattr(settings, 'ADMIN_EMAIL', None):
         admin_email_context = {
             "refund_request": refund_request,
             "refunded_amount": extracted_data["refunded_amount_decimal"],

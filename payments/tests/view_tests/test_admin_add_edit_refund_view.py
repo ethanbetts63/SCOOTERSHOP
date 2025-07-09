@@ -49,7 +49,7 @@ class AdminAddEditRefundRequestViewTest(TestCase):
     # The URL pattern is defined as 'payments/settings/refunds/edit/(?P<pk>[0-9]+)/\Z'.
     # To fix this, the test should pass a non-existent integer PK instead of a UUID string.
     def test_get_edit_refund_request_invalid_pk(self):
-        edit_url = reverse('payments:edit_refund_request', kwargs={'pk': '99999999-9999-9999-9999-999999999999'})
+        edit_url = reverse('payments:edit_refund_request', kwargs={'pk': 999999})
         response = self.client.get(edit_url)
         self.assertEqual(response.status_code, 404)
 
