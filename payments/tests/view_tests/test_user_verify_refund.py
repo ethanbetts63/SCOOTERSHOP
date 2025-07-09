@@ -57,7 +57,7 @@ class UserVerifyRefundViewTest(TestCase):
         response = self.client.get(self.url + f'?token={refund_request.verification_token}')
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('payments:user_refund_request'))
-        mock_messages_error.assert_called_once_with(MagicMock(), "The verification link has expired. Please submit a new refund request.")
+        mock_messages_error.assert_called_once_with(response.wsgi_request, "The verification link has expired. Please submit a new refund request.")
 
     # This test is failing due to a NameError: name 'mock' is not defined in the assert_called_once_with.
     @patch('django.contrib.messages.info')
@@ -66,7 +66,7 @@ class UserVerifyRefundViewTest(TestCase):
         response = self.client.get(self.url + f'?token={refund_request.verification_token}')
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('payments:user_verified_refund'))
-        mock_messages_info.assert_called_once_with(MagicMock(), "This refund request has already been verified or processed.")
+        mock_messages_info.assert_called_once_with(response.wsgi_request, "This refund request has already been verified or processed.")
 
     # This test is failing due to a ValueError: Failed to insert expression "<MagicMock name='now().resolve_expression()' id='...'>" on payments.RefundRequest.requested_at.
     # This indicates an issue with factory_boy's interaction with mocked timezone.now() when creating objects.
@@ -175,5 +175,5 @@ class UserVerifyRefundViewTest(TestCase):
         response = self.client.get(self.url + '?token=12345678-1234-5678-1234-567812345678')
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('core:index'))
-        mock_messages_error.assert_called_once_with(MagicMock(), "An unexpected error occurred during verification: Simulated unexpected error")
+        mock_messages_error.assert_called_once_with(response.wsgi_request, "An unexpected error occurred during verification: Simulated unexpected error")
         mock_send_templated_email.assert_not_called()
