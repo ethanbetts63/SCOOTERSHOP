@@ -216,9 +216,7 @@ class SalesProfileFactory(factory.django.DjangoModelFactory):
 
     user = factory.SubFactory(UserFactory)
     name = factory.Faker("name")
-    email = factory.LazyAttribute(
-        lambda o: o.user.email if o.user else factory.Faker("email")
-    )
+    email = factory.Faker("email")
     phone_number = factory.Faker("phone_number")
 
     address_line_1 = factory.Faker("street_address")

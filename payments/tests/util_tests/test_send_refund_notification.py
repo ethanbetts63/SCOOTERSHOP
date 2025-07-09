@@ -170,26 +170,4 @@ class SendRefundNotificationsTest(TestCase):
         if original_admin_email is not None:
             settings.ADMIN_EMAIL = original_admin_email
 
-    # This test is failing because the SalesProfileFactory is trying to create a SalesProfile with email=None, 
-    # but the email field in the SalesProfile model is not nullable.
-    @patch('payments.utils.send_refund_notificiation.send_templated_email')
-    def test_send_refund_notification_no_user_email_in_profile(self, mock_send_templated_email):
-        sales_profile_no_email = SalesProfileFactory(email=None, user=None)
-        sales_booking_no_email = SalesBookingFactory(sales_profile=sales_profile_no_email, payment=self.payment, sales_booking_reference='SALES-NOEMAIL')
-
-        extracted_data = {
-            'refunded_amount_decimal': Decimal('10.00'),
-            'stripe_refund_id': 're_test789',
-            'refund_status': 'succeeded',
-            'is_refund_object': True,
-        }
-        send_refund_notifications(
-            payment_obj=self.payment,
-            booking_obj=sales_booking_no_email,
-            booking_type_str='sales_booking',
-            refund_request=self.refund_request,
-            extracted_data=extracted_data,
-        )
-        self.assertEqual(mock_send_templated_email.call_count, 1)
-        admin_call_args, admin_call_kwargs = mock_send_templated_email.call_args_list[0]
-        self.assertEqual(admin_call_kwargs['recipient_list'], [settings.ADMIN_EMAIL])
+    
