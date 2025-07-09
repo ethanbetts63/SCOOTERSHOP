@@ -14,7 +14,7 @@ class SalesTermsCreateViewTest(TestCase):
         response = self.client.get(reverse('inventory:terms_and_conditions_create'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'inventory/admin_sales_terms_create.html')
-        self.assertContains(response, 'Create New Terms & Conditions Version')
+        self.assertContains(response, 'Create New Version')
         self.assertIn('form', response.context)
 
     def test_create_sales_terms_post_success(self):
