@@ -21,10 +21,6 @@ def send_templated_email(
     if not recipient_list:
         return False
 
-    # Skip logging for admin emails
-    if settings.ADMIN_EMAIL in recipient_list:
-        return
-
     sender_email = from_email if from_email else settings.DEFAULT_FROM_EMAIL
 
     user = getattr(profile, 'user', None)
@@ -47,6 +43,7 @@ def send_templated_email(
         text_content = strip_tags(text_content_prep).strip()
 
     except Exception as e:
+        # We still log template rendering failures as this happens before the admin check.
         EmailLog.objects.create(
             sender=sender_email, recipient=", ".join(recipient_list), subject=subject,
             status='FAILED',
@@ -59,6 +56,7 @@ def send_templated_email(
 
     email_status = 'PENDING'
     error_msg = None
+    success = False
 
     try:
         msg = EmailMultiAlternatives(subject, text_content, sender_email, recipient_list)
@@ -70,7 +68,8 @@ def send_templated_email(
         email_status = 'FAILED'
         error_msg = str(e)
         success = False
-    finally:
+
+    if settings.ADMIN_EMAIL not in recipient_list:
         try:
             with transaction.atomic():
                 log_entry = EmailLog(

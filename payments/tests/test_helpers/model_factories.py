@@ -128,7 +128,7 @@ class PaymentFactory(factory.django.DjangoModelFactory):
     service_booking = None
     service_customer_profile = None
     temp_sales_booking = None
-    sales_booking = factory.RelatedFactory("payments.tests.test_helpers.model_factories.SalesBookingFactory", 'payment')
+    sales_booking = None
     sales_customer_profile = None
 
     stripe_payment_intent_id = factory.Sequence(
