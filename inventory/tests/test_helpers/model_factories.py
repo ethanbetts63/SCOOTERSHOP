@@ -341,20 +341,10 @@ class FeaturedMotorcycleFactory(factory.django.DjangoModelFactory):
 class SalesTermsFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = SalesTerms
-        django_get_or_create = ('pk',)
 
     version_number = factory.Sequence(lambda n: n)
     content = factory.Faker("paragraph", nb_sentences=10)
     is_active = True
-
-    @classmethod
-    def _create(cls, model_class, *args, **kwargs):
-        obj, created = model_class.objects.get_or_create(pk=1, defaults=kwargs)
-        if not created:
-            for k, v in kwargs.items():
-                setattr(obj, k, v)
-            obj.save()
-        return obj
 
 
 class RefundPolicySettingsFactory(factory.django.DjangoModelFactory):

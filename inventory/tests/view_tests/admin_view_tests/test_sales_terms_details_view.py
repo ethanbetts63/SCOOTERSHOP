@@ -14,7 +14,7 @@ class SalesTermsDetailsViewTest(TestCase):
         response = self.client.get(reverse('inventory:terms_and_conditions_detail', kwargs={'pk': self.sales_terms.pk}))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'inventory/admin_sales_terms_details.html')
-        self.assertContains(response, f'View T&C Version {self.sales_terms.version_number}')
+        self.assertContains(response, f'View T&amp;C Version {self.sales_terms.version_number}')
         self.assertIn('terms_version', response.context)
         self.assertEqual(response.context['terms_version'], self.sales_terms)
 

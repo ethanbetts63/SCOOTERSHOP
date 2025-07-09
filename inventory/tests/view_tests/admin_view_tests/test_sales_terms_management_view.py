@@ -21,7 +21,7 @@ class SalesTermsManagementViewTest(TestCase):
         response = self.client.get(reverse('inventory:terms_and_conditions_management'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'inventory/admin_sales_terms_management.html')
-        self.assertContains(response, 'Sales Terms & Conditions Management')
+        self.assertContains(response, 'Sales Terms &amp; Conditions Management')
         self.assertIn('terms_versions', response.context)
 
         # Check ordering (by -version_number)
