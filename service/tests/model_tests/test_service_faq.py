@@ -34,12 +34,11 @@ class ServicefaqModelTest(TestCase):
 
         ordered_faqs = list(Servicefaq.objects.all())
         # Expected order based on model's Meta.ordering = ["booking_step", "display_order", "question"]
-        # 'general' comes after 'service_page', 'step1', etc. alphabetically.
-        # So, 'step1' FAQs come before 'general' FAQs.
+        # So, 'general' FAQs come before 'step1' FAQs.
         # Within 'general', they are ordered by display_order, then question.
-        self.assertEqual(ordered_faqs[0], faq2) # step1, order 1
-        self.assertEqual(ordered_faqs[1], faq3) # general, order 2
-        self.assertEqual(ordered_faqs[2], faq1) # general, order 3
+        self.assertEqual(ordered_faqs[0], faq3) # general, order 2
+        self.assertEqual(ordered_faqs[1], faq1) # general, order 3
+        self.assertEqual(ordered_faqs[2], faq2) # step1, order 1
 
     def test_default_values(self):
         faq = ServicefaqFactory(display_order=0)

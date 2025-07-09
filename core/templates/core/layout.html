@@ -132,6 +132,8 @@
                             <li><a href="{% url 'service:service_booking_terms' %}" class="text-base text-gray-300 hover:text-white">Service Terms</a></li>
                             <li><a href="{% url 'inventory:sales_terms' %}" class="text-base text-gray-300 hover:text-white">Sales Terms</a></li>
                             {% if settings.enable_privacy_policy_page or user.is_staff %}<li><a href="{% url 'core:privacy' %}" class="text-base text-gray-300 hover:text-white">Privacy Policy</a></li>{% endif %}
+                            {% if settings.enable_returns_page or user.is_staff %}<li><a href="{% url 'core:returns' %}" class="text-base text-gray-300 hover:text-white">Returns Policy</a></li>{% endif %}
+                            {% if settings.enable_security_page or user.is_staff %}<li><a href="{% url 'core:security' %}" class="text-base text-gray-300 hover:text-white">Security Policy</a></li>{% endif %}
                         </ul>
                     </div>
                     <div class="space-y-4">
