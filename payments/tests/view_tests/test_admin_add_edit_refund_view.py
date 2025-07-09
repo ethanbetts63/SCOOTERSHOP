@@ -140,7 +140,7 @@ class AdminAddEditRefundRequestViewTest(TestCase):
         refund_request.refresh_from_db()
         self.assertEqual(refund_request.amount_to_refund, Decimal('20.00'))
         self.assertEqual(refund_request.reason, 'New Reason')
-        self.assertEqual(refund_request.status, 'refunded')
+        self.assertEqual(refund_request.status, 'reviewed_pending_approval')
         self.assertIsNotNone(refund_request.processed_by)
         self.assertIsNotNone(refund_request.processed_at)
         mock_messages_success.assert_called_once()

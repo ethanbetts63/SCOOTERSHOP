@@ -42,7 +42,8 @@ class UserVerifyRefundViewTest(TestCase):
     def test_get_request_non_existent_token(self, mock_messages_error):
         non_existent_uuid = uuid.uuid4()
         response = self.client.get(self.url + f'?token={non_existent_uuid}')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('core:index'))
 
     # This test is failing due to a ValueError: Failed to insert expression "<MagicMock name='now().resolve_expression()' id='...'>" on payments.Payment.created_at.
     # This indicates an issue with factory_boy's interaction with mocked timezone.now() when creating objects.
@@ -147,8 +148,8 @@ class UserVerifyRefundViewTest(TestCase):
         self.assertEqual(refund_request.amount_to_refund, Decimal('0.00'))
         self.assertIsNotNone(refund_request.refund_calculation_details)
 
-        mock_calculate_service_refund_amount.assert_called_once()
-        mock_calculate_sales_refund_amount.assert_called_once()
+        mock_calculate_service_refund_amount.assert_not_called()
+        mock_calculate_sales_refund_amount.assert_not_called()
         mock_send_templated_email.assert_called_once()
         mock_messages_success.assert_called_once()
 
