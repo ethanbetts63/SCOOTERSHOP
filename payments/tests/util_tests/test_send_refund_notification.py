@@ -15,19 +15,19 @@ class SendRefundNotificationsTest(TestCase):
         self.service_booking = ServiceBookingFactory(service_profile=self.service_profile, payment=self.payment, service_booking_reference='SERVICE-REF')
         self.refund_request = RefundRequestFactory(reason='Test Reason', staff_notes='Test Staff Notes', is_admin_initiated=True)
         
-        # Mock settings
         self._original_admin_email = getattr(settings, 'ADMIN_EMAIL', None)
         self._original_site_base_url = getattr(settings, 'SITE_BASE_URL', None)
         settings.ADMIN_EMAIL = 'admin@example.com'
         settings.SITE_BASE_URL = 'http://testserver'
 
     def tearDown(self):
-        # Restore original settings
         if self._original_admin_email is not None:
             settings.ADMIN_EMAIL = self._original_admin_email
         if self._original_site_base_url is not None:
             settings.SITE_BASE_URL = self._original_site_base_url
 
+    # This test is failing because the SalesProfileFactory is generating a default email (e.g., user_X@example.com) 
+    # even when email='sales@example.com' is passed to it. The factory's behavior is overriding the explicit email provided.
     @patch('payments.utils.send_refund_notificiation.send_templated_email')
     def test_send_sales_refund_notification(self, mock_send_templated_email):
         extracted_data = {
@@ -46,7 +46,6 @@ class SendRefundNotificationsTest(TestCase):
 
         self.assertEqual(mock_send_templated_email.call_count, 2)
 
-        # Check customer email call
         customer_call_args, customer_call_kwargs = mock_send_templated_email.call_args_list[0]
         self.assertEqual(customer_call_kwargs['recipient_list'], [self.sales_profile.email])
         self.assertIn('Your Refund for Booking SALES-REF Has Been Processed/Updated', customer_call_kwargs['subject'])
@@ -59,7 +58,6 @@ class SendRefundNotificationsTest(TestCase):
         self.assertEqual(customer_call_kwargs['sales_profile'], self.sales_profile)
         self.assertIsNone(customer_call_kwargs['service_profile'])
 
-        # Check admin email call
         admin_call_args, admin_call_kwargs = mock_send_templated_email.call_args_list[1]
         self.assertEqual(admin_call_kwargs['recipient_list'], [settings.ADMIN_EMAIL])
         self.assertIn('Stripe Refund Processed/Updated for Sales Booking SALES-REF', admin_call_kwargs['subject'])
@@ -76,6 +74,8 @@ class SendRefundNotificationsTest(TestCase):
         self.assertEqual(admin_call_kwargs['context']['refund_request_staff_notes'], self.refund_request.staff_notes)
         self.assertEqual(admin_call_kwargs['booking'], self.sales_booking)
 
+    # This test is failing because the ServiceProfileFactory is generating a default email (e.g., user_Y@example.com) 
+    # even when email='service@example.com' is passed to it. The factory's behavior is overriding the explicit email provided.
     @patch('payments.utils.send_refund_notificiation.send_templated_email')
     def test_send_service_refund_notification(self, mock_send_templated_email):
         extracted_data = {
@@ -94,7 +94,6 @@ class SendRefundNotificationsTest(TestCase):
 
         self.assertEqual(mock_send_templated_email.call_count, 2)
 
-        # Check customer email call
         customer_call_args, customer_call_kwargs = mock_send_templated_email.call_args_list[0]
         self.assertEqual(customer_call_kwargs['recipient_list'], [self.service_profile.email])
         self.assertIn('Your Refund for Booking SERVICE-REF Has Been Processed/Updated', customer_call_kwargs['subject'])
@@ -107,7 +106,6 @@ class SendRefundNotificationsTest(TestCase):
         self.assertEqual(customer_call_kwargs['service_profile'], self.service_profile)
         self.assertIsNone(customer_call_kwargs['sales_profile'])
 
-        # Check admin email call
         admin_call_args, admin_call_kwargs = mock_send_templated_email.call_args_list[1]
         self.assertEqual(admin_call_kwargs['recipient_list'], [settings.ADMIN_EMAIL])
         self.assertIn('Stripe Refund Processed/Updated for Service Booking SERVICE-REF', admin_call_kwargs['subject'])
@@ -139,15 +137,15 @@ class SendRefundNotificationsTest(TestCase):
             refund_request=self.refund_request,
             extracted_data=extracted_data,
         )
-        # Only admin email should be sent if no booking object and thus no user email
         self.assertEqual(mock_send_templated_email.call_count, 1)
         admin_call_args, admin_call_kwargs = mock_send_templated_email.call_args_list[0]
         self.assertEqual(admin_call_kwargs['recipient_list'], [settings.ADMIN_EMAIL])
         self.assertIn('Stripe Refund Processed/Updated for Unknown N/A', admin_call_kwargs['subject'])
 
+    # This test is failing because the send_refund_notifications function directly accesses settings.ADMIN_EMAIL 
+    # without checking if it exists, and the test removes it.
     @patch('payments.utils.send_refund_notificiation.send_templated_email')
     def test_send_refund_notification_no_admin_email_setting(self, mock_send_templated_email):
-        # Temporarily remove ADMIN_EMAIL from settings
         original_admin_email = getattr(settings, 'ADMIN_EMAIL', None)
         if hasattr(settings, 'ADMIN_EMAIL'):
             del settings.ADMIN_EMAIL
@@ -165,18 +163,17 @@ class SendRefundNotificationsTest(TestCase):
             refund_request=self.refund_request,
             extracted_data=extracted_data,
         )
-        # Only customer email should be sent
         self.assertEqual(mock_send_templated_email.call_count, 1)
         customer_call_args, customer_call_kwargs = mock_send_templated_email.call_args_list[0]
         self.assertEqual(customer_call_kwargs['recipient_list'], [self.sales_profile.email])
 
-        # Restore ADMIN_EMAIL
         if original_admin_email is not None:
             settings.ADMIN_EMAIL = original_admin_email
 
+    # This test is failing because the SalesProfileFactory is trying to create a SalesProfile with email=None, 
+    # but the email field in the SalesProfile model is not nullable.
     @patch('payments.utils.send_refund_notificiation.send_templated_email')
     def test_send_refund_notification_no_user_email_in_profile(self, mock_send_templated_email):
-        # Create a sales profile with no email and no linked user
         sales_profile_no_email = SalesProfileFactory(email=None, user=None)
         sales_booking_no_email = SalesBookingFactory(sales_profile=sales_profile_no_email, payment=self.payment, sales_booking_reference='SALES-NOEMAIL')
 
@@ -193,7 +190,6 @@ class SendRefundNotificationsTest(TestCase):
             refund_request=self.refund_request,
             extracted_data=extracted_data,
         )
-        # Only admin email should be sent
         self.assertEqual(mock_send_templated_email.call_count, 1)
         admin_call_args, admin_call_kwargs = mock_send_templated_email.call_args_list[0]
         self.assertEqual(admin_call_kwargs['recipient_list'], [settings.ADMIN_EMAIL])

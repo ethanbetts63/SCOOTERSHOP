@@ -1,7 +1,6 @@
 {% load static %}
 
-<div class="card has-bg-effect service-booking-card h-full flex flex-col bg-gray-800 shadow-lg rounded-lg overflow-hidden">
-    <!-- I've reduced the padding here to make the content inside wider -->
+<div class="card has-bg-effect service-booking-card h-full flex flex-col bg-gray-900 shadow-lg rounded-lg overflow-hidden">
     <div class="card-body p-4 md:p-6 flex-grow flex flex-col">
         <h2 class="text-3xl font-bold text-white mb-4">Expert Scooter Servicing</h2>
         <p class="text-gray-300 mb-4">
@@ -12,9 +11,8 @@
             Our team of qualified technicians consists of life-long scooter enthusiasts. We treat every bike like it's our own, so you can rest assured knowing we'll do everything we can to get your bike back out on the road.
         </p>
         
-        <!-- Styled inner container for the booking form -->
         <div class="mt-auto bg-white rounded-lg p-6 shadow-md">
-            <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center">Book your service in under a online</h3>
+            <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center">Book your service online</h3>
             
             <form method="post" action="{% url 'service:service_book_step1' %}" class="service-booking-form">
                 {% csrf_token %}
@@ -62,11 +60,10 @@
 </div>
 
 <style>
-    /* Updated styles for the form select to match the new light theme */
     .service-booking-form select {
-        background-color: #F3F4F6; /* bg-gray-100 */
-        border: 1px solid #D1D5DB; /* border-gray-300 */
-        color: #111827; /* text-gray-900 */
+        background-color: #F3F4F6;
+        border: 1px solid #D1D5DB;
+        color: #111827;
         font-size: 0.875rem;
         border-radius: 0.5rem;
         display: block;
@@ -81,7 +78,6 @@
 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<!-- Removed the dark theme for the date picker to use the default light one -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
