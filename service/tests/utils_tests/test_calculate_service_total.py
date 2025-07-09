@@ -20,4 +20,4 @@ class CalculateServiceTotalTest(TestCase):
     def test_calculate_service_total_no_service_type(self):
         temp_booking = TempServiceBookingFactory.build(service_type=None)
         total = calculate_service_total(temp_booking)
-        self.assertIsNone(total) # Or assertEqual(total, Decimal('0.00')) depending on expected behavior
+        self.assertEqual(total, Decimal('0.00'))

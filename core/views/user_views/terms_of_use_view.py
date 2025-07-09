@@ -1,13 +1,6 @@
 from django.views.generic import TemplateView
-from django.shortcuts import redirect
 from dashboard.models import SiteSettings
-from django.contrib.auth.decorators import user_passes_test
-from django.utils.decorators import method_decorator
 
-
-@method_decorator(
-    user_passes_test(lambda u: u.is_staff, login_url="core:index"), name="dispatch"
-)
 class TermsOfUseView(TemplateView):
     template_name = "core/information/terms.html"
 
