@@ -4,178 +4,176 @@
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block content %}
-<div class="bg-gray-900">
+<div>
     
-    <div class="relative bg-gray-800 h-80 flex items-center justify-center">
+    <div class="relative bg-gray-800 h-96 flex items-center justify-center">
         <img src="{% static 'images/sym_22.jpg' %}" class="absolute inset-0 w-full h-full object-cover opacity-30" alt="Scooter banner">
         <div class="absolute inset-0 bg-black bg-opacity-40"></div>
         <div class="relative z-10 text-center px-4">
             <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight">{{ page_title }}</h1>
-            <p class="mt-4 text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto">Browse our hand-picked collection of premium motorcycles.</p>
+            
+            {% if current_condition_slug == 'new' %}
+                <p class="mt-4 text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto">
+                    Discover the latest models from the world's leading brands. Every new scooter comes with a full manufacturer's warranty and the peace of mind that comes from buying from Perth's only dedicated scooter shop.
+                </p>
+            {% else %}
+                 <p class="mt-4 text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto">
+                    Welcome to our collection of premium pre-owned scooters. Every bike in our inventory has passed a rigorous multi-point inspection by our expert technicians to ensure it meets our highest standards for quality and reliability.
+                </p>
+            {% endif %}
         </div>
     </div>
 
     <div class="container mx-auto px-4 py-8">
         
-        <div class="text-center mb-12 max-w-3xl mx-auto">
-            {% if current_condition_slug == 'new' %}
-                <p class="text-lg text-gray-300">
-                    Discover the latest models from the world's leading brands. Every new scooter comes with a full manufacturer's warranty and the peace of mind that comes from buying from Perth's only dedicated scooter shop.
-                </p>
-            {% else %}
-                 <p class="text-lg text-gray-300">
-                    Welcome to our collection of premium pre-owned scooters. Every bike in our inventory has passed a rigorous multi-point inspection by our expert technicians to ensure it meets our highest standards for quality and reliability.
-                </p>
-            {% endif %}
-        </div>
-
-
-        <div class="flex flex-col lg:flex-row gap-8">
-            <aside class="w-full lg:w-1/4">
-                <div class="bg-white p-6 rounded-2xl shadow-lg sticky top-8">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-3">Filters</h2>
-                    <form id="filter-form">
-                        
-                        <div class="mb-6">
-                            <label for="brand-select" class="block text-sm font-semibold text-gray-700 mb-2">Brand</label>
-                            <select id="brand-select" name="brand" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all">
-                                <option value="">All Brands</option>
-                                {% for make in unique_makes %}
-                                <option value="{{ make }}">{{ make }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        
-                        <div class="mb-6">
-                             <label class="block text-sm font-semibold text-gray-700 mb-2">Year</label>
-                            <div class="flex items-center space-x-2">
-                               <select id="year-min-select" name="year_min" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all">
-                                    <option value="">Min</option>
-                                     {% for year in years %}
-                                        <option value="{{ year }}">{{ year }}</option>
-                                     {% endfor %}
-                                </select>
-                                 <span class="text-gray-500">-</span>
-                                 <select id="year-max-select" name="year_max" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all">
-                                    <option value="">Max</option>
-                                     {% for year in years %}
-                                        <option value="{{ year }}">{{ year }}</option>
-                                     {% endfor %}
+        <div class="bg-gray-900 p-4 sm:p-6 lg:p-8 rounded-2xl shadow-2xl">
+            <div class="flex flex-col lg:flex-row gap-8">
+                <aside class="w-full lg:w-1/4">
+                    <div class="bg-white p-6 rounded-2xl shadow-lg sticky top-8">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-3">Filters</h2>
+                        <form id="filter-form">
+                            
+                            <div class="mb-6">
+                                <label for="brand-select" class="block text-sm font-semibold text-gray-700 mb-2">Brand</label>
+                                <select id="brand-select" name="brand" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all">
+                                    <option value="">All Brands</option>
+                                    {% for make in unique_makes %}
+                                    <option value="{{ make }}">{{ make }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
-                        </div>
 
-                        
-                        <div class="mb-6">
-                            <label for="price-range" class="block text-sm font-semibold text-gray-700 mb-2">Price Range</label>
-                            <div class="flex items-center space-x-2">
-                                <input type="number" name="price_min" placeholder="Min" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all" step="100">
-                                <span class="text-gray-500">-</span>
-                                <input type="number" name="price_max" placeholder="Max" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all" step="100">
-                            </div>
-                        </div>
-                        
-                        
-                        <div class="mb-6">
-                            <label for="engine-size-range" class="block text-sm font-semibold text-gray-700 mb-2">Engine (cc)</label>
-                            <div class="flex items-center space-x-2">
-                                <input type="number" name="engine_min_cc" placeholder="Min" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all" step="50">
-                                <span class="text-gray-500">-</span>
-                                <input type="number" name="engine_max_cc" placeholder="Max" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all" step="50">
-                            </div>
-                        </div>
-
-                        <div class="flex space-x-2 mt-4">
-                            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105">Apply</button>
-                            <button type="reset" id="reset-filters" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105">Reset</button>
-                        </div>
-                    </form>
-                </div>
-            </aside>
-
-            
-            <main class="w-full lg:w-3/4">
-                
-                <div class="mb-6 flex justify-end">
-                    <select id="sort-by" name="order" class="bg-white border-2 border-gray-300 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:border-green-500 transition-all shadow-sm">
-                        <option value="">Sort by...</option>
-                        <option value="price_low_to_high">Price: Low to High</option>
-                        <option value="price_high_to_low">Price: High to Low</option>
-                        <option value="age_new_to_old">Year: New to Old</option>
-                        <option value="age_old_to_new">Year: Old to New</option>
-                    </select>
-                </div>
-
-                
-                <div id="motorcycle-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                    
-                    {% for motorcycle in motorcycles %}
-                        <div class="bg-white rounded-2xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 ease-in-out group">
-                            <a href="{% url 'inventory:motorcycle-detail' pk=motorcycle.pk %}" class="block">
-                                <div class="relative">
-                                    <img src="{% if motorcycle.image %}{{ motorcycle.image.url }}{% else %}https://placehold.co/600x400/e2e8f0/333?text=No+Image{% endif %}" alt="{{ motorcycle.title }}" class="w-full h-56 object-cover">
-                                    <div class="absolute top-4 right-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">{{ motorcycle.get_conditions_display }}</div>
+                            
+                            <div class="mb-6">
+                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Year</label>
+                                <div class="flex items-center space-x-2">
+                                   <select id="year-min-select" name="year_min" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all">
+                                        <option value="">Min</option>
+                                         {% for year in years %}
+                                            <option value="{{ year }}">{{ year }}</option>
+                                         {% endfor %}
+                                    </select>
+                                     <span class="text-gray-500">-</span>
+                                     <select id="year-max-select" name="year_max" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all">
+                                        <option value="">Max</option>
+                                         {% for year in years %}
+                                            <option value="{{ year }}">{{ year }}</option>
+                                         {% endfor %}
+                                    </select>
                                 </div>
-                                <div class="p-6">
-                                    <h3 class="text-xl font-bold text-gray-800 truncate">{{ motorcycle.title }}</h3>
-                                    <p class="text-2xl font-extrabold text-green-600 my-2">
-                                        {% if motorcycle.price %}
-                                            ${{ motorcycle.price|floatformat:2 }}
-                                        {% else %}
-                                            Price on request
-                                        {% endif %}
-                                    </p>
-                                    <div class="grid grid-cols-3 gap-4 text-sm text-gray-600 mt-4 border-t pt-4">
-                                        <div class="text-center">
-                                            <p class="font-semibold">Year</p>
-                                            <p>{{ motorcycle.year }}</p>
-                                        </div>
-                                        <div class="text-center">
-                                            {% if 'New' in motorcycle.get_conditions_display %}
-                                                <p class="font-semibold">Transmission</p>
-                                                <p>{{ motorcycle.get_transmission_display|default:'N/A' }}</p>
+                            </div>
+
+                            
+                            <div class="mb-6">
+                                <label for="price-range" class="block text-sm font-semibold text-gray-700 mb-2">Price Range</label>
+                                <div class="flex items-center space-x-2">
+                                    <input type="number" name="price_min" placeholder="Min" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all" step="100">
+                                    <span class="text-gray-500">-</span>
+                                    <input type="number" name="price_max" placeholder="Max" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all" step="100">
+                                </div>
+                            </div>
+                            
+                            
+                            <div class="mb-6">
+                                <label for="engine-size-range" class="block text-sm font-semibold text-gray-700 mb-2">Engine (cc)</label>
+                                <div class="flex items-center space-x-2">
+                                    <input type="number" name="engine_min_cc" placeholder="Min" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all" step="50">
+                                    <span class="text-gray-500">-</span>
+                                    <input type="number" name="engine_max_cc" placeholder="Max" class="w-full bg-gray-100 border-2 border-gray-200 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-green-500 transition-all" step="50">
+                                </div>
+                            </div>
+
+                            <div class="flex space-x-2 mt-4">
+                                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105">Apply</button>
+                                <button type="reset" id="reset-filters" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105">Reset</button>
+                            </div>
+                        </form>
+                    </div>
+                </aside>
+
+                
+                <main class="w-full lg:w-3/4">
+                    
+                    <div class="mb-6 flex justify-end">
+                        <select id="sort-by" name="order" class="bg-white border-2 border-gray-300 rounded-lg py-2 px-4 text-gray-700 focus:outline-none focus:border-green-500 transition-all shadow-sm">
+                            <option value="">Sort by...</option>
+                            <option value="price_low_to_high">Price: Low to High</option>
+                            <option value="price_high_to_low">Price: High to Low</option>
+                            <option value="age_new_to_old">Year: New to Old</option>
+                            <option value="age_old_to_new">Year: Old to New</option>
+                        </select>
+                    </div>
+
+                    
+                    <div id="motorcycle-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                        
+                        {% for motorcycle in motorcycles %}
+                            <div class="bg-white rounded-2xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 ease-in-out group">
+                                <a href="{% url 'inventory:motorcycle-detail' pk=motorcycle.pk %}" class="block">
+                                    <div class="relative">
+                                        <img src="{% if motorcycle.image %}{{ motorcycle.image.url }}{% else %}https://placehold.co/600x400/e2e8f0/333?text=No+Image{% endif %}" alt="{{ motorcycle.title }}" class="w-full h-56 object-cover">
+                                        <div class="absolute top-4 right-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">{{ motorcycle.get_conditions_display }}</div>
+                                    </div>
+                                    <div class="p-6">
+                                        <h3 class="text-xl font-bold text-gray-800 truncate">{{ motorcycle.title }}</h3>
+                                        <p class="text-2xl font-extrabold text-green-600 my-2">
+                                            {% if motorcycle.price %}
+                                                ${{ motorcycle.price|floatformat:2 }}
                                             {% else %}
-                                                <p class="font-semibold">Odometer</p>
-                                                <p>{{ motorcycle.odometer|default:0 }} km</p>
+                                                Price on request
                                             {% endif %}
-                                        </div>
-                                        <div class="text-center">
-                                            <p class="font-semibold">Engine</p>
-                                            <p>{{ motorcycle.engine_size }} cc</p>
+                                        </p>
+                                        <div class="grid grid-cols-3 gap-4 text-sm text-gray-600 mt-4 border-t pt-4">
+                                            <div class="text-center">
+                                                <p class="font-semibold">Year</p>
+                                                <p>{{ motorcycle.year }}</p>
+                                            </div>
+                                            <div class="text-center">
+                                                {% if 'New' in motorcycle.get_conditions_display %}
+                                                    <p class="font-semibold">Transmission</p>
+                                                    <p>{{ motorcycle.get_transmission_display|default:'N/A' }}</p>
+                                                {% else %}
+                                                    <p class="font-semibold">Odometer</p>
+                                                    <p>{{ motorcycle.odometer|default:0 }} km</p>
+                                                {% endif %}
+                                            </div>
+                                            <div class="text-center">
+                                                <p class="font-semibold">Engine</p>
+                                                <p>{{ motorcycle.engine_size }} cc</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </a>
-                        </div>
-                    {% empty %}
-                        <p id="no-results-message" class="text-gray-500 col-span-full text-center py-12">No motorcycles match the current criteria.</p>
-                    {% endfor %}
-                </div>
+                                </a>
+                            </div>
+                        {% empty %}
+                            <p id="no-results-message" class="text-gray-300 col-span-full text-center py-12">No motorcycles match the current criteria.</p>
+                        {% endfor %}
+                    </div>
 
-                
-                <div id="pagination-controls" class="mt-12 flex justify-center items-center space-x-2">
-                    {% if page_obj.has_previous %}
-                    <a href="#" data-page="{{ page_obj.previous_page_number }}" class="pagination-link rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 shadow-sm">Previous</a>
-                    {% endif %}
-                    {% if page_obj.paginator.num_pages > 1 %}
-                    <span class="page-current px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg shadow-md">
-                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-                    </span>
-                    {% endif %}
-                    {% if page_obj.has_next %}
-                    <a href="#" data-page="{{ page_obj.next_page_number }}" class="pagination-link rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 shadow-sm">Next</a>
-                    {% endif %}
-                </div>
-            </main>
-        </div>
+                    
+                    <div id="pagination-controls" class="mt-12 flex justify-center items-center space-x-2">
+                        {% if page_obj.has_previous %}
+                        <a href="#" data-page="{{ page_obj.previous_page_number }}" class="pagination-link rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 shadow-sm">Previous</a>
+                        {% endif %}
+                        {% if page_obj.paginator.num_pages > 1 %}
+                        <span class="page-current px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg shadow-md">
+                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                        </span>
+                        {% endif %}
+                        {% if page_obj.has_next %}
+                        <a href="#" data-page="{{ page_obj.next_page_number }}" class="pagination-link rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 shadow-sm">Next</a>
+                        {% endif %}
+                    </div>
+                </main>
+            </div>
 
-        <div class="bg-gray-800 rounded-2xl p-8 my-16 text-center">
-            <h3 class="text-2xl font-bold text-white">Can't Find Your Perfect Ride?</h3>
-            <p class="text-gray-300 mt-2 max-w-2xl mx-auto">Our inventory changes daily. Contact us with what you're looking for and our team will help you track it down.</p>
-            <a href="{% url 'core:contact' %}" class="mt-6 inline-block bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-colors">
-                Contact Us
-            </a>
+            <div class="bg-gray-800 rounded-2xl p-8 my-16 text-center">
+                <h3 class="text-2xl font-bold text-white">Can't Find Your Perfect Ride?</h3>
+                <p class="text-gray-300 mt-2 max-w-2xl mx-auto">Our inventory changes daily. Contact us with what you're looking for and our team will help you track it down.</p>
+                <a href="{% url 'core:contact' %}" class="mt-6 inline-block bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-colors">
+                    Contact Us
+                </a>
+            </div>
         </div>
 
         <div class="mt-12">
@@ -259,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderMotorcycles(motorcycles) {
         motorcycleGrid.innerHTML = '';
         if (motorcycles.length === 0) {
-            motorcycleGrid.innerHTML = '<p id="no-results-message" class="text-gray-500 col-span-full text-center py-12">No motorcycles match the current criteria.</p>';
+            motorcycleGrid.innerHTML = '<p id="no-results-message" class="text-gray-300 col-span-full text-center py-12">No motorcycles match the current criteria.</p>';
             return;
         }
 
