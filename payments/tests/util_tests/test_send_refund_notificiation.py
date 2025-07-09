@@ -9,8 +9,10 @@ class SendRefundNotificationsTest(TestCase):
 
     def setUp(self):
         self.payment = PaymentFactory(amount=Decimal('100.00'), stripe_payment_intent_id='pi_test123')
-        self.sales_profile = SalesProfileFactory(email='sales@example.com', name='Sales Customer')
-        self.service_profile = ServiceProfileFactory(email='service@example.com', name='Service Customer')
+        user_sales = UserFactory(email='sales@example.com')
+        self.sales_profile = SalesProfileFactory(user=user_sales, email='sales@example.com', name='Sales Customer')
+        user_service = UserFactory(email='service@example.com')
+        self.service_profile = ServiceProfileFactory(user=user_service, email='service@example.com', name='Service Customer')
         self.sales_booking = SalesBookingFactory(sales_profile=self.sales_profile, payment=self.payment, sales_booking_reference='SALES-REF')
         self.service_booking = ServiceBookingFactory(service_profile=self.service_profile, payment=self.payment, service_booking_reference='SERVICE-REF')
         self.refund_request = RefundRequestFactory(reason='Test Reason', staff_notes='Test Staff Notes', is_admin_initiated=True)

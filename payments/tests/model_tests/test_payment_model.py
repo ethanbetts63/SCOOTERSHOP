@@ -120,11 +120,20 @@ class PaymentModelTest(TestCase):
 
     def test_ordering(self):
         now = timezone.now()
-        payment1 = PaymentFactory(created_at=now - datetime.timedelta(days=3))
-        payment2 = PaymentFactory(created_at=now - datetime.timedelta(days=1))
-        payment3 = PaymentFactory(created_at=now - datetime.timedelta(days=2))
+        
+        payment1 = PaymentFactory()
+        payment1.created_at = now - datetime.timedelta(days=3)
+        payment1.save()
+
+        payment2 = PaymentFactory()
+        payment2.created_at = now - datetime.timedelta(days=1)
+        payment2.save()
+
+        payment3 = PaymentFactory()
+        payment3.created_at = now - datetime.timedelta(days=2)
+        payment3.save()
 
         ordered_payments = list(Payment.objects.order_by('-created_at'))
-        self.assertEqual(ordered_payments[0], payment2)
-        self.assertEqual(ordered_payments[1], payment3)
-        self.assertEqual(ordered_payments[2], payment1)
+        self.assertEqual(ordered_payments[0].id, payment2.id)
+        self.assertEqual(ordered_payments[1].id, payment3.id)
+        self.assertEqual(ordered_payments[2].id, payment1.id)

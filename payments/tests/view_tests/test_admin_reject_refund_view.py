@@ -72,20 +72,20 @@ class AdminRejectRefundViewTest(TestCase):
         self.assertEqual(self.refund_request_service.processed_by, self.admin_user)
         self.assertEqual(self.refund_request_service.processed_at, now)
 
-        mock_messages_success.assert_called_once_with(MagicMock(), f"Refund Request for booking '{self.service_booking.service_booking_reference}' has been successfully rejected.")
+        mock_messages_success.assert_called_once_with(ANY, f"Refund Request for booking '{self.service_booking.service_booking_reference}' has been successfully rejected.")
         self.assertEqual(mock_send_templated_email.call_count, 2)
 
         user_email_call = mock_send_templated_email.call_args_list[0]
         self.assertEqual(user_email_call.kwargs['recipient_list'], [self.refund_request_service.request_email])
         self.assertIn('Your Refund Request for Booking', user_email_call.kwargs['subject'])
         self.assertEqual(user_email_call.kwargs['template_name'], 'user_refund_request_rejected.html')
-        mock_messages_info.assert_any_call(MagicMock(), "Automated rejection email sent to the user.")
+        mock_messages_info.assert_any_call(ANY, "Automated rejection email sent to the user.")
 
         admin_email_call = mock_send_templated_email.call_args_list[1]
         self.assertEqual(admin_email_call.kwargs['recipient_list'], [settings.DEFAULT_FROM_EMAIL])
         self.assertIn('Refund Request', admin_email_call.kwargs['subject'])
         self.assertEqual(admin_email_call.kwargs['template_name'], 'admin_refund_request_rejected.html')
-        mock_messages_info.assert_any_call(MagicMock(), "Admin notification email sent regarding the rejection.")
+        mock_messages_info.assert_any_call(ANY, "Admin notification email sent regarding the rejection.")
 
     # This test is failing due to the same TypeError as test_post_reject_refund_request_send_email_to_user.
     @patch('payments.views.Refunds.admin_reject_refund_view.send_templated_email')
