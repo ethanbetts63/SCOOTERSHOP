@@ -8,122 +8,89 @@
         <title>{% block title %}Scootershop{% endblock %}</title>
         {% load static %}
         <link rel="icon" href="{% static 'images/favicon_scooter.png' %}" type="image/png">
-        <link rel="stylesheet" href="{% static 'css/styles.css' %}">
         <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
         {% block extra_css %}{% endblock %}
     </head>
 
-    <body>
-        <nav>
-            <div class="logo">
-                <a href="{% url 'core:index' %}">
-                    <img src="{% static 'images/logo_scootershop_tight_crop.png' %}" alt="Scooter Shop Logo">
-                </a>
-            </div>
-
-            <ul>
-                {% if settings.enable_sales_new or user.is_staff %}
-                    <li>
-                        <a class="nav-item" href="{% url 'inventory:new' %}"
-                           {% if not settings.enable_sales_new and user.is_staff %}
-                               style="color: #08E5D1;"
-                           {% endif %}
-                        >
-                            New Bikes
+    <body class="bg-gray-800 text-gray-200 font-sans">
+        
+        <nav class="bg-gray-900 shadow-lg">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between items-center h-24">
+                    
+                    <div class="flex-shrink-0">
+                        <a href="{% url 'core:index' %}">
+                            <img class="h-20 w-auto" src="{% static 'images/logo_scootershop_tight_crop.png' %}" alt="Scooter Shop Logo">
                         </a>
-                    </li>
-                {% endif %}
-
-                {% if settings.enable_sales_used or user.is_staff %}
-                    <li>
-                        <a class="nav-item" href="{% url 'inventory:used' %}"
-                           {% if not settings.enable_sales_used and user.is_staff %}
-                               style="color: #08E5D1;"
-                           {% endif %}
-                        >
-                            Used Bikes
-                        </a>
-                    </li>
-                {% endif %}
-
-                {% if settings.enable_service_booking or user.is_staff %}
-                    <li>
-                        <a class="nav-item" href="{% url 'service:service' %}"
-                           {% if not settings.enable_service_booking and user.is_staff %}
-                               style="color: #08E5D1;"
-                           {% endif %}
-                        >
-                            Service Booking
-                        </a>
-                    </li>
-                {% endif %}
-
-                {% if settings.enable_contact_page or user.is_staff %}
-                    <li>
-                        <a href="{% url 'core:contact' %}"
-                         {% if not settings.enable_contact_page and user.is_staff %}
-                             style="color: #08E5D1;"
-                         {% endif %}
-                        >
-                            {% if not settings.enable_contact_page %}
-                                About us
-                            {% else %}
-                                Contact Us
-                            {% endif %}
-                        </a>
-                    </li>
-                {% endif %}
-
-                {% if settings.enable_user_accounts or user.is_staff %}
-                    <li>
-                        {% if user.is_authenticated %}
-                            <a class="nav-item" href="{% url 'users:logout' %}">
-                                Logout
-                            </a>
-                        {% else %}
-                            <a class="nav-item" href="{% url 'users:login' %}"
-                                {% if not settings.enable_user_accounts and user.is_staff %}
-                                style="color: #08E5D1;"
-                                {% endif %}
-                            >
-                                {% if settings.enable_user_accounts %}
-                                    Login/Register
-                                {% else %}
-                                    Login
-                                {% endif %}
-                            </a>
+                    </div>
+                    
+                    <div class="hidden lg:flex items-center space-x-4">
+                        {% if settings.enable_sales_new or user.is_staff %}
+                            <a href="{% url 'inventory:new' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">New Bikes</a>
                         {% endif %}
-                    </li>
-                {% endif %}
+                        {% if settings.enable_sales_used or user.is_staff %}
+                            <a href="{% url 'inventory:used' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Used Bikes</a>
+                        {% endif %}
+                        {% if settings.enable_service_booking or user.is_staff %}
+                            <a href="{% url 'service:service' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Service Booking</a>
+                        {% endif %}
+                        {% if settings.enable_contact_page or user.is_staff %}
+                             <a href="{% url 'core:contact' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Contact Us</a>
+                        {% endif %}
+                        {% if settings.enable_user_accounts or user.is_staff %}
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'users:logout' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Logout</a>
+                            {% else %}
+                                <a href="{% url 'users:login' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Login/Register</a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
 
-            </ul>
-
-            <div class="nav-social-icons">
-                {% if settings.facebook_link %}
-                <a href="{{ settings.facebook_link }}" target="_blank" rel="noopener">
-                    <img src="{% static 'images/svgs/facebook.svg' %}" alt="Facebook">
-                </a>
-                {% endif %}
-                {% if settings.instagram_link %}
-                <a href="{{ settings.instagram_link }}" target="_blank" rel="noopener">
-                    <img src="{% static 'images/svgs/instagram.svg' %}" alt="Instagram">
-                </a>
-                {% endif %}
-                {% if settings.youtube_link %}
-                <a href="{{ settings.youtube_link }}" target="_blank" rel="noopener">
-                    <img src="{% static 'images/svgs/youtube.svg' %}" alt="YouTube">
-                </a>
-                {% endif %}
-                {% if settings.enable_contact_page or user.is_staff %}
-                    <a href="{% url 'core:contact' %}">
-                        <img src="{% static 'images/svgs/mail.svg' %}" alt="Contact Us">
-                    </a>
-                {% endif %}
+                    <div class="hidden lg:flex items-center space-x-4">
+                        {% if settings.facebook_link %}<a href="{{ settings.facebook_link }}" target="_blank" rel="noopener"><img class="h-6 w-6" src="{% static 'images/svgs/facebook.svg' %}" alt="Facebook"></a>{% endif %}
+                        {% if settings.instagram_link %}<a href="{{ settings.instagram_link }}" target="_blank" rel="noopener"><img class="h-6 w-6" src="{% static 'images/svgs/instagram.svg' %}" alt="Instagram"></a>{% endif %}
+                        {% if settings.youtube_link %}<a href="{{ settings.youtube_link }}" target="_blank" rel="noopener"><img class="h-6 w-6" src="{% static 'images/svgs/youtube.svg' %}" alt="YouTube"></a>{% endif %}
+                        {% if settings.enable_contact_page or user.is_staff %}<a href="{% url 'core:contact' %}"><img class="h-6 w-6" src="{% static 'images/svgs/mail.svg' %}" alt="Contact"></a>{% endif %}
+                    </div>
+                    
+                    <div class="lg:hidden flex items-center">
+                        <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                            <span class="sr-only">Open main menu</span>
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="mobile-menu" class="lg:hidden hidden">
+                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                    {% if settings.enable_sales_new or user.is_staff %}
+                        <a href="{% url 'inventory:new' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">New Bikes</a>
+                    {% endif %}
+                    {% if settings.enable_sales_used or user.is_staff %}
+                        <a href="{% url 'inventory:used' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Used Bikes</a>
+                    {% endif %}
+                    {% if settings.enable_service_booking or user.is_staff %}
+                        <a href="{% url 'service:service' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Service Booking</a>
+                    {% endif %}
+                    {% if settings.enable_contact_page or user.is_staff %}
+                         <a href="{% url 'core:contact' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Contact Us</a>
+                    {% endif %}
+                    {% if settings.enable_user_accounts or user.is_staff %}
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'users:logout' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Logout</a>
+                        {% else %}
+                            <a href="{% url 'users:login' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Login/Register</a>
+                        {% endif %}
+                    {% endif %}
+                </div>
             </div>
         </nav>
 
         {% if messages %}
-            <div class="messages-container px-4 py-3 max-w-7xl mx-auto mt-4">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
                 {% for message in messages %}
                     <div class="p-4 mb-3 rounded-lg shadow-md text-sm
                                 {% if message.tags == 'error' %}bg-red-100 border-l-4 border-red-500 text-red-700{% endif %}
@@ -138,224 +105,75 @@
             </div>
         {% endif %}
 
-        <div>
+        <main>
             {% block content %}{% endblock %}
-        </div>
+        </main>
 
         {% block map %}{% endblock %}
 
-        <footer class="site-footer">
-            <div class="footer-container">
-                <div class="footer-section">
-                    <h3>Quick Links</h3>
-                    <ul>
-                        {% if settings.enable_sales_new or user.is_staff %}
-                            <li>
-                                <a href="{% url 'inventory:new' %}"
-                                   {% if not settings.enable_sales_new and user.is_staff %}
-                                        style="color: #08E5D1;"
-                                   {% endif %}
-                                >
-                                    New Bikes
-                                </a>
-                            </li>
-                        {% endif %}
-
-                        {% if settings.enable_sales_used or user.is_staff %}
-                            <li>
-                                <a href="{% url 'inventory:used' %}"
-                                   {% if not settings.enable_sales_used and user.is_staff %}
-                                        style="color: #08E5D1;"
-                                   {% endif %}
-                                >
-                                    Used Bikes
-                                </a>
-                            </li>
-                        {% endif %}
-
-
-                        {% if settings.enable_refunds or user.is_staff %}
-                            <li>
-                                <a href="{% url 'payments:user_refund_request' %}"
-                                   {% if not settings.enable_refunds and user.is_staff %}
-                                        style="color: #08E5D1;"
-                                   {% endif %}
-                                >
-                                    Refunds
-                                </a>
-                            </li>
-                        {% endif %}
-
-                        {% if settings.enable_contact_page or user.is_staff %}
-                            <li>
-                                <a href="{% url 'core:contact' %}"
-                                {% if not settings.enable_contact_page and user.is_staff %}
-                                    style="color: #08E5D1;"
-                                {% endif %}
-                                >
-                                    {% if not settings.enable_contact_page %}
-                                        About us
-                                    {% else %}
-                                        Contact Us
-                                    {% endif %}
-                                </a>
-                            </li>
-                        {% endif %}
-
-                        {% if not settings.enable_user_accounts and not user.is_authenticated %}
-                            <li>
-                                <a href="{% url 'users:login' %}">
-                                    Login
-                                </a>
-                            </li>
-                        {% endif %}
-
-                        {% if user.is_authenticated and user.is_staff %}
-                        <li><a href="{% url 'dashboard:dashboard_index' %}">Dashboard</a></li>
-                        {% endif %}
-                    </ul>
-                </div>
-
-                <div class="footer-section">
-                    <h3>Resources</h3>
-                    <ul>
-                        <li>
-                            <a href="{% url 'core:terms' %}">
-                                Terms of Use
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{% url 'service:service_booking_terms' %}">
-                                Service Booking Terms
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{% url 'inventory:sales_terms' %}">
-                                Sales Booking Terms
-                            </a>
-                        </li>
-                        {% if settings.enable_privacy_policy_page or user.is_staff %}
-                            <li>
-                                <a href="{% url 'core:privacy' %}"
-                                   {% if not settings.enable_privacy_policy_page and user.is_staff %}
-                                        style="color: #08E5D1;"
-                                   {% endif %}
-                                >
-                                    Privacy Policy
-                                </a>
-                            </li>
-                        {% endif %}
-
-                        {% if settings.enable_returns_page or user.is_staff %}
-                            <li>
-                                <a href="{% url 'core:returns' %}"
-                                    {% if not settings.enable_returns_page and user.is_staff %}
-                                        style="color: #08E5D1;"
-                                    {% endif %}
-                                >
-                                    Returns Policy
-                                </a>
-                            </li>
-                        {% endif %}
-
-                         {% if settings.enable_security_page or user.is_staff %}
-                            <li>
-                                <a href="{% url 'core:security' %}"
-                                   {% if not settings.enable_security_page and user.is_staff %}
-                                        style="color: #08E5D1;"
-                                   {% endif %}
-                                >
-                                    Security Policy
-                                </a>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </div>
-
-                <div class="footer-section">
-                    <h3>Contact Info</h3>
-                    <ul>
-                        {% if settings %}
-                            {% if settings.display_phone_number and settings.phone_number %}
-                                <li><strong>Phone:</strong> {{ settings.phone_number }}</li>
-                            {% endif %}
-                            {% if settings.email_address %}
-                                <li><strong>Email:</strong> {{ settings.email_address }}</li>
-                            {% endif %}
-                            {% if settings.display_address and settings.storefront_address %}
-                                <li><strong>Address:</strong> {{ settings.storefront_address|linebreaksbr }}</li>
-                            {% endif %}
-                            
+        <footer class="bg-gray-900 border-t border-gray-700 mt-12">
+            <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="space-y-4">
+                        <h3 class="text-sm font-semibold text-gray-400 tracking-wider uppercase">Quick Links</h3>
+                        <ul class="space-y-2">
+                            {% if settings.enable_sales_new or user.is_staff %}<li><a href="{% url 'inventory:new' %}" class="text-base text-gray-300 hover:text-white">New Bikes</a></li>{% endif %}
+                            {% if settings.enable_sales_used or user.is_staff %}<li><a href="{% url 'inventory:used' %}" class="text-base text-gray-300 hover:text-white">Used Bikes</a></li>{% endif %}
+                            {% if settings.enable_refunds or user.is_staff %}<li><a href="{% url 'payments:user_refund_request' %}" class="text-base text-gray-300 hover:text-white">Refunds</a></li>{% endif %}
+                            {% if settings.enable_contact_page or user.is_staff %}<li><a href="{% url 'core:contact' %}" class="text-base text-gray-300 hover:text-white">Contact Us</a></li>{% endif %}
+                            {% if user.is_authenticated and user.is_staff %}<li><a href="{% url 'dashboard:dashboard_index' %}" class="text-base text-gray-300 hover:text-white">Dashboard</a></li>{% endif %}
+                        </ul>
+                    </div>
+                    <div class="space-y-4">
+                        <h3 class="text-sm font-semibold text-gray-400 tracking-wider uppercase">Resources</h3>
+                        <ul class="space-y-2">
+                            <li><a href="{% url 'core:terms' %}" class="text-base text-gray-300 hover:text-white">Terms of Use</a></li>
+                            <li><a href="{% url 'service:service_booking_terms' %}" class="text-base text-gray-300 hover:text-white">Service Terms</a></li>
+                            <li><a href="{% url 'inventory:sales_terms' %}" class="text-base text-gray-300 hover:text-white">Sales Terms</a></li>
+                            {% if settings.enable_privacy_policy_page or user.is_staff %}<li><a href="{% url 'core:privacy' %}" class="text-base text-gray-300 hover:text-white">Privacy Policy</a></li>{% endif %}
+                        </ul>
+                    </div>
+                    <div class="space-y-4">
+                        <h3 class="text-sm font-semibold text-gray-400 tracking-wider uppercase">Contact Info</h3>
+                        <ul class="space-y-2 text-base text-gray-300">
+                            {% if settings.display_phone_number and settings.phone_number %}<li>Phone: {{ settings.phone_number }}</li>{% endif %}
+                            {% if settings.email_address %}<li>Email: {{ settings.email_address }}</li>{% endif %}
+                            {% if settings.display_address and settings.storefront_address %}<li>Address: {{ settings.storefront_address|linebreaksbr }}</li>{% endif %}
                             {% if settings.display_opening_hours %}
-                                <li><strong>Hours:</strong></li>
-                                {% if settings.opening_hours_monday %}
-                                    <li>Monday: {{ settings.opening_hours_monday }}</li>
-                                {% endif %}
-                                {% if settings.opening_hours_tuesday %}
-                                    <li>Tuesday: {{ settings.opening_hours_tuesday }}</li>
-                                {% endif %}
-                                {% if settings.opening_hours_wednesday %}
-                                    <li>Wednesday: {{ settings.opening_hours_wednesday }}</li>
-                                {% endif %}
-                                {% if settings.opening_hours_thursday %}
-                                    <li>Thursday: {{ settings.opening_hours_thursday }}</li>
-                                {% endif %}
-                                {% if settings.opening_hours_friday %}
-                                    <li>Friday: {{ settings.opening_hours_friday }}</li>
-                                {% endif %}
-                                {% if settings.opening_hours_saturday %}
-                                    <li>Saturday: {{ settings.opening_hours_saturday }}</li>
-                                {% endif %}
-                                {% if settings.opening_hours_sunday %}
-                                    <li>Sunday: {{ settings.opening_hours_sunday }}</li>
-                                {% endif %}
+                                <li class="pt-2 font-semibold">Hours:</li>
+                                {% if settings.opening_hours_monday %}<li>Mon: {{ settings.opening_hours_monday }}</li>{% endif %}
+                                {% if settings.opening_hours_tuesday %}<li>Tue: {{ settings.opening_hours_tuesday }}</li>{% endif %}
+                                {% if settings.opening_hours_wednesday %}<li>Wed: {{ settings.opening_hours_wednesday }}</li>{% endif %}
+                                {% if settings.opening_hours_thursday %}<li>Thu: {{ settings.opening_hours_thursday }}</li>{% endif %}
+                                {% if settings.opening_hours_friday %}<li>Fri: {{ settings.opening_hours_friday }}</li>{% endif %}
+                                {% if settings.opening_hours_saturday %}<li>Sat: {{ settings.opening_hours_saturday }}</li>{% endif %}
+                                {% if settings.opening_hours_sunday %}<li>Sun: {{ settings.opening_hours_sunday }}</li>{% endif %}
                             {% endif %}
-                        {% else %}
-                            <li><strong>Phone:</strong> (08) 9433 4613</li>
-                            <li><strong>Email:</strong> admin@scootershop.com.au</li>
-                            <li><strong>Address:</strong> Unit 2/95 Queen Victoria St, Fremantle WA, Australia</li>
-                            <li><strong>Hours:</strong></li>
-                            <li>Monday - Friday: 10:30am to 5:00pm</li>
-                            <li>Saturday: 10:30am to 1:00pm (By Appointment only)</li>
-                            <li>Sunday: Closed</li>
-                            <li>Public Holidays: Closed</li>
-                        {% endif %}
-                    </ul>
-                </div>
-
-                <div class="footer-section">
-                    <h3>Follow Us</h3>
-                    <div class="social-icons">
-                        {% if settings.facebook_link %}
-                        <a href="{{ settings.facebook_link }}" target="_blank" rel="noopener">
-                            <img src="{% static 'images/svgs/facebook.svg' %}" alt="Facebook">
-                        </a>
-                        {% endif %}
-                        {% if settings.instagram_link %}
-                        <a href="{{ settings.instagram_link }}" target="_blank" rel="noopener">
-                            <img src="{% static 'images/svgs/instagram.svg' %}" alt="Instagram">
-                        </a>
-                        {% endif %}
-                        {% if settings.youtube_link %}
-                        <a href="{{ settings.youtube_link }}" target="_blank" rel="noopener">
-                            <img src="{% static 'images/svgs/youtube.svg' %}" alt="YouTube">
-                        </a>
-                        {% endif %}
-                        {% if settings.enable_contact_page or user.is_staff %}
-                            <a href="{% url 'core:contact' %}">
-                                <img src="{% static 'images/svgs/mail.svg' %}" alt="Contact Us">
-                            </a>
-                        {% endif %}
+                        </ul>
+                    </div>
+                    <div class="space-y-4">
+                        <h3 class="text-sm font-semibold text-gray-400 tracking-wider uppercase">Follow Us</h3>
+                        <div class="flex space-x-6">
+                            {% if settings.facebook_link %}<a href="{{ settings.facebook_link }}" class="text-gray-400 hover:text-white"><span class="sr-only">Facebook</span><img class="h-6 w-6" src="{% static 'images/svgs/facebook.svg' %}" alt="Facebook"></a>{% endif %}
+                            {% if settings.instagram_link %}<a href="{{ settings.instagram_link }}" class="text-gray-400 hover:text-white"><span class="sr-only">Instagram</span><img class="h-6 w-6" src="{% static 'images/svgs/instagram.svg' %}" alt="Instagram"></a>{% endif %}
+                            {% if settings.youtube_link %}<a href="{{ settings.youtube_link }}" class="text-gray-400 hover:text-white"><span class="sr-only">YouTube</span><img class="h-6 w-6" src="{% static 'images/svgs/youtube.svg' %}" alt="YouTube"></a>{% endif %}
+                            {% if settings.enable_contact_page or user.is_staff %}<a href="{% url 'core:contact' %}" class="text-gray-400 hover:text-white"><span class="sr-only">Email</span><img class="h-6 w-6" src="{% static 'images/svgs/mail.svg' %}" alt="Contact"></a>{% endif %}
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="footer-bottom">
-                <p>Copyright © {% now "Y" %} Scootershop Australia</p>
-                <p>ABN 46157594161 | MD 27368 | MRB 7961</p>
+                <div class="mt-8 border-t border-gray-700 pt-8 text-center">
+                    <p class="text-base text-gray-400">&copy; {% now "Y" %} Scootershop Australia. All rights reserved.</p>
+                    <p class="text-sm text-gray-500">ABN 46157594161 | MD 27368 | MRB 7961</p>
+                </div>
             </div>
         </footer>
 
+        <script>
+            document.getElementById('mobile-menu-button').addEventListener('click', function() {
+                var menu = document.getElementById('mobile-menu');
+                menu.classList.toggle('hidden');
+            });
+        </script>
         {% block extra_js %}{% endblock %}
     </body>
 </html>
