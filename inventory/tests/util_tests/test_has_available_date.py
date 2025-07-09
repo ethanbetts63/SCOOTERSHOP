@@ -3,7 +3,10 @@ from unittest.mock import patch
 from django.test import TestCase
 from django.utils import timezone
 from inventory.models import BlockedSalesDate
-from inventory.utils.has_available_date import has_available_date
+from inventory.utils.has_available_date import (
+    has_available_date_for_deposit_flow,
+    has_available_date_for_viewing_flow,
+)
 from ..test_helpers.model_factories import InventorySettingsFactory, BlockedSalesDateFactory
 
 class CheckHasAvailableDateTest(TestCase):
@@ -20,64 +23,54 @@ class CheckHasAvailableDateTest(TestCase):
     def tearDown(self):
         BlockedSalesDate.objects.all().delete()
 
-    def test_no_inventory_settings(self):
-        self.assertFalse(has_available_date(None))
+    def test_flows_return_false_with_no_settings(self):
+        self.assertFalse(has_available_date_for_deposit_flow(None))
+        self.assertFalse(has_available_date_for_viewing_flow(None))
 
     @patch('django.utils.timezone.now')
-    def test_dates_are_available_standard_case(self, mock_now):
+    def test_viewing_flow_is_true_when_dates_available(self, mock_now):
         mock_now.return_value = timezone.make_aware(datetime.datetime(2025, 7, 7, 10, 0))
-        self.assertTrue(has_available_date(self.inventory_settings))
+        self.assertTrue(has_available_date_for_viewing_flow(self.inventory_settings))
 
     @patch('django.utils.timezone.now')
-    def test_no_dates_available_all_days_blocked(self, mock_now):
+    def test_viewing_flow_is_false_when_all_dates_blocked(self, mock_now):
         mock_now.return_value = timezone.make_aware(datetime.datetime(2025, 7, 7, 10, 0))
         BlockedSalesDateFactory(
             start_date=mock_now.return_value.date(),
             end_date=mock_now.return_value.date() + datetime.timedelta(days=31)
         )
-        self.assertFalse(has_available_date(self.inventory_settings))
+        self.assertFalse(has_available_date_for_viewing_flow(self.inventory_settings))
 
     @patch('django.utils.timezone.now')
-    def test_no_dates_available_due_to_closed_days(self, mock_now):
-        mock_now.return_value = timezone.make_aware(datetime.datetime(2025, 7, 4, 10, 0))
-        self.inventory_settings.sales_booking_open_days = "Sun"
-        self.inventory_settings.max_advance_booking_days = 1
-        self.inventory_settings.save()
-        self.assertFalse(has_available_date(self.inventory_settings))
-
-    @patch('django.utils.timezone.now')
-    def test_one_day_available(self, mock_now):
+    def test_deposit_flow_is_true_when_dates_available(self, mock_now):
         mock_now.return_value = timezone.make_aware(datetime.datetime(2025, 7, 7, 10, 0))
-        min_date = (mock_now.return_value + datetime.timedelta(hours=24)).date()
-        max_date = mock_now.return_value.date() + datetime.timedelta(days=30)
+        self.assertTrue(has_available_date_for_deposit_flow(self.inventory_settings))
+
+    @patch('django.utils.timezone.now')
+    def test_deposit_flow_is_false_when_dates_only_available_outside_lifespan(self, mock_now):
+        mock_now.return_value = timezone.make_aware(datetime.datetime(2025, 7, 7, 10, 0))
         
-        available_date = datetime.date(2025, 7, 15)
-
-        BlockedSalesDateFactory(start_date=min_date, end_date=available_date - datetime.timedelta(days=1))
-        BlockedSalesDateFactory(start_date=available_date + datetime.timedelta(days=1), end_date=max_date)
-
-        self.assertTrue(has_available_date(self.inventory_settings))
-
-    @patch('django.utils.timezone.now')
-    def test_deposit_flow_has_available_date(self, mock_now):
-        mock_now.return_value = timezone.make_aware(datetime.datetime(2025, 7, 7, 10, 0))
-        self.assertTrue(has_available_date(self.inventory_settings, is_deposit_flow=True))
-
-    @patch('django.utils.timezone.now')
-    def test_deposit_flow_has_no_available_date(self, mock_now):
-        mock_now.return_value = timezone.make_aware(datetime.datetime(2025, 7, 7, 10, 0))
+        # Block all dates within the 7-day deposit window
         BlockedSalesDateFactory(
             start_date=mock_now.return_value.date(),
             end_date=mock_now.return_value.date() + datetime.timedelta(days=8)
         )
-        self.assertFalse(has_available_date(self.inventory_settings, is_deposit_flow=True))
         
+        # Viewing flow should be true because dates are available after 8 days
+        self.assertTrue(has_available_date_for_viewing_flow(self.inventory_settings))
+        # Deposit flow should be false as no dates are available within the lifespan
+        self.assertFalse(has_available_date_for_deposit_flow(self.inventory_settings))
+
     @patch('django.utils.timezone.now')
-    def test_no_dates_available_when_range_is_invalid(self, mock_now):
-        mock_now.return_value = timezone.make_aware(datetime.datetime(2025, 7, 7, 10, 0))
+    def test_flows_return_false_when_range_is_invalid(self, mock_now):
+        # Time is a Thursday. 72h advance makes min_date Sunday.
+        mock_now.return_value = timezone.make_aware(datetime.datetime(2025, 7, 10, 10, 0))
+        
         self.inventory_settings.min_advance_booking_hours = 72
-        self.inventory_settings.max_advance_booking_days = 1
-        self.inventory_settings.sales_booking_open_days = "Mon,Wed,Fri"
+        self.inventory_settings.max_advance_booking_days = 1 # max_date is Friday
+        # Sunday is not an open day, so the corrected range (Sun-Sun) is unavailable.
+        self.inventory_settings.sales_booking_open_days = "Mon,Tue,Wed,Thu,Fri"
         self.inventory_settings.save()
 
-        self.assertFalse(has_available_date(self.inventory_settings))
+        self.assertFalse(has_available_date_for_viewing_flow(self.inventory_settings))
+        self.assertFalse(has_available_date_for_deposit_flow(self.inventory_settings))
