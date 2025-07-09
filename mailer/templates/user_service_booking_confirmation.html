@@ -1,4 +1,3 @@
-
 {% load static %}
 
 <!DOCTYPE html>
@@ -133,10 +132,12 @@
                                     <th>Total Cost:</th>
                                     <td><strong>{% if booking.calculated_total %}{{ booking.calculated_total|floatformat:2 }}{% else %}booking.calculated_total VARIABLE DID NOT LOAD{% endif %} {% if booking.currency %}{{ booking.currency }}{% else %}booking.currency VARIABLE DID NOT LOAD{% endif %}</strong></td>
                                 </tr>
+                                {% if booking.amount_paid > 0 %}
                                 <tr>
                                     <th>Amount Paid:</th>
                                     <td>{% if booking.amount_paid %}{{ booking.amount_paid|floatformat:2 }}{% else %}booking.amount_paid VARIABLE DID NOT LOAD{% endif %} {% if booking.currency %}{{ booking.currency }}{% else %}booking.currency VARIABLE DID NOT LOAD{% endif %}</td>
                                 </tr>
+                                {% endif %}
                                 <tr>
                                     <th>Payment Status:</th>
                                     <td>{% if booking.get_payment_status_display %}{{ booking.get_payment_status_display }}{% else %}booking.get_payment_status_display VARIABLE DID NOT LOAD{% endif %}</td>
@@ -164,7 +165,7 @@
                     </tr>
                     <tr>
                         <td class="footer">
-                            <p>&copy; {{ "now"|date:"Y" }} SCOOTER_SHOP. All rights reserved.</p>
+                            <p>&copy; {% now "Y" %} SCOOTER_SHOP. All rights reserved.</p>
                             <p>This is an automated email, please do not reply.</p>
                         </td>
                     </tr>
