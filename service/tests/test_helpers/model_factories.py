@@ -341,15 +341,6 @@ class ServicefaqFactory(factory.django.DjangoModelFactory):
     is_active = True
     display_order = factory.Sequence(lambda n: n)
 
-    @classmethod
-    def _create(cls, model_class, *args, **kwargs):
-        obj, created = model_class.objects.get_or_create(pk=1, defaults=kwargs)
-        if not created:
-            for k, v in kwargs.items():
-                setattr(obj, k, v)
-            obj.save()
-        return obj
-
 
 class ServiceTermsFactory(factory.django.DjangoModelFactory):
     class Meta:
