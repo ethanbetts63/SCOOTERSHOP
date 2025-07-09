@@ -52,15 +52,16 @@ class AdminRejectRefundViewTest(TestCase):
     @patch('payments.views.Refunds.admin_reject_refund_view.send_templated_email')
     @patch('django.contrib.messages.success')
     @patch('django.contrib.messages.info')
-    @patch('django.utils.timezone.now')
-    def test_post_reject_refund_request_send_email_to_user(self, mock_now, mock_messages_info, mock_messages_success, mock_send_templated_email):
-        mock_now.return_value = timezone.now()
+    def test_post_reject_refund_request_send_email_to_user(self, mock_messages_info, mock_messages_success, mock_send_templated_email):
+        now = timezone.now()
         url = reverse('payments:reject_refund_request', kwargs={'pk': self.refund_request_service.pk})
         form_data = {
             'rejection_reason': 'Test rejection reason',
             'send_rejection_email': True,
         }
-        response = self.client.post(url, data=form_data)
+        with patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = now
+            response = self.client.post(url, data=form_data)
 
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('payments:admin_refund_management'))
@@ -69,7 +70,7 @@ class AdminRejectRefundViewTest(TestCase):
         self.assertEqual(self.refund_request_service.status, 'rejected')
         self.assertEqual(self.refund_request_service.rejection_reason, 'Test rejection reason')
         self.assertEqual(self.refund_request_service.processed_by, self.admin_user)
-        self.assertEqual(self.refund_request_service.processed_at, mock_now.return_value)
+        self.assertEqual(self.refund_request_service.processed_at, now)
 
         mock_messages_success.assert_called_once_with(MagicMock(), f"Refund Request for booking '{self.service_booking.service_booking_reference}' has been successfully rejected.")
         self.assertEqual(mock_send_templated_email.call_count, 2)
@@ -90,15 +91,16 @@ class AdminRejectRefundViewTest(TestCase):
     @patch('payments.views.Refunds.admin_reject_refund_view.send_templated_email')
     @patch('django.contrib.messages.success')
     @patch('django.contrib.messages.info')
-    @patch('django.utils.timezone.now')
-    def test_post_reject_refund_request_do_not_send_email_to_user(self, mock_now, mock_messages_info, mock_messages_success, mock_send_templated_email):
-        mock_now.return_value = timezone.now()
+    def test_post_reject_refund_request_do_not_send_email_to_user(self, mock_messages_info, mock_messages_success, mock_send_templated_email):
+        now = timezone.now()
         url = reverse('payments:reject_refund_request', kwargs={'pk': self.refund_request_service.pk})
         form_data = {
             'rejection_reason': 'Test rejection reason',
             'send_rejection_email': False,
         }
-        response = self.client.post(url, data=form_data)
+        with patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = now
+            response = self.client.post(url, data=form_data)
 
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('payments:admin_refund_management'))
@@ -135,9 +137,8 @@ class AdminRejectRefundViewTest(TestCase):
     @patch('payments.views.Refunds.admin_reject_refund_view.send_templated_email')
     @patch('django.contrib.messages.warning')
     @patch('django.contrib.messages.success')
-    @patch('django.utils.timezone.now')
-    def test_post_reject_refund_request_no_user_recipient_email(self, mock_now, mock_messages_success, mock_messages_warning, mock_send_templated_email):
-        mock_now.return_value = datetime.datetime(2025, 7, 9, 10, 0, 0, tzinfo=datetime.timezone.utc)
+    def test_post_reject_refund_request_no_user_recipient_email(self, mock_messages_success, mock_messages_warning, mock_send_templated_email):
+        now = datetime.datetime(2025, 7, 9, 10, 0, 0, tzinfo=datetime.timezone.utc)
         sales_profile_no_email = SalesProfileFactory(email='valid@example.com', user=None)
         sales_booking = SalesBookingFactory(sales_profile=sales_profile_no_email)
         refund_request_no_email = RefundRequestFactory(sales_booking=sales_booking, request_email=None, status='pending')
@@ -147,7 +148,9 @@ class AdminRejectRefundViewTest(TestCase):
             'rejection_reason': 'Test rejection reason',
             'send_rejection_email': True,
         }
-        response = self.client.post(url, data=form_data)
+        with patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = now
+            response = self.client.post(url, data=form_data)
 
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('payments:admin_refund_management'))

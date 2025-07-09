@@ -48,19 +48,18 @@ class AdminRefundManagementTest(TestCase):
     # This indicates an issue with factory_boy's interaction with mocked timezone.now() when creating objects.
     # The problem is not in the test logic itself, but in the interaction with the mocking and factory.
     @patch('payments.views.Refunds.admin_refund_management.send_templated_email')
-    @patch('django.utils.timezone.now')
-    def test_clean_expired_unverified_refund_requests_deletes_and_sends_email(self, mock_now, mock_send_templated_email):
-        mock_now.return_value = timezone.now()
-
-        expired_time = mock_now.return_value - timedelta(hours=24, minutes=1)
+    def test_clean_expired_unverified_refund_requests_deletes_and_sends_email(self, mock_send_templated_email):
+        now = timezone.now()
+        expired_time = now - timedelta(hours=24, minutes=1)
         expired_request = RefundRequestFactory(status='unverified', token_created_at=expired_time, request_email='expired@example.com')
 
-        non_expired_time = mock_now.return_value - timedelta(hours=23)
+        non_expired_time = now - timedelta(hours=23)
         non_expired_request = RefundRequestFactory(status='unverified', token_created_at=non_expired_time, request_email='nonexpired@example.com')
 
         verified_request = RefundRequestFactory(status='pending', request_email='verified@example.com')
-
-        response = self.client.get(self.url)
+        with patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = now
+            response = self.client.get(self.url)
 
         self.assertFalse(RefundRequest.objects.filter(pk=expired_request.pk).exists())
         self.assertTrue(RefundRequest.objects.filter(pk=non_expired_request.pk).exists())
@@ -74,16 +73,16 @@ class AdminRefundManagementTest(TestCase):
 
     # This test is failing due to the same ValueError as test_clean_expired_unverified_refund_requests_deletes_and_sends_email.
     @patch('payments.views.Refunds.admin_refund_management.send_templated_email')
-    @patch('django.utils.timezone.now')
-    def test_clean_expired_unverified_refund_requests_no_email_sent_if_no_recipient(self, mock_now, mock_send_templated_email):
-        mock_now.return_value = datetime.datetime(2025, 7, 9, 10, 0, 0, tzinfo=datetime.timezone.utc)
-
-        expired_time = mock_now.return_value - timedelta(hours=24, minutes=1)
+    def test_clean_expired_unverified_refund_requests_no_email_sent_if_no_recipient(self, mock_send_templated_email):
+        now = datetime.datetime(2025, 7, 9, 10, 0, 0, tzinfo=datetime.timezone.utc)
+        expired_time = now - timedelta(hours=24, minutes=1)
         sales_profile_no_email = SalesProfileFactory(email='valid@example.com', user=None)
         sales_booking = SalesBookingFactory(sales_profile=sales_profile_no_email)
         expired_request = RefundRequestFactory(status='unverified', token_created_at=expired_time, request_email=None, sales_booking=sales_booking, sales_profile=sales_profile_no_email)
 
-        response = self.client.get(self.url)
+        with patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = now
+            response = self.client.get(self.url)
 
         self.assertFalse(RefundRequest.objects.filter(pk=expired_request.pk).exists())
         mock_send_templated_email.assert_not_called()

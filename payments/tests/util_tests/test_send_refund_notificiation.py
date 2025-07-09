@@ -178,7 +178,8 @@ class SendRefundNotificationsTest(TestCase):
     def test_send_refund_notification_no_user_email_in_profile(self, mock_send_templated_email):
         # Create a sales profile with no email and no linked user
         sales_profile_no_email = SalesProfileFactory(email='', user=None)
-        sales_booking_no_email = SalesBookingFactory(sales_profile=sales_profile_no_email, payment=self.payment, sales_booking_reference='SALES-NOEMAIL')
+        payment_no_email = PaymentFactory()
+        sales_booking_no_email = SalesBookingFactory(sales_profile=sales_profile_no_email, payment=payment_no_email, sales_booking_reference='SALES-NOEMAIL')
 
         extracted_data = {
             'refunded_amount_decimal': Decimal('10.00'),
