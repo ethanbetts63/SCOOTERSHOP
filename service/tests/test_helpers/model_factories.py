@@ -21,6 +21,7 @@ from service.models import (
 )
 
 from payments.models import Payment, RefundPolicySettings
+from dashboard.models import SiteSettings # Import SiteSettings
 
 from service.utils.calculate_estimated_pickup_date import (
     calculate_estimated_pickup_date,
@@ -357,3 +358,48 @@ class ServiceTermsFactory(factory.django.DjangoModelFactory):
     content = factory.Faker("paragraph")
     version_number = factory.Sequence(lambda n: n + 1)
     is_active = True
+
+
+class SiteSettingsFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = SiteSettings
+        django_get_or_create = ('pk',)
+
+    site_name = factory.Faker('company')
+    tagline = factory.Faker('catch_phrase')
+    email_address = factory.Faker('email')
+    phone_number = factory.Faker('phone_number')
+    address_line_1 = factory.Faker('street_address')
+    city = factory.Faker('city')
+    state = factory.Faker('state_abbr')
+    post_code = factory.Faker('postcode')
+    country = factory.Faker('country')
+    opening_hours_monday = '9:00 AM - 5:00 PM'
+    opening_hours_tuesday = '9:00 AM - 5:00 PM'
+    opening_hours_wednesday = '9:00 AM - 5:00 PM'
+    opening_hours_thursday = '9:00 AM - 5:00 PM'
+    opening_hours_friday = '9:00 AM - 5:00 PM'
+    opening_hours_saturday = 'Closed'
+    opening_hours_sunday = 'Closed'
+    facebook_link = factory.Faker('url')
+    instagram_link = factory.Faker('url')
+    youtube_link = factory.Faker('url')
+    tiktok_link = factory.Faker('url')
+    enable_sales_enquiries = True
+    enable_service_booking = True
+    enable_faq_sales = True
+    enable_faq_service = True
+    enable_refunds = True
+    display_address = True
+    display_phone = True
+    display_email = True
+    display_opening_hours = True
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        obj, created = model_class.objects.get_or_create(pk=1, defaults=kwargs)
+        if not created:
+            for k, v in kwargs.items():
+                setattr(obj, k, v)
+            obj.save()
+        return obj
