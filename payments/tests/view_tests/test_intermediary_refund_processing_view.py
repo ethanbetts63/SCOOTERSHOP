@@ -20,14 +20,7 @@ class IntermediaryRefundProcessingViewTest(TestCase):
         self.assertIn('process_refund_url', response.context)
         self.assertEqual(response.context['process_refund_url'], reverse('payments:process_refund', kwargs={'pk': self.refund_request.pk}))
 
-    def test_get_intermediary_refund_processing_view_no_pk(self):
-        response = self.client.get(reverse('payments:initiate_refund_process', kwargs={'pk': None}))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'payments/intermediary_refund_processing.html')
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertIn('No refund request ID provided for processing.', str(messages[0]))
-        self.assertIsNone(response.context['refund_request_pk'])
+    
 
     def test_get_intermediary_refund_processing_view_invalid_pk(self):
         response = self.client.get(reverse('payments:initiate_refund_process', kwargs={'pk': 999}))

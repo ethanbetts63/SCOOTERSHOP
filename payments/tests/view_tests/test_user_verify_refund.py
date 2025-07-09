@@ -1,3 +1,4 @@
+import datetime
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib import messages
@@ -26,14 +27,14 @@ class UserVerifyRefundViewTest(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('core:index'))
-        mock_messages_error.assert_called_once_with(MagicMock(), "Verification link is missing a token.")
+        mock_messages_error.assert_called_once_with(response.wsgi_request, "Verification link is missing a token.")
 
     @patch('django.contrib.messages.error')
     def test_get_request_invalid_token_format(self, mock_messages_error):
         response = self.client.get(self.url + '?token=invalid-uuid')
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('core:index'))
-        mock_messages_error.assert_called_once_with(MagicMock(), "Invalid verification token format.")
+        mock_messages_error.assert_called_once_with(response.wsgi_request, "Invalid verification token format.")
 
     # This test is failing because the view redirects to core:index (302) instead of raising a 404.
     # This is because the view catches Http404 and redirects.
@@ -49,7 +50,7 @@ class UserVerifyRefundViewTest(TestCase):
     @patch('django.contrib.messages.error')
     @patch('django.utils.timezone.now')
     def test_get_request_expired_token(self, mock_now, mock_messages_error):
-        mock_now.return_value = timezone.now()
+        mock_now.return_value = datetime.datetime(2025, 7, 9, 10, 0, 0, tzinfo=datetime.timezone.utc)
         expired_time = mock_now.return_value - timedelta(hours=25)
         refund_request = RefundRequestFactory(token_created_at=expired_time, status='unverified')
 
@@ -75,7 +76,7 @@ class UserVerifyRefundViewTest(TestCase):
     @patch('payments.views.Refunds.user_verify_refund_view.calculate_service_refund_amount')
     @patch('django.utils.timezone.now')
     def test_get_request_valid_token_service_booking(self, mock_now, mock_calculate_service_refund_amount, mock_messages_success, mock_send_templated_email):
-        mock_now.return_value = timezone.now()
+        mock_now.return_value = datetime.datetime(2025, 7, 9, 10, 0, 0, tzinfo=datetime.timezone.utc)
         mock_calculate_service_refund_amount.return_value = {'entitled_amount': Decimal('50.00'), 'details': 'Test details'}
 
         refund_request = RefundRequestFactory(service_booking=self.service_booking, payment=self.payment, status='unverified', token_created_at=mock_now.return_value)
@@ -102,7 +103,7 @@ class UserVerifyRefundViewTest(TestCase):
     @patch('payments.views.Refunds.user_verify_refund_view.calculate_sales_refund_amount')
     @patch('django.utils.timezone.now')
     def test_get_request_valid_token_sales_booking(self, mock_now, mock_calculate_sales_refund_amount, mock_messages_success, mock_send_templated_email):
-        mock_now.return_value = timezone.now()
+        mock_now.return_value = datetime.datetime(2025, 7, 9, 10, 0, 0, tzinfo=datetime.timezone.utc)
         mock_calculate_sales_refund_amount.return_value = {'entitled_amount': Decimal('75.00'), 'details': 'Test details'}
 
         refund_request = RefundRequestFactory(sales_booking=self.sales_booking, payment=self.payment, status='unverified', token_created_at=mock_now.return_value)
@@ -130,7 +131,7 @@ class UserVerifyRefundViewTest(TestCase):
     @patch('payments.views.Refunds.user_verify_refund_view.calculate_sales_refund_amount')
     @patch('django.utils.timezone.now')
     def test_get_request_valid_token_no_booking_object(self, mock_now, mock_calculate_sales_refund_amount, mock_calculate_service_refund_amount, mock_messages_success, mock_send_templated_email):
-        mock_now.return_value = timezone.now()
+        mock_now.return_value = datetime.datetime(2025, 7, 9, 10, 0, 0, tzinfo=datetime.timezone.utc)
         mock_calculate_service_refund_amount.return_value = {'entitled_amount': Decimal('0.00'), 'details': 'No booking'}
         mock_calculate_sales_refund_amount.return_value = {'entitled_amount': Decimal('0.00'), 'details': 'No booking'}
 
