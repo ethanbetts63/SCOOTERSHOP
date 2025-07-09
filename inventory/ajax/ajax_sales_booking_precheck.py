@@ -27,10 +27,7 @@ def sales_booking_precheck_ajax(request):
         for field, errors in form.errors.items():
             errors_dict[field] = [str(e) for e in errors]
 
-        if forms.NON_FIELD_ERRORS in form.errors:
-            errors_dict[forms.NON_FIELD_ERRORS] = [
-                str(e) for e in form.errors[forms.NON_FIELD_ERRORS]
-            ]
+        
 
         response_data["errors"] = errors_dict
 

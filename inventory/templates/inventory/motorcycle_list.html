@@ -4,18 +4,33 @@
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block content %}
-<div class="min-h-screen font-sans">
+<div class="bg-gray-900">
+    
+    <div class="relative bg-gray-800 h-80 flex items-center justify-center">
+        <img src="{% static 'images/sym_22.jpg' %}" class="absolute inset-0 w-full h-full object-cover opacity-30" alt="Scooter banner">
+        <div class="absolute inset-0 bg-black bg-opacity-40"></div>
+        <div class="relative z-10 text-center px-4">
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight">{{ page_title }}</h1>
+            <p class="mt-4 text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto">Browse our hand-picked collection of premium motorcycles.</p>
+        </div>
+    </div>
+
     <div class="container mx-auto px-4 py-8">
         
-        
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-extrabold text-white tracking-tight">{{ page_title }}</h1>
-            <p class="text-lg text-gray-300 mt-2">Browse our collection of premium motorcycles.</p>
+        <div class="text-center mb-12 max-w-3xl mx-auto">
+            {% if current_condition_slug == 'new' %}
+                <p class="text-lg text-gray-300">
+                    Discover the latest models from the world's leading brands. Every new scooter comes with a full manufacturer's warranty and the peace of mind that comes from buying from Perth's only dedicated scooter shop.
+                </p>
+            {% else %}
+                 <p class="text-lg text-gray-300">
+                    Welcome to our collection of premium pre-owned scooters. Every bike in our inventory has passed a rigorous multi-point inspection by our expert technicians to ensure it meets our highest standards for quality and reliability.
+                </p>
+            {% endif %}
         </div>
 
-        <div class="flex flex-col lg:flex-row gap-8">
 
-            
+        <div class="flex flex-col lg:flex-row gap-8">
             <aside class="w-full lg:w-1/4">
                 <div class="bg-white p-6 rounded-2xl shadow-lg sticky top-8">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-3">Filters</h2>
@@ -155,6 +170,14 @@
             </main>
         </div>
 
+        <div class="bg-gray-800 rounded-2xl p-8 my-16 text-center">
+            <h3 class="text-2xl font-bold text-white">Can't Find Your Perfect Ride?</h3>
+            <p class="text-gray-300 mt-2 max-w-2xl mx-auto">Our inventory changes daily. Contact us with what you're looking for and our team will help you track it down.</p>
+            <a href="{% url 'core:contact' %}" class="mt-6 inline-block bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-colors">
+                Contact Us
+            </a>
+        </div>
+
         <div class="mt-12">
             {% with title=faq_title %}
                 {% include 'inventory/_sales_faq_include.html' %}
@@ -163,8 +186,6 @@
 
     </div>
 </div>
-
-
 
 <template id="motorcycle-tile-template">
     <div class="bg-white rounded-2xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 ease-in-out group relative">
@@ -197,7 +218,6 @@
         </a>
     </div>
 </template>
-
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -308,7 +328,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 middleLabel.textContent = 'Transmission';
                 let transmissionText = bike.transmission || 'N/A';
                 if (transmissionText !== 'N/A') {
-                    // Capitalize the first letter for display
                     middleValue.textContent = transmissionText.charAt(0).toUpperCase() + transmissionText.slice(1);
                 } else {
                     middleValue.textContent = 'N/A';

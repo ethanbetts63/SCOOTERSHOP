@@ -27,12 +27,12 @@ class BookingProtectionTests(TestCase):
         request = self.factory.get('/')
         request.session = {}
         
-        # Set a timestamp 1 minute ago
-        past_time = timezone.now() - datetime.timedelta(minutes=1)
+        now = timezone.now()
+        past_time = now - datetime.timedelta(minutes=1)
         request.session['last_sales_booking_timestamp'] = past_time.isoformat()
         
         # Mock timezone.now() to be current time
-        mock_now.return_value = timezone.now()
+        mock_now.return_value = now
 
         # Configure the mock redirect to return a mock HttpResponseRedirect
         mock_redirect.return_value = HttpResponseRedirect(reverse('inventory:used'))

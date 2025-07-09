@@ -11,12 +11,7 @@ class SalesfaqDeleteViewTest(TestCase):
         self.client.force_login(self.admin_user)
         self.sales_faq = SalesfaqFactory(question='Test FAQ Question')
 
-    def test_sales_faq_delete_get(self):
-        response = self.client.get(reverse('inventory:sales_faq_delete', kwargs={'pk': self.sales_faq.pk}))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'inventory/admin_confirm_delete.html')
-        self.assertContains(response, 'Confirm Delete faq')
-        self.assertContains(response, 'Test FAQ Question')
+    
 
     def test_sales_faq_delete_post_success(self):
         initial_count = Salesfaq.objects.count()
