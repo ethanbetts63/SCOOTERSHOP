@@ -87,7 +87,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         data["max_advance_dropoff_days"] = 15
         data["latest_same_day_dropoff_time"] = time(14, 0)
         data["enable_after_hours_dropoff"] = True
-        data["after_hours_dropoff_disclaimer"] = "Updated disclaimer text."
+        data["after_hours_drop_off_instructions"] = "Updated disclaimer text."
 
         form = ServiceBookingSettingsForm(data=data, instance=self.service_settings)
         self.assertTrue(form.is_valid(), f"Form not valid for saving: {form.errors}")
@@ -103,7 +103,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertEqual(saved_settings.latest_same_day_dropoff_time, time(14, 0))
         self.assertEqual(saved_settings.enable_after_hours_dropoff, True)
         self.assertEqual(
-            saved_settings.after_hours_dropoff_disclaimer, "Updated disclaimer text."
+            saved_settings.after_hours_drop_off_instructions, "Updated disclaimer text."
         )
 
         self.assertEqual(saved_settings.pk, self.service_settings.pk)

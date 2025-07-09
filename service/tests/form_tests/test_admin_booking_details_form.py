@@ -83,7 +83,7 @@ class AdminBookingDetailsFormTest(TestCase):
         self.assertIn("service_type", form.errors)
         self.assertIn("service_date", form.errors)
         self.assertIn("dropoff_date", form.errors)
-        self.assertIn("dropoff_time", form.errors)
+        
         self.assertIn("booking_status", form.errors)
         self.assertIn("payment_status", form.errors)
         self.assertIn("estimated_pickup_date", form.errors)

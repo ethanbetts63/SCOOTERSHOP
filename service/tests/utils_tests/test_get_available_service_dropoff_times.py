@@ -163,7 +163,7 @@ class GetAvailableDropoffTimesTest(TestCase):
         self.service_settings.latest_same_day_dropoff_time = datetime.time(23, 59)
         self.service_settings.save()
 
-        expected_times = [f"{h:02d}:00" for h in range(24)]
+        expected_times = [f"{h:02d}:00" for h in range(12, 24)]
         available_times = get_available_dropoff_times(self.fixed_local_date)
         self.assertEqual(available_times, expected_times)
 

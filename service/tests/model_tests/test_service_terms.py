@@ -41,15 +41,18 @@ class ServiceTermsModelTest(TestCase):
         self.assertIn('You cannot deactivate the only active Service Terms version. Please activate another version first.', str(cm.exception))
 
     def test_deactivate_when_multiple_active_versions_exists(self):
-        # This test now asserts that it fails, as per the model's current clean method logic
         active_terms1 = ServiceTermsFactory(is_active=True)
         active_terms2 = ServiceTermsFactory(is_active=True)
 
-        with self.assertRaises(ValidationError) as cm:
-            active_terms1.is_active = False
-            active_terms1.full_clean()
-        
-        self.assertIn('You cannot deactivate the only active Service Terms version. Please activate another version first.', str(cm.exception))
+        active_terms1.is_active = False
+        active_terms1.full_clean()
+        active_terms1.save()
+
+        active_terms1.refresh_from_db()
+        active_terms2.refresh_from_db()
+
+        self.assertFalse(active_terms1.is_active)
+        self.assertTrue(active_terms2.is_active)
 
     def test_deactivate_with_another_active_version_already_committed(self):
         # Create two active terms, ensuring both are committed before attempting deactivation

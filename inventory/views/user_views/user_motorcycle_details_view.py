@@ -4,8 +4,7 @@ from inventory.models import Motorcycle, InventorySettings
 from inventory.utils.get_motorcycle_details import get_motorcycle_details
 from inventory.utils.get_sales_faqs import get_faqs_for_step
 from inventory.utils import get_featured_motorcycles
-from inventory.utils.get_sales_appointment_date_info import get_sales_appointment_date_info
-from datetime import timedelta, datetime
+from inventory.utils.has_available_date import has_available_date
 
 
 class UserMotorcycleDetailsView(DetailView):
@@ -28,35 +27,15 @@ class UserMotorcycleDetailsView(DetailView):
         inventory_settings = InventorySettings.objects.first()
         context["inventory_settings"] = inventory_settings
 
-        # More robust check for available appointment dates
-        is_appointment_date_available = False
-        if inventory_settings:
-            min_date, max_date, blocked_dates_str = get_sales_appointment_date_info(inventory_settings)
-            
-            # Generate a set of all possible dates in the range
-            all_possible_dates = set()
-            if max_date >= min_date:
-                current_date = min_date
-                while current_date <= max_date:
-                    all_possible_dates.add(current_date)
-                    current_date += timedelta(days=1)
-
-            # Convert the list of blocked date strings to a set of date objects
-            blocked_dates_obj = set()
-            for date_str in blocked_dates_str:
-                try:
-                    blocked_dates_obj.add(datetime.strptime(date_str, "%Y-%m-%d").date())
-                except (ValueError, TypeError):
-                    continue # Ignore invalid date strings
-
-            # The available dates are the difference between all possible dates and blocked dates
-            available_dates = all_possible_dates - blocked_dates_obj
-            
-            # If there is at least one available date, set the flag to True
-            if available_dates:
-                is_appointment_date_available = True
+        # Use the utility function to get the result.
+        is_available = has_available_date(inventory_settings)
         
-        context['is_appointment_date_available'] = is_appointment_date_available
+        # --- DEBUG PRINT STATEMENT ---
+        # This will print the result to your runserver console.
+        print(f"--- DEBUG: has_available_date() returned: {is_available} ---")
+        # --- END DEBUG ---
+
+        context['is_appointment_date_available'] = is_available
 
         context["sales_faqs"] = get_faqs_for_step("general")
         context["faq_title"] = "Questions About Our Motorcycles"        
