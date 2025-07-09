@@ -4,66 +4,44 @@
 {% block title %}Scootershop Australia{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'core/css/index_styles.css' %}">
-<link rel="stylesheet" href="{% static 'core/css/map_styles.css' %}">
-<link rel="stylesheet" href="{% static 'core/css/review_styles.css' %}">
-<link rel="stylesheet" href="{% static 'core/css/featured_styles.css' %}">
-<link rel="stylesheet" href="{% static 'core/css/book_include_styles.css' %}">
 <style>
     .image-cycler-box {
         position: relative;
         background-size: cover;
         background-position: center;
         transition: background-image 1s ease-in-out;
-        min-height: 250px; 
-    }
-    .image-cycler-box::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        background: rgba(0, 0, 0, 0.5);
-        border-radius: 0.5rem;
-    }
-    .image-cycler-content {
-        position: relative;
-        z-index: 10;
     }
 </style>
 {% endblock %}
 
 {% block content %}
     <div class="container mx-auto px-4 mt-8">
-        <div class="flex flex-wrap -mx-4">
-            <div class="w-full lg:w-1/2 px-4 mb-8 lg:mb-0">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="w-full">
                 {% include 'service/step1_service_details_include.html' %}
             </div>
 
-            <div class="w-full lg:w-1/2 px-4">
-                <div class="flex flex-col h-full justify-around">
-                    
-                    <div id="new-bikes-box" class="image-cycler-box rounded-lg p-8 text-center shadow-md hover:shadow-xl transition-shadow duration-300 ease-in-out mb-4 flex items-center justify-center">
-                        <div class="image-cycler-content">
-                            <h2 class="text-3xl font-bold mb-3 text-white">New Bikes</h2>
-                            <p class="mb-5 text-gray-200">Explore our latest models from the world's leading brands.</p>
-                            <a href="{% url 'inventory:new' %}" class="inline-block bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300">
-                                View New Bikes
-                            </a>
-                        </div>
+            <div class="w-full space-y-8">
+                <div id="new-bikes-box" class="image-cycler-box rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300 ease-in-out flex items-center justify-center p-8 min-h-[250px]">
+                    <div class="absolute inset-0 bg-black bg-opacity-50 rounded-lg"></div>
+                    <div class="relative z-10 text-center">
+                        <h2 class="text-3xl font-bold text-white">New Bikes</h2>
+                        <p class="my-3 text-gray-200">Explore our latest models from the world's leading brands.</p>
+                        <a href="{% url 'inventory:new' %}" class="inline-block bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300">
+                            View New Bikes
+                        </a>
                     </div>
+                </div>
 
-                    <div id="used-bikes-box" class="image-cycler-box rounded-lg p-8 text-center shadow-md hover:shadow-xl transition-shadow duration-300 ease-in-out mt-4 flex items-center justify-center">
-                         <div class="image-cycler-content">
-                            <h2 class="text-3xl font-bold mb-3 text-white">Used Bikes</h2>
-                            <p class="mb-5 text-gray-200">Discover high-quality, pre-owned scooters at fantastic prices.</p>
-                            <a href="{% url 'inventory:used' %}" class="inline-block bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300">
-                                View Used Bikes
-                            </a>
-                        </div>
+                <div id="used-bikes-box" class="image-cycler-box rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300 ease-in-out flex items-center justify-center p-8 min-h-[250px]">
+                    <div class="absolute inset-0 bg-black bg-opacity-50 rounded-lg"></div>
+                    <div class="relative z-10 text-center">
+                        <h2 class="text-3xl font-bold text-white">Used Bikes</h2>
+                        <p class="my-3 text-gray-200">Discover high-quality, pre-owned scooters at fantastic prices.</p>
+                        <a href="{% url 'inventory:used' %}" class="inline-block bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300">
+                            View Used Bikes
+                        </a>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -97,17 +75,17 @@
                     <p class="text-gray-300 mb-6">
                         We've proudly partnered with them for years—mainly because it just makes sense. Their scooters come back with fewer issues, and our mechanics enjoy working on them.
                     </p>
-                    <a href="{% url 'inventory:new' %}" class="inline-block w-full sm:w-auto bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-colors duration-300 text-center">
+                    <a href="{% url 'inventory:new' %}" class="w-full sm:w-auto bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-colors duration-300 text-center">
                         View SYM Models
                     </a>
                 </div>
-                <div class="w-full h-64 lg:h-full rounded-2xl overflow-hidden shadow-lg">
+                <div class="w-full h-80 lg:h-full rounded-2xl overflow-hidden shadow-lg">
                     <img src="{% static 'images/sym_22.jpg' %}" alt="SYM Scooter" class="w-full h-full object-cover">
                 </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-                <div class="w-full h-64 lg:h-full rounded-2xl overflow-hidden shadow-lg lg:order-first">
+                <div class="w-full h-80 lg:h-full rounded-2xl overflow-hidden shadow-lg lg:order-first">
                      <img src="{% static 'images/segway_1.jpg' %}" alt="Segway Moped" class="w-full h-full object-cover">
                 </div>
                 <div class="flex flex-col justify-center">
@@ -119,7 +97,7 @@
                     <p class="text-gray-300 mb-6">
                         We've tested a lot of brands, but Segway's electric mopeds impressed us with their build quality, design, and performance. We're confident these are vehicles we can stand behind—and that you'll love riding.
                     </p>
-                    <a href="{% url 'inventory:new' %}" class="inline-block w-full sm:w-auto bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-colors duration-300 text-center">
+                    <a href="{% url 'inventory:new' %}" class="w-full sm:w-auto bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-colors duration-300 text-center">
                         View Segway Models
                     </a>
                 </div>

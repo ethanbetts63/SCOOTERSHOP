@@ -4,9 +4,9 @@ from payments.tests.test_helpers.model_factories import PaymentFactory, ServiceB
 from django.db import IntegrityError
 from decimal import Decimal
 import uuid
-from django.utils import timezone
 import datetime
 import time
+from django.utils import timezone
 
 class PaymentModelTest(TestCase):
 
@@ -20,51 +20,42 @@ class PaymentModelTest(TestCase):
     def test_field_properties(self):
         payment = PaymentFactory()
 
-        # stripe_payment_intent_id
         field = payment._meta.get_field('stripe_payment_intent_id')
         self.assertEqual(field.max_length, 100)
         self.assertTrue(field.unique)
         self.assertTrue(field.null)
         self.assertTrue(field.blank)
 
-        # stripe_payment_method_id
         field = payment._meta.get_field('stripe_payment_method_id')
         self.assertEqual(field.max_length, 100)
         self.assertTrue(field.null)
         self.assertTrue(field.blank)
 
-        # amount
         field = payment._meta.get_field('amount')
         self.assertEqual(field.max_digits, 10)
         self.assertEqual(field.decimal_places, 2)
 
-        # currency
         field = payment._meta.get_field('currency')
         self.assertEqual(field.max_length, 3)
         self.assertEqual(field.default, 'AUD')
 
-        # status
         field = payment._meta.get_field('status')
         self.assertEqual(field.max_length, 50)
         self.assertEqual(field.default, 'requires_payment_method')
 
-        # description
         field = payment._meta.get_field('description')
         self.assertTrue(field.null)
         self.assertTrue(field.blank)
 
-        # metadata
         field = payment._meta.get_field('metadata')
         self.assertEqual(field.default, dict)
         self.assertTrue(field.blank)
 
-        # refund_policy_snapshot
         field = payment._meta.get_field('refund_policy_snapshot')
         self.assertEqual(field.default, dict)
         self.assertTrue(field.null)
         self.assertTrue(field.blank)
 
-        # refunded_amount
         field = payment._meta.get_field('refunded_amount')
         self.assertEqual(field.max_digits, 10)
         self.assertEqual(field.decimal_places, 2)
@@ -82,10 +73,9 @@ class PaymentModelTest(TestCase):
         old_created_at = payment.created_at
         old_updated_at = payment.updated_at
 
-        # Ensure updated_at changes on save
         import time
         payment.amount = Decimal('99.99')
-        time.sleep(0.001) # Introduce a small delay
+        time.sleep(0.001)
         payment.save()
         self.assertEqual(payment.created_at, old_created_at)
         self.assertGreater(payment.updated_at, old_updated_at)
@@ -97,10 +87,10 @@ class PaymentModelTest(TestCase):
         sales_profile = SalesProfileFactory()
 
         payment = PaymentFactory(
-            temp_service_booking=None, # Assuming it's null after conversion
+            temp_service_booking=None,
             service_booking=service_booking,
             service_customer_profile=service_profile,
-            temp_sales_booking=None, # Assuming it's null after conversion
+            temp_sales_booking=None,
             sales_booking=sales_booking,
             sales_customer_profile=sales_profile,
         )
@@ -116,7 +106,7 @@ class PaymentModelTest(TestCase):
             PaymentFactory(stripe_payment_intent_id='pi_unique_test_id')
 
     def test_json_fields_default_empty_dict(self):
-        payment = Payment.objects.create(amount=Decimal('1.00')) # Provide required 'amount'
+        payment = Payment.objects.create(amount=Decimal('1.00'))
         self.assertEqual(payment.metadata, {})
         self.assertEqual(payment.refund_policy_snapshot, {})
 
@@ -125,17 +115,15 @@ class PaymentModelTest(TestCase):
         self.assertEqual(payment_with_data.refund_policy_snapshot, {'policy': 'v1'})
 
     def test_refunded_amount_default(self):
-        payment = Payment.objects.create(amount=Decimal('1.00')) # Provide required 'amount'
+        payment = Payment.objects.create(amount=Decimal('1.00'))
         self.assertEqual(payment.refunded_amount, Decimal('0.00'))
 
     def test_ordering(self):
-        # Create payments with different created_at times to test ordering
         now = timezone.now()
         payment1 = PaymentFactory(created_at=now - datetime.timedelta(days=3))
         payment2 = PaymentFactory(created_at=now - datetime.timedelta(days=1))
         payment3 = PaymentFactory(created_at=now - datetime.timedelta(days=2))
 
-        # Default ordering is by '-created_at' (descending)
         ordered_payments = list(Payment.objects.order_by('-created_at'))
         self.assertEqual(ordered_payments[0], payment2)
         self.assertEqual(ordered_payments[1], payment3)

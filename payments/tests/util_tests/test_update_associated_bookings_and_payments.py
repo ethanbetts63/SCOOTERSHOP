@@ -148,7 +148,6 @@ class UpdateAssociatedBookingsAndPaymentsTest(TestCase):
 
         self.assertEqual(self.payment.refunded_amount, total_refunded_amount)
         self.assertEqual(self.payment.status, 'partially_refunded')
-        # Ensure booking object is not touched
         self.assertEqual(self.service_booking.amount_paid, self.initial_amount)
         self.assertEqual(self.service_booking.payment_status, 'paid')
         self.assertEqual(self.service_booking.booking_status, 'confirmed')
