@@ -68,6 +68,16 @@
                 }
 
                 function renderBookingDetails(booking) {
+                    let afterHoursHTML = '';
+                    if (booking.after_hours_drop_off && booking.after_hours_drop_off_instructions) {
+                        afterHoursHTML = `
+                            <tr class="py-2">
+                                <td class="font-medium text-gray-700 align-top py-2">Instructions:</td>
+                                <td class="text-gray-900 py-2">${booking.after_hours_drop_off_instructions.replace(/\n/g, '<br>')}</td>
+                            </tr>
+                        `;
+                    }
+
                     const storeAddressHTML = booking.store_address ? `
                         <tr class="py-2">
                             <td class="font-medium text-gray-700 align-top py-2">Store Address:</td>
@@ -90,6 +100,7 @@
                                     <tr class="py-2"><td class="font-medium text-gray-700 py-2">Motorcycle:</td><td class="text-gray-900 py-2">${booking.motorcycle_details}</td></tr>
                                     <tr class="py-2"><td class="font-medium text-gray-700 py-2">Service Type:</td><td class="text-gray-900 py-2">${booking.service_type}</td></tr>
                                     <tr class="py-2"><td class="font-medium text-gray-700 py-2">Drop-off:</td><td class="text-gray-900 py-2">${booking.dropoff_datetime}</td></tr>
+                                    ${afterHoursHTML}
                                     <tr class="py-2"><td class="font-medium text-gray-700 py-2">Payment Status:</td><td class="text-gray-900 py-2 capitalize">${booking.payment_status.replace(/_/g, ' ')}</td></tr>
                                     <tr class="py-2"><td class="font-medium text-gray-700 py-2">Amount Paid:</td><td class="text-gray-900 py-2">${booking.amount_paid} ${booking.currency}</td></tr>
                                     ${storeAddressHTML}

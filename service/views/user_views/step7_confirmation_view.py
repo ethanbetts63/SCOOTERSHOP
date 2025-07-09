@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.views import View
 from django.contrib import messages
 
-from service.models import ServiceBooking
+from service.models import ServiceBooking, ServiceSettings
 from payments.models import Payment
 from service.utils.booking_protection import set_recent_booking_flag
 
@@ -53,6 +53,8 @@ class Step7ConfirmationView(View):
 
             set_recent_booking_flag(request)
 
+            settings = ServiceSettings.objects.first()
+
             context = {
                 "service_booking": service_booking,
                 "booking_status": service_booking.get_booking_status_display(),
@@ -63,6 +65,8 @@ class Step7ConfirmationView(View):
                 "motorcycle_details": f"{service_booking.customer_motorcycle.year} {service_booking.customer_motorcycle.brand} {service_booking.customer_motorcycle.model}",
                 "customer_name": service_booking.service_profile.name,
                 "is_processing": False,
+                "settings": settings,
+                "after_hours_drop_off_instructions": settings.after_hours_drop_off_instructions if settings else "",
             }
             return render(request, "service/step7_confirmation.html", context)
 
