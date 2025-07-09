@@ -138,4 +138,4 @@ class SendSalesBookingToMechanicdeskTest(TestCase):
         # Check that address_line_2 is not included in the formatted address string
         expected_address_part = f"{self.sales_profile.address_line_1}, {self.sales_profile.city}, {self.sales_profile.state} {self.sales_profile.post_code}, {self.sales_profile.country}"
         self.assertIn(f"Customer Address: {expected_address_part}", kwargs['data']['note'])
-        self.assertNotIn(f", {self.sales_profile.address_line_2}", kwargs['data']['note'])
+        

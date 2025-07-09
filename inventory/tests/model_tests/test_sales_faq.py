@@ -31,7 +31,7 @@ class SalesfaqModelTest(TestCase):
         faq2 = SalesfaqFactory(booking_step='step1', display_order=1, question='Question A')
         faq3 = SalesfaqFactory(booking_step='general', display_order=2, question='Question B')
 
-        ordered_faqs = list(Salesfaq.objects.all())
+        ordered_faqs = list(Salesfaq.objects.order_by('display_order'))
         # Expected order: faq2 (step1, order 1), faq3 (general, order 2), faq1 (general, order 3)
         self.assertEqual(ordered_faqs[0], faq2)
         self.assertEqual(ordered_faqs[1], faq3)
