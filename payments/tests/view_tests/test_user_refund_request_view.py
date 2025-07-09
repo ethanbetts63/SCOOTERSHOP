@@ -28,6 +28,9 @@ class UserRefundRequestViewTest(TestCase):
         self.assertEqual(response.context['page_title'], 'Request a Refund')
         self.assertIn('Please enter your booking details', response.context['intro_text'])
 
+    # This test is failing because the form is not considered valid by the view, even though the data seems valid.
+    # This might be due to missing required fields or incorrect data types expected by the form.
+    # The view returns a 200 OK response instead of a 302 Redirect, indicating form validation failure.
     @patch('payments.views.Refunds.user_refund_request_view.send_templated_email')
     @patch('django.contrib.messages.success')
     @patch('django.utils.timezone.now')
@@ -58,6 +61,7 @@ class UserRefundRequestViewTest(TestCase):
         mock_send_templated_email.assert_called_once()
         mock_messages_success.assert_called_once()
 
+    # This test is failing for the same reason as test_post_valid_refund_request_service_booking.
     @patch('payments.views.Refunds.user_refund_request_view.send_templated_email')
     @patch('django.contrib.messages.success')
     @patch('django.utils.timezone.now')
@@ -88,6 +92,8 @@ class UserRefundRequestViewTest(TestCase):
         mock_send_templated_email.assert_called_once()
         mock_messages_success.assert_called_once()
 
+    # This test is failing because messages.error was not called, implying the form is considered valid by the view,
+    # even though the data is invalid. This might be due to missing validation in the form itself.
     @patch('django.contrib.messages.error')
     @patch('payments.views.Refunds.user_refund_request_view.send_templated_email')
     def test_post_invalid_refund_request(self, mock_send_templated_email, mock_messages_error):

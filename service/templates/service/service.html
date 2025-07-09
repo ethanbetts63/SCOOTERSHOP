@@ -14,22 +14,18 @@
     {% include 'service/step1_service_details_include.html' %}
 </div>
 
-<!-- Service Types Section -->
 <div class="container mx-auto px-4 pt-8 pb-12">
     <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-12">Our Services</h2>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {% for service_type in service_types %}
-        <!-- Outer container with dark background and padding to create the "border" effect -->
-        <div class="bg-gray-800 rounded-xl p-4 shadow-lg hover:shadow-2xl transition-shadow duration-300">
+        <div class="bg-gray-900 rounded-xl p-4 shadow-lg hover:shadow-2xl transition-shadow duration-300">
             <div class="flex flex-col md:flex-row gap-4 h-full">
-                <!-- Image Section -->
-                <div class="md:w-48 flex-shrink-0 flex items-center justify-center bg-gray-800 rounded-lg p-2">
+                <div class="md:w-48 flex-shrink-0 flex items-center justify-center bg-gray-900 rounded-lg p-2">
                     {% if service_type.image %}
                     <img src="{{ service_type.image.url }}" alt="{{ service_type.name }}" class="w-full h-auto object-contain max-h-32 md:max-h-full">
                     {% endif %}
                 </div>
-                <!-- Content Section (White Tile) -->
                 <div class="bg-white rounded-lg p-6 flex-grow flex flex-col">
                     <h3 class="text-xl font-bold text-gray-900 mb-2">{{ service_type.name }}</h3>
                     <p class="text-gray-600 mb-4 flex-grow">{{ service_type.description }}</p>
@@ -40,7 +36,7 @@
             </div>
         </div>
         {% empty %}
-        <div class="lg:col-span-2 bg-gray-800 rounded-lg p-8 text-center">
+        <div class="lg:col-span-2 bg-gray-900 rounded-lg p-8 text-center">
             <h3 class="text-xl font-bold text-white">More Services Available</h3>
             <p class="text-gray-300 mt-2">We offer comprehensive servicing for all scooter makes and models. Please contact us for more information about your specific needs.</p>
         </div>
