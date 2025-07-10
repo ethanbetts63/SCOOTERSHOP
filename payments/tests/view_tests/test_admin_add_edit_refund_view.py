@@ -100,7 +100,7 @@ class AdminAddEditRefundRequestViewTest(TestCase):
     # Also, processed_by and processed_at are not set because the status is not 'approved', 'refunded', or 'partially_refunded'.
     @patch('django.contrib.messages.success')
     def test_post_edit_valid_refund_request_service_booking(self, mock_messages_success):
-        refund_request = RefundRequestFactory(service_booking=self.service_booking, payment=self.payment, amount_to_refund=Decimal('10.00'), reason='Old Reason')
+        refund_request = RefundRequestFactory(service_booking=self.service_booking, payment=self.payment, amount_to_refund=Decimal('10.00'), reason='Old Reason', status='reviewed_pending_approval')
         edit_url = reverse('payments:edit_refund_request', kwargs={'pk': refund_request.pk})
         form_data = {
             'service_booking': self.service_booking.pk,
