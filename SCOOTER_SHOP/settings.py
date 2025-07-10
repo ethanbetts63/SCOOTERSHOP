@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "payments.apps.PaymentsConfig",
     "mailer.apps.MailerConfig",
     'import_export',
+    'django.contrib.sitemaps'
 ]
 
 MIDDLEWARE = [
