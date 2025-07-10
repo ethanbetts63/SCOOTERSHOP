@@ -5,7 +5,8 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{% block title %}Scootershop{% endblock %}</title>
+        <!-- FIX: Updated the default title -->
+        <title>{% block title %}Allbikes and Vespa Warehouse{% endblock %}</title>
         {% load static %}
         <link rel="icon" href="{% static 'images/favicon_scooter.png' %}" type="image/png">
         <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
@@ -21,7 +22,7 @@
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
                             <a href="{% url 'core:index' %}">
-                                <img class="h-20 w-auto" src="{% static 'images/allbikes_and_vespa_warehouse_logo.png' %}" alt="Scooter Shop Logo">
+                                <img class="h-20 w-auto" src="{% static 'images/allbikes_and_vespa_warehouse_logo.png' %}" alt="Allbikes and Vespa Warehouse Logo">
                             </a>
                         </div>
                         <div class="hidden lg:flex items-baseline space-x-4 ml-10">
@@ -165,7 +166,7 @@
                     </div>
                 </div>
                 <div class="mt-8 border-t border-gray-700 pt-8 text-center">
-                    <p class="text-base text-gray-400">&copy; {% now "Y" %} Scootershop Australia. All rights reserved.</p>
+]                    <p class="text-base text-gray-400">&copy; {% now "Y" %} Allbikes and Vespa Warehouse. All rights reserved.</p>
                     <p class="text-sm text-gray-500">ABN 46157594161 | MD 27368 | MRB 7961</p>
                 </div>
             </div>
