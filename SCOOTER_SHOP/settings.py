@@ -30,8 +30,6 @@ INSTALLED_APPS = [
     "service.apps.ServiceConfig",
     "payments.apps.PaymentsConfig",
     "mailer.apps.MailerConfig",
-    'widget_tweaks',
-    'mathfilters',
     'import_export',
 ]
 
