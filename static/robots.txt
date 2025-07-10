@@ -1,2 +1,6 @@
 User-agent: *
-Disallow:
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /payments/
+
+Sitemap: https://www.allbikesvespawharehouse.com.au/sitemap.xml
