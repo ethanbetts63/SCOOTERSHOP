@@ -24,6 +24,13 @@ class AdminRefundRequestForm(forms.ModelForm):
         required=False,
     )
 
+    status = forms.ChoiceField(
+        choices=RefundRequest.STATUS_CHOICES,
+        label="Refund Status",
+        help_text="Set the current status of the refund request.",
+        required=False,
+    )
+
     class Meta:
         model = RefundRequest
         fields = [
@@ -32,6 +39,7 @@ class AdminRefundRequestForm(forms.ModelForm):
             "reason",
             "staff_notes",
             "amount_to_refund",
+            "status",
         ]
         widgets = {
             "reason": forms.Textarea(
