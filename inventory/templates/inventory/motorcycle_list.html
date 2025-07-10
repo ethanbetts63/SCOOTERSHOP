@@ -1,7 +1,14 @@
 {% extends 'core/layout.html' %}
 {% load static %}
 
-{% block title %}{{ page_title }}{% endblock %}
+{% block title %}{{ page_title }} - Allbikes and Vespa Warehouse{% endblock %}
+{% if current_condition_slug == 'new' %}
+{% block meta_description %}Browse our selection of new scooters for sale in Perth. We stock the latest models from top brands like SYM and Segway. Find your perfect new ride today!{% endblock %}
+{% block meta_keywords %}new scooters perth, new scooter for sale, sym scooters for sale, segway mopeds perth, buy new scooter{% endblock %}
+{% else %}
+{% block meta_description %}Looking for a used scooter in Perth? Check out our quality pre-owned scooters. All our used bikes are inspected and ready to ride. Great deals available.{% endblock %}
+{% block meta_keywords %}used scooters perth, second hand scooter, used vespa perth, cheap scooters perth, pre-owned scooters{% endblock %}
+{% endif %}
 
 {% block content %}
 <div>

@@ -1,7 +1,9 @@
 {% extends 'core/layout.html' %}
 {% load static %}
 
-{% block title %}Sales Enquiry for {{ motorcycle.title }}{% endblock %}
+{% block title %}Enquiry for {{ motorcycle.title }} | Allbikes and Vespa Warehouse{% endblock %}
+{% block meta_description %}Have a question about the {{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }}? Send us an enquiry and our team will get back to you shortly.{% endblock %}
+{% block meta_keywords %}scooter enquiry, {{ motorcycle.brand }} {{ motorcycle.model }} enquiry, ask about scooter, scooter sales perth{% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'core/css/contact_styles.css' %}">
