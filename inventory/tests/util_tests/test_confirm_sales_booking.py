@@ -38,10 +38,8 @@ class ConfirmSalesBookingTests(TestCase):
 
     @patch('inventory.utils.confirm_sales_booking.send_templated_email')
     def test_confirm_sales_booking_used_motorcycle(self, mock_send_email):
-        used_motorcycle = MotorcycleFactory(quantity=1, condition='used', is_available=True, status='available')
+        used_motorcycle = MotorcycleFactory(condition='used', status='available')
         used_booking = SalesBookingFactory(motorcycle=used_motorcycle)
-        used_motorcycle.condition = 'used'
-        used_motorcycle.save()
         result = confirm_sales_booking(used_booking.id)
         self.assertTrue(result['success'])
         used_booking.refresh_from_db()
