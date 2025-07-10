@@ -14,8 +14,8 @@ class AdminAddEditRefundRequestViewTest(TestCase):
         self.admin_user = UserFactory(is_staff=True)
         self.client.force_login(self.admin_user)
         self.add_url = reverse('payments:add_refund_request')
-        self.service_booking = ServiceBookingFactory()
-        self.sales_booking = SalesBookingFactory()
+        self.service_booking = ServiceBookingFactory(payment_status='paid')
+        self.sales_booking = SalesBookingFactory(payment_status='deposit_paid')
         self.payment = PaymentFactory()
 
     def test_get_add_refund_request(self):
