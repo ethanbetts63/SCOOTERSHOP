@@ -46,11 +46,12 @@ class SalesTermsModelTest(TestCase):
         active_terms1 = SalesTermsFactory(is_active=True)
         active_terms2 = SalesTermsFactory(is_active=True)
 
-        with self.assertRaises(ValidationError) as cm:
-            active_terms1.is_active = False
-            active_terms1.full_clean()
-        
-        self.assertIn('You cannot deactivate the only active Terms and Conditions version. Please activate another version first.', str(cm.exception))
+        active_terms1.is_active = False
+        active_terms1.full_clean()  # Should not raise ValidationError
+        active_terms1.save()
+
+        active_terms2.refresh_from_db()
+        self.assertTrue(active_terms2.is_active)
 
     def test_deactivate_with_another_active_version_already_committed(self):
         # Create two active terms, ensuring both are committed before attempting deactivation

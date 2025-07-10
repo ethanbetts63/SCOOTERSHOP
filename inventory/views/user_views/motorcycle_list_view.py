@@ -2,6 +2,7 @@ from django.views.generic import ListView
 from inventory.models import Motorcycle
 from inventory.utils.get_unique_makes_for_filter import get_unique_makes_for_filter
 from inventory.utils.get_sales_faqs import get_faqs_for_step
+from dashboard.models import SiteSettings # FIX: Import SiteSettings
 import datetime
 
 
@@ -35,5 +36,8 @@ class MotorcycleListView(ListView):
 
         context["sales_faqs"] = get_faqs_for_step("general")
         context["faq_title"] = "Frequently Asked Questions"
+        
+        # FIX: Get site settings and add them to the context
+        context["settings"] = SiteSettings.get_settings()
 
         return context
