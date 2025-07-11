@@ -4,7 +4,8 @@ from .views.Refunds.user_views import (
     UserRefundRequestView, 
     UserConfirmationRefundRequestView, 
     UserVerifiedRefundView,
-    UserVerifyRefundView 
+    UserVerifyRefundView, 
+    RefundTermsView
 )
 
 from .views.Refunds.admin_views import (
@@ -83,4 +84,5 @@ urlpatterns = [
     path('dashboard/terms/refunds/', AdminRefundTermsManagementView.as_view(), name='refund_terms_management'),
     path('dashboard/terms/refunds/create/', AdminRefundTermsCreateView.as_view(), name='refund_terms_create'),
     path('dashboard/terms/refunds/<int:pk>/', AdminRefundTermsDetailsView.as_view(), name='refund_terms_details'),
+    path('refund-policy/', RefundTermsView.as_view(), name='refund_policy'), 
 ]

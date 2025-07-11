@@ -1,11 +1,11 @@
 from django.views.generic import TemplateView
-from payments.models import RefundPolicy
+from payments.models import RefundTerms
 
-class RefundPolicyView(TemplateView):
-    template_name = "payments/refund_policy.html"
+class RefundTermsView(TemplateView):
+    template_name = "payments/refund_terms.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['refund_policy'] = RefundPolicy.objects.filter(is_active=True).first()
+        context['refund_policy'] = RefundTerms.objects.filter(is_active=True).first()
         context['page_title'] = "Refund Policy"
         return context
