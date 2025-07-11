@@ -103,11 +103,13 @@ class Payment(models.Model):
         help_text="Arbitrary key-value pairs for additional payment information or Stripe metadata.",
     )
 
-    refund_policy_snapshot = models.JSONField(
-        default=dict,
-        blank=True,
+    refund_terms = models.ForeignKey(
+        "payments.RefundTerms",
+        on_delete=models.SET_NULL,
+        related_name="payments",
         null=True,
-        help_text="Snapshot of refund policy settings from RefundPolicySettings at the time of payment.",
+        blank=True,
+        help_text="The refund terms associated with this payment.",
     )
 
     refunded_amount = models.DecimalField(

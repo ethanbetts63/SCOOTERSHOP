@@ -62,4 +62,7 @@ urlpatterns = [
         Refunds.IntermediaryRefundProcessingView.as_view(),
         name="initiate_refund_process",
     ),
+    path('dashboard/terms/refunds/', Refunds.RefundTermsManagementView.as_view(), name='refund_terms_management'),
+    path('dashboard/terms/refunds/create/', Refunds.RefundTermsCreateView.as_view(), name='refund_terms_create'),
+    path('dashboard/terms/refunds/<int:pk>/', Refunds.RefundTermsDetailsView.as_view(), name='refund_terms_details'),
 ]

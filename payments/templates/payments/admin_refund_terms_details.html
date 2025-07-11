@@ -1,0 +1,18 @@
+{% extends 'dashboard/admin_layout.html' %}
+
+{% block admin_main_content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-lg rounded-lg p-6 md:p-8">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">{{ page_title }}</h1>
+            <a href="{% url 'payments:refund_terms_management' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                Back to Management
+            </a>
+        </div>
+
+        <div class="prose max-w-none">
+            {{ terms_version.content|linebreaks }}
+        </div>
+    </div>
+</div>
+{% endblock %}
