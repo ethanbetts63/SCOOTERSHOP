@@ -6,7 +6,22 @@
         <h1 class="text-3xl font-bold text-gray-800 mb-6">{{ page_title }}</h1>
         <form method="post">
             {% csrf_token %}
-            {{ form.as_p }}
+            <div>
+                <label for="id_content" class="block text-sm font-medium text-gray-700">{{ form.content.label }}</label>
+                <div class="mt-1">
+                    {{ form.content }}
+                </div>
+                {% if form.content.help_text %}
+                    <p class="mt-2 text-sm text-gray-500">{{ form.content.help_text }}</p>
+                {% endif %}
+                {% if form.content.errors %}
+                    <div class="text-red-600 text-sm mt-1">
+                        {% for error in form.content.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
             <div class="mt-6">
                 <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                     Create Version

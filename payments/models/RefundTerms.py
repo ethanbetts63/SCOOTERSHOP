@@ -65,15 +65,15 @@ class RefundTerms(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.pk and not self.version_number:
-            last_version = RefundPolicy.objects.all().order_by('version_number').last()
+            last_version = RefundTerms.objects.all().order_by('version_number').last()
             self.version_number = (last_version.version_number + 1) if last_version else 1
 
         if self.is_active:
             with transaction.atomic():
-                RefundPolicy.objects.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
+                RefundTerms.objects.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
         
         super().save(*args, **kwargs)
 
     def clean(self):
-        if not self.is_active and not RefundPolicy.objects.filter(is_active=True).exclude(pk=self.pk).exists():
+        if not self.is_active and not RefundTerms.objects.filter(is_active=True).exclude(pk=self.pk).exists():
              raise ValidationError("You cannot deactivate the only active refund policy version. Please activate another version first.")
