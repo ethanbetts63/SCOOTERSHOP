@@ -50,34 +50,6 @@ def convert_temp_sales_booking(
                 ):
                     payment_obj.temp_sales_booking = None
 
-                try:
-                    refund_settings = RefundPolicySettings.objects.first()
-                    if refund_settings:
-                        payment_obj.refund_policy_snapshot = {
-                            "refund_deducts_stripe_fee_policy": float(
-                                refund_settings.refund_deducts_stripe_fee_policy
-                            ),
-                            "stripe_fee_percentage_domestic": float(
-                                refund_settings.stripe_fee_percentage_domestic
-                            ),
-                            "stripe_fee_fixed_domestic": float(
-                                refund_settings.stripe_fee_fixed_domestic
-                            ),
-                            "stripe_fee_percentage_international": float(
-                                refund_settings.stripe_fee_percentage_international
-                            ),
-                            "stripe_fee_fixed_international": float(
-                                refund_settings.stripe_fee_fixed_international
-                            ),
-                            "sales_enable_deposit_refund_grace_period": refund_settings.sales_enable_deposit_refund_grace_period,
-                            "sales_deposit_refund_grace_period_hours": refund_settings.sales_deposit_refund_grace_period_hours,
-                            "sales_enable_deposit_refund": refund_settings.sales_enable_deposit_refund,
-                        }
-                    else:
-                        payment_obj.refund_policy_snapshot = {}
-                except Exception:
-                    payment_obj.refund_policy_snapshot = {}
-
                 payment_obj.save()
 
             temp_booking.delete()

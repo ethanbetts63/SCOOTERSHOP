@@ -5,29 +5,23 @@ from decimal import Decimal
 
 class RefundPolicySettings(models.Model):
 
-    cancellation_full_payment_full_refund_days = models.PositiveIntegerField(
+    full_payment_full_refund_days = models.PositiveIntegerField(
         default=7,
         help_text="Full refund if cancelled this many *full days* or more before the booking's start time (for full payments).",
     )
-    cancellation_full_payment_partial_refund_days = models.PositiveIntegerField(
+    full_payment_partial_refund_days = models.PositiveIntegerField(
         default=3,
         help_text="Partial refund if cancelled this many *full days* or more (but less than full refund threshold) before the booking's start time (for full payments).",
     )
-    cancellation_full_payment_partial_refund_percentage = models.DecimalField(
+    full_payment_partial_refund_percentage = models.DecimalField(
         max_digits=5,
         decimal_places=2,
         default=50.00,
         help_text="Percentage of total booking price to refund for partial cancellations (for full payments).",
     )
-    cancellation_full_payment_minimal_refund_days = models.PositiveIntegerField(
+    full_payment_no_refund_percentage = models.PositiveIntegerField(
         default=1,
         help_text="Minimal refund percentage applies if cancelled this many *full days* or more (but less than partial refund threshold) before the booking's start time (for full payments).",
-    )
-    cancellation_full_payment_minimal_refund_percentage = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        default=0.00,
-        help_text="Percentage of total booking price to refund for late cancellations (for full payments).",
     )
 
     cancellation_deposit_full_refund_days = models.PositiveIntegerField(
@@ -48,54 +42,7 @@ class RefundPolicySettings(models.Model):
         default=1,
         help_text="Minimal refund percentage applies to deposit if cancelled this many *full days* or more (but less than partial refund threshold) before the booking's start time.",
     )
-    cancellation_deposit_minimal_refund_percentage = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        default=0.00,
-        help_text="Percentage of deposit to refund for late cancellations.",
-    )
 
-    sales_enable_deposit_refund_grace_period = models.BooleanField(
-        default=True,
-        help_text="Enable a grace period for deposit refunds after cancellation or decline.",
-    )
-    sales_deposit_refund_grace_period_hours = models.IntegerField(
-        default=24,
-        help_text="The number of hours within which a deposit can be refunded after cancellation or decline.",
-    )
-    sales_enable_deposit_refund = models.BooleanField(
-        default=True,
-        help_text="Globally enable or disable the ability to refund deposits.",
-    )
-
-    refund_deducts_stripe_fee_policy = models.BooleanField(
-        default=True,
-        help_text="Policy: If true, refunds may have Stripe transaction fees deducted.",
-    )
-    stripe_fee_percentage_domestic = models.DecimalField(
-        max_digits=5,
-        decimal_places=4,
-        default=Decimal("0.0170"),
-        help_text="Stripe's percentage fee for domestic cards (e.g., 0.0170 for 1.70%).",
-    )
-    stripe_fee_fixed_domestic = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        default=Decimal("0.30"),
-        help_text="Stripe's fixed fee per transaction for domestic cards (e.30 for A$0.30).",
-    )
-    stripe_fee_percentage_international = models.DecimalField(
-        max_digits=5,
-        decimal_places=4,
-        default=Decimal("0.0350"),
-        help_text="Stripe's percentage fee for international cards (e.g., 0.0350 for 3.5%).",
-    )
-    stripe_fee_fixed_international = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        default=Decimal("0.30"),
-        help_text="Stripe's fixed fee per transaction for international cards (e.30 for A$0.30).",
-    )
 
     def __str__(self):
         return "Refund Policy Settings"
@@ -104,10 +51,8 @@ class RefundPolicySettings(models.Model):
         errors = {}
 
         percentage_fields = [
-            "cancellation_full_payment_partial_refund_percentage",
-            "cancellation_full_payment_minimal_refund_percentage",
+            "full_payment_partial_refund_percentage",
             "cancellation_deposit_partial_refund_percentage",
-            "cancellation_deposit_minimal_refund_percentage",
         ]
         for field_name in percentage_fields:
             value = getattr(self, field_name)
@@ -118,32 +63,17 @@ class RefundPolicySettings(models.Model):
                     f"Ensure {field_name.replace('_', ' ')} is between 0.00% and 100.00%."
                 ]
 
-        if self.stripe_fee_percentage_domestic is not None and not (
-            Decimal("0.00") <= self.stripe_fee_percentage_domestic <= Decimal("0.10")
-        ):
-            errors["stripe_fee_percentage_domestic"] = [
-                "Ensure domestic Stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."
-            ]
 
-        if self.stripe_fee_percentage_international is not None and not (
-            Decimal("0.00")
-            <= self.stripe_fee_percentage_international
-            <= Decimal("0.10")
-        ):
-            errors["stripe_fee_percentage_international"] = [
-                "Ensure international Stripe fee percentage is a sensible rate (e.g., 0.00 to 0.10 for 0-10%)."
-            ]
-
-        full_days_full_payment = self.cancellation_full_payment_full_refund_days
-        partial_days_full_payment = self.cancellation_full_payment_partial_refund_days
-        minimal_days_full_payment = self.cancellation_full_payment_minimal_refund_days
+        full_days_full_payment = self.full_payment_full_refund_days
+        partial_days_full_payment = self.full_payment_partial_refund_days
+        minimal_days_full_payment = self.full_payment_no_refund_percentage
 
         if (
             full_days_full_payment is not None
             and partial_days_full_payment is not None
             and full_days_full_payment < partial_days_full_payment
         ):
-            errors["cancellation_full_payment_full_refund_days"] = [
+            errors["full_payment_full_refund_days"] = [
                 "Full refund days must be greater than or equal to partial refund days."
             ]
         if (
@@ -151,7 +81,7 @@ class RefundPolicySettings(models.Model):
             and minimal_days_full_payment is not None
             and partial_days_full_payment < minimal_days_full_payment
         ):
-            errors["cancellation_full_payment_partial_refund_days"] = [
+            errors["full_payment_partial_refund_days"] = [
                 "Partial refund days must be greater than or equal to minimal refund days."
             ]
 

@@ -21,23 +21,23 @@ class SalesRefundCalcTests(TestCase):
 
         cls.refund_policy_settings = RefundPolicySettingsFactory()
 
-        cls.full_refund_enabled_grace_period_policy = {
-            "sales_enable_deposit_refund": True,
-            "sales_enable_deposit_refund_grace_period": True,
-            "sales_deposit_refund_grace_period_hours": 24,
-        }
+        # cls.full_refund_enabled_grace_period_policy = {
+        #     "sales_enable_deposit_refund": True,
+        #     "sales_enable_deposit_refund_grace_period": True,
+        #     "sales_deposit_refund_grace_period_hours": 24,
+        # }
 
-        cls.full_refund_enabled_no_grace_period_policy = {
-            "sales_enable_deposit_refund": True,
-            "sales_enable_deposit_refund_grace_period": False,
-            "sales_deposit_refund_grace_period_hours": 0,
-        }
+        # cls.full_refund_enabled_no_grace_period_policy = {
+        #     "sales_enable_deposit_refund": True,
+        #     "sales_enable_deposit_refund_grace_period": False,
+        #     "sales_deposit_refund_grace_period_hours": 0,
+        # }
 
-        cls.no_refund_disabled_policy = {
-            "sales_enable_deposit_refund": False,
-            "sales_enable_deposit_refund_grace_period": True,
-            "sales_deposit_refund_grace_period_hours": 24,
-        }
+        # cls.no_refund_disabled_policy = {
+        #     "sales_enable_deposit_refund": False,
+        #     "sales_enable_deposit_refund_grace_period": True,
+        #     "sales_deposit_refund_grace_period_hours": 24,
+        # }
 
     def _create_booking_with_payment(
         self, amount_paid, created_at_offset_hours=0, refund_policy_snapshot=None

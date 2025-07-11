@@ -128,7 +128,7 @@ class ConvertTempServiceBookingTest(TestCase):
         self.assertIsInstance(updated_payment.refund_policy_snapshot, dict)
         self.assertGreater(len(updated_payment.refund_policy_snapshot), 0)
         self.assertIn(
-            "cancellation_full_payment_full_refund_days",
+            "full_payment_full_refund_days",
             updated_payment.refund_policy_snapshot,
         )
 

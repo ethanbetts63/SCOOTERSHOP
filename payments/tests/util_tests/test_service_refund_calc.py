@@ -22,15 +22,13 @@ class ServiceRefundCalcTests(TestCase):
 
         cls.full_payment_policy_snapshot = {
             "deposit_enabled": False,
-            "cancellation_full_payment_full_refund_days": 7,
-            "cancellation_full_payment_partial_refund_days": 3,
-            "cancellation_full_payment_partial_refund_percentage": str(
+            "full_payment_full_refund_days": 7,
+            "full_payment_partial_refund_days": 3,
+            "full_payment_partial_refund_percentage": str(
                 Decimal("50.00")
             ),
-            "cancellation_full_payment_minimal_refund_days": 1,
-            "cancellation_full_payment_minimal_refund_percentage": str(
-                Decimal("10.00")
-            ),
+            "full_payment_no_refund_percentage": 1,
+
         }
 
         cls.deposit_payment_policy_snapshot = {
@@ -39,7 +37,6 @@ class ServiceRefundCalcTests(TestCase):
             "cancellation_deposit_partial_refund_days": 5,
             "cancellation_deposit_partial_refund_percentage": str(Decimal("75.00")),
             "cancellation_deposit_minimal_refund_days": 2,
-            "cancellation_deposit_minimal_refund_percentage": str(Decimal("20.00")),
         }
 
     def _create_booking_with_payment(
@@ -476,9 +473,6 @@ class ServiceRefundCalcTests(TestCase):
     def test_minimal_refund_zero_percentage(self):
 
         policy_with_zero_minimal = self.full_payment_policy_snapshot.copy()
-        policy_with_zero_minimal[
-            "cancellation_full_payment_minimal_refund_percentage"
-        ] = str(Decimal("0.00"))
 
         cancellation_datetime = timezone.now()
         booking, payment = self._create_booking_with_payment(
@@ -502,12 +496,12 @@ class ServiceRefundCalcTests(TestCase):
 
         policy_snapshot = {
             "deposit_enabled": False,
-            "cancellation_full_payment_full_refund_days": 7,
-            "cancellation_full_payment_partial_refund_days": 3,
-            "cancellation_full_payment_partial_refund_percentage": str(
+            "full_payment_full_refund_days": 7,
+            "full_payment_partial_refund_days": 3,
+            "full_payment_partial_refund_percentage": str(
                 Decimal("33.33")
             ),
-            "cancellation_full_payment_minimal_refund_days": 1,
+            "full_payment_no_refund_percentage": 1,
             "cancellation_full_payment_minimal_refund_percentage": str(Decimal("0.00")),
         }
 

@@ -21,38 +21,38 @@ def calculate_sales_refund_amount(
     policy_applied = "No Refund Policy"
     total_paid_for_calculation = booking.amount_paid or Decimal("0.00")
 
-    sales_enable_deposit_refund = refund_policy_snapshot.get(
-        "sales_enable_deposit_refund", False
-    )
-    sales_enable_deposit_refund_grace_period = refund_policy_snapshot.get(
-        "sales_enable_deposit_refund_grace_period", False
-    )
-    sales_deposit_refund_grace_period_hours = refund_policy_snapshot.get(
-        "sales_deposit_refund_grace_period_hours", 0
-    )
+    # sales_enable_deposit_refund = refund_policy_snapshot.get(
+    #     "sales_enable_deposit_refund", False
+    # )
+    # sales_enable_deposit_refund_grace_period = refund_policy_snapshot.get(
+    #     "sales_enable_deposit_refund_grace_period", False
+    # )
+    # sales_deposit_refund_grace_period_hours = refund_policy_snapshot.get(
+    #     "sales_deposit_refund_grace_period_hours", 0
+    # )
 
     time_since_booking_creation = cancellation_datetime - booking.created_at
     time_since_booking_creation_hours = (
         time_since_booking_creation.total_seconds() / 3600
     )
 
-    if sales_enable_deposit_refund:
-        if not sales_enable_deposit_refund_grace_period:
-            entitled_amount = total_paid_for_calculation
-            policy_applied = "Full Refund Policy (Grace Period Disabled)"
-        elif (
-            sales_enable_deposit_refund_grace_period
-            and time_since_booking_creation_hours
-            <= sales_deposit_refund_grace_period_hours
-        ):
-            entitled_amount = total_paid_for_calculation
-            policy_applied = f"Full Refund Policy (Within {sales_deposit_refund_grace_period_hours} hour grace period)"
-        else:
-            entitled_amount = Decimal("0.00")
-            policy_applied = "No Refund Policy (Grace Period Expired)"
-    else:
-        entitled_amount = Decimal("0.00")
-        policy_applied = "No Refund Policy (Refunds Disabled)"
+    # if sales_enable_deposit_refund:
+    #     if not sales_enable_deposit_refund_grace_period:
+    #         entitled_amount = total_paid_for_calculation
+    #         policy_applied = "Full Refund Policy (Grace Period Disabled)"
+    #     elif (
+    #         sales_enable_deposit_refund_grace_period
+    #         and time_since_booking_creation_hours
+    #         <= sales_deposit_refund_grace_period_hours
+    #     ):
+    #         entitled_amount = total_paid_for_calculation
+    #         policy_applied = f"Full Refund Policy (Within {sales_deposit_refund_grace_period_hours} hour grace period)"
+    #     else:
+    #         entitled_amount = Decimal("0.00")
+    # #         policy_applied = "No Refund Policy (Grace Period Expired)"
+    # else:
+    #     entitled_amount = Decimal("0.00")
+    #     policy_applied = "No Refund Policy (Refunds Disabled)"
 
     entitled_amount = max(
         Decimal("0.00"), min(entitled_amount, total_paid_for_calculation)

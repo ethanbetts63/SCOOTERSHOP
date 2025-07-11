@@ -286,20 +286,17 @@ class RefundPolicySettingsFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = RefundPolicySettings
 
-    cancellation_full_payment_full_refund_days = factory.Faker(
+    full_payment_full_refund_days = factory.Faker(
         "random_int", min=5, max=10
     )
-    cancellation_full_payment_partial_refund_days = factory.Faker(
+    full_payment_partial_refund_days = factory.Faker(
         "random_int", min=2, max=4
     )
-    cancellation_full_payment_partial_refund_percentage = factory.LazyFunction(
+    full_payment_partial_refund_percentage = factory.LazyFunction(
         lambda: Decimal(fake.random_element([25.00, 50.00, 75.00]))
     )
-    cancellation_full_payment_minimal_refund_days = factory.Faker(
+    full_payment_no_refund_percentage = factory.Faker(
         "random_int", min=0, max=1
-    )
-    cancellation_full_payment_minimal_refund_percentage = factory.LazyFunction(
-        lambda: Decimal(fake.random_element([0.00, 10.00, 20.00]))
     )
 
     cancellation_deposit_full_refund_days = factory.Faker("random_int", min=5, max=10)
@@ -308,23 +305,6 @@ class RefundPolicySettingsFactory(factory.django.DjangoModelFactory):
         lambda: Decimal(fake.random_element([25.00, 50.00, 75.00]))
     )
     cancellation_deposit_minimal_refund_days = factory.Faker("random_int", min=0, max=1)
-    cancellation_deposit_minimal_refund_percentage = factory.LazyFunction(
-        lambda: Decimal(fake.random_element([0.00, 10.00, 20.00]))
-    )
-
-    refund_deducts_stripe_fee_policy = factory.Faker("boolean")
-    stripe_fee_percentage_domestic = factory.LazyFunction(
-        lambda: Decimal(fake.random_element(["0.0170", "0.0180"]))
-    )
-    stripe_fee_fixed_domestic = factory.LazyFunction(
-        lambda: Decimal(fake.random_element(["0.30", "0.40"]))
-    )
-    stripe_fee_percentage_international = factory.LazyFunction(
-        lambda: Decimal(fake.random_element(["0.0350", "0.0390"]))
-    )
-    stripe_fee_fixed_international = factory.LazyFunction(
-        lambda: Decimal(fake.random_element(["0.30", "0.40"]))
-    )
 
 class ServicefaqFactory(factory.django.DjangoModelFactory):
     class Meta:

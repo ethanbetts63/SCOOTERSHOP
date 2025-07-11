@@ -75,39 +75,32 @@ def calculate_service_refund_amount(
         minimal_refund_days = refund_policy_snapshot.get(
             "cancellation_deposit_minimal_refund_days", 1
         )
-        minimal_refund_percentage = Decimal(
-            str(
-                refund_policy_snapshot.get(
-                    "cancellation_deposit_minimal_refund_percentage", 0.0
-                )
-            )
-        )
         policy_prefix = "Deposit Payment Policy"
     else:
         full_refund_days = refund_policy_snapshot.get(
-            "cancellation_full_payment_full_refund_days", 7
+            "full_payment_full_refund_days", 7
         )
         partial_refund_days = refund_policy_snapshot.get(
-            "cancellation_full_payment_partial_refund_days", 3
+            "full_payment_partial_refund_days", 3
         )
 
         partial_refund_percentage = Decimal(
             str(
                 refund_policy_snapshot.get(
-                    "cancellation_full_payment_partial_refund_percentage", 50.0
+                    "full_payment_partial_refund_percentage", 50.0
                 )
             )
         )
         minimal_refund_days = refund_policy_snapshot.get(
-            "cancellation_full_payment_minimal_refund_days", 1
+            "full_payment_no_refund_percentage", 1
         )
-        minimal_refund_percentage = Decimal(
-            str(
-                refund_policy_snapshot.get(
-                    "cancellation_full_payment_minimal_refund_percentage", 0.0
-                )
-            )
-        )
+        # minimal_refund_percentage = Decimal(
+        #     str(
+        #         refund_policy_snapshot.get(
+        #             "cancellation_full_payment_minimal_refund_percentage", 0.0
+        #         )
+        #     )
+        # )
         policy_prefix = "Full Payment Policy"
 
     partial_refund_percentage_calc = partial_refund_percentage / Decimal("100.00")
