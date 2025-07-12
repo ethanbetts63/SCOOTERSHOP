@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from decimal import Decimal
+import datetime
 
 
 class RefundSettings(models.Model):
@@ -45,38 +46,51 @@ class RefundSettings(models.Model):
 
 
     def generate_policy_text(self):
+        """
+        Generates a professionally formatted, legally-styled refund policy text
+        based on the current settings, using the original field names.
+        """
+        effective_date = datetime.date.today().strftime("%B %d, %Y")
+
         return f"""
-# Refund Policy
+**Refund and Cancellation Policy**
 
-## Full Payments
+*Effective Date: {effective_date}*
 
-### Full Refund
-- **Eligibility:** Cancellations made more than {self.full_payment_full_refund_days} days before the scheduled service or pickup date.
-- **Process:** The full payment amount will be refunded to the original payment method.
+This Refund and Cancellation Policy ("Policy") governs the cancellation of services and the issuance of refunds for bookings made with [Your Company Name] ("the Company"). By placing a booking, you ("the Client") acknowledge and agree to the terms outlined herein.
 
-### Partial Refund
-- **Eligibility:** Cancellations made between {self.full_payment_no_refund_percentage} and {self.full_payment_full_refund_days} days before the scheduled date.
-- **Refund Amount:** {self.full_payment_partial_refund_percentage}% of the total payment will be refunded.
-- **Process:** The partial refund will be processed to the original payment method.
+**1. Cancellation Procedure**
 
-### No Refund
-- **Eligibility:** Cancellations made less than {self.full_payment_no_refund_percentage} days before the scheduled date.
-- **Outcome:** The payment is non-refundable.
+1.1. To be eligible for a refund, all cancellation requests must be submitted in writing via email to [Your Contact Email] or through the client portal.
+1.2. The effective date of cancellation will be the date on which the Company receives the written notification from the Client. All timeframes are calculated based on the scheduled start date and time of the booking.
 
-## Deposits
+**2. Policy for Bookings Made with Full Payment**
 
-### Full Refund
-- **Eligibility:** Cancellations made more than {self.deposit_full_refund_days} days before the scheduled service or pickup date.
-- **Process:** The full deposit amount will be refunded to the original payment method.
+2.1. **Full Refund Eligibility:** A 100% refund of the total booking fee will be granted for cancellations received more than {self.full_payment_full_refund_days} full days prior to the scheduled service.
 
-### Partial Refund
-- **Eligibility:** Cancellations made between {self.deposit_no_refund_days} and {self.deposit_full_refund_days} days before the scheduled date.
-- **Refund Amount:** {self.deposit_partial_refund_percentage}% of the deposit will be refunded.
-- **Process:** The partial refund will be processed to the original payment method.
+2.2. **Partial Refund Eligibility:** A refund of {self.full_payment_partial_refund_percentage}% of the total booking fee will be granted for cancellations received between {self.full_payment_no_refund_percentage} and {self.full_payment_full_refund_days} full days prior to the scheduled service.
 
-### No Refund
-- **Eligibility:** Cancellations made less than {self.deposit_no_refund_days} days before the scheduled date.
-- **Outcome:** The deposit is non-refundable.
+2.3. **Non-Refundable Circumstances:** No refund will be issued for cancellations received less than {self.full_payment_no_refund_percentage} full days prior to the scheduled service. In such cases, the entirety of the booking fee is forfeited.
+
+**3. Policy for Bookings Made with a Deposit**
+
+3.1. **Full Refund of Deposit:** A 100% refund of the deposit amount will be granted for cancellations received more than {self.deposit_full_refund_days} full days prior to the scheduled service.
+
+3.2. **Partial Refund of Deposit:** A refund of {self.deposit_partial_refund_percentage}% of the deposit amount will be granted for cancellations received between {self.deposit_no_refund_days} and {self.deposit_full_refund_days} full days prior to the scheduled service.
+
+3.3. **Forfeiture of Deposit:** The deposit is non-refundable and will be forfeited for cancellations received less than {self.deposit_no_refund_days} full days prior to the scheduled service.
+
+**4. Refund Processing**
+
+4.1. All eligible refunds will be processed by the Company within 7-10 business days of the approved cancellation request.
+4.2. Refunds will be credited to the original form of payment used at the time of booking. The Client acknowledges that processing times may vary depending on their financial institution.
+
+**5. Policy Modifications**
+
+5.1. The Company reserves the right to amend this Policy at its sole discretion. The most current version of the Policy will be posted on the Company's website and will be effective for all bookings made after its publication date.
+
+---
+*Please retain a copy of this policy for your records.*
 """
 
     def __str__(self):

@@ -38,7 +38,7 @@ class AdminRefundTermsCreateView(AdminRequiredMixin, View):
             messages.success(
                 request, f"New Refund Policy Version {terms_version.version_number} created successfully and set as active."
             )
-            return redirect(reverse("payments:refund_terms_management"))
+            return redirect(reverse("refunds:refund_terms_management"))
         else:
             messages.error(request, "Please correct the errors below.")
             context = {
