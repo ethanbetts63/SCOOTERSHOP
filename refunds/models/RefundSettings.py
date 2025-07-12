@@ -141,14 +141,6 @@ class RefundSettings(models.Model):
                 "Partial deposit refund days must be greater than or equal to minimal deposit refund days."
             ]
 
-        if (
-            self.sales_deposit_refund_grace_period_hours is not None
-            and self.sales_deposit_refund_grace_period_hours < 0
-        ):
-            errors["sales_deposit_refund_grace_period_hours"] = [
-                "Sales deposit refund grace period hours cannot be negative."
-            ]
-
         if errors:
             raise ValidationError(errors)
 
