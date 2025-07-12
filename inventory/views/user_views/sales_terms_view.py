@@ -1,5 +1,7 @@
 from django.views.generic import TemplateView
 from inventory.models import SalesTerms
+from refunds.models import RefundTerms
+from dashboard.models import SiteSettings
 
 # Add this class to your user_views.py file
 class SalesTermsView(TemplateView):
@@ -19,4 +21,10 @@ class SalesTermsView(TemplateView):
         
         context["page_title"] = "Sales Terms & Conditions"
         context["terms"] = active_terms
+        
+        settings = SiteSettings.get_settings()
+        if settings.enable_refunds:
+            refund_terms = RefundTerms.objects.filter(is_active=True).first()
+            context["refund_terms"] = refund_terms
+            
         return context

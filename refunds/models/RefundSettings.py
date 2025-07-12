@@ -46,10 +46,7 @@ class RefundSettings(models.Model):
 
 
     def generate_policy_text(self):
-        """
-        Generates a professionally formatted, legally-styled refund policy text
-        based on the current settings, using the original field names.
-        """
+
         effective_date = datetime.date.today().strftime("%B %d, %Y")
 
         return f"""
@@ -82,8 +79,7 @@ This Refund and Cancellation Policy ("Policy") governs the cancellation of servi
 
 **4. Refund Processing**
 
-4.1. All eligible refunds will be processed by the Company within 7-10 business days of the approved cancellation request.
-4.2. Refunds will be credited to the original form of payment used at the time of booking. The Client acknowledges that processing times may vary depending on their financial institution.
+4.1. Refunds will be credited to the original form of payment used at the time of booking. The Client acknowledges that processing times may vary depending on their financial institution.
 
 **5. Policy Modifications**
 

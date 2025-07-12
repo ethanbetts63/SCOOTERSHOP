@@ -23,6 +23,16 @@
                 <p class="text-gray-500 mt-2">The terms and conditions for service booking have not been set up yet. Please check back later.</p>
             </div>
         {% endif %}
+
+        {% if refund_terms %}
+        <div class="prose max-w-none text-gray-700 mt-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Refund Terms</h2>
+            {{ refund_terms.content|linebreaks }}
+        </div>
+        <div class="mt-4 text-sm text-gray-500">
+            Last Updated {{ refund_terms.created_at|date:"d F Y" }}
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
