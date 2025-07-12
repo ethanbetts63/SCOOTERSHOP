@@ -48,7 +48,7 @@
             <h3 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Full Payment Cancellation Policy</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {% for field in form %}
-                    {% if 'cancellation_full_payment' in field.name %}
+                    {% if 'full_payment' in field.name %}
                         <div class="form-group">
                             <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
                             {{ field }}
@@ -68,7 +68,7 @@
             <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-4 border-b pb-2">Deposit Cancellation Policy</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {% for field in form %}
-                    {% if 'cancellation_deposit' in field.name and 'sales_enable_deposit_refund' not in field.name %}
+                    {% if 'deposit' in field.name %}
                         <div class="form-group">
                             <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
                             {{ field }}
@@ -84,22 +84,6 @@
                     {% endif %}
                 {% endfor %}
             </div>
-
-            <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-4 border-b pb-2">Inventory App Refund Settings</h3>
-            {% for field in form %}
-                <div class="form-group">
-                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.help_text %}
-                        <small class="text-gray-500">{{ field.help_text }}</small>
-                    {% endif %}
-                    {% if field.errors %}
-                        {% for error in field.errors %}
-                            <small class="text-red-500">{{ error }}</small>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-            {% endfor %}
 
             
         </form>

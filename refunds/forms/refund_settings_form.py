@@ -12,10 +12,10 @@ class RefundSettingsForm(forms.ModelForm):
             "full_payment_partial_refund_days",
             "full_payment_partial_refund_percentage",
             "full_payment_no_refund_percentage",
-            "cancellation_deposit_full_refund_days",
-            "cancellation_deposit_partial_refund_days",
-            "cancellation_deposit_partial_refund_percentage",
-            "cancellation_deposit_minimal_refund_days",
+            "deposit_full_refund_days",
+            "deposit_partial_refund_days",
+            "deposit_partial_refund_percentage",
+            "deposit_no_refund_days",
         ]
         widgets = {
             "full_payment_full_refund_days": forms.NumberInput(
@@ -35,13 +35,13 @@ class RefundSettingsForm(forms.ModelForm):
             "full_payment_no_refund_percentage": forms.NumberInput(
                 attrs={"class": "form-control", "min": "0"}
             ),
-            "cancellation_deposit_full_refund_days": forms.NumberInput(
+            "deposit_full_refund_days": forms.NumberInput(
                 attrs={"class": "form-control", "min": "0"}
             ),
-            "cancellation_deposit_partial_refund_days": forms.NumberInput(
+            "deposit_partial_refund_days": forms.NumberInput(
                 attrs={"class": "form-control", "min": "0"}
             ),
-            "cancellation_deposit_partial_refund_percentage": forms.NumberInput(
+            "deposit_partial_refund_percentage": forms.NumberInput(
                 attrs={
                     "class": "form-control",
                     "step": "0.01",
@@ -49,7 +49,7 @@ class RefundSettingsForm(forms.ModelForm):
                     "max": "100",
                 }
             ),
-            "cancellation_deposit_minimal_refund_days": forms.NumberInput(
+            "deposit_no_refund_days": forms.NumberInput(
                 attrs={"class": "form-control", "min": "0"}
             ),
 
@@ -67,14 +67,14 @@ class RefundSettingsForm(forms.ModelForm):
             "full_payment_no_refund_percentage": _(
                 "Full Payment: Minimal Refund Days"
             ),
-            "cancellation_deposit_full_refund_days": _("Deposit: Full Refund Days"),
-            "cancellation_deposit_partial_refund_days": _(
+            "deposit_full_refund_days": _("Deposit: Full Refund Days"),
+            "deposit_partial_refund_days": _(
                 "Deposit: Partial Refund Days"
             ),
-            "cancellation_deposit_partial_refund_percentage": _(
+            "deposit_partial_refund_percentage": _(
                 "Deposit: Partial Refund Percentage (%)"
             ),
-            "cancellation_deposit_minimal_refund_days": _(
+            "deposit_no_refund_days": _(
                 "Deposit: Minimal Refund Days"
             ),
             }
@@ -91,16 +91,16 @@ class RefundSettingsForm(forms.ModelForm):
             "full_payment_no_refund_percentage": _(
                 "Number of full days before booking start for a minimal refund (less than partial refund days)."
             ),
-            "cancellation_deposit_full_refund_days": _(
+            "deposit_full_refund_days": _(
                 "Number of full days before booking start for a full deposit refund."
             ),
-            "cancellation_deposit_partial_refund_days": _(
+            "deposit_partial_refund_days": _(
                 "Number of full days before booking start for a partial deposit refund (less than full refund days)."
             ),
-            "cancellation_deposit_partial_refund_percentage": _(
+            "deposit_partial_refund_percentage": _(
                 "Percentage of deposit to refund for partial cancellations."
             ),
-            "cancellation_deposit_minimal_refund_days": _(
+            "deposit_no_refund_days": _(
                 "Number of full days before booking start for a minimal deposit refund (less than partial refund days)."
             ),
         }

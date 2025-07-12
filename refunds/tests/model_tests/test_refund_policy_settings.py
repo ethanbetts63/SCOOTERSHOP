@@ -52,12 +52,12 @@ class RefundSettingsModelTests(TestCase):
         )
         self.assertEqual(settings.full_payment_no_refund_percentage, 1)
 
-        self.assertEqual(settings.cancellation_deposit_full_refund_days, 7)
-        self.assertEqual(settings.cancellation_deposit_partial_refund_days, 3)
+        self.assertEqual(settings.deposit_full_refund_days, 7)
+        self.assertEqual(settings.deposit_partial_refund_days, 3)
         self.assertEqual(
-            settings.cancellation_deposit_partial_refund_percentage, Decimal("50.00")
+            settings.deposit_partial_refund_percentage, Decimal("50.00")
         )
-        self.assertEqual(settings.cancellation_deposit_minimal_refund_days, 1)
+        self.assertEqual(settings.deposit_no_refund_days, 1)
 
 
     def test_str_method(self):
@@ -68,7 +68,7 @@ class RefundSettingsModelTests(TestCase):
 
         settings = self.settings
         settings.full_payment_partial_refund_percentage = Decimal("25.50")
-        settings.cancellation_deposit_partial_refund_percentage = Decimal("99.99")
+        settings.deposit_partial_refund_percentage = Decimal("99.99")
         settings.full_clean()
 
     def test_percentage_fields_validation_failure_too_high(self):
@@ -90,9 +90,9 @@ class RefundSettingsModelTests(TestCase):
         settings.full_payment_partial_refund_days = 5
         settings.full_payment_no_refund_percentage = 1
 
-        settings.cancellation_deposit_full_refund_days = 8
-        settings.cancellation_deposit_partial_refund_days = 4
-        settings.cancellation_deposit_minimal_refund_days = 0
+        settings.deposit_full_refund_days = 8
+        settings.deposit_partial_refund_days = 4
+        settings.deposit_no_refund_days = 0
         settings.full_clean()
 
     def test_days_thresholds_validation_failure_full_payment_order(self):
@@ -118,21 +118,21 @@ class RefundSettingsModelTests(TestCase):
     def test_days_thresholds_validation_failure_deposit_order(self):
 
         settings = self.settings
-        settings.cancellation_deposit_full_refund_days = 2
-        settings.cancellation_deposit_partial_refund_days = 5
+        settings.deposit_full_refund_days = 2
+        settings.deposit_partial_refund_days = 5
         with self.assertRaises(ValidationError) as cm:
             settings.full_clean()
         self.assertIn(
-            "cancellation_deposit_full_refund_days", cm.exception.message_dict
+            "deposit_full_refund_days", cm.exception.message_dict
         )
 
         settings = self.settings
-        settings.cancellation_deposit_partial_refund_days = 0
-        settings.cancellation_deposit_minimal_refund_days = 1
+        settings.deposit_partial_refund_days = 0
+        settings.deposit_no_refund_days = 1
         with self.assertRaises(ValidationError) as cm:
             settings.full_clean()
         self.assertIn(
-            "cancellation_deposit_partial_refund_days", cm.exception.message_dict
+            "deposit_partial_refund_days", cm.exception.message_dict
         )
 
     @classmethod

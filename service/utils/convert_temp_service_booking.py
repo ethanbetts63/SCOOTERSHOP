@@ -73,12 +73,12 @@ def convert_temp_service_booking(
                                 refund_settings.full_payment_partial_refund_percentage
                             ),
                             "full_payment_no_refund_percentage": refund_settings.full_payment_no_refund_percentage,
-                            "cancellation_deposit_full_refund_days": refund_settings.cancellation_deposit_full_refund_days,
-                            "cancellation_deposit_partial_refund_days": refund_settings.cancellation_deposit_partial_refund_days,
-                            "cancellation_deposit_partial_refund_percentage": float(
-                                refund_settings.cancellation_deposit_partial_refund_percentage
+                            "deposit_full_refund_days": refund_settings.deposit_full_refund_days,
+                            "deposit_partial_refund_days": refund_settings.deposit_partial_refund_days,
+                            "deposit_partial_refund_percentage": float(
+                                refund_settings.deposit_partial_refund_percentage
                             ),
-                            "cancellation_deposit_minimal_refund_days": refund_settings.cancellation_deposit_minimal_refund_days,
+                            "deposit_no_refund_days": refund_settings.deposit_no_refund_days,
 
                         }
                     else:

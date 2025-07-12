@@ -364,12 +364,12 @@ class RefundSettingsFactory(factory.django.DjangoModelFactory):
         "random_int", min=0, max=1
     )
 
-    cancellation_deposit_full_refund_days = factory.Faker("random_int", min=5, max=10)
-    cancellation_deposit_partial_refund_days = factory.Faker("random_int", min=2, max=4)
-    cancellation_deposit_partial_refund_percentage = factory.LazyFunction(
+    deposit_full_refund_days = factory.Faker("random_int", min=5, max=10)
+    deposit_partial_refund_days = factory.Faker("random_int", min=2, max=4)
+    deposit_partial_refund_percentage = factory.LazyFunction(
         lambda: Decimal(fake.random_element([25.00, 50.00, 75.00]))
     )
-    cancellation_deposit_minimal_refund_days = factory.Faker("random_int", min=0, max=1)
+    deposit_no_refund_days = factory.Faker("random_int", min=0, max=1)
 
 
     @classmethod

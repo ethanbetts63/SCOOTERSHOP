@@ -59,21 +59,21 @@ def calculate_service_refund_amount(
 
     if is_deposit_payment:
         full_refund_days = refund_policy_snapshot.get(
-            "cancellation_deposit_full_refund_days", 7
+            "deposit_full_refund_days", 7
         )
         partial_refund_days = refund_policy_snapshot.get(
-            "cancellation_deposit_partial_refund_days", 3
+            "deposit_partial_refund_days", 3
         )
 
         partial_refund_percentage = Decimal(
             str(
                 refund_policy_snapshot.get(
-                    "cancellation_deposit_partial_refund_percentage", 50.0
+                    "deposit_partial_refund_percentage", 50.0
                 )
             )
         )
         minimal_refund_days = refund_policy_snapshot.get(
-            "cancellation_deposit_minimal_refund_days", 1
+            "deposit_no_refund_days", 1
         )
         policy_prefix = "Deposit Payment Policy"
     else:

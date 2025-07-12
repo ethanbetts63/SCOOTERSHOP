@@ -14,10 +14,10 @@ class RefundSettingsFormTests(TestCase):
             "full_payment_partial_refund_days": 3,
             "full_payment_partial_refund_percentage": Decimal("50.00"),
             "full_payment_no_refund_percentage": 1,
-            "cancellation_deposit_full_refund_days": 7,
-            "cancellation_deposit_partial_refund_days": 3,
-            "cancellation_deposit_partial_refund_percentage": Decimal("50.00"),
-            "cancellation_deposit_minimal_refund_days": 1,
+            "deposit_full_refund_days": 7,
+            "deposit_partial_refund_days": 3,
+            "deposit_partial_refund_percentage": Decimal("50.00"),
+            "deposit_no_refund_days": 1,
         }
 
     def setUp(self):
@@ -38,10 +38,10 @@ class RefundSettingsFormTests(TestCase):
                 "full_payment_partial_refund_days": 5,
                 "full_payment_partial_refund_percentage": Decimal("75.00"),
                 "full_payment_no_refund_percentage": 2,
-                "cancellation_deposit_full_refund_days": 8,
-                "cancellation_deposit_partial_refund_days": 4,
-                "cancellation_deposit_partial_refund_percentage": Decimal("60.00"),
-                "cancellation_deposit_minimal_refund_days": 1,
+                "deposit_full_refund_days": 8,
+                "deposit_partial_refund_days": 4,
+                "deposit_partial_refund_percentage": Decimal("60.00"),
+                "deposit_no_refund_days": 1,
                 "": False,
                 "sales_deposit_refund_grace_period_hours": 72,
                 "sales_enable_deposit_refund": False,
@@ -118,32 +118,32 @@ class RefundSettingsFormTests(TestCase):
         data = self._get_valid_form_data()
         data.update(
             {
-                "cancellation_deposit_full_refund_days": 5,
-                "cancellation_deposit_partial_refund_days": 10,
+                "deposit_full_refund_days": 5,
+                "deposit_partial_refund_days": 10,
             }
         )
         form = RefundSettingsForm(instance=self.refund_settings, data=data)
         self.assertFalse(form.is_valid())
-        self.assertIn("cancellation_deposit_full_refund_days", form.errors)
+        self.assertIn("deposit_full_refund_days", form.errors)
         self.assertIn(
             "Full deposit refund days must be greater than or equal to partial deposit refund days.",
-            form.errors["cancellation_deposit_full_refund_days"][0],
+            form.errors["deposit_full_refund_days"][0],
         )
 
         data = self._get_valid_form_data()
         data.update(
             {
-                "cancellation_deposit_full_refund_days": 10,
-                "cancellation_deposit_partial_refund_days": 5,
-                "cancellation_deposit_minimal_refund_days": 10,
+                "deposit_full_refund_days": 10,
+                "deposit_partial_refund_days": 5,
+                "deposit_no_refund_days": 10,
             }
         )
         form = RefundSettingsForm(instance=self.refund_settings, data=data)
         self.assertFalse(form.is_valid())
-        self.assertIn("cancellation_deposit_partial_refund_days", form.errors)
+        self.assertIn("deposit_partial_refund_days", form.errors)
         self.assertIn(
             "Partial deposit refund days must be greater than or equal to minimal deposit refund days.",
-            form.errors["cancellation_deposit_partial_refund_days"][0],
+            form.errors["deposit_partial_refund_days"][0],
         )
 
     def test_form_no_new_instance_creation(self):

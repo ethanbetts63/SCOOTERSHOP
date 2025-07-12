@@ -24,21 +24,21 @@ class RefundSettings(models.Model):
         help_text="Minimal refund percentage applies if cancelled this many *full days* or more (but less than partial refund threshold) before the booking's start time (for full payments).",
     )
 
-    cancellation_deposit_full_refund_days = models.PositiveIntegerField(
+    deposit_full_refund_days = models.PositiveIntegerField(
         default=7,
         help_text="Full refund of deposit if cancelled this many *full days* or more before the booking's start time.",
     )
-    cancellation_deposit_partial_refund_days = models.PositiveIntegerField(
+    deposit_partial_refund_days = models.PositiveIntegerField(
         default=3,
         help_text="Partial refund of deposit if cancelled this many *full days* or more (but less than full refund threshold) before the booking's start time.",
     )
-    cancellation_deposit_partial_refund_percentage = models.DecimalField(
+    deposit_partial_refund_percentage = models.DecimalField(
         max_digits=5,
         decimal_places=2,
         default=50.00,
         help_text="Percentage of deposit to refund for partial cancellations.",
     )
-    cancellation_deposit_minimal_refund_days = models.PositiveIntegerField(
+    deposit_no_refund_days = models.PositiveIntegerField(
         default=1,
         help_text="Minimal refund percentage applies to deposit if cancelled this many *full days* or more (but less than partial refund threshold) before the booking's start time.",
     )
@@ -66,16 +66,16 @@ class RefundSettings(models.Model):
 ## Deposits
 
 ### Full Refund
-- **Eligibility:** Cancellations made more than {self.cancellation_deposit_full_refund_days} days before the scheduled service or pickup date.
+- **Eligibility:** Cancellations made more than {self.deposit_full_refund_days} days before the scheduled service or pickup date.
 - **Process:** The full deposit amount will be refunded to the original payment method.
 
 ### Partial Refund
-- **Eligibility:** Cancellations made between {self.cancellation_deposit_minimal_refund_days} and {self.cancellation_deposit_full_refund_days} days before the scheduled date.
-- **Refund Amount:** {self.cancellation_deposit_partial_refund_percentage}% of the deposit will be refunded.
+- **Eligibility:** Cancellations made between {self.deposit_no_refund_days} and {self.deposit_full_refund_days} days before the scheduled date.
+- **Refund Amount:** {self.deposit_partial_refund_percentage}% of the deposit will be refunded.
 - **Process:** The partial refund will be processed to the original payment method.
 
 ### No Refund
-- **Eligibility:** Cancellations made less than {self.cancellation_deposit_minimal_refund_days} days before the scheduled date.
+- **Eligibility:** Cancellations made less than {self.deposit_no_refund_days} days before the scheduled date.
 - **Outcome:** The deposit is non-refundable.
 """
 
@@ -87,7 +87,7 @@ class RefundSettings(models.Model):
 
         percentage_fields = [
             "full_payment_partial_refund_percentage",
-            "cancellation_deposit_partial_refund_percentage",
+            "deposit_partial_refund_percentage",
         ]
         for field_name in percentage_fields:
             value = getattr(self, field_name)
@@ -120,16 +120,16 @@ class RefundSettings(models.Model):
                 "Partial refund days must be greater than or equal to minimal refund days."
             ]
 
-        full_days_deposit = self.cancellation_deposit_full_refund_days
-        partial_days_deposit = self.cancellation_deposit_partial_refund_days
-        minimal_days_deposit = self.cancellation_deposit_minimal_refund_days
+        full_days_deposit = self.deposit_full_refund_days
+        partial_days_deposit = self.deposit_partial_refund_days
+        minimal_days_deposit = self.deposit_no_refund_days
 
         if (
             full_days_deposit is not None
             and partial_days_deposit is not None
             and full_days_deposit < partial_days_deposit
         ):
-            errors["cancellation_deposit_full_refund_days"] = [
+            errors["deposit_full_refund_days"] = [
                 "Full deposit refund days must be greater than or equal to partial deposit refund days."
             ]
         if (
@@ -137,7 +137,7 @@ class RefundSettings(models.Model):
             and minimal_days_deposit is not None
             and partial_days_deposit < minimal_days_deposit
         ):
-            errors["cancellation_deposit_partial_refund_days"] = [
+            errors["deposit_partial_refund_days"] = [
                 "Partial deposit refund days must be greater than or equal to minimal deposit refund days."
             ]
 

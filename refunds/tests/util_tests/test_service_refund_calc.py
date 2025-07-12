@@ -33,10 +33,10 @@ class ServiceRefundCalcTests(TestCase):
 
         cls.deposit_payment_policy_snapshot = {
             "deposit_enabled": True,
-            "cancellation_deposit_full_refund_days": 10,
-            "cancellation_deposit_partial_refund_days": 5,
-            "cancellation_deposit_partial_refund_percentage": str(Decimal("75.00")),
-            "cancellation_deposit_minimal_refund_days": 2,
+            "deposit_full_refund_days": 10,
+            "deposit_partial_refund_days": 5,
+            "deposit_partial_refund_percentage": str(Decimal("75.00")),
+            "deposit_no_refund_days": 2,
         }
 
     def _create_booking_with_payment(
