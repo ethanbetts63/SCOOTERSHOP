@@ -1,5 +1,5 @@
 from django.views.generic import DetailView
-from payments.models import RefundTerms
+from refunds.models import RefundTerms
 from dashboard.mixins import AdminRequiredMixin
 
 class AdminRefundTermsDetailsView(AdminRequiredMixin, DetailView):

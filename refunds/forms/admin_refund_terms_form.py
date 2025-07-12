@@ -1,5 +1,5 @@
 from django import forms
-from payments.models import RefundTerms
+from refunds.models import RefundTerms
 
 class AdminRefundTermsForm(forms.ModelForm):
     class Meta:

@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.contrib import messages
 
 from dashboard.mixins import AdminRequiredMixin
-from payments.forms import AdminRefundTermsForm
+from refunds.forms import AdminRefundTermsForm
 
 
 class AdminRefundTermsCreateView(AdminRequiredMixin, View):

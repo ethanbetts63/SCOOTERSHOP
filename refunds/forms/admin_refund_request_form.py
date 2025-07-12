@@ -1,6 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from payments.models.RefundRequest import RefundRequest
+from refunds.models.RefundRequest import RefundRequest
 from service.models import ServiceBooking
 from inventory.models import SalesBooking
 from decimal import Decimal

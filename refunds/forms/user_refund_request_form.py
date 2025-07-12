@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 import re
 from service.models import ServiceBooking, ServiceProfile
 from inventory.models import SalesBooking, SalesProfile
-from payments.models.RefundRequest import RefundRequest
+from refunds.models.RefundRequest import RefundRequest
 
 
 class RefundRequestForm(forms.ModelForm):

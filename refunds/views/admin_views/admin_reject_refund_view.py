@@ -5,8 +5,8 @@ from django.utils import timezone
 from django.conf import settings
 from django.urls import reverse
 from core.mixins import AdminRequiredMixin
-from payments.forms.admin_reject_refund_form import AdminRejectRefundForm
-from payments.models.RefundRequest import RefundRequest
+from refunds.forms.admin_reject_refund_form import AdminRejectRefundForm
+from refunds.models.RefundRequest import RefundRequest
 from mailer.utils import send_templated_email
 from service.models import ServiceProfile
 from inventory.models import SalesProfile

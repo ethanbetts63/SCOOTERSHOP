@@ -26,6 +26,7 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls', namespace='dashboard')),
     path('', include('core.urls', namespace='core')),
     path('payments/', include('payments.urls', namespace="payments")),
+    path('refunds/', include('refunds.urls', namespace='refunds')),
     path('mailer/', include('mailer.urls', namespace='mailer')),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
 ]

@@ -1,5 +1,5 @@
 from django.views.generic import TemplateView
-from payments.models import RefundTerms
+from refunds.models import RefundTerms
 
 class RefundTermsView(TemplateView):
     template_name = "payments/refund_terms.html"

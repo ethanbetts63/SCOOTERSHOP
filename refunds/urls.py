@@ -20,7 +20,7 @@ from .views.admin_views import (
 
 )
 
-app_name = "payments"
+app_name = "refunds"
 
 urlpatterns = [
     path(

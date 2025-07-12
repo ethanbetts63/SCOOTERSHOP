@@ -3,8 +3,8 @@ from django.views import View
 from django.contrib import messages
 from django.utils import timezone
 from core.mixins import AdminRequiredMixin
-from payments.forms.admin_refund_request_form import AdminRefundRequestForm
-from payments.models.RefundRequest import RefundRequest
+from refunds.forms.admin_refund_request_form import AdminRefundRequestForm
+from refunds.models.RefundRequest import RefundRequest
 
 
 class AdminAddEditRefundRequestView(AdminRequiredMixin, View):

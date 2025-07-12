@@ -1,7 +1,7 @@
 from django.test import TestCase
 from decimal import Decimal
-from payments.forms.admin_refund_request_form import AdminRefundRequestForm
-from payments.models.RefundRequest import RefundRequest
+from refunds.forms.admin_refund_request_form import AdminRefundRequestForm
+from refunds.models.RefundRequest import RefundRequest
 
 from payments.tests.test_helpers.model_factories import (
     PaymentFactory,

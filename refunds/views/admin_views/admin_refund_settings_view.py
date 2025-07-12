@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.forms import ValidationError
 from core.mixins import AdminRequiredMixin
 from refunds.models import RefundPolicySettings
-from payments.forms.refund_settings_form import RefundSettingsForm
+from refunds.forms.refund_settings_form import RefundSettingsForm
 
 
 class AdminRefundSettingsView(AdminRequiredMixin, UpdateView):
