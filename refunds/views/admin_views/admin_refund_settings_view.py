@@ -13,7 +13,7 @@ class AdminRefundSettingsView(AdminRequiredMixin, UpdateView):
     form_class = RefundSettingsForm
     template_name = "refunds/admin_refund_settings.html"
 
-    success_url = reverse_lazy("payments:admin_refund_settings")
+    success_url = reverse_lazy("refunds:admin_refund_settings")
 
     def get_object(self, queryset=None):
 

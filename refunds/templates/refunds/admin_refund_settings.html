@@ -101,38 +101,7 @@
                 </div>
             {% endfor %}
 
-            <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-4 border-b pb-2">Stripe Fee Settings</h3>
-            {% for field in form %}
-                {% if 'stripe_fee' in field.name or field.name == 'refund_deducts_stripe_fee_policy' %}
-                    {% if field.field.widget.input_type == 'checkbox' %}
-                        <div class="form-field checkbox-field flex items-center">
-                            {{ field }}
-                            <label for="{{ field.id_for_label }}" class="ml-2 block text-sm text-gray-900">{{ field.label }}</label>
-                            {% if field.help_text %}
-                                <small class="ml-2 text-gray-500">{{ field.help_text }}</small>
-                            {% endif %}
-                            {% if field.errors %}
-                                {% for error in field.errors %}
-                                    <small class="text-red-500">{{ error }}</small>
-                                {% endfor %}
-                            {% endif %}
-                        </div>
-                    {% else %}
-                        <div class="form-group">
-                            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
-                            {{ field }}
-                            {% if field.help_text %}
-                                <small class="text-gray-500">{{ field.help_text }}</small>
-                            {% endif %}
-                            {% if field.errors %}
-                                {% for error in field.errors %}
-                                    <small class="text-red-500">{{ error }}</small>
-                                {% endfor %}
-                            {% endif %}
-                        </div>
-                    {% endif %}
-                {% endif %}
-            {% endfor %}
+            
         </form>
     </div>
 </div>
