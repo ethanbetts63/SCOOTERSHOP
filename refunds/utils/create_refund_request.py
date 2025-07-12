@@ -1,4 +1,4 @@
-from payments.models import RefundRequest
+from refunds.models import RefundRequest
 from django.db import transaction
 from django.utils import timezone
 

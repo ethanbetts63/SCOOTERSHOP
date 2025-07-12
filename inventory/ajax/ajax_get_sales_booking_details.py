@@ -5,8 +5,8 @@ from django.views.decorators.http import require_GET
 from django.utils import timezone
 
 from inventory.models import SalesBooking
-from payments.models import RefundRequest
-from payments.utils.sales_refund_calc import calculate_sales_refund_amount
+from refunds.models import RefundRequest
+from refunds.utils.sales_refund_calc import calculate_sales_refund_amount
 
 
 @require_GET

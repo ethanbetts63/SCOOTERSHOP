@@ -3,7 +3,7 @@ from django.views.generic import UpdateView
 from django.contrib import messages
 from django.forms import ValidationError
 from core.mixins import AdminRequiredMixin
-from payments.models import RefundPolicySettings
+from refunds.models import RefundPolicySettings
 from payments.forms.refund_settings_form import RefundSettingsForm
 
 

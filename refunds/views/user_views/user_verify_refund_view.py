@@ -8,9 +8,9 @@ import uuid
 from decimal import Decimal
 from django.conf import settings
 from django.http import Http404
-from payments.models.RefundRequest import RefundRequest
-from payments.utils.service_refund_calc import calculate_service_refund_amount
-from payments.utils.sales_refund_calc import calculate_sales_refund_amount
+from refunds.models.RefundRequest import RefundRequest
+from refunds.utils.service_refund_calc import calculate_service_refund_amount
+from refunds.utils.sales_refund_calc import calculate_sales_refund_amount
 from mailer.utils import send_templated_email
 from service.models import ServiceProfile
 from inventory.models import SalesProfile

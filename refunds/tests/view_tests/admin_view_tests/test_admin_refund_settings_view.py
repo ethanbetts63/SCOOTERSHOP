@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
-from payments.models import RefundPolicySettings
+from refunds.models import RefundPolicySettings
 from payments.tests.test_helpers.model_factories import UserFactory, RefundPolicySettingsFactory
 from django.contrib.messages import get_messages
 from decimal import Decimal

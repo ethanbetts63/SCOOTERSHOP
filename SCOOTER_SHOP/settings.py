@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "service.apps.ServiceConfig",
     "payments.apps.PaymentsConfig",
     "mailer.apps.MailerConfig",
+    "refunds.apps.RefundsConfig",
     'import_export',
     'django.contrib.sitemaps'
 ]

@@ -6,7 +6,7 @@ from unittest.mock import patch, MagicMock
 from django.utils import timezone
 from datetime import timedelta
 
-from payments.models import RefundRequest
+from refunds.models import RefundRequest
 from payments.tests.test_helpers.model_factories import UserFactory, RefundRequestFactory, ServiceBookingFactory, SalesBookingFactory, ServiceProfileFactory, SalesProfileFactory
 
 class AdminRefundManagementTest(TestCase):

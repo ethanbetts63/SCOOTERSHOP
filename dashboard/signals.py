@@ -5,7 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from inventory.models import SalesBooking
 from service.models import ServiceBooking
 from core.models import Enquiry
-from payments.models import RefundRequest
+from refunds.models import RefundRequest
 
 from .models import Notification
 

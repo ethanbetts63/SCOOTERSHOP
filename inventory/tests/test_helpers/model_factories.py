@@ -22,7 +22,7 @@ from inventory.models import (
     FeaturedMotorcycle,
 )
 
-from payments.models import RefundPolicySettings
+from refunds.models import RefundPolicySettings
 
 from inventory.models.temp_sales_booking import (
     PAYMENT_STATUS_CHOICES as TEMP_PAYMENT_STATUS_CHOICES,
@@ -37,7 +37,9 @@ from inventory.models.sales_booking import (
     BOOKING_STATUS_CHOICES as SALES_BOOKING_STATUS_CHOICES,
 )
 
-from payments.models import Payment, RefundRequest
+from payments.models import Payment
+
+from refunds.models import RefundRequest, RefundPolicySettings
 
 User = get_user_model()
 

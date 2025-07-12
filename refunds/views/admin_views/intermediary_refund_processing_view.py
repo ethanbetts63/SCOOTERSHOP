@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.urls import reverse
 
 from core.mixins import AdminRequiredMixin
-from payments.models import RefundRequest
+from refunds.models import RefundRequest
 
 
 class IntermediaryRefundProcessingView(AdminRequiredMixin, TemplateView):

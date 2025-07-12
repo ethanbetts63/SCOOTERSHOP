@@ -2,7 +2,7 @@ from django.db import transaction
 from django.conf import settings
 from inventory.models import SalesBooking
 from mailer.utils import send_templated_email
-from payments.utils.create_refund_request import create_refund_request
+from refunds.utils.create_refund_request import create_refund_request
 
 
 def reject_sales_booking(

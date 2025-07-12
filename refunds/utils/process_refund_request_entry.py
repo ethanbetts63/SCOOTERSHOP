@@ -1,6 +1,7 @@
 from django.utils import timezone
-from payments.models import Payment, RefundRequest
+from payments.models import Payment
 
+from refunds.models import RefundRequest, RefundPolicySettings
 
 def process_refund_request_entry(
     payment_obj: Payment, booking_obj, booking_type_str: str, extracted_data: dict

@@ -5,8 +5,8 @@ from django.views.decorators.http import require_GET
 from datetime import datetime
 from django.utils import timezone
 from service.models import ServiceBooking
-from payments.models import RefundRequest
-from payments.utils.service_refund_calc import calculate_service_refund_amount
+from refunds.models import RefundRequest
+from refunds.utils.service_refund_calc import calculate_service_refund_amount
 from ..decorators import admin_required
 
 

@@ -4,7 +4,7 @@ from datetime import timedelta
 from mailer.utils import send_templated_email
 from django.conf import settings
 from core.mixins import AdminRequiredMixin
-from payments.models import RefundRequest
+from refunds.models import RefundRequest
 from service.models import ServiceProfile
 from inventory.models import SalesProfile
 

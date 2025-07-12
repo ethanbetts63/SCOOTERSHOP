@@ -7,7 +7,7 @@ from django.conf import settings
 from decimal import Decimal
 from django.utils import timezone
 from core.mixins import AdminRequiredMixin
-from payments.models import RefundRequest
+from refunds.models import RefundRequest
 
 
 class ProcessRefundView(AdminRequiredMixin, View):

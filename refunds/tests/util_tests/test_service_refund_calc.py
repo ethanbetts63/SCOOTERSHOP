@@ -5,7 +5,7 @@ from django.utils import timezone
 from unittest.mock import MagicMock
 
 
-from payments.utils.service_refund_calc import calculate_service_refund_amount
+from refunds.utils.service_refund_calc import calculate_service_refund_amount
 from payments.tests.test_helpers.model_factories import (
     ServiceBookingFactory,
     PaymentFactory,

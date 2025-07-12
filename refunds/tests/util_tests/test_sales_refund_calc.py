@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 
 
-from payments.utils.sales_refund_calc import calculate_sales_refund_amount
+from refunds.utils.sales_refund_calc import calculate_sales_refund_amount
 
 
 from payments.tests.test_helpers.model_factories import (

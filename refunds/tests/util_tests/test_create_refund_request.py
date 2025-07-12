@@ -1,7 +1,7 @@
 
 from django.test import TestCase
-from payments.utils.create_refund_request import create_refund_request
-from payments.models import RefundRequest
+from refunds.utils.create_refund_request import create_refund_request
+from refunds.models import RefundRequest
 from payments.tests.test_helpers.model_factories import PaymentFactory, SalesBookingFactory, ServiceBookingFactory, UserFactory, SalesProfileFactory, ServiceProfileFactory
 from decimal import Decimal
 from django.utils import timezone

@@ -2,12 +2,12 @@ from django.db import transaction
 
 
 from ..utils.get_booking_from_payment import get_booking_from_payment
-from ..utils.extract_stripe_refund_data import extract_stripe_refund_data
+from refunds.utils.extract_stripe_refund_data import extract_stripe_refund_data
 from ..utils.update_associated_bookings_and_payments import (
     update_associated_bookings_and_payments,
 )
-from ..utils.process_refund_request_entry import process_refund_request_entry
-from ..utils.send_refund_notificiation import send_refund_notifications
+from refunds.utils.process_refund_request_entry import process_refund_request_entry
+from refunds.utils.send_refund_notificiation import send_refund_notifications
 from ..models import Payment
 
 

@@ -1,7 +1,7 @@
 from django.test import TestCase
 from decimal import Decimal
 from django.core.exceptions import ValidationError
-from payments.models import RefundPolicySettings
+from refunds.models import RefundPolicySettings
 
 
 class RefundPolicySettingsModelTests(TestCase):

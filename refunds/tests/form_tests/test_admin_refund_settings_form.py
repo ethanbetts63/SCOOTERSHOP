@@ -2,7 +2,7 @@ from django.test import TestCase
 from decimal import Decimal
 from django.core.exceptions import ValidationError
 from payments.forms import RefundSettingsForm
-from payments.models import RefundPolicySettings
+from refunds.models import RefundPolicySettings
 
 
 class RefundSettingsFormTests(TestCase):

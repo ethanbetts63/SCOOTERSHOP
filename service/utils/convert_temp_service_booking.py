@@ -2,7 +2,7 @@ from django.db import transaction
 from decimal import Decimal
 from service.utils.send_booking_to_mechanicdesk import send_booking_to_mechanicdesk
 from service.models import ServiceBooking, ServiceSettings
-from payments.models import RefundPolicySettings
+from refunds.models import RefundPolicySettings
 
 
 def convert_temp_service_booking(

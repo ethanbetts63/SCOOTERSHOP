@@ -8,7 +8,7 @@ from inventory.models import (
     SalesBooking,
     InventorySettings,
 )
-from payments.models import RefundPolicySettings
+from refunds.models import RefundPolicySettings
 from inventory.utils.convert_temp_sales_booking import convert_temp_sales_booking
 from ..test_helpers.model_factories import (
     TempSalesBookingFactory,
