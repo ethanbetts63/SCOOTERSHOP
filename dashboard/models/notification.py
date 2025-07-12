@@ -11,7 +11,8 @@ class Notification(models.Model):
         models.Q(app_label='inventory', model='salesbooking') |
         models.Q(app_label='service', model='servicebooking') |
         models.Q(app_label='core', model='enquiry') |
-        models.Q(app_label='payments', model='refund')
+        models.Q(app_label='payments', model='refund') |
+        models.Q(app_label='refunds', model='refundterms')
     )
 
     content_type = models.ForeignKey(
