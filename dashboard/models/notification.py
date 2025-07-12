@@ -12,7 +12,7 @@ class Notification(models.Model):
         models.Q(app_label='service', model='servicebooking') |
         models.Q(app_label='core', model='enquiry') |
         models.Q(app_label='refunds', model='refundrequest') |
-        models.Q(app_label='refunds', model='refundterms')
+        models.Q(app_label='refunds', model='refundsettings')
     )
 
     content_type = models.ForeignKey(
