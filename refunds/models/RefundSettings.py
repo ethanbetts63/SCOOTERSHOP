@@ -44,6 +44,41 @@ class RefundSettings(models.Model):
     )
 
 
+    def generate_policy_text(self):
+        return f"""
+# Refund Policy
+
+## Full Payments
+
+### Full Refund
+- **Eligibility:** Cancellations made more than {self.full_payment_full_refund_days} days before the scheduled service or pickup date.
+- **Process:** The full payment amount will be refunded to the original payment method.
+
+### Partial Refund
+- **Eligibility:** Cancellations made between {self.full_payment_no_refund_percentage} and {self.full_payment_full_refund_days} days before the scheduled date.
+- **Refund Amount:** {self.full_payment_partial_refund_percentage}% of the total payment will be refunded.
+- **Process:** The partial refund will be processed to the original payment method.
+
+### No Refund
+- **Eligibility:** Cancellations made less than {self.full_payment_no_refund_percentage} days before the scheduled date.
+- **Outcome:** The payment is non-refundable.
+
+## Deposits
+
+### Full Refund
+- **Eligibility:** Cancellations made more than {self.cancellation_deposit_full_refund_days} days before the scheduled service or pickup date.
+- **Process:** The full deposit amount will be refunded to the original payment method.
+
+### Partial Refund
+- **Eligibility:** Cancellations made between {self.cancellation_deposit_minimal_refund_days} and {self.cancellation_deposit_full_refund_days} days before the scheduled date.
+- **Refund Amount:** {self.cancellation_deposit_partial_refund_percentage}% of the deposit will be refunded.
+- **Process:** The partial refund will be processed to the original payment method.
+
+### No Refund
+- **Eligibility:** Cancellations made less than {self.cancellation_deposit_minimal_refund_days} days before the scheduled date.
+- **Outcome:** The deposit is non-refundable.
+"""
+
     def __str__(self):
         return "Refund Policy Settings"
 

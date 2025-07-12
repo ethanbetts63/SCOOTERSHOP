@@ -7,12 +7,19 @@ from dashboard.mixins import AdminRequiredMixin
 from refunds.forms import AdminRefundTermsForm
 
 
+from refunds.models import RefundSettings
+
 class AdminRefundTermsCreateView(AdminRequiredMixin, View):
     template_name = "refunds/admin_refund_terms_create.html"
     form_class = AdminRefundTermsForm
 
     def get(self, request, *args, **kwargs):
-        form = self.form_class()
+        settings = RefundSettings.objects.first()
+        initial_content = ''
+        if settings:
+            initial_content = settings.generate_policy_text()
+        
+        form = self.form_class(initial={'content': initial_content})
         context = {
             "form": form,
             "page_title": "Create New Refund Policy Version",
