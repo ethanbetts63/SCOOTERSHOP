@@ -15,7 +15,7 @@ class AdminRefundManagementTest(TestCase):
         self.client = Client()
         self.admin_user = UserFactory(is_staff=True)
         self.client.force_login(self.admin_user)
-        self.url = reverse('payments:admin_refund_management')
+        self.url = reverse('refunds:admin_refund_management')
 
         RefundRequest.objects.all().delete()
 

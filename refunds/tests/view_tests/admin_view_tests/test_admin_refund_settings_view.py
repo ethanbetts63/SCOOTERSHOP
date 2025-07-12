@@ -13,7 +13,7 @@ class AdminRefundSettingsViewTest(TestCase):
         self.refund_settings = RefundPolicySettingsFactory()
 
     def test_get_admin_refund_settings_view(self):
-        response = self.client.get(reverse('payments:admin_refund_settings'))
+        response = self.client.get(reverse('refunds:admin_refund_settings'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'payments/admin_refund_settings.html')
         self.assertIn('form', response.context)
@@ -33,9 +33,9 @@ class AdminRefundSettingsViewTest(TestCase):
             'sales_enable_deposit_refund': True,
             'refund_policy_settings_submit': '',
         }
-        response = self.client.post(reverse('payments:admin_refund_settings'), data=data)
+        response = self.client.post(reverse('refunds:admin_refund_settings'), data=data)
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('payments:admin_refund_settings'))
+        self.assertRedirects(response, reverse('refunds:admin_refund_settings'))
         self.refund_settings.refresh_from_db()
         self.assertEqual(self.refund_settings.full_payment_full_refund_days, 10)
         messages = list(get_messages(response.wsgi_request))
@@ -47,7 +47,7 @@ class AdminRefundSettingsViewTest(TestCase):
             'full_payment_full_refund_days': -1, # Invalid data
             'refund_policy_settings_submit': '',
         }
-        response = self.client.post(reverse('payments:admin_refund_settings'), data=data)
+        response = self.client.post(reverse('refunds:admin_refund_settings'), data=data)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'payments/admin_refund_settings.html')
         self.assertIn('form', response.context)
@@ -58,6 +58,6 @@ class AdminRefundSettingsViewTest(TestCase):
 
     def test_admin_required_mixin(self):
         self.client.logout()
-        response = self.client.get(reverse('payments:admin_refund_settings'))
+        response = self.client.get(reverse('refunds:admin_refund_settings'))
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('users:login') + '?next=' + reverse('payments:admin_refund_settings'))
+        self.assertRedirects(response, reverse('users:login') + '?next=' + reverse('refunds:admin_refund_settings'))

@@ -13,7 +13,7 @@ class AdminAddEditRefundRequestViewTest(TestCase):
         self.client = Client()
         self.admin_user = UserFactory(is_staff=True)
         self.client.force_login(self.admin_user)
-        self.add_url = reverse('payments:add_refund_request')
+        self.add_url = reverse('refunds:add_refund_request')
         self.service_booking = ServiceBookingFactory(payment_status='paid')
         self.sales_booking = SalesBookingFactory(payment_status='deposit_paid')
         self.payment = PaymentFactory()
@@ -27,7 +27,7 @@ class AdminAddEditRefundRequestViewTest(TestCase):
 
     def test_get_edit_refund_request_service_booking(self):
         refund_request = RefundRequestFactory(service_booking=self.service_booking)
-        edit_url = reverse('payments:edit_refund_request', kwargs={'pk': refund_request.pk})
+        edit_url = reverse('refunds:edit_refund_request', kwargs={'pk': refund_request.pk})
         response = self.client.get(edit_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'payments/admin_refund_form.html')
@@ -37,7 +37,7 @@ class AdminAddEditRefundRequestViewTest(TestCase):
 
     def test_get_edit_refund_request_sales_booking(self):
         refund_request = RefundRequestFactory(sales_booking=self.sales_booking)
-        edit_url = reverse('payments:edit_refund_request', kwargs={'pk': refund_request.pk})
+        edit_url = reverse('refunds:edit_refund_request', kwargs={'pk': refund_request.pk})
         response = self.client.get(edit_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'payments/admin_refund_form.html')
@@ -46,7 +46,7 @@ class AdminAddEditRefundRequestViewTest(TestCase):
         self.assertIn(f'Edit Sales Refund Request for Booking {self.sales_booking.sales_booking_reference}', response.context['title'])
 
     def test_get_edit_refund_request_invalid_pk(self):
-        edit_url = reverse('payments:edit_refund_request', kwargs={'pk': 999999})
+        edit_url = reverse('refunds:edit_refund_request', kwargs={'pk': 999999})
         response = self.client.get(edit_url)
         self.assertEqual(response.status_code, 404)
 
@@ -62,7 +62,7 @@ class AdminAddEditRefundRequestViewTest(TestCase):
         }
         response = self.client.post(self.add_url, data=form_data)
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('payments:admin_refund_management'))
+        self.assertRedirects(response, reverse('refunds:admin_refund_management'))
         self.assertEqual(RefundRequest.objects.count(), 1)
         refund_request = RefundRequest.objects.first()
         self.assertTrue(refund_request.is_admin_initiated)
@@ -81,7 +81,7 @@ class AdminAddEditRefundRequestViewTest(TestCase):
         }
         response = self.client.post(self.add_url, data=form_data)
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('payments:admin_refund_management'))
+        self.assertRedirects(response, reverse('refunds:admin_refund_management'))
         self.assertEqual(RefundRequest.objects.count(), 1)
         refund_request = RefundRequest.objects.first()
         self.assertTrue(refund_request.is_admin_initiated)
@@ -91,7 +91,7 @@ class AdminAddEditRefundRequestViewTest(TestCase):
     @patch('django.contrib.messages.success')
     def test_post_edit_valid_refund_request_service_booking(self, mock_messages_success):
         refund_request = RefundRequestFactory(service_booking=self.service_booking, payment=self.payment, amount_to_refund=Decimal('10.00'), reason='Old Reason', status='reviewed_pending_approval')
-        edit_url = reverse('payments:edit_refund_request', kwargs={'pk': refund_request.pk})
+        edit_url = reverse('refunds:edit_refund_request', kwargs={'pk': refund_request.pk})
         form_data = {
             'service_booking': self.service_booking.pk,
             'payment': self.payment.pk,
@@ -102,7 +102,7 @@ class AdminAddEditRefundRequestViewTest(TestCase):
         }
         response = self.client.post(edit_url, data=form_data)
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('payments:admin_refund_management'))
+        self.assertRedirects(response, reverse('refunds:admin_refund_management'))
         refund_request.refresh_from_db()
         self.assertEqual(refund_request.amount_to_refund, Decimal('20.00'))
         self.assertEqual(refund_request.reason, 'New Reason')
@@ -114,7 +114,7 @@ class AdminAddEditRefundRequestViewTest(TestCase):
     @patch('django.contrib.messages.success')
     def test_post_edit_valid_refund_request_sales_booking(self, mock_messages_success):
         refund_request = RefundRequestFactory(sales_booking=self.sales_booking, payment=self.payment, amount_to_refund=Decimal('10.00'), reason='Old Reason', status='pending')
-        edit_url = reverse('payments:edit_refund_request', kwargs={'pk': refund_request.pk})
+        edit_url = reverse('refunds:edit_refund_request', kwargs={'pk': refund_request.pk})
         form_data = {
             'sales_booking': self.sales_booking.pk,
             'payment': self.payment.pk,
@@ -125,7 +125,7 @@ class AdminAddEditRefundRequestViewTest(TestCase):
         }
         response = self.client.post(edit_url, data=form_data)
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('payments:admin_refund_management'))
+        self.assertRedirects(response, reverse('refunds:admin_refund_management'))
         refund_request.refresh_from_db()
         self.assertEqual(refund_request.amount_to_refund, Decimal('20.00'))
         self.assertEqual(refund_request.reason, 'New Reason')
@@ -148,7 +148,7 @@ class AdminAddEditRefundRequestViewTest(TestCase):
     @patch('django.contrib.messages.error')
     def test_post_edit_invalid_refund_request(self, mock_messages_error):
         refund_request = RefundRequestFactory(service_booking=self.service_booking, payment=self.payment)
-        edit_url = reverse('payments:edit_refund_request', kwargs={'pk': refund_request.pk})
+        edit_url = reverse('refunds:edit_refund_request', kwargs={'pk': refund_request.pk})
         form_data = {
             'amount_to_refund': '-10.00',
             'reason': '',

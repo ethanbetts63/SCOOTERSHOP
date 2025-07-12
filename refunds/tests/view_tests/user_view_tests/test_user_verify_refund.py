@@ -14,7 +14,7 @@ class UserVerifyRefundViewTest(TestCase):
 
     def setUp(self):
         self.client = Client()
-        self.url = reverse('payments:user_verify_refund')
+        self.url = reverse('refunds:user_verify_refund')
         self.service_booking = ServiceBookingFactory()
         self.sales_booking = SalesBookingFactory()
         self.payment = PaymentFactory()
@@ -57,7 +57,7 @@ class UserVerifyRefundViewTest(TestCase):
 
         response = self.client.get(self.url + f'?token={refund_request.verification_token}')
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('payments:user_refund_request'))
+        self.assertRedirects(response, reverse('refunds:user_refund_request'))
         mock_messages_error.assert_called_once_with(response.wsgi_request, "The verification link has expired. Please submit a new refund request.")
 
     # This test is failing due to a NameError: name 'mock' is not defined in the assert_called_once_with.
@@ -66,7 +66,7 @@ class UserVerifyRefundViewTest(TestCase):
         refund_request = RefundRequestFactory(status='pending')
         response = self.client.get(self.url + f'?token={refund_request.verification_token}')
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('payments:user_verified_refund'))
+        self.assertRedirects(response, reverse('refunds:user_verified_refund'))
         mock_messages_info.assert_called_once_with(response.wsgi_request, "This refund request has already been verified or processed.")
 
     # This test is failing due to a ValueError: Failed to insert expression "<MagicMock name='now().resolve_expression()' id='...'>" on payments.RefundRequest.requested_at.
@@ -85,7 +85,7 @@ class UserVerifyRefundViewTest(TestCase):
         response = self.client.get(self.url + f'?token={refund_request.verification_token}')
 
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('payments:user_verified_refund'))
+        self.assertRedirects(response, reverse('refunds:user_verified_refund'))
 
         refund_request.refresh_from_db()
         self.assertEqual(refund_request.status, 'pending')
@@ -112,7 +112,7 @@ class UserVerifyRefundViewTest(TestCase):
         response = self.client.get(self.url + f'?token={refund_request.verification_token}')
 
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('payments:user_verified_refund'))
+        self.assertRedirects(response, reverse('refunds:user_verified_refund'))
 
         refund_request.refresh_from_db()
         self.assertEqual(refund_request.status, 'pending')
@@ -141,7 +141,7 @@ class UserVerifyRefundViewTest(TestCase):
         response = self.client.get(self.url + f'?token={refund_request.verification_token}')
 
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('payments:user_verified_refund'))
+        self.assertRedirects(response, reverse('refunds:user_verified_refund'))
 
         refund_request.refresh_from_db()
         self.assertEqual(refund_request.status, 'pending')

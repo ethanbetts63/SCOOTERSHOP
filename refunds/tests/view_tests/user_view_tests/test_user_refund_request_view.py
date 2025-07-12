@@ -12,7 +12,7 @@ class UserRefundRequestViewTest(TestCase):
 
     def setUp(self):
         self.client = Client()
-        self.url = reverse('payments:user_refund_request')
+        self.url = reverse('refunds:user_refund_request')
         self.payment = PaymentFactory(status='succeeded')
         self.user = UserFactory()
         self.service_profile = ServiceProfileFactory(user=self.user)
@@ -42,7 +42,7 @@ class UserRefundRequestViewTest(TestCase):
         response = self.client.post(self.url, data=form_data)
 
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('payments:user_confirmation_refund_request'))
+        self.assertRedirects(response, reverse('refunds:user_confirmation_refund_request'))
 
         self.assertEqual(RefundRequest.objects.count(), 1)
         refund_request = RefundRequest.objects.first()
@@ -69,7 +69,7 @@ class UserRefundRequestViewTest(TestCase):
         response = self.client.post(self.url, data=form_data)
 
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('payments:user_confirmation_refund_request'))
+        self.assertRedirects(response, reverse('refunds:user_confirmation_refund_request'))
 
         self.assertEqual(RefundRequest.objects.count(), 1)
         refund_request = RefundRequest.objects.first()

@@ -78,7 +78,7 @@
                                         {% elif notification.content_type.model == 'enquiry' %}
                                             <a href="{% url 'core:enquiry_management' %}" class="action-button btn-view">View</a>
                                         {% elif notification.content_type.model == 'refundrequest' %}
-                                            <a href="{% url 'payments:admin_refund_management' %}" class="action-button btn-view">View</a>
+                                            <a href="{% url 'refunds:admin_refund_management' %}" class="action-button btn-view">View</a>
                                         {% endif %}
                                     </div>
                                 </td>

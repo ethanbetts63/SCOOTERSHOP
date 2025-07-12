@@ -121,7 +121,7 @@
                         <ul class="space-y-2">
                             {% if settings.enable_sales_new or user.is_staff %}<li><a href="{% url 'inventory:new' %}" class="text-base text-gray-300 hover:text-white">New Bikes</a></li>{% endif %}
                             {% if settings.enable_sales_used or user.is_staff %}<li><a href="{% url 'inventory:used' %}" class="text-base text-gray-300 hover:text-white">Used Bikes</a></li>{% endif %}
-                            {% if settings.enable_refunds or user.is_staff %}<li><a href="{% url 'payments:user_refund_request' %}" class="text-base text-gray-300 hover:text-white">Refunds</a></li>{% endif %}
+                            {% if settings.enable_refunds or user.is_staff %}<li><a href="{% url 'refunds:user_refund_request' %}" class="text-base text-gray-300 hover:text-white">Refunds</a></li>{% endif %}
                             {% if settings.enable_contact_page or user.is_staff %}<li><a href="{% url 'core:contact' %}" class="text-base text-gray-300 hover:text-white">Contact Us</a></li>{% endif %}
                             {% if user.is_authenticated and user.is_staff %}<li><a href="{% url 'dashboard:dashboard_index' %}" class="text-base text-gray-300 hover:text-white">Dashboard</a></li>{% endif %}
                         </ul>
@@ -132,7 +132,7 @@
                             <li><a href="{% url 'core:terms' %}" class="text-base text-gray-300 hover:text-white">Terms of Use</a></li>
                             <li><a href="{% url 'service:service_booking_terms' %}" class="text-base text-gray-300 hover:text-white">Service Terms</a></li>
                             <li><a href="{% url 'inventory:sales_terms' %}" class="text-base text-gray-300 hover:text-white">Sales Terms</a></li>
-                            {% if settings.enable_refunds %}<li><a href="{% url 'payments:refund_policy' %}" class="text-base text-gray-300 hover:text-white">Refund Policy</a></li>{% endif %}
+                            {% if settings.enable_refunds %}<li><a href="{% url 'refunds:refund_policy' %}" class="text-base text-gray-300 hover:text-white">Refund Policy</a></li>{% endif %}
                             {% if settings.enable_privacy_policy_page or user.is_staff %}<li><a href="{% url 'core:privacy' %}" class="text-base text-gray-300 hover:text-white">Privacy Policy</a></li>{% endif %}
                             {% if settings.enable_returns_page or user.is_staff %}<li><a href="{% url 'core:returns' %}" class="text-base text-gray-300 hover:text-white">Returns Policy</a></li>{% endif %}
                             {% if settings.enable_security_page or user.is_staff %}<li><a href="{% url 'core:security' %}" class="text-base text-gray-300 hover:text-white">Security Policy</a></li>{% endif %}

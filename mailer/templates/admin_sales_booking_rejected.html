@@ -222,7 +222,7 @@
 
                             {% if booking.payment_status == 'deposit_paid' %}
                             <p style="color: #dc3545; font-weight: bold;">
-                                This booking had a deposit of {% if booking.amount_paid %}{{ booking.amount_paid|floatformat:2 }}{% else %}booking.amount_paid VARIABLE DID NOT LOAD{% endif %} {% if booking.currency %}{{ booking.currency }}{% else %}booking.currency VARIABLE DID NOT LOAD{% endif %}. A formal refund request was NOT initiated through the sales booking rejection process. If a refund is required, please process it manually via the <a href="{% url 'payments:admin_refund_management' %}" class="text-blue-600 hover:underline">Refund Management</a> area.
+                                This booking had a deposit of {% if booking.amount_paid %}{{ booking.amount_paid|floatformat:2 }}{% else %}booking.amount_paid VARIABLE DID NOT LOAD{% endif %} {% if booking.currency %}{{ booking.currency }}{% else %}booking.currency VARIABLE DID NOT LOAD{% endif %}. A formal refund request was NOT initiated through the sales booking rejection process. If a refund is required, please process it manually via the <a href="{% url 'refunds:admin_refund_management' %}" class="text-blue-600 hover:underline">Refund Management</a> area.
                             </p>
                             {% endif %}
 

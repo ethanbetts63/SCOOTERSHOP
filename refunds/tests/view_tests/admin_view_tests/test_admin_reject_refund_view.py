@@ -21,7 +21,7 @@ class AdminRejectRefundViewTest(TestCase):
         self.refund_request_sales = RefundRequestFactory(sales_booking=self.sales_booking, status='pending')
 
     def test_get_reject_refund_request_service_booking(self):
-        url = reverse('payments:reject_refund_request', kwargs={'pk': self.refund_request_service.pk})
+        url = reverse('refunds:reject_refund_request', kwargs={'pk': self.refund_request_service.pk})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'payments/admin_reject_refund_form.html')
@@ -30,7 +30,7 @@ class AdminRejectRefundViewTest(TestCase):
         self.assertIn(f'Reject Refund Request for Booking {self.service_booking.service_booking_reference}', response.context['title'])
 
     def test_get_reject_refund_request_sales_booking(self):
-        url = reverse('payments:reject_refund_request', kwargs={'pk': self.refund_request_sales.pk})
+        url = reverse('refunds:reject_refund_request', kwargs={'pk': self.refund_request_sales.pk})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'payments/admin_reject_refund_form.html')
@@ -42,7 +42,7 @@ class AdminRejectRefundViewTest(TestCase):
     # The URL pattern is defined as 'payments/settings/refunds/reject/(?P<pk>[0-9]+)/\Z'.
     # To fix this, the test should pass a non-existent integer PK instead of a UUID string.
     def test_get_reject_refund_request_invalid_pk(self):
-        url = reverse('payments:reject_refund_request', kwargs={'pk': 999999})
+        url = reverse('refunds:reject_refund_request', kwargs={'pk': 999999})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
 
@@ -54,7 +54,7 @@ class AdminRejectRefundViewTest(TestCase):
     @patch('django.contrib.messages.info')
     def test_post_reject_refund_request_send_email_to_user(self, mock_messages_info, mock_messages_success, mock_send_templated_email):
         now = timezone.now()
-        url = reverse('payments:reject_refund_request', kwargs={'pk': self.refund_request_service.pk})
+        url = reverse('refunds:reject_refund_request', kwargs={'pk': self.refund_request_service.pk})
         form_data = {
             'rejection_reason': 'Test rejection reason',
             'send_rejection_email': True,
@@ -64,7 +64,7 @@ class AdminRejectRefundViewTest(TestCase):
             response = self.client.post(url, data=form_data)
 
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('payments:admin_refund_management'))
+        self.assertRedirects(response, reverse('refunds:admin_refund_management'))
 
         self.refund_request_service.refresh_from_db()
         self.assertEqual(self.refund_request_service.status, 'rejected')
@@ -93,7 +93,7 @@ class AdminRejectRefundViewTest(TestCase):
     @patch('django.contrib.messages.info')
     def test_post_reject_refund_request_do_not_send_email_to_user(self, mock_messages_info, mock_messages_success, mock_send_templated_email):
         now = timezone.now()
-        url = reverse('payments:reject_refund_request', kwargs={'pk': self.refund_request_service.pk})
+        url = reverse('refunds:reject_refund_request', kwargs={'pk': self.refund_request_service.pk})
         form_data = {
             'rejection_reason': 'Test rejection reason',
             'send_rejection_email': False,
@@ -103,7 +103,7 @@ class AdminRejectRefundViewTest(TestCase):
             response = self.client.post(url, data=form_data)
 
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('payments:admin_refund_management'))
+        self.assertRedirects(response, reverse('refunds:admin_refund_management'))
 
         self.refund_request_service.refresh_from_db()
         self.assertEqual(self.refund_request_service.status, 'rejected')
@@ -118,7 +118,7 @@ class AdminRejectRefundViewTest(TestCase):
 
     @patch('django.contrib.messages.error')
     def test_post_reject_refund_request_optional_rejection_reason(self, mock_messages_error):
-        url = reverse('payments:reject_refund_request', kwargs={'pk': self.refund_request_service.pk})
+        url = reverse('refunds:reject_refund_request', kwargs={'pk': self.refund_request_service.pk})
         form_data = {
             'rejection_reason': '',
             'send_rejection_email': True,
@@ -126,7 +126,7 @@ class AdminRejectRefundViewTest(TestCase):
         response = self.client.post(url, data=form_data)
 
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('payments:admin_refund_management'))
+        self.assertRedirects(response, reverse('refunds:admin_refund_management'))
         self.refund_request_service.refresh_from_db()
         self.assertEqual(self.refund_request_service.status, 'rejected')
         self.assertEqual(self.refund_request_service.rejection_reason, '')
@@ -141,7 +141,7 @@ class AdminRejectRefundViewTest(TestCase):
         sales_booking = SalesBookingFactory(sales_profile=sales_profile_no_email)
         refund_request_no_email = RefundRequestFactory(sales_booking=sales_booking, request_email=None, status='pending')
 
-        url = reverse('payments:reject_refund_request', kwargs={'pk': refund_request_no_email.pk})
+        url = reverse('refunds:reject_refund_request', kwargs={'pk': refund_request_no_email.pk})
         form_data = {
             'rejection_reason': 'Test rejection reason',
             'send_rejection_email': True,
@@ -151,7 +151,7 @@ class AdminRejectRefundViewTest(TestCase):
             response = self.client.post(url, data=form_data)
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('payments:admin_refund_management'))
+        self.assertEqual(response.url, reverse('refunds:admin_refund_management'))
 
         refund_request_no_email.refresh_from_db()
         self.assertEqual(refund_request_no_email.status, 'rejected')
@@ -164,7 +164,7 @@ class AdminRejectRefundViewTest(TestCase):
 
     def test_admin_required_mixin(self):
         self.client.logout()
-        url = reverse('payments:reject_refund_request', kwargs={'pk': self.refund_request_service.pk})
+        url = reverse('refunds:reject_refund_request', kwargs={'pk': self.refund_request_service.pk})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('users:login') + '?next=' + url)

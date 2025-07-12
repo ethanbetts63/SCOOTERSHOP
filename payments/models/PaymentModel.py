@@ -104,7 +104,7 @@ class Payment(models.Model):
     )
 
     refund_terms = models.ForeignKey(
-        "payments.RefundTerms",
+        "refunds.RefundTerms",
         on_delete=models.SET_NULL,
         related_name="payments",
         null=True,
