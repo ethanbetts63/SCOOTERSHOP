@@ -65,7 +65,7 @@ class RefundSettingsForm(forms.ModelForm):
                 "Full Payment: Partial Refund Percentage (%)"
             ),
             "full_payment_no_refund_percentage": _(
-                "Full Payment: Minimal Refund Days"
+                "Full Payment: No Refund Days"
             ),
             "deposit_full_refund_days": _("Deposit: Full Refund Days"),
             "deposit_partial_refund_days": _(
@@ -75,7 +75,7 @@ class RefundSettingsForm(forms.ModelForm):
                 "Deposit: Partial Refund Percentage (%)"
             ),
             "deposit_no_refund_days": _(
-                "Deposit: Minimal Refund Days"
+                "Deposit: No Refund Days"
             ),
             }
         help_texts = {
