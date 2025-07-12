@@ -21,7 +21,7 @@ class AdminAddEditRefundRequestViewTest(TestCase):
     def test_get_add_refund_request(self):
         response = self.client.get(self.add_url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'payments/admin_refund_form.html')
+        self.assertTemplateUsed(response, 'refunds/admin_refund_form.html')
         self.assertIsInstance(response.context['form'], AdminRefundRequestForm)
         self.assertEqual(response.context['title'], 'Create New Refund Request')
 
@@ -30,7 +30,7 @@ class AdminAddEditRefundRequestViewTest(TestCase):
         edit_url = reverse('refunds:edit_refund_request', kwargs={'pk': refund_request.pk})
         response = self.client.get(edit_url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'payments/admin_refund_form.html')
+        self.assertTemplateUsed(response, 'refunds/admin_refund_form.html')
         self.assertIsInstance(response.context['form'], AdminRefundRequestForm)
         self.assertEqual(response.context['form'].instance, refund_request)
         self.assertIn(f'Edit Service Refund Request for Booking {self.service_booking.service_booking_reference}', response.context['title'])
@@ -40,7 +40,7 @@ class AdminAddEditRefundRequestViewTest(TestCase):
         edit_url = reverse('refunds:edit_refund_request', kwargs={'pk': refund_request.pk})
         response = self.client.get(edit_url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'payments/admin_refund_form.html')
+        self.assertTemplateUsed(response, 'refunds/admin_refund_form.html')
         self.assertIsInstance(response.context['form'], AdminRefundRequestForm)
         self.assertEqual(response.context['form'].instance, refund_request)
         self.assertIn(f'Edit Sales Refund Request for Booking {self.sales_booking.sales_booking_reference}', response.context['title'])
@@ -140,7 +140,7 @@ class AdminAddEditRefundRequestViewTest(TestCase):
         }
         response = self.client.post(self.add_url, data=form_data)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'payments/admin_refund_form.html')
+        self.assertTemplateUsed(response, 'refunds/admin_refund_form.html')
         self.assertIn('form', response.context)
         self.assertFalse(response.context['form'].is_valid())
         mock_messages_error.assert_called_once()
@@ -155,7 +155,7 @@ class AdminAddEditRefundRequestViewTest(TestCase):
         }
         response = self.client.post(edit_url, data=form_data)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'payments/admin_refund_form.html')
+        self.assertTemplateUsed(response, 'refunds/admin_refund_form.html')
         self.assertIn('form', response.context)
         self.assertFalse(response.context['form'].is_valid())
         mock_messages_error.assert_called_once()

@@ -15,7 +15,7 @@ class AdminRefundSettingsViewTest(TestCase):
     def test_get_admin_refund_settings_view(self):
         response = self.client.get(reverse('refunds:admin_refund_settings'))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'payments/admin_refund_settings.html')
+        self.assertTemplateUsed(response, 'refunds/admin_refund_settings.html')
         self.assertIn('form', response.context)
         self.assertEqual(response.context['form'].instance, self.refund_settings)
 
@@ -49,7 +49,7 @@ class AdminRefundSettingsViewTest(TestCase):
         }
         response = self.client.post(reverse('refunds:admin_refund_settings'), data=data)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'payments/admin_refund_settings.html')
+        self.assertTemplateUsed(response, 'refunds/admin_refund_settings.html')
         self.assertIn('form', response.context)
         self.assertFalse(response.context['form'].is_valid())
         messages = list(get_messages(response.wsgi_request))

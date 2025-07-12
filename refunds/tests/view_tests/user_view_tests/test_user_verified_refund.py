@@ -13,7 +13,7 @@ class UserVerifiedRefundViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        self.assertTemplateUsed(response, "payments/user_verified_refund.html")
+        self.assertTemplateUsed(response, "refunds/user_verified_refund.html")
 
         self.assertIn("page_title", response.context)
         self.assertEqual(response.context["page_title"], "Refund Request Verified")

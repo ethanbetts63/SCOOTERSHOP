@@ -8,7 +8,7 @@ from refunds.models import RefundRequest
 
 class IntermediaryRefundProcessingView(AdminRequiredMixin, TemplateView):
 
-    template_name = "payments/intermediary_refund_processing.html"
+    template_name = "refunds/intermediary_refund_processing.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

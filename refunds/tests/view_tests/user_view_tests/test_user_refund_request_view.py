@@ -23,7 +23,7 @@ class UserRefundRequestViewTest(TestCase):
     def test_get_request(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'payments/user_refund_request.html')
+        self.assertTemplateUsed(response, 'refunds/user_refund_request.html')
         self.assertIsInstance(response.context['form'], RefundRequestForm)
         self.assertEqual(response.context['page_title'], 'Request a Refund')
         self.assertIn('Please enter your booking details', response.context['intro_text'])
@@ -91,7 +91,7 @@ class UserRefundRequestViewTest(TestCase):
         response = self.client.post(self.url, data=form_data)
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'payments/user_refund_request.html')
+        self.assertTemplateUsed(response, 'refunds/user_refund_request.html')
         self.assertIn('form', response.context)
         form = response.context['form']
         self.assertFalse(form.is_valid())

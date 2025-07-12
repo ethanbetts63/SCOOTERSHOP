@@ -4,7 +4,7 @@ from django.views import View
 
 class UserConfirmationRefundRequestView(View):
 
-    template_name = "payments/user_confirmation_refund_request.html"
+    template_name = "refunds/user_confirmation_refund_request.html"
 
     def get(self, request, *args, **kwargs):
 

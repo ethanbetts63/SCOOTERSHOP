@@ -8,7 +8,7 @@ from refunds.forms import AdminRefundTermsForm
 
 
 class AdminRefundTermsCreateView(AdminRequiredMixin, View):
-    template_name = "payments/admin_refund_terms_create.html"
+    template_name = "refunds/admin_refund_terms_create.html"
     form_class = AdminRefundTermsForm
 
     def get(self, request, *args, **kwargs):

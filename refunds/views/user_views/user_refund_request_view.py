@@ -15,7 +15,7 @@ from inventory.models import SalesProfile
 
 class UserRefundRequestView(View):
 
-    template_name = "payments/user_refund_request.html"
+    template_name = "refunds/user_refund_request.html"
 
     def get(self, request, *args, **kwargs):
 

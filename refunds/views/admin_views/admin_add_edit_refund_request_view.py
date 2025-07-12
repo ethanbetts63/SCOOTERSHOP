@@ -8,7 +8,7 @@ from refunds.models.RefundRequest import RefundRequest
 
 
 class AdminAddEditRefundRequestView(AdminRequiredMixin, View):
-    template_name = "payments/admin_refund_form.html"
+    template_name = "refunds/admin_refund_form.html"
 
     def get(self, request, pk=None, *args, **kwargs):
 

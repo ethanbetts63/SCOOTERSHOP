@@ -4,7 +4,7 @@ from dashboard.mixins import AdminRequiredMixin
 
 class AdminRefundTermsManagementView(AdminRequiredMixin, ListView):
     model = RefundTerms
-    template_name = "payments/admin_refund_terms_management.html"
+    template_name = "refunds/admin_refund_terms_management.html"
     context_object_name = "terms_versions"
     paginate_by = 10
 

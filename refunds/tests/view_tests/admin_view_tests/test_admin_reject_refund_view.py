@@ -24,7 +24,7 @@ class AdminRejectRefundViewTest(TestCase):
         url = reverse('refunds:reject_refund_request', kwargs={'pk': self.refund_request_service.pk})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'payments/admin_reject_refund_form.html')
+        self.assertTemplateUsed(response, 'refunds/admin_reject_refund_form.html')
         self.assertIsInstance(response.context['form'], AdminRejectRefundForm)
         self.assertEqual(response.context['refund_request'], self.refund_request_service)
         self.assertIn(f'Reject Refund Request for Booking {self.service_booking.service_booking_reference}', response.context['title'])
@@ -33,13 +33,13 @@ class AdminRejectRefundViewTest(TestCase):
         url = reverse('refunds:reject_refund_request', kwargs={'pk': self.refund_request_sales.pk})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'payments/admin_reject_refund_form.html')
+        self.assertTemplateUsed(response, 'refunds/admin_reject_refund_form.html')
         self.assertIsInstance(response.context['form'], AdminRejectRefundForm)
         self.assertEqual(response.context['refund_request'], self.refund_request_sales)
         self.assertIn(f'Reject Refund Request for Booking {self.sales_booking.sales_booking_reference}', response.context['title'])
 
     # This test is failing because the URL pattern expects a numeric PK, but a UUID string is passed.
-    # The URL pattern is defined as 'payments/settings/refunds/reject/(?P<pk>[0-9]+)/\Z'.
+    # The URL pattern is defined as 'refunds/settings/refunds/reject/(?P<pk>[0-9]+)/\Z'.
     # To fix this, the test should pass a non-existent integer PK instead of a UUID string.
     def test_get_reject_refund_request_invalid_pk(self):
         url = reverse('refunds:reject_refund_request', kwargs={'pk': 999999})

@@ -2,7 +2,7 @@ from django.views.generic import TemplateView
 from refunds.models import RefundTerms
 
 class RefundTermsView(TemplateView):
-    template_name = "payments/refund_terms.html"
+    template_name = "refunds/refund_terms.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

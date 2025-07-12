@@ -23,7 +23,7 @@ class AdminRefundManagementTest(TestCase):
         RefundRequestFactory.create_batch(5)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'payments/admin_refund_management.html')
+        self.assertTemplateUsed(response, 'refunds/admin_refund_management.html')
         self.assertIn('refund_requests', response.context)
         self.assertEqual(len(response.context['refund_requests']), 5)
         self.assertIn('status_choices', response.context)

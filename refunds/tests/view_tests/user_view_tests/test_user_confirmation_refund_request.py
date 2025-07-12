@@ -16,7 +16,7 @@ class UserConfirmationRefundRequestViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
         self.assertTemplateUsed(
-            response, "payments/user_confirmation_refund_request.html"
+            response, "refunds/user_confirmation_refund_request.html"
         )
 
     def test_context_data_is_correct(self):

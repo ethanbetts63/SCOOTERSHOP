@@ -11,7 +11,7 @@ class AdminRefundSettingsView(AdminRequiredMixin, UpdateView):
 
     model = RefundPolicySettings
     form_class = RefundSettingsForm
-    template_name = "payments/admin_refund_settings.html"
+    template_name = "refunds/admin_refund_settings.html"
 
     success_url = reverse_lazy("payments:admin_refund_settings")
 

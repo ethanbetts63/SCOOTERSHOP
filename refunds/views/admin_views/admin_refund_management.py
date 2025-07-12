@@ -11,7 +11,7 @@ from inventory.models import SalesProfile
 
 class AdminRefundManagement(AdminRequiredMixin, ListView):
     model = RefundRequest
-    template_name = "payments/admin_refund_management.html"
+    template_name = "refunds/admin_refund_management.html"
     context_object_name = "refund_requests"
     paginate_by = 20
 

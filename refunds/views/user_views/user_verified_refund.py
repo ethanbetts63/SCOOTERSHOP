@@ -3,7 +3,7 @@ from django.views import View
 
 
 class UserVerifiedRefundView(View):
-    template_name = "payments/user_verified_refund.html"
+    template_name = "refunds/user_verified_refund.html"
 
     def get(self, request, *args, **kwargs):
         context = {

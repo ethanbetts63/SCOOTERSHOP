@@ -14,7 +14,7 @@ from inventory.models import SalesProfile
 
 class AdminRejectRefundView(AdminRequiredMixin, View):
 
-    template_name = "payments/admin_reject_refund_form.html"
+    template_name = "refunds/admin_reject_refund_form.html"
 
     def get(self, request, pk, *args, **kwargs):
 

@@ -4,7 +4,7 @@ from dashboard.mixins import AdminRequiredMixin
 
 class AdminRefundTermsDetailsView(AdminRequiredMixin, DetailView):
     model = RefundTerms
-    template_name = "payments/admin_refund_terms_details.html"
+    template_name = "refunds/admin_refund_terms_details.html"
     context_object_name = "terms_version"
 
     def get_context_data(self, **kwargs):
