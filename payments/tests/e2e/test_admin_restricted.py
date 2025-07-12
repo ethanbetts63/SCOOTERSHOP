@@ -3,7 +3,7 @@ from django.urls import reverse
 from payments.tests.test_helpers.model_factories import (
     UserFactory,
     RefundRequestFactory,
-    RefundPolicySettingsFactory,
+    RefundSettingsFactory,
 )
 
 class PaymentsAdminViewsTestCase(TestCase):
@@ -14,7 +14,7 @@ class PaymentsAdminViewsTestCase(TestCase):
         self.staff_user = UserFactory(is_staff=True, password="password123")
         self.admin_user = UserFactory(is_staff=True, is_superuser=True, password="password123")
         self.refund_request = RefundRequestFactory()
-        RefundPolicySettingsFactory() 
+        RefundSettingsFactory() 
 
     def _assert_redirects_to_login(self, url):
         self.client.login(username=self.regular_user.username, password="password123")

@@ -1,12 +1,12 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
-from refunds.models import RefundPolicySettings
+from refunds.models import RefundSettings
 
 
 class RefundSettingsForm(forms.ModelForm):
 
     class Meta:
-        model = RefundPolicySettings
+        model = RefundSettings
         fields = [
             "full_payment_full_refund_days",
             "full_payment_partial_refund_days",
@@ -113,7 +113,7 @@ class RefundSettingsForm(forms.ModelForm):
             instance = (
                 self.instance
                 if self.instance.pk
-                else RefundPolicySettings(**cleaned_data)
+                else RefundSettings(**cleaned_data)
             )
             instance.full_clean(exclude=["id"])
         except forms.ValidationError as e:

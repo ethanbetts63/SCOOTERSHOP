@@ -9,7 +9,7 @@ import django.apps
 
 fake = Faker()
 
-from payments.models import Payment, WebhookEvent, RefundRequest, RefundPolicySettings
+from payments.models import Payment, WebhookEvent, RefundRequest, RefundSettings
 from service.models import (
     ServiceBooking,
     ServiceProfile,
@@ -468,9 +468,9 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
     customer_notes = factory.Faker("paragraph")
 
 
-class RefundPolicySettingsFactory(factory.django.DjangoModelFactory):
+class RefundSettingsFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = RefundPolicySettings
+        model = RefundSettings
 
     full_payment_full_refund_days = factory.Faker(
         "random_int", min=5, max=10

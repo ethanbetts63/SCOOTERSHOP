@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
-from refunds.models import RefundPolicySettings
-from payments.tests.test_helpers.model_factories import UserFactory, RefundPolicySettingsFactory
+from refunds.models import RefundSettings
+from payments.tests.test_helpers.model_factories import UserFactory, RefundSettingsFactory
 from django.contrib.messages import get_messages
 from decimal import Decimal
 
@@ -10,7 +10,7 @@ class AdminRefundSettingsViewTest(TestCase):
     def setUp(self):
         self.admin_user = UserFactory(is_staff=True)
         self.client.force_login(self.admin_user)
-        self.refund_settings = RefundPolicySettingsFactory()
+        self.refund_settings = RefundSettingsFactory()
 
     def test_get_admin_refund_settings_view(self):
         response = self.client.get(reverse('refunds:admin_refund_settings'))

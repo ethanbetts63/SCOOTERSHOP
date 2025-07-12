@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.DeleteModel(
-            name="RefundPolicySettings",
+            name="RefundSettings",
         ),
         migrations.RemoveField(
             model_name="refundrequest",

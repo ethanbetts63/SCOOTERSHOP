@@ -20,7 +20,7 @@ from service.models import (
     ServiceTerms,
 )
 
-from payments.models import Payment, RefundPolicySettings
+from payments.models import Payment, RefundSettings
 from dashboard.models import SiteSettings # Import SiteSettings
 
 from service.utils.calculate_estimated_pickup_date import (
@@ -282,9 +282,9 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
     customer_notes = factory.Faker("paragraph")
 
 
-class RefundPolicySettingsFactory(factory.django.DjangoModelFactory):
+class RefundSettingsFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = RefundPolicySettings
+        model = RefundSettings
 
     full_payment_full_refund_days = factory.Faker(
         "random_int", min=5, max=10

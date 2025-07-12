@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from decimal import Decimal
 
 
-class RefundPolicySettings(models.Model):
+class RefundSettings(models.Model):
 
     full_payment_full_refund_days = models.PositiveIntegerField(
         default=7,
@@ -118,9 +118,9 @@ class RefundPolicySettings(models.Model):
             raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
-        if not self.pk and RefundPolicySettings.objects.exists():
+        if not self.pk and RefundSettings.objects.exists():
             raise ValidationError(
-                "Only one instance of RefundPolicySettings can be created. Please edit the existing one."
+                "Only one instance of RefundSettings can be created. Please edit the existing one."
             )
 
         self.full_clean()

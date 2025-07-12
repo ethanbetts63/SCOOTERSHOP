@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name="RefundPolicySettings",
+            name="RefundSettings",
             fields=[
                 (
                     "id",
@@ -437,7 +437,7 @@ class Migration(migrations.Migration):
                     models.JSONField(
                         blank=True,
                         default=dict,
-                        help_text="Snapshot of refund policy settings from RefundPolicySettings at the time of payment.",
+                        help_text="Snapshot of refund policy settings from RefundSettings at the time of payment.",
                         null=True,
                     ),
                 ),

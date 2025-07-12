@@ -9,7 +9,7 @@ from refunds.utils.service_refund_calc import calculate_service_refund_amount
 from payments.tests.test_helpers.model_factories import (
     ServiceBookingFactory,
     PaymentFactory,
-    RefundPolicySettingsFactory,
+    RefundSettingsFactory,
 )
 
 
@@ -18,7 +18,7 @@ class ServiceRefundCalcTests(TestCase):
     @classmethod
     def setUpTestData(cls):
 
-        cls.refund_policy_settings = RefundPolicySettingsFactory()
+        cls.refund_policy_settings = RefundSettingsFactory()
 
         cls.full_payment_policy_snapshot = {
             "deposit_enabled": False,

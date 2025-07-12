@@ -1,48 +1,48 @@
 from django.test import TestCase
 from decimal import Decimal
 from django.core.exceptions import ValidationError
-from refunds.models import RefundPolicySettings
+from refunds.models import RefundSettings
 
 
-class RefundPolicySettingsModelTests(TestCase):
+class RefundSettingsModelTests(TestCase):
 
     def setUp(self):
 
-        RefundPolicySettings.objects.all().delete()
+        RefundSettings.objects.all().delete()
 
-        self.settings = RefundPolicySettings.objects.create()
+        self.settings = RefundSettings.objects.create()
 
     def test_singleton_creation_raises_error(self):
 
-        self.assertEqual(RefundPolicySettings.objects.count(), 1)
+        self.assertEqual(RefundSettings.objects.count(), 1)
 
         with self.assertRaises(ValidationError) as context:
-            RefundPolicySettings.objects.create(
+            RefundSettings.objects.create(
                 full_payment_full_refund_days=10
             )
 
         self.assertIn(
-            "Only one instance of RefundPolicySettings can be created.",
+            "Only one instance of RefundSettings can be created.",
             str(context.exception),
         )
 
-        self.assertEqual(RefundPolicySettings.objects.count(), 1)
+        self.assertEqual(RefundSettings.objects.count(), 1)
 
     def test_singleton_get_or_create(self):
 
-        self.assertEqual(RefundPolicySettings.objects.count(), 1)
-        initial_instance = RefundPolicySettings.objects.get()
+        self.assertEqual(RefundSettings.objects.count(), 1)
+        initial_instance = RefundSettings.objects.get()
 
-        new_settings, created = RefundPolicySettings.objects.get_or_create(pk=1)
+        new_settings, created = RefundSettings.objects.get_or_create(pk=1)
 
         self.assertFalse(created)
-        self.assertEqual(RefundPolicySettings.objects.count(), 1)
+        self.assertEqual(RefundSettings.objects.count(), 1)
         self.assertEqual(new_settings.pk, initial_instance.pk)
 
     def test_default_values(self):
 
-        RefundPolicySettings.objects.all().delete()
-        settings = RefundPolicySettings.objects.create()
+        RefundSettings.objects.all().delete()
+        settings = RefundSettings.objects.create()
 
         self.assertEqual(settings.full_payment_full_refund_days, 7)
         self.assertEqual(settings.full_payment_partial_refund_days, 3)
@@ -137,5 +137,5 @@ class RefundPolicySettingsModelTests(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        RefundPolicySettings.objects.all().delete()
+        RefundSettings.objects.all().delete()
         super().tearDownClass()

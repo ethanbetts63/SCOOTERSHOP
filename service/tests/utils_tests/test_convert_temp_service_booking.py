@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 
 from service.models import TempServiceBooking, ServiceBooking, ServiceSettings
-from payments.models import Payment, RefundPolicySettings
+from payments.models import Payment, RefundSettings
 
 from service.utils.convert_temp_service_booking import convert_temp_service_booking
 
@@ -12,7 +12,7 @@ from service.utils.convert_temp_service_booking import convert_temp_service_book
 from ..test_helpers.model_factories import (
     TempServiceBookingFactory,
     ServiceSettingsFactory,
-    RefundPolicySettingsFactory,
+    RefundSettingsFactory,
     PaymentFactory,
     ServiceTypeFactory,
     ServiceProfileFactory,
@@ -32,7 +32,7 @@ class ConvertTempServiceBookingTest(TestCase):
             service_profile=cls.service_profile
         )
 
-        cls.refund_policy_settings = RefundPolicySettingsFactory()
+        cls.refund_policy_settings = RefundSettingsFactory()
 
     def setUp(self):
 
@@ -41,9 +41,9 @@ class ConvertTempServiceBookingTest(TestCase):
         Payment.objects.all().delete()
 
         ServiceSettings.objects.all().delete()
-        RefundPolicySettings.objects.all().delete()
+        RefundSettings.objects.all().delete()
         self.service_settings = ServiceSettingsFactory(currency_code="AUD")
-        self.refund_policy_settings = RefundPolicySettingsFactory()
+        self.refund_policy_settings = RefundSettingsFactory()
 
     def test_successful_conversion_without_payment_object(self):
 
@@ -134,8 +134,8 @@ class ConvertTempServiceBookingTest(TestCase):
 
     def test_conversion_without_refund_policy_settings(self):
 
-        RefundPolicySettings.objects.all().delete()
-        self.assertEqual(RefundPolicySettings.objects.count(), 0)
+        RefundSettings.objects.all().delete()
+        self.assertEqual(RefundSettings.objects.count(), 0)
 
         temp_booking = TempServiceBookingFactory(
             service_type=self.service_type,

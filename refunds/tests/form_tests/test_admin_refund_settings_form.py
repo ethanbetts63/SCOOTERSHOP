@@ -2,7 +2,7 @@ from django.test import TestCase
 from decimal import Decimal
 from django.core.exceptions import ValidationError
 from payments.forms import RefundSettingsForm
-from refunds.models import RefundPolicySettings
+from refunds.models import RefundSettings
 
 
 class RefundSettingsFormTests(TestCase):
@@ -22,7 +22,7 @@ class RefundSettingsFormTests(TestCase):
 
     def setUp(self):
 
-        self.refund_settings, created = RefundPolicySettings.objects.get_or_create(
+        self.refund_settings, created = RefundSettings.objects.get_or_create(
             pk=1, defaults=self._get_valid_form_data()
         )
 
@@ -59,7 +59,7 @@ class RefundSettingsFormTests(TestCase):
             Decimal("75.00"),
         )
 
-        self.assertEqual(RefundPolicySettings.objects.count(), 1)
+        self.assertEqual(RefundSettings.objects.count(), 1)
 
     def test_form_invalid_percentage_fields(self):
 
@@ -157,11 +157,11 @@ class RefundSettingsFormTests(TestCase):
             form.save()
 
         self.assertIn(
-            "Only one instance of RefundPolicySettings can be created. Please edit the existing one.",
+            "Only one instance of RefundSettings can be created. Please edit the existing one.",
             str(cm.exception),
         )
 
-        self.assertEqual(RefundPolicySettings.objects.count(), 1)
+        self.assertEqual(RefundSettings.objects.count(), 1)
 
     def test_form_initial_data_for_existing_instance(self):
 

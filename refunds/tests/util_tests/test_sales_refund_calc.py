@@ -10,7 +10,7 @@ from refunds.utils.sales_refund_calc import calculate_sales_refund_amount
 from payments.tests.test_helpers.model_factories import (
     SalesBookingFactory,
     PaymentFactory,
-    RefundPolicySettingsFactory,
+    RefundSettingsFactory,
 )
 
 
@@ -19,7 +19,7 @@ class SalesRefundCalcTests(TestCase):
     @classmethod
     def setUpTestData(cls):
 
-        cls.refund_policy_settings = RefundPolicySettingsFactory()
+        cls.refund_policy_settings = RefundSettingsFactory()
 
         # cls.full_refund_enabled_grace_period_policy = {
         #     "sales_enable_deposit_refund": True,

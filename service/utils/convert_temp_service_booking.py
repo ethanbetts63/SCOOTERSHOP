@@ -2,7 +2,7 @@ from django.db import transaction
 from decimal import Decimal
 from service.utils.send_booking_to_mechanicdesk import send_booking_to_mechanicdesk
 from service.models import ServiceBooking, ServiceSettings
-from refunds.models import RefundPolicySettings
+from refunds.models import RefundSettings
 
 
 def convert_temp_service_booking(
@@ -64,7 +64,7 @@ def convert_temp_service_booking(
                     payment_obj.temp_service_booking = None
 
                 try:
-                    refund_settings = RefundPolicySettings.objects.first()
+                    refund_settings = RefundSettings.objects.first()
                     if refund_settings:
                         payment_obj.refund_policy_snapshot = {
                             "full_payment_full_refund_days": refund_settings.full_payment_full_refund_days,

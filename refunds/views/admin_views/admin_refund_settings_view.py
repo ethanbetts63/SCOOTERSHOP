@@ -3,13 +3,13 @@ from django.views.generic import UpdateView
 from django.contrib import messages
 from django.forms import ValidationError
 from core.mixins import AdminRequiredMixin
-from refunds.models import RefundPolicySettings
+from refunds.models import RefundSettings
 from refunds.forms.refund_settings_form import RefundSettingsForm
 
 
 class AdminRefundSettingsView(AdminRequiredMixin, UpdateView):
 
-    model = RefundPolicySettings
+    model = RefundSettings
     form_class = RefundSettingsForm
     template_name = "refunds/admin_refund_settings.html"
 
@@ -17,7 +17,7 @@ class AdminRefundSettingsView(AdminRequiredMixin, UpdateView):
 
     def get_object(self, queryset=None):
 
-        obj, created = RefundPolicySettings.objects.get_or_create(pk=1)
+        obj, created = RefundSettings.objects.get_or_create(pk=1)
         return obj
 
     def form_valid(self, form):

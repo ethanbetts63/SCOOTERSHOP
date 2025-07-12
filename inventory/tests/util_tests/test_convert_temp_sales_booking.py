@@ -8,7 +8,7 @@ from inventory.models import (
     SalesBooking,
     InventorySettings,
 )
-from refunds.models import RefundPolicySettings
+from refunds.models import RefundSettings
 from inventory.utils.convert_temp_sales_booking import convert_temp_sales_booking
 from ..test_helpers.model_factories import (
     TempSalesBookingFactory,
@@ -16,7 +16,7 @@ from ..test_helpers.model_factories import (
     MotorcycleFactory,
     SalesProfileFactory,
     PaymentFactory,
-    RefundPolicySettingsFactory,
+    RefundSettingsFactory,
 )
 
 
@@ -29,7 +29,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
             currency_code="USD",
         )
 
-        cls.refund_settings = RefundPolicySettingsFactory()
+        cls.refund_settings = RefundSettingsFactory()
 
         cls.motorcycle = MotorcycleFactory(status="available", is_available=True)
         cls.sales_profile = SalesProfileFactory()
@@ -138,8 +138,8 @@ class ConvertTempSalesBookingUtilTest(TestCase):
 
     def test_conversion_with_payment_object_no_refund_settings(self):
 
-        RefundPolicySettings.objects.all().delete()
-        self.assertFalse(RefundPolicySettings.objects.exists())
+        RefundSettings.objects.all().delete()
+        self.assertFalse(RefundSettings.objects.exists())
 
         payment_obj = PaymentFactory(
             temp_sales_booking=None,
@@ -161,7 +161,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         payment_obj.refresh_from_db()
         self.assertEqual(payment_obj.refund_policy_snapshot, {})
 
-        RefundPolicySettingsFactory()
+        RefundSettingsFactory()
 
     def test_conversion_no_inventory_settings(self):
 

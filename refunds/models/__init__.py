@@ -1,3 +1,3 @@
 from .RefundTerms import RefundTerms
-from .RefundPolicySettings import RefundPolicySettings
+from .RefundSettings import RefundSettings
 from .RefundRequest import RefundRequest

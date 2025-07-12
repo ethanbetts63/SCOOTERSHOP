@@ -22,7 +22,7 @@ from inventory.models import (
     FeaturedMotorcycle,
 )
 
-from refunds.models import RefundPolicySettings
+from refunds.models import RefundSettings
 
 from inventory.models.temp_sales_booking import (
     PAYMENT_STATUS_CHOICES as TEMP_PAYMENT_STATUS_CHOICES,
@@ -39,7 +39,7 @@ from inventory.models.sales_booking import (
 
 from payments.models import Payment
 
-from refunds.models import RefundRequest, RefundPolicySettings
+from refunds.models import RefundRequest, RefundSettings
 
 User = get_user_model()
 
@@ -347,9 +347,9 @@ class SalesTermsFactory(factory.django.DjangoModelFactory):
     is_active = True
 
 
-class RefundPolicySettingsFactory(factory.django.DjangoModelFactory):
+class RefundSettingsFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = RefundPolicySettings
+        model = RefundSettings
 
     full_payment_full_refund_days = factory.Faker(
         "random_int", min=5, max=10
