@@ -9,9 +9,11 @@ from dashboard.views import (
     ReviewCreateUpdateView, 
     ReviewDetailsView, 
     ReviewDeleteView,
-    AutopopulateReviewsView
-
+    AutopopulateReviewsView,
+    GoogleMyBusinessSettingsView, 
+    gmb_auth_views
 )
+
 from dashboard.ajax.search_google_reviews import search_google_reviews_ajax
 
 app_name = 'dashboard'
@@ -29,4 +31,10 @@ urlpatterns = [
     path('reviews/<int:pk>/', ReviewDetailsView.as_view(), name='review_details'),
     path('reviews/<int:pk>/delete/', ReviewDeleteView.as_view(), name='review_delete'),
     path('ajax/search-google-reviews/', search_google_reviews_ajax, name='search_google_reviews_ajax'),
+
+    path('settings/gmb/', GoogleMyBusinessSettingsView.as_view(), name='gmb_settings'),
+    path('gmb/auth/', gmb_auth_views.GoogleMyBusinessAuthView.as_view(), name='gmb_auth'),
+    path('gmb/callback/', gmb_auth_views.GoogleMyBusinessCallbackView.as_view(), name='gmb_callback'),
+    path('gmb/disconnect/', gmb_auth_views.GoogleMyBusinessDisconnectView.as_view(), name='gmb_disconnect'),
+
 ]
