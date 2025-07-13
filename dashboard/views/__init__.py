@@ -6,5 +6,7 @@ from .reviews_management_view import ReviewsManagementView
 from .review_create_update_view import ReviewCreateUpdateView
 from .review_delete_view import ReviewDeleteView
 from .autopopulate_reviews_view import AutopopulateReviewsView
-from .gmb_auth_views import *
+from .gmb_auth_view import GoogleMyBusinessAuthView
+from .gmb_callback_view import GoogleMyBusinessCallbackView
+from .gmb_disconnect_view import GoogleMyBusinessDisconnectView
 from .gmb_settings_view import GoogleMyBusinessSettingsView

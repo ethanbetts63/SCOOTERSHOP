@@ -1,4 +1,3 @@
-# This is the updated version of your dashboard/urls.py
 from django.urls import path
 from dashboard.views import (
     DashboardIndexView, 
@@ -11,7 +10,9 @@ from dashboard.views import (
     ReviewDeleteView,
     AutopopulateReviewsView,
     GoogleMyBusinessSettingsView, 
-    gmb_auth_views
+    GoogleMyBusinessAuthView, 
+    GoogleMyBusinessCallbackView, 
+    GoogleMyBusinessDisconnectView
 )
 
 from dashboard.ajax.search_google_reviews import search_google_reviews_ajax
@@ -33,8 +34,8 @@ urlpatterns = [
     path('ajax/search-google-reviews/', search_google_reviews_ajax, name='search_google_reviews_ajax'),
 
     path('settings/gmb/', GoogleMyBusinessSettingsView.as_view(), name='gmb_settings'),
-    path('gmb/auth/', gmb_auth_views.GoogleMyBusinessAuthView.as_view(), name='gmb_auth'),
-    path('gmb/callback/', gmb_auth_views.GoogleMyBusinessCallbackView.as_view(), name='gmb_callback'),
-    path('gmb/disconnect/', gmb_auth_views.GoogleMyBusinessDisconnectView.as_view(), name='gmb_disconnect'),
+    path('gmb/auth/', GoogleMyBusinessAuthView.as_view(), name='gmb_auth'),
+    path('gmb/callback/', GoogleMyBusinessCallbackView.as_view(), name='gmb_callback'),
+    path('gmb/disconnect/', GoogleMyBusinessDisconnectView.as_view(), name='gmb_disconnect'),
 
 ]
