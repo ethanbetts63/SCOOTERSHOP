@@ -7,7 +7,7 @@ class ReviewsManagementView(AdminRequiredMixin, ListView):
     View to list all curated reviews for the admin.
     """
     model = Review
-    template_name = "dashboard/admin_reviews_management.html"
+    template_name = "dashboard/reviews_management.html"
     context_object_name = "reviews"
     paginate_by = 15
 

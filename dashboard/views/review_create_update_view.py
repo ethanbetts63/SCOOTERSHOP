@@ -10,7 +10,7 @@ class ReviewCreateUpdateView(AdminRequiredMixin, View):
     """
     View to handle both creation of new reviews and updates to existing ones.
     """
-    template_name = "dashboard/admin_review_create.html"
+    template_name = "dashboard/review_create_update.html"
     form_class = ReviewForm
 
     def get(self, request, pk=None, *args, **kwargs):
