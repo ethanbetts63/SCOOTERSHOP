@@ -11,7 +11,9 @@ class ServiceTypeFactory(factory.django.DjangoModelFactory):
         model = ServiceType
 
     name = factory.Faker("word")
-    cost = factory.Faker("pydecimal", left_digits=3, right_digits=2, positive=True)
+    description = factory.Faker("text")
+    estimated_duration = factory.Faker("random_int", min=1, max=5)
+    base_price = factory.Faker("pydecimal", left_digits=3, right_digits=2, positive=True)
 
 class ServiceProfileFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -24,10 +26,14 @@ class CustomerMotorcycleFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = CustomerMotorcycle
 
-    owner = factory.SubFactory(ServiceProfileFactory)
-    make = factory.Faker("word")
+    service_profile = factory.SubFactory(ServiceProfileFactory)
+    brand = factory.Faker("word")
     model = factory.Faker("word")
     year = factory.Faker("year")
+    rego = factory.Faker("license_plate")
+    odometer = factory.Faker("random_int", min=1000, max=50000)
+    transmission = "MANUAL"
+    engine_size = "250cc"
 
 class ServiceBookingFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -38,5 +44,6 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
     customer_motorcycle = factory.SubFactory(CustomerMotorcycleFactory)
     amount_paid = factory.Faker("pydecimal", left_digits=3, right_digits=2, positive=True)
     payment_method = "online_deposit"
+    service_date = factory.LazyFunction(lambda: timezone.now().date() + timezone.timedelta(days=10))
     dropoff_date = factory.LazyFunction(lambda: timezone.now().date() + timezone.timedelta(days=10))
     dropoff_time = factory.LazyFunction(lambda: timezone.now().time())

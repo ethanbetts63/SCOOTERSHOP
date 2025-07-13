@@ -7,9 +7,8 @@ def calculate_service_refund_amount(booking, cancellation_datetime: datetime = N
     if not cancellation_datetime:
         cancellation_datetime = timezone.now()
 
-    try:
-        refund_settings = RefundSettings.objects.first()
-    except RefundSettings.DoesNotExist:
+    refund_settings = RefundSettings.objects.first()
+    if not refund_settings:
         return {
             "entitled_amount": Decimal("0.00"),
             "details": "Refund settings not configured.",
