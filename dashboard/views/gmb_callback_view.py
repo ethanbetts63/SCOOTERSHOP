@@ -6,6 +6,8 @@ from django.contrib import messages
 from dashboard.models import GoogleMyBusinessAccount
 from inventory.mixins import AdminRequiredMixin
 
+GMB_SCOPES = ['https://www.googleapis.com/auth/business.manage']
+
 
 class GoogleMyBusinessCallbackView(AdminRequiredMixin, View):
     """
