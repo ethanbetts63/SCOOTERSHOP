@@ -1,3 +1,7 @@
 from .dashboard_index import *
 from .settings_business_info import SettingsBusinessInfoView
 from .settings_visibility import SettingsVisibilityView
+from .review_details_view import ReviewDetailsView
+from .reviews_management_view import ReviewsManagementView
+from .review_create_update_view import ReviewCreateUpdateView
+from .review_delete_view import ReviewDeleteView
