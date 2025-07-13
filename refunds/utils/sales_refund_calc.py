@@ -7,21 +7,19 @@ def calculate_sales_refund_amount(booking, cancellation_datetime: datetime = Non
     if not cancellation_datetime:
         cancellation_datetime = timezone.now()
 
-    try:
-        refund_settings = RefundSettings.objects.first()
-    except RefundSettings.DoesNotExist:
+    refund_settings = RefundSettings.objects.first()
+    
+    if not refund_settings:
         return {
             "entitled_amount": Decimal("0.00"),
             "details": "Refund settings not configured.",
             "policy_applied": "N/A",
-        }
-
-    time_difference = cancellation_datetime - booking.created_at
-    days_since_booking = time_difference.days
-
-    total_paid = booking.amount_paid or Decimal("0.00")
-    entitled_amount = Decimal("0.00")
-    policy_applied = "No Refund"
+    }
+    """
+    This is missing? 
+    days_since_booking 
+    total_paid 
+    """
 
     if days_since_booking >= refund_settings.deposit_full_refund_days:
         entitled_amount = total_paid

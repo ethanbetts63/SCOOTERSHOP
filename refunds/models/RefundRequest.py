@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from payments.models.PaymentModel import Payment
+from payments.models import Payment
 import uuid
 from django.utils import timezone
 
