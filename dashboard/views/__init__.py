@@ -5,3 +5,4 @@ from .review_details_view import ReviewDetailsView
 from .reviews_management_view import ReviewsManagementView
 from .review_create_update_view import ReviewCreateUpdateView
 from .review_delete_view import ReviewDeleteView
+from .autopopulate_reviews_view import AutopopulateReviewsView

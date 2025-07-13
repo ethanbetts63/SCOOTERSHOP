@@ -29,7 +29,7 @@ def search_google_reviews_ajax(request):
         print("API key or Place ID not configured")
         return JsonResponse({"error": "Google API key or Place ID is not configured."}, status=500)
 
-    url = f"https://maps.googleapis.com/maps/api/place/details/json?place_id={place_id}&fields=name,review&key={api_key}"
+    url = f"https://maps.googleapis.com/maps/api/place/details/json?place_id={place_id}&fields=name,review&key={api_key}&reviews_sort=newest"
     print(f"Request URL: {url}")
     
     try:

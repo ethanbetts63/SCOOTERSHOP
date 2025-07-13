@@ -48,6 +48,14 @@
     .btn-create:hover {
         background-color: #16a34a;
     }
+    .btn-autopopulate {
+        color: #ffffff;
+        background-color: #3b82f6; /* blue-500 */
+        border: 1px solid #2563eb; /* blue-600 */
+    }
+    .btn-autopopulate:hover {
+        background-color: #2563eb;
+    }
     .status-dot {
         height: 0.75rem;
         width: 0.75rem;
@@ -71,7 +79,7 @@
             <div class="flex space-x-2">
                 <form action="{% url 'dashboard:autopopulate_reviews' %}" method="post" class="inline">
                     {% csrf_token %}
-                    <button type="submit" class="action-button btn-create">Autopopulate</button>
+                    <button type="submit" class="action-button btn-autopopulate">Autopopulate</button>
                 </form>
                 <a href="{% url 'dashboard:review_create' %}" class="action-button btn-create">
                     Create New Review
