@@ -31,6 +31,7 @@
         #reviews-dropdown .dropdown-item {
             padding: 10px;
             cursor: pointer;
+            color: #000;
         }
         #reviews-dropdown .dropdown-item:hover {
             background-color: #f0f0f0;
@@ -41,6 +42,7 @@
             border-radius: 0.25rem;
             margin-top: 1rem;
             display: none;
+            color: #000;
         }
     </style>
 {% endblock %}
@@ -66,7 +68,7 @@
 
             <div class="flex items-center justify-start space-x-4 mt-6">
                 <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md">
-                    Create Review
+                    Add Review
                 </button>
                 <a href="{% url 'dashboard:reviews_management' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                     Cancel
@@ -89,6 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
     searchInput.addEventListener('keyup', function() {
         clearTimeout(timeout);
         const query = searchInput.value.trim();
+        console.log(`Query: ${query}`);
 
         if (query.length < 3) {
             dropdown.style.display = 'none';
@@ -96,16 +99,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         timeout = setTimeout(() => {
+            console.log("Fetching reviews...");
             fetch(`{% url 'dashboard:search_google_reviews_ajax' %}?query=${query}`)
-                .then(response => response.json())
+                .then(response => {
+                    console.log("Response received from server");
+                    return response.json();
+                })
                 .then(data => {
+                    console.log("Data received:", data);
                     dropdown.innerHTML = '';
                     if (data.reviews && data.reviews.length > 0) {
+                        console.log(`${data.reviews.length} reviews found`);
                         data.reviews.forEach(review => {
                             const item = document.createElement('div');
                             item.classList.add('dropdown-item');
                             item.textContent = `${review.author_name}: ${review.text.substring(0, 50)}...`;
                             item.addEventListener('click', () => {
+                                console.log("Review selected:", review);
                                 document.getElementById('id_author_name').value = review.author_name;
                                 document.getElementById('id_rating').value = review.rating;
                                 document.getElementById('id_text').value = review.text;
@@ -124,6 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
                         dropdown.style.display = 'block';
                     } else {
+                        console.log("No reviews found");
                         dropdown.style.display = 'none';
                     }
                 })

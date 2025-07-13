@@ -8,7 +8,8 @@ from dashboard.views import (
     ReviewsManagementView, 
     ReviewCreateUpdateView, 
     ReviewDetailsView, 
-    ReviewDeleteView
+    ReviewDeleteView,
+    AutopopulateReviewsView
 
 )
 from dashboard.ajax.search_google_reviews import search_google_reviews_ajax
@@ -24,6 +25,7 @@ urlpatterns = [
     # Review Management URLs
     path('reviews/', ReviewsManagementView.as_view(), name='reviews_management'),
     path('reviews/create/', ReviewCreateUpdateView.as_view(), name='review_create'),
+    path('reviews/autopopulate/', AutopopulateReviewsView.as_view(), name='autopopulate_reviews'),
     path('reviews/<int:pk>/', ReviewDetailsView.as_view(), name='review_details'),
     path('reviews/<int:pk>/delete/', ReviewDeleteView.as_view(), name='review_delete'),
     path('ajax/search-google-reviews/', search_google_reviews_ajax, name='search_google_reviews_ajax'),

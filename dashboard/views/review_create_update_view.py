@@ -15,7 +15,7 @@ class ReviewCreateUpdateView(AdminRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
         form = self.form_class()
-        page_title = "Create Review"
+        page_title = "Add Review"
 
         context = {
             "form": form,
@@ -26,7 +26,7 @@ class ReviewCreateUpdateView(AdminRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST)
-        page_title = "Create Review"
+        page_title = "Add Review"
 
         if form.is_valid():
             review = form.save()

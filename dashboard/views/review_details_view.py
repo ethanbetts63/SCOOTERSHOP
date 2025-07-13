@@ -4,7 +4,7 @@ from dashboard.models import Review
 
 class ReviewDetailsView(AdminRequiredMixin, DetailView):
     model = Review
-    template_name = "dashboard/admin_review_details.html"
+    template_name = "dashboard/review_details.html"
     context_object_name = "review"
 
     def get_context_data(self, **kwargs):
