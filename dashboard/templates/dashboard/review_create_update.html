@@ -21,6 +21,27 @@
             border-radius: initial;
             box-shadow: none;
         }
+        #reviews-dropdown {
+            border: 1px solid #ccc;
+            border-top: none;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        #reviews-dropdown .dropdown-item {
+            padding: 10px;
+            cursor: pointer;
+        }
+        #reviews-dropdown .dropdown-item:hover {
+            background-color: #f0f0f0;
+        }
+        #selected-review-details {
+            border: 1px solid #ccc;
+            padding: 1rem;
+            border-radius: 0.25rem;
+            margin-top: 1rem;
+            display: none;
+        }
     </style>
 {% endblock %}
 
@@ -29,30 +50,23 @@
     <div class="bg-white shadow-lg rounded-lg p-6 md:p-8 max-w-4xl mx-auto">
         <h2 class="text-2xl font-bold text-gray-800 mb-6">{{ page_title }}</h2>
 
-        <form method="post" class="space-y-6">
-            {% csrf_token %}
+        <div class="form-group">
+            <label for="review-search" class="block text-gray-700 text-sm font-medium mb-2">Search for a Review</label>
+            <input type="text" id="review-search" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Start typing to search for reviews...">
+            <div id="reviews-dropdown" class="bg-white shadow-lg rounded-b-md"></div>
+        </div>
 
-            {% for field in form %}
-                <div class="form-group">
-                    <label for="{{ field.id_for_label }}" class="block text-gray-700 text-sm font-medium mb-2">
-                        {{ field.label }}
-                        {% if field.field.required %}
-                            <span class="text-red-500">*</span>
-                        {% endif %}
-                    </label>
-                    {{ field }}
-                    {% if field.help_text %}
-                        <div class="text-gray-600 text-xs italic mt-1">{{ field.help_text|safe }}</div>
-                    {% endif %}
-                    {% for error in field.errors %}
-                        <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endfor %}
+        <div id="selected-review-details"></div>
+
+        <form method="post" class="space-y-6 mt-6">
+            {% csrf_token %}
+            <div style="display:none;">
+                {{ form.as_p }}
+            </div>
 
             <div class="flex items-center justify-start space-x-4 mt-6">
                 <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md">
-                    {% if is_edit_mode %}Update Review{% else %}Create Review{% endif %}
+                    Create Review
                 </button>
                 <a href="{% url 'dashboard:reviews_management' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                     Cancel
@@ -61,4 +75,70 @@
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('review-search');
+    const dropdown = document.getElementById('reviews-dropdown');
+    const selectedReviewDetails = document.getElementById('selected-review-details');
+    let timeout = null;
+
+    searchInput.addEventListener('keyup', function() {
+        clearTimeout(timeout);
+        const query = searchInput.value.trim();
+
+        if (query.length < 3) {
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        timeout = setTimeout(() => {
+            fetch(`{% url 'dashboard:search_google_reviews_ajax' %}?query=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    dropdown.innerHTML = '';
+                    if (data.reviews && data.reviews.length > 0) {
+                        data.reviews.forEach(review => {
+                            const item = document.createElement('div');
+                            item.classList.add('dropdown-item');
+                            item.textContent = `${review.author_name}: ${review.text.substring(0, 50)}...`;
+                            item.addEventListener('click', () => {
+                                document.getElementById('id_author_name').value = review.author_name;
+                                document.getElementById('id_rating').value = review.rating;
+                                document.getElementById('id_text').value = review.text;
+                                document.getElementById('id_profile_photo_url').value = review.profile_photo_url;
+                                
+                                selectedReviewDetails.innerHTML = `
+                                    <h3 class="text-lg font-bold">Selected Review</h3>
+                                    <p><strong>Author:</strong> ${review.author_name}</p>
+                                    <p><strong>Rating:</strong> ${review.rating}</p>
+                                    <p><strong>Review:</strong> ${review.text}</p>
+                                `;
+                                selectedReviewDetails.style.display = 'block';
+                                dropdown.style.display = 'none';
+                            });
+                            dropdown.appendChild(item);
+                        });
+                        dropdown.style.display = 'block';
+                    } else {
+                        dropdown.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching reviews:', error);
+                    dropdown.style.display = 'none';
+                });
+        }, 500);
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+});
+</script>
 {% endblock %}

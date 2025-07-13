@@ -11,6 +11,7 @@ from dashboard.views import (
     ReviewDeleteView
 
 )
+from dashboard.ajax.search_google_reviews import search_google_reviews_ajax
 
 app_name = 'dashboard'
 
@@ -24,6 +25,6 @@ urlpatterns = [
     path('reviews/', ReviewsManagementView.as_view(), name='reviews_management'),
     path('reviews/create/', ReviewCreateUpdateView.as_view(), name='review_create'),
     path('reviews/<int:pk>/', ReviewDetailsView.as_view(), name='review_details'),
-    path('reviews/<int:pk>/update/', ReviewCreateUpdateView.as_view(), name='review_update'),
     path('reviews/<int:pk>/delete/', ReviewDeleteView.as_view(), name='review_delete'),
+    path('ajax/search-google-reviews/', search_google_reviews_ajax, name='search_google_reviews_ajax'),
 ]

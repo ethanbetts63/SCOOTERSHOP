@@ -1,4 +1,7 @@
 from django.views.generic import ListView
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
+from django.contrib import messages
 from inventory.mixins import AdminRequiredMixin
 from dashboard.models import Review
 
@@ -18,3 +21,22 @@ class ReviewsManagementView(AdminRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["page_title"] = "Display Reviews Management"
         return context
+
+    def post(self, request, *args, **kwargs):
+        review_id = request.POST.get("review_id")
+        action = request.POST.get("action")
+        review = get_object_or_404(Review, id=review_id)
+
+        if action == "increment":
+            review.display_order += 1
+            review.save()
+            messages.success(request, f"Display order for review by '{review.author_name}' incremented.")
+        elif action == "decrement":
+            if review.display_order > 0:
+                review.display_order -= 1
+                review.save()
+                messages.success(request, f"Display order for review by '{review.author_name}' decremented.")
+            else:
+                messages.warning(request, "Display order cannot be less than 0.")
+        
+        return redirect(reverse("dashboard:reviews_management"))
