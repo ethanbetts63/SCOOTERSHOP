@@ -20,7 +20,8 @@ from service.models import (
     ServiceTerms,
 )
 
-from payments.models import Payment, RefundSettings
+from payments.models import Payment
+from refunds.models import RefundSettings
 from dashboard.models import SiteSettings # Import SiteSettings
 
 from service.utils.calculate_estimated_pickup_date import (
@@ -228,7 +229,6 @@ class PaymentFactory(factory.django.DjangoModelFactory):
     stripe_payment_intent_id = factory.Sequence(lambda n: f"pi_{uuid.uuid4().hex[:24]}")
     stripe_payment_method_id = factory.Sequence(lambda n: f"pm_{uuid.uuid4().hex[:24]}")
     refunded_amount = Decimal("0.00")
-    refund_policy_snapshot = {}
     temp_service_booking = None
     service_booking = None
     service_customer_profile = None

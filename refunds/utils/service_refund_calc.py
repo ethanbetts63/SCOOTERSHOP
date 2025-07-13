@@ -33,9 +33,9 @@ def calculate_service_refund_amount(booking, cancellation_datetime: datetime = N
             percentage = refund_settings.deposit_partial_refund_percentage / Decimal("100")
             entitled_amount = total_paid * percentage
             policy_applied = f"Partial Deposit Refund ({refund_settings.deposit_partial_refund_percentage}%)"
-        elif days_before_dropoff >= refund_settings.deposit_no_refund_days:
+        else:
             entitled_amount = Decimal("0.00")
-            policy_applied = f"No Deposit Refund ({refund_settings.deposit_no_refund_days} or more days before drop-off)"
+            policy_applied = f"No Deposit Refund (less than {refund_settings.deposit_no_refund_days} days before drop-off)"
     else: # full payment
         if days_before_dropoff >= refund_settings.full_payment_full_refund_days:
             entitled_amount = total_paid
@@ -44,9 +44,9 @@ def calculate_service_refund_amount(booking, cancellation_datetime: datetime = N
             percentage = refund_settings.full_payment_partial_refund_percentage / Decimal("100")
             entitled_amount = total_paid * percentage
             policy_applied = f"Partial Payment Refund ({refund_settings.full_payment_partial_refund_percentage}%)"
-        elif days_before_dropoff >= refund_settings.full_payment_no_refund_percentage:
+        else:
             entitled_amount = Decimal("0.00")
-            policy_applied = f"No Payment Refund ({refund_settings.full_payment_no_refund_percentage} or more days before drop-off)"
+            policy_applied = f"No Payment Refund (less than {refund_settings.full_payment_no_refund_percentage} days before drop-off)"
 
     entitled_amount = max(Decimal("0.00"), min(entitled_amount, total_paid))
 
