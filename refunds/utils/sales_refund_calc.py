@@ -15,11 +15,8 @@ def calculate_sales_refund_amount(booking, cancellation_datetime: datetime = Non
             "details": "Refund settings not configured.",
             "policy_applied": "N/A",
     }
-    """
-    This is missing? 
-    days_since_booking 
-    total_paid 
-    """
+    days_since_booking = (cancellation_datetime - booking["created_at"]).days
+    total_paid = booking["total_paid"]
 
     if days_since_booking >= refund_settings.deposit_full_refund_days:
         entitled_amount = total_paid
