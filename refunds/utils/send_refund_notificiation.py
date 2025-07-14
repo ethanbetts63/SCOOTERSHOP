@@ -72,15 +72,10 @@ def send_refund_notifications(
             template_name="user_refund_processed_confirmation.html",
             context=email_context,
             booking=booking_for_email,
-            service_profile=(
+            profile=(
                 booking_obj.service_profile
                 if booking_type_str == "service_booking"
-                else None
-            ),
-            sales_profile=(
-                booking_obj.sales_profile
-                if booking_type_str == "sales_booking"
-                else None
+                else booking_obj.sales_profile
             ),
         )
 
@@ -113,4 +108,5 @@ def send_refund_notifications(
             template_name="admin_refund_processed_notification.html",
             context=admin_email_context,
             booking=booking_for_email,
+            profile=None,
         )
