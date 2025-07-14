@@ -8,16 +8,13 @@ class CustomerMotorcycleForm(forms.ModelForm):
         label=_("Please specify brand name"),
         required=False,
         max_length=100,
-        help_text=_("Required if 'Other' is selected for brand."),
+        help_text=_("Please note: we do not usually work on brands outside our select list due to part availibility and expertise but we will take your service into consideration."),
         widget=forms.TextInput,
     )
 
     brand = forms.ChoiceField(
         label=_("Motorcycle Brand"),
         widget=forms.Select,
-        help_text=_(
-            "Select the brand of your motorcycle. Choose 'Other' if your brand is not listed. Please note we normally do not work on bike not in the displayed list."
-        ),
         required=True,
     )
 

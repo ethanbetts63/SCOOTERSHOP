@@ -25,12 +25,14 @@
                         <div>
                             <label for="{{ form.brand.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.brand.label }}{% if form.brand.field.required %}<span class="text-red-500">*</span>{% endif %}</label>
                             {{ form.brand }}
+                            {% if form.brand.help_text %}<p class="mt-2 text-sm text-gray-500">{{ form.brand.help_text }}</p>{% endif %}
                             {% if form.brand.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.brand.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
                         </div>
 
                         <div id="otherBrandNameDiv" style="display: none;">
                             <label for="{{ form.other_brand_name.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.other_brand_name.label }}<span id="other-brand-asterisk" class="text-red-500"></span></label>
                             {{ form.other_brand_name }}
+                            {% if form.other_brand_name.help_text %}<p class="mt-2 text-sm text-gray-500">{{ form.other_brand_name.help_text }}</p>{% endif %}
                             {% if form.other_brand_name.errors %}<div class="mt-1 text-sm text-red-600">{% for error in form.other_brand_name.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
                         </div>
 
