@@ -54,7 +54,7 @@ class AdminAddEditRefundRequestView(AdminRequiredMixin, View):
         else:
             form = AdminRefundRequestForm(request.POST)
 
-        admin_management_redirect_url = "payments:admin_refund_management"
+        admin_management_redirect_url = "refunds:admin_refund_management"
 
         if form.is_valid():
             refund_request_instance = form.save(commit=False)
