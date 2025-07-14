@@ -29,9 +29,6 @@
                 let pollInterval;
                 const MAX_POLL_ATTEMPTS = 30; // Approx 60 seconds
                 let pollAttempts = 0;
-
-                // --- MODIFICATION START ---
-                // Add a counter for consecutive errors
                 let consecutiveErrors = 0;
                 const MAX_CONSECUTIVE_ERRORS = 3; // Allow for 3 failed attempts (6 seconds) before showing an error
 

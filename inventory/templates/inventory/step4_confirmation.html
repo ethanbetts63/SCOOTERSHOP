@@ -11,12 +11,14 @@
         <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Your Sales Booking Request</h2>
 
         {% if is_processing %}
-            <div id="processing-message" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6" role="alert">
-                <p>Your booking is currently being finalized. This may take a moment. Please do not close this window.</p>
-                <p class="mt-2 text-sm">We are confirming your payment and reserving the motorcycle for you.</p>
-                <p class="mt-2 text-sm font-semibold">Status: Processing...</p>
+            <div id="processing-message-container">
+                <div id="processing-message" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6" role="alert">
+                    <p>Your booking is currently being finalized. This may take a moment. Please do not close this window.</p>
+                    <p class="mt-2 text-sm">We are confirming your payment and reserving the motorcycle for you.</p>
+                    <p class="mt-2 text-sm font-semibold">Status: Processing...</p>
+                </div>
             </div>
-            <div class="text-center mt-8">
+            <div id="spinner" class="text-center mt-8">
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
                 <p class="mt-4 text-gray-600">Please wait while we confirm your booking.</p>
             </div>
@@ -24,8 +26,24 @@
             <script>
                 const paymentIntentId = "{{ payment_intent_id }}";
                 const checkStatusUrl = "{% url 'inventory:ajax_sales_payment_status_check' %}";
-                let errorCount = 0;
-                const maxErrors = 3;
+                
+                // --- MODIFICATION START ---
+                let consecutiveErrors = 0;
+                const MAX_CONSECUTIVE_ERRORS = 3; // Allow for 3 failed attempts (9 seconds) before showing an error
+                const POLLING_INTERVAL = 3000; // 3 seconds
+
+                const messageContainer = document.getElementById('processing-message-container');
+                const spinner = document.getElementById('spinner');
+
+                function showErrorState(message) {
+                    spinner.style.display = 'none';
+                    messageContainer.innerHTML = `
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
+                            <p>${message}</p>
+                        </div>
+                    `;
+                }
+                // --- MODIFICATION END ---
 
                 function pollBookingStatus() {
                     fetch(`${checkStatusUrl}?payment_intent_id=${paymentIntentId}`)
@@ -37,27 +55,41 @@
                         })
                         .then(data => {
                             if (data.status === 'ready') {
+                                // On success, redirect to the same page to load the full confirmation details
                                 window.location.href = window.location.pathname + '?payment_intent_id=' + paymentIntentId;
                             } else if (data.status === 'processing') {
-                                setTimeout(pollBookingStatus, 3000);
+                                // --- MODIFICATION START ---
+                                // Reset error counter on a successful "processing" status
+                                consecutiveErrors = 0;
+                                // Continue polling
+                                setTimeout(pollBookingStatus, POLLING_INTERVAL);
+                                // --- MODIFICATION END ---
                             } else {
-                                const messageDiv = document.getElementById('processing-message');
-                                messageDiv.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
-                                messageDiv.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
-                                messageDiv.innerHTML = `<p>${data.message || 'Booking finalization failed. Please contact support.'}</p>`;
+                                // Handle explicit "error" status from the server
+                                // --- MODIFICATION START ---
+                                console.error('Received error status from server:', data.message);
+                                consecutiveErrors++;
+                                if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+                                    showErrorState(data.message || 'Booking finalization failed. Please contact support.');
+                                } else {
+                                    // Retry on error
+                                    setTimeout(pollBookingStatus, POLLING_INTERVAL);
+                                }
+                                // --- MODIFICATION END ---
                             }
                         })
                         .catch(error => {
+                            // Handle network errors or other fetch failures
+                            // --- MODIFICATION START ---
                             console.error('Error polling booking status:', error);
-                            errorCount++;
-                            if (errorCount >= maxErrors) {
-                                const messageDiv = document.getElementById('processing-message');
-                                messageDiv.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
-                                messageDiv.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
-                                messageDiv.innerHTML = `<p>An error occurred while checking status. Please try refreshing or contact support.</p>`;
+                            consecutiveErrors++;
+                            if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+                                showErrorState('An error occurred while checking the booking status. Please refresh the page or contact support.');
                             } else {
-                                setTimeout(pollBookingStatus, 3000); // Retry on error
+                                // Retry on error
+                                setTimeout(pollBookingStatus, POLLING_INTERVAL);
                             }
+                            // --- MODIFICATION END ---
                         });
                 }
 

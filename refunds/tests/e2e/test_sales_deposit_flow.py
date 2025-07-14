@@ -1,4 +1,3 @@
-
 import datetime
 from decimal import Decimal
 import stripe
@@ -65,11 +64,9 @@ class TestSalesDepositRefundFlow(TestCase):
         booking = SalesBooking.objects.create(
             sales_profile=self.sales_profile,
             motorcycle=self.motorcycle,
-            payment_method="online_deposit",
             payment_status="deposit_paid",
             booking_status="confirmed",
             amount_paid=self.deposit_amount,
-            total_price=self.motorcycle.price,
         )
         payment.sales_booking = booking
         payment.save()
