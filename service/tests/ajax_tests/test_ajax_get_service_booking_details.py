@@ -12,6 +12,7 @@ from service.ajax.ajax_get_service_booking_details import (
 )
 
 
+from refunds.models import RefundSettings
 from ..test_helpers.model_factories import (
     ServiceBookingFactory,
     ServiceProfileFactory,
@@ -19,6 +20,7 @@ from ..test_helpers.model_factories import (
     ServiceTypeFactory,
     PaymentFactory,
     UserFactory,
+    RefundSettingsFactory
 )
 
 
@@ -52,6 +54,7 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
             booking_status="confirmed",
             customer_notes="Test notes for booking details.",
         )
+        self.refund_settings = RefundSettingsFactory()
 
     def test_get_service_booking_details_success(self):
 

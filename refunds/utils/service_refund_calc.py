@@ -54,4 +54,5 @@ def calculate_service_refund_amount(booking, cancellation_datetime: datetime = N
         "entitled_amount": entitled_amount.quantize(Decimal("0.01")),
         "details": f"Cancellation {days_before_dropoff} days before drop-off. Policy: {policy_applied}",
         "policy_applied": policy_applied,
+        "days_before_dropoff": days_before_dropoff,
     }

@@ -85,6 +85,7 @@ def get_service_booking_details_json(request, pk):
         if latest_refund_request:
             refund_status_for_booking = latest_refund_request.get_status_display()
 
+        cancellation_datetime = timezone.now()
         refund_calculation_results = calculate_service_refund_amount(
             booking=service_booking,
             cancellation_datetime=cancellation_datetime,
