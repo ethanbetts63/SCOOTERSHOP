@@ -1,14 +1,7 @@
 from functools import wraps
 from django.http import JsonResponse
 
-
 def admin_required(view_func):
-    """
-    Decorator for views that checks that the user is logged in and is a staff
-    member. Returns a 403 Forbidden response if the user is not a staff member.
-    Returns a 401 Unauthorized response if the user is not authenticated.
-    """
-
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
         if not request.user.is_authenticated:
