@@ -22,6 +22,7 @@
           "url": "{{ request.scheme }}://{{ request.get_host }}{% url 'core:index' %}",
           "telephone": "{{ settings.phone_number }}",
           "email": "{{ settings.email_address }}",
+          
           "address": {
             "@type": "PostalAddress",
             "streetAddress": "{{ settings.street_address }}",
@@ -29,7 +30,36 @@
             "addressRegion": "{{ settings.address_region }}",
             "postalCode": "{{ settings.postal_code }}"
           },
-          "openingHours": "By Appointment Only"
+          "serviceArea": [
+            { "@type": "Place", "name": "Dianella" },
+            { "@type": "Place", "name": "Morley" },
+            { "@type": "Place", "name": "Bedford" },
+            { "@type": "Place", "name": "Inglewood" },
+            { "@type": "Place", "name": "Yokine" },
+            { "@type": "Place", "name": "Nollamara" },
+            { "@type": "Place", "name": "Balcatta" },
+            { "@type": "Place", "name": "Stirling" },
+            { "@type": "Place", "name": "Tuart Hill" },
+            { "@type": "Place", "name": "Osborne Park" },
+            { "@type": "Place", "name": "Joondalup" },
+            { "@type": "Place", "name": "Joondanna" },
+            { "@type": "Place", "name": "Coolbinia" },
+            { "@type": "Place", "name": "Menora" },
+            { "@type": "Place", "name": "North Perth" },
+            { "@type": "Place", "name": "Leederville" },
+            { "@type": "Place", "name": "Subiaco" },
+            { "@type": "Place", "name": "Bayswater" },
+            { "@type": "Place", "name": "Maylands" },
+            { "@type": "Place", "name": "Embleton" },
+            { "@type": "Place", "name": "Mount Lawley" },
+            { "@type": "Place", "name": "Highgate" },
+            { "@type": "Place", "name": "Perth CBD" },
+            { "@type": "Place", "name": "Scarborough" },
+            { "@type": "Place", "name": "Victoria Park" },
+            { "@type": "Place", "name": "Fremantle" },
+            { "@type": "Place", "name": "Northbridge" }
+          ],
+          "openingHours": "By Appointment Only", 
         }
         </script>
     </head>
