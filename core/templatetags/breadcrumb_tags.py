@@ -18,21 +18,37 @@ def breadcrumbs(context):
         'url': reverse('core:index') # Assuming 'core:index' is the name for your home URL
     })
 
-    for i, part in enumerate(path_parts):
-        current_path += part + '/'
-        # Attempt to resolve the URL part to a view name or just use the part itself
-        # This is a simplified approach; a more robust solution might involve a mapping
-        # or more complex URL resolution.
-        try:
-            # This part is tricky as reverse needs a view name.
-            # For now, we'll just construct the URL directly.
-            # A better approach would be to have a lookup for display names and URLs.
-            pass
-        except:
-            pass # Handle cases where part doesn't directly map to a named URL
+    IGNORED_SLUGS = ['service-book', 'step1', 'step2', 'step3', 'step4', 'step5', 'step6', 'step7', 'step8', 'step9', 'step10', 'inventory', 'motorcycles'
+]
 
-        # Capitalize and replace hyphens for display name
-        display_name = part.replace('-', ' ').replace('_', ' ').title()
+    for i, part in enumerate(path_parts):
+        if part in IGNORED_SLUGS:
+            continue
+
+        current_path += part + '/'
+        
+        # Improve display names for common slugs
+        display_name_map = {
+            'service': 'Service',
+            'new': 'New Bikes',
+            'used': 'Used Bikes',
+            'contact': 'Contact Us',
+            'privacy': 'Privacy Policy',
+            'returns': 'Returns Policy',
+            'security': 'Security Policy',
+            'terms': 'Terms of Use',
+            'enquiries': 'Enquiries',
+            'dashboard': 'Dashboard',
+            'login': 'Login',
+            'register': 'Register',
+            'logout': 'Logout',
+            'refunds': 'Refunds',
+            'user-refund-request': 'Refund Request',
+            'refund-policy': 'Refund Policy',
+            'sales-terms': 'Sales Terms',
+            'service-booking-terms': 'Service Booking Terms',
+        }
+        display_name = display_name_map.get(part, part.replace('-', ' ').replace('_', ' ').title())
         
         # For the last part, it's the current page, so it's not a link
         if i == len(path_parts) - 1:
