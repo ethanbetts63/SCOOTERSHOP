@@ -129,7 +129,7 @@ class TestSalesDepositRefundFlow(TestCase):
         # 5. Assertions
         self.booking.refresh_from_db()
         self.assertEqual(self.booking.payment_status, "refunded")
-        self.assertEqual(self.booking.booking_status, "cancelled")
+        self.assertEqual(self.booking.booking_status, "declined_refunded")
 
         refund_request.refresh_from_db()
         self.assertEqual(refund_request.status, "refunded")
