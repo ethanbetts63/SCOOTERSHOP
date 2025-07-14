@@ -146,16 +146,7 @@ class UserVerifyRefundView(View):
                 template_name="admin_refund_request_notification.html",
                 context=admin_email_context,
                 booking=booking_object,
-                service_profile=(
-                    customer_profile_object
-                    if isinstance(customer_profile_object, ServiceProfile)
-                    else None
-                ),
-                sales_profile=(
-                    customer_profile_object
-                    if isinstance(customer_profile_object, SalesProfile)
-                    else None
-                ),
+                profile=customer_profile_object,
             )
 
             messages.success(

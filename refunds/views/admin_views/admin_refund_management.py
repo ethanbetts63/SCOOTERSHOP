@@ -74,16 +74,7 @@ class AdminRefundManagement(AdminRequiredMixin, ListView):
                         template_name="user_refund_request_expired_unverified.html",
                         context=user_email_context,
                         booking=booking_object,
-                        service_profile=(
-                            customer_profile_object
-                            if isinstance(customer_profile_object, ServiceProfile)
-                            else None
-                        ),
-                        sales_profile=(
-                            customer_profile_object
-                            if isinstance(customer_profile_object, SalesProfile)
-                            else None
-                        ),
+                        profile=customer_profile_object,
                     )
                 else:
                     pass
