@@ -105,16 +105,7 @@ class AdminRejectRefundView(AdminRequiredMixin, View):
                             template_name="user_refund_request_rejected.html",
                             context=user_email_context,
                             booking=booking_object,
-                            service_profile=(
-                                customer_profile_object
-                                if isinstance(customer_profile_object, ServiceProfile)
-                                else None
-                            ),
-                            sales_profile=(
-                                customer_profile_object
-                                if isinstance(customer_profile_object, SalesProfile)
-                                else None
-                            ),
+                            profile=customer_profile_object,
                         )
                         messages.info(
                             request, "Automated rejection email sent to the user."
@@ -156,16 +147,7 @@ class AdminRejectRefundView(AdminRequiredMixin, View):
                     template_name="admin_refund_request_rejected.html",
                     context=admin_email_context,
                     booking=booking_object,
-                    service_profile=(
-                        customer_profile_object
-                        if isinstance(customer_profile_object, ServiceProfile)
-                        else None
-                    ),
-                    sales_profile=(
-                        customer_profile_object
-                        if isinstance(customer_profile_object, SalesProfile)
-                        else None
-                    ),
+                    profile=customer_profile_object,
                 )
                 messages.info(
                     request, "Admin notification email sent regarding the rejection."
