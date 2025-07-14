@@ -55,7 +55,7 @@ class SalesProfileModelTest(TestCase):
     def test_phone_number_field(self):
         field = self.sales_profile_with_user._meta.get_field("phone_number")
         self.assertIsInstance(self.sales_profile_with_user.phone_number, str)
-        self.assertEqual(field.max_length, 20)
+        self.assertEqual(field.max_length, 30)
         self.assertFalse(field.blank)
         self.assertFalse(field.null)
         self.assertEqual(field.help_text, "Phone number of the customer.")
