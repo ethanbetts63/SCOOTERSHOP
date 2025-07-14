@@ -15,7 +15,7 @@ class SalesProfile(models.Model):
     name = models.CharField(max_length=100, help_text="Full name of the customer.")
     email = models.EmailField(help_text="Email address of the customer.")
     phone_number = models.CharField(
-        max_length=20, help_text="Phone number of the customer."
+        max_length=30, help_text="Phone number of the customer."
     )
 
     address_line_1 = models.CharField(
