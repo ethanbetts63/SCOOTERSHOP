@@ -23,11 +23,8 @@ def update_associated_bookings_and_payments(
             booking_obj.payment_status = "paid"
 
         if booking_type_str == "service_booking":
-            if (
-                booking_obj.booking_status == "declined"
-                and booking_obj.payment_status == "refunded"
-            ):
-                booking_obj.booking_status = "DECLINED_REFUNDED"
+            if booking_obj.payment_status == "refunded":
+                booking_obj.booking_status = "cancelled"
         elif booking_type_str == "sales_booking":
 
             if (

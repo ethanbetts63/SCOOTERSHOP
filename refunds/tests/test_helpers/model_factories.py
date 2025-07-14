@@ -4,16 +4,23 @@ from faker import Faker
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from decimal import Decimal
+import datetime
 
 from refunds.models import RefundSettings
 from inventory.models.sales_booking import SalesBooking
 from inventory.models.motorcycle import Motorcycle
 from inventory.models.sales_profile import SalesProfile
-from service.models.service_booking import ServiceBooking
-from service.models.service_type import ServiceType
-from service.models.service_profile import ServiceProfile
-from service.models.customer_motorcycle import CustomerMotorcycle
+from service.models import (
+    ServiceBooking, 
+    ServiceType, 
+    ServiceProfile, 
+    CustomerMotorcycle, 
+    ServiceSettings, 
+    ServiceBrand, 
+    ServiceTerms
+)
 from payments.models import Payment
+from dashboard.models import SiteSettings
 
 fake = Faker()
 
@@ -144,3 +151,81 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
     amount_paid = Decimal("100.00")
     payment_method = "online_deposit"
     service_date = factory.LazyFunction(timezone.now)
+
+class ServiceSettingsFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ServiceSettings
+        django_get_or_create = ("pk",)
+
+    booking_advance_notice = 1
+    max_visible_slots_per_day = 6
+    booking_open_days = "Mon,Tue,Wed,Thu,Fri"
+    drop_off_start_time = datetime.time(9, 0)
+    drop_off_end_time = datetime.time(17, 0)
+    drop_off_spacing_mins = 30
+    max_advance_dropoff_days = 7
+    latest_same_day_dropoff_time = datetime.time(12, 0)
+
+    enable_after_hours_dropoff = False
+    after_hours_dropoff_disclaimer = factory.Faker("paragraph", nb_sentences=3)
+    enable_online_deposit = True
+    deposit_calc_method = "FLAT_FEE"
+    deposit_flat_fee_amount = Decimal("1.00")
+    deposit_percentage = Decimal("0.00")
+    enable_online_full_payment = False
+    enable_instore_full_payment = True
+    currency_code = "AUD"
+    currency_symbol = "$"
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        obj, created = model_class.objects.get_or_create(pk=1, defaults=kwargs)
+        if not created:
+            for k, v in kwargs.items():
+                setattr(obj, k, v)
+            obj.save()
+        return obj
+
+class ServiceBrandFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ServiceBrand
+        django_get_or_create = ("name",)
+
+    name = factory.Sequence(lambda n: f"Brand {n}")
+
+class ServiceTermsFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ServiceTerms
+
+    content = factory.Faker("paragraph")
+    version_number = factory.Sequence(lambda n: n + 1)
+    is_active = True
+
+class SiteSettingsFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = SiteSettings
+        django_get_or_create = ('pk',)
+
+    phone_number = factory.Faker('phone_number')
+    email_address = factory.Faker('email')
+    storefront_address = factory.Faker('address')
+    google_places_place_id = factory.Faker('md5')
+    youtube_link = factory.Faker('url')
+    instagram_link = factory.Faker('url')
+    facebook_link = factory.Faker('url')
+    opening_hours_monday = '9:00 AM - 5:00 PM'
+    opening_hours_tuesday = '9:00 AM - 5:00 PM'
+    opening_hours_wednesday = '9:00 AM - 5:00 PM'
+    opening_hours_thursday = '9:00 AM - 5:00 PM'
+    opening_hours_friday = '9:00 AM - 5:00 PM'
+    opening_hours_saturday = 'Closed'
+    opening_hours_sunday = 'Closed'
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        obj, created = model_class.objects.get_or_create(pk=1, defaults=kwargs)
+        if not created:
+            for k, v in kwargs.items():
+                setattr(obj, k, v)
+            obj.save()
+        return obj

@@ -1,3 +1,4 @@
+
 import datetime
 from decimal import Decimal
 import stripe
@@ -28,16 +29,14 @@ from ..test_helpers.model_factories import (
 
 @skipIf(not settings.STRIPE_SECRET_KEY, "Stripe API key not configured in settings")
 @override_settings(ADMIN_EMAIL="admin@example.com")
-class TestServiceDepositRefundFlow(TestCase):
+class TestServiceFullPaymentRefundFlow(TestCase):
 
     def setUp(self):
         self.client = Client()
         SiteSettingsFactory()
-        self.deposit_amount = Decimal("50.00")
+        self.full_amount = Decimal("500.00")
         self.service_settings = ServiceSettingsFactory(
-            enable_online_deposit=True,
-            deposit_calc_method="FLAT_FEE",
-            deposit_flat_fee_amount=self.deposit_amount,
+            enable_online_full_payment=True,
             booking_advance_notice=1,
             drop_off_start_time=datetime.time(9, 0),
             drop_off_end_time=datetime.time(17, 0),
@@ -45,35 +44,35 @@ class TestServiceDepositRefundFlow(TestCase):
             currency_code="AUD",
         )
         self.service_type = ServiceTypeFactory(
-            name="Service Deposit Refund Test", base_price=Decimal("500.00"), is_active=True
+            name="Service Full Payment Refund Test", base_price=self.full_amount, is_active=True
         )
-        self.user = UserFactory(username="refunduser")
+        self.user = UserFactory(username="fullrefunduser")
         self.service_profile = ServiceProfileFactory(
-            user=self.user, name="Refund Test User", email="refund@user.com", country="AU"
+            user=self.user, name="Full Refund Test User", email="fullrefund@user.com", country="AU"
         )
         self.motorcycle = CustomerMotorcycleFactory(
-            service_profile=self.service_profile, brand="Yamaha", model="MT-07"
+            service_profile=self.service_profile, brand="Honda", model="CBR500R"
         )
-        ServiceBrandFactory(name="Yamaha")
+        ServiceBrandFactory(name="Honda")
         self.client.force_login(self.user)
         stripe.api_key = settings.STRIPE_SECRET_KEY
         ServiceTermsFactory(is_active=True)
 
-        # Create a service booking with a deposit
-        self.booking = self._create_service_booking_with_deposit()
+        # Create a service booking with a full payment
+        self.booking = self._create_service_booking_with_full_payment()
 
-    def _create_service_booking_with_deposit(self):
+    def _create_service_booking_with_full_payment(self):
         # This is a simplified version of the booking flow
         # to create a booking with a payment object.
         payment = Payment.objects.create(
             service_booking=None, # Initially null
-            amount=self.deposit_amount,
+            amount=self.full_amount,
             status='succeeded',
             currency='aud',
         )
         
         intent = stripe.PaymentIntent.create(
-            amount=int(self.deposit_amount * 100),
+            amount=int(self.full_amount * 100),
             currency='aud',
             payment_method_types=['card'],
             payment_method='pm_card_visa',
@@ -89,23 +88,23 @@ class TestServiceDepositRefundFlow(TestCase):
             service_date=timezone.now().date() + datetime.timedelta(days=5),
             dropoff_date=timezone.now().date() + datetime.timedelta(days=5),
             dropoff_time="10:00",
-            payment_method="online_deposit",
-            payment_status="deposit_paid",
+            payment_method="online_full",
+            payment_status="paid",
             booking_status="confirmed",
-            amount_paid=self.deposit_amount,
+            amount_paid=self.full_amount,
             calculated_total=self.service_type.base_price,
         )
         payment.service_booking = booking
         payment.save()
         return booking
 
-    def test_service_deposit_refund_flow(self):
+    def test_service_full_payment_refund_flow(self):
         # 1. Create a RefundRequest with status 'approved'
         payment = Payment.objects.get(service_booking=self.booking)
         refund_request = RefundRequest.objects.create(
             payment=payment,
             service_booking=self.booking,
-            amount_to_refund=self.deposit_amount,
+            amount_to_refund=self.full_amount,
             status="approved",
             is_admin_initiated=True,
         )
@@ -116,7 +115,7 @@ class TestServiceDepositRefundFlow(TestCase):
         try:
             refund = stripe.Refund.create(
                 payment_intent=payment_intent_id,
-                amount=int(self.deposit_amount * 100),
+                amount=int(self.full_amount * 100),
                 reason='requested_by_customer',
             )
         except stripe.error.StripeError as e:
@@ -140,7 +139,7 @@ class TestServiceDepositRefundFlow(TestCase):
                     "id": charge_id,
                     "object": "charge",
                     "amount": int(self.service_type.base_price * 100),
-                    "amount_refunded": int(self.deposit_amount * 100),
+                    "amount_refunded": int(self.full_amount * 100),
                     "payment_intent": payment_intent_id,
                     "refunds": {
                         "object": "list",
@@ -160,4 +159,4 @@ class TestServiceDepositRefundFlow(TestCase):
 
         refund_request.refresh_from_db()
         self.assertEqual(refund_request.status, "refunded")
-        self.assertEqual(refund_request.amount_to_refund, self.deposit_amount)
+        self.assertEqual(refund_request.amount_to_refund, self.full_amount)
