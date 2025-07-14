@@ -23,7 +23,14 @@ class SiteSettings(models.Model):
                                                      
     phone_number = models.CharField(max_length=20, blank=True, null=True, default='(08) 9433 4613')
     email_address = models.EmailField(blank=True, null=True, default='admin@scootershop.com.au')
-    storefront_address = models.TextField(blank=True, null=True, default='Unit 2/95 Queen Victoria St, Fremantle WA, Australia')
+    # Deprecated: Use street_address, address_locality, address_region, postal_code instead
+    storefront_address = models.TextField(blank=True, null=True, help_text="Deprecated: Use street_address, address_locality, address_region, postal_code instead.")
+    
+    street_address = models.CharField(max_length=255, blank=True, null=True, default='Unit 2/95 Queen Victoria St')
+    address_locality = models.CharField(max_length=100, blank=True, null=True, default='Fremantle')
+    address_region = models.CharField(max_length=100, blank=True, null=True, default='WA')
+    postal_code = models.CharField(max_length=20, blank=True, null=True, default='6160')
+    
     google_places_place_id = models.CharField(max_length=255, blank=True, null=True, help_text="Google Places Place ID for the storefront location", default="ChIJy_zrHmGhMioRisz6mis0SpQ")
     youtube_link = models.CharField(max_length=255, blank=True, null=True)
     instagram_link = models.CharField(max_length=255, blank=True, null=True)

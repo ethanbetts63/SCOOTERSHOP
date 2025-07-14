@@ -216,7 +216,7 @@
                         <ul class="space-y-2 text-base text-gray-300">
                             {% if settings.display_phone_number and settings.phone_number %}<li>Phone: {{ settings.phone_number }}</li>{% endif %}
                             {% if settings.email_address %}<li>Email: {{ settings.email_address }}</li>{% endif %}
-                            {% if settings.display_address and settings.storefront_address %}<li>Address: {{ settings.storefront_address|linebreaksbr }}</li>{% endif %}
+                            {% if settings.display_address and settings.street_address %}<li>Address: {{ settings.street_address }}<br>{{ settings.address_locality }}, {{ settings.address_region }} {{ settings.postal_code }}</li>{% endif %}
                             {% if settings.display_opening_hours %}
                                 <li class="pt-2 font-semibold">Hours:</li>
                                 {% if settings.opening_hours_monday %}<li>Mon: {{ settings.opening_hours_monday }}</li>{% endif %}
