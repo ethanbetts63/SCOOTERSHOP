@@ -144,15 +144,15 @@
         <div class="max-w-7xl mx-auto px-4 py-2">
             {% get_breadcrumbs as breadcrumb_data %}
             <nav class="flex justify-end" aria-label="Breadcrumb">
-                <ol class="flex items-center space-x-2 md:space-x-4">
+                <ol class="flex items-center">
                     {% for breadcrumb in breadcrumb_data.breadcrumbs %}
                         <li class="inline-flex items-center">
                             {% if breadcrumb.url %}
-                                <a href="{{ breadcrumb.url }}" class="inline-flex items-center text-sm font-medium text-gray-400 hover:text-white">
+                                <a href="{{ breadcrumb.url }}" class="inline-flex items-center text-sm font-medium text-gray-400 hover:text-white pr-1">
                                     {{ breadcrumb.name }}
                                 </a>
                                 {% if not forloop.last %}
-                                    <span class="mx-2 text-gray-400">/</span>
+                                    <span class="text-gray-400">/</span>
                                 {% endif %}
                             {% else %}
                                 <span class="text-sm font-medium text-gray-200">
