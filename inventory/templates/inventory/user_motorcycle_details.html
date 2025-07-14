@@ -2,7 +2,7 @@
 {% load static %}
 {% load youtube %}
 
-{% block title %}{{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }} for Sale | Allbikes and Vespa Warehouse{% endblock %}
+{% block title %}{{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }} for Sale Perth | Allbikes and Vespa Warehouse{% endblock %}
 {% block meta_description %}Check out this {{ motorcycle.get_conditions_display|lower }} {{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }} for sale at Allbikes and Vespa Warehouse in Perth. {{ motorcycle.description|truncatewords:20 }}{% endblock %}
 {% block meta_keywords %}{{ motorcycle.brand }} {{ motorcycle.model }}, {{ motorcycle.year }} scooter, {{ motorcycle.get_conditions_display|lower }} scooter for sale, scooter perth, {{ motorcycle.brand }} for sale{% endblock %}
 
@@ -220,6 +220,65 @@
         </div>
     {% endif %}
 </div>
+
+<!-- Product Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": "{{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }}",
+  "image": [
+    {% if motorcycle.image %}
+      "{{ request.scheme }}://{{ request.get_host }}{{ motorcycle.image.url }}"{% if motorcycle.images.all %},{% endif %}
+    {% endif %}
+    {% for img in motorcycle.images.all %}
+      "{{ request.scheme }}://{{ request.get_host }}{{ img.image.url }}"{% if not forloop.last %},{% endif %}
+    {% endfor %}
+   ],
+  "description": "{{ motorcycle.description|escapejs }}",
+  "sku": "{{ motorcycle.stock_number }}",
+  "brand": {
+    "@type": "Brand",
+    "name": "{{ motorcycle.brand }}"
+  },
+  {% if motorcycle.price %}
+  "offers": {
+    "@type": "Offer",
+    "url": "{{ request.scheme }}://{{ request.get_host }}{{ request.path }}",
+    "priceCurrency": "{{ inventory_settings.currency_iso_code|default:'AUD' }}",
+    "price": "{{ motorcycle.price }}",
+    "priceValidUntil": "{{ motorcycle.price_valid_until|date:'Y-m-d' }}",
+    "itemCondition": "{% if 'New' in motorcycle.get_conditions_display %}https://schema.org/NewCondition{% else %}https://schema.org/UsedCondition{% endif %}",
+    "availability": "{% if motorcycle.is_available %}https://schema.org/InStock{% else %}https://schema.org/SoldOut{% endif %}"
+  },
+  {% endif %}
+  "additionalProperty": [
+    {
+      "@type": "PropertyValue",
+      "name": "Year",
+      "value": "{{ motorcycle.year }}"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "Engine Size",
+      "value": "{{ motorcycle.engine_size }} cc"
+    },
+    {% if 'New' not in motorcycle.get_conditions_display %}
+    {
+      "@type": "PropertyValue",
+      "name": "Odometer",
+      "value": "{{ motorcycle.odometer|floatformat:0 }} km"
+    },
+    {% endif %}
+    {
+        "@type": "PropertyValue",
+        "name": "Transmission",
+        "value": "{{ motorcycle.get_transmission_display }}"
+    }
+  ]
+}
+</script>
+
 {% endblock %}
 
 {% block extra_js %}
