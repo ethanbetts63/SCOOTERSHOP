@@ -4,7 +4,8 @@ from unittest.mock import patch
 
 
 from service.models import TempServiceBooking, ServiceBooking, ServiceSettings
-from payments.models import Payment, RefundSettings
+from payments.models import Payment
+from refunds.models import RefundSettings
 
 from service.utils.convert_temp_service_booking import convert_temp_service_booking
 
