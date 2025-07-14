@@ -158,6 +158,8 @@ class Step5PaymentDropoffAndTermsView(View):
                             "booking": final_service_booking,
                             "profile": final_service_booking.service_profile,
                             "after_hours_drop_off_instructions": self.service_settings.after_hours_drop_off_instructions,
+                            "SITE_DOMAIN": settings.SITE_DOMAIN,
+                            "SITE_SCHEME": settings.SITE_SCHEME,
                         }
                         email_sent = send_templated_email(
                             recipient_list=[user_email],
@@ -187,6 +189,8 @@ class Step5PaymentDropoffAndTermsView(View):
                             context={
                                 "booking": final_service_booking,
                                 "profile": final_service_booking.service_profile,
+                                "SITE_DOMAIN": settings.SITE_DOMAIN,
+                                "SITE_SCHEME": settings.SITE_SCHEME,
                             },
                             booking=final_service_booking,
                             profile=final_service_booking.service_profile,

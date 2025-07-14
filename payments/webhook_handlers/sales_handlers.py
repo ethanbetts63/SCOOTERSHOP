@@ -67,6 +67,8 @@ def handle_sales_booking_succeeded(payment_obj: Payment, payment_intent_data: di
             ),
             "sales_profile": sales_profile,
             "is_deposit_confirmed": sales_booking.payment_status == "deposit_paid",
+            "SITE_DOMAIN": settings.SITE_DOMAIN,
+            "SITE_SCHEME": settings.SITE_SCHEME,
         }
 
         user_email = (

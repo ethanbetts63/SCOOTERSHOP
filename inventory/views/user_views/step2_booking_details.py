@@ -160,6 +160,8 @@ class Step2BookingDetailsView(View):
                         "booking": converted_sales_booking,
                         "sales_profile": converted_sales_booking.sales_profile,
                         "is_deposit_confirmed": False,
+                        "SITE_DOMAIN": settings.SITE_DOMAIN,
+                        "SITE_SCHEME": settings.SITE_SCHEME,
                     }
                     user_email = converted_sales_booking.sales_profile.email
 

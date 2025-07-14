@@ -127,6 +127,8 @@ class UserVerifyRefundView(View):
                 "calculated_refund_amount": calculated_refund_amount,
                 "admin_refund_link": admin_refund_link,
                 "booking_reference": booking_reference_for_email,
+                "SITE_DOMAIN": settings.SITE_DOMAIN,
+                "SITE_SCHEME": settings.SITE_SCHEME,
             }
 
             admin_recipient_list = [

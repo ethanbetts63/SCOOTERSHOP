@@ -95,6 +95,8 @@ class AdminRejectRefundView(AdminRequiredMixin, View):
                         "refund_request": refund_request_instance,
                         "admin_email": settings.DEFAULT_FROM_EMAIL,
                         "booking_reference": booking_reference_for_email,
+                        "SITE_DOMAIN": settings.SITE_DOMAIN,
+                        "SITE_SCHEME": settings.SITE_SCHEME,
                     }
                     try:
                         send_templated_email(
@@ -144,6 +146,8 @@ class AdminRejectRefundView(AdminRequiredMixin, View):
                 "admin_email": settings.DEFAULT_FROM_EMAIL,
                 "admin_refund_link": admin_refund_link,
                 "booking_reference": booking_reference_for_email,
+                "SITE_DOMAIN": settings.SITE_DOMAIN,
+                "SITE_SCHEME": settings.SITE_SCHEME,
             }
             try:
                 send_templated_email(

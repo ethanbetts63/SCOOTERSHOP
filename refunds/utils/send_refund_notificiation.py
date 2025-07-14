@@ -63,6 +63,8 @@ def send_refund_notifications(
             ),
             "refund_policy_link": settings.SITE_BASE_URL + "/returns/",
             "admin_message_from_refund": admin_message_for_email,
+            "SITE_DOMAIN": settings.SITE_DOMAIN,
+            "SITE_SCHEME": settings.SITE_SCHEME,
         }
         send_templated_email(
             recipient_list=[user_email],
@@ -102,6 +104,8 @@ def send_refund_notifications(
             "refund_request_staff_notes": (
                 refund_request.staff_notes if refund_request else ""
             ),
+            "SITE_DOMAIN": settings.SITE_DOMAIN,
+            "SITE_SCHEME": settings.SITE_SCHEME,
         }
         send_templated_email(
             recipient_list=[settings.ADMIN_EMAIL],

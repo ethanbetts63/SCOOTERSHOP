@@ -25,7 +25,7 @@ class SalesEnquiryView(View):
                 recipient_list=[enquiry.email],
                 subject="Enquiry Received - Scooter Shop",
                 template_name="user_general_enquiry_notification.html",
-                context={'enquiry': enquiry},
+                context={'enquiry': enquiry, "SITE_DOMAIN": settings.SITE_DOMAIN, "SITE_SCHEME": settings.SITE_SCHEME},
                 booking=enquiry,
                 profile=enquiry,
             )
@@ -35,7 +35,7 @@ class SalesEnquiryView(View):
                 recipient_list=[settings.ADMIN_EMAIL],
                 subject="New Enquiry - Scooter Shop",
                 template_name="admin_general_enquiry_notification.html",
-                context={'enquiry': enquiry},
+                context={'enquiry': enquiry, "SITE_DOMAIN": settings.SITE_DOMAIN, "SITE_SCHEME": settings.SITE_SCHEME},
                 booking=enquiry,
                 profile=enquiry,
             )

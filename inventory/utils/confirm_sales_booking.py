@@ -38,6 +38,8 @@ def confirm_sales_booking(sales_booking_id, message=None, send_notification=True
                     "motorcycle": motorcycle,
                     "admin_message": message,
                     "action_type": "confirmation",
+                    "SITE_DOMAIN": settings.SITE_DOMAIN,
+                    "SITE_SCHEME": settings.SITE_SCHEME,
                 }
 
                 customer_email_subject = (

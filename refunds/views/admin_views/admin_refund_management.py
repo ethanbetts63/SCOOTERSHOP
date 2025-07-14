@@ -65,6 +65,8 @@ class AdminRefundManagement(AdminRequiredMixin, ListView):
                         "admin_email": getattr(
                             settings, "ADMIN_EMAIL", settings.DEFAULT_FROM_EMAIL
                         ),
+                        "SITE_DOMAIN": settings.SITE_DOMAIN,
+                        "SITE_SCHEME": settings.SITE_SCHEME,
                     }
                     send_templated_email(
                         recipient_list=[recipient_email],

@@ -53,6 +53,8 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
                 context={
                     "booking": service_booking,
                     "profile": service_profile,
+                    "SITE_DOMAIN": settings.SITE_DOMAIN,
+                    "SITE_SCHEME": settings.SITE_SCHEME,
                 },
                 booking=service_booking,
                 profile=service_profile,
@@ -66,6 +68,8 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
                 context={
                     "booking": service_booking,
                     "profile": service_profile,
+                    "SITE_DOMAIN": settings.SITE_DOMAIN,
+                    "SITE_SCHEME": settings.SITE_SCHEME,
                 },
                 booking=service_booking,
                 profile=service_profile,

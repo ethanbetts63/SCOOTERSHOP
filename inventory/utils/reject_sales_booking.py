@@ -98,6 +98,8 @@ def reject_sales_booking(
                     "action_type": "rejection",
                     "refund_request_pending": False,
                     "refund_amount_requested": None,
+                    "SITE_DOMAIN": settings.SITE_DOMAIN,
+                    "SITE_SCHEME": settings.SITE_SCHEME,
                 }
 
                 customer_email_subject = (
