@@ -275,7 +275,18 @@
         "name": "Transmission",
         "value": "{{ motorcycle.get_transmission_display }}"
     }
-  ]
+  ],
+  {% if motorcycle.youtube_link %}
+  "video": {
+    "@type": "VideoObject",
+    "name": "{{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }} Walkaround",
+    "description": "{{ motorcycle.description|escapejs }}",
+    "thumbnailUrl": "https://img.youtube.com/vi/{{ motorcycle.youtube_link|get_youtube_id }}/hqdefault.jpg",
+    "embedUrl": "https://www.youtube.com/embed/{{ motorcycle.youtube_link|get_youtube_id }}",
+    "uploadDate": "{{ motorcycle.created_at|date:'Y-m-d' }}",
+    "contentUrl": "https://www.youtube.com/watch?v={{ motorcycle.youtube_link|get_youtube_id }}"
+  }
+  {% endif %}
 }
 </script>
 
