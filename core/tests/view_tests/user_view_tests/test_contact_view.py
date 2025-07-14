@@ -71,7 +71,7 @@ class ContactViewTest(TestCase):
             recipient_list=[enquiry.email],
             subject="Enquiry Received - Scooter Shop",
             template_name="user_general_enquiry_notification.html",
-            context={"enquiry": enquiry},
+            context={"enquiry": enquiry, 'SITE_DOMAIN': '127.0.0.1:8000', 'SITE_SCHEME': 'http'},
             booking=enquiry,
             profile=enquiry,
         )
@@ -79,7 +79,7 @@ class ContactViewTest(TestCase):
             recipient_list=["admin@example.com"],
             subject="New Enquiry - Scooter Shop",
             template_name="admin_general_enquiry_notification.html",
-            context={"enquiry": enquiry},
+            context={"enquiry": enquiry, 'SITE_DOMAIN': '127.0.0.1:8000', 'SITE_SCHEME': 'http'},
             booking=enquiry,
             profile=enquiry,
         )
