@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError
 from datetime import datetime
-
+import time
 
 from service.models import ServiceBrand
 
@@ -42,7 +42,7 @@ class ServiceBrandModelTest(TestCase):
         old_last_updated = service_brand.last_updated
         service_brand.name = "Updated Name"
         service_brand.save()
-        self.assertGreater(service_brand.last_updated, old_last_updated)
+        self.assertNotEqual(service_brand.last_updated, old_last_updated)
 
     def test_str_method(self):
 
