@@ -1,6 +1,24 @@
 {% if sales_faqs %}
 <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 my-6">
     <h4 class="text-lg font-bold text-gray-800 mb-3">{{ title|default:"Frequently Asked Questions" }}</h4>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {% for faq in sales_faqs %}
+        {
+          "@type": "Question",
+          "name": "{{ faq.question|escapejs }}",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "{{ faq.answer|linebreaksbr|escapejs }}"
+          }
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ]
+    }
+    </script>
     
     <div class="space-y-3" id="faq-accordion">
         {% for faq in sales_faqs %}
