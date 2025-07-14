@@ -9,8 +9,7 @@ import uuid
 
 from refunds.forms.user_refund_request_form import RefundRequestForm
 from mailer.utils import send_templated_email
-from service.models import ServiceProfile
-from inventory.models import SalesProfile
+
 
 
 class UserRefundRequestView(View):
@@ -72,6 +71,8 @@ class UserRefundRequestView(View):
                 "refund_policy_link": refund_policy_link,
                 "admin_email": admin_email,
                 "booking_reference": booking_reference_for_email,
+                "SITE_DOMAIN": settings.SITE_DOMAIN,
+                "SITE_SCHEME": settings.SITE_SCHEME,
             }
 
             send_templated_email(
@@ -80,16 +81,7 @@ class UserRefundRequestView(View):
                 template_name="user_refund_request_verification.html",
                 context=user_email_context,
                 booking=booking_object,
-                service_profile=(
-                    customer_profile_object
-                    if isinstance(customer_profile_object, ServiceProfile)
-                    else None
-                ),
-                sales_profile=(
-                    customer_profile_object
-                    if isinstance(customer_profile_object, SalesProfile)
-                    else None
-                ),
+                profile=customer_profile_object,
             )
 
             messages.success(
