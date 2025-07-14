@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const box = document.getElementById(elementId);
         if (!box || images.length === 0) {
             if (box) {
-                box.style.backgroundImage = "url('{% static 'images/default_scooter_bg.jpg' %}')";
+                box.style.backgroundColor = "#1F2937"; // Equivalent to Tailwind's bg-gray-900
             }
             return;
         }
