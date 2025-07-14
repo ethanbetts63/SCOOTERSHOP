@@ -51,7 +51,7 @@ class UserVerifyRefundView(View):
                     request,
                     "This refund request has already been verified or processed.",
                 )
-                return redirect(reverse("payments:user_verified_refund"))
+                return redirect(reverse("refunds:user_verified_refund"))
 
             token_validity_hours = 24
             if (timezone.now() - refund_request.token_created_at) > timedelta(
@@ -61,7 +61,7 @@ class UserVerifyRefundView(View):
                     request,
                     "The verification link has expired. Please submit a new refund request.",
                 )
-                return redirect(reverse("payments:user_refund_request"))
+                return redirect(reverse("refunds:user_refund_request"))
 
             refund_request.status = "pending"
             refund_request.save()
@@ -74,7 +74,7 @@ class UserVerifyRefundView(View):
             booking_object = None
             customer_profile_object = None
 
-            admin_link_name = "payments:edit_refund_request"
+            admin_link_name = "refunds:edit_refund_request"
 
             if refund_request.service_booking:
                 calculated_refund_result = calculate_service_refund_amount(
@@ -161,7 +161,7 @@ class UserVerifyRefundView(View):
             messages.success(
                 request, "Your refund request has been successfully verified!"
             )
-            return redirect(reverse("payments:user_verified_refund"))
+            return redirect(reverse("refunds:user_verified_refund"))
 
         except Http404:
             messages.error(

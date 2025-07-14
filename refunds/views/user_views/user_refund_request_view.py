@@ -36,7 +36,7 @@ class UserRefundRequestView(View):
             refund_request.save()
 
             verification_link = request.build_absolute_uri(
-                reverse("payments:user_verify_refund")
+                reverse("refunds:user_verify_refund")
                 + f"?token={str(refund_request.verification_token)}"
             )
 
@@ -83,7 +83,7 @@ class UserRefundRequestView(View):
                 request,
                 "Your refund request has been submitted. Please check your email to confirm your request.",
             )
-            return redirect(reverse("payments:user_confirmation_refund_request"))
+            return redirect(reverse("refunds:user_confirmation_refund_request"))
 
         else:
             context = {

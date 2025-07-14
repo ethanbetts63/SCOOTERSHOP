@@ -7,7 +7,7 @@ class UserConfirmationRefundRequestViewTests(TestCase):
     def setUp(self):
 
         self.client = Client()
-        self.confirmation_url = reverse("payments:user_confirmation_refund_request")
+        self.confirmation_url = reverse("refunds:user_confirmation_refund_request")
 
     def test_get_request_renders_correctly(self):
 

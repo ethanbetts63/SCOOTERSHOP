@@ -43,7 +43,7 @@ class AdminRejectRefundView(AdminRequiredMixin, View):
         booking_reference_for_email = "N/A"
         booking_object = None
         customer_profile_object = None
-        admin_management_redirect_url = "payments:admin_refund_management"
+        admin_management_redirect_url = "refunds:admin_refund_management"
         admin_edit_link_name = None
 
         if refund_request_instance.service_booking:
@@ -52,16 +52,16 @@ class AdminRejectRefundView(AdminRequiredMixin, View):
             )
             booking_object = refund_request_instance.service_booking
             customer_profile_object = refund_request_instance.service_profile
-            admin_management_redirect_url = "payments:admin_refund_management"
-            admin_edit_link_name = "payments:edit_refund_request"
+            admin_management_redirect_url = "refunds:admin_refund_management"
+            admin_edit_link_name = "refunds:edit_refund_request"
         elif refund_request_instance.sales_booking:
             booking_reference_for_email = (
                 refund_request_instance.sales_booking.sales_booking_reference
             )
             booking_object = refund_request_instance.sales_booking
             customer_profile_object = refund_request_instance.sales_profile
-            admin_management_redirect_url = "payments:admin_refund_management"
-            admin_edit_link_name = "payments:edit_refund_request"
+            admin_management_redirect_url = "refunds:admin_refund_management"
+            admin_edit_link_name = "refunds:edit_refund_request"
 
         if form.is_valid():
             refund_request_instance = form.save(commit=False)

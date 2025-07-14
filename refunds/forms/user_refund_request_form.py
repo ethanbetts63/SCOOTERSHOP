@@ -11,7 +11,7 @@ class RefundRequestForm(forms.ModelForm):
         max_length=50,
         label=_("Booking Reference"),
         help_text=_(
-            "Enter your unique booking reference number (e.g., SERVICE-XXXXX, or SBK-XXXXX)."
+            "Enter your unique booking reference number (e.g., SVC-XXXXX, or SBK-XXXXX)."
         ),
     )
     email = forms.EmailField(
