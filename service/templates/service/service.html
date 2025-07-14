@@ -37,6 +37,32 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Service Schema for each service type -->
+        <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "name": "{{ service_type.name }}",
+          "description": "{{ service_type.description }}",
+          {% if service_type.image %}
+          "image": "{{ request.scheme }}://{{ request.get_host }}{{ service_type.image.url }}",
+          {% endif %}
+          "serviceType": "{{ service_type.name }}",
+          "provider": {
+            "@type": "MotorcycleRepair",
+            "name": "Allbikes and Vespa Warehouse"
+          },
+          {% if service_type.base_price %}
+          "offers": {
+            "@type": "Offer",
+            "price": "{{ service_type.base_price }}",
+            "priceCurrency": "AUD"
+          }
+          {% endif %}
+        }
+        </script>
+
         {% empty %}
         <div class="lg:col-span-2 bg-gray-900 rounded-lg p-8 text-center">
             <h3 class="text-xl font-bold text-white">More Services Available</h3>
@@ -49,5 +75,28 @@
 <div class="container mx-auto px-4 mt-8 mb-12">
     {% include 'service/_service_faq_include.html' %}
 </div>
+
+<!-- FAQPage Schema -->
+{% if faqs %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+        {% for faq in faqs %}
+        {
+            "@type": "Question",
+            "name": "{{ faq.question|escapejs }}",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "{{ faq.answer|escapejs }}"
+            }
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ]
+}
+</script>
+{% endif %}
+
 
 {% endblock %}
