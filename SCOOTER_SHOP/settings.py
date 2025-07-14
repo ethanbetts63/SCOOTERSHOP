@@ -7,7 +7,12 @@ load_dotenv()
 
 STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
 STRIPE_WEBHOOK_SECRET= os.getenv('STRIPE_WEBHOOK_SECRET')
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+SITE_DOMAIN = os.getenv('SITE_DOMAIN', '127.0.0.1:8000')
+SITE_SCHEME = os.getenv('SITE_SCHEME', 'http')
+
 
 
 SECRET_KEY = "django-insecure-w0&@r2_2x%j*$jy12&hb_g6qgt%ppkdx**+%!l@gf8v*%91v7z"

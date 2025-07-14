@@ -16,4 +16,6 @@ def site_settings(request):
     return {
         'settings': settings_object, 
         'service_types': service_types_list,
+        'SITE_DOMAIN': settings.SITE_DOMAIN,
+        'SITE_SCHEME': settings.SITE_SCHEME,
     }
