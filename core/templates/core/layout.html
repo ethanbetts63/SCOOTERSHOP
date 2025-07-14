@@ -14,74 +14,22 @@
         <script type="application/ld+json">
         {
           "@context": "https://schema.org",
-          "@type": "MotorcycleDealer",
+          "@type": ["MotorcycleDealer", "MotorcycleRepair"],
           "name": "Allbikes and Vespa Warehouse",
+          "description": "Perth's premier dealer and repair shop specializing in new and used scooters, mopeds, and motorcycles. Official service centre for Vespa, Piaggio, and Aprilia.",
+          "keywords": "scooter repair, moped servicing, vespa service, piaggio service, used scooters perth, used mopeds perth",
           "image": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo5.webp' %}",
           "url": "{{ request.scheme }}://{{ request.get_host }}{% url 'core:index' %}",
           "telephone": "{{ settings.phone_number }}",
           "email": "{{ settings.email_address }}",
           "address": {
             "@type": "PostalAddress",
-            "streetAddress": "{{ settings.storefront_address }}"
+            "streetAddress": "{{ settings.street_address }}",
+            "addressLocality": "{{ settings.address_locality }}",
+            "addressRegion": "{{ settings.address_region }}",
+            "postalCode": "{{ settings.postal_code }}"
           },
-          "openingHoursSpecification": [
-            {% if settings.opening_hours_monday and settings.opening_hours_monday != 'Closed' and settings.opening_hours_monday != 'By Appointment Only' %}
-            {
-              "@type": "OpeningHoursSpecification",
-              "dayOfWeek": "https://schema.org/Monday",
-              "opens": "{{ settings.opening_hours_monday|slice:'0:5' }}",
-              "closes": "{{ settings.opening_hours_monday|slice:'-8:-3' }}"
-            }{% if settings.opening_hours_tuesday or settings.opening_hours_wednesday or settings.opening_hours_thursday or settings.opening_hours_friday or settings.opening_hours_saturday or settings.opening_hours_sunday %},{% endif %}
-            {% endif %}
-            {% if settings.opening_hours_tuesday and settings.opening_hours_tuesday != 'Closed' and settings.opening_hours_tuesday != 'By Appointment Only' %}
-            {
-              "@type": "OpeningHoursSpecification",
-              "dayOfWeek": "https://schema.org/Tuesday",
-              "opens": "{{ settings.opening_hours_tuesday|slice:'0:5' }}",
-              "closes": "{{ settings.opening_hours_tuesday|slice:'-8:-3' }}"
-            }{% if settings.opening_hours_wednesday or settings.opening_hours_thursday or settings.opening_hours_friday or settings.opening_hours_saturday or settings.opening_hours_sunday %},{% endif %}
-            {% endif %}
-            {% if settings.opening_hours_wednesday and settings.opening_hours_wednesday != 'Closed' and settings.opening_hours_wednesday != 'By Appointment Only' %}
-            {
-              "@type": "OpeningHoursSpecification",
-              "dayOfWeek": "https://schema.org/Wednesday",
-              "opens": "{{ settings.opening_hours_wednesday|slice:'0:5' }}",
-              "closes": "{{ settings.opening_hours_wednesday|slice:'-8:-3' }}"
-            }{% if settings.opening_hours_thursday or settings.opening_hours_friday or settings.opening_hours_saturday or settings.opening_hours_sunday %},{% endif %}
-            {% endif %}
-            {% if settings.opening_hours_thursday and settings.opening_hours_thursday != 'Closed' and settings.opening_hours_thursday != 'By Appointment Only' %}
-            {
-              "@type": "OpeningHoursSpecification",
-              "dayOfWeek": "https://schema.org/Thursday",
-              "opens": "{{ settings.opening_hours_thursday|slice:'0:5' }}",
-              "closes": "{{ settings.opening_hours_thursday|slice:'-8:-3' }}"
-            }{% if settings.opening_hours_friday or settings.opening_hours_saturday or settings.opening_hours_sunday %},{% endif %}
-            {% endif %}
-            {% if settings.opening_hours_friday and settings.opening_hours_friday != 'Closed' and settings.opening_hours_friday != 'By Appointment Only' %}
-            {
-              "@type": "OpeningHoursSpecification",
-              "dayOfWeek": "https://schema.org/Friday",
-              "opens": "{{ settings.opening_hours_friday|slice:'0:5' }}",
-              "closes": "{{ settings.opening_hours_friday|slice:'-8:-3' }}"
-            }{% if settings.opening_hours_saturday or settings.opening_hours_sunday %},{% endif %}
-            {% endif %}
-            {% if settings.opening_hours_saturday and settings.opening_hours_saturday != 'Closed' and settings.opening_hours_saturday != 'By Appointment Only' %}
-            {
-              "@type": "OpeningHoursSpecification",
-              "dayOfWeek": "https://schema.org/Saturday",
-              "opens": "{{ settings.opening_hours_saturday|slice:'0:5' }}",
-              "closes": "{{ settings.opening_hours_saturday|slice:'-8:-3' }}"
-            }{% if settings.opening_hours_sunday %},{% endif %}
-            {% endif %}
-            {% if settings.opening_hours_sunday and settings.opening_hours_sunday != 'Closed' and settings.opening_hours_sunday != 'By Appointment Only' %}
-            {
-              "@type": "OpeningHoursSpecification",
-              "dayOfWeek": "https://schema.org/Sunday",
-              "opens": "{{ settings.opening_hours_sunday|slice:'0:5' }}",
-              "closes": "{{ settings.opening_hours_sunday|slice:'-8:-3' }}"
-            }
-            {% endif %}
-          ]
+          "openingHours": "By Appointment Only"
         }
         </script>
     </head>

@@ -23,8 +23,6 @@ class SiteSettings(models.Model):
                                                      
     phone_number = models.CharField(max_length=20, blank=True, null=True, default='(08) 9433 4613')
     email_address = models.EmailField(blank=True, null=True, default='admin@scootershop.com.au')
-    # Deprecated: Use street_address, address_locality, address_region, postal_code instead
-    storefront_address = models.TextField(blank=True, null=True, help_text="Deprecated: Use street_address, address_locality, address_region, postal_code instead.")
     
     street_address = models.CharField(max_length=255, blank=True, null=True, default='Unit 2/95 Queen Victoria St')
     address_locality = models.CharField(max_length=100, blank=True, null=True, default='Fremantle')

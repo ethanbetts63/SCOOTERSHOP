@@ -7,7 +7,10 @@ class BusinessInfoFormTest(TestCase):
         form_data = {
             'phone_number': '1234567890',
             'email_address': 'test@example.com',
-            'storefront_address': '123 Test St',
+            'street_address': '123 Test St',
+            'address_locality': 'Test City',
+            'address_region': 'TS',
+            'postal_code': '12345',
             'opening_hours_monday': '9-5',
             'opening_hours_tuesday': '9-5',
             'opening_hours_wednesday': '9-5',

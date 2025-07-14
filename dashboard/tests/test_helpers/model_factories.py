@@ -34,7 +34,10 @@ class SiteSettingsFactory(factory.django.DjangoModelFactory):
     enable_google_places_reviews = True
     phone_number = "(08) 9433 4613"
     email_address = "admin@scootershop.com.au"
-    storefront_address = "Unit 2/95 Queen Victoria St, Fremantle WA, Australia"
+        street_address = "Unit 2/95 Queen Victoria St"
+    address_locality = "Fremantle"
+    address_region = "WA"
+    postal_code = "6160"
     google_places_place_id = "ChIJy_zrHmGhMioRisz6mis0SpQ"
     opening_hours_monday = "10:30am to 5:00pm"
     opening_hours_tuesday = "10:30am to 5:00pm"

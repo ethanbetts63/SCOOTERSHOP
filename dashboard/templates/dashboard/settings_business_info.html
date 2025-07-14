@@ -44,8 +44,20 @@
                             {{ form.email_address }}
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.storefront_address.id_for_label }}" class="block text-sm font-medium text-gray-700">Storefront Address</label>
-                            {{ form.storefront_address }}
+                            <label for="{{ form.street_address.id_for_label }}" class="block text-sm font-medium text-gray-700">Street Address</label>
+                            {{ form.street_address }}
+                        </div>
+                        <div class="col-span-6 sm:col-span-3">
+                            <label for="{{ form.address_locality.id_for_label }}" class="block text-sm font-medium text-gray-700">City</label>
+                            {{ form.address_locality }}
+                        </div>
+                        <div class="col-span-6 sm:col-span-3">
+                            <label for="{{ form.address_region.id_for_label }}" class="block text-sm font-medium text-gray-700">State/Region</label>
+                            {{ form.address_region }}
+                        </div>
+                        <div class="col-span-6 sm:col-span-3">
+                            <label for="{{ form.postal_code.id_for_label }}" class="block text-sm font-medium text-gray-700">Postal Code</label>
+                            {{ form.postal_code }}
                         </div>
                         <div class="form-group">
                             <label for="{{ form.google_places_place_id.id_for_label }}" class="block text-sm font-medium text-gray-700">Google Places Place ID</label>

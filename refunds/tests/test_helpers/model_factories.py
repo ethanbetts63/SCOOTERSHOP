@@ -208,7 +208,10 @@ class SiteSettingsFactory(factory.django.DjangoModelFactory):
 
     phone_number = factory.Faker('phone_number')
     email_address = factory.Faker('email')
-    storefront_address = factory.Faker('address')
+    street_address = factory.Faker('street_address')
+    address_locality = factory.Faker('city')
+    address_region = factory.Faker('state_abbr')
+    postal_code = factory.Faker('postcode')
     google_places_place_id = factory.Faker('md5')
     youtube_link = factory.Faker('url')
     instagram_link = factory.Faker('url')

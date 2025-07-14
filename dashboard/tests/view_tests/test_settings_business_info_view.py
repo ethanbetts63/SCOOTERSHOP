@@ -21,7 +21,10 @@ class SettingsBusinessInfoViewTest(TestCase):
         form_data = {
             'phone_number': '1111111111',
             'email_address': 'new@example.com',
-            'storefront_address': 'New Address',
+            'street_address': 'New Street',
+            'address_locality': 'New City',
+            'address_region': 'NS',
+            'postal_code': '99999',
             'opening_hours_monday': '8-4',
             'opening_hours_tuesday': '8-4',
             'opening_hours_wednesday': '8-4',
