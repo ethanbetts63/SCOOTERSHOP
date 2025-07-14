@@ -21,6 +21,7 @@ class VisibilitySettingsForm(forms.ModelForm):
             'display_opening_hours',
             'enable_faq_service',
             'enable_faq_sales',
+            'enable_motorcycle_mover',
         ]
         widgets = {
             'enable_sales_new': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
@@ -39,4 +40,5 @@ class VisibilitySettingsForm(forms.ModelForm):
             'display_opening_hours': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'enable_faq_service': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'enable_faq_sales': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'enable_motorcycle_mover': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }

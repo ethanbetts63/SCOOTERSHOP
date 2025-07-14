@@ -20,6 +20,7 @@ class SiteSettings(models.Model):
     enable_faq_service = models.BooleanField(default=True, help_text="Enable the faq section for services.")
     enable_faq_sales = models.BooleanField(default=True, help_text="Enable the faq section for sales.")
     enable_refunds = models.BooleanField(default=False, help_text="Enable the refunds page.")
+    enable_motorcycle_mover = models.BooleanField(default=True, help_text="Enable the motorcycle mover section.")
                                                      
     phone_number = models.CharField(max_length=20, blank=True, null=True, default='(08) 9433 4613')
     email_address = models.EmailField(blank=True, null=True, default='admin@scootershop.com.au')
