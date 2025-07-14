@@ -9,3 +9,4 @@ from .ajax_search_motorcycles import *
 from .ajax_search_sales_profiles import *
 from .ajax_motorcycle_availability_check import *
 from .ajax_get_sales_bookings_json import *
+from .ajax_search_sales_bookings import *

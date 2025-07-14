@@ -48,6 +48,24 @@
         border-radius: 5px;
         margin-top: 15px;
     }
+    .search-results {
+        border: 1px solid #ccc;
+        max-height: 200px;
+        overflow-y: auto;
+        position: absolute;
+        background-color: white;
+        width: calc(100% - 2px); /* Adjust for border */
+        z-index: 100;
+        border-top: none;
+    }
+    .search-results div {
+        padding: 8px;
+        cursor: pointer;
+        border-bottom: 1px solid #eee;
+    }
+    .search-results div:hover {
+        background-color: #f0f0f0;
+    }
     @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
@@ -105,11 +123,13 @@
                 </div>
                 
                 <div id="salesBookingSection" class="form-group {% if not refund_request.sales_booking %}hidden{% endif %}">
-                    <label for="{{ form.sales_booking.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                        {{ form.sales_booking.label }}
+                    <label for="salesBookingSearchInput" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.sales_booking.label }} (Search by Reference, Customer, Motorcycle)
                         {% if form.sales_booking.field.required %}<span class="required-indicator">*</span>{% endif %}
                     </label>
-                    {{ form.sales_booking }}
+                    <input type="text" id="salesBookingSearchInput" class="form-control" placeholder="Search sales bookings...">
+                    <div id="salesBookingSearchResults" class="search-results hidden"></div>
+                    {{ form.sales_booking.as_hidden }}
                     {% if form.sales_booking.errors %}<div class="text-red-500 text-xs mt-1">{% for error in form.sales_booking.errors %}{{ error }}{% endfor %}</div>{% endif %}
                     <p class="text-xs text-gray-500 mt-1">{{ form.sales_booking.help_text }}</p>
                 </div>
@@ -173,6 +193,9 @@
             const serviceBookingSelect = document.getElementById('id_service_booking');
             const salesBookingSelect = document.getElementById('id_sales_booking'); 
 
+            const salesBookingSearchInput = document.getElementById('salesBookingSearchInput');
+            const salesBookingSearchResults = document.getElementById('salesBookingSearchResults');
+
             const amountToRefundInput = document.getElementById('id_amount_to_refund');
             
             const serviceDetailsContainer = document.getElementById('serviceBookingDetails');
@@ -180,6 +203,8 @@
 
             const loader = document.getElementById('loader');
             const ajaxErrorContainer = document.getElementById('ajaxError');
+
+            let searchTimeout = null;
 
             function hideAllDetails() {
                 serviceDetailsContainer.classList.add('hidden');
@@ -279,6 +304,52 @@
                     });
             }
 
+            function searchSalesBookings() {
+                const query = salesBookingSearchInput.value.trim();
+                if (query.length < 3) {
+                    salesBookingSearchResults.classList.add('hidden');
+                    return;
+                }
+
+                loader.classList.remove('hidden');
+                salesBookingSearchResults.innerHTML = '';
+                salesBookingSearchResults.classList.add('hidden');
+                ajaxErrorContainer.classList.add('hidden');
+
+                fetch(`{{ search_sales_bookings_url }}?query=${query}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Network response was not ok. Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        loader.classList.add('hidden');
+                        if (data.error) {
+                            console.error('API Error:', data.error);
+                            ajaxErrorContainer.textContent = `Error from server: ${data.error}`;
+                            ajaxErrorContainer.classList.remove('hidden');
+                        } else if (data.bookings && data.bookings.length > 0) {
+                            data.bookings.forEach(booking => {
+                                const div = document.createElement('div');
+                                div.textContent = `${booking.reference} - ${booking.customer_name} - ${booking.motorcycle_info}`;
+                                div.dataset.bookingId = booking.id;
+                                salesBookingSearchResults.appendChild(div);
+                            });
+                            salesBookingSearchResults.classList.remove('hidden');
+                        } else {
+                            salesBookingSearchResults.innerHTML = '<div>No results found.</div>';
+                            salesBookingSearchResults.classList.remove('hidden');
+                        }
+                    })
+                    .catch(error => {
+                        loader.classList.add('hidden');
+                        console.error('Fetch Error:', error);
+                        ajaxErrorContainer.textContent = `Failed to search bookings. Check console (F12).`;
+                        ajaxErrorContainer.classList.remove('hidden');
+                    });
+            }
+
             serviceBookingRadio.addEventListener('change', handleBookingTypeChange);
             salesBookingRadio.addEventListener('change', handleBookingTypeChange); 
 
@@ -286,10 +357,22 @@
                 fetchBookingDetails('service', this.value);
             });
 
-            salesBookingSelect.addEventListener('change', function() { 
-                fetchBookingDetails('sales', this.value);
+            salesBookingSearchInput.addEventListener('keyup', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(searchSalesBookings, 300);
+            });
+
+            salesBookingSearchResults.addEventListener('click', function(event) {
+                const selectedBookingId = event.target.dataset.bookingId;
+                if (selectedBookingId) {
+                    salesBookingSelect.value = selectedBookingId; // Update the hidden select
+                    salesBookingSearchInput.value = event.target.textContent; // Display selected text
+                    salesBookingSearchResults.classList.add('hidden');
+                    fetchBookingDetails('sales', selectedBookingId);
+                }
             });
             
+            // Initial load logic
             const refundRequestExists = "{{ refund_request.pk|default:'' }}" ? true : false;
             
             if (refundRequestExists) {
@@ -298,7 +381,12 @@
                     fetchBookingDetails('service', serviceBookingSelect.value);
                 } else if (salesBookingRadio.checked) { 
                     handleBookingTypeChange();
-                    fetchBookingDetails('sales', salesBookingSelect.value);
+                    // For existing sales booking, populate search input and fetch details
+                    if (salesBookingSelect.value) {
+                        // This part might need an initial fetch to get the display text for the input
+                        // For now, we'll just fetch details based on the hidden value
+                        fetchBookingDetails('sales', salesBookingSelect.value);
+                    }
                 }
             } else {
                 handleBookingTypeChange();

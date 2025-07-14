@@ -52,6 +52,7 @@ from .ajax import (
     ajax_sales_booking_precheck,
     ajax_motorcycle_availability_check,
     ajax_get_sales_bookings_json,
+    ajax_search_sales_bookings,
 )
 
 app_name = "inventory"
@@ -342,5 +343,10 @@ urlpatterns = [
         "ajax/sales-bookings-json/",
         ajax_get_sales_bookings_json.get_sales_bookings_json,
         name="get_sales_bookings_json",
+    ),
+    path(
+        "ajax/admin/search-sales-bookings/",
+        ajax_search_sales_bookings.search_sales_bookings_ajax,
+        name="admin_api_search_sales_bookings",
     ),
 ]
