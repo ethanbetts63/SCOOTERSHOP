@@ -196,7 +196,11 @@
                             <td class="text-gray-900 py-2">{{ amount_paid|floatformat:2 }} {{ currency }}</td>
                         </tr>
                         {% if settings.street_address %}
-                            <td class="text-gray-900 py-2">{{ settings.street_address }}<br>{{ settings.address_locality }}, {{ settings.address_region }} {{ settings.postal_code }}</td>
+                            <tr class="py-2">
+                                <td class="font-medium text-gray-700 py-2">Store Address:</td>
+                                <td class="text-gray-900 py-2">{{ settings.street_address }}<br>{{ settings.address_locality }}, {{ settings.address_region }} {{ settings.postal_code }}</td>
+                            </tr>
+                        {% endif %}
                     </tbody>
                 </table>
             </div>
@@ -209,4 +213,5 @@
         {% endif %}
     </div>
 </div>
+        {% endif %}
 {% endblock %}
