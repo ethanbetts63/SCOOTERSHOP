@@ -12,13 +12,12 @@ def breadcrumbs(context):
     breadcrumbs_list = []
     current_path = '/'
 
-    # Add home breadcrumb
     breadcrumbs_list.append({
         'name': 'Home',
-        'url': reverse('core:index') # Assuming 'core:index' is the name for your home URL
+        'url': reverse('core:index') 
     })
 
-    IGNORED_SLUGS = ['service-book', 'step1', 'step2', 'step3', 'step4', 'step5', 'step6', 'step7', 'step8', 'step9', 'step10', 'inventory', 'motorcycles'
+    IGNORED_SLUGS = ['service-book', 'step1', 'step2', 'step3', 'step4', 'step5', 'step6', 'step7', 'step8', 'step9', 'step10', 'inventory', 'motorcycles', 'refunds',
 ]
 
     for i, part in enumerate(path_parts):
@@ -27,7 +26,6 @@ def breadcrumbs(context):
 
         current_path += part + '/'
         
-        # Improve display names for common slugs
         display_name_map = {
             'service': 'Service',
             'new': 'New Bikes',

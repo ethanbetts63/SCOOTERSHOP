@@ -10,13 +10,12 @@
         {% load static %}
         <link rel="icon" href="{% static 'images/favicon.webp' %}" type="image/png">
         <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-                {% block extra_css %}
+                        {% block extra_css %}
         <style>
-            .breadcrumb-item + .breadcrumb-item::before {
-                content: "/"; /* You can change this to a different character or SVG */
-                padding-left: 0.5rem;
+            .breadcrumb-list li + li::before {
+                content: ">\00a0"; /* Adds a > with a non-breaking space */
                 padding-right: 0.5rem;
-                color: #6B7280; /* Tailwind gray-500 */
+                color: #9CA3AF; /* Tailwind gray-400 */
             }
         </style>
         {% endblock %}
