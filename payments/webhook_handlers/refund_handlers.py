@@ -64,8 +64,7 @@ def handle_booking_refunded(payment_obj: Payment, event_object_data: dict):
                 raise
 
     except Exception as e:
-        print(f"Unhandled exception in handle_booking_refunded: {e}")
-        raise
+        pass
 
 
 def handle_booking_refund_updated(payment_obj: Payment, event_data: dict):
