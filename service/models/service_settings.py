@@ -102,6 +102,8 @@ class ServiceSettings(models.Model):
         max_length=5, default="$", help_text="Currency symbol (e.g., $)."
     )
 
+    enable_estimated_pickup_date = models.BooleanField(default=False, verbose_name="Enable Estimated Pick-up Date")
+
     def __str__(self):
         return "Service Settings"
 

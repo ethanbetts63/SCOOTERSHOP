@@ -122,11 +122,13 @@
                                     <td>{{ after_hours_drop_off_instructions|linebreaksbr }}</td>
                                 </tr>
                                 {% endif %}
+                                {% if service_settings.enable_estimated_pickup_date %}
                                 {% if booking.estimated_pickup_date %}
                                 <tr>
                                     <th>Estimated Pick-up Date:</th>
                                     <td>{{ booking.estimated_pickup_date|date:"D, M d, Y" }}</td>
                                 </tr>
+                                {% endif %}
                                 {% endif %}
                                 <tr>
                                     <th>Total Cost:</th>

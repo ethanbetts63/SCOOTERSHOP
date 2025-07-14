@@ -109,6 +109,16 @@
                         </tr>
                     ` : '';
 
+                    let estimatedPickupDateHTML = '';
+                    if ({{ enable_estimated_pickup_date|yesno:"true,false" }} && booking.estimated_pickup_date) {
+                        estimatedPickupDateHTML = `
+                            <tr class="py-2">
+                                <td class="font-medium text-gray-700 py-2">Estimated Pick-up Date:</td>
+                                <td class="text-gray-900 py-2">${new Date(booking.estimated_pickup_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                            </tr>
+                        `;
+                    }
+
                     bookingDetailsContainer.innerHTML = `
                         <div class="mb-6 bg-green-50 border-l-4 border-green-400 text-green-800 p-4 rounded-md" role="alert">
                             <p class="text-lg font-bold">Your booking request has been received!</p>
@@ -125,6 +135,7 @@
                                     <tr class="py-2"><td class="font-medium text-gray-700 py-2">Service Type:</td><td class="text-gray-900 py-2">${booking.service_type}</td></tr>
                                     <tr class="py-2"><td class="font-medium text-gray-700 py-2">Drop-off:</td><td class="text-gray-900 py-2">${booking.dropoff_datetime}</td></tr>
                                     ${afterHoursHTML}
+                                    ${estimatedPickupDateHTML}
                                     <tr class="py-2"><td class="font-medium text-gray-700 py-2">Payment Status:</td><td class="text-gray-900 py-2 capitalize">${booking.payment_status.replace(/_/g, ' ')}</td></tr>
                                     <tr class="py-2"><td class="font-medium text-gray-700 py-2">Amount Paid:</td><td class="text-gray-900 py-2">${booking.amount_paid} ${booking.currency}</td></tr>
                                     ${storeAddressHTML}
@@ -185,6 +196,12 @@
                         <tr class="py-2">
                             <td class="font-medium text-gray-700 align-top py-2">Instructions:</td>
                             <td class="text-gray-900 py-2">{{ after_hours_drop_off_instructions|linebreaksbr }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if settings.enable_estimated_pickup_date and service_booking.estimated_pickup_date %}
+                        <tr class="py-2">
+                            <td class="font-medium text-gray-700 py-2">Estimated Pick-up Date:</td>
+                            <td class="text-gray-900 py-2">{{ service_booking.estimated_pickup_date|date:"D, M d, Y" }}</td>
                         </tr>
                         {% endif %}
                         <tr class="py-2">

@@ -141,10 +141,12 @@
                                         {% endif %}
                                     </td>
                                 </tr>
+                                {% if service_settings.enable_estimated_pickup_date %}
                                 <tr>
                                     <th>Estimated Pick-up Date:</th>
                                     <td>{% if booking.estimated_pickup_date %}{{ booking.estimated_pickup_date|date:"D, M d, Y" }}{% else %}Not set{% endif %}</td>
                                 </tr>
+                                {% endif %}
                             </table>
 
                             <div class="section-title">Customer Profile Details</div>
