@@ -3,13 +3,13 @@
 </script>
 
 <nav aria-label="breadcrumb">
-    <ol class="flex items-center justify-end space-x-2 text-sm text-gray-200 breadcrumb-list">
+    <ol>
         {% for breadcrumb in breadcrumbs %}
-            <li class="flex items-center">
+            <li>
                 {% if breadcrumb.url %}
-                    <a href="{{ breadcrumb.url }}" class="hover:text-white">{{ breadcrumb.name }}</a>
+                    <a href="{{ breadcrumb.url }}">{{ breadcrumb.name }}</a>
                 {% else %}
-                    <span class="text-white font-semibold">{{ breadcrumb.name }}</span>
+                    <span>{{ breadcrumb.name }}</span>
                 {% endif %}
             </li>
         {% endfor %}

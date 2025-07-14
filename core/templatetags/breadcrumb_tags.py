@@ -82,6 +82,8 @@ def breadcrumbs(context):
                 "name": breadcrumb['name']
             })
 
+    print(f"Breadcrumbs List: {breadcrumbs_list}")
+
     return {
         'breadcrumbs': breadcrumbs_list,
         'json_ld_breadcrumbs': json.dumps(json_ld, indent=2)
