@@ -17,7 +17,6 @@ def handle_booking_refunded(payment_obj: Payment, event_object_data: dict):
             try:
                 extracted_data = extract_stripe_refund_data(event_object_data)
             except Exception as e:
-                print(f"Error in extract_stripe_refund_data: {e}")
                 raise
 
             if extracted_data["refunded_amount_decimal"] <= 0 or (
@@ -25,7 +24,6 @@ def handle_booking_refunded(payment_obj: Payment, event_object_data: dict):
                 and not extracted_data["is_refund_object"]
                 and not extracted_data["is_payment_intent_object"]
             ):
-                print("Skipping refund processing due to invalid extracted data.")
                 return
 
             try:
