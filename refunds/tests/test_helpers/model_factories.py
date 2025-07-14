@@ -103,7 +103,8 @@ class ServiceTypeFactory(factory.django.DjangoModelFactory):
         model = ServiceType
 
     name = "Test Service"
-    price = Decimal("200.00")
+    base_price = Decimal("200.00")
+    estimated_duration = 1 # Add a default value for estimated_duration
 
 
 class ServiceProfileFactory(factory.django.DjangoModelFactory):
@@ -120,10 +121,14 @@ class CustomerMotorcycleFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = CustomerMotorcycle
 
-    user = factory.SubFactory(UserFactory)
+    service_profile = factory.SubFactory(ServiceProfileFactory)
     brand = "Test Brand"
     model = "Test Model"
     year = 2020
+    rego = "TEST123"
+    odometer = 10000
+    transmission = "MANUAL"
+    engine_size = "250cc"
 
 
 class ServiceBookingFactory(factory.django.DjangoModelFactory):
@@ -138,3 +143,4 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
     dropoff_time = "10:00"
     amount_paid = Decimal("100.00")
     payment_method = "online_deposit"
+    service_date = factory.LazyFunction(timezone.now)

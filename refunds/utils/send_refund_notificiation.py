@@ -52,7 +52,7 @@ def send_refund_notifications(
         else None
     )
 
-    if user_email:
+    if user_email and refund_request: # Only send user email if refund_request is present
         email_context = {
             "refund_request": refund_request,
             "refunded_amount": extracted_data["refunded_amount_decimal"],
