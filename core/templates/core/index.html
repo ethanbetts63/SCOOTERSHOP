@@ -105,7 +105,9 @@
 
         </div>
     </div>
+{% if settings.enable_motorcycle_mover %}
 {% include 'core/includes/motorcycle_mover.html' %}
+{% endif %}
 
 {% endblock %}
 

@@ -6,8 +6,6 @@
 {% block meta_keywords %}scooter service perth, scooter repair perth, vespa service, sym service, scooter maintenance, book scooter service{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/service_styles.css' %}">
-<link rel="stylesheet" href="{% static 'core/css/book_include_styles.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -104,8 +102,9 @@
 <div class="container mx-auto px-4 mt-8 mb-12">
     {% include 'service/_service_faq_include.html' %}
 </div>
+{% if settings.enable_motorcycle_mover %}
 {% include 'core/includes/motorcycle_mover.html' %}
-
+{% endif %}
 
 
 

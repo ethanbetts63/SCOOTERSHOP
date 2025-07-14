@@ -213,6 +213,7 @@
         {% endif %}
     </div>
 </div>
+{% if settings.enable_motorcycle_mover %}
 {% include 'core/includes/motorcycle_mover.html' %}
-
-        {% endblock %}
+{% endif %}
+{% endblock %}
