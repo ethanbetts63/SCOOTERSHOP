@@ -27,43 +27,70 @@
                 const processingMessage = document.getElementById('processing-message');
                 const bookingDetailsContainer = document.getElementById('booking-details-container');
                 let pollInterval;
-                const MAX_POLL_ATTEMPTS = 30;
+                const MAX_POLL_ATTEMPTS = 30; // Approx 60 seconds
                 let pollAttempts = 0;
+
+                // --- MODIFICATION START ---
+                // Add a counter for consecutive errors
+                let consecutiveErrors = 0;
+                const MAX_CONSECUTIVE_ERRORS = 3; // Allow for 3 failed attempts (6 seconds) before showing an error
+
+                function showErrorState(message) {
+                    clearInterval(pollInterval);
+                    processingMessage.innerHTML = `
+                        <p class="text-red-600 text-xl">
+                            ${message}
+                        </p>
+                        <a href="${homeUrl}" class="inline-flex justify-center mt-4 py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            Return to Homepage
+                        </a>
+                    `;
+                }
 
                 function fetchBookingStatus() {
                     pollAttempts++;
                     if (pollAttempts > MAX_POLL_ATTEMPTS) {
-                        clearInterval(pollInterval);
-                        processingMessage.innerHTML = `
-                            <p class="text-red-600 text-xl">
-                                We're having trouble confirming your service booking. Please check your email for a confirmation, or contact support with Payment Intent ID: <strong>${paymentIntentId}</strong>.
-                            </p>
-                            <a href="${homeUrl}" class="inline-flex justify-center mt-4 py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                Return to Homepage
-                            </a>
-                        `;
+                        showErrorState(`We're having trouble confirming your service booking. Please check your email for a confirmation, or contact support with Payment Intent ID: <strong>${paymentIntentId}</strong>.`);
                         return;
                     }
 
                     fetch(`${statusCheckUrl}?payment_intent_id=${paymentIntentId}`)
-                        .then(response => response.json())
+                        .then(response => {
+                            if (!response.ok) {
+                                // Catch HTTP errors like 500, 502, etc.
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
                         .then(data => {
                             if (data.status === 'ready') {
                                 clearInterval(pollInterval);
                                 processingMessage.classList.add('hidden');
                                 bookingDetailsContainer.classList.remove('hidden');
                                 renderBookingDetails(data);
+                                consecutiveErrors = 0;
                             } else if (data.status === 'processing') {
                                 console.log("Service booking still processing...");
+                                consecutiveErrors = 0;
+                                // --- MODIFICATION END ---
                             } else {
-                                clearInterval(pollInterval);
-                                processingMessage.innerHTML = `<p class="text-red-600 text-xl">Error: ${data.message || 'Could not retrieve service booking status.'}</p>`;
+                                console.error('Received error status from server:', data.message);
+                                // --- MODIFICATION START ---
+                                consecutiveErrors++;
+                                if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+                                    showErrorState(`Error: ${data.message || 'Could not retrieve service booking status.'}`);
+                                }
+                                // --- MODIFICATION END ---
                             }
                         })
                         .catch(error => {
                             console.error('Error fetching service booking status:', error);
-                            clearInterval(pollInterval);
-                            processingMessage.innerHTML = `<p class="text-red-600 text-xl">A network error occurred. Please refresh the page or contact support.</p>`;
+                            // --- MODIFICATION START ---
+                            consecutiveErrors++;
+                            if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+                                showErrorState('A network error occurred. Please check your connection or contact support.');
+                            }
+                            // --- MODIFICATION END ---
                         });
                 }
 
