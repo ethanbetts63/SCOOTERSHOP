@@ -26,7 +26,7 @@
 
         <div class="content">
             
-            <p>Hi {% if refund_request.driver_profile and refund_request.driver_profile.name %}{{ refund_request.driver_profile.name }}{% elif refund_request.service_profile and refund_request.service_profile.name %}{{ refund_request.service_profile.name }}{% else %}customer name VARIABLE DID NOT LOAD{% endif %},</p>
+            <p>Hi {{ customer_name }},</p>
             <p>We are pleased to inform you that your refund request for booking <strong>{% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}</strong> has been approved and processed.</p>
 
             <div class="highlight">
