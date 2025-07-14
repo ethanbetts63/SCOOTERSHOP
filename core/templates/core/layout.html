@@ -148,11 +148,11 @@
                     {% for breadcrumb in breadcrumb_data.breadcrumbs %}
                         <li class="inline-flex items-center">
                             {% if breadcrumb.url %}
-                                <a href="{{ breadcrumb.url }}" class="inline-flex items-center text-sm font-medium text-gray-400 hover:text-white pr-1">
+                                <a href="{{ breadcrumb.url }}" class="inline-flex items-center text-sm font-medium text-gray-400 hover:text-white">
                                     {{ breadcrumb.name }}
                                 </a>
                                 {% if not forloop.last %}
-                                    <span class="text-gray-400">/</span>
+                                    <span class="px-1 text-gray-400">/</span>
                                 {% endif %}
                             {% else %}
                                 <span class="text-sm font-medium text-gray-200">
