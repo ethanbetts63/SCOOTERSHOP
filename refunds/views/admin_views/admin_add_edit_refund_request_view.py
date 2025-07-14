@@ -1,3 +1,4 @@
+from django.urls import reverse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.contrib import messages
@@ -37,6 +38,8 @@ class AdminAddEditRefundRequestView(AdminRequiredMixin, View):
             "title": title,
             "refund_request": refund_request,
             "booking_reference": booking_reference,
+            "service_booking_details_url": reverse("service:admin_api_get_service_booking_details", args=[0]),
+            "sales_booking_details_url": reverse("inventory:api_sales_booking_details", args=[0]),
         }
         return render(request, self.template_name, context)
 

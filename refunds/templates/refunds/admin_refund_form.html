@@ -64,7 +64,7 @@
                 Back to Refund Management
             </a>
         </div>
-        <p class="mb-4">Use this form to {% if refund_request %}edit{% else %}create{% endif %} a refund request.</p>
+                <p class="mb-4 text-black">Use this form to {% if refund_request %}edit{% else %}create{% endif %} a refund request.</p>
 
         <form method="post" class="space-y-6" novalidate>
             {% csrf_token %}
@@ -163,6 +163,8 @@
 {% endblock %}
 
 {% block extra_js %}
+    
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const serviceBookingRadio = document.getElementById('serviceBookingRadio');
@@ -181,6 +183,16 @@
 
             const loader = document.getElementById('loader');
             const ajaxErrorContainer = document.getElementById('ajaxError');
+
+            // Debug elements
+            const debugServiceUrl = document.getElementById('debug-service-url');
+            const debugSalesUrl = document.getElementById('debug-sales-url');
+            const debugBookingType = document.getElementById('debug-booking-type');
+            const debugBookingId = document.getElementById('debug-booking-id');
+            const debugFinalUrl = document.getElementById('debug-final-url');
+
+            debugServiceUrl.textContent = '{{ service_booking_details_url }}';
+            debugSalesUrl.textContent = '{{ sales_booking_details_url }}';
 
             function hideAllDetails() {
                 serviceDetailsContainer.classList.add('hidden');
@@ -201,9 +213,11 @@
                 if (serviceBookingRadio.checked) {
                     serviceBookingSection.classList.remove('hidden');
                     serviceBookingSelect.removeAttribute('disabled');
+                    debugBookingType.textContent = 'service';
                 } else if (salesBookingRadio.checked) {
                     salesBookingSection.classList.remove('hidden');
                     salesBookingSelect.removeAttribute('disabled');
+                    debugBookingType.textContent = 'sales';
                 }
             }
 
@@ -222,14 +236,14 @@
 
                 if (container) {
                     detailsHtml = `
-                        <h5 class="font-bold text-lg mb-2">${bookingType.charAt(0).toUpperCase() + bookingType.slice(1)} Booking Refund Details</h5>
-                        <p><strong>Customer:</strong> ${data.customer_name}</p>
-                        <p><strong>Booking Ref:</strong> ${data[bookingRefField]}</p>
-                        <p><strong>Payment Amount:</strong> $${data.payment_amount}</p>
-                        <p><strong>Booking Status:</strong> ${data.booking_status}</p>
-                        <p><strong>Payment Status:</strong> ${data.payment_status}</p>
-                        <p><strong>Entitled Refund:</strong> $${data.entitled_refund_amount}</p>
-                        <p><strong>Calculation Details:</strong> ${data.refund_calculation_details}</p>
+                        <h5 class="font-bold text-lg mb-2 text-gray-900">${bookingType.charAt(0).toUpperCase() + bookingType.slice(1)} Booking Refund Details</h5>
+                        <p class="text-gray-800"><strong>Customer:</strong> ${data.customer_name}</p>
+                        <p class="text-gray-800"><strong>Booking Ref:</strong> ${data[bookingRefField]}</p>
+                        <p class="text-gray-800"><strong>Payment Amount:</strong> ${data.payment_amount}</p>
+                        <p class="text-gray-800"><strong>Booking Status:</strong> ${data.booking_status}</p>
+                        <p class="text-gray-800"><strong>Payment Status:</strong> ${data.payment_status}</p>
+                        <p class="text-gray-800"><strong>Entitled Refund:</strong> ${data.entitled_refund_amount}</p>
+                        <p class="text-gray-800"><strong>Calculation Details:</strong> ${data.refund_calculation_details}</p>
                     `;
                     container.innerHTML = detailsHtml;
                     container.classList.remove('hidden');
@@ -239,20 +253,22 @@
 
             function fetchBookingDetails(bookingType, bookingId) {
                 hideAllDetails();
+                debugBookingId.textContent = bookingId;
                 if (!bookingId) {
                     return;
                 }
 
                 let url;
                 if (bookingType === 'service') {
-                    url = `/payments/api/service-booking-details/${bookingId}/`; 
+                    url = '{{ service_booking_details_url }}'.replace('/0/', `/${bookingId}/`);
                 } else if (bookingType === 'sales') {
-                    url = `/inventory/ajax/sales-booking-details/${bookingId}/`; 
+                    url = '{{ sales_booking_details_url }}'.replace('/0/', `/${bookingId}/`);
                 } else {
                     console.error("Unknown booking type:", bookingType);
                     return;
                 }
 
+                debugFinalUrl.textContent = url;
                 loader.classList.remove('hidden');
 
                 fetch(url)
