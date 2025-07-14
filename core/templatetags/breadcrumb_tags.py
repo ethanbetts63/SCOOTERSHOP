@@ -4,8 +4,8 @@ import json
 
 register = template.Library()
 
-@register.inclusion_tag('core/partials/breadcrumbs.html', takes_context=True)
-def breadcrumbs(context):
+@register.simple_tag(takes_context=True)
+def get_breadcrumbs(context):
     request = context['request']
     path_parts = [part for part in request.path.split('/') if part]
     
@@ -82,7 +82,7 @@ def breadcrumbs(context):
                 "name": breadcrumb['name']
             })
 
-    print(f"Breadcrumbs List: {breadcrumbs_list}")
+    
 
     return {
         'breadcrumbs': breadcrumbs_list,
