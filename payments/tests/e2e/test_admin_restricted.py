@@ -36,30 +36,30 @@ class PaymentsAdminViewsTestCase(TestCase):
         self.client.logout()
 
     def test_admin_refund_management_permissions(self):
-        url = reverse("payments:admin_refund_management")
+        url = reverse("refunds:admin_refund_management")
         self._assert_redirects_to_login(url)
         self._assert_staff_access_allowed(url)
         self._assert_superuser_access_allowed(url)
 
     def test_add_refund_request_permissions(self):
-        url = reverse("payments:add_refund_request")
+        url = reverse("refunds:add_refund_request")
         self._assert_redirects_to_login(url)
         self._assert_staff_access_allowed(url)
         self._assert_superuser_access_allowed(url)
 
     def test_edit_refund_request_permissions(self):
-        url = reverse("payments:edit_refund_request", args=[self.refund_request.pk])
+        url = reverse("refunds:edit_refund_request", args=[self.refund_request.pk])
         self._assert_redirects_to_login(url)
         self._assert_staff_access_allowed(url)
         self._assert_superuser_access_allowed(url)
 
     def test_process_refund_permissions(self):
-        url = reverse("payments:process_refund", args=[self.refund_request.pk])
+        url = reverse("refunds:process_refund", args=[self.refund_request.pk])
         self._assert_redirects_to_login(url) 
         self.client.login(username=self.staff_user.username, password="password123")
         response = self.client.post(url)
         self.assertEqual(response.status_code, 302)
-        self.assertIn(reverse("payments:admin_refund_management"), response.url)
+        self.assertIn(reverse("refunds:admin_refund_management"), response.url)
         self.client.logout()
         self.client.login(username=self.admin_user.username, password="password123")
         response = self.client.post(url)
@@ -67,19 +67,19 @@ class PaymentsAdminViewsTestCase(TestCase):
         self.client.logout()
 
     def test_reject_refund_request_permissions(self):
-        url = reverse("payments:reject_refund_request", args=[self.refund_request.pk])
+        url = reverse("refunds:reject_refund_request", args=[self.refund_request.pk])
         self._assert_redirects_to_login(url)
         self._assert_staff_access_allowed(url)
         self._assert_superuser_access_allowed(url)
 
     def test_admin_refund_settings_permissions(self):
-        url = reverse("payments:admin_refund_settings")
+        url = reverse("refunds:admin_refund_settings")
         self._assert_redirects_to_login(url)
         self._assert_staff_access_allowed(url)
         self._assert_superuser_access_allowed(url)
 
     def test_initiate_refund_process_permissions(self):
-        url = reverse("payments:initiate_refund_process", args=[self.refund_request.pk])
+        url = reverse("refunds:initiate_refund_process", args=[self.refund_request.pk])
         self._assert_redirects_to_login(url)
         self._assert_staff_access_allowed(url)
         self._assert_superuser_access_allowed(url)

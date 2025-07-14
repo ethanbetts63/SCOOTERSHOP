@@ -44,7 +44,6 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
             payment=PaymentFactory(
                 amount=Decimal("150.00"),
                 status="paid",
-                refund_policy_snapshot={"some_policy_detail": "value"},
             ),
             dropoff_date=timezone.localdate() + datetime.timedelta(days=7),
             dropoff_time=datetime.time(10, 0),

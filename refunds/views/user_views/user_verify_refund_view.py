@@ -66,10 +66,6 @@ class UserVerifyRefundView(View):
             refund_request.status = "pending"
             refund_request.save()
 
-            refund_policy_snapshot = {}
-            if refund_request.payment and refund_request.payment.refund_policy_snapshot:
-                refund_policy_snapshot = refund_request.payment.refund_policy_snapshot
-
             calculated_refund_result = {
                 "entitled_amount": Decimal("0.00"),
                 "details": "No calculation performed.",
@@ -83,7 +79,6 @@ class UserVerifyRefundView(View):
             if refund_request.service_booking:
                 calculated_refund_result = calculate_service_refund_amount(
                     booking=refund_request.service_booking,
-                    refund_policy_snapshot=refund_policy_snapshot,
                     cancellation_datetime=refund_request.requested_at,
                 )
                 booking_reference_for_email = (
@@ -95,7 +90,6 @@ class UserVerifyRefundView(View):
             elif refund_request.sales_booking:
                 calculated_refund_result = calculate_sales_refund_amount(
                     booking=refund_request.sales_booking,
-                    refund_policy_snapshot=refund_policy_snapshot,
                     cancellation_datetime=refund_request.requested_at,
                 )
                 booking_reference_for_email = (
@@ -117,7 +111,6 @@ class UserVerifyRefundView(View):
 
             refund_request.refund_calculation_details = {
                 "calculated_amount": float(calculated_refund_amount),
-                "policy_snapshot_used": refund_policy_snapshot,
                 "cancellation_datetime": refund_request.requested_at.isoformat(),
                 "booking_type": booking_type_for_details,
                 "full_calculation_details": json_compatible_calculation_details,

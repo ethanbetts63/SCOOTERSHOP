@@ -126,42 +126,9 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         )
         self.assertIsNone(payment_obj.temp_sales_booking)
 
-        self.assertIsInstance(payment_obj.refund_policy_snapshot, dict)
-        self.assertGreater(len(payment_obj.refund_policy_snapshot), 0)
-
-        self.assertIn(
-            "refund_deducts_stripe_fee_policy", payment_obj.refund_policy_snapshot
-        )
-        self.assertIn("sales_enable_deposit_refund", payment_obj.refund_policy_snapshot)
-
         self.assertFalse(TempSalesBooking.objects.filter(pk=temp_booking.pk).exists())
 
-    def test_conversion_with_payment_object_no_refund_settings(self):
-
-        RefundSettings.objects.all().delete()
-        self.assertFalse(RefundSettings.objects.exists())
-
-        payment_obj = PaymentFactory(
-            temp_sales_booking=None,
-            amount=Decimal("0.00"),
-            status="unpaid",
-        )
-        temp_booking = TempSalesBookingFactory(
-            motorcycle=self.motorcycle,
-            sales_profile=self.sales_profile,
-            payment=payment_obj,
-        )
-
-        sales_booking = convert_temp_sales_booking(
-            temp_booking=temp_booking,
-            booking_payment_status="deposit_paid",
-            amount_paid_on_booking=Decimal("100.00"),
-            payment_obj=payment_obj,
-        )
-        payment_obj.refresh_from_db()
-        self.assertEqual(payment_obj.refund_policy_snapshot, {})
-
-        RefundSettingsFactory()
+    
 
     def test_conversion_no_inventory_settings(self):
 

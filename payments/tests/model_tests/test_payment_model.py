@@ -51,11 +51,6 @@ class PaymentModelTest(TestCase):
         self.assertEqual(field.default, dict)
         self.assertTrue(field.blank)
 
-        field = payment._meta.get_field('refund_policy_snapshot')
-        self.assertEqual(field.default, dict)
-        self.assertTrue(field.null)
-        self.assertTrue(field.blank)
-
         field = payment._meta.get_field('refunded_amount')
         self.assertEqual(field.max_digits, 10)
         self.assertEqual(field.decimal_places, 2)
@@ -108,11 +103,9 @@ class PaymentModelTest(TestCase):
     def test_json_fields_default_empty_dict(self):
         payment = Payment.objects.create(amount=Decimal('1.00'))
         self.assertEqual(payment.metadata, {})
-        self.assertEqual(payment.refund_policy_snapshot, {})
 
-        payment_with_data = PaymentFactory(metadata={'key': 'value'}, refund_policy_snapshot={'policy': 'v1'})
+        payment_with_data = PaymentFactory(metadata={'key': 'value'})
         self.assertEqual(payment_with_data.metadata, {'key': 'value'})
-        self.assertEqual(payment_with_data.refund_policy_snapshot, {'policy': 'v1'})
 
     def test_refunded_amount_default(self):
         payment = Payment.objects.create(amount=Decimal('1.00'))

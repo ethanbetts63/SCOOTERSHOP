@@ -14,7 +14,7 @@ class ProcessRefundView(AdminRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         refund_request = get_object_or_404(RefundRequest, pk=pk)
 
-        admin_management_redirect_url = "payments:admin_refund_management"
+        admin_management_redirect_url = "refunds:admin_refund_management"
 
         if refund_request.status not in [
             "pending",

@@ -85,26 +85,9 @@ def get_service_booking_details_json(request, pk):
         if latest_refund_request:
             refund_status_for_booking = latest_refund_request.get_status_display()
 
-        refund_policy_snapshot_for_calc = {}
-        if service_booking.payment and service_booking.payment.refund_policy_snapshot:
-            refund_policy_snapshot_for_calc = (
-                service_booking.payment.refund_policy_snapshot
-            )
-
-        cancellation_datetime = datetime.now()
-        if service_booking.dropoff_date:
-            dropoff_time_for_calc = service_booking.dropoff_time or time(0, 0)
-            cancellation_datetime = datetime.combine(
-                service_booking.dropoff_date, dropoff_time_for_calc
-            )
-
-        if timezone.is_aware(timezone.now()):
-            cancellation_datetime = timezone.make_aware(cancellation_datetime)
-
         refund_calculation_results = calculate_service_refund_amount(
             booking=service_booking,
             cancellation_datetime=cancellation_datetime,
-            refund_policy_snapshot=refund_policy_snapshot_for_calc,
         )
 
         booking_details = {

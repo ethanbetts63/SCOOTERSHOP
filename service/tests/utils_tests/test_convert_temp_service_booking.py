@@ -124,47 +124,7 @@ class ConvertTempServiceBookingTest(TestCase):
         self.assertEqual(updated_payment.service_customer_profile, self.service_profile)
         self.assertIsNone(updated_payment.temp_service_booking)
 
-        self.assertIsNotNone(updated_payment.refund_policy_snapshot)
-        self.assertIsInstance(updated_payment.refund_policy_snapshot, dict)
-        self.assertGreater(len(updated_payment.refund_policy_snapshot), 0)
-        self.assertIn(
-            "full_payment_full_refund_days",
-            updated_payment.refund_policy_snapshot,
-        )
-
-    def test_conversion_without_refund_policy_settings(self):
-
-        RefundSettings.objects.all().delete()
-        self.assertEqual(RefundSettings.objects.count(), 0)
-
-        temp_booking = TempServiceBookingFactory(
-            service_type=self.service_type,
-            service_profile=self.service_profile,
-            customer_motorcycle=self.customer_motorcycle,
-            payment_method="online_full",
-            calculated_total=Decimal("100.00"),
-            calculated_deposit_amount=Decimal("0.00"),
-        )
-
-        payment_obj = PaymentFactory(
-            amount=Decimal("0.00"),
-            currency="AUD",
-            status="requires_payment_method",
-            temp_service_booking=None,
-            service_booking=None,
-        )
-
-        convert_temp_service_booking(
-            temp_booking=temp_booking,
-            payment_method="online_full",
-            booking_payment_status="paid",
-            amount_paid_on_booking=Decimal("100.00"),
-            calculated_total_on_booking=Decimal("100.00"),
-            payment_obj=payment_obj,
-        )
-
-        updated_payment = Payment.objects.get(pk=payment_obj.pk)
-        self.assertEqual(updated_payment.refund_policy_snapshot, {})
+    
 
     @patch(
         "service.models.ServiceBooking.objects.create",

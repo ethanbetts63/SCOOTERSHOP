@@ -63,29 +63,6 @@ def convert_temp_service_booking(
                 ):
                     payment_obj.temp_service_booking = None
 
-                try:
-                    refund_settings = RefundSettings.objects.first()
-                    if refund_settings:
-                        payment_obj.refund_policy_snapshot = {
-                            "full_payment_full_refund_days": refund_settings.full_payment_full_refund_days,
-                            "full_payment_partial_refund_days": refund_settings.full_payment_partial_refund_days,
-                            "full_payment_partial_refund_percentage": float(
-                                refund_settings.full_payment_partial_refund_percentage
-                            ),
-                            "full_payment_no_refund_percentage": refund_settings.full_payment_no_refund_percentage,
-                            "deposit_full_refund_days": refund_settings.deposit_full_refund_days,
-                            "deposit_partial_refund_days": refund_settings.deposit_partial_refund_days,
-                            "deposit_partial_refund_percentage": float(
-                                refund_settings.deposit_partial_refund_percentage
-                            ),
-                            "deposit_no_refund_days": refund_settings.deposit_no_refund_days,
-
-                        }
-                    else:
-                        payment_obj.refund_policy_snapshot = {}
-                except Exception:
-                    payment_obj.refund_policy_snapshot = {}
-
                 payment_obj.save()
 
             send_booking_to_mechanicdesk(service_booking)

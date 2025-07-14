@@ -75,18 +75,11 @@ def get_sales_booking_details_json(request, pk):
         if latest_refund_request:
             refund_status_for_booking = latest_refund_request.get_status_display()
 
-        refund_policy_snapshot_for_calc = {}
-        if sales_booking.payment and sales_booking.payment.refund_policy_snapshot:
-            refund_policy_snapshot_for_calc = (
-                sales_booking.payment.refund_policy_snapshot
-            )
-
         cancellation_datetime_for_calc = timezone.now()
 
         refund_calculation_results = calculate_sales_refund_amount(
             booking=sales_booking,
             cancellation_datetime=cancellation_datetime_for_calc,
-            refund_policy_snapshot=refund_policy_snapshot_for_calc,
         )
 
         booking_details = {

@@ -9,7 +9,8 @@ import django.apps
 
 fake = Faker()
 
-from payments.models import Payment, WebhookEvent, RefundRequest, RefundSettings
+from payments.models import Payment, WebhookEvent
+from refunds.models import RefundRequest, RefundSettings
 from service.models import (
     ServiceBooking,
     ServiceProfile,
@@ -156,15 +157,6 @@ class PaymentFactory(factory.django.DjangoModelFactory):
 
     metadata = factory.LazyFunction(dict)
 
-    refund_policy_snapshot = factory.LazyFunction(
-        lambda: {
-            "policy_version": "1.0",
-            "deduct_fees": True,
-            "sales_enable_deposit_refund_grace_period": fake.boolean(),
-            "sales_deposit_refund_grace_period_hours": fake.random_int(min=12, max=72),
-            "sales_enable_deposit_refund": fake.boolean(),
-        }
-    )
     refunded_amount = factory.LazyFunction(
         lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True)
     )
