@@ -2,15 +2,28 @@
 
 {% block extra_css %}
 {{ block.super }}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+    /* General Form Styling */
     .form-group input,
     .form-group select,
     .form-group textarea {
-        border: 1px solid #ccc;
-        color: #000;
+        border: 1px solid #ced4da;
+        color: #495057;
         width: 100%;
-        padding: 0.5rem;
+        padding: 0.5rem 0.75rem;
         border-radius: 0.25rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        background-color: #fff;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
     }
     .form-group .errorlist {
         list-style-type: none;
@@ -28,9 +41,11 @@
         color: red;
         margin-left: 5px;
     }
-    .hidden {
-        display: none;
+    .hidden, [hidden] {
+        display: none !important;
     }
+
+    /* Loader and Error Styling */
     .loader {
         border: 4px solid #f3f3f3;
         border-top: 4px solid #3498db;
@@ -48,24 +63,60 @@
         border-radius: 5px;
         margin-top: 15px;
     }
+
+    /* Dynamic Search Results Styling (from sales booking page) */
+    .search-results-container {
+        position: relative;
+    }
     .search-results {
-        border: 1px solid #ccc;
-        max-height: 200px;
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        border: 1px solid #ddd;
+        border-radius: 0.25rem;
+        max-height: 250px;
         overflow-y: auto;
         position: absolute;
         background-color: white;
-        width: calc(100% - 2px); /* Adjust for border */
-        z-index: 100;
-        border-top: none;
+        z-index: 1000;
+        width: 100%;
+        color: #333;
     }
-    .search-results div {
-        padding: 8px;
+    .search-results li {
+        padding: 12px;
         cursor: pointer;
+        color: #333;
         border-bottom: 1px solid #eee;
     }
-    .search-results div:hover {
+    .search-results li:last-child {
+        border-bottom: none;
+    }
+    .search-results li:hover {
         background-color: #f0f0f0;
     }
+    .search-results li strong {
+        font-weight: 600;
+        color: #000;
+    }
+    .search-results li small {
+        font-size: 0.85rem;
+        color: #555;
+    }
+
+    /* Selected Item Display Styling */
+    .selected-item-display {
+        padding: 1rem;
+        background-color: #e9ecef;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        margin-top: 1rem;
+        color: #333;
+    }
+    .selected-item-display small,
+    .selected-item-display span.text-muted {
+        color: #555 !important;
+    }
+
     @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
@@ -74,12 +125,11 @@
 {% endblock %}
 
 {% block admin_main_content %}
-<div class="container mx-auto px-4 py-8">
+<div class="container mx-auto px-4 py-8 font-inter">
     <div class="bg-white shadow-lg rounded-lg p-6 md:p-8 max-w-4xl mx-auto">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold text-gray-800">{{ title }}</h1>
         </div>
-                <p class="mb-4 text-black">Use this form to {% if refund_request %}edit{% else %}create{% endif %} a refund request.</p>
 
         <form method="post" class="space-y-6" novalidate>
             {% csrf_token %}
@@ -102,33 +152,41 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Select Booking Type<span class="required-indicator">*</span></label>
                     <div class="flex items-center space-x-4">
                         <div class="flex items-center">
-                            <input class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" type="radio" name="booking_type_selector" id="serviceBookingRadio" value="service" {% if refund_request.service_booking %}checked{% endif %}>
+                            <input class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" type="radio" name="booking_type_selector" id="serviceBookingRadio" value="service" {% if not form.instance.pk or form.instance.service_booking %}checked{% endif %}>
                             <label for="serviceBookingRadio" class="ml-2 block text-sm text-gray-900">Service Booking</label>
                         </div>
                         <div class="flex items-center">
-                            <input class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" type="radio" name="booking_type_selector" id="salesBookingRadio" value="sales" {% if refund_request.sales_booking %}checked{% endif %}>
+                            <input class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" type="radio" name="booking_type_selector" id="salesBookingRadio" value="sales" {% if form.instance.sales_booking %}checked{% endif %}>
                             <label for="salesBookingRadio" class="ml-2 block text-sm text-gray-900">Sales Booking</label>
                         </div>
                     </div>
                 </div>
 
-                <div id="serviceBookingSection" class="form-group {% if not refund_request.service_booking %}hidden{% endif %}">
-                    <label for="{{ form.service_booking.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                        {{ form.service_booking.label }}
+                <div id="serviceBookingSection" class="form-group">
+                    <label for="serviceBookingSearchInput" class="block text-sm font-medium text-gray-700 mb-1">
+                        Search Service Booking (Reference, Customer, Motorcycle)
                         {% if form.service_booking.field.required %}<span class="required-indicator">*</span>{% endif %}
                     </label>
-                    {{ form.service_booking }}
+                    <div class="search-results-container">
+                        <input type="text" id="serviceBookingSearchInput" class="form-control" placeholder="Start typing to search service bookings...">
+                        <ul id="serviceBookingSearchResults" class="search-results" hidden></ul>
+                    </div>
+                    <div id="selectedServiceBookingDisplay" class="selected-item-display" hidden></div>
+                    {{ form.service_booking.as_hidden }}
                     {% if form.service_booking.errors %}<div class="text-red-500 text-xs mt-1">{% for error in form.service_booking.errors %}{{ error }}{% endfor %}</div>{% endif %}
                     <p class="text-xs text-gray-500 mt-1">{{ form.service_booking.help_text }}</p>
                 </div>
                 
-                <div id="salesBookingSection" class="form-group {% if not refund_request.sales_booking %}hidden{% endif %}">
+                <div id="salesBookingSection" class="form-group">
                     <label for="salesBookingSearchInput" class="block text-sm font-medium text-gray-700 mb-1">
-                        {{ form.sales_booking.label }} (Search by Reference, Customer, Motorcycle)
+                        Search Sales Booking (Reference, Customer, Motorcycle)
                         {% if form.sales_booking.field.required %}<span class="required-indicator">*</span>{% endif %}
                     </label>
-                    <input type="text" id="salesBookingSearchInput" class="form-control" placeholder="Search sales bookings...">
-                    <div id="salesBookingSearchResults" class="search-results hidden"></div>
+                    <div class="search-results-container">
+                        <input type="text" id="salesBookingSearchInput" class="form-control" placeholder="Start typing to search sales bookings...">
+                        <ul id="salesBookingSearchResults" class="search-results" hidden></ul>
+                    </div>
+                    <div id="selectedSalesBookingDisplay" class="selected-item-display" hidden></div>
                     {{ form.sales_booking.as_hidden }}
                     {% if form.sales_booking.errors %}<div class="text-red-500 text-xs mt-1">{% for error in form.sales_booking.errors %}{{ error }}{% endfor %}</div>{% endif %}
                     <p class="text-xs text-gray-500 mt-1">{{ form.sales_booking.help_text }}</p>
@@ -136,8 +194,7 @@
                 
                 <div id="loader" class="loader hidden"></div>
                 <div id="ajaxError" class="error-message hidden"></div>
-                <div id="serviceBookingDetails" class="booking-details-box hidden p-4 bg-gray-50 rounded-md"></div>
-                <div id="salesBookingDetails" class="booking-details-box hidden p-4 bg-gray-50 rounded-md"></div>
+                <div id="bookingDetailsContainer" class="booking-details-box hidden p-4 bg-gray-50 rounded-md mt-4"></div>
 
                 <div class="form-group">
                     <label for="{{ form.reason.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
@@ -180,217 +237,392 @@
 {% endblock %}
 
 {% block extra_js %}
-    
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // --- DOM Elements ---
+    const dom = {
+        serviceBookingRadio: document.getElementById('serviceBookingRadio'),
+        salesBookingRadio: document.getElementById('salesBookingRadio'),
+        serviceBookingSection: document.getElementById('serviceBookingSection'),
+        salesBookingSection: document.getElementById('salesBookingSection'),
+        serviceBookingHiddenInput: document.getElementById('id_service_booking'),
+        serviceBookingSearchInput: document.getElementById('serviceBookingSearchInput'),
+        serviceBookingSearchResults: document.getElementById('serviceBookingSearchResults'),
+        selectedServiceBookingDisplay: document.getElementById('selectedServiceBookingDisplay'),
+        salesBookingHiddenInput: document.getElementById('id_sales_booking'),
+        salesBookingSearchInput: document.getElementById('salesBookingSearchInput'),
+        salesBookingSearchResults: document.getElementById('salesBookingSearchResults'),
+        selectedSalesBookingDisplay: document.getElementById('selectedSalesBookingDisplay'),
+        amountToRefundInput: document.getElementById('id_amount_to_refund'),
+        bookingDetailsContainer: document.getElementById('bookingDetailsContainer'),
+        loader: document.getElementById('loader'),
+        ajaxErrorContainer: document.getElementById('ajaxError'),
+    };
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const serviceBookingRadio = document.getElementById('serviceBookingRadio');
-            const salesBookingRadio = document.getElementById('salesBookingRadio'); 
-            
-            const serviceBookingSection = document.getElementById('serviceBookingSection');
-            const salesBookingSection = document.getElementById('salesBookingSection'); 
+    // --- State ---
+    let searchTimeout = null;
 
-            const serviceBookingSelect = document.getElementById('id_service_booking');
-            const salesBookingSelect = document.getElementById('id_sales_booking'); 
+    // --- URLs (from Django context) ---
+    const urls = {
+        serviceDetails: '{{ service_booking_details_url|escapejs }}',
+        salesDetails: '{{ sales_booking_details_url|escapejs }}',
+        searchSales: '{{ search_sales_bookings_url|escapejs }}',
+        searchService: '{{ search_service_bookings_url|escapejs }}',
+    };
 
-            const salesBookingSearchInput = document.getElementById('salesBookingSearchInput');
-            const salesBookingSearchResults = document.getElementById('salesBookingSearchResults');
+    // --- Functions ---
+    function hideAllDetails() {
+        dom.bookingDetailsContainer.hidden = true;
+        dom.ajaxErrorContainer.hidden = true;
+    }
 
-            const amountToRefundInput = document.getElementById('id_amount_to_refund');
-            
-            const serviceDetailsContainer = document.getElementById('serviceBookingDetails');
-            const salesDetailsContainer = document.getElementById('salesBookingDetails'); 
+    function handleBookingTypeChange() {
+        hideAllDetails();
+        dom.amountToRefundInput.value = '0.00';
+        clearServiceBookingSelection(); // Always clear service selection when type changes
+        clearSalesBookingSelection(); // Always clear sales selection when type changes
 
-            const loader = document.getElementById('loader');
-            const ajaxErrorContainer = document.getElementById('ajaxError');
+        const isService = dom.serviceBookingRadio.checked;
+        dom.serviceBookingSection.hidden = !isService;
+        dom.salesBookingSection.hidden = isService;
 
-            let searchTimeout = null;
+        // Enable/disable inputs based on selected type
+        dom.serviceBookingHiddenInput.disabled = !isService;
+        dom.serviceBookingSearchInput.disabled = !isService;
+        dom.salesBookingHiddenInput.disabled = isService;
+        dom.salesBookingSearchInput.disabled = isService;
 
-            function hideAllDetails() {
-                serviceDetailsContainer.classList.add('hidden');
-                salesDetailsContainer.classList.add('hidden'); 
-                ajaxErrorContainer.classList.add('hidden');
-            }
+        // If service is selected, ensure search input is enabled
+        if (isService) {
+            dom.serviceBookingSearchInput.removeAttribute('disabled');
+        } else { // If sales is selected, ensure sales search input is enabled
+            dom.salesBookingSearchInput.removeAttribute('disabled');
+        }
+    }
 
-            function handleBookingTypeChange() {
-                amountToRefundInput.value = '0.00';
-                hideAllDetails();
+    function displayBookingDetails(data, bookingType) {
+        let detailsHtml = '';
+        const bookingRef = bookingType === 'service' ? data.service_booking_reference : data.sales_booking_reference;
 
-                serviceBookingSection.classList.add('hidden');
-                salesBookingSection.classList.add('hidden'); 
+        detailsHtml = `
+            <h5 class="font-bold text-lg mb-2 text-gray-900">${bookingType.charAt(0).toUpperCase() + bookingType.slice(1)} Booking Refund Details</h5>
+            <p class="text-gray-800"><strong>Customer:</strong> ${data.customer_name}</p>
+            <p class="text-gray-800"><strong>Booking Ref:</strong> ${bookingRef}</p>
+            <p class="text-gray-800"><strong>Payment Amount:</strong> ${data.payment_amount}</p>
+            <p class="text-gray-800"><strong>Booking Status:</strong> ${data.booking_status}</p>
+            <p class="text-gray-800"><strong>Payment Status:</strong> ${data.payment_status}</p>
+            <p class="text-gray-800"><strong>Entitled Refund:</strong> ${data.entitled_refund_amount}</p>
+            <p class="text-gray-800"><strong>Calculation Details:</strong> ${data.refund_calculation_details}</p>
+        `;
+        dom.bookingDetailsContainer.innerHTML = detailsHtml;
+        dom.bookingDetailsContainer.hidden = false;
+        dom.amountToRefundInput.value = parseFloat(data.entitled_refund_amount).toFixed(2);
+    }
 
-                serviceBookingSelect.setAttribute('disabled', 'disabled');
-                salesBookingSelect.setAttribute('disabled', 'disabled'); 
+    function fetchBookingDetails(bookingType, bookingId) {
+        hideAllDetails();
+        if (!bookingId) return;
 
-                if (serviceBookingRadio.checked) {
-                    serviceBookingSection.classList.remove('hidden');
-                    serviceBookingSelect.removeAttribute('disabled');
-                } else if (salesBookingRadio.checked) {
-                    salesBookingSection.classList.remove('hidden');
-                    salesBookingSelect.removeAttribute('disabled');
-                }
-            }
+        const url = (bookingType === 'service' ? urls.serviceDetails : urls.salesDetails).replace('/0/', `/${bookingId}/`);
+        dom.loader.classList.remove('hidden');
 
-            function displayBookingDetails(data, bookingType) {
-                let detailsHtml = '';
-                let container;
-                let bookingRefField = '';
+        fetch(url)
+            .then(response => {
+                if (!response.ok) throw new Error(`Network response was not ok. Status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+                displayBookingDetails(data, bookingType);
+            })
+            .catch(error => {
+                console.error('Fetch Error:', error);
+                dom.ajaxErrorContainer.textContent = `Failed to fetch details: ${error.message}`;
+                dom.ajaxErrorContainer.hidden = false;
+            })
+            .finally(() => {
+                dom.loader.classList.add('hidden');
+            });
+    }
 
-                if (bookingType === 'service') {
-                    container = serviceDetailsContainer;
-                    bookingRefField = 'service_booking_reference'; 
-                } else if (bookingType === 'sales') { 
-                    container = salesDetailsContainer;
-                    bookingRefField = 'sales_booking_reference'; 
-                }
+    // --- Service Booking Search Functions ---
+    function performServiceBookingSearch(query) {
+        dom.loader.classList.remove('hidden');
+        dom.serviceBookingSearchResults.innerHTML = '';
+        dom.serviceBookingSearchResults.hidden = true;
+        dom.ajaxErrorContainer.hidden = true;
 
-                if (container) {
-                    detailsHtml = `
-                        <h5 class="font-bold text-lg mb-2 text-gray-900">${bookingType.charAt(0).toUpperCase() + bookingType.slice(1)} Booking Refund Details</h5>
-                        <p class="text-gray-800"><strong>Customer:</strong> ${data.customer_name}</p>
-                        <p class="text-gray-800"><strong>Booking Ref:</strong> ${data[bookingRefField]}</p>
-                        <p class="text-gray-800"><strong>Payment Amount:</strong> ${data.payment_amount}</p>
-                        <p class="text-gray-800"><strong>Booking Status:</strong> ${data.booking_status}</p>
-                        <p class="text-gray-800"><strong>Payment Status:</strong> ${data.payment_status}</p>
-                        <p class="text-gray-800"><strong>Entitled Refund:</strong> ${data.entitled_refund_amount}</p>
-                        <p class="text-gray-800"><strong>Calculation Details:</strong> ${data.refund_calculation_details}</p>
-                    `;
-                    container.innerHTML = detailsHtml;
-                    container.classList.remove('hidden');
-                }
-                amountToRefundInput.value = data.entitled_refund_amount.toFixed(2);
-            }
-
-            function fetchBookingDetails(bookingType, bookingId) {
-                hideAllDetails();
-                if (!bookingId) {
-                    return;
-                }
-
-                let url;
-                if (bookingType === 'service') {
-                    url = '{{ service_booking_details_url }}'.replace('/0/', `/${bookingId}/`);
-                } else if (bookingType === 'sales') {
-                    url = '{{ sales_booking_details_url }}'.replace('/0/', `/${bookingId}/`);
+        fetch(`${urls.searchService}?query=${encodeURIComponent(query)}`)
+            .then(response => {
+                if (!response.ok) throw new Error(`Network response was not ok. Status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+                
+                dom.serviceBookingSearchResults.innerHTML = '';
+                if (data.bookings && data.bookings.length > 0) {
+                    data.bookings.forEach(booking => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <strong>${booking.reference}</strong> - ${booking.customer_name}<br>
+                            <small>${booking.motorcycle_info} | ${booking.dropoff_date} ${booking.dropoff_time}</small>
+                        `;
+                        li.dataset.bookingId = booking.id;
+                        li.dataset.displayText = `${booking.reference} - ${booking.customer_name} - ${booking.motorcycle_info}`;
+                        li.addEventListener('click', () => selectServiceBooking(booking.id, booking.reference, booking.customer_name, booking.motorcycle_info, booking.dropoff_date, booking.dropoff_time));
+                        dom.serviceBookingSearchResults.appendChild(li);
+                    });
                 } else {
-                    console.error("Unknown booking type:", bookingType);
-                    return;
+                    const li = document.createElement('li');
+                    li.textContent = 'No results found.';
+                    dom.serviceBookingSearchResults.appendChild(li);
                 }
+                dom.serviceBookingSearchResults.hidden = false;
+            })
+            .catch(error => {
+                console.error('Service Search Error:', error);
+                dom.ajaxErrorContainer.textContent = `Failed to search service bookings: ${error.message}`;
+                dom.ajaxErrorContainer.hidden = false;
+            })
+            .finally(() => {
+                dom.loader.classList.add('hidden');
+            });
+    }
 
-                loader.classList.remove('hidden');
+    function selectServiceBooking(bookingId, reference, customerName, motorcycleInfo, dropoffDate, dropoffTime) {
+        dom.serviceBookingHiddenInput.value = bookingId;
+        dom.serviceBookingSearchInput.value = `${reference} - ${customerName} - ${motorcycleInfo} (${dropoffDate} ${dropoffTime})`;
+        dom.serviceBookingSearchInput.setAttribute('disabled', 'disabled');
+        dom.serviceBookingSearchResults.hidden = true;
 
-                fetch(url)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`Network response was not ok. Status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        loader.classList.add('hidden');
-                        if (data.error) {
-                            console.error('API Error:', data.error);
-                            ajaxErrorContainer.textContent = `Error from server: ${data.error}`;
-                            ajaxErrorContainer.classList.remove('hidden');
-                        } else {
-                            displayBookingDetails(data, bookingType);
-                        }
-                    })
-                    .catch(error => {
-                        loader.classList.add('hidden');
-                        console.error('Fetch Error:', error);
-                        ajaxErrorContainer.textContent = `Failed to fetch details. Check the console (F12) for more information.`;
-                        ajaxErrorContainer.classList.remove('hidden');
+        updateServiceBookingDisplay({ reference, customer_name: customerName, motorcycle_info: motorcycleInfo, dropoff_date: dropoffDate, dropoff_time: dropoffTime });
+        fetchBookingDetails('service', bookingId);
+    }
+
+    function updateServiceBookingDisplay(bookingData) {
+        if (bookingData) {
+            dom.selectedServiceBookingDisplay.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <div>
+                        <strong>Selected Booking:</strong> ${bookingData.reference} - ${bookingData.customer_name}<br>
+                        <small class="text-muted">${bookingData.motorcycle_info} (${bookingData.dropoff_date} ${bookingData.dropoff_time})</small>
+                    </div>
+                    <button type="button" class="bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-2 rounded-md text-sm" id="clearServiceBookingSelection">Clear</button>
+                </div>
+            `;
+            dom.selectedServiceBookingDisplay.hidden = false;
+            document.getElementById('clearServiceBookingSelection').addEventListener('click', clearServiceBookingSelection);
+        } else {
+            dom.selectedServiceBookingDisplay.hidden = true;
+            dom.selectedServiceBookingDisplay.innerHTML = '';
+        }
+    }
+
+    function clearServiceBookingSelection() {
+        dom.serviceBookingHiddenInput.value = '';
+        dom.serviceBookingSearchInput.value = '';
+        dom.serviceBookingSearchInput.removeAttribute('disabled');
+        dom.serviceBookingSearchInput.focus();
+        dom.selectedServiceBookingDisplay.hidden = true;
+        dom.selectedServiceBookingDisplay.innerHTML = '';
+        hideAllDetails();
+    }
+
+    // --- Sales Booking Search Functions ---
+    function performSalesBookingSearch(query) {
+        dom.loader.classList.remove('hidden');
+        dom.salesBookingSearchResults.innerHTML = '';
+        dom.salesBookingSearchResults.hidden = true;
+        dom.ajaxErrorContainer.hidden = true;
+
+        fetch(`${urls.searchSales}?query=${encodeURIComponent(query)}`)
+            .then(response => {
+                if (!response.ok) throw new Error(`Network response was not ok. Status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+                
+                dom.salesBookingSearchResults.innerHTML = '';
+                if (data.bookings && data.bookings.length > 0) {
+                    data.bookings.forEach(booking => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <strong>${booking.reference}</strong> - ${booking.customer_name}<br>
+                            <small>${booking.motorcycle_info}</small>
+                        `;
+                        li.dataset.bookingId = booking.id;
+                        li.dataset.displayText = `${booking.reference} - ${booking.customer_name} - ${booking.motorcycle_info}`;
+                        li.addEventListener('click', () => selectSalesBooking(booking.id, booking.reference, booking.customer_name, booking.motorcycle_info));
+                        dom.salesBookingSearchResults.appendChild(li);
                     });
-            }
-
-            function searchSalesBookings() {
-                const query = salesBookingSearchInput.value.trim();
-                if (query.length < 3) {
-                    salesBookingSearchResults.classList.add('hidden');
-                    return;
+                } else {
+                    const li = document.createElement('li');
+                    li.textContent = 'No results found.';
+                    dom.salesBookingSearchResults.appendChild(li);
                 }
-
-                loader.classList.remove('hidden');
-                salesBookingSearchResults.innerHTML = '';
-                salesBookingSearchResults.classList.add('hidden');
-                ajaxErrorContainer.classList.add('hidden');
-
-                fetch(`{{ search_sales_bookings_url }}?query=${query}`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`Network response was not ok. Status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        loader.classList.add('hidden');
-                        if (data.error) {
-                            console.error('API Error:', data.error);
-                            ajaxErrorContainer.textContent = `Error from server: ${data.error}`;
-                            ajaxErrorContainer.classList.remove('hidden');
-                        } else if (data.bookings && data.bookings.length > 0) {
-                            data.bookings.forEach(booking => {
-                                const div = document.createElement('div');
-                                div.textContent = `${booking.reference} - ${booking.customer_name} - ${booking.motorcycle_info}`;
-                                div.dataset.bookingId = booking.id;
-                                salesBookingSearchResults.appendChild(div);
-                            });
-                            salesBookingSearchResults.classList.remove('hidden');
-                        } else {
-                            salesBookingSearchResults.innerHTML = '<div>No results found.</div>';
-                            salesBookingSearchResults.classList.remove('hidden');
-                        }
-                    })
-                    .catch(error => {
-                        loader.classList.add('hidden');
-                        console.error('Fetch Error:', error);
-                        ajaxErrorContainer.textContent = `Failed to search bookings. Check console (F12).`;
-                        ajaxErrorContainer.classList.remove('hidden');
-                    });
-            }
-
-            serviceBookingRadio.addEventListener('change', handleBookingTypeChange);
-            salesBookingRadio.addEventListener('change', handleBookingTypeChange); 
-
-            serviceBookingSelect.addEventListener('change', function() {
-                fetchBookingDetails('service', this.value);
+                dom.salesBookingSearchResults.hidden = false;
+            })
+            .catch(error => {
+                console.error('Search Error:', error);
+                dom.ajaxErrorContainer.textContent = `Failed to search: ${error.message}`;
+                dom.ajaxErrorContainer.hidden = false;
+            })
+            .finally(() => {
+                dom.loader.classList.add('hidden');
             });
+    }
 
-            salesBookingSearchInput.addEventListener('keyup', function() {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(searchSalesBookings, 300);
-            });
+    function selectSalesBooking(bookingId, reference, customerName, motorcycleInfo) {
+        dom.salesBookingHiddenInput.value = bookingId;
+        dom.salesBookingSearchInput.value = `${reference} - ${customerName} - ${motorcycleInfo}`;
+        dom.salesBookingSearchInput.setAttribute('disabled', 'disabled');
+        dom.salesBookingSearchResults.hidden = true;
 
-            salesBookingSearchResults.addEventListener('click', function(event) {
-                const selectedBookingId = event.target.dataset.bookingId;
-                if (selectedBookingId) {
-                    salesBookingSelect.value = selectedBookingId; // Update the hidden select
-                    salesBookingSearchInput.value = event.target.textContent; // Display selected text
-                    salesBookingSearchResults.classList.add('hidden');
-                    fetchBookingDetails('sales', selectedBookingId);
-                }
-            });
-            
-            // Initial load logic
-            const refundRequestExists = "{{ refund_request.pk|default:'' }}" ? true : false;
-            
-            if (refundRequestExists) {
-                if (serviceBookingRadio.checked) {
-                    handleBookingTypeChange();
-                    fetchBookingDetails('service', serviceBookingSelect.value);
-                } else if (salesBookingRadio.checked) { 
-                    handleBookingTypeChange();
-                    // For existing sales booking, populate search input and fetch details
-                    if (salesBookingSelect.value) {
-                        // This part might need an initial fetch to get the display text for the input
-                        // For now, we'll just fetch details based on the hidden value
-                        fetchBookingDetails('sales', salesBookingSelect.value);
+        updateSalesBookingDisplay({ reference, customer_name: customerName, motorcycle_info: motorcycleInfo });
+        fetchBookingDetails('sales', bookingId);
+    }
+    
+    function updateSalesBookingDisplay(bookingData) {
+        if (bookingData) {
+            dom.selectedSalesBookingDisplay.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <div>
+                        <strong>Selected Booking:</strong> ${bookingData.reference} - ${bookingData.customer_name}<br>
+                        <small class="text-muted">${bookingData.motorcycle_info}</small>
+                    </div>
+                    <button type="button" class="bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-2 rounded-md text-sm" id="clearSalesBookingSelection">Clear</button>
+                </div>
+            `;
+            dom.selectedSalesBookingDisplay.hidden = false;
+            document.getElementById('clearSalesBookingSelection').addEventListener('click', clearSalesBookingSelection);
+        } else {
+            dom.selectedSalesBookingDisplay.hidden = true;
+            dom.selectedSalesBookingDisplay.innerHTML = '';
+        }
+    }
+
+    function clearSalesBookingSelection() {
+        dom.salesBookingHiddenInput.value = '';
+        dom.salesBookingSearchInput.value = '';
+        dom.salesBookingSearchInput.removeAttribute('disabled');
+        dom.salesBookingSearchInput.focus();
+        dom.selectedSalesBookingDisplay.hidden = true;
+        dom.selectedSalesBookingDisplay.innerHTML = '';
+        hideAllDetails();
+    }
+
+    // --- Event Listeners ---
+    dom.serviceBookingRadio.addEventListener('change', handleBookingTypeChange);
+    dom.salesBookingRadio.addEventListener('change', handleBookingTypeChange);
+
+    dom.serviceBookingSearchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value.trim();
+        if (query.length < 2) {
+            dom.serviceBookingSearchResults.hidden = true;
+            return;
+        }
+        searchTimeout = setTimeout(() => performServiceBookingSearch(query), 300);
+    });
+
+    dom.serviceBookingSearchResults.addEventListener('click', function(event) {
+        const selectedBookingId = event.target.dataset.bookingId;
+        if (selectedBookingId) {
+            const reference = event.target.querySelector('strong').textContent.split(' -')[0];
+            const customerName = event.target.querySelector('strong').textContent.split(' -')[1].trim();
+            const smallElements = event.target.querySelectorAll('small');
+            const motorcycleInfo = smallElements[0] ? smallElements[0].textContent : '';
+            const dropoffDetails = smallElements[1] ? smallElements[1].textContent.split(' | ') : [];
+            const dropoffDate = dropoffDetails[0] ? dropoffDetails[0].trim() : '';
+            const dropoffTime = dropoffDetails[1] ? dropoffDetails[1].trim() : '';
+
+            selectServiceBooking(selectedBookingId, reference, customerName, motorcycleInfo, dropoffDate, dropoffTime);
+        }
+    });
+
+    dom.salesBookingSearchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value.trim();
+        if (query.length < 2) {
+            dom.salesBookingSearchResults.hidden = true;
+            return;
+        }
+        searchTimeout = setTimeout(() => performSalesBookingSearch(query), 300);
+    });
+
+    dom.salesBookingSearchResults.addEventListener('click', function(event) {
+        const selectedBookingId = event.target.dataset.bookingId;
+        if (selectedBookingId) {
+            const reference = event.target.querySelector('strong').textContent.split(' -')[0];
+            const customerName = event.target.querySelector('strong').textContent.split(' -')[1].trim();
+            const motorcycleInfo = event.target.querySelector('small') ? event.target.querySelector('small').textContent : '';
+            selectSalesBooking(selectedBookingId, reference, customerName, motorcycleInfo);
+        }
+    });
+
+    // Hide search results when clicking outside
+    document.addEventListener('click', function(event) {
+        const isClickInsideServiceSearch = dom.serviceBookingSearchInput.contains(event.target) || dom.serviceBookingSearchResults.contains(event.target);
+        const isClickInsideSalesSearch = dom.salesBookingSearchInput.contains(event.target) || dom.salesBookingSearchResults.contains(event.target);
+        
+        if (!isClickInsideServiceSearch) {
+            dom.serviceBookingSearchResults.hidden = true;
+        }
+        if (!isClickInsideSalesSearch) {
+            dom.salesBookingSearchResults.hidden = true;
+        }
+    });
+
+    // --- Initial Load Logic ---
+    function initializeForm() {
+        const initialServiceBookingId = dom.serviceBookingHiddenInput.value;
+        const initialSalesBookingId = dom.salesBookingHiddenInput.value;
+        
+        // Set initial state based on radio buttons
+        handleBookingTypeChange(); 
+
+        if (dom.serviceBookingRadio.checked && initialServiceBookingId) {
+            const url = urls.serviceDetails.replace('/0/', `/${initialServiceBookingId}/`);
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && !data.error) {
+                        selectServiceBooking(
+                            initialServiceBookingId,
+                            data.service_booking_reference,
+                            data.customer_name,
+                            data.motorcycle_info,
+                            data.dropoff_date,
+                            data.dropoff_time
+                        );
+                    } else {
+                        console.error("Error fetching initial service booking details:", data.error);
                     }
-                }
-            } else {
-                handleBookingTypeChange();
-            }
-        });
-    </script>
+                })
+                .catch(err => console.error("Fetch error for initial service booking details:", err));
+        } else if (dom.salesBookingRadio.checked && initialSalesBookingId) {
+            const url = urls.salesDetails.replace('/0/', `/${initialSalesBookingId}/`);
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && !data.error) {
+                        selectSalesBooking(
+                            initialSalesBookingId,
+                            data.sales_booking_reference,
+                            data.customer_name,
+                            data.motorcycle_info
+                        );
+                    } else {
+                        console.error("Error fetching initial sales booking details:", data.error);
+                    }
+                })
+                .catch(err => console.error("Fetch error for initial sales booking details:", err));
+        }
+    }
+
+    initializeForm();
+});
+</script>
 {% endblock %}

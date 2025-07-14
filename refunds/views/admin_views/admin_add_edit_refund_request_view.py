@@ -41,6 +41,7 @@ class AdminAddEditRefundRequestView(AdminRequiredMixin, View):
             "service_booking_details_url": reverse("service:admin_api_get_service_booking_details", args=[0]),
             "sales_booking_details_url": reverse("inventory:api_sales_booking_details", args=[0]),
             "search_sales_bookings_url": reverse("inventory:admin_api_search_sales_bookings"),
+            "search_service_bookings_url": reverse("service:admin_api_search_bookings"),
         }
         return render(request, self.template_name, context)
 
