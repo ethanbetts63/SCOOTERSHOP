@@ -16,6 +16,8 @@ def sell_and_notify(motorcycle):
     print(f"[sell_and_notify] Found {bookings_to_notify.count()} non-deposit bookings to notify.")
 
     for booking in bookings_to_notify:
+        booking.booking_status = "cancelled"
+        booking.save()
         user = booking.sales_profile.user
         recipient_email = user.email
         subject = f"Update on your interest in the {motorcycle.title}"

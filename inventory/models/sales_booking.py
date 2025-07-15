@@ -18,7 +18,6 @@ BOOKING_STATUS_CHOICES = [
     ("enquired", "Enquired"),
 ]
 
-
 class SalesBooking(models.Model):
     motorcycle = models.ForeignKey(
         "inventory.Motorcycle",
