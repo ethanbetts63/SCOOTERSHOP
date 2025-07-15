@@ -169,7 +169,7 @@
                         </a>
                     </div>
                     <div class="mb-3 position-relative">
-                        <label for="profileSearch" class="form-label">Search Customer (Name, Email, Phone, ID)</label>
+                        <label for="profileSearch" class="form-label text-gray-900">Search Customer (Name, Email, Phone, ID)</label>
                         <input type="text" class="form-control" id="profileSearch" placeholder="Start typing to search sales profiles..." autocomplete="off">
                         <div id="profileSearchResults" class="search-results"></div>
                         {% for error in form.selected_profile_id.errors %}
@@ -198,7 +198,7 @@
                         </a>
                     </div>
                     <div class="mb-3 position-relative">
-                        <label for="motorcycleSearch" class="form-label">Search Motorcycle (Brand, Model, VIN, Stock#, Rego, ID)</label>
+                        <label for="motorcycleSearch" class="form-label text-gray-900">Search Motorcycle (Brand, Model, VIN, Stock#, Rego, ID)</label>
                         <input type="text" class="form-control" id="motorcycleSearch" placeholder="Start typing to search motorcycles..." autocomplete="off">
                         <div id="motorcycleSearchResults" class="search-results"></div>
                         {% for error in form.selected_motorcycle_id.errors %}
