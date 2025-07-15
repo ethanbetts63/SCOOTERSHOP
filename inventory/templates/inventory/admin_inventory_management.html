@@ -118,11 +118,13 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium table-cell-padding">
                                     <div class="flex space-x-2">
                                         <a href="{% url 'inventory:admin_motorcycle_update' pk=motorcycle.pk %}" class="action-button btn-edit">Edit</a>
+                                        {% if motorcycle.status != 'sold' %}
                                         <form action="" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to mark this bike as sold and notify customers who have a future appointment on this bike? To mark as sold without notifying click edit instead.');">
                                             {% csrf_token %}
                                             <input type="hidden" name="motorcycle_id" value="{{ motorcycle.id }}">
                                             <button type="submit" class="action-button btn-create">Sell & Notify</button>
                                         </form>
+                                        {% endif %}
                                         <form action="{% url 'inventory:admin_motorcycle_delete' pk=motorcycle.pk %}" method="post" class="inline">
                                             {% csrf_token %}
                                             <button type="submit" class="action-button btn-delete" onclick="return confirm('Are you sure you want to delete this motorcycle? This action cannot be undone.');">
