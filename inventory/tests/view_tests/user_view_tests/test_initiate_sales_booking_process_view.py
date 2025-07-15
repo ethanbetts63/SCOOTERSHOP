@@ -8,7 +8,7 @@ from decimal import Decimal
 class InitiateBookingProcessViewTest(TestCase):
 
     def setUp(self):
-        self.motorcycle = MotorcycleFactory(is_available=True)
+        self.motorcycle = MotorcycleFactory(status="for_sale")
         self.inventory_settings = InventorySettingsFactory()
 
     def test_post_initiate_booking_process_success_with_deposit(self):

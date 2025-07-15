@@ -32,7 +32,7 @@ def sell_and_notify(motorcycle):
             success = send_templated_email(
                 recipient_list=[recipient_email],
                 subject=subject,
-                template_name="mailer/user_notify_sold.html",
+                template_name="user_notify_sold.html",
                 context=context,
                 booking=booking,
                 profile=booking.sales_profile,

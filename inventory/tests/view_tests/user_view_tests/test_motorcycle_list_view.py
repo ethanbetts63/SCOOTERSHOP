@@ -103,9 +103,8 @@ class MotorcycleListViewTest(TestCase):
                 conditions=[cls.condition_used.name],
             )
 
-    def test_all_motorcycles_page_renders_empty_initially(self):
-
-        response = self.client.get(reverse("inventory:all"))
+    def setUp(self):
+        Motorcycle.objects.all().delete()
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "inventory/motorcycle_list.html")
 
@@ -174,7 +173,6 @@ class MotorcycleListViewTest(TestCase):
         self.assertContains(response, "No motorcycles match the current criteria.")
 
     def test_no_motorcycles_found_display_initial_load(self):
-
         response = self.client.get(reverse("inventory:all"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "No motorcycles match the current criteria.")
