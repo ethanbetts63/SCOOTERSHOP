@@ -26,6 +26,7 @@ class TestPaymentEdgeCases(TestCase):
             enable_reservation_by_deposit=True,
             deposit_amount=Decimal("200.00"),
             currency_code="AUD",
+            require_drivers_license=False,
         )
         self.motorcycle = MotorcycleFactory(
             is_available=True,

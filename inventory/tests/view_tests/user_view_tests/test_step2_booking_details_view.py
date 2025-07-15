@@ -184,11 +184,15 @@ class Step2BookingDetailsViewTest(TestCase):
         self, mock_error, mock_success, mock_convert_temp_sales_booking
     ):
         # Directly create and save TempSalesBooking to ensure deposit_required_for_flow is True
+        # Ensure an active SalesTerms exists for the test
+        SalesTermsFactory(is_active=True) # Ensure one exists
+
         temp_booking = TempSalesBookingFactory(
             motorcycle=self.motorcycle,
             sales_profile=self.sales_profile,
             deposit_required_for_flow=True,
             booking_status="pending_details",
+            sales_terms_version=self.sales_terms, # Link to the active sales terms
         )
         temp_booking.save()
 
