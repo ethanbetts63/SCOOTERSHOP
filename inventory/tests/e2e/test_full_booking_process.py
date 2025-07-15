@@ -45,7 +45,7 @@ class TestEnquiryFlows(TestCase):
             "inventory:initiate_booking", kwargs={"pk": self.motorcycle.pk}
         )
         response = self.client.post(
-            initiate_url, {"deposit_required_for_flow": "false"}
+            initiate_url, {"deposit_required_for_flow": "false"}, follow=True
         )
         self.assertEqual(response.status_code, 302)
         self.assertIn("temp_sales_booking_uuid", self.client.session)
