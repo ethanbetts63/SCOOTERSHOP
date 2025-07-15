@@ -4,17 +4,15 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 from django.contrib.auth.decorators import login_required
 from dashboard.models import SiteSettings
+from ..decorators import admin_required
 
 @require_GET
-@login_required
+@admin_required
 def search_google_reviews_ajax(request):
     """
     Handles AJAX requests to search for Google reviews based on a query.
     """
     print("AJAX view called")
-    if not request.user.is_staff:
-        print("Permission denied")
-        return JsonResponse({"error": "Permission denied"}, status=403)
 
     search_term = request.GET.get("query", "").strip().lower()
     print(f"Search term: {search_term}")
