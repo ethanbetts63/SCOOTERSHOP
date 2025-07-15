@@ -13,7 +13,7 @@ class InitiateBookingProcessViewTest(TestCase):
 
         cls.inventory_settings = InventorySettingsFactory()
 
-        cls.motorcycle = MotorcycleFactory(is_available=True)
+        cls.motorcycle = MotorcycleFactory(status="for_sale")
 
         cls.initiate_booking_url = reverse(
             "inventory:initiate_booking", kwargs={"pk": cls.motorcycle.pk}

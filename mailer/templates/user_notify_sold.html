@@ -83,14 +83,14 @@
                     </tr>
                     <tr>
                         <td class="content">
-                            <p>Hi {% if profile.name %}{{ profile.name }}{% else %}there{% endif %},</p>
+                            <p>Hi {{ profile.name|default:"MISSING VARIABLE" }},</p>
                             <p>
                                 We're writing to let you know that the motorcycle you were interested in, the 
-                                <strong>{% if motorcycle.title %}{{ motorcycle.title }}{% else %}details not available{% endif %}</strong>, 
+                                <strong>{{ motorcycle.title|default:"MISSING VARIABLE" }}</strong>, 
                                 has now been sold and is no longer available.
                             </p>
                             <p>
-                                This notification is in reference to your booking (Ref: <strong>{% if booking.sales_booking_reference %}{{ booking.sales_booking_reference }}{% else %}N/A{% endif %}</strong>).
+                                This notification is in reference to your booking (Ref: <strong>{{ booking.sales_booking_reference|default:"MISSING VARIABLE" }}</strong>).
                             </p>
                             
                             <h2>Motorcycle Details</h2>
@@ -98,9 +98,9 @@
                                 <tr>
                                     <th>Motorcycle:</th>
                                     <td>
-                                        {% if motorcycle.year %}{{ motorcycle.year }} {% endif %}
-                                        {% if motorcycle.brand %}{{ motorcycle.brand }} {% endif %}
-                                        {% if motorcycle.model %}{{ motorcycle.model }}{% endif %}
+                                        {{ motorcycle.year|default:"MISSING VARIABLE" }} 
+                                        {{ motorcycle.brand|default:"MISSING VARIABLE" }} 
+                                        {{ motorcycle.model|default:"MISSING VARIABLE" }}
                                     </td>
                                 </tr>
                                 <tr>
@@ -112,7 +112,7 @@
                             <p>We understand this might be disappointing. We invite you to browse our current inventory for other motorcycles that may catch your eye.</p>
 
                             <p style="text-align: center;">
-                                <a href="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{% url 'core:index' %}" class="button">Browse Our Website</a>
+                                <a href="{{ SITE_SCHEME|default:"MISSING VARIABLE" }}://{{ SITE_DOMAIN|default:"MISSING VARIABLE" }}{% url 'core:index' %}" class="button">Browse Our Website</a>
                             </p>
                             
                             <p>Best regards,</p>

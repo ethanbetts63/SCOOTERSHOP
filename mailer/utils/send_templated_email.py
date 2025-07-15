@@ -68,6 +68,7 @@ def send_templated_email(
         email_status = 'FAILED'
         error_msg = str(e)
         success = False
+        print(f"[send_templated_email] Error sending email: {error_msg}")
 
     if settings.ADMIN_EMAIL not in recipient_list:
         try:
