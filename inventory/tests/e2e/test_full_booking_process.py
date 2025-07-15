@@ -240,7 +240,7 @@ class TestDepositFlows(TestCase):
         )
         self.client.post(initiate_url_2, {"deposit_required_for_flow": "true"})
 
-        response = self.client.get(step1_url, follow=True)
+        response = self.client.get(step1_url) 
         self.assertContains(response, "Thorough Tester Updated")
         self.client.post(step1_url, updated_profile_data)
 
