@@ -197,17 +197,25 @@
 
                             
                             {% if booking.amount_paid > 0 %}
+                            {% if booking.amount_paid > 0 %}
                             <div class="section-title">Financial Details</div>
                             <table>
                                 <tr>
                                     <th>Amount Paid:</th>
-                                    <td>{% if booking.amount_paid %}{{ booking.amount_paid|floatformat:2 }}{% else %}booking.amount_paid VARIABLE DID NOT LOAD{% endif %} {% if booking.currency %}{{ booking.currency }}{% else %}booking.currency VARIABLE DID NOT LOAD{% endif %}</td>
+                                    <td>{{ booking.amount_paid|floatformat:2 }} {% if booking.currency %}{{ booking.currency }}{% else %}AUD{% endif %}</td>
                                 </tr>
                                 <tr>
-                                    <th>Stripe Payment Intent ID:</th>
-                                    <td>{% if booking.stripe_payment_intent_id %}{{ booking.stripe_payment_intent_id }}{% else %}booking.stripe_payment_intent_id VARIABLE DID NOT LOAD{% endif %}</td>
+                                    <th>Payment Status:</th>
+                                    <td>{% if booking.get_payment_status_display %}{{ booking.get_payment_status_display }}{% else %}N/A{% endif %}</td>
                                 </tr>
+                                {% if booking.stripe_payment_intent_id %}
+                                <tr>
+                                    <th>Stripe Payment Intent ID:</th>
+                                    <td>{{ booking.stripe_payment_intent_id }}</td>
+                                </tr>
+                                {% endif %}
                             </table>
+                            {% endif %}
                             {% endif %}
                             
                             

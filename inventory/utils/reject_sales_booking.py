@@ -77,11 +77,11 @@ def reject_sales_booking(
                     if motorcycle.condition == "new":
                         motorcycle.quantity += 1
                         motorcycle.is_available = True
-                        motorcycle.status = "available"
+                        motorcycle.status = "for_sale"
                         motorcycle.save()
                     else:
                         motorcycle.is_available = True
-                        motorcycle.status = "available"
+                        motorcycle.status = "for_sale"
                         motorcycle.save()
             else:
                 return {

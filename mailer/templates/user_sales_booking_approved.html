@@ -120,10 +120,12 @@
                                     <td>{% if booking.customer_notes %}{{ booking.customer_notes }}{% else %}-{% endif %}</td>
                                 </tr>
                                 {% endif %}
+                                {% if booking.amount_paid > 0 %}
                                 <tr>
                                     <th>Amount Paid:</th>
-                                    <td>{% if booking.amount_paid %}{{ booking.amount_paid|floatformat:2 }}{% else %}booking.amount_paid VARIABLE DID NOT LOAD{% endif %} {% if booking.currency %}{{ booking.currency }}{% else %}booking.currency VARIABLE DID NOT LOAD{% endif %}</td>
+                                    <td>{{ booking.amount_paid|floatformat:2 }} {% if booking.currency %}{{ booking.currency }}{% else %}AUD{% endif %}</td>
                                 </tr>
+                                {% endif %}
                                 <tr>
                                     <th>Payment Status:</th>
                                     <td>{% if booking.get_payment_status_display %}{{ booking.get_payment_status_display }}{% else %}booking.get_payment_status_display VARIABLE DID NOT LOAD{% endif %}</td>

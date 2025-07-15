@@ -150,13 +150,12 @@
                                 <tr>
                                     <th>Amount Paid:</th>
                                     <td>
-                                        {% if booking.amount_paid %}{{ booking.amount_paid|floatformat:2 }}{% else %}amount_paid DID NOT LOAD {% endif %}
-                                        {% if booking.currency %}{{ booking.currency }}{% else %}currency DID NOT LOAD{% endif %}
+                                        {{ booking.amount_paid|floatformat:2 }} {{ booking.currency }}
                                     </td>
                                 </tr>
                                 <tr>
                                     <th>Payment Status:</th>
-                                    <td>{% if booking.get_payment_status_display %}{{ booking.get_payment_status_display }}{% else %}get_payment_status_display DID NOT LOAD{% endif %}</td>
+                                    <td>{{ booking.get_payment_status_display }}</td>
                                 </tr>
                                 {% endif %}
                                 
