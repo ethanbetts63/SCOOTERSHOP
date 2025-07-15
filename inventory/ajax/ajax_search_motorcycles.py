@@ -36,8 +36,7 @@ def search_motorcycles_ajax(request):
             condition_filter = Q(condition=condition) | Q(conditions__name__iexact=condition)
             queryset = queryset.filter(condition_filter)
 
-        # Filter by is_available
-        queryset = queryset.filter(is_available=True)
+        
 
         # Order and limit the results
         queryset = queryset.distinct().order_by("brand", "model", "year")[:20]

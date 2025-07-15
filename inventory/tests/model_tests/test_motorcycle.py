@@ -178,7 +178,7 @@ class MotorcycleModelTest(TestCase):
         self.assertTrue(field.default)
         self.assertEqual(field.help_text, "Is this bike generally available for sale?")
         self.assertTrue(self.motorcycle_for_sale.is_available)
-        self.assertFalse(self.motorcycle_unavailable.is_available)
+        self.assertFalse(self.motorcycle_reserved.is_available)
 
     def test_rego_field(self):
 
