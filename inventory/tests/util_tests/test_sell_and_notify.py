@@ -53,3 +53,13 @@ class SellAndNotifyTests(TestCase):
         self.assertEqual(email.subject, f'Update on your interest in the {self.motorcycle.title}')
         self.assertIn(self.motorcycle.title, email.body)
         self.assertIn('has now been sold and is no longer available', email.body)
+
+    def test_non_deposit_booking_status_updated_to_cancelled(self):
+        sell_and_notify(self.motorcycle)
+        self.booking1.refresh_from_db()
+        self.booking3.refresh_from_db()
+        self.booking2.refresh_from_db()
+
+        self.assertEqual(self.booking1.booking_status, 'cancelled')
+        self.assertEqual(self.booking3.booking_status, 'cancelled')
+        self.assertNotEqual(self.booking2.booking_status, 'cancelled') # Ensure deposit booking is not cancelled

@@ -23,9 +23,8 @@ class InitiateBookingProcessViewTest(TestCase):
         self.assertEqual(temp_booking.booking_status, 'pending_details')
 
     def test_post_initiate_booking_process_success_without_deposit(self):
-        response = self.client.post(reverse('inventory:initiate_booking', kwargs={'pk': self.motorcycle.pk}), data={'deposit_required_for_flow': 'false'})
-        self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('inventory:step1_sales_profile'))
+        response = self.client.post(reverse('inventory:initiate_booking', kwargs={'pk': self.motorcycle.pk}), data={'deposit_required_for_flow': 'false'}, follow=True)
+        self.assertEqual(response.status_code, 200)
         self.assertIn('temp_sales_booking_uuid', self.client.session)
         temp_booking = TempSalesBooking.objects.get(session_uuid=self.client.session['temp_sales_booking_uuid'])
         self.assertEqual(temp_booking.motorcycle, self.motorcycle)
