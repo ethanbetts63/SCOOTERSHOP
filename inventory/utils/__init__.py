@@ -11,3 +11,4 @@ from .booking_protection import *
 from .get_sales_faqs import *
 from .get_featured_motorcycles import *
 from .has_available_date import *
+from .sell_and_notify import *

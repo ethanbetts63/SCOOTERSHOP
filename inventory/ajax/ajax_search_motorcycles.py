@@ -14,12 +14,6 @@ def search_motorcycles_ajax(request):
     """
     search_term = request.GET.get("query", "").strip()
     condition = request.GET.get("condition")
-    include_unavailable = (
-        request.GET.get("include_unavailable", "false").lower() == "true"
-    )
-
-    motorcycles_data = []
-
     if search_term:
         # Base search query across multiple fields
         search_query = (
@@ -38,9 +32,8 @@ def search_motorcycles_ajax(request):
             condition_filter = Q(condition=condition) | Q(conditions__name__iexact=condition)
             queryset = queryset.filter(condition_filter)
 
-        # Exclude unavailable motorcycles unless specified
-        if not include_unavailable:
-            queryset = queryset.filter(status__in=["for_sale", "reserved"])
+        # Filter by is_available
+        queryset = queryset.filter(is_available=True)
 
         # Order and limit the results
         queryset = queryset.distinct().order_by("brand", "model", "year")[:20]

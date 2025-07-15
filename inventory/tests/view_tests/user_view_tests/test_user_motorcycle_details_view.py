@@ -67,21 +67,11 @@ class UserMotorcycleDetailsViewTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
 
-    def test_motorcycle_details_view_unavailable_motorcycle(self):
-
-        unavailable_motorcycle = MotorcycleFactory(
-            brand="SoldBrand",
-            model="SoldModel",
-            year=2021,
-            price=20000.00,
-            is_available=False,
-        )
-        url = reverse(
-            "inventory:motorcycle-detail", kwargs={"pk": unavailable_motorcycle.pk}
-        )
-        response = self.client.get(url)
-
+    def test_motorcycle_details_view_not_for_sale_motorcycle(self):
+        not_for_sale_motorcycle = MotorcycleFactory(is_available=False)
+        response = self.client.get(reverse("inventory:motorcycle-detail", kwargs={"pk": not_for_sale_motorcycle.pk}))
         self.assertEqual(response.status_code, 200)
-        self.assertIn("motorcycle", response.context)
-        self.assertEqual(response.context["motorcycle"], unavailable_motorcycle)
-        self.assertContains(response, unavailable_motorcycle.title)
+        self.assertTemplateUsed(response, "inventory/user_motorcycle_details.html")
+        self.assertEqual(response.context["motorcycle"], not_for_sale_motorcycle)
+        self.assertContains(response, not_for_sale_motorcycle.title)
+        self.assertContains(response, "Unavailable")

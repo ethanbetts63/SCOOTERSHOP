@@ -34,10 +34,9 @@ class InitiateBookingProcessViewTest(TestCase):
         self.assertEqual(temp_booking.booking_status, 'pending_details')
 
     def test_post_initiate_booking_process_motorcycle_not_available(self):
-        unavailable_motorcycle = MotorcycleFactory(is_available=False)
-        response = self.client.post(reverse('inventory:initiate_booking', kwargs={'pk': unavailable_motorcycle.pk}))
-        self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('inventory:motorcycle-detail', kwargs={'pk': unavailable_motorcycle.pk}))
+        not_for_sale_motorcycle = MotorcycleFactory(is_available=False)
+        response = self.client.post(reverse('inventory:initiate_booking', kwargs={'pk': not_for_sale_motorcycle.pk}))
+        self.assertRedirects(response, reverse('inventory:motorcycle-detail', kwargs={'pk': not_for_sale_motorcycle.pk}))
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
         self.assertIn('is currently reserved or sold and cannot be booked at this time.', str(messages[0]))

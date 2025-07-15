@@ -37,14 +37,7 @@ class MotorcycleModelTest(TestCase):
             is_available=True,
         )
 
-        cls.motorcycle_unavailable = MotorcycleFactory(
-            brand="Kawasaki",
-            model="Ninja 400",
-            year=2021,
-            price=Decimal("8000.00"),
-            conditions=[cls.condition_used.name],
-            is_available=False,
-        )
+        
 
     def test_motorcycle_creation(self):
 

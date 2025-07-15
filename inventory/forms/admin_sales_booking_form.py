@@ -205,7 +205,7 @@ class AdminSalesBookingForm(forms.ModelForm):
                         )
 
             else:
-                if motorcycle.status in ["reserved", "sold", "unavailable"]:
+                if motorcycle.status in ["reserved", "sold"]:
 
                     if not (
                         instance_motorcycle and instance_motorcycle.pk == motorcycle.pk

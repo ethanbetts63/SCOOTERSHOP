@@ -273,31 +273,7 @@ class MotorcycleFormTest(TestCase):
         )
         self.assertEqual(instance_available.status, "for_sale")
 
-        data_unavailable = {
-            "status": "unavailable",
-            "brand": "Test",
-            "model": "Unavailable",
-            "year": 2022,
-            "engine_size": 500,
-            "odometer": 100,
-            "transmission": "manual",
-            "stock_number": "UN-001",
-            "conditions": [self.condition_used.pk],
-        }
-
-        form_unavailable = MotorcycleForm(data=data_unavailable)
-
-        self.assertTrue(
-            form_unavailable.is_valid(),
-            f"Form should be valid when 'is_available' is unchecked. Errors: {form_unavailable.errors.as_json()}",
-        )
-
-        instance_unavailable = form_unavailable.save()
-        self.assertFalse(
-            instance_unavailable.is_available,
-            "Motorcycle should be saved as not available.",
-        )
-        self.assertEqual(instance_unavailable.status, "unavailable")
+        
 
     def test_form_saves_status_correctly(self):
         base_data = {

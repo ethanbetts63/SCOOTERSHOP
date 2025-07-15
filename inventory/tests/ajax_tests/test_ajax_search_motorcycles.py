@@ -39,9 +39,7 @@ class AjaxSearchMotorcyclesTest(TestCase):
         cls.suzuki_rmz = MotorcycleFactory(
             brand="Suzuki", model="RM-Z250", status="sold", is_available=False
         )
-        cls.ktm_sxf = MotorcycleFactory(
-            brand="KTM", model="350 SX-F", status="unavailable", is_available=False
-        )
+        MotorcycleFactory(brand="KTM", model="350 SX-F", is_available=False)
 
     def _get_response(self, user, query_params={}):
 
