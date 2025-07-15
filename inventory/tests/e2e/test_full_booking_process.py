@@ -9,6 +9,8 @@ from django.conf import settings
 
 from inventory.models import TempSalesBooking, SalesBooking
 from payments.models import Payment
+from unittest.mock import patch, MagicMock
+
 from ..test_helpers.model_factories import (
     InventorySettingsFactory,
     MotorcycleFactory,
