@@ -19,15 +19,14 @@ class TestEnquiryWithAppointmentFlow(TestCase):
         self.client.force_login(self.user)
         self.settings = InventorySettingsFactory(currency_code="AUD")
         self.motorcycle = MotorcycleFactory(
-            is_available=True,
-            status="available",
+            status="for_sale",
             price=Decimal("5000.00"),
             year=1993,
             brand="Kawasaki",
             model="Enough",
         )
         self.another_motorcycle = MotorcycleFactory(
-            is_available=True, status="available", price=Decimal("8000.00")
+            status="for_sale", price=Decimal("8000.00")
         )
         self.sales_terms = SalesTermsFactory(is_active=True)
 
