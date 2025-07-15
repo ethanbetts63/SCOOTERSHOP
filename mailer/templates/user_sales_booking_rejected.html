@@ -120,10 +120,12 @@
                                     <td>{% if booking.appointment_date %}{{ booking.appointment_date|date:"D, M d, Y" }}{% else %}booking.appointment_date VARIABLE DID NOT LOAD{% endif %} at {% if booking.appointment_time %}{{ booking.appointment_time|time:"P" }}{% else %}booking.appointment_time VARIABLE DID NOT LOAD{% endif %}</td>
                                 </tr>
                                 {% endif %}
+                                {% if booking.amount_paid > 0 %}
                                 <tr>
                                     <th>Amount Paid:</th>
-                                    <td>{% if booking.amount_paid %}{{ booking.amount_paid|floatformat:2 }}{% else %}booking.amount_paid VARIABLE DID NOT LOAD{% endif %} {% if booking.currency %}{{ booking.currency }}{% else %}booking.currency VARIABLE DID NOT LOAD{% endif %}</td>
+                                    <td>{{ booking.amount_paid|floatformat:2 }} {% if booking.currency %}{{ booking.currency }}{% else %}AUD{% endif %}</td>
                                 </tr>
+                                {% endif %}
                                 <tr>
                                     <th>Payment Status:</th>
                                     <td>{% if booking.get_payment_status_display %}{{ booking.get_payment_status_display }}{% else %}booking.get_payment_status_display VARIABLE DID NOT LOAD{% endif %}</td>
