@@ -24,7 +24,6 @@ def confirm_sales_booking(sales_booking_id, message=None, send_notification=True
                 else:
                     if booking.payment_status == "deposit_paid":
                         if motorcycle.is_available:
-                            motorcycle.is_available = False
                             motorcycle.status = "reserved"
                             motorcycle.save()
                     else:
