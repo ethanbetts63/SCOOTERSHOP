@@ -1,14 +1,15 @@
 from django.http import JsonResponse
 from django.db.models import Q
 from django.views.decorators.http import require_GET
-from django.contrib.auth.decorators import login_required
-from inventory.models import SalesBooking
 from ..decorators import admin_required
+from inventory.models import SalesBooking
 
 
 @require_GET
 @admin_required
 def search_sales_bookings_ajax(request):
+    search_term = request.GET.get("query", "").strip()
+    bookings_data = []
 
     if search_term:
         search_query = (

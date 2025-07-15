@@ -5,6 +5,7 @@ from inventory.models import TempSalesBooking
 from payments.models import Payment
 from inventory.utils.convert_temp_sales_booking import convert_temp_sales_booking
 from mailer.utils import send_templated_email
+from dashboard.models import SiteSettings
 
 
 def handle_sales_booking_succeeded(payment_obj: Payment, payment_intent_data: dict):
@@ -60,6 +61,7 @@ def handle_sales_booking_succeeded(payment_obj: Payment, payment_intent_data: di
             motorcycle.save()
 
         sales_profile = sales_booking.sales_profile
+        site_settings = SiteSettings.get_settings()
         email_context = {
             "booking": sales_booking,
             "user": (
@@ -69,6 +71,7 @@ def handle_sales_booking_succeeded(payment_obj: Payment, payment_intent_data: di
             "is_deposit_confirmed": sales_booking.payment_status == "deposit_paid",
             "SITE_DOMAIN": settings.SITE_DOMAIN,
             "SITE_SCHEME": settings.SITE_SCHEME,
+            "site_settings": site_settings,
         }
 
         user_email = (

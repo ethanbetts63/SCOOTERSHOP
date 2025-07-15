@@ -4,6 +4,7 @@ from service.models import TempServiceBooking
 from payments.models import Payment
 from service.utils.convert_temp_service_booking import convert_temp_service_booking
 from mailer.utils import send_templated_email
+from dashboard.models import SiteSettings
 
 
 def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: dict):
@@ -43,6 +44,7 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
 
         service_profile = service_booking.service_profile
         user_email = service_profile.email
+        site_settings = SiteSettings.get_settings()
         
 
         if user_email:
@@ -55,6 +57,7 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
                     "profile": service_profile,
                     "SITE_DOMAIN": settings.SITE_DOMAIN,
                     "SITE_SCHEME": settings.SITE_SCHEME,
+                    "site_settings": site_settings,
                 },
                 booking=service_booking,
                 profile=service_profile,
@@ -70,6 +73,7 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
                     "profile": service_profile,
                     "SITE_DOMAIN": settings.SITE_DOMAIN,
                     "SITE_SCHEME": settings.SITE_SCHEME,
+                    "site_settings": site_settings,
                 },
                 booking=service_booking,
                 profile=service_profile,

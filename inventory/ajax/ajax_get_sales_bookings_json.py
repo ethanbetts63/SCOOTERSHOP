@@ -4,6 +4,7 @@ from django.urls import reverse
 
 from ..decorators import admin_required
 
+@admin_required
 def get_sales_bookings_json(request):
 
     bookings = SalesBooking.objects.filter(

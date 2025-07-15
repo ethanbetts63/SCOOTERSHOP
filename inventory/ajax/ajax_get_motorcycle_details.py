@@ -2,12 +2,12 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET
 from ..decorators import admin_required
+from inventory.models import Motorcycle
 
 
 @require_GET
 @admin_required
 def get_motorcycle_details_ajax(request, pk):
-
     try:
         motorcycle = get_object_or_404(Motorcycle, pk=pk)
     except Exception as e:

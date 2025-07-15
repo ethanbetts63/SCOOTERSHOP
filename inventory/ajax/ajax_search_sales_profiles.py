@@ -2,12 +2,12 @@ from django.http import JsonResponse
 from django.db.models import Q
 from django.views.decorators.http import require_GET
 from ..decorators import admin_required
+from inventory.models import SalesProfile
 
 
 @require_GET
 @admin_required
 def search_sales_profiles_ajax(request):
-
     search_term = request.GET.get("query", "").strip()
     profiles_data = []
 

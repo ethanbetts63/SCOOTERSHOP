@@ -2,6 +2,7 @@ from django.db import transaction
 from django.conf import settings
 from inventory.models import SalesBooking
 from mailer.utils import send_templated_email
+from dashboard.models import SiteSettings
 
 def confirm_sales_booking(sales_booking_id, message=None, send_notification=True):
     try:
@@ -32,6 +33,7 @@ def confirm_sales_booking(sales_booking_id, message=None, send_notification=True
                 }
 
             if send_notification:
+                site_settings = SiteSettings.get_settings()
                 email_context = {
                     "booking": booking,
                     "sales_profile": booking.sales_profile,
@@ -40,6 +42,7 @@ def confirm_sales_booking(sales_booking_id, message=None, send_notification=True
                     "action_type": "confirmation",
                     "SITE_DOMAIN": settings.SITE_DOMAIN,
                     "SITE_SCHEME": settings.SITE_SCHEME,
+                    "site_settings": site_settings,
                 }
 
                 customer_email_subject = (

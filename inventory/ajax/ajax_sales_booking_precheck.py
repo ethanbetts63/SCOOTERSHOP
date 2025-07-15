@@ -1,12 +1,13 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from ..decorators import admin_required
+from inventory.forms import AdminSalesBookingForm
+from django import forms
 
 
 @require_POST
 @admin_required
 def sales_booking_precheck_ajax(request):
-
     form = AdminSalesBookingForm(request.POST)
 
     response_data = {"status": "success", "errors": {}, "warnings": []}

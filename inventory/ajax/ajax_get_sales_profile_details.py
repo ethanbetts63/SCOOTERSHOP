@@ -2,12 +2,12 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET
 from ..decorators import admin_required
+from inventory.models import SalesProfile
 
 
 @require_GET
 @admin_required
 def get_sales_profile_details_ajax(request, pk):
-
     try:
         sales_profile = get_object_or_404(SalesProfile, pk=pk)
     except Exception as e:
