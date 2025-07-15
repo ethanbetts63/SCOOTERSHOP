@@ -6,6 +6,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.conf import settings
 from inventory.models import  SalesBooking
+from inventory.models import TempSalesBooking, SalesBooking
 from payments.models import Payment
 from ..test_helpers.model_factories import (
     InventorySettingsFactory,
@@ -27,17 +28,15 @@ class TestLoggedInDepositFlowWithUpdates(TestCase):
             currency_code="AUD",
         )
         self.motorcycle = MotorcycleFactory(
-            is_available=True,
             price=Decimal("12000.00"),
-            status="available",
+            status="for_sale",
             year=1999,
             brand="Kawasaki",
             model="Star",
         )
         self.another_motorcycle = MotorcycleFactory(
-            is_available=True,
             price=Decimal("15000.00"),
-            status="available",
+            status="for_sale",
             year=2022,
             brand="Ducati",
             model="Panigale",
@@ -84,7 +83,8 @@ class TestLoggedInDepositFlowWithUpdates(TestCase):
         self.client.post(step2_url, updated_appointment_data)
 
         self.client.get(step3_url)
-        payment_obj = Payment.objects.first()
+        temp_booking = TempSalesBooking.objects.get(session_uuid=self.client.session["temp_sales_booking_uuid"])
+        payment_obj = Payment.objects.get(temp_sales_booking=temp_booking)
         payment_obj.refresh_from_db()
         payment_intent_id = payment_obj.stripe_payment_intent_id
 
