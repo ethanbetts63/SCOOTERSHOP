@@ -28,9 +28,8 @@ class TestPaymentEdgeCases(TestCase):
             currency_code="AUD",
         )
         self.motorcycle = MotorcycleFactory(
-            is_available=True,
             price=Decimal("15000.00"),
-            status="available",
+            status="for_sale",
         )
         stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -79,7 +78,7 @@ class TestPaymentEdgeCases(TestCase):
             self.motorcycle.is_available,
             "Motorcycle should still be available after a failed payment.",
         )
-        self.assertEqual(self.motorcycle.status, "available")
+        self.assertEqual(self.motorcycle.status, "for_sale")
 
         self.assertIn("temp_sales_booking_uuid", self.client.session)
         temp_booking_uuid = self.client.session["temp_sales_booking_uuid"]
