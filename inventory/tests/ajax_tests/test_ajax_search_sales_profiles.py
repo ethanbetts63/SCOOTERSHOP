@@ -42,7 +42,7 @@ class AjaxSearchSalesProfilesTest(TestCase):
     def test_view_requires_staff_user(self):
         response = self._get_response(self.non_staff_user, {"query": "John"})
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(json.loads(response.content), {"status": "error", "message": "Admin access required."})
+        self.assertEqual(json.loads(response.content), {"error": "Permission denied"})
 
     def test_search_returns_correct_json_structure(self):
 

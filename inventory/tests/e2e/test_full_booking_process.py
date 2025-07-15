@@ -9,8 +9,6 @@ from django.conf import settings
 
 from inventory.models import TempSalesBooking, SalesBooking
 from payments.models import Payment
-from unittest.mock import patch, MagicMock
-
 from ..test_helpers.model_factories import (
     InventorySettingsFactory,
     MotorcycleFactory,
@@ -45,7 +43,7 @@ class TestEnquiryFlows(TestCase):
             "inventory:initiate_booking", kwargs={"pk": self.motorcycle.pk}
         )
         response = self.client.post(
-            initiate_url, {"deposit_required_for_flow": "false"}, follow=True
+            initiate_url, {"deposit_required_for_flow": "false"}
         )
         self.assertEqual(response.status_code, 302)
         self.assertIn("temp_sales_booking_uuid", self.client.session)
@@ -128,12 +126,7 @@ class TestDepositFlows(TestCase):
         self.sales_terms = SalesTermsFactory(is_active=True)
         stripe.api_key = settings.STRIPE_SECRET_KEY
 
-    def test_logged_in_deposit_flow_with_updates(self, mock_stripe_modify, mock_stripe_retrieve, mock_stripe_create):
-        # Mock Stripe API calls
-        mock_stripe_create.return_value = MagicMock(id='pi_test_create', client_secret='cs_test_create', status='requires_payment_method', amount=15000, currency='aud')
-        mock_stripe_retrieve.return_value = MagicMock(id='pi_test_retrieve', client_secret='cs_test_retrieve', status='succeeded', amount=15000, currency='aud')
-        mock_stripe_modify.return_value = MagicMock(id='pi_test_modify', client_secret='cs_test_modify', status='requires_payment_method', amount=15000, currency='aud')
-
+    def test_logged_in_deposit_flow_with_updates(self):
         initiate_url = reverse(
             "inventory:initiate_booking", kwargs={"pk": self.motorcycle.pk}
         )
@@ -176,10 +169,7 @@ class TestDepositFlows(TestCase):
         payment_obj.refresh_from_db()
         payment_intent_id = payment_obj.stripe_payment_intent_id
 
-        # Mock the confirm call as well
-        with patch('inventory.utils.create_update_sales_payment_intent.stripe.PaymentIntent.confirm') as mock_stripe_confirm:
-            mock_stripe_confirm.return_value = MagicMock(id=payment_intent_id, status='succeeded', amount=15000, currency='aud')
-            
+        try:
             confirmation_url_path = reverse("inventory:step4_confirmation")
             full_return_url = f"http://testserver{confirmation_url_path}"
             stripe.PaymentIntent.confirm(
@@ -187,6 +177,8 @@ class TestDepositFlows(TestCase):
                 payment_method="pm_card_visa",
                 return_url=full_return_url,
             )
+        except stripe.error.StripeError as e:
+            self.fail(f"Stripe API call failed during test: {e}")
 
         updated_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
         handle_sales_booking_succeeded(payment_obj, updated_intent)

@@ -25,11 +25,10 @@ class Step2BookingDetailsViewTest(TestCase):
         cls.inventory_settings = InventorySettingsFactory(
             enable_viewing_for_enquiry=True,
             enable_reservation_by_deposit=True,
-            enable_sales_new_bikes=True,
         )
         cls.sales_terms = SalesTermsFactory(is_active=True)
 
-        cls.motorcycle = MotorcycleFactory(condition="new")
+        cls.motorcycle = MotorcycleFactory()
         cls.sales_profile = SalesProfileFactory()
 
     def _create_temp_booking_in_session(self, client, **kwargs):
@@ -46,7 +45,6 @@ class Step2BookingDetailsViewTest(TestCase):
         default_kwargs.update(kwargs)
 
         temp_booking = TempSalesBookingFactory(**default_kwargs)
-        temp_booking.save() # Ensure the deposit_required_for_flow is saved
         session = client.session
         session["temp_sales_booking_uuid"] = str(temp_booking.session_uuid)
         session.save()
@@ -183,23 +181,9 @@ class Step2BookingDetailsViewTest(TestCase):
     def test_post_valid_data_deposit_required(
         self, mock_error, mock_success, mock_convert_temp_sales_booking
     ):
-        # Directly create and save TempSalesBooking to ensure deposit_required_for_flow is True
-        # Ensure an active SalesTerms exists for the test
-        SalesTermsFactory(is_active=True) # Ensure one exists
-
-        temp_booking = TempSalesBookingFactory(
-            motorcycle=self.motorcycle,
-            sales_profile=self.sales_profile,
-            deposit_required_for_flow=True,
-            booking_status="pending_details",
-            sales_terms_version=self.sales_terms, # Link to the active sales terms
+        temp_booking = self._create_temp_booking_in_session(
+            self.client, deposit_required_for_flow=True
         )
-        temp_booking.save()
-
-        # Manually set the session UUID
-        session = self.client.session
-        session["temp_sales_booking_uuid"] = str(temp_booking.session_uuid)
-        session.save()
 
         post_date = datetime.date.today() + datetime.timedelta(days=10)
         post_time = datetime.time(14, 0)

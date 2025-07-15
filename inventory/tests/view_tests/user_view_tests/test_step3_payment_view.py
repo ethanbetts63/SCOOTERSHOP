@@ -143,9 +143,6 @@ class Step3PaymentViewTest(TestCase):
     )
     def test_get_creates_new_intent_and_payment_obj(self, mock_create_update):
 
-        self.temp_booking.deposit_required_for_flow = True
-        self.temp_booking.save()
-
         mock_intent = MagicMock(client_secret="new_client_secret", id="pi_new_123")
 
         mock_payment = PaymentFactory.build(
@@ -170,9 +167,7 @@ class Step3PaymentViewTest(TestCase):
         "inventory.views.user_views.step3_payment_view.create_or_update_sales_payment_intent"
     )
     def test_get_invalid_amount_redirects(self, mock_create_update):
-        # Ensure temp_booking has valid motorcycle and sales_profile
-        self.temp_booking.motorcycle = self.motorcycle
-        self.temp_booking.sales_profile = self.sales_profile
+
         self.temp_booking.amount_paid = Decimal("0.00")
         self.temp_booking.save()
 
