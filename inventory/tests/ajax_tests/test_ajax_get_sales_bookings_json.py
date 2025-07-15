@@ -34,4 +34,4 @@ class GetSalesBookingsJsonTest(TestCase):
         response = get_sales_bookings_json(request)
         self.assertEqual(response.status_code, 403)
         data = json.loads(response.content)
-        self.assertEqual(data['error'], 'Permission denied')
+        self.assertEqual(data, {"status": "error", "message": "Admin access required."})

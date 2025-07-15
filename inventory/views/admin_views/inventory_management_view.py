@@ -1,7 +1,10 @@
 from django.db.models import Q
 from django.views.generic import ListView
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
 from inventory.models import Motorcycle
 from inventory.mixins import AdminRequiredMixin
+from inventory.utils.sell_and_notify import sell_and_notify
 
 
 class InventoryManagementView(AdminRequiredMixin, ListView):
@@ -51,3 +54,10 @@ class InventoryManagementView(AdminRequiredMixin, ListView):
             context["page_title"] = "All Motorcycle Inventory Management"
 
         return context
+
+    def post(self, request, *args, **kwargs):
+        motorcycle_id = request.POST.get("motorcycle_id")
+        motorcycle = get_object_or_404(Motorcycle, id=motorcycle_id)
+        sell_and_notify(motorcycle)
+        messages.success(request, f"{motorcycle.title} has been marked as sold and notifications have been sent.")
+        return redirect(request.META.get("HTTP_REFERER", "inventory:inventory_management"))

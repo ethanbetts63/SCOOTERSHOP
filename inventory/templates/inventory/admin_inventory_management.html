@@ -96,9 +96,6 @@
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
                             {% if condition_type == 'new' %}
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                            {% else %}
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rego</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Odometer</th>
                             {% endif %}
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
@@ -117,13 +114,15 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">${{ motorcycle.price|floatformat:2|default:"N/A" }}</td>
                                 {% if condition_type == 'new' %}
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ motorcycle.quantity|default:"N/A" }}</td>
-                                {% else %}
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ motorcycle.rego|default:"N/A" }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ motorcycle.odometer }} km</td>
                                 {% endif %}
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium table-cell-padding">
                                     <div class="flex space-x-2">
                                         <a href="{% url 'inventory:admin_motorcycle_update' pk=motorcycle.pk %}" class="action-button btn-edit">Edit</a>
+                                        <form action="" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to mark this bike as sold and notify customers?');">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="motorcycle_id" value="{{ motorcycle.id }}">
+                                            <button type="submit" class="action-button btn-delete">Sell & Notify</button>
+                                        </form>
                                         <form action="{% url 'inventory:admin_motorcycle_delete' pk=motorcycle.pk %}" method="post" class="inline">
                                             {% csrf_token %}
                                             <button type="submit" class="action-button btn-delete" onclick="return confirm('Are you sure you want to delete this motorcycle? This action cannot be undone.');">

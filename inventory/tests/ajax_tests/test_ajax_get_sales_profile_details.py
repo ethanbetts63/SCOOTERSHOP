@@ -26,7 +26,7 @@ class GetSalesProfileDetailsAjaxTest(TestCase):
         response = get_sales_profile_details_ajax(request, self.sales_profile.pk)
         self.assertEqual(response.status_code, 403)
         data = json.loads(response.content)
-        self.assertEqual(data['error'], 'Permission denied')
+        self.assertEqual(data, {"status": "error", "message": "Admin access required."})
 
     def test_get_sales_profile_details_ajax_not_found(self):
         request = self.factory.get(reverse('inventory:admin_api_get_sales_profile_details', kwargs={'pk': 999}))
