@@ -145,9 +145,7 @@ class MotorcycleFactory(factory.django.DjangoModelFactory):
         lambda: fake.date_between(start_date="+6m", end_date="+2y")
     )
     stock_number = factory.Sequence(lambda n: f"STK-{n:05d}")
-    status = factory.Faker(
-        "random_element", elements=[choice[0] for choice in Motorcycle.STATUS_CHOICES]
-    )
+    is_available = True
 
     @factory.post_generation
     def conditions(obj, create, extracted, **kwargs):
