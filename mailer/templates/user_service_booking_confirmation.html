@@ -156,6 +156,12 @@
                                 {% endif %}
                             </table>
 
+                            {% if site_settings.enable_refunds and booking.amount_paid > 0 %}
+                            <div style="text-align: center; margin-top: 20px; border-top: 1px solid #dddddd; padding-top: 20px;">
+                                <p>Need to request a refund? <a href="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{% url 'refunds:user_refund_request' %}?booking_reference={{ booking.service_booking_reference }}">Click here to submit a request</a>.</p>
+                            </div>
+                            {% endif %}
+
                             <p>We look forward to seeing you!</p>
                             <p>Best regards,</p>
                             <p>The SCOOTER_SHOP Team</p>

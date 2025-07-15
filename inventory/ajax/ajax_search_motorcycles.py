@@ -1,19 +1,12 @@
 from django.http import JsonResponse
 from django.db.models import Q
 from django.views.decorators.http import require_GET
-from django.contrib.auth.decorators import login_required
-from inventory.models import Motorcycle
+from ..decorators import admin_required
 
 
 @require_GET
-@login_required
+@admin_required
 def search_motorcycles_ajax(request):
-    """
-    Handles AJAX requests to search for motorcycles based on a query and
-    optional filters like condition.
-    """
-    if not request.user.is_staff:
-        return JsonResponse({"error": "Permission denied"}, status=403)
 
     search_term = request.GET.get("query", "").strip()
     condition = request.GET.get("condition")

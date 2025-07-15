@@ -1,16 +1,11 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from django.contrib.auth.decorators import login_required
-from inventory.forms import AdminSalesBookingForm
-from django import forms
+from ..decorators import admin_required
 
 
 @require_POST
-@login_required
+@admin_required
 def sales_booking_precheck_ajax(request):
-
-    if not request.user.is_staff:
-        return JsonResponse({"error": "Permission denied"}, status=403)
 
     form = AdminSalesBookingForm(request.POST)
 

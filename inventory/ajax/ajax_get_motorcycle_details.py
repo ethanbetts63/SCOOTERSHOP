@@ -1,16 +1,12 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET
-from django.contrib.auth.decorators import login_required
-from inventory.models import Motorcycle
+from ..decorators import admin_required
 
 
 @require_GET
-@login_required
+@admin_required
 def get_motorcycle_details_ajax(request, pk):
-
-    if not request.user.is_staff:
-        return JsonResponse({"error": "Permission denied"}, status=403)
 
     try:
         motorcycle = get_object_or_404(Motorcycle, pk=pk)

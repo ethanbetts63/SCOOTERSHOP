@@ -2,9 +2,9 @@ from django.http import JsonResponse
 from inventory.models import SalesBooking
 from django.urls import reverse
 
+from ..decorators import admin_required
+
 def get_sales_bookings_json(request):
-    if not request.user.is_staff:
-        return JsonResponse({"error": "Permission denied"}, status=403)
 
     bookings = SalesBooking.objects.filter(
         booking_status__in=["confirmed", "completed"]

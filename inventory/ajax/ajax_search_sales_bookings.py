@@ -3,17 +3,12 @@ from django.db.models import Q
 from django.views.decorators.http import require_GET
 from django.contrib.auth.decorators import login_required
 from inventory.models import SalesBooking
-from dashboard.decorators import admin_required # Assuming admin_required is in dashboard app
+from ..decorators import admin_required
 
 
 @require_GET
 @admin_required
 def search_sales_bookings_ajax(request):
-    search_term = request.GET.get("query", "").strip()
-    bookings_data = []
-
-    if not request.user.is_staff:
-        return JsonResponse({"error": "Permission denied"}, status=403)
 
     if search_term:
         search_query = (
