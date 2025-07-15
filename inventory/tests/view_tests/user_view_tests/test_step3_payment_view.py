@@ -38,7 +38,7 @@ class Step3PaymentViewTest(TestCase):
             deposit_amount=Decimal("200.00"),
             currency_code="AUD",
         )
-        cls.motorcycle = MotorcycleFactory(price=Decimal("15000.00"))
+        cls.motorcycle = MotorcycleFactory(price=Decimal("15000.00"), status="for_sale")
         cls.base_url = reverse("inventory:step3_payment")
 
     def setUp(self):
