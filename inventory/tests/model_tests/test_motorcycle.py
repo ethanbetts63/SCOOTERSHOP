@@ -34,7 +34,13 @@ class MotorcycleModelTest(TestCase):
             year=2022,
             price=Decimal("15000.00"),
             conditions=[cls.condition_new.name],
-            is_available=True,
+            status="for_sale",
+        )
+        cls.motorcycle_reserved = MotorcycleFactory(
+            brand="Yamaha",
+            model="YZF-R1",
+            year=2023,
+            status="reserved",
         )
 
         

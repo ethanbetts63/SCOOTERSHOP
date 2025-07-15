@@ -140,7 +140,6 @@ class MotorcycleFactory(factory.django.DjangoModelFactory):
     )
     description = factory.Faker("paragraph", nb_sentences=5)
     image = None
-    is_available = True
     rego = factory.Faker("bothify", text="???###")
     rego_exp = factory.LazyFunction(
         lambda: fake.date_between(start_date="+6m", end_date="+2y")

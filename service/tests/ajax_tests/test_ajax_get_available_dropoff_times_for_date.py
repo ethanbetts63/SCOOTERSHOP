@@ -15,7 +15,7 @@ class AjaxGetAvailableDropoffTimesForDateTest(TestCase):
 
     def setUp(self):
         self.factory = RequestFactory()
-        self.user = User.objects.create_user(username='testuser', password='password')
+        self.user = User.objects.create_user(username='testuser', password='password', is_staff=True)
 
     @patch(
         "service.ajax.ajax_get_available_dropoff_times_for_date.get_available_dropoff_times"
