@@ -46,6 +46,7 @@ class Step2BookingDetailsViewTest(TestCase):
         default_kwargs.update(kwargs)
 
         temp_booking = TempSalesBookingFactory(**default_kwargs)
+        temp_booking.save() # Ensure the deposit_required_for_flow is saved
         session = client.session
         session["temp_sales_booking_uuid"] = str(temp_booking.session_uuid)
         session.save()
@@ -182,9 +183,19 @@ class Step2BookingDetailsViewTest(TestCase):
     def test_post_valid_data_deposit_required(
         self, mock_error, mock_success, mock_convert_temp_sales_booking
     ):
-        temp_booking = self._create_temp_booking_in_session(
-            self.client, deposit_required_for_flow=True
+        # Directly create and save TempSalesBooking to ensure deposit_required_for_flow is True
+        temp_booking = TempSalesBookingFactory(
+            motorcycle=self.motorcycle,
+            sales_profile=self.sales_profile,
+            deposit_required_for_flow=True,
+            booking_status="pending_details",
         )
+        temp_booking.save()
+
+        # Manually set the session UUID
+        session = self.client.session
+        session["temp_sales_booking_uuid"] = str(temp_booking.session_uuid)
+        session.save()
 
         post_date = datetime.date.today() + datetime.timedelta(days=10)
         post_time = datetime.time(14, 0)

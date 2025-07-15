@@ -68,7 +68,7 @@ class UserMotorcycleDetailsViewTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_motorcycle_details_view_not_for_sale_motorcycle(self):
-        not_for_sale_motorcycle = MotorcycleFactory(is_available=False)
+        not_for_sale_motorcycle = MotorcycleFactory(status='unavailable')
         response = self.client.get(reverse("inventory:motorcycle-detail", kwargs={"pk": not_for_sale_motorcycle.pk}))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "inventory/user_motorcycle_details.html")
