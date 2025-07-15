@@ -9,7 +9,7 @@ class RejectSalesBookingTests(TestCase):
     def setUp(self):
         self.admin_user = UserFactory(is_staff=True)
         self.motorcycle_new = MotorcycleFactory(quantity=0, condition='new', status='reserved', is_available=False)
-        self.motorcycle_used = MotorcycleFactory(condition='used', status='reserved', is_available=False)
+        self.motorcycle_used = MotorcycleFactory(condition='used', status='reserved')
         
         # Ensure each sales booking gets a unique payment instance
         self.sales_booking_new_deposit = SalesBookingFactory(motorcycle=self.motorcycle_new, payment=PaymentFactory(amount=Decimal('100.00')), payment_status='deposit_paid', booking_status='pending')
@@ -38,7 +38,7 @@ class RejectSalesBookingTests(TestCase):
         self.motorcycle_new.refresh_from_db()
         self.assertEqual(self.motorcycle_new.quantity, 1)
         self.assertTrue(self.motorcycle_new.is_available)
-        self.assertEqual(self.motorcycle_new.status, 'available')
+        self.assertEqual(self.motorcycle_new.status, 'for_sale')
         
         mock_create_refund.assert_called_once()
         mock_send_email.assert_not_called()
@@ -60,7 +60,7 @@ class RejectSalesBookingTests(TestCase):
         
         self.motorcycle_used.refresh_from_db()
         self.assertTrue(self.motorcycle_used.is_available)
-        self.assertEqual(self.motorcycle_used.status, 'available')
+        self.assertEqual(self.motorcycle_used.status, 'for_sale')
         
         self.assertEqual(mock_send_email.call_count, 2)
 
@@ -120,6 +120,6 @@ class RejectSalesBookingTests(TestCase):
         
         self.motorcycle_used.refresh_from_db()
         self.assertTrue(self.motorcycle_used.is_available)
-        self.assertEqual(self.motorcycle_used.status, 'available')
+        self.assertEqual(self.motorcycle_used.status, 'for_sale')
         
         self.assertEqual(mock_send_email.call_count, 2)

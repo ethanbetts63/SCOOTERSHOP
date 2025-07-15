@@ -37,7 +37,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
     def setUp(self):
 
         self.motorcycle.refresh_from_db()
-        self.motorcycle.status = "available"
+        self.motorcycle.status = "for_sale"
         self.motorcycle.is_available = True
         self.motorcycle.save()
 
@@ -81,7 +81,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         self.assertFalse(TempSalesBooking.objects.filter(pk=temp_booking.pk).exists())
 
         self.motorcycle.refresh_from_db()
-        self.assertEqual(self.motorcycle.status, "available")
+        self.assertEqual(self.motorcycle.status, "for_sale")
         self.assertTrue(self.motorcycle.is_available)
 
     def test_conversion_with_payment_object(self):
