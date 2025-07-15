@@ -47,7 +47,7 @@ class ProcessRefundViewTests(TestCase):
             amount_to_refund=Decimal("100.00"),
         )
 
-        url = reverse("payments:process_refund", kwargs={"pk": refund_request.pk})
+        url = reverse("refunds:process_refund", kwargs={"pk": refund_request.pk})
         response = self.client.post(url)
 
         self.assertEqual(response.status_code, 302)
@@ -77,7 +77,7 @@ class ProcessRefundViewTests(TestCase):
             amount_to_refund=Decimal("75.00"),
         )
 
-        url = reverse("payments:process_refund", kwargs={"pk": refund_request.pk})
+        url = reverse("refunds:process_refund", kwargs={"pk": refund_request.pk})
         response = self.client.post(url)
 
         self.assertEqual(response.status_code, 302)
@@ -88,7 +88,7 @@ class ProcessRefundViewTests(TestCase):
     def test_refund_invalid_status_rejection(self):
         # This test is correct, it specifically checks for a non-approvable status
         refund_request = RefundRequestFactory(status="failed")
-        url = reverse("payments:process_refund", kwargs={"pk": refund_request.pk})
+        url = reverse("refunds:process_refund", kwargs={"pk": refund_request.pk})
         response = self.client.post(url)
         self.assertEqual(response.status_code, 302)
         messages_list = list(messages.get_messages(response.wsgi_request))
@@ -97,7 +97,7 @@ class ProcessRefundViewTests(TestCase):
     def test_refund_no_associated_payment_rejection(self):
         # FIX: Set an approvable status to get past the first check
         refund_request = RefundRequestFactory(status="pending", payment=None)
-        url = reverse("payments:process_refund", kwargs={"pk": refund_request.pk})
+        url = reverse("refunds:process_refund", kwargs={"pk": refund_request.pk})
         response = self.client.post(url)
         self.assertEqual(response.status_code, 302)
         messages_list = list(messages.get_messages(response.wsgi_request))
@@ -106,7 +106,7 @@ class ProcessRefundViewTests(TestCase):
     def test_refund_invalid_amount_rejection(self):
         # FIX: Set an approvable status to get past the first check
         refund_request = RefundRequestFactory(status="pending", amount_to_refund=Decimal("0.00"))
-        url = reverse("payments:process_refund", kwargs={"pk": refund_request.pk})
+        url = reverse("refunds:process_refund", kwargs={"pk": refund_request.pk})
         response = self.client.post(url)
         self.assertEqual(response.status_code, 302)
         messages_list = list(messages.get_messages(response.wsgi_request))
@@ -116,7 +116,7 @@ class ProcessRefundViewTests(TestCase):
         # FIX: Set an approvable status to get past the first check
         payment = PaymentFactory(stripe_payment_intent_id=None)
         refund_request = RefundRequestFactory(status="pending", payment=payment)
-        url = reverse("payments:process_refund", kwargs={"pk": refund_request.pk})
+        url = reverse("refunds:process_refund", kwargs={"pk": refund_request.pk})
         response = self.client.post(url)
         self.assertEqual(response.status_code, 302)
         messages_list = list(messages.get_messages(response.wsgi_request))
@@ -126,7 +126,7 @@ class ProcessRefundViewTests(TestCase):
     def test_generic_exception_during_refund_creation(self, mock_stripe_refund_create):
         mock_stripe_refund_create.side_effect = ValueError("Something went wrong internally")
         refund_request = RefundRequestFactory(status="reviewed_pending_approval")
-        url = reverse("payments:process_refund", kwargs={"pk": refund_request.pk})
+        url = reverse("refunds:process_refund", kwargs={"pk": refund_request.pk})
         response = self.client.post(url)
         self.assertEqual(response.status_code, 302)
         messages_list = list(messages.get_messages(response.wsgi_request))

@@ -69,3 +69,35 @@ class SalesBookingActionViewTest(TestCase):
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), 'Booking rejected.')
+
+    @patch('inventory.views.admin_views.sales_booking_action_view.reject_sales_booking')
+    def test_post_reject_action_with_refund_success(self, mock_reject):
+        # Create a sales booking with deposit paid
+        sales_booking_with_deposit = SalesBookingFactory(payment_status='deposit_paid', amount_paid=100.00)
+
+        mock_reject.return_value = {
+            'success': True,
+            'message': 'Booking rejected and refund initiated.',
+            'refund_request_pk': 123 # Mock a refund request PK
+        }
+
+        form_data = {
+            'sales_booking_id': sales_booking_with_deposit.pk,
+            'action': 'reject',
+            'send_notification': True,
+            'message': 'Test rejection message with refund',
+            'initiate_refund': True,
+            'refund_amount': 100.00
+        }
+
+        response = self.client.post(
+            reverse('inventory:admin_sales_booking_action', kwargs={'pk': sales_booking_with_deposit.pk, 'action_type': 'reject'}),
+            data=form_data
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('refunds:initiate_refund_process', kwargs={'pk': 123}))
+        mock_reject.assert_called_once()
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'Booking rejected and refund initiated.')

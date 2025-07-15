@@ -26,7 +26,7 @@ class IntermediaryRefundProcessingView(AdminRequiredMixin, TemplateView):
             context["refund_request_pk"] = refund_request_pk
 
             context["process_refund_url"] = reverse(
-                "payments:process_refund", kwargs={"pk": refund_request_pk}
+                "refunds:process_refund", kwargs={"pk": refund_request_pk}
             )
         except Exception:
             messages.error(self.request, "Refund request not found or invalid.")

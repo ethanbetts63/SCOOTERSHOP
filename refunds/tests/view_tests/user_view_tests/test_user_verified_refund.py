@@ -8,7 +8,7 @@ class UserVerifiedRefundViewTests(TestCase):
         cls.client = Client()
 
     def test_get_request_renders_correct_template_and_context(self):
-        url = reverse("payments:user_verified_refund")
+        url = reverse("refunds:user_verified_refund")
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
@@ -34,7 +34,7 @@ class UserVerifiedRefundViewTests(TestCase):
         )
 
     def test_get_request_renders_content_correctly(self):
-        url = reverse("payments:user_verified_refund")
+        url = reverse("refunds:user_verified_refund")
         response = self.client.get(url)
 
         content = response.content.decode("utf-8")

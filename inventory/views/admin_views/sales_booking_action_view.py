@@ -112,7 +112,7 @@ class SalesBookingActionView(AdminRequiredMixin, FormView):
                 messages.success(self.request, result["message"])
 
                 self.success_url = reverse_lazy(
-                    "payments:initiate_refund_process",
+                    "refunds:initiate_refund_process",
                     kwargs={"pk": result["refund_request_pk"]},
                 )
                 return super().form_valid(form)
