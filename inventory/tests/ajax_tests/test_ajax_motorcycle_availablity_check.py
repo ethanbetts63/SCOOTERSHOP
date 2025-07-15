@@ -16,7 +16,7 @@ class AjaxMotorcycleAvailabilityCheckTest(TestCase):
         cls.client = Client()
 
         cls.available_motorcycle = MotorcycleFactory(is_available=True)
-        cls.unavailable_motorcycle = MotorcycleFactory(is_available=False)
+        cls.unavailable_motorcycle = MotorcycleFactory(status="sold")
 
         cls.available_temp_booking = TempSalesBookingFactory(
             motorcycle=cls.available_motorcycle
