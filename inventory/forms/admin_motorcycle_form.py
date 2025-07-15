@@ -37,8 +37,6 @@ class MotorcycleForm(forms.ModelForm):
         instance = kwargs.get("instance")
         super().__init__(*args, **kwargs)
 
-        self.fields["is_available"].required = False
-
         self.fields["status"].required = True
         self.fields["conditions"].required = True
         self.fields["price"].required = False

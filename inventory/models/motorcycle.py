@@ -96,6 +96,13 @@ class Motorcycle(models.Model):
     def get_absolute_url(self):
         return reverse("inventory:motorcycle-detail", kwargs={"pk": self.pk})
 
+    def save(self, *args, **kwargs):
+        if self.status == "for_sale":
+            self.is_available = True
+        else:
+            self.is_available = False
+        super().save(*args, **kwargs)
+
     def get_conditions_display(self):
         if self.conditions.exists():
             return ", ".join(
