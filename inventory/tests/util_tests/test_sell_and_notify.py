@@ -13,7 +13,7 @@ class SellAndNotifyTests(TestCase):
         self.booking1 = SalesBookingFactory(
             motorcycle=self.motorcycle,
             sales_profile=self.sales_profile1,
-            deposit_made=False
+            payment_status='unpaid'
         )
 
         self.user2 = UserFactory()
@@ -21,7 +21,7 @@ class SellAndNotifyTests(TestCase):
         self.booking2 = SalesBookingFactory(
             motorcycle=self.motorcycle,
             sales_profile=self.sales_profile2,
-            deposit_made=True  # This one should not be notified
+            payment_status='deposit_paid'  # This one should not be notified
         )
 
         self.user3 = UserFactory()
@@ -29,7 +29,7 @@ class SellAndNotifyTests(TestCase):
         self.booking3 = SalesBookingFactory(
             motorcycle=self.motorcycle,
             sales_profile=self.sales_profile3,
-            deposit_made=False
+            payment_status='unpaid'
         )
 
     def test_motorcycle_status_updated_to_sold(self):

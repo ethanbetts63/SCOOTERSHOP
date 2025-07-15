@@ -10,7 +10,7 @@ def sell_and_notify(motorcycle):
     motorcycle.save()
 
     bookings_to_notify = SalesBooking.objects.filter(
-        motorcycle=motorcycle, deposit_made=False
+        motorcycle=motorcycle, payment_status='unpaid'
     )
 
     for booking in bookings_to_notify:
