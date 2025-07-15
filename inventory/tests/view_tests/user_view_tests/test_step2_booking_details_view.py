@@ -28,7 +28,7 @@ class Step2BookingDetailsViewTest(TestCase):
         )
         cls.sales_terms = SalesTermsFactory(is_active=True)
 
-        cls.motorcycle = MotorcycleFactory()
+        cls.motorcycle = MotorcycleFactory(status="for_sale")
         cls.sales_profile = SalesProfileFactory()
 
     def _create_temp_booking_in_session(self, client, **kwargs):
@@ -192,6 +192,7 @@ class Step2BookingDetailsViewTest(TestCase):
             "appointment_time": post_time.strftime("%H:%M"),
             "customer_notes": "Looking forward to the viewing.",
             "terms_accepted": "on",
+            "deposit_required_for_flow": "true",
         }
 
         response = self.client.post(self.url, data=post_data, follow=True)
