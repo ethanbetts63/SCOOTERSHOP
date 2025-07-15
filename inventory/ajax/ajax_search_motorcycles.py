@@ -14,6 +14,10 @@ def search_motorcycles_ajax(request):
     """
     search_term = request.GET.get("query", "").strip()
     condition = request.GET.get("condition")
+    motorcycles_data = []
+
+    motorcycles_data = []
+
     if search_term:
         # Base search query across multiple fields
         search_query = (
