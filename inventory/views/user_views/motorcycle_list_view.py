@@ -14,7 +14,15 @@ class MotorcycleListView(ListView):
     allow_empty = True
 
     def get_queryset(self):
-        return Motorcycle.objects.none()
+        condition_slug = self.kwargs.get("condition_slug")
+        queryset = Motorcycle.objects.filter(status__in=["for_sale", "reserved"]).order_by("-date_posted")
+
+        if condition_slug == "new":
+            queryset = queryset.filter(condition="new")
+        elif condition_slug == "used":
+            queryset = queryset.filter(condition="used")
+
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

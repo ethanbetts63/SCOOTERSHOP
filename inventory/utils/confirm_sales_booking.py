@@ -22,10 +22,17 @@ def confirm_sales_booking(sales_booking_id, message=None, send_notification=True
                             motorcycle.status = "sold"
                         motorcycle.save()
                 else:
-                    if motorcycle.is_available:
-                        motorcycle.is_available = False
-                        motorcycle.status = "reserved"
-                        motorcycle.save()
+                    if booking.payment_status == "deposit_paid":
+                        if motorcycle.is_available:
+                            motorcycle.is_available = False
+                            motorcycle.status = "reserved"
+                            motorcycle.save()
+                    else:
+                        # For unpaid bookings (e.g., viewing requests), do not change status to reserved
+                        # Ensure it remains 'for_sale' if it was already.
+                        if motorcycle.status != "for_sale":
+                            motorcycle.status = "for_sale"
+                            motorcycle.save()
             else:
                 return {
                     "success": False,

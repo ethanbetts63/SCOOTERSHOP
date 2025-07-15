@@ -34,6 +34,13 @@ class UserMotorcycleDetailsView(DetailView):
         context['can_reserve_with_deposit'] = has_available_date_for_deposit_flow(inventory_settings)
         context['can_book_viewing'] = has_available_date_for_viewing_flow(inventory_settings)
 
+        # Determine if the motorcycle is reserved based on active bookings with deposit paid
+        is_reserved = motorcycle.sales_bookings.filter(
+            booking_status__in=["pending_confirmation", "confirmed"],
+            payment_status="deposit_paid"
+        ).exists()
+        context['is_reserved'] = is_reserved
+
         context["sales_faqs"] = get_faqs_for_step("general")
         context["faq_title"] = "Questions About Our Motorcycles"        
         category = None
