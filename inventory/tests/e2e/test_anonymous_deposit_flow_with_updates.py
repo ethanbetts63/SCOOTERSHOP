@@ -27,17 +27,15 @@ class TestAnonymousDepositFlowWithUpdates(TestCase):
             currency_code="AUD",
         )
         self.motorcycle = MotorcycleFactory(
-            is_available=True,
             price=Decimal("12000.00"),
-            status="available",
+            status="for_sale",
             year=1999,
             brand="Kawasaki",
             model="Star",
         )
         self.another_motorcycle = MotorcycleFactory(
-            is_available=True,
             price=Decimal("15000.00"),
-            status="available",
+            status="for_sale",
             year=2022,
             brand="Ducati",
             model="Panigale",
