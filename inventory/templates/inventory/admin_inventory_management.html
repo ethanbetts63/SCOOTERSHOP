@@ -121,7 +121,7 @@
                                         <form action="" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to mark this bike as sold and notify customers?');">
                                             {% csrf_token %}
                                             <input type="hidden" name="motorcycle_id" value="{{ motorcycle.id }}">
-                                            <button type="submit" class="action-button btn-delete">Sell & Notify</button>
+                                            <button type="submit" class="action-button btn-create">Sell & Notify</button>
                                         </form>
                                         <form action="{% url 'inventory:admin_motorcycle_delete' pk=motorcycle.pk %}" method="post" class="inline">
                                             {% csrf_token %}

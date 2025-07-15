@@ -17,7 +17,7 @@ class SalesBookingPrecheckAjaxTest(TestCase):
         response = sales_booking_precheck_ajax(request)
         self.assertEqual(response.status_code, 403)
         data = json.loads(response.content)
-        self.assertEqual(data['error'], 'Permission denied')
+        self.assertEqual(data, {"status": "error", "message": "Admin access required."})
 
     @patch('inventory.ajax.ajax_sales_booking_precheck.AdminSalesBookingForm')
     def test_form_is_valid_no_warnings(self, MockAdminSalesBookingForm):
