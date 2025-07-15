@@ -18,16 +18,10 @@ def send_templated_email(
     profile,
     from_email=None,
 ):
-    print(f"[send_templated_email] Recipient list: {recipient_list}")
-    print(f"[send_templated_email] Subject: {subject}")
-    print(f"[send_templated_email] Template name: {template_name}")
-
     if not recipient_list:
-        print("[send_templated_email] Recipient list is empty. Returning False.")
         return False
 
     sender_email = from_email if from_email else settings.DEFAULT_FROM_EMAIL
-    print(f"[send_templated_email] Sender email: {sender_email}")
 
     user = getattr(profile, 'user', None)
 
@@ -49,11 +43,9 @@ def send_templated_email(
         text_content_prep = re.sub(r'</(div|h[1-6]|ul|ol|li)>', '\n', text_content_prep)
         text_content_prep = re.sub(r'<(p|div|h[1-6]|ul|ol|li)[^>]*?>', '', text_content_prep)
         text_content = strip_tags(text_content_prep).strip()
-        print("[send_templated_email] Template rendered successfully.")
 
     except Exception as e:
         error_msg = f"Template rendering failed: {e}"
-        print(f"[send_templated_email] {error_msg}")
         EmailLog.objects.create(
             sender=sender_email, recipient=", ".join(recipient_list), subject=subject,
             status='FAILED',
@@ -74,12 +66,10 @@ def send_templated_email(
         msg.send()
         email_status = 'SENT'
         success = True
-        print("[send_templated_email] Email sent successfully via msg.send().")
     except Exception as e:
         email_status = 'FAILED'
         error_msg = str(e)
         success = False
-        print(f"[send_templated_email] Error during msg.send(): {error_msg}")
 
     if settings.ADMIN_EMAIL not in recipient_list:
         try:
@@ -100,13 +90,6 @@ def send_templated_email(
                 )
                 log_entry.save()
         except Exception as log_e:
-            print(f"Failed to create email log: {log_e}")
-
-    if not success and error_msg:
-        print(f"[send_templated_email] Final email sending status: FAILED. Error: {error_msg}")
-    elif not success:
-        print("[send_templated_email] Final email sending status: FAILED (no specific error message captured).")
-    else:
-        print("[send_templated_email] Final email sending status: SUCCESS.")
+            pass # Failed to create email log
 
     return success
