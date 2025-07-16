@@ -16,7 +16,7 @@ from payments.webhook_handlers import WEBHOOK_HANDLERS
 def stripe_webhook(request):
     payload = request.body
     sig_header = request.META.get("HTTP_STRIPE_SIGNATURE")
-
+    print("WEBHOOK CALLED")
     logger.info(f"Stripe webhook payload: {payload}")
     logger.info(f"Stripe webhook signature: {sig_header}")
     event = None
