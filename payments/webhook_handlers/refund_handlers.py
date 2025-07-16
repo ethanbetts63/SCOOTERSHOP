@@ -10,7 +10,7 @@ from ..utils.update_associated_bookings_and_payments import (
     update_associated_bookings_and_payments,
 )
 from refunds.utils.process_refund_request_entry import process_refund_request_entry
-from refunds.utils.send_refund_notificiation import send_refund_notifications
+from refunds.utils.send_refund_notification import send_refund_notifications
 from ..models import Payment
 
 
