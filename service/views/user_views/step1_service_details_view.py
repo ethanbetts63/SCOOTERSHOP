@@ -79,14 +79,12 @@ class Step1ServiceDetailsView(View):
                 selected_day_of_week_abbr = abbreviated_day_names.get(
                     service_date.weekday()
                 )
-
                 if selected_day_of_week_abbr not in open_days_list:
                     messages.error(
                         request,
                         f"Services are not available on {selected_day_of_week_full}s.",
                     )
                     errors_exist = True
-
             blocked_dates_overlap = BlockedServiceDate.objects.filter(
                 start_date__lte=service_date, end_date__gte=service_date
             ).exists()
@@ -96,24 +94,19 @@ class Step1ServiceDetailsView(View):
                     "Selected service date overlaps with a blocked service period.",
                 )
                 errors_exist = True
-
             if errors_exist:
                 return redirect("core:index")
-
             temp_booking = None
-
             temp_booking_uuid_from_session = request.session.get(
                 "temp_service_booking_uuid"
             )
 
             if temp_booking_uuid_from_session:
                 try:
-
                     temp_booking = TempServiceBooking.objects.get(
                         session_uuid=temp_booking_uuid_from_session
                     )
                 except TempServiceBooking.DoesNotExist:
-
                     temp_booking = None
 
             service_profile_for_temp_booking = None
@@ -129,7 +122,6 @@ class Step1ServiceDetailsView(View):
 
             try:
                 if temp_booking:
-
                     temp_booking.service_type = service_type
                     temp_booking.service_date = service_date
                     if service_profile_for_temp_booking:
