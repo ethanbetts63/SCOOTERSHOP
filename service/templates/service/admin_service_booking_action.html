@@ -1,0 +1,201 @@
+{% extends "dashboard/admin_layout.html" %}
+{% load static %}
+
+{% block extra_css %}
+{{ block.super }}
+{# All styling is now done via Tailwind CSS classes in the HTML below #}
+<style>
+    /* Ensure input text is black for better readability against white background */
+    .form-input-text {
+        color: #111827; /* gray-900 */
+    }
+    .form-input-text::placeholder {
+        color: #6b7280; /* gray-500 */
+    }
+</style>
+{% endblock %}
+
+{% block admin_main_content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-lg rounded-lg p-6 md:p-8 max-w-2xl mx-auto">
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">{{ page_title|default:"Service Booking Action" }}</h1>
+        </div>
+
+        {% if booking %}
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+                <h2 class="text-xl font-semibold mb-3 text-gray-700">
+                    {{ action_display }} Booking: <span class="font-medium text-blue-600">{{ booking.service_booking_reference }}</span>
+                </h2>
+                <div class="space-y-2 text-sm text-gray-600">
+                    <p><strong>Motorcycle:</strong> {{ booking.customer_motorcycle.year }} {{ booking.customer_motorcycle.brand }} {{ booking.customer_motorcycle.model }}</p>
+                    <p>
+                        <strong>Customer:</strong> {{ booking.service_profile.name }} 
+                        (<a href="mailto:{{ booking.service_profile.email }}" class="text-blue-600 hover:underline">{{ booking.service_profile.email }}</a>)
+                    </p>
+                    <p>
+                        <strong>Current Status:</strong> 
+                        <span class="font-semibold px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-xs">{{ booking.get_booking_status_display }}</span>
+                    </p>
+                    {% if booking.payment_status == 'deposit_paid' %}
+                    <p>
+                        <strong>Payment Status:</strong> 
+                        <span class="font-semibold px-2 py-1 bg-green-100 text-green-800 rounded-md text-xs">{{ booking.get_payment_status_display }}</span>
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <form method="post" novalidate class="space-y-6">
+                {% csrf_token %}
+                
+                {# Hidden fields for form processing #}
+                {{ form.service_booking_id }}
+                {{ form.action }}
+
+                <div>
+                    <label for="{{ form.message.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.message.label }}
+                    </label>
+                    <textarea name="{{ form.message.name }}" id="{{ form.message.id_for_label }}" 
+                              rows="4" 
+                              class="block w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm form-input-text"
+                              placeholder="{{ form.message.field.widget.attrs.placeholder|default:'Provide a reason or message for this action...' }}"
+                              >{% if form.message.value %}{{ form.message.value }}{% endif %}</textarea>
+                    {% if form.message.help_text %}
+                        <p class="mt-2 text-xs text-gray-500">{{ form.message.help_text }}</p>
+                    {% endif %}
+                    {% if form.message.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.message.errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="relative flex items-start">
+                    <div class="flex h-5 items-center">
+                        <input type="checkbox" name="{{ form.send_notification.name }}" id="{{ form.send_notification.id_for_label }}" 
+                               class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                               {% if form.send_notification.value %}checked{% endif %}>
+                    </div>
+                    <div class="ml-3 text-sm">
+                        <label for="{{ form.send_notification.id_for_label }}" class="font-medium text-gray-700">
+                            {{ form.send_notification.label }}
+                        </label>
+                        {% if form.send_notification.help_text %}
+                            <p class="text-gray-500">{{ form.send_notification.help_text }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if form.send_notification.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {% for error in form.send_notification.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+
+                
+                {% if action_type == 'reject' and booking.payment_status == 'deposit_paid' %}
+                    <div class="border-t border-gray-200 pt-6 space-y-6">
+                        <h3 class="text-lg font-medium text-gray-900">Refund Options</h3>
+                        
+                        <div class="relative flex items-start">
+                             <div class="flex h-5 items-center">
+                                <input type="checkbox" name="{{ form.initiate_refund.name }}" id="{{ form.initiate_refund.id_for_label }}" 
+                                       class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                       {% if form.initiate_refund.value %}checked{% endif %}>
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="{{ form.initiate_refund.id_for_label }}" class="font-medium text-gray-700">
+                                    {{ form.initiate_refund.label }}
+                                </label>
+                                {% if form.initiate_refund.help_text %}
+                                    <p class="text-gray-500">{{ form.initiate_refund.help_text }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                         {% if form.initiate_refund.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.initiate_refund.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div id="refundAmountField" style="display: none;">
+                            <label for="{{ form.refund_amount.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                                {{ form.refund_amount.label }}
+                            </label>
+                            <div class="relative mt-1 rounded-md shadow-sm">
+                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                  <span class="text-gray-500 sm:text-sm">$</span>
+                                </div>
+                                <input type="number" step="0.01" name="{{ form.refund_amount.name }}" id="{{ form.refund_amount.id_for_label }}" 
+                                       class="block w-full rounded-md border border-gray-300 pl-7 pr-12 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm form-input-text"
+                                       value="{% if form.refund_amount.value %}{{ form.refund_amount.value|floatformat:2 }}{% elif booking.amount_paid %}{{ booking.amount_paid|floatformat:2 }}{% endif %}">
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                                  <span class="text-gray-500 sm:text-sm" id="currency">{{ booking.currency }}</span>
+                                </div>
+                            </div>
+                            {% if form.refund_amount.help_text %}
+                                <p class="mt-2 text-xs text-gray-500">{{ form.refund_amount.help_text }}</p>
+                            {% endif %}
+                            {% if form.refund_amount.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {% for error in form.refund_amount.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="flex justify-end items-center space-x-3 pt-6 border-t border-gray-200">
+                    <a href="{% url 'service:service_booking_management' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
+                    <button type="submit" class="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white 
+                        {% if action_type == 'confirm' %}bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2
+                        {% elif action_type == 'reject' %}bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2
+                        {% else %}bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                        {% endif %}">
+                        {{ action_display }} Booking
+                    </button>
+                </div>
+            </form>
+        {% else %}
+            <div class="text-center py-10">
+                <p class="text-red-600 font-semibold">Service Booking not found or an invalid action was requested.</p>
+                <a href="{% url 'service:service_booking_management' %}" class="mt-4 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Go Back to Bookings List
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const initiateRefundCheckbox = document.getElementById('{{ form.initiate_refund.id_for_label }}');
+        const refundAmountField = document.getElementById('refundAmountField');
+        const refundAmountInput = document.getElementById('{{ form.refund_amount.id_for_label }}');
+        const bookingAmountPaid = parseFloat("{{ booking.amount_paid|floatformat:2|default:'0.00' }}");
+
+        function toggleRefundAmountField() {
+            if (initiateRefundCheckbox && refundAmountField) {
+                 if (initiateRefundCheckbox.checked) {
+                    refundAmountField.style.display = 'block';
+                    if (refundAmountInput.value === '' || parseFloat(refundAmountInput.value) === 0) {
+                         refundAmountInput.value = bookingAmountPaid.toFixed(2);
+                    }
+                } else {
+                    refundAmountField.style.display = 'none';
+                    refundAmountInput.value = '';
+                }
+            }
+        }
+
+        // Run on page load
+        toggleRefundAmountField();
+
+        // Attach event listener if the checkbox exists
+        if (initiateRefundCheckbox) {
+            initiateRefundCheckbox.addEventListener('change', toggleRefundAmountField);
+        }
+    });
+</script>
+{% endblock %}

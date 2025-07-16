@@ -94,9 +94,15 @@ urlpatterns = [
         name="admin_edit_service_booking",
     ),
     path(
+        path(
         "service-booking-management/delete-booking/<int:pk>/",
         admin_views.AdminServiceBookingDeleteView.as_view(),
         name="admin_delete_service_booking",
+    ),
+    path(
+        "admin/booking/<int:pk>/action/<str:action_type>/",
+        admin_views.ServiceBookingActionView.as_view(),
+        name="admin_service_booking_action",
     ),
 
     # Admin - Settings & Configuration

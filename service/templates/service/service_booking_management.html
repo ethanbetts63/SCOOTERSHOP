@@ -48,6 +48,22 @@
     .btn-create:hover {
         background-color: #16a34a;
     }
+    .btn-confirm {
+        color: #ffffff;
+        background-color: #10b981; /* emerald-500 */
+        border: 1px solid #059669; /* emerald-600 */
+    }
+    .btn-confirm:hover {
+        background-color: #059669;
+    }
+    .btn-reject {
+        color: #ffffff;
+        background-color: #f59e0b; /* amber-500 */
+        border: 1px solid #d97706; /* amber-600 */
+    }
+    .btn-reject:hover {
+        background-color: #d97706;
+    }
 
     /* Custom styles for improved readability */
     body {
@@ -168,8 +184,16 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ booking.service_date|date:"d M Y" }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">{{ booking.get_booking_status_display }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium table-cell-padding">
-                                    <div class="flex space-x-2">
+                                    <div class="flex flex-wrap gap-2">
                                         <a href="{% url 'service:admin_service_booking_detail' pk=booking.pk %}" class="action-button btn-edit">Details</a>
+                                        {% if booking.booking_status == 'pending' %}
+                                            <a href="{% url 'service:admin_service_booking_action' pk=booking.pk action_type='confirm' %}" class="action-button btn-confirm">
+                                                Confirm
+                                            </a>
+                                            <a href="{% url 'service:admin_service_booking_action' pk=booking.pk action_type='reject' %}" class="action-button btn-reject">
+                                                Reject
+                                            </a>
+                                        {% endif %}
                                     </div>
                                 </td>
                             </tr>

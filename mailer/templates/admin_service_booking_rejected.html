@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ADMIN: Service Booking Rejected</title>
+</head>
+<body>
+    <h1>ADMIN: Service Booking Rejected</h1>
+    <p>Dear Admin,</p>
+    <p>The service booking with reference <strong>{{ booking.service_booking_reference }}</strong> for customer {{ booking.service_profile.name }} ({{ booking.service_profile.email }}) has been rejected.</p>
+    {% if admin_message %}
+    <p><strong>Admin Message:</strong> {{ admin_message }}</p>
+    {% endif %}
+    {% if refund_request_pending %}
+    <p>A refund request for {{ refund_amount_requested }} was initiated for this booking.</p>
+    {% endif %}
+    <p>This email serves as a notification of the rejection.</p>
+</body>
+</html>
