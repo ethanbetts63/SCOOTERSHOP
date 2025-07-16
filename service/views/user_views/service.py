@@ -1,3 +1,4 @@
+from django.shortcuts import render, redirect
 import logging
 
 logger = logging.getLogger(__name__)

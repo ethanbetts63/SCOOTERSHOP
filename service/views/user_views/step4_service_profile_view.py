@@ -1,3 +1,4 @@
+from django.shortcuts import render, redirect
 import logging
 
 logger = logging.getLogger(__name__)
@@ -44,8 +45,14 @@ class Step4ServiceProfileView(View):
             try:
                 return request.user.service_profile
             except ServiceProfile.DoesNotExist:
+                logger.warning(
+                    f"Step4 _get_service_profile_instance: ServiceProfile does not exist for user {request.user.id}."
+                )
                 return None
             except AttributeError:
+                logger.warning(
+                    f"Step4 _get_service_profile_instance: AttributeError for user {request.user.id}, attempting direct lookup."
+                )
                 profile = ServiceProfile.objects.filter(user=request.user).first()
                 return profile
 

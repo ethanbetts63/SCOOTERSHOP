@@ -1,4 +1,7 @@
 from django.shortcuts import render, redirect
+import logging
+
+logger = logging.getLogger(__name__)
 from django.views import View
 from django.urls import reverse
 from django.contrib import messages
@@ -35,6 +38,9 @@ class Step5PaymentDropoffAndTermsView(View):
             ).get(session_uuid=temp_service_booking_uuid)
             return temp_booking, None
         except TempServiceBooking.DoesNotExist:
+            logger.error(
+                f"Step5 _get_temp_booking: TempServiceBooking not found for uuid {temp_service_booking_uuid}."
+            )
             request.session.pop("temp_service_booking_uuid", None)
             messages.error(
                 request, "Your booking session could not be found. Please start over."
@@ -54,6 +60,7 @@ class Step5PaymentDropoffAndTermsView(View):
 
         self.service_settings = ServiceSettings.objects.first()
         if not self.service_settings:
+            logger.error("Step5 Dispatch: ServiceSettings not configured.")
             messages.error(
                 request,
                 "Service settings are not configured. Please contact an administrator.",
@@ -204,6 +211,9 @@ class Step5PaymentDropoffAndTermsView(View):
                     return redirect(reverse("service:service_book_step7"))
 
                 except Exception as e:
+                    logger.error(
+                        f"Step5 POST: Error finalizing in-store payment booking for temp_booking {self.temp_booking.id}. Error: {e}"
+                    )
                     messages.error(
                         request,
                         f"An error occurred while finalizing your booking: {e}. Please try again.",

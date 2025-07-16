@@ -1,5 +1,5 @@
+import uuid
 import logging
-
 logger = logging.getLogger(__name__)
 import datetime
 from django.shortcuts import redirect
@@ -7,7 +7,6 @@ from django.views import View
 from django.contrib import messages
 from django.urls import reverse
 from django.utils import timezone
-
 from service.forms import ServiceDetailsForm
 from service.models import (
     TempServiceBooking,
@@ -16,7 +15,6 @@ from service.models import (
     BlockedServiceDate,
 )
 from service.utils.booking_protection import check_and_manage_recent_booking_flag
-
 
 class Step1ServiceDetailsView(View):
     template_name = "service/step1_service_details_include.html"
@@ -122,7 +120,6 @@ class Step1ServiceDetailsView(View):
             customer_motorcycles_exist = False
             if request.user.is_authenticated:
                 try:
-
                     service_profile_for_temp_booking = request.user.service_profile
 
                     if service_profile_for_temp_booking.customer_motorcycles.exists():
