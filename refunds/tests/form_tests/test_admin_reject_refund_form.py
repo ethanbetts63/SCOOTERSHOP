@@ -1,6 +1,5 @@
-
 from django.test import TestCase
-from payments.forms import AdminRejectRefundForm
+from refunds.forms import AdminRejectRefundForm
 
 class AdminRejectRefundFormTest(TestCase):
 

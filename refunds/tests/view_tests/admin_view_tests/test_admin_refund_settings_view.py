@@ -29,7 +29,6 @@ class AdminRefundSettingsViewTest(TestCase):
             'deposit_partial_refund_days': 3,
             'deposit_partial_refund_percentage': Decimal('25.00'),
             'deposit_no_refund_days': 0,
-            'sales_deposit_refund_grace_period_hours': 24,
             'sales_enable_deposit_refund': True,
             'refund_policy_settings_submit': '',
         }

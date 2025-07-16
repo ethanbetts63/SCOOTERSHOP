@@ -1,7 +1,7 @@
 from django.test import TestCase
 from decimal import Decimal
 from django.core.exceptions import ValidationError
-from payments.forms import RefundSettingsForm
+from refunds.forms import RefundSettingsForm
 from refunds.models import RefundSettings
 
 
@@ -43,7 +43,6 @@ class RefundSettingsFormTests(TestCase):
                 "deposit_partial_refund_percentage": Decimal("60.00"),
                 "deposit_no_refund_days": 1,
                 "": False,
-                "sales_deposit_refund_grace_period_hours": 72,
                 "sales_enable_deposit_refund": False,
             }
         )
@@ -166,15 +165,12 @@ class RefundSettingsFormTests(TestCase):
     def test_form_initial_data_for_existing_instance(self):
 
         initial_percentage = Decimal("45.00")
-        initial_grace_hours = 36
         initial_enable_refund = False
 
         self.refund_settings.full_payment_partial_refund_percentage = (
             initial_percentage
         )
-        self.refund_settings.sales_deposit_refund_grace_period_hours = (
-            initial_grace_hours
-        )
+
         self.refund_settings.sales_enable_deposit_refund = initial_enable_refund
         self.refund_settings.save()
 
@@ -182,9 +178,6 @@ class RefundSettingsFormTests(TestCase):
         self.assertEqual(
             form.initial["full_payment_partial_refund_percentage"],
             initial_percentage,
-        )
-        self.assertEqual(
-            form.initial["sales_deposit_refund_grace_period_hours"], initial_grace_hours
         )
         self.assertEqual(
             form.initial["sales_enable_deposit_refund"], initial_enable_refund
@@ -200,16 +193,9 @@ class RefundSettingsFormTests(TestCase):
         )
 
         data_invalid_hours = self._get_valid_form_data()
-        data_invalid_hours["sales_deposit_refund_grace_period_hours"] = -10
         form_invalid_hours = RefundSettingsForm(
             instance=self.refund_settings, data=data_invalid_hours
         )
         self.assertFalse(form_invalid_hours.is_valid())
-        self.assertIn(
-            "sales_deposit_refund_grace_period_hours", form_invalid_hours.errors
-        )
 
-        self.assertIn(
-            "Sales deposit refund grace period hours cannot be negative.",
-            form_invalid_hours.errors["sales_deposit_refund_grace_period_hours"][0],
-        )
+
