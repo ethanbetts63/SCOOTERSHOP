@@ -4,9 +4,7 @@ import uuid
 from django.contrib.auth import get_user_model
 from decimal import Decimal
 from faker import Faker
-
 fake = Faker()
-
 from service.models import (
     BlockedServiceDate,
     CustomerMotorcycle,
@@ -19,18 +17,13 @@ from service.models import (
     Servicefaq,
     ServiceTerms,
 )
-
 from payments.models import Payment
 from refunds.models import RefundSettings
 from dashboard.models import SiteSettings # Import SiteSettings
-
 from service.utils.calculate_estimated_pickup_date import (
     calculate_estimated_pickup_date,
 )
-
-
 User = get_user_model()
-
 
 class UserFactory(factory.django.DjangoModelFactory):
     class Meta:

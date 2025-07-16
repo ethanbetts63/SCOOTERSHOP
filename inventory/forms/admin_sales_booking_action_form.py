@@ -2,9 +2,7 @@ from inventory.models import SalesBooking
 from django import forms
 from decimal import Decimal
 
-
 class SalesBookingActionForm(forms.Form):
-
     message = forms.CharField(
         widget=forms.Textarea(
             attrs={
