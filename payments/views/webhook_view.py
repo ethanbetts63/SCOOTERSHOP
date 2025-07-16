@@ -1,4 +1,6 @@
-from django.http import HttpResponse
+import logging
+
+logger = logging.getLogger(__name__)
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.db import transaction
@@ -20,9 +22,11 @@ def stripe_webhook(request):
         event = stripe.Webhook.construct_event(
             payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
         )
-    except (ValueError, stripe.error.SignatureVerificationError):
+    except (ValueError, stripe.error.SignatureVerificationError) as e:
+        logger.error(f"Webhook Error: Invalid payload or signature. Error: {e}")
         return HttpResponse(status=400)
-    except Exception:
+    except Exception as e:
+        logger.error(f"Webhook Error: Could not construct event. Error: {e}")
         return HttpResponse(status=400)
 
     try:
@@ -33,7 +37,8 @@ def stripe_webhook(request):
                 payload=event.to_dict(),
                 received_at=timezone.now(),
             )
-    except Exception:
+    except Exception as e:
+        logger.error(f"Webhook Error: Could not create WebhookEvent. Error: {e}")
         return HttpResponse(status=200)
 
     event_type = event["type"]
@@ -91,7 +96,10 @@ def stripe_webhook(request):
                     if handler:
                         try:
                             handler(payment_obj, event_data)
-                        except Exception:
+                        except Exception as e:
+                            logger.error(
+                                f"Webhook Error: Handler for {booking_type} and {event_type} failed. Error: {e}"
+                            )
                             raise
                     else:
                         pass
@@ -99,8 +107,14 @@ def stripe_webhook(request):
                     pass
 
         except Payment.DoesNotExist:
+            logger.warning(
+                f"Webhook Info: Payment with {lookup_field}={lookup_id} not found."
+            )
             return HttpResponse(status=200)
-        except Exception:
+        except Exception as e:
+            logger.error(
+                f"Webhook Error: Unhandled exception in webhook processing. Error: {e}"
+            )
             return HttpResponse(status=500)
     else:
         pass

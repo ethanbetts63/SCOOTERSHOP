@@ -7,11 +7,11 @@ from datetime import time
 
 class ServiceSettings(models.Model):
     booking_advance_notice = models.IntegerField(
-        default=1,
+        default=2,
         help_text="Minimum number of days notice required for a booking (e.g., 1 for next day).",
     )
     max_visible_slots_per_day = models.IntegerField(
-        default=2,
+        default=1,
         help_text="Maximum number of booking slots to show per day in the calendar.",
     )
 
@@ -36,7 +36,7 @@ class ServiceSettings(models.Model):
     )
 
     max_advance_dropoff_days = models.IntegerField(
-        default=0,
+        default=3,
         help_text="Maximum number of days in advance a customer can drop off their motorcycle before the service date.",
     )
 

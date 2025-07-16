@@ -1,4 +1,6 @@
-from django.conf import settings
+import logging
+
+logger = logging.getLogger(__name__)
 from decimal import Decimal
 from service.models import TempServiceBooking
 from payments.models import Payment
@@ -80,4 +82,13 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
             )
     
     except TempServiceBooking.DoesNotExist as e:
+        logger.warning(
+            f"Webhook Info: TempServiceBooking not found for payment {payment_obj.id}, possibly already processed. Error: {e}"
+        )
+        pass
+
+    except Exception as e:
+        logger.error(
+            f"Webhook Error: Unhandled exception in service booking success handler for payment {payment_obj.id}. Error: {e}"
+        )
         pass

@@ -1,4 +1,6 @@
-from django.shortcuts import render, redirect
+import logging
+
+logger = logging.getLogger(__name__)
 from django.views import View
 from django.urls import reverse
 from django.contrib import messages
@@ -25,6 +27,9 @@ class Step4ServiceProfileView(View):
             ).get(session_uuid=temp_booking_uuid)
             return temp_booking, None
         except TempServiceBooking.DoesNotExist:
+            logger.error(
+                f"Step4 _get_temp_booking: TempServiceBooking not found for uuid {temp_booking_uuid}."
+            )
             request.session.pop("temp_service_booking_uuid", None)
             messages.error(
                 request, "Your booking session could not be found. Please start over."

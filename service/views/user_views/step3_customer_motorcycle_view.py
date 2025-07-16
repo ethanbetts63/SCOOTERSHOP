@@ -1,4 +1,6 @@
-from django.shortcuts import render, redirect
+import logging
+
+logger = logging.getLogger(__name__)
 from django.views import View
 from django.urls import reverse
 from django.contrib import messages
@@ -26,6 +28,7 @@ class Step3CustomerMotorcycleView(View):
 
         self.service_settings = ServiceSettings.objects.first()
         if not self.service_settings:
+            logger.error("Step3 Dispatch: ServiceSettings not configured.")
             messages.error(
                 request,
                 "Service settings are not configured. Please contact an administrator.",

@@ -1,4 +1,6 @@
-from django.shortcuts import render, redirect, get_object_or_404
+import logging
+
+logger = logging.getLogger(__name__)
 from django.views import View
 from django.urls import reverse
 from django.db import transaction
@@ -31,14 +33,18 @@ class Step1SalesProfileView(View):
                 TempSalesBooking, session_uuid=temp_booking_uuid
             )
         except Exception as e:
+            logger.error(
+                f"Step1 GET: Failed to retrieve TempSalesBooking with uuid {temp_booking_uuid}. Error: {e}"
+            )
             messages.error(
                 request,
-                f"Your booking session could not be found or is invalid. Error: {e}",
+                "Your booking session could not be found or is invalid.",
             )
             return redirect(reverse("inventory:all"))
 
         inventory_settings = InventorySettings.objects.first()
         if not inventory_settings:
+            logger.error("Step1 POST: InventorySettings not configured.")
             messages.error(
                 request,
                 "Inventory settings are not configured. Please contact support.",
@@ -81,14 +87,18 @@ class Step1SalesProfileView(View):
                 TempSalesBooking, session_uuid=temp_booking_uuid
             )
         except Exception as e:
+            logger.error(
+                f"Step1 GET: Failed to retrieve TempSalesBooking with uuid {temp_booking_uuid}. Error: {e}"
+            )
             messages.error(
                 request,
-                f"Your booking session could not be found or is invalid. Error: {e}",
+                "Your booking session could not be found or is invalid.",
             )
             return redirect(reverse("inventory:all"))
 
         inventory_settings = InventorySettings.objects.first()
         if not inventory_settings:
+            logger.error("Step1 POST: InventorySettings not configured.")
             messages.error(
                 request,
                 "Inventory settings are not configured. Please contact support.",

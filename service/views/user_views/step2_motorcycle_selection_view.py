@@ -1,4 +1,6 @@
-from django.shortcuts import render, redirect, get_object_or_404
+import logging
+
+logger = logging.getLogger(__name__)
 from django.views import View
 from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -70,7 +72,10 @@ class Step2MotorcycleSelectionView(LoginRequiredMixin, View):
                     self.temp_booking.customer_motorcycle = motorcycle
                     self.temp_booking.save()
                     return redirect(reverse("service:service_book_step4"))
-                except (ValueError, CustomerMotorcycle.DoesNotExist):
+                except (ValueError, CustomerMotorcycle.DoesNotExist) as e:
+                    logger.error(
+                        f"Step2 POST: Invalid motorcycle selection for service_profile {self.service_profile.id}. Error: {e}"
+                    )
                     form.add_error(
                         "selected_motorcycle", "Invalid motorcycle selection."
                     )

@@ -1,4 +1,6 @@
-from django.db import transaction
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 from ..utils.get_booking_from_payment import get_booking_from_payment
@@ -16,6 +18,7 @@ def handle_booking_refunded(payment_obj: Payment, event_object_data: dict):
         try:
             extracted_data = extract_stripe_refund_data(event_object_data)
         except Exception as e:
+            logger.error(f"Error extracting Stripe refund data: {e}")
             raise
 
         if extracted_data["refunded_amount_decimal"] <= 0 or (
@@ -28,7 +31,7 @@ def handle_booking_refunded(payment_obj: Payment, event_object_data: dict):
         try:
             booking_obj, booking_type_str = get_booking_from_payment(payment_obj)
         except Exception as e:
-            print(f"Error in get_booking_from_payment: {e}")
+            logger.error(f"Error in get_booking_from_payment: {e}")
             raise
 
         try:
@@ -39,7 +42,7 @@ def handle_booking_refunded(payment_obj: Payment, event_object_data: dict):
                 extracted_data["refunded_amount_decimal"],
             )
         except Exception as e:
-            print(f"Error in update_associated_bookings_and_payments: {e}")
+            logger.error(f"Error in update_associated_bookings_and_payments: {e}")
             raise
 
         try:
@@ -47,7 +50,7 @@ def handle_booking_refunded(payment_obj: Payment, event_object_data: dict):
                 payment_obj, booking_obj, booking_type_str, extracted_data
             )
         except Exception as e:
-            print(f"Error in process_refund_request_entry: {e}")
+            logger.error(f"Error in process_refund_request_entry: {e}")
             raise
 
         try:
@@ -59,7 +62,7 @@ def handle_booking_refunded(payment_obj: Payment, event_object_data: dict):
                 extracted_data,
             )
         except Exception as e:
-            print(f"Error in send_refund_notifications: {e}")
+            logger.error(f"Error in send_refund_notifications: {e}")
             raise
 
 

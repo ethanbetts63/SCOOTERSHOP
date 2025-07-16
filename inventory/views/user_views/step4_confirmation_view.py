@@ -1,4 +1,6 @@
-from django.shortcuts import render, redirect
+import logging
+
+logger = logging.getLogger(__name__)
 from django.views import View
 from django.contrib import messages
 from decimal import Decimal
@@ -20,6 +22,9 @@ class Step4ConfirmationView(View):
                     sales_booking_reference=booking_reference
                 )
             except SalesBooking.DoesNotExist:
+                logger.warning(
+                    f"Step4 GET: SalesBooking not found for booking_reference {booking_reference}."
+                )
                 del request.session["current_sales_booking_reference"]
                 pass
 
@@ -39,12 +44,21 @@ class Step4ConfirmationView(View):
                     Payment.objects.get(stripe_payment_intent_id=payment_intent_id)
                     is_processing = True
                 except Payment.DoesNotExist:
+                    logger.warning(
+                        f"Step4 GET: Payment not found for payment_intent_id {payment_intent_id} after SalesBooking miss."
+                    )
                     is_processing = False
-            except Exception:
+            except Exception as e:
+                logger.error(
+                    f"Step4 GET: Error retrieving SalesBooking with payment_intent_id {payment_intent_id}. Error: {e}"
+                )
                 try:
                     Payment.objects.get(stripe_payment_intent_id=payment_intent_id)
                     is_processing = True
                 except Payment.DoesNotExist:
+                    logger.warning(
+                        f"Step4 GET: Payment not found for payment_intent_id {payment_intent_id} after exception. Error: {e}"
+                    )
                     is_processing = False
 
         if sales_booking:

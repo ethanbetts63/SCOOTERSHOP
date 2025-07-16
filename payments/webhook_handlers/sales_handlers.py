@@ -1,4 +1,6 @@
-from django.conf import settings
+import logging
+
+logger = logging.getLogger(__name__)
 from decimal import Decimal
 
 from inventory.models import TempSalesBooking
@@ -97,7 +99,13 @@ def handle_sales_booking_succeeded(payment_obj: Payment, payment_intent_data: di
                 profile=sales_profile,
             )
 
-    except TempSalesBooking.DoesNotExist:
+    except TempSalesBooking.DoesNotExist as e:
+        logger.error(
+            f"Webhook Error: TempSalesBooking not found for payment {payment_obj.id}. Error: {e}"
+        )
         raise
-    except Exception:
+    except Exception as e:
+        logger.error(
+            f"Webhook Error: Unhandled exception in sales booking success handler for payment {payment_obj.id}. Error: {e}"
+        )
         raise

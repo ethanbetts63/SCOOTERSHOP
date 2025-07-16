@@ -1,4 +1,6 @@
-import uuid
+import logging
+
+logger = logging.getLogger(__name__)
 import datetime
 from django.shortcuts import redirect
 from django.views import View
@@ -175,7 +177,9 @@ class Step1ServiceDetailsView(View):
                 return redirect(redirect_url)
 
             except Exception as e:
-
+                logger.error(
+                    f"Step1 POST: An unexpected error occurred while saving the service selection. Error: {e}"
+                )
                 messages.error(
                     request,
                     f"An unexpected error occurred while saving your selection: {e}",
