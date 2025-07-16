@@ -94,10 +94,14 @@ class Step4ServiceProfileView(View):
         form = self.form_class(request.POST, instance=profile_instance)
 
         if form.is_valid():
-            service_profile = form.save(commit=False)
-
-            if request.user.is_authenticated and not service_profile.user_id:
-                service_profile.user = request.user
+            if request.user.is_authenticated:
+                service_profile, created = ServiceProfile.objects.get_or_create(user=request.user, defaults=form.cleaned_data)
+                if not created:
+                    # Update existing profile
+                    for key, value in form.cleaned_data.items():
+                        setattr(service_profile, key, value)
+            else:
+                service_profile = form.save(commit=False)
 
             service_profile.save()
 
