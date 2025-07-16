@@ -19,6 +19,7 @@ def stripe_webhook(request):
     print("WEBHOOK CALLED")
     logger.info(f"Stripe webhook payload: {payload}")
     logger.info(f"Stripe webhook signature: {sig_header}")
+    logger.info(f"Stripe webhook secret from settings: {settings.STRIPE_WEBHOOK_SECRET}")
     event = None
 
 
