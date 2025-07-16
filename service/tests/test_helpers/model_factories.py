@@ -327,15 +327,33 @@ class SiteSettingsFactory(factory.django.DjangoModelFactory):
         model = SiteSettings
         django_get_or_create = ('pk',)
 
-    site_name = factory.Faker('company')
-    tagline = factory.Faker('catch_phrase')
-    email_address = factory.Faker('email')
+    enable_sales_new = True
+    enable_sales_used = True
+    enable_service_booking = True
+    enable_contact_page = True
+    enable_map_display = True
+    enable_privacy_policy_page = True
+    enable_returns_page = True
+    enable_security_page = True
+    enable_google_places_reviews = True
+    enable_user_accounts = True
+    display_phone_number = True
+    display_address = True
+    display_opening_hours = True
+    enable_faq_service = True
+    enable_faq_sales = True
+    enable_refunds = True
+    enable_motorcycle_mover = True
     phone_number = factory.Faker('phone_number')
-    address_line_1 = factory.Faker('street_address')
-    city = factory.Faker('city')
-    state = factory.Faker('state_abbr')
-    post_code = factory.Faker('postcode')
-    country = factory.Faker('country')
+    email_address = factory.Faker('email')
+    street_address = factory.Faker('street_address')
+    address_locality = factory.Faker('city')
+    address_region = factory.Faker('state_abbr')
+    postal_code = factory.Faker('postcode')
+    google_places_place_id = factory.Faker('uuid4')
+    youtube_link = factory.Faker('url')
+    instagram_link = factory.Faker('url')
+    facebook_link = factory.Faker('url')
     opening_hours_monday = '9:00 AM - 5:00 PM'
     opening_hours_tuesday = '9:00 AM - 5:00 PM'
     opening_hours_wednesday = '9:00 AM - 5:00 PM'
@@ -343,19 +361,6 @@ class SiteSettingsFactory(factory.django.DjangoModelFactory):
     opening_hours_friday = '9:00 AM - 5:00 PM'
     opening_hours_saturday = 'Closed'
     opening_hours_sunday = 'Closed'
-    facebook_link = factory.Faker('url')
-    instagram_link = factory.Faker('url')
-    youtube_link = factory.Faker('url')
-    tiktok_link = factory.Faker('url')
-    enable_sales_enquiries = True
-    enable_service_booking = True
-    enable_faq_sales = True
-    enable_faq_service = True
-    enable_refunds = True
-    display_address = True
-    display_phone = True
-    display_email = True
-    display_opening_hours = True
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
