@@ -6,7 +6,6 @@ from ..decorators import admin_required
 
 
 @require_GET
-@admin_required
 def get_motorcycle_details_ajax(request, motorcycle_id):
 
     try:

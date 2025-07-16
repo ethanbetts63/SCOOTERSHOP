@@ -7,7 +7,6 @@ from ..utils import get_service_date_availability
 
 
 @require_GET
-@admin_required
 def get_service_date_availability_ajax(request):
     try:
         min_date, disabled_dates_json = get_service_date_availability()

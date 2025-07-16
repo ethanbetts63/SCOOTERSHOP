@@ -6,7 +6,6 @@ from ..decorators import admin_required
 
 
 @require_GET
-@admin_required
 def get_service_profile_details_ajax(request, profile_id):
 
     try:
