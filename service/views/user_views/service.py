@@ -1,7 +1,4 @@
 from django.shortcuts import render, redirect
-import logging
-
-logger = logging.getLogger(__name__)
 from django.contrib import messages
 
 from service.models import ServiceType, TempServiceBooking, ServiceSettings, Servicefaq
@@ -20,15 +17,13 @@ def service(request):
 
     try:
         service_types = ServiceType.objects.filter(is_active=True)
-    except Exception as e:
-        logger.error(f"Error loading service types: {e}")
+    except Exception:
         service_types = []
         messages.warning(request, "Could not load service types.")
 
     try:
         service_faqs = Servicefaq.objects.filter(is_active=True)
-    except Exception as e:
-        logger.error(f"Error loading service faqs: {e}")
+    except Exception:
         service_faqs = []
         messages.warning(request, "Could not load service faqs.")
 
