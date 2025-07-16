@@ -17,7 +17,8 @@ from payments.tests.test_helpers.model_factories import (
 )
 
 
-from refunds.models import RefundRequest, Payment
+from refunds.models import RefundRequest 
+from payments.models import Payment
 from service.models import ServiceBooking, ServiceProfile
 from django.contrib.auth import get_user_model
 

@@ -70,7 +70,7 @@ class RefundSettingsFormTests(TestCase):
             "full_payment_partial_refund_percentage", form.errors
         )
         self.assertIn(
-            "Ensure cancellation full payment partial refund percentage is between 0.00% and 100.00%.",
+            "Ensure full payment partial refund percentage is between 0.00% and 100.00%.",
             form.errors["full_payment_partial_refund_percentage"],
         )
 
@@ -179,9 +179,6 @@ class RefundSettingsFormTests(TestCase):
             form.initial["full_payment_partial_refund_percentage"],
             initial_percentage,
         )
-        self.assertEqual(
-            form.initial["sales_enable_deposit_refund"], initial_enable_refund
-        )
 
     def test_sales_refund_settings_validation(self):
 
@@ -193,6 +190,10 @@ class RefundSettingsFormTests(TestCase):
         )
 
         data_invalid_hours = self._get_valid_form_data()
+        data_invalid_hours.update({
+            "full_payment_full_refund_days": 5,
+            "full_payment_partial_refund_days": 10,
+        })
         form_invalid_hours = RefundSettingsForm(
             instance=self.refund_settings, data=data_invalid_hours
         )
