@@ -94,7 +94,6 @@ urlpatterns = [
         name="admin_edit_service_booking",
     ),
     path(
-        path(
         "service-booking-management/delete-booking/<int:pk>/",
         admin_views.AdminServiceBookingDeleteView.as_view(),
         name="admin_delete_service_booking",
