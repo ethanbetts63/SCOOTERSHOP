@@ -65,7 +65,10 @@ def convert_temp_service_booking(
 
                 payment_obj.save()
 
-            send_booking_to_mechanicdesk(service_booking)
+            try:
+                send_booking_to_mechanicdesk(service_booking)
+            except OSError as e:
+                logger.error(f"OSError sending booking to MechanicDesk: {e}")
 
             temp_booking.delete()
 

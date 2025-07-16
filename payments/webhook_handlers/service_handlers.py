@@ -30,16 +30,20 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
         elif temp_booking.payment_method == "online_deposit":
             booking_payment_status = "deposit_paid"
 
-        service_booking = convert_temp_service_booking(
-            temp_booking=temp_booking,
-            payment_method=temp_booking.payment_method,
-            booking_payment_status=booking_payment_status,
-            amount_paid_on_booking=Decimal(payment_intent_data["amount_received"])
-            / Decimal("100"),
-            calculated_total_on_booking=temp_booking.calculated_total,
-            stripe_payment_intent_id=payment_obj.stripe_payment_intent_id,
-            payment_obj=payment_obj,
-        )
+        try:
+            service_booking = convert_temp_service_booking(
+                temp_booking=temp_booking,
+                payment_method=temp_booking.payment_method,
+                booking_payment_status=booking_payment_status,
+                amount_paid_on_booking=Decimal(payment_intent_data["amount_received"])
+                / Decimal("100"),
+                calculated_total_on_booking=temp_booking.calculated_total,
+                stripe_payment_intent_id=payment_obj.stripe_payment_intent_id,
+                payment_obj=payment_obj,
+            )
+        except OSError as e:
+            logger.error(f"OSError converting temp service booking: {e}")
+            service_booking = None
         
         if payment_obj.status != payment_intent_data["status"]:
             payment_obj.status = payment_intent_data["status"]
