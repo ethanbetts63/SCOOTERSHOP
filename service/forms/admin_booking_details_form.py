@@ -6,7 +6,6 @@ from django.utils import timezone
 
 
 class AdminBookingDetailsForm(forms.ModelForm):
-
     estimated_pickup_date = forms.DateField(
         widget=forms.DateInput(
             attrs={
