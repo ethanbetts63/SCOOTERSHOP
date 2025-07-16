@@ -1,4 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
+import logging
+
+logger = logging.getLogger(__name__)
 from django.views import View
 from django.http import JsonResponse, Http404
 from django.conf import settings
@@ -33,6 +36,9 @@ class Step6PaymentView(View):
             )
             request.temp_booking = temp_booking
         except Http404:
+            logger.warning(
+                f"Step6 Dispatch: TempServiceBooking not found for uuid {temp_booking_uuid}."
+            )
             messages.error(request, "Your booking session could not be found.")
             return redirect("service:service")
 
@@ -51,6 +57,7 @@ class Step6PaymentView(View):
         try:
             request.service_settings = ServiceSettings.objects.get()
         except ServiceSettings.DoesNotExist:
+            logger.error("Step6 Dispatch: ServiceSettings not configured.")
             messages.error(
                 request, "Service settings are not configured. Please contact support."
             )
@@ -239,11 +246,17 @@ class Step6PaymentView(View):
                     )
 
         except stripe.error.StripeError as e:
+            logger.error(
+                f"Step6 GET: Stripe error during payment intent creation/modification for temp_booking {temp_booking.id}. Error: {e}"
+            )
             messages.error(
                 request, f"Payment system error: {e}. Please try again later."
             )
             return redirect("service:service_book_step5")
-        except Exception:
+        except Exception as e:
+            logger.error(
+                f"Step6 GET: Unexpected error during payment setup for temp_booking {temp_booking.id}. Error: {e}"
+            )
             messages.error(
                 request,
                 "An unexpected error occurred during payment setup. Please try again.",
@@ -269,6 +282,7 @@ class Step6PaymentView(View):
             data = json.loads(request.body)
             payment_intent_id = data.get("payment_intent_id")
         except json.JSONDecodeError:
+            logger.error("Step6 POST: Invalid JSON format in request body.")
             return JsonResponse(
                 {"error": "Invalid JSON format in request body"}, status=400
             )
@@ -313,8 +327,10 @@ class Step6PaymentView(View):
                 )
 
         except stripe.error.StripeError as e:
+            logger.error(f"Step6 POST: Stripe error on payment intent retrieval. Error: {e}")
             return JsonResponse({"error": str(e)}, status=500)
-        except Exception:
+        except Exception as e:
+            logger.error(f"Step6 POST: Internal server error during payment processing. Error: {e}")
             return JsonResponse(
                 {
                     "error": "An internal server error occurred during payment processing."

@@ -1,4 +1,6 @@
-from django.shortcuts import render, redirect
+import logging
+
+logger = logging.getLogger(__name__)
 from django.views import View
 from django.contrib import messages
 
@@ -19,6 +21,9 @@ class Step7ConfirmationView(View):
                     service_booking_reference=booking_reference
                 )
             except ServiceBooking.DoesNotExist:
+                logger.warning(
+                    f"Step7 GET: ServiceBooking not found for booking_reference {booking_reference}."
+                )
                 del request.session["service_booking_reference"]
                 pass
 
