@@ -53,7 +53,6 @@ def send_refund_notifications(
     )
 
     if user_email and refund_request: # Only send user email if refund_request is present
-        print(f"send_refund_notifications: booking_obj={booking_obj}, booking_type_str={booking_type_str}, customer_name={customer_name}")
         email_context = {
             "refund_request": refund_request,
             "refunded_amount": extracted_data["refunded_amount_decimal"],

@@ -90,7 +90,7 @@ class TestServiceFullPaymentRefundFlow(TestCase):
             dropoff_time="10:00",
             payment_method="online_full",
             payment_status="paid",
-            booking_status="confirmed",
+            booking_status="pending",
             amount_paid=self.full_amount,
             calculated_total=self.service_type.base_price,
         )

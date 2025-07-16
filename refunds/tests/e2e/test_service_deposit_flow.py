@@ -91,7 +91,7 @@ class TestServiceDepositRefundFlow(TestCase):
             dropoff_time="10:00",
             payment_method="online_deposit",
             payment_status="deposit_paid",
-            booking_status="confirmed",
+            booking_status="pending",
             amount_paid=self.deposit_amount,
             calculated_total=self.service_type.base_price,
         )
