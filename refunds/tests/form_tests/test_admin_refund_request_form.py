@@ -123,7 +123,7 @@ class AdminRefundRequestFormTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn("__all__", form.errors)
         self.assertEqual(
-            form.errors["__all__"], ["Please select a Service, or Sales Booking."]
+            form.errors["__all__"], ["Please select a Service or Sales Booking."]
         )
 
     def test_form_invalid_multiple_bookings_selected(self):
