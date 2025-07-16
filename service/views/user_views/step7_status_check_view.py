@@ -1,4 +1,7 @@
 from django.views import View
+import logging
+
+logger = logging.getLogger(__name__)
 from django.http import JsonResponse
 from service.models import ServiceBooking
 from payments.models import Payment
@@ -51,6 +54,9 @@ class Step7StatusCheckView(View):
             return JsonResponse(response_data)
 
         except ServiceBooking.DoesNotExist:
+            logger.warning(
+                f"Step7 Status Check: ServiceBooking not found for payment_intent_id {payment_intent_id}."
+            )
             try:
                 Payment.objects.get(stripe_payment_intent_id=payment_intent_id)
                 return JsonResponse(
@@ -60,6 +66,9 @@ class Step7StatusCheckView(View):
                     }
                 )
             except Payment.DoesNotExist:
+                logger.error(
+                    f"Step7 Status Check: Payment not found for payment_intent_id {payment_intent_id}."
+                )
                 return JsonResponse(
                     {
                         "status": "error",
@@ -68,6 +77,9 @@ class Step7StatusCheckView(View):
                     status=500,
                 )
         except Exception as e:
+            logger.error(
+                f"Step7 Status Check: An internal server error occurred for payment_intent_id {payment_intent_id}. Error: {e}"
+            )
             return JsonResponse(
                 {
                     "status": "error",

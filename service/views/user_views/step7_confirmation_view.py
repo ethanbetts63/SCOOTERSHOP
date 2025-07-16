@@ -1,3 +1,4 @@
+from django.shortcuts import render, redirect
 import logging
 
 logger = logging.getLogger(__name__)
@@ -44,12 +45,21 @@ class Step7ConfirmationView(View):
                     is_processing = True
 
                 except Payment.DoesNotExist:
+                    logger.warning(
+                        f"Step7 GET: Payment not found for payment_intent_id {payment_intent_id} after ServiceBooking miss."
+                    )
                     is_processing = False
-            except Exception:
+            except Exception as e:
+                logger.error(
+                    f"Step7 GET: Error retrieving ServiceBooking with payment_intent_id {payment_intent_id}. Error: {e}"
+                )
                 try:
                     Payment.objects.get(stripe_payment_intent_id=payment_intent_id)
                     is_processing = True
                 except Payment.DoesNotExist:
+                    logger.warning(
+                        f"Step7 GET: Payment not found for payment_intent_id {payment_intent_id} after exception. Error: {e}"
+                    )
                     is_processing = False
 
         if service_booking:
