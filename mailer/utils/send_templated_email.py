@@ -33,6 +33,8 @@ def send_templated_email(
     context['booking'] = booking
     context['profile'] = profile
     context['user'] = user
+    context['SITE_SCHEME'] = settings.SITE_SCHEME
+    context['SITE_DOMAIN'] = settings.SITE_DOMAIN
 
     html_content = None
     text_content = None
