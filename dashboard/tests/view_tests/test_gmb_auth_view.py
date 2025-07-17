@@ -3,6 +3,7 @@ from django.urls import reverse
 from unittest import mock
 from dashboard.models import GoogleMyBusinessAccount
 from django.contrib.auth import get_user_model
+from users.tests.test_helpers.model_factories import SuperUserFactory
 from django.utils import timezone
 
 User = get_user_model()
@@ -22,13 +23,7 @@ class GoogleMyBusinessAuthViewTest(TestCase):
         self.client = self.client_class()
 
         # Create an admin user and log them in
-        self.admin_user = User.objects.create_user(
-            username="admin",
-            email="admin@example.com",
-            password="password",
-            is_staff=True,
-            is_superuser=True,
-        )
+        self.admin_user = SuperUserFactory(username="admin", email="admin@example.com", password="password")
         self.client.login(username="admin", password="password")
 
     @mock.patch("google_auth_oauthlib.flow.Flow.from_client_config")
