@@ -87,13 +87,14 @@ class AdminRefundRequestForm(forms.ModelForm):
         if sales_booking_id:
             try:
                 sales_booking = SalesBooking.objects.get(pk=sales_booking_id)
+                cleaned_data['sales_booking'] = sales_booking
             except SalesBooking.DoesNotExist:
                 self.add_error("sales_booking", "Invalid Sales Booking selected.")
         
         # Validation logic
         selected_bookings = [b for b in [service_booking, sales_booking] if b is not None]
         if len(selected_bookings) > 1:
-            raise ValidationError("Please select only one type of booking (Service or Sales).")
+            raise ValidationError("Please select only one type of booking (Service, or Sales).")
         if not selected_bookings:
             raise ValidationError("Please select a Service or Sales Booking.")
 
