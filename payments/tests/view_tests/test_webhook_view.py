@@ -10,10 +10,8 @@ from unittest.mock import patch, MagicMock
 from payments.models import Payment, WebhookEvent
 from payments.webhook_handlers import WEBHOOK_HANDLERS
 
-from payments.tests.test_helpers.model_factories import (
-    PaymentFactory,
-    MotorcycleFactory,
-)
+from payments.tests.test_helpers.model_factories import PaymentFactory
+from inventory.tests.test_helpers.model_factories import MotorcycleFactory
 
 
 class StripeWebhookViewTest(TestCase):

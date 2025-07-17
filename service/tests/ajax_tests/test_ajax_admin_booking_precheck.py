@@ -5,20 +5,18 @@ import json
 from unittest.mock import patch, Mock
 from datetime import date, timedelta
 from django.utils import timezone
-
-
 from service.ajax.ajax_admin_booking_precheck import admin_booking_precheck_ajax
-
-
-from ..test_helpers.model_factories import ServiceTypeFactory, StaffUserFactory
-
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
+from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory, ServiceTypeFactory, ServiceSettingsFactory, ServiceTermsFactory, ServicefaqFactory, CustomerMotorcycleFactory, BlockedServiceDateFactory, ServiceBrandFactory
+from inventory.tests.test_helpers.model_factories import SalesBookingFactory, SalesProfileFactory
+from payments.tests.test_helpers.model_factories import PaymentFactory, WebhookEventFactory
+from refunds.tests.test_helpers.model_factories import RefundRequestFactory, RefundSettingsFactory
 
 class AjaxAdminBookingPrecheckTest(TestCase):
 
     def setUp(self):
         self.factory = RequestFactory()
         self.service_type = ServiceTypeFactory()
-        # FIX: Create a staff user to attach to requests
         self.staff_user = StaffUserFactory()
 
         today = date.today()

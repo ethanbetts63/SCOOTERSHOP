@@ -5,7 +5,9 @@ from service.models import ServiceBooking
 from inventory.models import SalesBooking
 
 # Import factories from refunds app
-from refunds.tests.test_helpers.model_factories import PaymentFactory, ServiceBookingFactory, SalesBookingFactory
+from payments.tests.test_helpers.model_factories import PaymentFactory
+from service.tests.test_helpers.model_factories import ServiceBookingFactory
+from inventory.tests.test_helpers.model_factories import SalesBookingFactory
 
 
 class GetBookingFromPaymentTest(TestCase):

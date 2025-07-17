@@ -8,15 +8,15 @@ from inventory.models import SalesBooking, TempSalesBooking
 from payments.webhook_handlers.sales_handlers import handle_sales_booking_succeeded
 
 
-from ..test_helpers.model_factories import (
-    UserFactory,
+from users.tests.test_helpers.model_factories import UserFactory
+from inventory.tests.test_helpers.model_factories import (
     SalesProfileFactory,
     MotorcycleFactory,
     TempSalesBookingFactory,
-    PaymentFactory,
     SalesBookingFactory,
     MotorcycleConditionFactory,
 )
+from payments.tests.test_helpers.model_factories import PaymentFactory
 
 
 @override_settings(ADMIN_EMAIL="admin-sales@example.com")
