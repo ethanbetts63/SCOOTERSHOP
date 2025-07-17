@@ -6,7 +6,7 @@ from unittest import mock
 from inventory.models import SalesProfile
 
 
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
 from inventory.tests.test_helpers.model_factories import SalesProfileFactory
 
 
@@ -14,14 +14,10 @@ class SalesProfileDeleteViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
-        cls.admin_user = UserFactory(
+        cls.admin_user = SuperUserFactory(
             username="admin",
             email="admin@example.com",
-            is_staff=True,
-            is_superuser=True,
         )
-        cls.admin_user.set_password("adminpassword")
-        cls.admin_user.save()
 
         cls.non_admin_user = UserFactory(
             username="user",
@@ -41,7 +37,7 @@ class SalesProfileDeleteViewTest(TestCase):
         )
 
     def test_delete_sales_profile_as_admin_success(self):
-        self.client.login(username="admin", password="adminpassword")
+        self.client.login(username="admin", password="password123")
         self.assertTrue(
             SalesProfile.objects.filter(pk=self.sales_profile_to_delete.pk).exists()
         )
@@ -63,7 +59,7 @@ class SalesProfileDeleteViewTest(TestCase):
         )
 
     def test_delete_sales_profile_as_admin_not_found(self):
-        self.client.login(username="admin", password="adminpassword")
+        self.client.login(username="admin", password="password123")
         non_existent_pk = self.sales_profile_to_delete.pk + 999
         url = reverse(
             "inventory:admin_sales_profile_delete", kwargs={"pk": non_existent_pk}
@@ -79,7 +75,7 @@ class SalesProfileDeleteViewTest(TestCase):
     def test_delete_sales_profile_as_admin_failure(self, mock_sales_profile_delete):
         mock_sales_profile_delete.side_effect = Exception("DB error!")
 
-        self.client.login(username="admin", password="adminpassword")
+        self.client.login(username="admin", password="password123")
         response = self.client.post(self.delete_url, follow=True)
 
         self.assertRedirects(response, reverse("inventory:sales_profile_management"))
