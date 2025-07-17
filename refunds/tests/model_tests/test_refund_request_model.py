@@ -3,7 +3,6 @@ from django.test import TestCase
 import uuid
 from django.utils import timezone
 import datetime
-
 from refunds.tests.test_helpers.model_factories import RefundRequestFactory
 from service.tests.test_helpers.model_factories import (
     ServiceBookingFactory,
@@ -17,13 +16,10 @@ from inventory.tests.test_helpers.model_factories import (
     MotorcycleFactory,
 )
 from service.tests.test_helpers.model_factories import CustomerMotorcycleFactory
-
-
 from refunds.models import RefundRequest
 from payments.models import Payment
 from service.models import ServiceBooking, ServiceProfile
 from django.contrib.auth import get_user_model
-
 User = get_user_model()
 
 
