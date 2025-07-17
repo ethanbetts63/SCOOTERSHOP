@@ -6,7 +6,12 @@ from service.models import ServiceBooking
 from inventory.models import SalesBooking
 from users.models import User
 from dashboard.models import SiteSettings
-from mailer.tests.test_helpers.model_factories import ServiceBookingFactory, SalesBookingFactory, UserFactory, PaymentFactory, EnquiryFactory, RefundRequestFactory
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
+from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory, ServiceTypeFactory, ServiceSettingsFactory, ServiceTermsFactory, ServicefaqFactory, CustomerMotorcycleFactory, BlockedServiceDateFactory, ServiceBrandFactory
+from inventory.tests.test_helpers.model_factories import SalesBookingFactory, SalesProfileFactory
+from payments.tests.test_helpers.model_factories import PaymentFactory, WebhookEventFactory
+from refunds.tests.test_helpers.model_factories import RefundRequestFactory, RefundSettingsFactory
+from core.tests.test_helpers.model_factories import EnquiryFactory
 
 def send_all_test_emails(admin_email):
     template_dir = os.path.join(settings.BASE_DIR, 'mailer', 'templates')

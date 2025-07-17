@@ -3,7 +3,10 @@ from unittest.mock import patch, MagicMock
 from django.conf import settings
 from mailer.utils.send_templated_email import send_templated_email
 from mailer.models import EmailLog
-from mailer.tests.test_helpers.model_factories import UserFactory, ServiceProfileFactory, SalesProfileFactory, ServiceBookingFactory, SalesBookingFactory, ServiceTypeFactory
+from mailer.tests.test_helpers.model_factories import EmailLogFactory
+from users.tests.test_helpers.model_factories import UserFactory
+from service.tests.test_helpers.model_factories import ServiceProfileFactory, ServiceBookingFactory, ServiceTypeFactory
+from inventory.tests.test_helpers.model_factories import SalesProfileFactory, SalesBookingFactory
 
 class SendTemplatedEmailTest(TestCase):
 

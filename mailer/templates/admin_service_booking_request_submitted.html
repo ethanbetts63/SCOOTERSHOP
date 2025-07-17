@@ -1,8 +1,7 @@
-
 {% extends "email_layout.html" %}
 {% load static %}
 
-{% block title %}NEW SERVICE BOOKING: {% if booking.service_booking_reference %}{{ booking.service_booking_reference }}{% else %}booking.service_booking_reference VARIABLE DID NOT LOAD{% endif %}{% endblock %}
+{% block title %}NEW SERVICE BOOKING: {{ booking.service_booking_reference | default:'Reference Missing' }}{% endblock %}
 
 {% block content %}
     <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
@@ -19,145 +18,145 @@
                             <p>Dear Administrator,</p>
                             <p>A new motorcycle service booking has been confirmed. Please find the full details below:</p>
 
+                            <!-- Booking Overview Section -->
                             <div class="section-title">Booking Overview</div>
-                            <table>
+                            <table class="details-table" width="100%" cellspacing="0" cellpadding="0" border="0">
                                 <tr>
-                                    <th>Booking Reference:</th>
-                                    <td><strong>{% if booking.service_booking_reference %}{{ booking.service_booking_reference }}{% else %}booking.service_booking_reference VARIABLE DID NOT LOAD{% endif %}</strong></td>
+                                    <td class="label" width="40%">Booking Reference:</td>
+                                    <td class="value"><strong>{{ booking.service_booking_reference | default:'Not available' }}</strong></td>
                                 </tr>
                                 <tr>
-                                    <th>Status:</th>
-                                    <td>{% if booking.get_booking_status_display %}{{ booking.get_booking_status_display }}{% else %}booking.get_booking_status_display VARIABLE DID NOT LOAD{% endif %}</td>
+                                    <td class="label">Status:</td>
+                                    <td class="value">{{ booking.get_booking_status_display | default:'Not available' }}</td>
                                 </tr>
                                 <tr>
-                                    <th>Created At:</th>
-                                    <td>{% if booking.created_at %}{{ booking.created_at|date:"D, M d, Y H:i" }}{% else %}booking.created_at VARIABLE DID NOT LOAD{% endif %}</td>
+                                    <td class="label">Created At:</td>
+                                    <td class="value">{{ booking.created_at|date:"D, M d, Y H:i" | default:'Not available' }}</td>
                                 </tr>
                                 <tr>
-                                    <th>Last Updated:</th>
-                                    <td>{% if booking.updated_at %}{{ booking.updated_at|date:"D, M d, Y H:i" }}{% else %}booking.updated_at VARIABLE DID NOT LOAD{% endif %}</td>
+                                    <td class="label">Last Updated:</td>
+                                    <td class="value">{{ booking.updated_at|date:"D, M d, Y H:i" | default:'Not available' }}</td>
                                 </tr>
                             </table>
 
+                            <!-- Service Details Section -->
                             <div class="section-title">Service Details</div>
-                            <table>
+                            <table class="details-table" width="100%" cellspacing="0" cellpadding="0" border="0">
                                 <tr>
-                                    <th>Service Type:</th>
-                                    <td>{% if booking.service_type.name %}{{ booking.service_type.name }}{% else %}booking.service_type.name VARIABLE DID NOT LOAD{% endif %}</td>
+                                    <td class="label" width="40%">Service Type:</td>
+                                    <td class="value">{{ booking.service_type.name | default:'Not available' }}</td>
                                 </tr>
                                 <tr>
-                                    <th>Service Date:</th>
-                                    <td>{% if booking.service_date %}{{ booking.service_date|date:"D, M d, Y" }}{% else %}booking.service_date VARIABLE DID NOT LOAD{% endif %}</td>
+                                    <td class="label">Service Date:</td>
+                                    <td class="value">{{ booking.service_date|date:"D, M d, Y" | default:'Not available' }}</td>
                                 </tr>
                                 <tr>
-                                    <th>Drop-off Date/Time:</th>
-                                    <td>
+                                    <td class="label">Drop-off Date/Time:</td>
+                                    <td class="value">
                                         {% if booking.after_hours_drop_off %}
                                             <strong style="color: #dc3545;">AFTER-HOURS DROP-OFF</strong>
                                         {% else %}
-                                            {% if booking.dropoff_date %}{{ booking.dropoff_date|date:"D, M d, Y" }}{% else %}booking.dropoff_date VARIABLE DID NOT LOAD{% endif %} at {% if booking.dropoff_time %}{{ booking.dropoff_time|time:"P" }}{% else %}booking.dropoff_time VARIABLE DID NOT LOAD{% endif %}
+                                            {{ booking.dropoff_date|date:"D, M d, Y" | default:'N/A' }} at {{ booking.dropoff_time|time:"P" | default:'N/A' }}
                                         {% endif %}
                                     </td>
                                 </tr>
                                 {% if service_settings.enable_estimated_pickup_date %}
                                 <tr>
-                                    <th>Estimated Pick-up Date:</th>
-                                    <td>{% if booking.estimated_pickup_date %}{{ booking.estimated_pickup_date|date:"D, M d, Y" }}{% else %}Not set{% endif %}</td>
+                                    <td class="label">Estimated Pick-up Date:</td>
+                                    <td class="value">{{ booking.estimated_pickup_date|date:"D, M d, Y" | default:'Not set' }}</td>
                                 </tr>
                                 {% endif %}
                             </table>
 
+                            <!-- Customer Profile Details Section -->
                             <div class="section-title">Customer Profile Details</div>
                             {% if booking.service_profile %}
-                            <table>
+                            <table class="details-table" width="100%" cellspacing="0" cellpadding="0" border="0">
                                 <tr>
-                                    <th>Name:</th>
-                                    <td>{% if booking.service_profile.name %}{{ booking.service_profile.name }}{% else %}booking.service_profile.name VARIABLE DID NOT LOAD{% endif %}</td>
+                                    <td class="label" width="40%">Name:</td>
+                                    <td class="value">{{ booking.service_profile.name | default:'Not available' }}</td>
                                 </tr>
                                 <tr>
-                                    <th>Email:</th>
-                                    <td>{% if booking.service_profile.email %}{{ booking.service_profile.email }}{% else %}booking.service_profile.email VARIABLE DID NOT LOAD{% endif %}</td>
+                                    <td class="label">Email:</td>
+                                    <td class="value">{{ booking.service_profile.email | default:'Not available' }}</td>
                                 </tr>
                                 <tr>
-                                    <th>Phone Number:</th>
-                                    <td>{% if booking.service_profile.phone_number %}{{ booking.service_profile.phone_number }}{% else %}booking.service_profile.phone_number VARIABLE DID NOT LOAD{% endif %}</td>
+                                    <td class="label">Phone Number:</td>
+                                    <td class="value">{{ booking.service_profile.phone_number | default:'Not available' }}</td>
                                 </tr>
                                 <tr>
-                                    <th>Address:</th>
-                                    <td>
-                                        {% if booking.service_profile.address_line_1 %}{{ booking.service_profile.address_line_1 }}{% else %}{% endif %}<br>
+                                    <td class="label" style="vertical-align: top;">Address:</td>
+                                    <td class="value">
+                                        {{ booking.service_profile.address_line_1 | default:'' }}<br>
                                         {% if booking.service_profile.address_line_2 %}{{ booking.service_profile.address_line_2 }}<br>{% endif %}
-                                        {% if booking.service_profile.city %}{{ booking.service_profile.city }}{% else %}{% endif %}, {% if booking.service_profile.state %}{{ booking.service_profile.state }}{% else %}{% endif %} {% if booking.service_profile.post_code %}{{ booking.service_profile.post_code }}{% else %}{% endif %}<br>
-                                        {% if booking.service_profile.country %}{{ booking.service_profile.country }}{% else %}booking.service_profile.country VARIABLE DID NOT LOAD{% endif %}
+                                        {{ booking.service_profile.city | default:'' }}, {{ booking.service_profile.state | default:'' }} {{ booking.service_profile.post_code | default:'' }}<br>
+                                        {{ booking.service_profile.country | default:'' }}
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>Linked User:</th>
-                                    <td>{% if booking.service_profile.user %}{{ booking.service_profile.user.email }} (ID: {{ booking.service_profile.user.id }}){% else %}N/A{% endif %}</td>
+                                    <td class="label">Linked User:</td>
+                                    <td class="value">{% if booking.service_profile.user %}{{ booking.service_profile.user.email }} (ID: {{ booking.service_profile.user.id }}){% else %}N/A{% endif %}</td>
                                 </tr>
                             </table>
                             {% else %}
                             <p>No customer profile details available.</p>
                             {% endif %}
 
+                            <!-- Customer Motorcycle Details Section -->
                             <div class="section-title">Customer Motorcycle Details</div>
                             {% if booking.customer_motorcycle %}
-                            <table>
+                            <table class="details-table" width="100%" cellspacing="0" cellpadding="0" border="0">
                                 <tr>
-                                    <th>Make:</th>
-                                    <td>{% if booking.customer_motorcycle.brand %}{{ booking.customer_motorcycle.brand }}{% else %}booking.customer_motorcycle.brand VARIABLE DID NOT LOAD{% endif %}</td>
+                                    <td class="label" width="40%">Make:</td>
+                                    <td class="value">{{ booking.customer_motorcycle.brand | default:'Not available' }}</td>
                                 </tr>
                                 <tr>
-                                    <th>Model:</th>
-                                    <td>{% if booking.customer_motorcycle.model %}{{ booking.customer_motorcycle.model }}{% else %}booking.customer_motorcycle.model VARIABLE DID NOT LOAD{% endif %}</td>
+                                    <td class="label">Model:</td>
+                                    <td class="value">{{ booking.customer_motorcycle.model | default:'Not available' }}</td>
                                 </tr>
                                 <tr>
-                                    <th>Year:</th>
-                                    <td>{% if booking.customer_motorcycle.year %}{{ booking.customer_motorcycle.year }}{% else %}booking.customer_motorcycle.year VARIABLE DID NOT LOAD{% endif %}</td>
+                                    <td class="label">Year:</td>
+                                    <td class="value">{{ booking.customer_motorcycle.year | default:'Not available' }}</td>
                                 </tr>
                                 <tr>
-                                    <th>License Plate:</th>
-                                    <td>{% if booking.customer_motorcycle.license_plate %}{{ booking.customer_motorcycle.license_plate }}{% else %}booking.customer_motorcycle.license_plate VARIABLE DID NOT LOAD{% endif %}</td>
+                                    <td class="label">License Plate:</td>
+                                    <td class="value">{{ booking.customer_motorcycle.license_plate | default:'Not available' }}</td>
                                 </tr>
                             </table>
                             {% else %}
                             <p>No customer motorcycle details available.</p>
                             {% endif %}
 
+                            <!-- Financial Details Section -->
                             <div class="section-title">Financial Details</div>
-                            <table>
+                            <table class="details-table" width="100%" cellspacing="0" cellpadding="0" border="0">
                                 <tr>
-                                    <th>Calculated Total:</th>
-                                    <td><strong>{% if booking.calculated_total %}{{ booking.calculated_total|floatformat:2 }}{% else %}booking.calculated_total VARIABLE DID NOT LOAD{% endif %} {% if booking.currency %}{{ booking.currency }}{% else %}booking.currency VARIABLE DID NOT LOAD{% endif %}</strong></td>
+                                    <td class="label" width="40%">Calculated Total:</td>
+                                    <td class="value"><strong>{{ booking.calculated_total|floatformat:2 | default:'0.00' }} {{ booking.currency | default:'AUD' }}</strong></td>
                                 </tr>
                                 <tr>
-                                    <th>Amount Paid:</th>
-                                    <td>{% if booking.amount_paid %}{{ booking.amount_paid|floatformat:2 }}{% else %}booking.amount_paid VARIABLE DID NOT LOAD{% endif %} {% if booking.currency %}{{ booking.currency }}{% else %}booking.currency VARIABLE DID NOT LOAD{% endif %}</td>
+                                    <td class="label">Amount Paid:</td>
+                                    <td class="value">{{ booking.amount_paid|floatformat:2 | default:'0.00' }} {{ booking.currency | default:'AUD' }}</td>
                                 </tr>
                                 <tr>
-                                    <th>Payment Status:</th>
-                                    <td>{% if booking.get_payment_status_display %}{{ booking.get_payment_status_display }}{% else %}booking.get_payment_status_display VARIABLE DID NOT LOAD{% endif %}</td>
+                                    <td class="label">Payment Status:</td>
+                                    <td class="value">{{ booking.get_payment_status_display | default:'Not available' }}</td>
                                 </tr>
                                 <tr>
-                                    <th>Payment Method:</th>
-                                    <td>{% if booking.get_payment_method_display %}{{ booking.get_payment_method_display }}{% else %}booking.get_payment_method_display VARIABLE DID NOT LOAD{% endif %}</td>
-                                </tr>
-                                <tr>
-                                    <th>Currency:</th>
-                                    <td>{% if booking.currency %}{{ booking.currency }}{% else %}booking.currency VARIABLE DID NOT LOAD{% endif %}</td>
+                                    <td class="label">Payment Method:</td>
+                                    <td class="value">{{ booking.get_payment_method_display | default:'Not available' }}</td>
                                 </tr>
                                 {% if booking.stripe_payment_intent_id %}
                                 <tr>
-                                    <th>Stripe Payment Intent ID:</th>
-                                    <td>{% if booking.stripe_payment_intent_id %}{{ booking.stripe_payment_intent_id }}{% else %}booking.stripe_payment_intent_id VARIABLE DID NOT LOAD{% endif %}</td>
+                                    <td class="label">Stripe Payment Intent ID:</td>
+                                    <td class="value">{{ booking.stripe_payment_intent_id }}</td>
                                 </tr>
                                 {% endif %}
                             </table>
 
                             <div class="section-title">Customer Notes</div>
-                            <p>{% if booking.customer_notes %}{{ booking.customer_notes }}{% else %}booking.customer_notes VARIABLE DID NOT LOAD{% endif %}</p>
+                            <p>{% if booking.customer_notes %}{{ booking.customer_notes }}{% else %}No notes provided.{% endif %}</p>
 
-                            
                         </td>
                     </tr>
                     <tr>
@@ -169,4 +168,28 @@
             </td>
         </tr>
     </table>
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .section-title {
+        font-size: 18px;
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #dddddd;
+        padding-bottom: 5px;
+    }
+    .details-table td {
+        padding: 8px 0;
+        font-size: 14px;
+    }
+    .details-table .label {
+        font-weight: bold;
+        color: #555555;
+    }
+    .details-table .value {
+        text-align: left;
+    }
+</style>
 {% endblock %}

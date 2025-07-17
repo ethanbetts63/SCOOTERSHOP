@@ -8,7 +8,7 @@ import time
 
 from payments.models import WebhookEvent
 
-from ..test_helpers.model_factories import WebhookEventFactory
+from payments.tests.test_helpers.model_factories import WebhookEventFactory
 
 
 class WebhookEventModelTest(TestCase):

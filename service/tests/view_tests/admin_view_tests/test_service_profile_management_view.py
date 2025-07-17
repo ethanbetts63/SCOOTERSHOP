@@ -5,7 +5,8 @@ from django.utils import timezone
 
 
 from service.models import ServiceProfile
-from ..test_helpers.model_factories import UserFactory, ServiceProfileFactory
+from users.tests.test_helpers.model_factories import UserFactory
+from service.tests.test_helpers.model_factories import ServiceProfileFactory
 
 
 class ServiceProfileManagementViewTest(TestCase):

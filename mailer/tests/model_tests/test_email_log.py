@@ -1,6 +1,9 @@
 from django.test import TestCase
 from mailer.models.EmailLog_model import EmailLog
-from mailer.tests.test_helpers.model_factories import EmailLogFactory, UserFactory, ServiceProfileFactory, SalesProfileFactory, ServiceBookingFactory, SalesBookingFactory
+from mailer.tests.test_helpers.model_factories import EmailLogFactory
+from users.tests.test_helpers.model_factories import UserFactory
+from service.tests.test_helpers.model_factories import ServiceProfileFactory, ServiceBookingFactory
+from inventory.tests.test_helpers.model_factories import SalesProfileFactory, SalesBookingFactory
 
 
 class EmailLogModelTest(TestCase):

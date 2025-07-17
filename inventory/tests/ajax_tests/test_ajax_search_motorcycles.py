@@ -2,7 +2,8 @@ import json
 from django.test import TestCase, RequestFactory
 from django.urls import reverse
 from inventory.ajax.ajax_search_motorcycles import search_motorcycles_ajax
-from ..test_helpers.model_factories import UserFactory, MotorcycleFactory
+from users.tests.test_helpers.model_factories import UserFactory
+from inventory.tests.test_helpers.model_factories import MotorcycleFactory
 
 
 class AjaxSearchMotorcyclesTest(TestCase):
