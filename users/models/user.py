@@ -10,10 +10,7 @@ class User(AbstractUser):
     state = models.CharField(max_length=50, blank=True, null=True)
     post_code = models.CharField(max_length=20, blank=True, null=True)
     country = models.CharField(max_length=50, blank=True, null=True)
-    id_image = models.FileField(upload_to="user_ids/", blank=True, null=True)
-    international_id_image = models.FileField(
-        upload_to="user_ids/international/", blank=True, null=True
-    )
+    
 
     groups = models.ManyToManyField(
         "auth.Group",

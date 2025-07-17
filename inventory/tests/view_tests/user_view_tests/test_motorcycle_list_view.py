@@ -3,7 +3,7 @@ from django.urls import reverse
 from inventory.models import Motorcycle
 
 
-from inventory.tests.test_helpers.model_factories import MotorcycleConditionFactory
+from inventory.tests.test_helpers.model_factories import MotorcycleConditionFactory, MotorcycleFactory
 
 
 class MotorcycleListViewTest(TestCase):
@@ -20,7 +20,7 @@ class MotorcycleListViewTest(TestCase):
         )
 
     def setUp(self):
-        Motorcycle.objects.all().delete()
+        MotorcycleFactory._meta.model.objects.all().delete()
 
     def test_new_motorcycles_page_renders_empty_initially(self):
         response = self.client.get(reverse("inventory:new"))

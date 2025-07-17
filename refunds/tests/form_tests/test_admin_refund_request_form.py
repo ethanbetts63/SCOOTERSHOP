@@ -1,7 +1,7 @@
 from django.test import TestCase
 from decimal import Decimal
+from django.apps import apps
 from refunds.forms.admin_refund_request_form import AdminRefundRequestForm
-from refunds.models.RefundRequest import RefundRequest
 
 from payments.tests.test_helpers.model_factories import PaymentFactory
 from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
@@ -16,6 +16,8 @@ from service.tests.test_helpers.model_factories import (
     CustomerMotorcycleFactory,
     ServiceTypeFactory,
 )
+
+RefundRequest = apps.get_model('refunds', 'RefundRequest')
 
 
 class AdminRefundRequestFormTests(TestCase):

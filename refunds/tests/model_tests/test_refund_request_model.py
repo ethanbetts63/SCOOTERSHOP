@@ -270,6 +270,7 @@ class RefundRequestModelTest(TestCase):
             amount_to_refund=Decimal("10.00"),
             request_email="default@example.com",
             service_profile=self.service_profile,
+            is_admin_initiated=False,
         )
         self.assertFalse(refund_request_default.is_admin_initiated)
 
