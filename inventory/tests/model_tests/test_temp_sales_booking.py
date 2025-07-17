@@ -10,6 +10,8 @@ from inventory.models.temp_sales_booking import (
     PAYMENT_STATUS_CHOICES,
 )
 
+
+
 from inventory.tests.test_helpers.model_factories import (
     TempSalesBookingFactory,
     SalesProfileFactory,
@@ -84,11 +86,10 @@ class TempSalesBookingModelTest(TestCase):
         self.assertIsNone(self.temp_sales_booking.payment)
 
     def test_amount_paid_field(self):
-        new_booking_default_amount = TempSalesBooking(
+        new_booking_default_amount = TempSalesBookingFactory(
             motorcycle=self.motorcycle,
             sales_profile=self.sales_profile,
         )
-        new_booking_default_amount.save()
 
         field = new_booking_default_amount._meta.get_field("amount_paid")
         self.assertIsInstance(new_booking_default_amount.amount_paid, Decimal)
@@ -208,8 +209,8 @@ class TempSalesBookingModelTest(TestCase):
         self.assertGreater(self.temp_sales_booking.updated_at, old_updated_at)
 
     def test_meta_options(self):
-        self.assertEqual(TempSalesBooking._meta.verbose_name, "Temporary Sales Booking")
+        self.assertEqual(TempSalesBookingFactory._meta.model._meta.verbose_name, "Temporary Sales Booking")
         self.assertEqual(
-            TempSalesBooking._meta.verbose_name_plural, "Temporary Sales Bookings"
+            TempSalesBookingFactory._meta.model._meta.verbose_name_plural, "Temporary Sales Bookings"
         )
-        self.assertEqual(TempSalesBooking._meta.ordering, ["-created_at"])
+        self.assertEqual(TempSalesBookingFactory._meta.model._meta.ordering, ["-created_at"])

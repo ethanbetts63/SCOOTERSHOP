@@ -1,8 +1,9 @@
 import os
+import uuid
 from django.conf import settings
 from mailer.utils.send_templated_email import send_templated_email
 from dashboard.models import SiteSettings
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
 from service.tests.test_helpers.model_factories import ServiceBookingFactory
 from inventory.tests.test_helpers.model_factories import SalesBookingFactory
 from payments.tests.test_helpers.model_factories import PaymentFactory
@@ -23,8 +24,9 @@ def send_all_test_emails(admin_email):
         service_booking = ServiceBookingFactory()
         sales_booking = SalesBookingFactory()
         admin_user = SuperUserFactory(
-            email=admin_email
-        )  # Create an admin user for context
+            email=admin_email,
+            username=f"admin_test_user_{uuid.uuid4().hex}"
+        )
         site_settings = SiteSettings.get_settings()
         enquiry_instance = EnquiryFactory()
         payment_instance = PaymentFactory()
@@ -35,15 +37,12 @@ def send_all_test_emails(admin_email):
         for template_name in os.listdir(template_dir):
             if not template_name.endswith(".html"):
                 continue
-
             booking = None
             profile = None
             no_data_message = None
             enquiry = None
             refund_request = None
             payment = None
-
-            # Determine context based on template name
             if "service" in template_name:
                 if service_booking:
                     booking = service_booking
@@ -62,17 +61,16 @@ def send_all_test_emails(admin_email):
                 enquiry = enquiry_instance
             elif "refund" in template_name:
                 refund_request = refund_request_instance
-                booking = service_booking  # Link refund to a booking for context
+                booking = service_booking  
                 profile = (
                     booking.service_profile
-                )  # Link refund to a profile for context
+                )  
                 payment = payment_instance
 
-            # Add other general context items
             context = {
                 "booking": booking,
                 "profile": profile,
-                "user": admin_user,  # Use the created admin user
+                "user": admin_user,  
                 "is_test_email": True,
                 "no_data_message": no_data_message,
                 "SITE_DOMAIN": settings.SITE_DOMAIN,
@@ -92,7 +90,6 @@ def send_all_test_emails(admin_email):
                 profile=profile,
             )
     finally:
-        # Clean up created instances
         if service_booking:
             service_booking.delete()
         if sales_booking:

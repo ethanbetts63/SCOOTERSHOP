@@ -11,7 +11,6 @@ class User(AbstractUser):
     post_code = models.CharField(max_length=20, blank=True, null=True)
     country = models.CharField(max_length=50, blank=True, null=True)
     
-
     groups = models.ManyToManyField(
         "auth.Group",
         verbose_name="groups",
