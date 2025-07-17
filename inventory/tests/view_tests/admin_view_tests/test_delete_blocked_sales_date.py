@@ -6,7 +6,7 @@ from unittest import mock
 from inventory.models import BlockedSalesDate
 
 
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
 from inventory.tests.test_helpers.model_factories import BlockedSalesDateFactory
 
 
@@ -14,14 +14,10 @@ class BlockedSalesDateDeleteViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
-        cls.admin_user = UserFactory(
+        cls.admin_user = SuperUserFactory(
             username="admin",
             email="admin@example.com",
-            is_staff=True,
-            is_superuser=True,
         )
-        cls.admin_user.set_password("adminpassword")
-        cls.admin_user.save()
 
         cls.non_admin_user = UserFactory(
             username="user",
@@ -41,7 +37,7 @@ class BlockedSalesDateDeleteViewTest(TestCase):
         )
 
     def test_delete_blocked_sales_date_as_admin_success(self):
-        self.client.login(username="admin", password="adminpassword")
+        self.client.login(username="admin", password="password123")
         self.assertTrue(
             BlockedSalesDate.objects.filter(pk=self.blocked_date_to_delete.pk).exists()
         )
@@ -65,7 +61,7 @@ class BlockedSalesDateDeleteViewTest(TestCase):
         )
 
     def test_delete_blocked_sales_date_as_admin_not_found(self):
-        self.client.login(username="admin", password="adminpassword")
+        self.client.login(username="admin", password="password123")
         non_existent_pk = self.blocked_date_to_delete.pk + 999
         url = reverse(
             "inventory:admin_blocked_sales_date_delete", kwargs={"pk": non_existent_pk}
@@ -81,7 +77,7 @@ class BlockedSalesDateDeleteViewTest(TestCase):
     def test_delete_blocked_sales_date_as_admin_failure(self, mock_blocked_date_delete):
         mock_blocked_date_delete.side_effect = Exception("DB error!")
 
-        self.client.login(username="admin", password="adminpassword")
+        self.client.login(username="admin", password="password123")
         response = self.client.post(self.delete_url, follow=True)
 
         self.assertRedirects(

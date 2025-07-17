@@ -10,7 +10,7 @@ from inventory.tests.test_helpers.model_factories import (
     SalesProfileFactory,
     MotorcycleFactory,
 )
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
 from payments.tests.test_helpers.model_factories import PaymentFactory
 from refunds.tests.test_helpers.model_factories import RefundRequestFactory
 
@@ -23,7 +23,7 @@ from refunds.tests.test_helpers.model_factories import RefundRequestFactory
 class AjaxGetSalesBookingDetailsTest(TestCase):
     def setUp(self):
         self.client = Client()
-        self.admin_user = UserFactory(is_staff=True, is_superuser=True)
+        self.admin_user = SuperUserFactory()
         self.regular_user = UserFactory(is_staff=False)
         self.ajax_url_name = "inventory:api_sales_booking_details"
 
