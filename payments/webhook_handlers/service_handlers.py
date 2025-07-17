@@ -35,6 +35,7 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
                 temp_booking=temp_booking,
                 payment_method=temp_booking.payment_method,
                 booking_payment_status=booking_payment_status,
+                booking_status="pending",
                 amount_paid_on_booking=Decimal(payment_intent_data["amount_received"])
                 / Decimal("100"),
                 calculated_total_on_booking=temp_booking.calculated_total,
@@ -57,8 +58,8 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
         if user_email:
             send_templated_email(
                 recipient_list=[user_email],
-                subject=f"Your Service Booking Confirmation - {service_booking.service_booking_reference}",
-                template_name="user_service_booking_confirmation.html",
+                subject=f"Your Service Booking Request Submitted - {service_booking.service_booking_reference}",
+                template_name="user_service_booking_request_submitted.html",
                 context={
                     "booking": service_booking,
                     "profile": service_profile,

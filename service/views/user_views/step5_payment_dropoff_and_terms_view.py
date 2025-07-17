@@ -152,6 +152,7 @@ class Step5PaymentDropoffAndTermsView(View):
                         temp_booking=self.temp_booking,
                         payment_method=self.temp_booking.payment_method,
                         booking_payment_status="unpaid",
+                        booking_status="pending",
                         amount_paid_on_booking=Decimal("0.00"),
                         calculated_total_on_booking=self.temp_booking.calculated_total,
                     )
@@ -170,8 +171,8 @@ class Step5PaymentDropoffAndTermsView(View):
                         }
                         email_sent = send_templated_email(
                             recipient_list=[user_email],
-                            subject=f"Your Service Booking Confirmed! Ref: {final_service_booking.service_booking_reference}",
-                            template_name="user_service_booking_confirmation.html",
+                            subject=f"Your Service Booking Request Submitted! Ref: {final_service_booking.service_booking_reference}",
+                            template_name="user_service_booking_request_submitted.html",
                             context=email_context,
                             booking=final_service_booking,
                             profile=final_service_booking.service_profile,
