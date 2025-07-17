@@ -7,7 +7,7 @@ class ConfirmSalesBookingTests(TestCase):
 
     def setUp(self):
         self.motorcycle = MotorcycleFactory(quantity=1, condition='new', status='available')
-        self.sales_booking = SalesBookingFactory(motorcycle=self.motorcycle)
+        self.sales_booking = SalesBookingFactory(motorcycle=self.motorcycle, booking_status='pending_confirmation')
 
     @patch('inventory.utils.confirm_sales_booking.send_templated_email')
     def test_confirm_sales_booking_success(self, mock_send_email):

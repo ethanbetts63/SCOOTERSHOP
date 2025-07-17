@@ -21,7 +21,8 @@ class SellAndNotifyTests(TestCase):
         self.booking2 = SalesBookingFactory(
             motorcycle=self.motorcycle,
             sales_profile=self.sales_profile2,
-            payment_status='deposit_paid'  # This one should not be notified
+            payment_status='deposit_paid',  # This one should not be notified
+            booking_status='pending_confirmation'
         )
 
         self.user3 = UserFactory()
