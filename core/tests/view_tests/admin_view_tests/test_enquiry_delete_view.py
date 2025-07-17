@@ -1,6 +1,8 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.messages import get_messages
+
+from core.models.enquiry import Enquiry
 from core.models.enquiry import Enquiry
 from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 from core.tests.test_helpers.model_factories import EnquiryFactory

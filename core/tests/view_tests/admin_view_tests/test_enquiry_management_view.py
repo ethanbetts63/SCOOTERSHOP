@@ -1,8 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-
+from core.models.enquiry import Enquiry
 from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
-from datetime import datetime, timedelta
 from core.tests.test_helpers.model_factories import EnquiryFactory
 
 
@@ -48,7 +47,7 @@ class EnquiryManagementViewTest(TestCase):
         self.assertEqual(response.context["page_title"], "Enquiry Management")
 
         enquiries_in_context = response.context["enquiries"]
-        all_enquiries = list(EnquiryFactory.create_batch(15))
+        all_enquiries = list(Enquiry.objects.all().order_by("-created_at"))
         self.assertListEqual(list(enquiries_in_context), all_enquiries[:10])
 
     def test_pagination_page_2(self):

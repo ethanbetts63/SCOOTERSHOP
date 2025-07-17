@@ -3,12 +3,10 @@ from django.urls import reverse
 from unittest.mock import patch
 from django.apps import apps
 from refunds.forms.admin_refund_request_form import AdminRefundRequestForm
-from payments.tests.test_helpers.model_factories import (
-    RefundRequestFactory,
-    ServiceBookingFactory,
-    SalesBookingFactory,
-    PaymentFactory,
-)
+from refunds.tests.test_helpers.model_factories import RefundRequestFactory
+from service.tests.test_helpers.model_factories import ServiceBookingFactory
+from inventory.tests.test_helpers.model_factories import SalesBookingFactory
+from payments.tests.test_helpers.model_factories import PaymentFactory
 from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 from decimal import Decimal
 
@@ -81,7 +79,7 @@ class AdminAddEditRefundRequestViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse("refunds:admin_refund_management"))
         self.assertEqual(RefundRequest.objects.count(), 1)
-        refund_request = RefundRequest.objects.first()
+        refund_request = RefundRequest.objects.get(service_booking=self.service_booking)
         self.assertTrue(refund_request.is_admin_initiated)
         self.assertEqual(refund_request.status, "reviewed_pending_approval")
         mock_messages_success.assert_called_once()
@@ -100,7 +98,7 @@ class AdminAddEditRefundRequestViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse("refunds:admin_refund_management"))
         self.assertEqual(RefundRequest.objects.count(), 1)
-        refund_request = RefundRequest.objects.first()
+        refund_request = RefundRequest.objects.get(sales_booking=self.sales_booking)
         self.assertTrue(refund_request.is_admin_initiated)
         self.assertEqual(refund_request.status, "reviewed_pending_approval")
         mock_messages_success.assert_called_once()
