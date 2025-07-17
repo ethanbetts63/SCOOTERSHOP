@@ -6,11 +6,8 @@ from django.utils import timezone
 from datetime import timedelta
 
 from django.apps import apps
-from payments.tests.test_helpers.model_factories import (
-    RefundRequestFactory,
-    SalesBookingFactory,
-    SalesProfileFactory,
-)
+from refunds.tests.test_helpers.model_factories import RefundRequestFactory
+from inventory.tests.test_helpers.model_factories import SalesBookingFactory, SalesProfileFactory
 from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 
 RefundRequest = apps.get_model('refunds', 'RefundRequest')
@@ -53,7 +50,7 @@ class AdminRefundManagementTest(TestCase):
     # This test is failing due to a ValueError: Failed to insert expression "<MagicMock name='now().resolve_expression()' id='...'>" on payments.Payment.created_at.
     # This indicates an issue with factory_boy's interaction with mocked timezone.now() when creating objects.
     # The problem is not in the test logic itself, but in the interaction with the mocking and factory.
-    @patch("payments.views.Refunds.admin_refund_management.send_templated_email")
+    @patch("refunds.views.admin_views.admin_refund_management.send_templated_email")
     def test_clean_expired_unverified_refund_requests_deletes_and_sends_email(
         self, mock_send_templated_email
     ):
@@ -94,7 +91,7 @@ class AdminRefundManagementTest(TestCase):
         )
 
     # This test is failing due to the same ValueError as test_clean_expired_unverified_refund_requests_deletes_and_sends_email.
-    @patch("payments.views.Refunds.admin_refund_management.send_templated_email")
+    @patch("refunds.views.admin_views.admin_refund_management.send_templated_email")
     def test_clean_expired_unverified_refund_requests_no_email_sent_if_no_recipient(
         self, mock_send_templated_email
     ):
