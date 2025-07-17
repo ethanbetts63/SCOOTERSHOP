@@ -16,7 +16,8 @@ def update_associated_bookings_and_payments(
 
         if booking_obj.amount_paid <= 0:
             booking_obj.payment_status = "refunded"
-            booking_obj.booking_status = "cancelled"
+            if booking_obj.booking_status != "declined":
+                booking_obj.booking_status = "cancelled"
         elif booking_obj.amount_paid < payment_obj.amount:
             booking_obj.payment_status = "partially_refunded"
         else:

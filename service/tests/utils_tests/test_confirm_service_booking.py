@@ -10,6 +10,8 @@ class ConfirmServiceBookingTests(TestCase):
 
     @patch('service.utils.confirm_service_booking.send_templated_email')
     def test_confirm_service_booking_success(self, mock_send_email):
+        self.service_booking.booking_status = 'pending'
+        self.service_booking.save()
         result = confirm_service_booking(self.service_booking.id)
         self.assertTrue(result['success'])
         self.assertEqual(result['message'], 'Service booking confirmed successfully.')

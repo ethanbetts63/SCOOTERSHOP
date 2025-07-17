@@ -11,6 +11,7 @@ def convert_temp_service_booking(
     booking_payment_status,
     amount_paid_on_booking,
     calculated_total_on_booking,
+    booking_status="confirmed",
     stripe_payment_intent_id=None,
     payment_obj=None,
 ):
@@ -42,7 +43,7 @@ def convert_temp_service_booking(
                 dropoff_time=temp_booking.dropoff_time,
                 after_hours_drop_off=temp_booking.after_hours_drop_off,    
                 estimated_pickup_date=temp_booking.estimated_pickup_date,
-                booking_status="confirmed",
+                booking_status=booking_status,
                 customer_notes=temp_booking.customer_notes,
                 service_terms_version=temp_booking.service_terms_version,
                 payment=payment_obj,

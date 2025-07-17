@@ -114,9 +114,9 @@ class TestAnonymousInStorePaymentFlow(TestCase):
 
         step5_data = {
             "dropoff_date": valid_future_date.strftime("%Y-%m-%d"),
+            "dropoff_time": "10:00",
             "payment_method": "in_store_full",
             "service_terms_accepted": "on",
-            "after_hours_drop_off_choice": "on",
         }
         response = self.client.post(step5_url, step5_data)
         self.assertRedirects(response, step7_url)
