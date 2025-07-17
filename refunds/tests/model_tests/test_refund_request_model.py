@@ -4,7 +4,7 @@ import uuid
 from django.utils import timezone
 import datetime
 
-from payments.tests.test_helpers.model_factories import (
+from refunds.tests.test_helpers.model_factories import (
     RefundRequestFactory,
     ServiceBookingFactory,
     PaymentFactory,

@@ -6,6 +6,7 @@ from service.models import ServiceProfile, ServiceBooking, ServiceType, Customer
 from inventory.models import SalesProfile, SalesBooking, Motorcycle
 from decimal import Decimal
 from faker import Faker
+from payments.models import Payment
 import uuid
 
 fake = Faker()
@@ -246,3 +247,12 @@ class EmailLogFactory(factory.django.DjangoModelFactory):
     sales_profile = factory.SubFactory(SalesProfileFactory)
     service_booking = factory.SubFactory(ServiceBookingFactory)
     sales_booking = factory.SubFactory(SalesBookingFactory)
+
+class PaymentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Payment
+
+    amount = Decimal("100.00")
+    stripe_payment_method_id = "pm_card_visa"
+    stripe_payment_intent_id = factory.LazyFunction(lambda: f"pi_{uuid.uuid4().hex}")
+    status = "succeeded"
