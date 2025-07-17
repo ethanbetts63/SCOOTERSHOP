@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.utils import timezone
 from service.models import ServiceBooking
-from users.tests.test_helpers.model_factories import StaffUserFactory, SuperUserFactory
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory, SuperUserFactory
 from service.tests.test_helpers.model_factories import (
     ServiceBookingFactory,
     ServiceTypeFactory,
@@ -19,7 +19,7 @@ class ServiceBookingManagementViewTest(TestCase):
             username="superuser_booking"
         )
         cls.regular_user = UserFactory(
-            username="regular_user_booking", is_staff=False, is_superuser=False
+            username="regular_user_booking"
         )
         cls.service_type_a = ServiceTypeFactory(name="Oil Change")
         cls.service_type_b = ServiceTypeFactory(name="Tyre Replacement")

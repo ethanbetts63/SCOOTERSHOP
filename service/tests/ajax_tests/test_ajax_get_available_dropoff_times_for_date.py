@@ -3,7 +3,7 @@ from django.http import JsonResponse
 import datetime
 import json
 from unittest.mock import patch
-from users.models import User
+from users.tests.test_helpers.model_factories import StaffUserFactory
 from service.ajax.ajax_get_available_dropoff_times_for_date import (
     get_available_dropoff_times_for_date,
 )
@@ -12,9 +12,7 @@ from service.ajax.ajax_get_available_dropoff_times_for_date import (
 class AjaxGetAvailableDropoffTimesForDateTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
-        self.user = User.objects.create_user(
-            username="testuser", password="password", is_staff=True
-        )
+        self.user = StaffUserFactory(username="testuser", password="password")
 
     @patch(
         "service.ajax.ajax_get_available_dropoff_times_for_date.get_available_dropoff_times"

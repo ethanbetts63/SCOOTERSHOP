@@ -4,7 +4,7 @@ import json
 from datetime import date, time, timedelta
 
 
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 from service.tests.test_helpers.model_factories import (
     ServiceBookingFactory,
     ServiceProfileFactory,
@@ -21,8 +21,8 @@ class AjaxSearchServiceBookingsTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
 
-        self.staff_user = UserFactory(
-            username="admin_user", email="admin@example.com", is_staff=True
+        self.staff_user = StaffUserFactory(
+            username="admin_user", email="admin@example.com"
         )
         self.non_staff_user = UserFactory(
             username="regular_user", email="user@example.com", is_staff=False

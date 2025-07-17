@@ -19,7 +19,7 @@ class ProcessRefundViewTests(TestCase):
     def setUpTestData(cls):
         cls.client = Client()
         cls.admin_user = SuperUserFactory()
-        cls.regular_user = UserFactory(is_staff=False, is_superuser=False)
+        cls.regular_user = UserFactory()
 
     def setUp(self):
         self.client.force_login(self.admin_user)

@@ -21,7 +21,7 @@ class ServiceAdminAjaxPermissionsTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
-        cls.regular_user = UserFactory(password="password123")
+        cls.regular_user = UserFactory()
         cls.staff_user = StaffUserFactory()
         cls.service_profile = ServiceProfileFactory()
         cls.customer_motorcycle = CustomerMotorcycleFactory(

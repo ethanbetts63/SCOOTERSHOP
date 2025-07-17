@@ -19,7 +19,7 @@ class ServiceProfileManagementViewTest(TestCase):
             username="superuser"
         )
         cls.regular_user = UserFactory(
-            username="regular_user", is_staff=False, is_superuser=False
+            username="regular_user"
         )
 
         cls.profile1 = ServiceProfileFactory(
@@ -238,7 +238,7 @@ class ServiceProfileDeleteViewTest(TestCase):
             username="superuser"
         )
         cls.regular_user = UserFactory(
-            username="regular_user", is_staff=False, is_superuser=False
+            username="regular_user"
         )
         cls.profile_to_delete = ServiceProfileFactory(name="Profile to Delete")
         cls.list_url = reverse("service:admin_service_profiles")

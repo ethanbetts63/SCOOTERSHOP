@@ -13,7 +13,7 @@ class InventoryAdminAjaxPermissionsTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
-        cls.regular_user = UserFactory(password="password123")
+        cls.regular_user = UserFactory()
         cls.staff_user = StaffUserFactory()
         cls.motorcycle = MotorcycleFactory()
         cls.sales_profile = SalesProfileFactory()

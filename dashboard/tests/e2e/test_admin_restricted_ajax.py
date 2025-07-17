@@ -14,7 +14,7 @@ class DashboardAdminAjaxPermissionsTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
-        cls.regular_user = UserFactory(password="password123")
+        cls.regular_user = UserFactory()
         cls.staff_user = StaffUserFactory()
 
     def _test_ajax_permissions(self, url_name, kwargs=None, method="get", data=None):

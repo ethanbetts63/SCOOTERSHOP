@@ -5,7 +5,7 @@ from django.contrib import messages
 
 from service.models import ServiceProfile
 from service.forms import AdminServiceProfileForm
-from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
+from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory, StaffUserFactory
 from service.tests.test_helpers.model_factories import ServiceProfileFactory
 
 
@@ -19,7 +19,7 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
             username="superuser"
         )
         cls.regular_user = UserFactory(
-            username="regular_user", is_staff=False, is_superuser=False
+            username="regular_user"
         )
 
         cls.existing_profile = ServiceProfileFactory(

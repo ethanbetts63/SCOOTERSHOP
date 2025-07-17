@@ -19,7 +19,7 @@ class CustomerMotorcycleManagementViewTest(TestCase):
             username="superuser_moto"
         )
         cls.regular_user = UserFactory(
-            username="regular_user_moto", is_staff=False, is_superuser=False
+            username="regular_user_moto"
         )
 
         cls.profile_john = ServiceProfileFactory(

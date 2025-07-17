@@ -24,7 +24,7 @@ class ServiceAdminViewsPermissionsTestCase(TestCase):
         cls.login_url = reverse("users:login")
 
         # Create user types
-        cls.regular_user = UserFactory(password="password123")
+        cls.regular_user = UserFactory()
         cls.staff_user = StaffUserFactory()
 
         # Create instances of all necessary models for URL kwargs

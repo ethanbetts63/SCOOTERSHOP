@@ -23,7 +23,7 @@ class InventoryAdminViewsPermissionsTestCase(TestCase):
         cls.client = Client()
         cls.login_url = reverse("users:login")
 
-        cls.regular_user = UserFactory(password="password123")
+        cls.regular_user = UserFactory()
         cls.staff_user = StaffUserFactory()
 
         MotorcycleConditionFactory(name="new")

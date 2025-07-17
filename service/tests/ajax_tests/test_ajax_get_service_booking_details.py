@@ -12,7 +12,7 @@ from service.ajax.ajax_get_service_booking_details import (
 )
 
 
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 from service.tests.test_helpers.model_factories import (
     ServiceBookingFactory,
     ServiceProfileFactory,
@@ -27,8 +27,8 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
 
-        self.staff_user = UserFactory(
-            is_staff=True, username="staffuser", email="staff@example.com"
+        self.staff_user = StaffUserFactory(
+            username="staffuser", email="staff@example.com"
         )
 
         self.regular_user = UserFactory(

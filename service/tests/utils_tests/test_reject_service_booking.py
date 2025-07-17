@@ -1,7 +1,7 @@
 from django.test import TestCase
 from unittest.mock import patch, MagicMock
 from service.utils.reject_service_booking import reject_service_booking
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 from service.tests.test_helpers.model_factories import ServiceBookingFactory
 from payments.tests.test_helpers.model_factories import PaymentFactory
 from decimal import Decimal
