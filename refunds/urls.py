@@ -16,6 +16,7 @@ from .views.admin_views import (
     IntermediaryRefundProcessingView,
     AdminRefundTermsManagementView, 
     AdminRefundTermsCreateView, 
+    AdminRefundTermsDetailView
 )
 
 app_name = "refunds"
@@ -78,5 +79,6 @@ urlpatterns = [
     ),
     path('dashboard/terms/refunds/', AdminRefundTermsManagementView.as_view(), name='refund_terms_management'),
     path('dashboard/terms/refunds/create/', AdminRefundTermsCreateView.as_view(), name='refund_terms_create'),
+    path('dashboard/terms/refunds/<int:pk>/', AdminRefundTermsDetailView.as_view(), name='refund_terms_details'),
     path('refund-policy/', RefundTermsView.as_view(), name='refund_policy'), 
 ]
