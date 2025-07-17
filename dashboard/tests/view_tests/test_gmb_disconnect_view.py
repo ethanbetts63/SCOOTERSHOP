@@ -2,6 +2,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from dashboard.models import GoogleMyBusinessAccount
 from django.contrib.auth import get_user_model
+from users.tests.test_helpers.model_factories import SuperUserFactory, UserFactory
 from django.utils import timezone
 
 User = get_user_model()
@@ -17,20 +18,8 @@ class GoogleMyBusinessDisconnectViewTest(TestCase):
     def setUp(self):
         GoogleMyBusinessAccount.objects.all().delete()
         self.client = self.client_class()
-        self.admin_user = User.objects.create_user(
-            username="admin",
-            email="admin@example.com",
-            password="password",
-            is_staff=True,
-            is_superuser=True,
-        )
-        self.user = User.objects.create_user(
-            username="user",
-            email="user@example.com",
-            password="password",
-            is_staff=False,
-            is_superuser=False,
-        )
+        self.admin_user = SuperUserFactory(username="admin", email="admin@example.com", password="password")
+        self.user = UserFactory(username="user", email="user@example.com", password="password")
 
     def test_successful_disconnection(self):
         # Configure a GMB account first
