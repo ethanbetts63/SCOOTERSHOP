@@ -3,6 +3,9 @@ from django.conf import settings
 from inventory.models import SalesBooking
 from mailer.utils import send_templated_email
 from dashboard.models import SiteSettings
+import logging
+
+logger = logging.getLogger(__name__)
 
 def confirm_sales_booking(sales_booking_id, message=None, send_notification=True):
     try:
@@ -83,4 +86,5 @@ def confirm_sales_booking(sales_booking_id, message=None, send_notification=True
     except SalesBooking.DoesNotExist:
         return {"success": False, "message": "Sales Booking not found."}
     except Exception as e:
+        logger.error(f"Error confirming sales booking: {e}", exc_info=True)
         return {"success": False, "message": f"An error occurred: {str(e)}"}
