@@ -8,11 +8,13 @@ from inventory.models import Motorcycle, MotorcycleCondition
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from ..test_helpers.model_factories import (
-    MotorcycleFactory,
-    MotorcycleConditionFactory,
-    UserFactory,
-)
+from inventory.forms.admin_motorcycle_form import MotorcycleForm
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
+from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory, ServiceTypeFactory, ServiceSettingsFactory, ServiceTermsFactory, ServicefaqFactory, CustomerMotorcycleFactory, BlockedServiceDateFactory, ServiceBrandFactory
+from inventory.tests.test_helpers.model_factories import SalesBookingFactory, SalesProfileFactory, MotorcycleConditionFactory, MotorcycleFactory, MotorcycleImageFactory, FeaturedMotorcycleFactory, InventorySettingsFactory, BlockedSalesDateFactory
+from payments.tests.test_helpers.model_factories import PaymentFactory, WebhookEventFactory
+from refunds.tests.test_helpers.model_factories import RefundRequestFactory, RefundSettingsFactory
+
 
 User = get_user_model()
 

@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 import json
-from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory 
 from inventory.tests.test_helpers.model_factories import MotorcycleFactory, SalesProfileFactory, SalesBookingFactory
 
 class InventoryAdminAjaxPermissionsTestCase(TestCase):

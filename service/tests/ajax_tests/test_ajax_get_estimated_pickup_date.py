@@ -2,8 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from unittest.mock import patch
 import datetime
-from users.tests.test_helpers.model_factories import UserFactory
-from users.tests.test_helpers.model_factories import StaffUserFactory
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory 
 from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory, ServiceTypeFactory, ServiceSettingsFactory, ServiceTermsFactory, ServicefaqFactory
 from inventory.tests.test_helpers.model_factories import SalesBookingFactory, SalesProfileFactory
 from payments.tests.test_helpers.model_factories import PaymentFactory
