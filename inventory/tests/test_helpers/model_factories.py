@@ -1,13 +1,8 @@
 import factory
 import datetime
 import uuid
-from django.contrib.auth import get_user_model
-from decimal import Decimal
 from faker import Faker
-from django.utils import timezone
-
 fake = Faker()
-
 from inventory.models import (
     BlockedSalesDate,
     InventorySettings,
@@ -21,9 +16,6 @@ from inventory.models import (
     Salesfaq,
     FeaturedMotorcycle,
 )
-
-from refunds.models import RefundSettings
-
 from inventory.models.temp_sales_booking import (
     PAYMENT_STATUS_CHOICES as TEMP_PAYMENT_STATUS_CHOICES,
 )
@@ -36,62 +28,8 @@ from inventory.models.sales_booking import (
 from inventory.models.sales_booking import (
     BOOKING_STATUS_CHOICES as SALES_BOOKING_STATUS_CHOICES,
 )
-
-from payments.models import Payment
-
-from refunds.models import RefundRequest, RefundSettings
-
-User = get_user_model()
-
-
-class UserFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = User
-
-    username = factory.Faker("uuid4")
-    email = factory.Faker("email")
-    first_name = factory.Faker("first_name")
-    last_name = factory.Faker("last_name")
-    is_active = True
-    is_staff = False
-    is_superuser = False
-    password = factory.PostGenerationMethodCall('set_password', 'testpassword')
-
-
-    phone_number = factory.Faker("phone_number")
-    address_line_1 = factory.Faker("street_address")
-    address_line_2 = factory.Faker("secondary_address")
-    city = factory.Faker("city")
-    state = factory.Faker("state_abbr")
-    post_code = factory.Faker("postcode")
-    country = factory.Faker("country_code")
-
-class StaffUserFactory(UserFactory):
-    is_staff = True
-    password = factory.PostGenerationMethodCall('set_password', 'password123')
-
-
-
-class PaymentFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Payment
-
-    amount = factory.LazyFunction(
-        lambda: fake.pydecimal(left_digits=4, right_digits=2, positive=True)
-    )
-    currency = "AUD"
-    status = factory.Faker(
-        "random_element",
-        elements=["succeeded", "requires_action", "requires_payment_method"],
-    )
-    description = factory.Faker("sentence")
-    stripe_payment_intent_id = factory.Sequence(lambda n: f"pi_{uuid.uuid4().hex[:24]}")
-    stripe_payment_method_id = factory.Sequence(lambda n: f"pm_{uuid.uuid4().hex[:24]}")
-    refunded_amount = Decimal("0.00")
-    temp_service_booking = None
-    service_booking = None
-    service_customer_profile = None
-
+from users.tests.test_helpers.model_factories import UserFactory
+from payments.tests.test_helpers.model_factories import PaymentFactory
 
 class MotorcycleConditionFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -261,7 +199,6 @@ class TempSalesBookingFactory(factory.django.DjangoModelFactory):
     )
     
 
-
 class SalesBookingFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = SalesBooking
@@ -341,88 +278,3 @@ class SalesTermsFactory(factory.django.DjangoModelFactory):
     version_number = factory.Sequence(lambda n: n)
     content = factory.Faker("paragraph", nb_sentences=10)
     is_active = True
-
-
-class RefundSettingsFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = RefundSettings
-
-    full_payment_full_refund_days = factory.Faker(
-        "random_int", min=5, max=10
-    )
-    full_payment_partial_refund_days = factory.Faker(
-        "random_int", min=2, max=4
-    )
-    full_payment_partial_refund_percentage = factory.LazyFunction(
-        lambda: Decimal(fake.random_element([25.00, 50.00, 75.00]))
-    )
-    full_payment_no_refund_percentage = factory.Faker(
-        "random_int", min=0, max=1
-    )
-
-    deposit_full_refund_days = factory.Faker("random_int", min=5, max=10)
-    deposit_partial_refund_days = factory.Faker("random_int", min=2, max=4)
-    deposit_partial_refund_percentage = factory.LazyFunction(
-        lambda: Decimal(fake.random_element([25.00, 50.00, 75.00]))
-    )
-    deposit_no_refund_days = factory.Faker("random_int", min=0, max=1)
-
-
-    @classmethod
-    def _create(cls, model_class, *args, **kwargs):
-        obj, created = model_class.objects.get_or_create(pk=1, defaults=kwargs)
-        if not created:
-            for k, v in kwargs.items():
-                setattr(obj, k, v)
-            obj.save()
-        return obj
-
-
-class RefundRequestFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = RefundRequest
-
-    service_booking = None
-    sales_booking = None
-    service_profile = None
-    sales_profile = None
-
-    payment = factory.SubFactory(PaymentFactory)
-
-    reason = factory.Faker("paragraph")
-    rejection_reason = None
-    requested_at = factory.LazyFunction(timezone.now)
-    status = factory.Faker(
-        "random_element",
-        elements=[
-            "unverified",
-            "pending",
-            "reviewed_pending_approval",
-            "approved",
-            "rejected",
-            "partially_refunded",
-            "refunded",
-            "failed",
-        ],
-    )
-    amount_to_refund = factory.LazyFunction(
-        lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True)
-    )
-    processed_by = None
-    processed_at = None
-    staff_notes = factory.Faker("paragraph")
-    stripe_refund_id = factory.Sequence(lambda n: f"re_{uuid.uuid4().hex[:24]}_{n}")
-    is_admin_initiated = factory.Faker("boolean")
-    refund_calculation_details = factory.LazyFunction(
-        lambda: {
-            "policy_version": "1.0",
-            "refunded_amount": str(
-                fake.pydecimal(left_digits=2, right_digits=2, positive=True)
-            ),
-            "sales_grace_period_applied": fake.boolean(),
-            "sales_grace_period_hours": fake.random_int(min=12, max=72),
-        }
-    )
-    request_email = factory.Faker("email")
-    verification_token = factory.LazyFunction(uuid.uuid4)
-    token_created_at = factory.LazyFunction(timezone.now)

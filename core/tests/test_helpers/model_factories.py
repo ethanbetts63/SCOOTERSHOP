@@ -1,9 +1,5 @@
 import factory
-from faker import Faker
-from django.contrib.auth import get_user_model
-fake = Faker()
 from core.models import Enquiry
-User = get_user_model()
 
 class EnquiryFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -13,24 +9,3 @@ class EnquiryFactory(factory.django.DjangoModelFactory):
     email = factory.Faker("email")
     phone_number = factory.LazyFunction(lambda: fake.numerify("##########"))
     message = factory.Faker("paragraph")
-
-
-class UserFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = User
-
-    username = factory.Faker("uuid4")
-    email = factory.Faker("email")
-    first_name = factory.Faker("first_name")
-    last_name = factory.Faker("last_name")
-    is_active = True
-    is_staff = False
-    is_superuser = False
-
-    phone_number = factory.Faker("phone_number")
-    address_line_1 = factory.Faker("street_address")
-    address_line_2 = factory.Faker("secondary_address")
-    city = factory.Faker("city")
-    state = factory.Faker("state_abbr")
-    post_code = factory.Faker("postcode")
-    country = factory.Faker("country_code")

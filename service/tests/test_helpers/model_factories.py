@@ -1,7 +1,6 @@
 import factory
 import datetime
 import uuid
-from django.contrib.auth import get_user_model
 from decimal import Decimal
 from faker import Faker
 fake = Faker()
@@ -17,39 +16,11 @@ from service.models import (
     Servicefaq,
     ServiceTerms,
 )
-from payments.models import Payment
-from refunds.models import RefundSettings
-from dashboard.models import SiteSettings # Import SiteSettings
 from service.utils.calculate_estimated_pickup_date import (
     calculate_estimated_pickup_date,
 )
-User = get_user_model()
-
-class UserFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = User
-
-    username = factory.Sequence(lambda n: f"user_{n}")
-    email = factory.Sequence(lambda n: f"user_{n}@example.com")
-    first_name = factory.Faker("first_name")
-    last_name = factory.Faker("last_name")
-    is_active = True
-    is_staff = False
-    is_superuser = False
-    password = factory.PostGenerationMethodCall('set_password', 'password123')
-
-    phone_number = factory.Faker("phone_number")
-    address_line_1 = factory.Faker("street_address")
-    address_line_2 = factory.Faker("secondary_address")
-    city = factory.Faker("city")
-    state = factory.Faker("state_abbr")
-    post_code = factory.Faker("postcode")
-    country = factory.Faker("country_code")
-
-class StaffUserFactory(UserFactory):
-    is_staff = True
-    password = factory.PostGenerationMethodCall('set_password', 'password123')
-
+from users.tests.test_helpers.model_factories import UserFactory
+from payments.tests.test_helpers.model_factories import PaymentFactory
 
 class ServiceBrandFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -205,28 +176,6 @@ class TempServiceBookingFactory(factory.django.DjangoModelFactory):
         elements=[choice[0] for choice in TempServiceBooking.PAYMENT_METHOD_CHOICES],
     )
 
-
-class PaymentFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Payment
-
-    amount = factory.LazyFunction(
-        lambda: fake.pydecimal(left_digits=4, right_digits=2, positive=True)
-    )
-    currency = "AUD"
-    status = factory.Faker(
-        "random_element",
-        elements=["succeeded", "requires_action", "requires_payment_method"],
-    )
-    description = factory.Faker("sentence")
-    stripe_payment_intent_id = factory.Sequence(lambda n: f"pi_{uuid.uuid4().hex[:24]}")
-    stripe_payment_method_id = factory.Sequence(lambda n: f"pm_{uuid.uuid4().hex[:24]}")
-    refunded_amount = Decimal("0.00")
-    temp_service_booking = None
-    service_booking = None
-    service_customer_profile = None
-
-
 class ServiceBookingFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ServiceBooking
@@ -274,31 +223,6 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
     )
     customer_notes = factory.Faker("paragraph")
 
-
-class RefundSettingsFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = RefundSettings
-
-    full_payment_full_refund_days = factory.Faker(
-        "random_int", min=5, max=10
-    )
-    full_payment_partial_refund_days = factory.Faker(
-        "random_int", min=2, max=4
-    )
-    full_payment_partial_refund_percentage = factory.LazyFunction(
-        lambda: Decimal(fake.random_element([25.00, 50.00, 75.00]))
-    )
-    full_payment_no_refund_percentage = factory.Faker(
-        "random_int", min=0, max=1
-    )
-
-    deposit_full_refund_days = factory.Faker("random_int", min=5, max=10)
-    deposit_partial_refund_days = factory.Faker("random_int", min=2, max=4)
-    deposit_partial_refund_percentage = factory.LazyFunction(
-        lambda: Decimal(fake.random_element([25.00, 50.00, 75.00]))
-    )
-    deposit_no_refund_days = factory.Faker("random_int", min=0, max=1)
-
 class ServicefaqFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Servicefaq
@@ -321,52 +245,3 @@ class ServiceTermsFactory(factory.django.DjangoModelFactory):
     version_number = factory.Sequence(lambda n: n + 1)
     is_active = True
 
-
-class SiteSettingsFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = SiteSettings
-        django_get_or_create = ('pk',)
-
-    enable_sales_new = True
-    enable_sales_used = True
-    enable_service_booking = True
-    enable_contact_page = True
-    enable_map_display = True
-    enable_privacy_policy_page = True
-    enable_returns_page = True
-    enable_security_page = True
-    enable_google_places_reviews = True
-    enable_user_accounts = True
-    display_phone_number = True
-    display_address = True
-    display_opening_hours = True
-    enable_faq_service = True
-    enable_faq_sales = True
-    enable_refunds = True
-    enable_motorcycle_mover = True
-    phone_number = factory.Faker('phone_number')
-    email_address = factory.Faker('email')
-    street_address = factory.Faker('street_address')
-    address_locality = factory.Faker('city')
-    address_region = factory.Faker('state_abbr')
-    postal_code = factory.Faker('postcode')
-    google_places_place_id = factory.Faker('uuid4')
-    youtube_link = factory.Faker('url')
-    instagram_link = factory.Faker('url')
-    facebook_link = factory.Faker('url')
-    opening_hours_monday = '9:00 AM - 5:00 PM'
-    opening_hours_tuesday = '9:00 AM - 5:00 PM'
-    opening_hours_wednesday = '9:00 AM - 5:00 PM'
-    opening_hours_thursday = '9:00 AM - 5:00 PM'
-    opening_hours_friday = '9:00 AM - 5:00 PM'
-    opening_hours_saturday = 'Closed'
-    opening_hours_sunday = 'Closed'
-
-    @classmethod
-    def _create(cls, model_class, *args, **kwargs):
-        obj, created = model_class.objects.get_or_create(pk=1, defaults=kwargs)
-        if not created:
-            for k, v in kwargs.items():
-                setattr(obj, k, v)
-            obj.save()
-        return obj
