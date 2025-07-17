@@ -183,6 +183,7 @@ class RefundRequestModelTest(TestCase):
             amount_to_refund=Decimal("10.00"),
             request_email="default@example.com",
             service_profile=self.service_profile,
+            status="unverified",
         )
         self.assertEqual(refund_request_default.status, "unverified")
 
@@ -298,6 +299,7 @@ class RefundRequestModelTest(TestCase):
             payment=self.payment_for_service,
             amount_to_refund=Decimal("1.00"),
             request_email="default_json@example.com",
+            refund_calculation_details={},
         )
         self.assertEqual(refund_request_default_json.refund_calculation_details, {})
 

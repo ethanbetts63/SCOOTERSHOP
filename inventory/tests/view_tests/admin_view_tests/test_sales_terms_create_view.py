@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from inventory.models import SalesTerms
-from inventory.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 from django.contrib.messages import get_messages
 
 
