@@ -12,7 +12,7 @@ class PaymentsAdminViewsTestCase(TestCase):
         self.client = Client()
         self.login_url = reverse("users:login")
         self.regular_user = UserFactory(password="password123")
-        self.staff_user = UserFactory(is_staff=True, password="password123")
+        self.staff_user = StaffUserFactory()
         self.admin_user = SuperUserFactory()
         self.refund_request = RefundRequestFactory()
         RefundSettingsFactory()

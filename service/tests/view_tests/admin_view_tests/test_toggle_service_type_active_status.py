@@ -1,13 +1,14 @@
 from django.test import TestCase
 from django.urls import reverse
-from service.tests.test_helpers.model_factories import ServiceTypeFactory, UserFactory
+from service.tests.test_helpers.model_factories import ServiceTypeFactory
+from users.tests.test_helpers.model_factories import staff_factory
 from django.contrib.messages import get_messages
 import json
 
 
 class ToggleServiceTypeActiveStatusTest(TestCase):
     def setUp(self):
-        self.admin_user = UserFactory(is_staff=True)
+        self.admin_user = staff_factory()
         self.non_staff_user = UserFactory(is_staff=False)
         self.service_type = ServiceTypeFactory(name="Test Service", is_active=True)
 
