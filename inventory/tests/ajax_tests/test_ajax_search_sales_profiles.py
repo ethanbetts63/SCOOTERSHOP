@@ -20,8 +20,8 @@ class AjaxSearchSalesProfilesTest(TestCase):
             phone_number="111-222-3333",
         )
         cls.profile2 = SalesProfileFactory(
-            name="Alice Williams",
-            email="alice.w@email.com",
+            name="Alice Johnson",
+            email="alice.j@email.com",
             phone_number="444-555-6666",
         )
         cls.profile3 = SalesProfileFactory(
@@ -59,7 +59,7 @@ class AjaxSearchSalesProfilesTest(TestCase):
             self.assertIn(key, profile_data)
 
     def test_search_by_name(self):
-        response = self._get_response(self.staff_user, {"query": "williams"})
+        response = self._get_response(self.staff_user, {"query": "Johnson"})
         data = json.loads(response.content)
         self.assertEqual(len(data["profiles"]), 1)
         self.assertEqual(data["profiles"][0]["id"], self.profile2.pk)

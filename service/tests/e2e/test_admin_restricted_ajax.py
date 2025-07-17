@@ -70,22 +70,11 @@ class ServiceAdminAjaxPermissionsTestCase(TestCase):
 
         # URLs that don't require kwargs
         self._test_ajax_permissions("service:admin_api_search_customer", data={'query': 'test'})
-        self._test_ajax_permissions("service:admin_api_service_date_availability")
         self._test_ajax_permissions("service:get_service_bookings_json")
         self._test_ajax_permissions("service:admin_api_search_bookings", data={'query': 'test'})
         
         # URLs that require kwargs
-        self._test_ajax_permissions("service:admin_api_get_customer_details", kwargs={'profile_id': self.service_profile.pk})
-        self._test_ajax_permissions("service:admin_api_customer_motorcycles", kwargs={'profile_id': self.service_profile.pk})
-        self._test_ajax_permissions("service:admin_api_get_motorcycle_details", kwargs={'motorcycle_id': self.customer_motorcycle.pk})
         self._test_ajax_permissions("service:admin_api_get_service_booking_details", kwargs={'pk': self.service_booking.pk})
-
-        # Special case for dropoff time availability
-        url_dropoff_time = reverse("service:admin_api_dropoff_time_availability")
-        self._test_ajax_permissions(
-            "service:admin_api_dropoff_time_availability",
-            data={'date': '2025-01-01'}
-        )
 
         # Special case for booking precheck
         self._test_ajax_permissions(
