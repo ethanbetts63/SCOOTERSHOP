@@ -41,7 +41,7 @@
             <h1 class="text-3xl font-bold text-gray-800">{{ page_title|default:"Email Management" }}</h1>
             <form action="{% url 'mailer:test_emails' %}" method="post">
                 {% csrf_token %}
-                <button type="submit" class="action-button btn-view">Test Emails</button>
+                <button type="submit" class="action-button btn-view" onclick="return confirm('Are you sure you want to test send all emails to the admin email account?')">Test Emails</button>
             </form>
         </div>
 
