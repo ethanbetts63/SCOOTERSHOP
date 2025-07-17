@@ -89,7 +89,9 @@ def stripe_webhook(request):
                 ):
                     booking_type = event_data["metadata"]["booking_type"]
                 else:
-                    pass
+                    logger.error(
+                        f"Webhook Error: Could not determine booking_type for payment {payment_obj.id} from payment object or event metadata."
+                    )
 
                 if booking_type and booking_type in WEBHOOK_HANDLERS:
                     handler = WEBHOOK_HANDLERS[booking_type].get(event_type)
@@ -102,8 +104,14 @@ def stripe_webhook(request):
                             )
                             raise
                     else:
+                        # Not all events for a booking type will have a handler.
                         pass
+                elif booking_type:
+                    logger.error(
+                        f"Webhook Error: No webhook handler configuration for booking_type '{booking_type}' on payment {payment_obj.id}."
+                    )
                 else:
+                    # booking_type is None, which was already logged above.
                     pass
 
         except Payment.DoesNotExist:

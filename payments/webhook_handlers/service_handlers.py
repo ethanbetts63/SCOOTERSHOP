@@ -43,8 +43,8 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
                 payment_obj=payment_obj,
             )
         except OSError as e:
-            logger.error(f"OSError converting temp service booking: {e}")
-            service_booking = None
+            logger.error(f"Webhook Error: OSError converting temp service booking for payment {payment_obj.id}. Error: {e}")
+            raise
         
         if payment_obj.status != payment_intent_data["status"]:
             payment_obj.status = payment_intent_data["status"]
@@ -97,4 +97,4 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
         logger.error(
             f"Webhook Error: Unhandled exception in service booking success handler for payment {payment_obj.id}. Error: {e}"
         )
-        pass
+        raise
