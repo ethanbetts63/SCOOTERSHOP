@@ -14,9 +14,7 @@ from payments.tests.test_helpers.model_factories import PaymentFactory, WebhookE
 from refunds.tests.test_helpers.model_factories import RefundRequestFactory, RefundSettingsFactory
 
 
-
 class Step2BookingDetailsViewTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
