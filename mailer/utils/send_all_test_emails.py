@@ -3,7 +3,7 @@ import uuid
 from django.conf import settings
 from mailer.utils.send_templated_email import send_templated_email
 from dashboard.models import SiteSettings
-from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
+from users.tests.test_helpers.model_factories import SuperUserFactory
 from service.tests.test_helpers.model_factories import ServiceBookingFactory
 from inventory.tests.test_helpers.model_factories import SalesBookingFactory
 from payments.tests.test_helpers.model_factories import PaymentFactory
@@ -21,12 +21,16 @@ def send_all_test_emails(admin_email):
     refund_request_instance = None
 
     try:
-        service_booking = ServiceBookingFactory()
-        sales_booking = SalesBookingFactory()
+        # Create one unique user for the entire test run
+        unique_username = f"admin_test_user_{uuid.uuid4().hex}"
         admin_user = SuperUserFactory(
             email=admin_email,
-            username=f"admin_test_user_{uuid.uuid4().hex}"
+            username=unique_username
         )
+
+        # Create other necessary test objects
+        service_booking = ServiceBookingFactory(service_profile__user=admin_user)
+        sales_booking = SalesBookingFactory(sales_profile__user=admin_user)
         site_settings = SiteSettings.get_settings()
         enquiry_instance = EnquiryFactory()
         payment_instance = PaymentFactory()
@@ -37,40 +41,32 @@ def send_all_test_emails(admin_email):
         for template_name in os.listdir(template_dir):
             if not template_name.endswith(".html"):
                 continue
+            
             booking = None
             profile = None
-            no_data_message = None
             enquiry = None
             refund_request = None
             payment = None
+            no_data_message = None
+
             if "service" in template_name:
-                if service_booking:
-                    booking = service_booking
-                    profile = booking.service_profile
-                else:
-                    no_data_message = "Could not find a sample Service Booking to populate this email."
+                booking = service_booking
+                profile = booking.service_profile
             elif "sales" in template_name:
-                if sales_booking:
-                    booking = sales_booking
-                    profile = booking.sales_profile
-                else:
-                    no_data_message = (
-                        "Could not find a sample Sales Booking to populate this email."
-                    )
+                booking = sales_booking
+                profile = booking.sales_profile
             elif "enquiry" in template_name:
                 enquiry = enquiry_instance
             elif "refund" in template_name:
                 refund_request = refund_request_instance
-                booking = service_booking  
-                profile = (
-                    booking.service_profile
-                )  
+                booking = service_booking
+                profile = booking.service_profile
                 payment = payment_instance
 
             context = {
                 "booking": booking,
                 "profile": profile,
-                "user": admin_user,  
+                "user": admin_user,
                 "is_test_email": True,
                 "no_data_message": no_data_message,
                 "SITE_DOMAIN": settings.SITE_DOMAIN,
@@ -90,6 +86,7 @@ def send_all_test_emails(admin_email):
                 profile=profile,
             )
     finally:
+        # Clean up all temporary test data
         if service_booking:
             service_booking.delete()
         if sales_booking:
@@ -102,40 +99,3 @@ def send_all_test_emails(admin_email):
             payment_instance.delete()
         if refund_request_instance:
             refund_request_instance.delete()
-
-
-# def send_all_test_emails(admin_email):
-#     """
-#     Sends a test version of the admin_refund_request_approved.html email template.
-#     """
-#     # Assuming refund requests are tied to ServiceBookings or SalesBookings
-#     # For this test, we'll use a ServiceBooking as a placeholder for context.
-#     booking = ServiceBooking.objects.order_by("?").first()
-#     admin_user = User.objects.filter(email=admin_email).first()
-#     site_settings = SiteSettings.get_settings()
-
-#     context = {
-#         'booking': booking,
-#         'profile': booking.service_profile if booking else None,
-#         'user': admin_user, # The admin user receiving the email
-#         'is_test_email': True,
-#         'no_data_message': None,
-#         'SITE_DOMAIN': settings.SITE_DOMAIN,
-#         'SITE_SCHEME': settings.SITE_SCHEME,
-#         'site_settings': site_settings,
-#         'refund_amount': "123.45", # Example refund amount
-#         'refund_reason': "Test refund reason for approved request.",
-#         'refund_status': "Approved",
-#     }
-
-#     if not booking:
-#         context['no_data_message'] = "Could not find a sample Service Booking to populate this email. Some fields may be empty."
-
-#     send_templated_email(
-#         recipient_list=[admin_email],
-#         subject="Test Email: Admin Refund Request Approved",
-#         template_name="admin_refund_request_approved.html",
-#         context=context,
-#         booking=booking,
-#         profile=booking.service_profile if booking else None,
-#     )
