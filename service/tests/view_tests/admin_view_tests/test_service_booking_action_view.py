@@ -4,13 +4,13 @@ from django.contrib.messages import get_messages
 from unittest.mock import patch
 from service.tests.test_helpers.model_factories import (
     ServiceBookingFactory,
-    UserFactory,
 )
+from users.tests.test_helpers.model_factories import staff_factory
 
 
 class ServiceBookingActionViewTest(TestCase):
     def setUp(self):
-        self.admin_user = UserFactory(is_staff=True)
+        self.admin_user = staff_factory()
         self.client.force_login(self.admin_user)
         self.service_booking = ServiceBookingFactory()
 

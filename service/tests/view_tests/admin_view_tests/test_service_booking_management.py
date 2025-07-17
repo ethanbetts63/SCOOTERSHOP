@@ -12,8 +12,8 @@ from service.tests.test_helpers.model_factories import (
 class ServiceBookingManagementViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.staff_user = UserFactory(
-            username="staff_user_booking", is_staff=True, is_superuser=False
+        cls.staff_user = staff_factory(
+            username="staff_user_booking"
         )
         cls.superuser = SuperUserFactory(
             username="superuser_booking"

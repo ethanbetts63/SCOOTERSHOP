@@ -9,7 +9,7 @@ from users.tests.test_helpers.model_factories import UserFactory, StaffUserFacto
 class GetSalesBookingsJsonTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
-        self.admin_user = UserFactory(is_staff=True)
+        self.admin_user = StaffUserFactory()
         self.non_admin_user = UserFactory()
         self.booking1 = SalesBookingFactory(booking_status="confirmed")
         self.booking2 = SalesBookingFactory(booking_status="completed")

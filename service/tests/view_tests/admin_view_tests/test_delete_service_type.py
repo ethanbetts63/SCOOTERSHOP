@@ -1,13 +1,14 @@
 from django.test import TestCase
 from django.urls import reverse
 from service.models import ServiceType
-from service.tests.test_helpers.model_factories import ServiceTypeFactory, UserFactory
+from service.tests.test_helpers.model_factories import ServiceTypeFactory
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 from django.contrib.messages import get_messages
 
 
 class ServiceTypeDeleteViewTest(TestCase):
     def setUp(self):
-        self.admin_user = UserFactory(is_staff=True)
+        self.admin_user = StaffUserFactory()
         self.client.force_login(self.admin_user)
         self.service_type = ServiceTypeFactory(name="Test Service Type")
 

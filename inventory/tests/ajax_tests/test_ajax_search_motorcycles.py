@@ -2,7 +2,7 @@ import json
 from django.test import TestCase, RequestFactory
 from django.urls import reverse
 from inventory.ajax.ajax_search_motorcycles import search_motorcycles_ajax
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 from inventory.tests.test_helpers.model_factories import MotorcycleFactory
 
 
@@ -10,7 +10,7 @@ class AjaxSearchMotorcyclesTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.factory = RequestFactory()
-        cls.staff_user = UserFactory(is_staff=True)
+        cls.staff_user = StaffUserFactory()
         cls.non_staff_user = UserFactory(is_staff=False)
 
         cls.honda_crf = MotorcycleFactory(

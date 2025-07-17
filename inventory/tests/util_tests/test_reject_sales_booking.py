@@ -4,7 +4,7 @@ from inventory.utils.reject_sales_booking import reject_sales_booking
 from inventory.tests.test_helpers.model_factories import (
     SalesBookingFactory,
     MotorcycleFactory,
-    UserFactory,
+    from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
     PaymentFactory,
 )
 from decimal import Decimal

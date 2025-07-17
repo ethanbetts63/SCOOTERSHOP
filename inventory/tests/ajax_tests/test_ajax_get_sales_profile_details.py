@@ -3,13 +3,13 @@ from django.test import TestCase, RequestFactory
 from django.urls import reverse
 from inventory.ajax.ajax_get_sales_profile_details import get_sales_profile_details_ajax
 from inventory.tests.test_helpers.model_factories import SalesProfileFactory
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 
 
 class GetSalesProfileDetailsAjaxTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
-        self.admin_user = UserFactory(is_staff=True)
+        self.admin_user = StaffUserFactory()
         self.non_admin_user = UserFactory()
         self.sales_profile = SalesProfileFactory()
 

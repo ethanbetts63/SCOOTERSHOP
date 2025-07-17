@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from service.models import ServiceBooking
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import staff_factory
 from service.tests.test_helpers.model_factories import ServiceBookingFactory
 from django.contrib.messages import get_messages
 

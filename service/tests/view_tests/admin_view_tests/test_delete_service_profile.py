@@ -1,14 +1,14 @@
 from django.test import TestCase
 from django.urls import reverse
 from service.models import ServiceProfile
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import staff_factory
 from service.tests.test_helpers.model_factories import ServiceProfileFactory
 from django.contrib.messages import get_messages
 
 
 class ServiceProfileDeleteViewTest(TestCase):
     def setUp(self):
-        self.admin_user = UserFactory(is_staff=True)
+        self.admin_user = staff_factory()
         self.client.force_login(self.admin_user)
         self.service_profile = ServiceProfileFactory(name="Test Profile")
 
