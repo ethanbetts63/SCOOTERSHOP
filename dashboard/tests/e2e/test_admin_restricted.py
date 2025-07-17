@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory, SuperUserFactory
 
 
 class DashboardAdminViewsRedirectTestCase(TestCase):
@@ -9,7 +9,7 @@ class DashboardAdminViewsRedirectTestCase(TestCase):
         self.login_url = reverse("users:login")
         self.regular_user = UserFactory(password="password123")
         self.staff_user = StaffUserFactory(password="password123")
-        self.admin_user = StaffUserFactory(is_superuser=True, password="password123")
+        self.admin_user = SuperUserFactory()
 
     def _assert_redirects_to_login(self, url, user):
         self.client.login(username=user.username, password="password123")
