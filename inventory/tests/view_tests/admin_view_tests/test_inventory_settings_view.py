@@ -9,7 +9,7 @@ from inventory.models import InventorySettings
 from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
 from inventory.tests.test_helpers.model_factories import InventorySettingsFactory
 
-User = get_user_model()
+
 
 
 class InventorySettingsViewTest(TestCase):

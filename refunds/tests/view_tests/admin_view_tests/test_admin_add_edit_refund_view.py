@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from unittest.mock import patch
-from refunds.models import RefundRequest
+from django.apps import apps
 from refunds.forms.admin_refund_request_form import AdminRefundRequestForm
 from payments.tests.test_helpers.model_factories import (
     RefundRequestFactory,
@@ -11,6 +11,8 @@ from payments.tests.test_helpers.model_factories import (
 )
 from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 from decimal import Decimal
+
+RefundRequest = apps.get_model('refunds', 'RefundRequest')
 
 
 class AdminAddEditRefundRequestViewTest(TestCase):

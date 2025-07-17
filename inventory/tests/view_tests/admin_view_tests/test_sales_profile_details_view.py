@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
 from inventory.tests.test_helpers.model_factories import SalesProfileFactory
 
-User = get_user_model()
+
 
 
 class SalesProfileDetailsViewTest(TestCase):

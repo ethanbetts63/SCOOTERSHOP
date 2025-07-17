@@ -1,12 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
-from inventory.tests.test_helpers.model_factories import (
-    FeaturedMotorcycleFactory,
-    MotorcycleFactory,
-    UserFactory,
-    StaffUserFactory,
-)
-
+from users.tests.test_helpers.model_factories import StaffUserFactory
+from inventory.tests.test_helpers.model_factories import MotorcycleFactory, FeaturedMotorcycleFactory
 
 class FeaturedMotorcycleManagementViewTest(TestCase):
     def setUp(self):

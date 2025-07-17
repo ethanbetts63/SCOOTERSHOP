@@ -9,7 +9,7 @@ from inventory.tests.test_helpers.model_factories import (
 class FeaturedMotorcycleModelTest(TestCase):
     def test_featured_motorcycle_creation(self):
         motorcycle = MotorcycleFactory()
-        featured = FeaturedMotorcycle.objects.create(
+        featured = FeaturedMotorcycleFactory(
             motorcycle=motorcycle, category="new", order=1
         )
         self.assertIsInstance(featured, FeaturedMotorcycle)
@@ -19,7 +19,7 @@ class FeaturedMotorcycleModelTest(TestCase):
 
     def test_str_representation(self):
         motorcycle = MotorcycleFactory(title="Test Bike")
-        featured = FeaturedMotorcycle.objects.create(
+        featured = FeaturedMotorcycleFactory(
             motorcycle=motorcycle, category="used", order=1
         )
         self.assertEqual(str(featured), "Test Bike (Featured Used)")
@@ -29,13 +29,13 @@ class FeaturedMotorcycleModelTest(TestCase):
         motorcycle2 = MotorcycleFactory()
         motorcycle3 = MotorcycleFactory()
 
-        featured1 = FeaturedMotorcycle.objects.create(
+        featured1 = FeaturedMotorcycleFactory(
             motorcycle=motorcycle1, category="new", order=3
         )
-        featured2 = FeaturedMotorcycle.objects.create(
+        featured2 = FeaturedMotorcycleFactory(
             motorcycle=motorcycle2, category="new", order=1
         )
-        featured3 = FeaturedMotorcycle.objects.create(
+        featured3 = FeaturedMotorcycleFactory(
             motorcycle=motorcycle3, category="new", order=2
         )
 
