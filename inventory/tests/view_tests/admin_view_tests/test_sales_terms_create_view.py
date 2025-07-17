@@ -4,7 +4,6 @@ from inventory.models import SalesTerms
 from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 from django.contrib.messages import get_messages
 
-
 class SalesTermsCreateViewTest(TestCase):
     def setUp(self):
         self.admin_user = StaffUserFactory()

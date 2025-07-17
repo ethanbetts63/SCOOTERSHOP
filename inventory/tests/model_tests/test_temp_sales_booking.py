@@ -34,7 +34,7 @@ class TempSalesBookingModelTest(TestCase):
     def test_temp_sales_booking_creation(self):
         self.assertIsInstance(self.temp_sales_booking, TempSalesBooking)
         self.assertIsNotNone(self.temp_sales_booking.pk)
-        self.assertEqual(TempSalesBooking.objects.count(), 1)
+        self.assertEqual(TempSalesBookingFactory._meta.model.objects.count(), 1)
 
     def test_motorcycle_foreign_key(self):
         field = self.temp_sales_booking._meta.get_field("motorcycle")
