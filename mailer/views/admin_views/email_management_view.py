@@ -1,9 +1,12 @@
-from django.views.generic import ListView
+from django.views.generic import ListView, View
+from django.shortcuts import redirect
+from django.contrib import messages
 from mailer.models import EmailLog
 from core.mixins import AdminRequiredMixin
 from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
+from mailer.utils.send_all_emails import send_all_test_emails
 
 class EmailManagementView(AdminRequiredMixin, ListView):
     model = EmailLog
@@ -25,3 +28,13 @@ class EmailManagementView(AdminRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["page_title"] = "Email Management"
         return context
+
+class TestEmailView(AdminRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        admin_email = getattr(settings, "ADMIN_EMAIL", None)
+        if admin_email:
+            send_all_test_emails(admin_email)
+            messages.success(request, "Test emails sent successfully.")
+        else:
+            messages.error(request, "ADMIN_EMAIL not configured in settings.")
+        return redirect("mailer:email_management")
