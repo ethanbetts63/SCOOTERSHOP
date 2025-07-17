@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory, SuperUserFactory
 from refunds.tests.test_helpers.model_factories import (
     RefundRequestFactory,
     RefundSettingsFactory,
@@ -13,9 +13,7 @@ class PaymentsAdminViewsTestCase(TestCase):
         self.login_url = reverse("users:login")
         self.regular_user = UserFactory(password="password123")
         self.staff_user = UserFactory(is_staff=True, password="password123")
-        self.admin_user = UserFactory(
-            is_staff=True, is_superuser=True, password="password123"
-        )
+        self.admin_user = SuperUserFactory()
         self.refund_request = RefundRequestFactory()
         RefundSettingsFactory()
 

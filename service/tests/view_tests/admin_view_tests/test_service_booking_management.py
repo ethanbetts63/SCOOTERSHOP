@@ -15,8 +15,8 @@ class ServiceBookingManagementViewTest(TestCase):
         cls.staff_user = UserFactory(
             username="staff_user_booking", is_staff=True, is_superuser=False
         )
-        cls.superuser = UserFactory(
-            username="superuser_booking", is_staff=True, is_superuser=True
+        cls.superuser = SuperUserFactory(
+            username="superuser_booking"
         )
         cls.regular_user = UserFactory(
             username="regular_user_booking", is_staff=False, is_superuser=False
