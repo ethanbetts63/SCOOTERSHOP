@@ -22,8 +22,8 @@ def send_all_test_emails(admin_email):
     try:
         service_booking = ServiceBookingFactory()
         sales_booking = SalesBookingFactory()
-        admin_user = UserFactory(
-            email=admin_email, is_staff=True, is_superuser=True
+        admin_user = SuperUserFactory(
+            email=admin_email
         )  # Create an admin user for context
         site_settings = SiteSettings.get_settings()
         enquiry_instance = EnquiryFactory()

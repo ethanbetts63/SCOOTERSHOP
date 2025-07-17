@@ -3,8 +3,8 @@ from django.urls import reverse
 from dashboard.models import SiteSettings
 from users.tests.test_helpers.model_factories import (
     StaffUserFactory,
-    SiteSettingsFactory,
 )
+from dashboard.tests.test_helpers.model_factories import SiteSettingsFactory
 
 
 class SettingsVisibilityViewTest(TestCase):

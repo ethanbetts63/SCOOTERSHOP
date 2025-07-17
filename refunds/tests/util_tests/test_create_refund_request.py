@@ -5,7 +5,7 @@ from payments.models import Payment
 from refunds.models import RefundRequest
 from service.models import ServiceBooking, ServiceProfile
 from inventory.models import SalesBooking, SalesProfile
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
 from service.tests.test_helpers.model_factories import (
     ServiceBookingFactory,
     ServiceProfileFactory,
@@ -27,9 +27,7 @@ class CreateRefundRequestTest(TestCase):
         SalesProfile.objects.all().delete()
 
         self.user = UserFactory(email="testuser@example.com")
-        self.admin_user = UserFactory(
-            email="admin@example.com", is_staff=True, is_superuser=True
-        )
+        self.admin_user = SuperUserFactory(email="admin@example.com")
         self.service_profile = ServiceProfileFactory(
             user=self.user, email="service@example.com"
         )

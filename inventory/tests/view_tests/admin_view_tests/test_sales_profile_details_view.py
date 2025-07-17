@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 
 
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
 from inventory.tests.test_helpers.model_factories import SalesProfileFactory
 
 User = get_user_model()
@@ -18,11 +18,9 @@ class SalesProfileDetailsViewTest(TestCase):
         cls.user.set_password("password123")
         cls.user.save()
 
-        cls.admin_user = UserFactory(
-            username="adminuser", is_staff=True, is_superuser=True
+        cls.admin_user = SuperUserFactory(
+            username="adminuser",
         )
-        cls.admin_user.set_password("adminpass123")
-        cls.admin_user.save()
 
         cls.sales_profile = SalesProfileFactory(
             user=cls.user, name="John Doe's Profile"
@@ -41,13 +39,13 @@ class SalesProfileDetailsViewTest(TestCase):
         self.assertRedirects(response, f"{reverse('users:login')}?next={self.url}")
 
     def test_view_accessible_for_admin_user(self):
-        self.client.login(username="adminuser", password="adminpass123")
+        self.client.login(username="adminuser", password="password123")
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "inventory/admin_sales_profile_details.html")
 
     def test_context_data(self):
-        self.client.login(username="adminuser", password="adminpass123")
+        self.client.login(username="adminuser", password="password123")
         response = self.client.get(self.url)
 
         self.assertIn("sales_profile", response.context)
@@ -60,7 +58,7 @@ class SalesProfileDetailsViewTest(TestCase):
         )
 
     def test_404_for_non_existent_sales_profile(self):
-        self.client.login(username="adminuser", password="adminpass123")
+        self.client.login(username="adminuser", password="password123")
         non_existent_url = reverse(
             "inventory:sales_profile_details", kwargs={"pk": 99999}
         )

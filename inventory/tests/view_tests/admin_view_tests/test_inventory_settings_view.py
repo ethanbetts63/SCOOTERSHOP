@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from inventory.models import InventorySettings
 
 
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
 from inventory.tests.test_helpers.model_factories import InventorySettingsFactory
 
 User = get_user_model()
@@ -22,11 +22,9 @@ class InventorySettingsViewTest(TestCase):
         cls.user.set_password("password123")
         cls.user.save()
 
-        cls.admin_user = UserFactory(
-            username="adminuser", is_staff=True, is_superuser=True
+        cls.admin_user = SuperUserFactory(
+            username="adminuser",
         )
-        cls.admin_user.set_password("adminpass123")
-        cls.admin_user.save()
 
         cls.settings = InventorySettingsFactory(
             deposit_amount=150.00,
@@ -45,7 +43,7 @@ class InventorySettingsViewTest(TestCase):
         self.assertRedirects(response, f"{reverse('users:login')}?next={self.url}")
 
     def test_get_view_as_admin(self):
-        self.client.login(username="adminuser", password="adminpass123")
+        self.client.login(username="adminuser", password="password123")
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, 200)
@@ -57,7 +55,7 @@ class InventorySettingsViewTest(TestCase):
         InventorySettings.objects.all().delete()
         self.assertEqual(InventorySettings.objects.count(), 0)
 
-        self.client.login(username="adminuser", password="adminpass123")
+        self.client.login(username="adminuser", password="password123")
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, 200)
