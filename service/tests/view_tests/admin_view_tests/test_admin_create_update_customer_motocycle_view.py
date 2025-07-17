@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.contrib import messages
 from service.models import CustomerMotorcycle
 from service.forms import AdminCustomerMotorcycleForm
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
 from service.tests.test_helpers.model_factories import (
     ServiceProfileFactory,
     CustomerMotorcycleFactory,
@@ -16,8 +16,8 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         cls.staff_user = UserFactory(
             username="staff_motorcycle_user", is_staff=True, is_superuser=False
         )
-        cls.superuser = UserFactory(
-            username="superuser_motorcycle", is_staff=True, is_superuser=True
+        cls.superuser = SuperUserFactory(
+            username="superuser_motorcycle"
         )
         cls.regular_user = UserFactory(
             username="regular_motorcycle_user", is_staff=False, is_superuser=False
