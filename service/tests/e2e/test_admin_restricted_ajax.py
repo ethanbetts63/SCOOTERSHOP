@@ -4,16 +4,11 @@ from django.contrib.auth import get_user_model
 import json
 import datetime
 from unittest.mock import patch
-
-from service.tests.test_helpers.model_factories import (
-    UserFactory,
-    StaffUserFactory,
-    ServiceProfileFactory,
-    CustomerMotorcycleFactory,
-    ServiceBookingFactory,
-    ServiceTypeFactory,
-    ServiceSettingsFactory,
-)
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
+from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory, ServiceTypeFactory, ServiceSettingsFactory, ServiceTermsFactory, ServicefaqFactory, CustomerMotorcycleFactory
+from inventory.tests.test_helpers.model_factories import SalesBookingFactory, SalesProfileFactory
+from payments.tests.test_helpers.model_factories import PaymentFactory, WebhookEventFactory
+from refunds.tests.test_helpers.model_factories import RefundRequestFactory, RefundSettingsFactory
 
 User = get_user_model()
 
@@ -24,8 +19,6 @@ class ServiceAdminAjaxPermissionsTestCase(TestCase):
         cls.client = Client()
         cls.regular_user = UserFactory(password="password123")
         cls.staff_user = StaffUserFactory()
-
-        # Create instances for URL kwargs
         cls.service_profile = ServiceProfileFactory()
         cls.customer_motorcycle = CustomerMotorcycleFactory(service_profile=cls.service_profile)
         cls.service_type = ServiceTypeFactory()
@@ -40,8 +33,6 @@ class ServiceAdminAjaxPermissionsTestCase(TestCase):
         if data is None:
             data = {}
         url = reverse(url_name, kwargs=kwargs)
-
-        # Test anonymous user
         response_anon = self.client.generic(method.upper(), url, data)
         self.assertEqual(response_anon.status_code, 401, f"URL {url} did not return 401 for anonymous user.")
         self.assertEqual(json.loads(response_anon.content), {"status": "error", "message": "Authentication required."})

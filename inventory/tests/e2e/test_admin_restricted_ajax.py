@@ -1,9 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.contrib.auth import get_user_model
 import json
-
-from service.tests.test_helpers.model_factories import (
+from users.tests.test_helpers.model_factories import (
     UserFactory,
     StaffUserFactory,
 )
@@ -12,8 +10,6 @@ from inventory.tests.test_helpers.model_factories import (
     SalesProfileFactory,
     SalesBookingFactory
 )
-
-User = get_user_model()
 
 class InventoryAdminAjaxPermissionsTestCase(TestCase):
     @classmethod
@@ -30,19 +26,16 @@ class InventoryAdminAjaxPermissionsTestCase(TestCase):
             data = {}
         url = reverse(url_name, kwargs=kwargs)
 
-        # Test anonymous user
         response_anon = self.client.generic(method.upper(), url, data)
         self.assertEqual(response_anon.status_code, 401, f"URL {url} did not return 401 for anonymous user.")
         self.assertEqual(json.loads(response_anon.content), {"status": "error", "message": "Authentication required."})
 
-        # Test regular user
         self.client.login(username=self.regular_user.username, password="password123")
         response_regular = self.client.generic(method.upper(), url, data)
         self.assertEqual(response_regular.status_code, 403, f"URL {url} did not return 403 for regular user.")
         self.assertEqual(json.loads(response_regular.content), {"status": "error", "message": "Admin access required."})
         self.client.logout()
 
-        # Test staff user
         self.client.login(username=self.staff_user.username, password="password123")
         response_staff = self.client.generic(method.upper(), url, data)
         self.assertIn(response_staff.status_code, [200, 400], f"URL {url} did not return 200 or 400 for staff user.")

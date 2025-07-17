@@ -2,19 +2,17 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from unittest import mock
 from decimal import Decimal
-from django.utils import timezone
 from django.conf import settings
-
 from refunds.utils.send_refund_notification import send_refund_notifications
 from payments.models import Payment
 from refunds.models import RefundRequest
 from service.models import ServiceBooking, ServiceProfile
 from inventory.models import SalesBooking, SalesProfile
-
-# Import factories from their respective locations
-from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory, PaymentFactory, UserFactory
-from inventory.tests.test_helpers.model_factories import SalesBookingFactory, SalesProfileFactory, RefundRequestFactory
-
+from users.tests.test_helpers.model_factories import UserFactory
+from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory
+from inventory.tests.test_helpers.model_factories import SalesBookingFactory, SalesProfileFactory
+from payments.tests.test_helpers.model_factories import PaymentFactory
+from refunds.tests.test_helpers.model_factories import RefundRequestFactory
 
 @override_settings(
     ADMIN_EMAIL="admin@example.com",

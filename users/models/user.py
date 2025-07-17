@@ -1,23 +1,17 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
                                                                           
-class User(AbstractUser):
-                                
+class User(AbstractUser):                           
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     address_line_1 = models.CharField(max_length=100, blank=True, null=True)
     address_line_2 = models.CharField(max_length=100, blank=True, null=True)
     city = models.CharField(max_length=50, blank=True, null=True)
     state = models.CharField(max_length=50, blank=True, null=True)
     post_code = models.CharField(max_length=20, blank=True, null=True)
-    country = models.CharField(max_length=50, blank=True, null=True)
-
-                            
+    country = models.CharField(max_length=50, blank=True, null=True)    
     id_image = models.FileField(upload_to='user_ids/', blank=True, null=True)
     international_id_image = models.FileField(upload_to='user_ids/international/', blank=True, null=True)
-
-                                                                               
-                                                                        
+                                                            
     groups = models.ManyToManyField(
         'auth.Group',
         verbose_name='groups',

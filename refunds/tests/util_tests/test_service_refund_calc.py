@@ -1,25 +1,20 @@
 from django.test import TestCase
 from decimal import Decimal
-from datetime import datetime, timedelta, time, date
+from datetime import datetime, timedelta, time
 from django.utils import timezone
-import factory
-
 from refunds.utils.service_refund_calc import calculate_service_refund_amount
 from refunds.models import RefundSettings
 from service.models import ServiceBooking
-from service.tests.test_helpers.model_factories import ServiceBookingFactory, RefundSettingsFactory
-
+from service.tests.test_helpers.model_factories import ServiceBookingFactory
+from refunds.tests.test_helpers.model_factories import RefundSettingsFactory
 
 class ServiceRefundCalcTest(TestCase):
 
     def setUp(self):
-        # Ensure a clean state for RefundSettings before each test
         RefundSettings.objects.all().delete()
-        # Ensure a clean state for ServiceBooking before each test
         ServiceBooking.objects.all().delete()
 
     def test_no_refund_settings_configured(self):
-        # Test scenario where no RefundSettings object exists
         booking = ServiceBookingFactory(amount_paid=Decimal("100.00"))
         result = calculate_service_refund_amount(booking)
 

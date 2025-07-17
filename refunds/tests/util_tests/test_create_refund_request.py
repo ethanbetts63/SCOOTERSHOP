@@ -1,22 +1,17 @@
 from django.test import TestCase
 from decimal import Decimal
-from django.utils import timezone
-
 from refunds.utils.create_refund_request import create_refund_request
 from payments.models import Payment
 from refunds.models import RefundRequest
 from service.models import ServiceBooking, ServiceProfile
 from inventory.models import SalesBooking, SalesProfile
-
-# Import factories
-from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory, PaymentFactory, UserFactory
+from users.tests.test_helpers.model_factories import UserFactory
+from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory
 from inventory.tests.test_helpers.model_factories import SalesBookingFactory, SalesProfileFactory
-
+from payments.tests.test_helpers.model_factories import PaymentFactory
 
 class CreateRefundRequestTest(TestCase):
-
     def setUp(self):
-        # Clean up database before each test
         Payment.objects.all().delete()
         RefundRequest.objects.all().delete()
         ServiceBooking.objects.all().delete()

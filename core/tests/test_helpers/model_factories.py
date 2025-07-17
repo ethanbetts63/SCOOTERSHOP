@@ -1,5 +1,7 @@
 import factory
 from core.models import Enquiry
+from faker import Faker
+fake = Faker()
 
 class EnquiryFactory(factory.django.DjangoModelFactory):
     class Meta:

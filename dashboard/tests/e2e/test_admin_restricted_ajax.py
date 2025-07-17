@@ -4,10 +4,8 @@ from django.contrib.auth import get_user_model
 import json
 from unittest.mock import patch
 
-from service.tests.test_helpers.model_factories import (
-    UserFactory,
-    StaffUserFactory,
-)
+
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 
 User = get_user_model()
 

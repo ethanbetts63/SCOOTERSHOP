@@ -1,17 +1,14 @@
 from django.test import TestCase
 from decimal import Decimal
-from django.utils import timezone
-
 from refunds.utils.process_refund_request_entry import process_refund_request_entry
 from payments.models import Payment
 from refunds.models import RefundRequest
 from service.models import ServiceBooking
 from inventory.models import SalesBooking
-
-# Import factories
-from service.tests.test_helpers.model_factories import ServiceBookingFactory, PaymentFactory
-from inventory.tests.test_helpers.model_factories import SalesBookingFactory, RefundRequestFactory
-
+from service.tests.test_helpers.model_factories import ServiceBookingFactory
+from inventory.tests.test_helpers.model_factories import SalesBookingFactory
+from payments.tests.test_helpers.model_factories import PaymentFactory
+from refunds.tests.test_helpers.model_factories import RefundRequestFactory
 
 class ProcessRefundRequestEntryTest(TestCase):
 
