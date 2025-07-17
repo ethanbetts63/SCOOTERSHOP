@@ -3,6 +3,7 @@ from django.test import TestCase
 import uuid
 from django.utils import timezone
 import datetime
+from django.apps import apps
 from refunds.tests.test_helpers.model_factories import RefundRequestFactory
 from service.tests.test_helpers.model_factories import (
     ServiceBookingFactory,
@@ -16,9 +17,11 @@ from inventory.tests.test_helpers.model_factories import (
     MotorcycleFactory,
 )
 from service.tests.test_helpers.model_factories import CustomerMotorcycleFactory
-from refunds.models import RefundRequest
-from payments.models import Payment
-from service.models import ServiceBooking, ServiceProfile
+
+RefundRequest = apps.get_model('refunds', 'RefundRequest')
+Payment = apps.get_model('payments', 'Payment')
+ServiceBooking = apps.get_model('service', 'ServiceBooking')
+ServiceProfile = apps.get_model('service', 'ServiceProfile')
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
@@ -52,7 +55,7 @@ class RefundRequestModelTest(TestCase):
         )
 
     def test_create_basic_refund_request(self):
-        RefundRequest.objects.all().delete()
+        RefundRequestFactory.reset_sequence()
 
         refund_request = RefundRequestFactory.create(
             payment=self.payment_for_service,
@@ -175,7 +178,7 @@ class RefundRequestModelTest(TestCase):
         self.assertTrue(RefundRequest.objects.filter(id=refund_request.id).exists())
 
     def test_status_choices_and_default(self):
-        refund_request_default = RefundRequest.objects.create(
+        refund_request_default = RefundRequestFactory.create(
             payment=self.payment_for_service,
             amount_to_refund=Decimal("10.00"),
             request_email="default@example.com",
@@ -261,7 +264,7 @@ class RefundRequestModelTest(TestCase):
         refund_request_customer = RefundRequestFactory.create(is_admin_initiated=False)
         self.assertFalse(refund_request_customer.is_admin_initiated)
 
-        refund_request_default = RefundRequest.objects.create(
+        refund_request_default = RefundRequestFactory.create(
             payment=self.payment_for_service,
             amount_to_refund=Decimal("10.00"),
             request_email="default@example.com",
@@ -291,7 +294,7 @@ class RefundRequestModelTest(TestCase):
             "Additional calculation details.",
         )
 
-        refund_request_default_json = RefundRequest.objects.create(
+        refund_request_default_json = RefundRequestFactory.create(
             payment=self.payment_for_service,
             amount_to_refund=Decimal("1.00"),
             request_email="default_json@example.com",
@@ -332,7 +335,7 @@ class RefundRequestModelTest(TestCase):
             delta=datetime.timedelta(seconds=1),
         )
 
-        refund_request_default_token = RefundRequest.objects.create(
+        refund_request_default_token = RefundRequestFactory.create(
             payment=self.payment_for_service,
             service_profile=self.service_profile,
             amount_to_refund=Decimal("10.00"),

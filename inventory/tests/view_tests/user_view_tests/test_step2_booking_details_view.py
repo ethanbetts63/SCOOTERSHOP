@@ -74,7 +74,7 @@ class Step2BookingDetailsViewTest(TestCase):
 
     def test_get_no_inventory_settings(self):
         self._create_temp_booking_in_session(self.client)
-        InventorySettingsFactory()._meta.model.objects.all().delete()
+        InventorySettings.objects.all().delete()
         self.assertFalse(InventorySettings.objects.exists())
 
         response = self.client.get(self.url, follow=True)
@@ -161,7 +161,7 @@ class Step2BookingDetailsViewTest(TestCase):
     @mock.patch("django.contrib.messages.error")
     def test_post_no_inventory_settings(self, mock_error, mock_success):
         self._create_temp_booking_in_session(self.client)
-        InventorySettingsFactory()._meta.model.objects.all().delete()
+        InventorySettings.objects.all().delete()
 
         response = self.client.post(
             self.url, data={"terms_accepted": "on"}, follow=True

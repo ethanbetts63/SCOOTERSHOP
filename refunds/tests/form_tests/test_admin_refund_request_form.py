@@ -143,7 +143,7 @@ class AdminRefundRequestFormTests(TestCase):
         self.assertIsNone(form.initial.get("status"))
 
     def test_form_edit_instance_service_booking(self):
-        existing_refund_request = RefundRequest.objects.create(
+        existing_refund_request = RefundRequestFactory(
             service_booking=self.service_booking_paid,
             payment=self.payment_succeeded_service,
             service_profile=self.service_profile,
@@ -173,7 +173,7 @@ class AdminRefundRequestFormTests(TestCase):
         self.assertEqual(RefundRequest.objects.count(), 1)
 
     def test_form_edit_instance_sales_booking(self):
-        existing_refund_request = RefundRequest.objects.create(
+        existing_refund_request = RefundRequestFactory(
             sales_booking=self.sales_booking_deposit,
             payment=self.payment_deposit_sales,
             sales_profile=self.sales_profile,
