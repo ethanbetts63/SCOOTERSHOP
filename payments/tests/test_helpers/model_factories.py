@@ -6,7 +6,6 @@ from django.contrib.auth import get_user_model
 from decimal import Decimal
 from faker import Faker
 import django.apps
-
 fake = Faker()
 
 from payments.models import Payment, WebhookEvent

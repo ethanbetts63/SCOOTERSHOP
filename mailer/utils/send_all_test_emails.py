@@ -6,21 +6,25 @@ from service.models import ServiceBooking
 from inventory.models import SalesBooking
 from users.models import User
 from dashboard.models import SiteSettings
-from mailer.tests.test_helpers.model_factories import ServiceBookingFactory, SalesBookingFactory, UserFactory
+from mailer.tests.test_helpers.model_factories import ServiceBookingFactory, SalesBookingFactory, UserFactory, PaymentFactory, EnquiryFactory, RefundRequestFactory
 
 def send_all_test_emails(admin_email):
     template_dir = os.path.join(settings.BASE_DIR, 'mailer', 'templates')
-
-    # Create instances using factories
     service_booking = None
     sales_booking = None
     admin_user = None
+    payment_instance = None
+    enquiry_instance = None
+    refund_request_instance = None
 
     try:
         service_booking = ServiceBookingFactory()
         sales_booking = SalesBookingFactory()
         admin_user = UserFactory(email=admin_email, is_staff=True, is_superuser=True) # Create an admin user for context
         site_settings = SiteSettings.get_settings()
+        enquiry_instance = EnquiryFactory()
+        payment_instance = PaymentFactory()
+        refund_request_instance = RefundRequestFactory(service_booking=service_booking, payment=payment_instance)
 
         for template_name in os.listdir(template_dir):
             if not template_name.endswith('.html'):
@@ -29,6 +33,9 @@ def send_all_test_emails(admin_email):
             booking = None
             profile = None
             no_data_message = None
+            enquiry = None
+            refund_request = None
+            payment = None
 
             # Determine context based on template name
             if 'service' in template_name:
@@ -43,6 +50,13 @@ def send_all_test_emails(admin_email):
                     profile = booking.sales_profile
                 else:
                     no_data_message = "Could not find a sample Sales Booking to populate this email."
+            elif 'enquiry' in template_name:
+                enquiry = enquiry_instance
+            elif 'refund' in template_name:
+                refund_request = refund_request_instance
+                booking = service_booking # Link refund to a booking for context
+                profile = booking.service_profile # Link refund to a profile for context
+                payment = payment_instance
             
             # Add other general context items
             context = {
@@ -53,7 +67,10 @@ def send_all_test_emails(admin_email):
                 'no_data_message': no_data_message,
                 'SITE_DOMAIN': settings.SITE_DOMAIN,
                 'SITE_SCHEME': settings.SITE_SCHEME,
-                'site_settings': site_settings
+                'site_settings': site_settings,
+                'enquiry': enquiry,
+                'refund_request': refund_request,
+                'payment': payment,
             }
 
             send_templated_email(
@@ -72,6 +89,12 @@ def send_all_test_emails(admin_email):
             sales_booking.delete()
         if admin_user:
             admin_user.delete()
+        if enquiry_instance:
+            enquiry_instance.delete()
+        if payment_instance:
+            payment_instance.delete()
+        if refund_request_instance:
+            refund_request_instance.delete()
 
 # def send_all_test_emails(admin_email):
 #     """

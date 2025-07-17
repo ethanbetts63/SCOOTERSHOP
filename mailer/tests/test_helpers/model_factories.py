@@ -207,7 +207,7 @@ class MotorcycleFactory(factory.django.DjangoModelFactory):
     rego_exp = factory.LazyFunction(
         lambda: fake.date_between(start_date="+6m", end_date="+5y")
     )
-    stock_number = factory.Sequence(lambda n: f"STK-{n:05d}")
+    stock_number = factory.Sequence(lambda n: f"STK-{uuid.uuid4().hex[:10].upper()}-{n}")
 
 
 class SalesBookingFactory(factory.django.DjangoModelFactory):
