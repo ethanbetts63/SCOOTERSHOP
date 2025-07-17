@@ -2,7 +2,6 @@ import requests
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
-from django.contrib.auth.decorators import login_required
 from dashboard.models import SiteSettings
 from ..decorators import admin_required
 

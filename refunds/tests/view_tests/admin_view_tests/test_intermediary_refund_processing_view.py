@@ -1,8 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
-from refunds.models import RefundRequest
 from payments.tests.test_helpers.model_factories import RefundRequestFactory, UserFactory
-from django.contrib.messages import get_messages
 
 class IntermediaryRefundProcessingViewTest(TestCase):
 

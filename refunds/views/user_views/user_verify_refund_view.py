@@ -12,8 +12,6 @@ from refunds.models.RefundRequest import RefundRequest
 from refunds.utils.service_refund_calc import calculate_service_refund_amount
 from refunds.utils.sales_refund_calc import calculate_sales_refund_amount
 from mailer.utils import send_templated_email
-from service.models import ServiceProfile
-from inventory.models import SalesProfile
 
 
 def _convert_decimals_to_float(obj):

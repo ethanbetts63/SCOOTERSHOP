@@ -5,9 +5,7 @@ from service.tests.test_helpers.model_factories import ServiceBookingFactory, Se
 from inventory.tests.test_helpers.model_factories import SalesBookingFactory, SalesProfileFactory
 from django.db import IntegrityError
 from decimal import Decimal
-import uuid
 import datetime
-import time
 from django.utils import timezone
 
 class PaymentModelTest(TestCase):

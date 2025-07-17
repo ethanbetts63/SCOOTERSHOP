@@ -1,7 +1,6 @@
 from django.test import TestCase
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from decimal import Decimal
-from django.db import transaction
 
 from payments.webhook_handlers.refund_handlers import handle_booking_refunded, handle_booking_refund_updated
 from payments.tests.test_helpers.model_factories import PaymentFactory

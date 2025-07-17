@@ -1,16 +1,12 @@
 import os
-import random
 from django.conf import settings
 from mailer.utils.send_templated_email import send_templated_email
-from service.models import ServiceBooking
-from inventory.models import SalesBooking
-from users.models import User
 from dashboard.models import SiteSettings
-from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
-from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory, ServiceTypeFactory, ServiceSettingsFactory, ServiceTermsFactory, ServicefaqFactory, CustomerMotorcycleFactory, BlockedServiceDateFactory, ServiceBrandFactory
-from inventory.tests.test_helpers.model_factories import SalesBookingFactory, SalesProfileFactory
-from payments.tests.test_helpers.model_factories import PaymentFactory, WebhookEventFactory
-from refunds.tests.test_helpers.model_factories import RefundRequestFactory, RefundSettingsFactory
+from users.tests.test_helpers.model_factories import UserFactory
+from service.tests.test_helpers.model_factories import ServiceBookingFactory
+from inventory.tests.test_helpers.model_factories import SalesBookingFactory
+from payments.tests.test_helpers.model_factories import PaymentFactory
+from refunds.tests.test_helpers.model_factories import RefundRequestFactory
 from core.tests.test_helpers.model_factories import EnquiryFactory
 
 def send_all_test_emails(admin_email):

@@ -1,9 +1,7 @@
-from django.test import TestCase, RequestFactory
+from django.test import TestCase
 from django.urls import reverse
 from django.contrib.messages import get_messages
 from unittest.mock import patch
-from service.models import ServiceBooking
-from users.models import User
 from service.tests.test_helpers.model_factories import ServiceBookingFactory, UserFactory
 
 class ServiceBookingActionViewTest(TestCase):

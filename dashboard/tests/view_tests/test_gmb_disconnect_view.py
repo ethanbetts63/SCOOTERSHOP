@@ -1,6 +1,5 @@
 from django.test import TestCase, override_settings
 from django.urls import reverse
-from unittest import mock
 from dashboard.models import GoogleMyBusinessAccount
 from django.contrib.auth import get_user_model
 from django.utils import timezone

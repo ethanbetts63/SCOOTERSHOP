@@ -1,8 +1,6 @@
 from decimal import Decimal
-from unittest import skipIf
 from django.test import TestCase, Client, override_settings
 from django.urls import reverse
-from django.conf import settings
 from inventory.models import TempSalesBooking, SalesBooking
 from inventory.tests.test_helpers.model_factories import InventorySettingsFactory, MotorcycleFactory, SalesTermsFactory
 from users.tests.test_helpers.model_factories import UserFactory

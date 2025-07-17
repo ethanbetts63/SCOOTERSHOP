@@ -1,7 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
 from unittest.mock import patch, MagicMock
-from inventory.models import FeaturedMotorcycle, Motorcycle
 from inventory.tests.test_helpers.model_factories import FeaturedMotorcycleFactory, MotorcycleFactory, UserFactory
 from django.contrib.messages import get_messages
 

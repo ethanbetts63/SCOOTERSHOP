@@ -1,6 +1,5 @@
 from django.test import TestCase
 from django.urls import reverse
-from inventory.models import FeaturedMotorcycle, Motorcycle
 from inventory.tests.test_helpers.model_factories import FeaturedMotorcycleFactory, MotorcycleFactory, UserFactory
 
 class FeaturedMotorcycleManagementViewTest(TestCase):

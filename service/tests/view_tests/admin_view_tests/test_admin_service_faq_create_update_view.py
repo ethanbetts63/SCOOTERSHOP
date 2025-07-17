@@ -1,12 +1,8 @@
 from django.test import TestCase
 from django.urls import reverse
 from service.models import Servicefaq
-from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory 
-from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory, ServiceTypeFactory, ServiceSettingsFactory, ServiceTermsFactory, ServicefaqFactory, CustomerMotorcycleFactory, BlockedServiceDateFactory, ServiceBrandFactory
-from inventory.tests.test_helpers.model_factories import SalesBookingFactory, SalesProfileFactory
-from payments.tests.test_helpers.model_factories import PaymentFactory
-from payments.tests.test_helpers.model_factories import WebhookEventFactory
-from refunds.tests.test_helpers.model_factories import RefundRequestFactory, RefundSettingsFactory
+from users.tests.test_helpers.model_factories import UserFactory 
+from service.tests.test_helpers.model_factories import ServicefaqFactory
 from django.contrib.messages import get_messages
 
 class ServicefaqCreateUpdateViewTest(TestCase):

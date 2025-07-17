@@ -4,7 +4,6 @@ from django.views.decorators.http import require_GET
 from service.utils.get_available_service_dropoff_times import (
     get_available_dropoff_times,
 )
-from ..decorators import admin_required
 
 
 @require_GET

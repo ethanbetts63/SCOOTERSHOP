@@ -1,5 +1,4 @@
 from django.test import TestCase, override_settings
-from django.urls import reverse
 from unittest import mock
 from decimal import Decimal
 from django.conf import settings

@@ -1,8 +1,7 @@
 from django.test import TestCase
 from decimal import Decimal
-from datetime import datetime, timedelta
+from datetime import timedelta
 from django.utils import timezone
-from unittest import mock
 import factory
 
 from refunds.utils.sales_refund_calc import calculate_sales_refund_amount

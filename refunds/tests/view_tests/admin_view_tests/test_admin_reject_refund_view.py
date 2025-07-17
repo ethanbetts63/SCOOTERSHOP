@@ -1,11 +1,9 @@
 import datetime
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.contrib import messages
-from unittest.mock import patch, MagicMock, ANY
-from refunds.models import RefundRequest
+from unittest.mock import patch, ANY
 from refunds.forms.admin_reject_refund_form import AdminRejectRefundForm
-from payments.tests.test_helpers.model_factories import UserFactory, RefundRequestFactory, ServiceBookingFactory, SalesBookingFactory, ServiceProfileFactory, SalesProfileFactory
+from payments.tests.test_helpers.model_factories import UserFactory, RefundRequestFactory, ServiceBookingFactory, SalesBookingFactory, SalesProfileFactory
 from django.utils import timezone
 from django.conf import settings
 

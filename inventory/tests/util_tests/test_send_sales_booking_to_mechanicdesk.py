@@ -6,7 +6,6 @@ from inventory.tests.test_helpers.model_factories import SalesBookingFactory, Sa
 from django.conf import settings
 from decimal import Decimal
 import datetime
-import pytz
 import requests # Added import
 
 class SendSalesBookingToMechanicdeskTest(TestCase):

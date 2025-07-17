@@ -1,7 +1,6 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 import json
-from ..decorators import admin_required
 
 from ..utils import get_service_date_availability
 

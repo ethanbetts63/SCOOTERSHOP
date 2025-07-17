@@ -1,6 +1,5 @@
 from django.test import TestCase
 from django.urls import reverse
-from inventory.models import SalesTerms
 from inventory.tests.test_helpers.model_factories import SalesTermsFactory, UserFactory, SalesBookingFactory
 
 class SalesTermsManagementViewTest(TestCase):

@@ -1,6 +1,5 @@
 from django.shortcuts import redirect
 from django.views import View
-from django.conf import settings
 from django.contrib import messages
 from dashboard.models import GoogleMyBusinessAccount
 from inventory.mixins import AdminRequiredMixin

@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
-from inventory.models import Motorcycle, TempSalesBooking, InventorySettings
+from inventory.models import TempSalesBooking, InventorySettings
 from inventory.tests.test_helpers.model_factories import MotorcycleFactory, InventorySettingsFactory
 from django.contrib.messages import get_messages
 from decimal import Decimal

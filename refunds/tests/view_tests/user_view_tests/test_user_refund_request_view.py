@@ -1,11 +1,9 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.contrib import messages
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from refunds.models import RefundRequest
 from refunds.forms.user_refund_request_form import RefundRequestForm
 from payments.tests.test_helpers.model_factories import ServiceBookingFactory, SalesBookingFactory, PaymentFactory, UserFactory, ServiceProfileFactory, SalesProfileFactory
-from django.utils import timezone
 import uuid
 
 class UserRefundRequestViewTest(TestCase):

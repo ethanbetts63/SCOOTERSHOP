@@ -1,5 +1,5 @@
 from django.test import TestCase
-from inventory.models import FeaturedMotorcycle, Motorcycle
+from inventory.models import FeaturedMotorcycle
 from inventory.tests.test_helpers.model_factories import MotorcycleFactory, FeaturedMotorcycleFactory
 
 class FeaturedMotorcycleModelTest(TestCase):

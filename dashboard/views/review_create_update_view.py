@@ -3,7 +3,6 @@ from django.views import View
 from django.urls import reverse
 from django.contrib import messages
 from inventory.mixins import AdminRequiredMixin
-from dashboard.models import Review
 from dashboard.forms import ReviewForm
 
 class ReviewCreateUpdateView(AdminRequiredMixin, View):

@@ -1,6 +1,5 @@
 from django.test import TestCase
 from django.urls import reverse
-from service.models import ServiceType
 from service.tests.test_helpers.model_factories import ServiceTypeFactory, UserFactory
 
 class ServiceTypeManagementViewTest(TestCase):

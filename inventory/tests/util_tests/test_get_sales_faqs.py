@@ -1,7 +1,6 @@
 from django.test import TestCase
 from inventory.utils.get_sales_faqs import get_faqs_for_step
 from inventory.tests.test_helpers.model_factories import SalesfaqFactory
-from inventory.models import Salesfaq
 
 class GetSalesFaqsTest(TestCase):
 

@@ -2,7 +2,7 @@ from django.conf import settings
 from mailer.utils import send_templated_email
 from payments.models import Payment
 
-from refunds.models import RefundRequest, RefundSettings
+from refunds.models import RefundRequest
 
 def send_refund_notifications(
     payment_obj: Payment,

@@ -1,8 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
-from unittest.mock import patch, MagicMock
-from service.models import ServiceType, TempServiceBooking, ServiceSettings, Servicefaq
-from dashboard.models import SiteSettings
+from unittest.mock import patch
 from service.tests.test_helpers.model_factories import ServiceTypeFactory, TempServiceBookingFactory, ServiceSettingsFactory, ServicefaqFactory, SiteSettingsFactory
 from django.contrib.messages import get_messages
 import datetime

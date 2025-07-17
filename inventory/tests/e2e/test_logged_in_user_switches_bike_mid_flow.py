@@ -3,7 +3,7 @@ from decimal import Decimal
 import stripe
 from unittest import skipIf
 
-from django.test import TestCase, Client, override_settings
+from django.test import TestCase, Client
 from django.urls import reverse
 from django.conf import settings
 

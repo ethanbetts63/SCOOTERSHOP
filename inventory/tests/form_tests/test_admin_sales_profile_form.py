@@ -2,7 +2,6 @@
 from django.test import TestCase
 from inventory.forms import AdminSalesProfileForm
 from inventory.tests.test_helpers.model_factories import SalesProfileFactory, UserFactory
-from django.core.exceptions import ValidationError
 
 class AdminSalesProfileFormTest(TestCase):
 

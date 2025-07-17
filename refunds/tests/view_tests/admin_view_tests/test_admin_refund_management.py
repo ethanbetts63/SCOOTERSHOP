@@ -1,13 +1,12 @@
 import datetime
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.contrib.messages import get_messages
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from django.utils import timezone
 from datetime import timedelta
 
 from refunds.models import RefundRequest
-from payments.tests.test_helpers.model_factories import UserFactory, RefundRequestFactory, ServiceBookingFactory, SalesBookingFactory, ServiceProfileFactory, SalesProfileFactory
+from payments.tests.test_helpers.model_factories import UserFactory, RefundRequestFactory, SalesBookingFactory, SalesProfileFactory
 
 class AdminRefundManagementTest(TestCase):
 

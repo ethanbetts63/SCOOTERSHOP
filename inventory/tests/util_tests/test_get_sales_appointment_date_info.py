@@ -2,15 +2,10 @@ import datetime
 from unittest.mock import patch
 from django.test import TestCase
 from django.utils import timezone
-from inventory.models import InventorySettings, BlockedSalesDate
+from inventory.models import BlockedSalesDate
 from inventory.utils.get_sales_appointment_date_info import get_sales_appointment_date_info
 
-from inventory.forms.admin_motorcycle_form import MotorcycleForm
-from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
-from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory, ServiceTypeFactory, ServiceSettingsFactory, ServiceTermsFactory, ServicefaqFactory, CustomerMotorcycleFactory, BlockedServiceDateFactory, ServiceBrandFactory
-from inventory.tests.test_helpers.model_factories import SalesBookingFactory, TempSalesBookingFactory, SalesProfileFactory, MotorcycleConditionFactory, MotorcycleFactory, MotorcycleImageFactory, FeaturedMotorcycleFactory, InventorySettingsFactory, BlockedSalesDateFactory
-from payments.tests.test_helpers.model_factories import PaymentFactory, WebhookEventFactory
-from refunds.tests.test_helpers.model_factories import RefundRequestFactory, RefundSettingsFactory
+from inventory.tests.test_helpers.model_factories import InventorySettingsFactory, BlockedSalesDateFactory
 
 class GetSalesAppointmentDateInfoTest(TestCase):
 

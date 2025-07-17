@@ -7,8 +7,7 @@ from service.models import BlockedServiceDate, ServiceBooking
 # FIX 1: Import the StaffUserFactory
 
 
-from inventory.forms.admin_motorcycle_form import MotorcycleForm
-from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
+from users.tests.test_helpers.model_factories import StaffUserFactory
 from service.tests.test_helpers.model_factories import (
     ServiceSettingsFactory,
     BlockedServiceDateFactory,
@@ -18,9 +17,6 @@ from service.tests.test_helpers.model_factories import (
     CustomerMotorcycleFactory,
 )
 from users.tests.test_helpers.model_factories import StaffUserFactory
-from inventory.tests.test_helpers.model_factories import SalesBookingFactory, TempSalesBookingFactory, SalesProfileFactory, MotorcycleConditionFactory, MotorcycleFactory, MotorcycleImageFactory, FeaturedMotorcycleFactory, InventorySettingsFactory, BlockedSalesDateFactory
-from payments.tests.test_helpers.model_factories import PaymentFactory, WebhookEventFactory
-from refunds.tests.test_helpers.model_factories import RefundRequestFactory, RefundSettingsFactory
 
 
 from faker import Faker

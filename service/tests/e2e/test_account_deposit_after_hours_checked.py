@@ -1,7 +1,6 @@
 import datetime
 from decimal import Decimal
 import stripe
-import time
 from unittest import skipIf
 
 from django.test import TestCase, Client, override_settings
@@ -16,12 +15,8 @@ from service.models import (
 from dashboard.models import SiteSettings
 from payments.models import Payment
 from payments.webhook_handlers.service_handlers import handle_service_booking_succeeded
-from inventory.forms.admin_motorcycle_form import MotorcycleForm
-from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
-from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory, ServiceTypeFactory, ServiceSettingsFactory, ServiceTermsFactory, ServicefaqFactory, CustomerMotorcycleFactory, BlockedServiceDateFactory, ServiceBrandFactory
-from inventory.tests.test_helpers.model_factories import SalesBookingFactory, TempSalesBookingFactory, SalesProfileFactory, MotorcycleConditionFactory, MotorcycleFactory, MotorcycleImageFactory, FeaturedMotorcycleFactory, InventorySettingsFactory, BlockedSalesDateFactory
-from payments.tests.test_helpers.model_factories import PaymentFactory, WebhookEventFactory
-from refunds.tests.test_helpers.model_factories import RefundRequestFactory, RefundSettingsFactory
+from users.tests.test_helpers.model_factories import UserFactory
+from service.tests.test_helpers.model_factories import ServiceProfileFactory, ServiceTypeFactory, ServiceSettingsFactory, ServiceTermsFactory, CustomerMotorcycleFactory, ServiceBrandFactory
 
 
 

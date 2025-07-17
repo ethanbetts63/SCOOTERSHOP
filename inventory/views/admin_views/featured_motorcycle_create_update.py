@@ -3,7 +3,7 @@ from django.views.generic import UpdateView
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
-from inventory.models import FeaturedMotorcycle, Motorcycle
+from inventory.models import FeaturedMotorcycle
 from inventory.forms.admin_featured_motorcycle_form import FeaturedMotorcycleForm
 
 class FeaturedMotorcycleCreateUpdateView(AdminRequiredMixin, UpdateView):
