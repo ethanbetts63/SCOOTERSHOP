@@ -5,13 +5,15 @@ from unittest.mock import patch
 from django.utils import timezone
 from datetime import timedelta
 
-from refunds.models import RefundRequest
+from django.apps import apps
 from payments.tests.test_helpers.model_factories import (
     RefundRequestFactory,
     SalesBookingFactory,
     SalesProfileFactory,
 )
 from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
+
+RefundRequest = apps.get_model('refunds', 'RefundRequest')
 
 
 class AdminRefundManagementTest(TestCase):
@@ -21,7 +23,7 @@ class AdminRefundManagementTest(TestCase):
         self.client.force_login(self.admin_user)
         self.url = reverse("refunds:admin_refund_management")
 
-        RefundRequest.objects.all().delete()
+        RefundRequestFactory.reset_sequence()
 
     def test_get_request_basic_display(self):
         RefundRequestFactory.create_batch(5)
