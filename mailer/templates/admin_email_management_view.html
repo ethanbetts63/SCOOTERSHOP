@@ -25,6 +25,12 @@
     .pagination a {
         padding: 0.5rem 1rem;
     }
+    .truncate-subject {
+        max-width: 25rem; /* Adjust as needed */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 </style>
 {% endblock %}
 
@@ -57,7 +63,7 @@
                         {% for email in emails %}
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ email.recipient }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ email.subject }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate-subject" title="{{ email.subject }}">{{ email.subject }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <span class="status-{{ email.status|lower }}">{{ email.status }}</span>
                                 </td>
