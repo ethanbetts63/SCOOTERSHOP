@@ -1,14 +1,14 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from core.models.enquiry import Enquiry
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 from core.tests.test_helpers.model_factories import EnquiryFactory
 
 
 class EnquiryManagementViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.staff_user = UserFactory(is_staff=True)
+        cls.staff_user = StaffUserFactory()
         cls.regular_user = UserFactory()
         cls.login_url = reverse("users:login")
         cls.list_url = reverse("core:enquiry_management")

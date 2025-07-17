@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from unittest.mock import patch, MagicMock
 from dashboard.models import SiteSettings
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 
 
 class PrivacyPolicyViewTest(TestCase):
@@ -12,7 +12,7 @@ class PrivacyPolicyViewTest(TestCase):
         self.index_url = reverse("core:index")
         self.template_name = "core/information/privacy.html"
 
-        self.staff_user = UserFactory(is_staff=True)
+        self.staff_user = StaffUserFactory()
         self.client.force_login(self.staff_user)
 
         self.mock_site_settings = MagicMock(spec=SiteSettings)

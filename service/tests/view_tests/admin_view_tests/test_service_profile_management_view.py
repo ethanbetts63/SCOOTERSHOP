@@ -5,15 +5,15 @@ from django.utils import timezone
 
 
 from service.models import ServiceProfile
-from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
+from users.tests.test_helpers.model_factories import staff_factory, SuperUserFactory, UserFactory
 from service.tests.test_helpers.model_factories import ServiceProfileFactory
 
 
 class ServiceProfileManagementViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.staff_user = UserFactory(
-            username="staff_user", is_staff=True, is_superuser=False
+        cls.staff_user = staff_factory(
+            username="staff_user"
         )
         cls.superuser = SuperUserFactory(
             username="superuser"
@@ -231,8 +231,8 @@ class ServiceProfileManagementViewTest(TestCase):
 class ServiceProfileDeleteViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.staff_user = UserFactory(
-            username="staff_user", is_staff=True, is_superuser=False
+        cls.staff_user = staff_factory(
+            username="staff_user"
         )
         cls.superuser = SuperUserFactory(
             username="superuser"

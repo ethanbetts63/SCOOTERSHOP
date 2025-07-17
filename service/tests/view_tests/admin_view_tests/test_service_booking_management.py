@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.utils import timezone
 from service.models import ServiceBooking
-from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
+from users.tests.test_helpers.model_factories import staff_factory, SuperUserFactory
 from service.tests.test_helpers.model_factories import (
     ServiceBookingFactory,
     ServiceTypeFactory,
