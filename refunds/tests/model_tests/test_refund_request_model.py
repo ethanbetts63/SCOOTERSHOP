@@ -15,8 +15,8 @@ from users.tests.test_helpers.model_factories import UserFactory
 from inventory.tests.test_helpers.model_factories import (
     MotorcycleConditionFactory,
     MotorcycleFactory,
-    CustomerMotorcycleFactory,
 )
+from service.tests.test_helpers.model_factories import CustomerMotorcycleFactory
 
 
 from refunds.models import RefundRequest

@@ -8,6 +8,7 @@ from inventory.tests.test_helpers.model_factories import (
     SalesBookingFactory,
     SalesProfileFactory,
     MotorcycleFactory,
+    InventorySettingsFactory
 )
 
 

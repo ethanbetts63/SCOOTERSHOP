@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from dashboard.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 
 
 class DashboardAdminViewsRedirectTestCase(TestCase):

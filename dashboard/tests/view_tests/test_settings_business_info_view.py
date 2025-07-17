@@ -1,10 +1,10 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from dashboard.models import SiteSettings
-from dashboard.tests.test_helpers.model_factories import (
+from users.tests.test_helpers.model_factories import (
     StaffUserFactory,
-    SiteSettingsFactory,
 )
+from dashboard.tests.test_helpers.model_factories import SiteSettingsFactory
 
 
 class SettingsBusinessInfoViewTest(TestCase):

@@ -1,5 +1,5 @@
 from django.test import TestCase, Client
-from dashboard.tests.test_helpers.model_factories import StaffUserFactory, UserFactory
+from users.tests.test_helpers.model_factories import StaffUserFactory, UserFactory
 
 
 class DashboardIndexViewTest(TestCase):
