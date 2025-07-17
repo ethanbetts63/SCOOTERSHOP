@@ -1,11 +1,12 @@
 from django.test import TestCase
 from django.urls import reverse
-from service.tests.test_helpers.model_factories import ServicefaqFactory, UserFactory
+from service.tests.test_helpers.model_factories import ServicefaqFactory
+from users.tests.test_helpers.model_factories import StaffUserFactory
 
 
 class ServicefaqManagementViewTest(TestCase):
     def setUp(self):
-        self.admin_user = UserFactory(is_staff=True)
+        self.admin_user = StaffUserFactory()
         self.client.force_login(self.admin_user)
 
         # Create some FAQs for testing pagination and ordering

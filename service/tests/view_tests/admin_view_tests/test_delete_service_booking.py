@@ -8,7 +8,7 @@ from django.contrib.messages import get_messages
 
 class AdminServiceBookingDeleteViewTest(TestCase):
     def setUp(self):
-        self.admin_user = UserFactory(is_staff=True)
+        self.admin_user = staff_factory()
         self.client.force_login(self.admin_user)
         self.service_booking = ServiceBookingFactory(
             service_booking_reference="SBK-TEST"

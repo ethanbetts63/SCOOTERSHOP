@@ -5,12 +5,13 @@ from unittest.mock import patch
 from inventory.tests.test_helpers.model_factories import (
     SalesBookingFactory,
     UserFactory,
+    StaffUserFactory,
 )
 
 
 class SalesBookingActionViewTest(TestCase):
     def setUp(self):
-        self.admin_user = UserFactory(is_staff=True)
+        self.admin_user = StaffUserFactory()
         self.client.force_login(self.admin_user)
         self.sales_booking = SalesBookingFactory()
 

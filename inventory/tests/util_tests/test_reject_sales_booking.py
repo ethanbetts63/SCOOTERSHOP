@@ -12,7 +12,7 @@ from decimal import Decimal
 
 class RejectSalesBookingTests(TestCase):
     def setUp(self):
-        self.admin_user = UserFactory(is_staff=True)
+        self.admin_user = StaffUserFactory()
         self.motorcycle_new = MotorcycleFactory(
             quantity=0, condition="new", status="reserved", is_available=False
         )

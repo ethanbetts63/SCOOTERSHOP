@@ -1,13 +1,14 @@
 from django.test import TestCase
 from django.urls import reverse
 from inventory.models import Salesfaq
-from inventory.tests.test_helpers.model_factories import SalesfaqFactory, UserFactory
+from inventory.tests.test_helpers.model_factories import SalesfaqFactory
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 from django.contrib.messages import get_messages
 
 
 class SalesfaqDeleteViewTest(TestCase):
     def setUp(self):
-        self.admin_user = UserFactory(is_staff=True)
+        self.admin_user = StaffUserFactory()
         self.client.force_login(self.admin_user)
         self.sales_faq = SalesfaqFactory(question="Test FAQ Question")
 

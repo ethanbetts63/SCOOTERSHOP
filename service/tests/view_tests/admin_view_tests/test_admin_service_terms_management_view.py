@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import staff_factory
 from service.tests.test_helpers.model_factories import (
     ServiceBookingFactory,
     ServiceTermsFactory,
@@ -9,7 +9,7 @@ from service.tests.test_helpers.model_factories import (
 
 class ServiceTermsManagementViewTest(TestCase):
     def setUp(self):
-        self.admin_user = UserFactory(is_staff=True)
+        self.admin_user = staff_factory()
         self.client.force_login(self.admin_user)
 
         # Create some ServiceTerms versions

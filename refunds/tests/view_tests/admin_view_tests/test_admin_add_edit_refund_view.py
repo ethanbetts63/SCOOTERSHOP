@@ -16,7 +16,7 @@ from decimal import Decimal
 class AdminAddEditRefundRequestViewTest(TestCase):
     def setUp(self):
         self.client = Client()
-        self.admin_user = UserFactory(is_staff=True)
+        self.admin_user = StaffUserFactory()
         self.client.force_login(self.admin_user)
         self.add_url = reverse("refunds:add_refund_request")
         self.service_booking = ServiceBookingFactory(payment_status="paid")

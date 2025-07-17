@@ -1,10 +1,11 @@
 from django.test import TestCase
 from django.urls import reverse
-from inventory.tests.test_helpers.model_factories import SalesTermsFactory, UserFactory
+from inventory.tests.test_helpers.model_factories import SalesTermsFactory
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 
 
 class SalesTermsDetailsViewTest(TestCase):
-    def setUp(self):
+    def self.admin_user = StaffUserFactory()
         self.admin_user = UserFactory(is_staff=True)
         self.client.force_login(self.admin_user)
         self.sales_terms = SalesTermsFactory(version_number=1, content="Test Content")

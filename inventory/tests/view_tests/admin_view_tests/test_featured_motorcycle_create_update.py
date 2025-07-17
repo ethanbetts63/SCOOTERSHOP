@@ -5,13 +5,14 @@ from inventory.tests.test_helpers.model_factories import (
     FeaturedMotorcycleFactory,
     MotorcycleFactory,
     UserFactory,
+    StaffUserFactory,
 )
 from django.contrib.messages import get_messages
 
 
 class FeaturedMotorcycleCreateUpdateViewTest(TestCase):
     def setUp(self):
-        self.admin_user = UserFactory(is_staff=True)
+        self.admin_user = StaffUserFactory()
         self.client.force_login(self.admin_user)
         self.motorcycle = MotorcycleFactory()
         self.featured_motorcycle = FeaturedMotorcycleFactory(

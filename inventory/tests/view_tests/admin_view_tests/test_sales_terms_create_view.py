@@ -1,13 +1,13 @@
 from django.test import TestCase
 from django.urls import reverse
 from inventory.models import SalesTerms
-from inventory.tests.test_helpers.model_factories import UserFactory
+from inventory.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 from django.contrib.messages import get_messages
 
 
 class SalesTermsCreateViewTest(TestCase):
     def setUp(self):
-        self.admin_user = UserFactory(is_staff=True)
+        self.admin_user = StaffUserFactory()
         self.client.force_login(self.admin_user)
 
     def test_create_sales_terms_get(self):

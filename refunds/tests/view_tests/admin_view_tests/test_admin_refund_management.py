@@ -17,7 +17,7 @@ from payments.tests.test_helpers.model_factories import (
 class AdminRefundManagementTest(TestCase):
     def setUp(self):
         self.client = Client()
-        self.admin_user = UserFactory(is_staff=True)
+        self.admin_user = StaffUserFactory()
         self.client.force_login(self.admin_user)
         self.url = reverse("refunds:admin_refund_management")
 

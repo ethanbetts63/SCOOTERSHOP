@@ -1,14 +1,14 @@
 from django.test import TestCase
 from django.urls import reverse
 from service.models import Servicefaq
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import staff_factory
 from service.tests.test_helpers.model_factories import ServicefaqFactory
 from django.contrib.messages import get_messages
 
 
 class ServicefaqCreateUpdateViewTest(TestCase):
     def setUp(self):
-        self.admin_user = UserFactory(is_staff=True)
+        self.admin_user = staff_factory()
         self.client.force_login(self.admin_user)
 
     def test_create_service_faq_get(self):

@@ -9,7 +9,7 @@ from inventory.tests.test_helpers.model_factories import (
 
 class SalesTermsManagementViewTest(TestCase):
     def setUp(self):
-        self.admin_user = UserFactory(is_staff=True)
+        self.admin_user = StaffUserFactory()
         self.client.force_login(self.admin_user)
 
         # Create some SalesTerms versions

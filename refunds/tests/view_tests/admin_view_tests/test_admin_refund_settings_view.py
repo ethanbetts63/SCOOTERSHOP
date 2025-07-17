@@ -10,7 +10,7 @@ from decimal import Decimal
 
 class AdminRefundSettingsViewTest(TestCase):
     def setUp(self):
-        self.admin_user = UserFactory(is_staff=True)
+        self.admin_user = StaffUserFactory()
         self.client.force_login(self.admin_user)
         self.refund_settings = RefundSettingsFactory()
 

@@ -9,7 +9,7 @@ from decimal import Decimal
 
 class RejectServiceBookingTests(TestCase):
     def setUp(self):
-        self.admin_user = UserFactory(is_staff=True)
+        self.admin_user = StaffUserFactory()
         self.service_booking_deposit = ServiceBookingFactory(
             payment=PaymentFactory(amount=Decimal("50.00")),
             payment_status="deposit_paid",
