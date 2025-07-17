@@ -28,9 +28,15 @@ def send_all_test_emails(admin_email):
             username=unique_username
         )
 
+        # Force the sales booking factory to use a unique stock number
+        unique_stock_number = f"TEST-{uuid.uuid4().hex[:6].upper()}"
+        sales_booking = SalesBookingFactory(
+            sales_profile__user=admin_user,
+            motorcycle__stock_number=unique_stock_number
+        )
+
         # Create other necessary test objects
         service_booking = ServiceBookingFactory(service_profile__user=admin_user)
-        sales_booking = SalesBookingFactory(sales_profile__user=admin_user)
         site_settings = SiteSettings.get_settings()
         enquiry_instance = EnquiryFactory()
         payment_instance = PaymentFactory()
