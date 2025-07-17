@@ -1,52 +1,36 @@
-
+{% extends 'email_layout.html' %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Refund Request Has Been Approved!</title>
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .header img { max-width: 150px; }
-        .content { margin-bottom: 20px; }
-        .highlight { background-color: #d4edda; padding: 10px; border-left: 5px solid #28a745; margin-bottom: 15px; }
-        .footer { text-align: center; font-size: 0.9em; color: #777; border-top: 1px solid #eee; padding-top: 15px; margin-top: 20px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <img src="{% static 'images/logo_scootershop_tight_crop.png' %}" alt="Scootershop Logo">
-            <h2>Good News! Your Refund Request is Approved!</h2>
-        </div>
+{% block title %}Your Refund Request Has Been Approved!{% endblock %}
 
-        <div class="content">
-            
-            <p>Hi {{ customer_name }},</p>
-            <p>We are pleased to inform you that your refund request for booking <strong>{% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}</strong> has been approved and processed.</p>
+{% block preheader %}
+Good news! Your refund for booking {{ booking_reference }} has been approved and processed.
+{% endblock %}
 
-            <div class="highlight">
-                <strong>Refund Amount:</strong> {% if refund_request.amount_to_refund %}{{ refund_request.amount_to_refund|floatformat:2 }}{% else %}refund_request.amount_to_refund VARIABLE DID NOT LOAD{% endif %} {% if refund_request.payment.currency %}{{ refund_request.payment.currency }}{% else %}currency VARIABLE DID NOT LOAD{% endif %}<br>
-                <strong>Booking Reference:</strong> {% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}
-            </div>
+{% block header_title %}
+Refund Request Approved
+{% endblock %}
 
-            <p>The refunded amount should appear in your account within 5-10 business days, depending on your bank's processing times.</p>
+{% block content %}
+    <p style="margin: 0 0 20px 0;">Hi {{ customer_name }},</p>
+    <p style="margin: 0 0 20px 0;">We are pleased to inform you that your refund request for booking <strong>{{ booking_reference | default:'(booking_reference missing)' }}</strong> has been approved and processed.</p>
 
-            <p>If you have any questions regarding the refund process, please refer to our <a href="{% if refund_policy_link %}{{ refund_policy_link }}{% else %}refund_policy_link VARIABLE DID NOT LOAD{% endif %}">Refund Policy</a> or contact us directly at <a href="mailto:{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}">{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}</a>.</p>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 20px;">
+        <tr>
+            <td style="background-color: #1F2937; border-left: 4px solid #10B981; padding: 15px;">
+                <p style="margin: 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB;">
+                    <strong>Refund Amount:</strong> {{ refund_request.amount_to_refund|floatformat:2 | default:'(amount missing)' }} {{ refund_request.payment.currency | default:'(currency missing)' }}<br>
+                    <strong>Booking Reference:</strong> {{ booking_reference | default:'(booking_reference missing)' }}
+                </p>
+            </td>
+        </tr>
+    </table>
 
-            <p>Thank you for your patience.</p>
-            <p>Sincerely,</p>
-            <p>The Scootershop Team</p>
-        </div>
-
-        <div class="footer">
-            <p>This is an automated email. Please do not reply directly to this message.</p>
-            <p>&copy; {% now "Y" %} Scootershop Australia. All rights reserved.</p>
-        </div>
-    </div>
-</body>
-</html>
+    <p style="margin: 0 0 20px 0;">The refunded amount should appear in your account within 5-10 business days, depending on your bank's processing times.</p>
+    <p style="margin: 0 0 20px 0;">
+        If you have any questions, please refer to our <a href="{% if refund_policy_link %}{{ refund_policy_link }}{% else %}#__{% endif %}" style="color: #34D399; text-decoration: underline;">Refund Policy</a> or contact us directly at <a href="mailto:{% if admin_email %}{{ admin_email }}{% else %}#__{% endif %}" style="color: #34D399; text-decoration: underline;">{% if admin_email %}{{ admin_email }}{% else %}(email missing){% endif %}</a>.
+    </p>
+    <p style="margin: 0 0 10px 0;">Thank you for your patience.</p>
+    <p style="margin: 0 0 10px 0;">Sincerely,</p>
+    <p style="margin: 0;"><strong>The Allbikes and Vespa Warehouse Team</strong></p>
+{% endblock %}
