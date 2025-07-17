@@ -1,7 +1,8 @@
 from django.test import TestCase
 from django.core import mail
 from inventory.utils.sell_and_notify import sell_and_notify
-from ..test_helpers.model_factories import MotorcycleFactory, SalesBookingFactory, SalesProfileFactory, UserFactory
+from inventory.tests.test_helpers.model_factories import MotorcycleFactory, SalesBookingFactory, SalesProfileFactory
+from users.tests.test_helpers.model_factories import UserFactory
 
 
 class SellAndNotifyTests(TestCase):

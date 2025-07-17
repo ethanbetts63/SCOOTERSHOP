@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.db import models
 from core.models.enquiry import Enquiry
-from ..test_helpers.model_factories import EnquiryFactory
+from core.tests.test_helpers.model_factories import EnquiryFactory
 
 
 class EnquiryModelTest(TestCase):

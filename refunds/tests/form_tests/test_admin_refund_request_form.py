@@ -3,17 +3,10 @@ from decimal import Decimal
 from refunds.forms.admin_refund_request_form import AdminRefundRequestForm
 from refunds.models.RefundRequest import RefundRequest
 
-from payments.tests.test_helpers.model_factories import (
-    PaymentFactory,
-    UserFactory,
-    SalesBookingFactory,
-    SalesProfileFactory,
-    MotorcycleFactory,
-    ServiceBookingFactory,
-    ServiceProfileFactory,
-    CustomerMotorcycleFactory,
-    ServiceTypeFactory,
-)
+from payments.tests.test_helpers.model_factories import PaymentFactory
+from users.tests.test_helpers.model_factories import UserFactory
+from inventory.tests.test_helpers.model_factories import SalesBookingFactory, SalesProfileFactory, MotorcycleFactory
+from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory, CustomerMotorcycleFactory, ServiceTypeFactory
 
 
 class AdminRefundRequestFormTests(TestCase):

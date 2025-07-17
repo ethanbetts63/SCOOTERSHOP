@@ -1,7 +1,8 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from core.models.enquiry import Enquiry
-from ...test_helpers.model_factories import UserFactory, EnquiryFactory
+from users.tests.test_helpers.model_factories import UserFactory
+from core.tests.test_helpers.model_factories import EnquiryFactory
 
 
 class EnquiryManagementViewTest(TestCase):

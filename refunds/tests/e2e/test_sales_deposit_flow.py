@@ -14,12 +14,9 @@ from dashboard.models import SiteSettings
 from payments.models import Payment
 from refunds.models import RefundRequest
 from payments.webhook_handlers.refund_handlers import handle_booking_refunded
-from ..test_helpers.model_factories import (
-    MotorcycleFactory,
-    SalesProfileFactory,
-    UserFactory,
-    SiteSettingsFactory,
-)
+from inventory.tests.test_helpers.model_factories import MotorcycleFactory, SalesProfileFactory
+from users.tests.test_helpers.model_factories import UserFactory
+from dashboard.tests.test_helpers.model_factories import SiteSettingsFactory
 
 
 @skipIf(not settings.STRIPE_SECRET_KEY, "Stripe API key not configured in settings")

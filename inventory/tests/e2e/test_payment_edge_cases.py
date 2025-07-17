@@ -8,11 +8,8 @@ from django.conf import settings
 
 from inventory.models import TempSalesBooking, SalesBooking
 from payments.models import Payment
-from ..test_helpers.model_factories import (
-    InventorySettingsFactory,
-    MotorcycleFactory,
-    UserFactory,
-)
+from inventory.tests.test_helpers.model_factories import InventorySettingsFactory, MotorcycleFactory
+from users.tests.test_helpers.model_factories import UserFactory
 
 
 @skipIf(not settings.STRIPE_SECRET_KEY, "Stripe API key not configured in settings")

@@ -2,7 +2,8 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.messages import get_messages
 from core.models.enquiry import Enquiry
-from ...test_helpers.model_factories import UserFactory, EnquiryFactory
+from users.tests.test_helpers.model_factories import UserFactory
+from core.tests.test_helpers.model_factories import EnquiryFactory
 
 
 class EnquiryDeleteViewTest(TestCase):
