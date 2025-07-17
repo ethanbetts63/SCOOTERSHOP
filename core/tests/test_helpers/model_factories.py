@@ -1,23 +1,18 @@
 import factory
 from faker import Faker
 from django.contrib.auth import get_user_model
-
 fake = Faker()
-
-from core.models.enquiry import Enquiry
-
+from core.models import Enquiry
+User = get_user_model()
 
 class EnquiryFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Enquiry
-
+        
     name = factory.Faker("name")
     email = factory.Faker("email")
     phone_number = factory.LazyFunction(lambda: fake.numerify("##########"))
     message = factory.Faker("paragraph")
-
-
-User = get_user_model()
 
 
 class UserFactory(factory.django.DjangoModelFactory):

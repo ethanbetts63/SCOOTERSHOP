@@ -8,6 +8,10 @@ from decimal import Decimal
 from faker import Faker
 from payments.models import Payment
 import uuid
+from core.models import Enquiry
+from refunds.models import RefundRequest
+from django.utils import timezone
+
 
 fake = Faker()
 User = get_user_model()
@@ -256,3 +260,64 @@ class PaymentFactory(factory.django.DjangoModelFactory):
     stripe_payment_method_id = "pm_card_visa"
     stripe_payment_intent_id = factory.LazyFunction(lambda: f"pi_{uuid.uuid4().hex}")
     status = "succeeded"
+
+class EnquiryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Enquiry
+        
+    name = factory.Faker("name")
+    email = factory.Faker("email")
+    phone_number = factory.LazyFunction(lambda: fake.numerify("##########"))
+    message = factory.Faker("paragraph")
+
+class RefundRequestFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RefundRequest
+
+    service_booking = None
+    sales_booking = None
+    service_profile = None
+    sales_profile = None
+
+    payment = factory.SubFactory(PaymentFactory)
+
+    reason = factory.Faker("paragraph")
+    rejection_reason = None
+    requested_at = factory.LazyFunction(timezone.now)
+    status = factory.Faker(
+        "random_element",
+        elements=[
+            "unverified",
+            "pending",
+            "reviewed_pending_approval",
+            "approved",
+            "rejected",
+            "partially_refunded",
+            "refunded",
+            "failed",
+        ],
+    )
+    amount_to_refund = factory.LazyFunction(
+        lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True)
+    )
+    processed_by = None
+    processed_at = None
+    staff_notes = factory.Faker("paragraph")
+    stripe_refund_id = factory.Sequence(lambda n: f"re_{uuid.uuid4().hex[:24]}_{n}")
+    is_admin_initiated = factory.Faker("boolean")
+    refund_calculation_details = factory.LazyFunction(
+        lambda: {
+            "policy_version": "1.0",
+            "refunded_amount": str(
+                fake.pydecimal(left_digits=2, right_digits=2, positive=True)
+            ),
+            "sales_grace_period_applied": fake.boolean(),
+            "sales_grace_period_hours": fake.random_int(min=12, max=72),
+        }
+    )
+    request_email = factory.Faker("email")
+    verification_token = factory.LazyFunction(uuid.uuid4)
+    token_created_at = factory.LazyFunction(timezone.now)
+
+
+
