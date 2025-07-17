@@ -95,8 +95,8 @@ class MotorcycleFactory(factory.django.DjangoModelFactory):
         if extracted:
             for condition_name in extracted:
                 condition, _ = MotorcycleCondition.objects.get_or_create(
-                    name=condition_name,
-                    defaults={"display_name": condition_name.replace("_", " ").title()},
+                    name=condition_name.name,
+                    defaults={"display_name": condition_name.name.replace("_", " ").title()},
                 )
                 obj.conditions.add(condition)
 
