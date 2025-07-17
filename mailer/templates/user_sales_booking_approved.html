@@ -1,166 +1,67 @@
-{% load static %}
+{% extends 'email_layout.html' %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Sales Booking for {% if motorcycle.title %}{{ motorcycle.title }}{% else %}motorcycle.title VARIABLE DID NOT LOAD{% endif %} is Confirmed!</title>
-    <style type="text/css">
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333333;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .header {
-            background-color: #28a745; /* Green for confirmation */
-            color: #ffffff;
-            padding: 20px;
-            text-align: center;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-        .content {
-            padding: 20px;
-        }
-        .footer {
-            text-align: center;
-            padding: 20px;
-            font-size: 12px;
-            color: #777777;
-            border-bottom-left-radius: 8px;
-            border-bottom-right-radius: 8px;
-        }
-        .button {
-            display: inline-block;
-            background-color: #28a745;
-            color: #000000;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            border: 1px solid #dddddd;
-            text-align: left;
-            padding: 8px;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .section-title {
-            background-color: #e9ecef;
-            padding: 10px;
-            margin-top: 20px;
-            margin-bottom: 10px;
-            border-left: 5px solid #28a745; /* Green for sections */
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-        <tr>
-            <td style="padding: 20px 0; text-align: center;">
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="container">
-                    <tr>
-                        <td class="header">
-                            <h1>Sales Booking Confirmed!</h1>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="content">
-                            <p>Hi {% if sales_profile.name %}{{ sales_profile.name }}{% else %}sales_profile.name VARIABLE DID NOT LOAD{% endif %},</p>
-                            <p>Great news! Your sales booking for the <strong>{% if motorcycle.title %}{{ motorcycle.title }}{% else %}motorcycle.title VARIABLE DID NOT LOAD{% endif %}</strong> has been confirmed.</p>
+{% block title %}
+Your Sales Booking for {% if motorcycle.title %}{{ motorcycle.title }}{% else %}motorcycle.title VARIABLE DID NOT LOAD{% endif %} is Confirmed!
+{% endblock %}
 
-                            <div class="section-title">Your Booking Details</div>
-                            <table>
-                                <tr>
-                                    <th>Booking Reference:</th>
-                                    <td><strong>{% if booking.sales_booking_reference %}{{ booking.sales_booking_reference }}{% else %}booking.sales_booking_reference VARIABLE DID NOT LOAD{% endif %}</strong></td>
-                                </tr>
-                                <tr>
-                                    <th>Motorcycle:</th>
-                                    <td>{% if motorcycle.year %}{{ motorcycle.year }}{% else %}motorcycle.year VARIABLE DID NOT LOAD{% endif %} {% if motorcycle.brand %}{{ motorcycle.brand }}{% else %}motorcycle.brand VARIABLE DID NOT LOAD{% endif %} {% if motorcycle.model %}{{ motorcycle.model }}{% else %}motorcycle.model VARIABLE DID NOT LOAD{% endif %}</td>
-                                </tr>
-                                <tr>
-                                    <th>Status:</th>
-                                    <td>{% if booking.get_booking_status_display %}{{ booking.get_booking_status_display }}{% else %}booking.get_booking_status_display VARIABLE DID NOT LOAD{% endif %}</td>
-                                </tr>
-                                {% if booking.appointment_date and booking.appointment_time %}
-                                <tr>
-                                    <th>Appointment Date/Time:</th>
-                                    <td>{% if booking.appointment_date %}{{ booking.appointment_date|date:"D, M d, Y" }}{% else %}booking.appointment_date VARIABLE DID NOT LOAD{% endif %} at {% if booking.appointment_time %}{{ booking.appointment_time|time:"P" }}{% else %}booking.appointment_time VARIABLE DID NOT LOAD{% endif %}</td>
-                                </tr>
-                                {% endif %}
-                                {% if booking.customer_notes %}
-                                <tr>
-                                    <th>Your Notes:</th>
-                                    <td>{% if booking.customer_notes %}{{ booking.customer_notes }}{% else %}-{% endif %}</td>
-                                </tr>
-                                {% endif %}
-                                {% if booking.amount_paid > 0 %}
-                                <tr>
-                                    <th>Amount Paid:</th>
-                                    <td>{{ booking.amount_paid|floatformat:2 }} {% if booking.currency %}{{ booking.currency }}{% else %}AUD{% endif %}</td>
-                                </tr>
-                                {% endif %}
-                                <tr>
-                                    <th>Payment Status:</th>
-                                    <td>{% if booking.get_payment_status_display %}{{ booking.get_payment_status_display }}{% else %}booking.get_payment_status_display VARIABLE DID NOT LOAD{% endif %}</td>
-                                </tr>
-                            </table>
+{% block content %}
+<p>Hi {% if sales_profile.name %}{{ sales_profile.name }}{% else %}sales_profile.name VARIABLE DID NOT LOAD{% endif %},</p>
+<p>Great news! Your sales booking for the <strong>{% if motorcycle.title %}{{ motorcycle.title }}{% else %}motorcycle.title VARIABLE DID NOT LOAD{% endif %}</strong> has been confirmed.</p>
 
-                            {% if admin_message %}
-                            <div class="section-title">Message from SCOOTER_SHOP Team</div>
-                            <p style="white-space: pre-wrap;">{{ admin_message }}</p>
-                            {% endif %}
+<div class="section-title">Your Booking Details</div>
+<table>
+    <tr>
+        <th>Booking Reference:</th>
+        <td><strong>{% if booking.sales_booking_reference %}{{ booking.sales_booking_reference }}{% else %}booking.sales_booking_reference VARIABLE DID NOT LOAD{% endif %}</strong></td>
+    </tr>
+    <tr>
+        <th>Motorcycle:</th>
+        <td>{% if motorcycle.year %}{{ motorcycle.year }}{% else %}motorcycle.year VARIABLE DID NOT LOAD{% endif %} {% if motorcycle.brand %}{{ motorcycle.brand }}{% else %}motorcycle.brand VARIABLE DID NOT LOAD{% endif %} {% if motorcycle.model %}{{ motorcycle.model }}{% else %}motorcycle.model VARIABLE DID NOT LOAD{% endif %}</td>
+    </tr>
+    <tr>
+        <th>Status:</th>
+        <td>{% if booking.get_booking_status_display %}{{ booking.get_booking_status_display }}{% else %}booking.get_booking_status_display VARIABLE DID NOT LOAD{% endif %}</td>
+    </tr>
+    {% if booking.appointment_date and booking.appointment_time %}
+    <tr>
+        <th>Appointment Date/Time:</th>
+        <td>{% if booking.appointment_date %}{{ booking.appointment_date|date:"D, M d, Y" }}{% else %}booking.appointment_date VARIABLE DID NOT LOAD{% endif %} at {% if booking.appointment_time %}{{ booking.appointment_time|time:"P" }}{% else %}booking.appointment_time VARIABLE DID NOT LOAD{% endif %}</td>
+    </tr>
+    {% endif %}
+    {% if booking.customer_notes %}
+    <tr>
+        <th>Your Notes:</th>
+        <td>{% if booking.customer_notes %}{{ booking.customer_notes }}{% else %}-{% endif %}</td>
+    </tr>
+    {% endif %}
+    {% if booking.amount_paid > 0 %}
+    <tr>
+        <th>Amount Paid:</th>
+        <td>{{ booking.amount_paid|floatformat:2 }} {% if booking.currency %}{{ booking.currency }}{% else %}AUD{% endif %}</td>
+    </tr>
+    {% endif %}
+    <tr>
+        <th>Payment Status:</th>
+        <td>{% if booking.get_payment_status_display %}{{ booking.get_payment_status_display }}{% else %}booking.get_payment_status_display VARIABLE DID NOT LOAD{% endif %}</td>
+    </tr>
+</table>
 
-                            {% if site_settings.enable_refunds and booking.amount_paid > 0 %}
-                            <div style="text-align: center; margin-top: 20px; border-top: 1px solid #dddddd; padding-top: 20px;">
-                                <p>Need to request a refund? <a href="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{% url 'refunds:user_refund_request' %}?booking_reference={{ booking.sales_booking_reference }}">Click here to submit a request</a>.</p>
-                            </div>
-                            {% endif %}
+{% if admin_message %}
+<div class="section-title">Message from SCOOTER_SHOP Team</div>
+<p style="white-space: pre-wrap;">{{ admin_message }}</p>
+{% endif %}
 
-                            <p>We look forward to assisting you with your new motorcycle!</p>
-                            <p>Best regards,</p>
-                            <p>The SCOOTER_SHOP Team</p>
+{% if site_settings.enable_refunds and booking.amount_paid > 0 %}
+<div style="text-align: center; margin-top: 20px; border-top: 1px solid #dddddd; padding-top: 20px;">
+    <p>Need to request a refund? <a href="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{% url 'refunds:user_refund_request' %}?booking_reference={{ booking.sales_booking_reference }}">Click here to submit a request</a>.</p>
+</div>
+{% endif %}
 
-                            <p style="text-align: center;">
-                                <a href="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{% url 'core:index' %}" class="button">Visit Our Website</a>
-                            </p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="footer">
-                            <p>&copy; {{ "now"|date:"Y" }} SCOOTER_SHOP. All rights reserved.</p>
-                            <p>This is an automated email, please do not reply.</p>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
-</body>
-</html>
+<p>We look forward to assisting you with your new motorcycle!</p>
+<p>Best regards,</p>
+<p>The SCOOTER_SHOP Team</p>
+
+<p style="text-align: center;">
+    <a href="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{% url 'core:index' %}" class="button">Visit Our Website</a>
+</p>
+{% endblock %}

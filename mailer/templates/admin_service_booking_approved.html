@@ -1,9 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>ADMIN: Service Booking Confirmed</title>
-</head>
-<body>
+{% extends "email_layout.html" %}
+
+{% block title %}ADMIN: Service Booking Confirmed{% endblock %}
+
+{% block content %}
     <h1>ADMIN: Service Booking Confirmed</h1>
     <p>Dear Admin,</p>
     <p>The service booking with reference <strong>{{ booking.service_booking_reference }}</strong> has been confirmed.</p>
@@ -18,5 +17,4 @@
     <p><strong>Admin Message:</strong> {{ admin_message }}</p>
     {% endif %}
     <p>This email serves as a notification of the confirmation.</p>
-</body>
-</html>
+{% endblock %}

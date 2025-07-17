@@ -2,6 +2,7 @@ from pathlib import Path
 from django.urls import reverse_lazy
 import os
 from dotenv import load_dotenv
+import sys
 
 load_dotenv()
 
@@ -50,6 +51,23 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "SCOOTER_SHOP.urls"
+
+if 'test' in sys.argv:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': True, # This is the key
+        'handlers': {
+            'null': {
+                'class': 'logging.NullHandler',
+            },
+        },
+        'loggers': {
+            '': {
+                'handlers': ['null'],
+                'level': 'DEBUG',
+            },
+        }
+    }
 
 TEMPLATES = [
     {

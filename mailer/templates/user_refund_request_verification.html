@@ -1,94 +1,62 @@
 
-{% load static %}
+{% extends 'email_layout.html' %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confirm Your Refund Request</title>
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .header img { max-width: 150px; }
-        .content { margin-bottom: 20px; }
-        .button-container { text-align: center; margin-top: 30px; margin-bottom: 30px; }
-        .button { display: inline-block; padding: 12px 25px; background-color: #007bff; color: #ffffff !important; text-decoration: none; border-radius: 5px; font-weight: bold; }
-        .footer { text-align: center; font-size: 0.9em; color: #777; border-top: 1px solid #eee; padding-top: 15px; margin-top: 20px; }
-        .details-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .details-table th, .details-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        .details-table th { background-color: #f2f2f2; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <img src="{% static 'images/logo_scootershop_tight_crop.png' %}" alt="Scootershop Logo">
-            <h2>Confirm Your Refund Request</h2>
-        </div>
+{% block title %}
+Confirm Your Refund Request
+{% endblock %}
 
-        <div class="content">
-            
-            <p>Hi {% if refund_request.service_profile and refund_request.service_profile.name %}{{ refund_request.service_profile.name }}{% elif refund_request.sales_profile and refund_request.sales_profile.name %}{{ refund_request.sales_profile.name }}{% elif refund_request.request_email %}{{ refund_request.request_email }}{% else %}customer name/email VARIABLE DID NOT LOAD{% endif %},</p>
-            
-            <p>Thank you for submitting a refund request for your booking with reference <strong>{% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}</strong>.</p>
-            <p>To finalize your request and allow our team to review it, please click the verification link below:</p>
+{% block content %}
+<p>Hi {% if refund_request.service_profile and refund_request.service_profile.name %}{{ refund_request.service_profile.name }}{% elif refund_request.sales_profile and refund_request.sales_profile.name %}{{ refund_request.sales_profile.name }}{% elif refund_request.request_email %}{{ refund_request.request_email }}{% else %}customer name/email VARIABLE DID NOT LOAD{% endif %},</p>
 
-            <div class="button-container">
-                <a href="{% if verification_link %}{{ verification_link }}{% else %}verification_link VARIABLE DID NOT LOAD{% endif %}" class="button">Confirm My Refund Request</a>
-            </div>
+<p>Thank you for submitting a refund request for your booking with reference <strong>{% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}</strong>.</p>
+<p>To finalize your request and allow our team to review it, please click the verification link below:</p>
 
-            <p><strong>Important:</strong> This link is valid for a limited time (e.g., 24 hours). If the link expires, you may need to submit a new request.</p>
+<div class="button-container">
+    <a href="{% if verification_link %}{{ verification_link }}{% else %}verification_link VARIABLE DID NOT LOAD{% endif %}" class="button">Confirm My Refund Request</a>
+</div>
 
-            <p>Here are the details of your request:</p>
-            <table class="details-table">
-                <tr>
-                    <th>Booking Reference:</th>
-                    <td>{% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}</td>
-                </tr>
-                {% if refund_request.service_booking %}
-                <tr>
-                    <th>Service Date:</th>
-                    <td>{% if refund_request.service_booking.dropoff_date %}{{ refund_request.service_booking.dropoff_date|date:"D, d M Y" }}{% else %}dropoff_date VARIABLE DID NOT LOAD{% endif %}</td>
-                </tr>
-                <tr>
-                    <th>Service Type:</th>
-                    <td>{% if refund_request.service_booking.service_type.name %}{{ refund_request.service_booking.service_type.name }}{% else %}service_type.name VARIABLE DID NOT LOAD{% endif %}</td>
-                </tr>
-                {% elif refund_request.sales_booking %}
-                <tr>
-                    <th>Appointment Date:</th>
-                    <td>{% if refund_request.sales_booking.appointment_date %}{{ refund_request.sales_booking.appointment_date|date:"D, d M Y" }}{% else %}appointment_date VARIABLE DID NOT LOAD{% endif %}</td>
-                </tr>
-                <tr>
-                    <th>Motorcycle:</th>
-                    <td>{% if refund_request.sales_booking.motorcycle.name %}{{ refund_request.sales_booking.motorcycle.name }}{% else %}motorcycle.name VARIABLE DID NOT LOAD{% endif %}</td>
-                </tr>
-                {% endif %}
-                <tr>
-                    <th>Your Email:</th>
-                    <td>{% if refund_request.request_email %}{{ refund_request.request_email }}{% else %}refund_request.request_email VARIABLE DID NOT LOAD{% endif %}</td>
-                </tr>
-                {% if refund_request.reason %}
-                <tr>
-                    <th>Reason Provided:</th>
-                    <td>{{ refund_request.reason }}</td>
-                </tr>
-                {% endif %}
-            </table>
+<p><strong>Important:</strong> This link is valid for a limited time (e.g., 24 hours). If the link expires, you may need to submit a new request.</p>
 
-            <p>Once confirmed, your request will be reviewed by our team. We will notify you of the outcome via email.</p>
-            <p>You can review our full refund policy <a href="{% if refund_policy_link %}{{ refund_policy_link }}{% else %}refund_policy_link VARIABLE DID NOT LOAD{% endif %}">here</a>.</p>
-            <p>If you have any questions, please reply to this email or contact us at <a href="mailto:{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}">{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}</a>.</p>
-            <p>Thank you,</p>
-            <p>The Scootershop Team</p>
-        </div>
+<p>Here are the details of your request:</p>
+<table class="details-table">
+    <tr>
+        <th>Booking Reference:</th>
+        <td>{% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}</td>
+    </tr>
+    {% if refund_request.service_booking %}
+    <tr>
+        <th>Service Date:</th>
+        <td>{% if refund_request.service_booking.dropoff_date %}{{ refund_request.service_booking.dropoff_date|date:"D, d M Y" }}{% else %}dropoff_date VARIABLE DID NOT LOAD{% endif %}</td>
+    </tr>
+    <tr>
+        <th>Service Type:</th>
+        <td>{% if refund_request.service_booking.service_type.name %}{{ refund_request.service_booking.service_type.name }}{% else %}service_type.name VARIABLE DID NOT LOAD{% endif %}</td>
+    </tr>
+    {% elif refund_request.sales_booking %}
+    <tr>
+        <th>Appointment Date:</th>
+        <td>{% if refund_request.sales_booking.appointment_date %}{{ refund_request.sales_booking.appointment_date|date:"D, d M Y" }}{% else %}appointment_date VARIABLE DID NOT LOAD{% endif %}</td>
+    </tr>
+    <tr>
+        <th>Motorcycle:</th>
+        <td>{% if refund_request.sales_booking.motorcycle.name %}{{ refund_request.sales_booking.motorcycle.name }}{% else %}motorcycle.name VARIABLE DID NOT LOAD{% endif %}</td>
+    </tr>
+    {% endif %}
+    <tr>
+        <th>Your Email:</th>
+        <td>{% if refund_request.request_email %}{{ refund_request.request_email }}{% else %}refund_request.request_email VARIABLE DID NOT LOAD{% endif %}</td>
+    </tr>
+    {% if refund_request.reason %}
+    <tr>
+        <th>Reason Provided:</th>
+        <td>{{ refund_request.reason }}</td>
+    </tr>
+    {% endif %}
+</table>
 
-        <div class="footer">
-            <p>This is an automated email, please do not reply directly to this message unless you have further questions.</p>
-            <p>&copy; {% now "Y" %} Scootershop Australia. All rights reserved.</p>
-        </div>
-    </div>
-</body>
-</html>
+<p>Once confirmed, your request will be reviewed by our team. We will notify you of the outcome via email.</p>
+<p>You can review our full refund policy <a href="{% if refund_policy_link %}{{ refund_policy_link }}{% else %}refund_policy_link VARIABLE DID NOT LOAD{% endif %}">here</a>.</p>
+<p>If you have any questions, please reply to this email or contact us at <a href="mailto:{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}">{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}</a>.</p>
+<p>Thank you,</p>
+<p>The Scootershop Team</p>
+{% endblock %}
