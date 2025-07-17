@@ -1,7 +1,8 @@
 from django.test import TestCase
 from unittest.mock import patch, MagicMock
 from service.utils.reject_service_booking import reject_service_booking
-from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
+from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import StaffUserFactory
 from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory, ServiceTypeFactory, ServiceSettingsFactory, ServiceTermsFactory, ServicefaqFactory, CustomerMotorcycleFactory, BlockedServiceDateFactory, ServiceBrandFactory
 from inventory.tests.test_helpers.model_factories import SalesBookingFactory, SalesProfileFactory
 from payments.tests.test_helpers.model_factories import PaymentFactory, WebhookEventFactory

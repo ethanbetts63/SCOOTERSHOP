@@ -1,6 +1,8 @@
 from django.test import TestCase
 from payments.models import Payment
-from payments.tests.test_helpers.model_factories import PaymentFactory, ServiceBookingFactory, SalesBookingFactory, ServiceProfileFactory, SalesProfileFactory
+from payments.tests.test_helpers.model_factories import PaymentFactory
+from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory
+from inventory.tests.test_helpers.model_factories import SalesBookingFactory, SalesProfileFactory
 from django.db import IntegrityError
 from decimal import Decimal
 import uuid

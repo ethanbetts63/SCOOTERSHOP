@@ -3,7 +3,7 @@ from django.test import TestCase, RequestFactory
 from django.urls import reverse
 from unittest.mock import patch, MagicMock
 from inventory.ajax.ajax_sales_booking_precheck import sales_booking_precheck_ajax
-from inventory.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import UserFactory
 
 class SalesBookingPrecheckAjaxTest(TestCase):
     def setUp(self):

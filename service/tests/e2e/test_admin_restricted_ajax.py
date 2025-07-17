@@ -4,7 +4,8 @@ from django.contrib.auth import get_user_model
 import json
 import datetime
 from unittest.mock import patch
-from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
+from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import StaffUserFactory
 from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory, ServiceTypeFactory, ServiceSettingsFactory, ServiceTermsFactory, ServicefaqFactory, CustomerMotorcycleFactory
 from inventory.tests.test_helpers.model_factories import SalesBookingFactory, SalesProfileFactory
 from payments.tests.test_helpers.model_factories import PaymentFactory, WebhookEventFactory

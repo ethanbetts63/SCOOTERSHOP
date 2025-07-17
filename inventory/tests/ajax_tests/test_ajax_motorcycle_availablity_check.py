@@ -4,7 +4,7 @@ import json
 import uuid
 
 
-from ..test_helpers.model_factories import (
+from inventory.tests.test_helpers.model_factories import (
     MotorcycleFactory,
     TempSalesBookingFactory,
 )

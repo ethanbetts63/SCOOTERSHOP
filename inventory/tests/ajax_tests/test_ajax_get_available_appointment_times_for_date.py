@@ -2,7 +2,7 @@ import datetime
 from django.test import TestCase, Client
 from django.urls import reverse
 from inventory.models import InventorySettings
-from ..test_helpers.model_factories import (
+from inventory.tests.test_helpers.model_factories import (
     InventorySettingsFactory,
     SalesBookingFactory,
     MotorcycleFactory,

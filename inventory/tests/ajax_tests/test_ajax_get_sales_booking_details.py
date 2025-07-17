@@ -6,13 +6,13 @@ from django.utils import timezone
 import datetime
 
 from inventory.tests.test_helpers.model_factories import (
-    UserFactory,
     SalesBookingFactory,
     SalesProfileFactory,
-    PaymentFactory,
     MotorcycleFactory,
-    RefundRequestFactory,
 )
+from users.tests.test_helpers.model_factories import UserFactory
+from payments.tests.test_helpers.model_factories import PaymentFactory
+from refunds.tests.test_helpers.model_factories import RefundRequestFactory
 
 
 @override_settings(

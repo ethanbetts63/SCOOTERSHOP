@@ -2,9 +2,11 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 
-from ..test_helpers.model_factories import (
+from users.tests.test_helpers.model_factories import (
     UserFactory,
     StaffUserFactory,
+)
+from inventory.tests.test_helpers.model_factories import (
     MotorcycleFactory,
     SalesBookingFactory,
     SalesProfileFactory,

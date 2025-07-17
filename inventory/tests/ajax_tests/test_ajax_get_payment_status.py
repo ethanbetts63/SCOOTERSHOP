@@ -6,12 +6,12 @@ import datetime
 
 
 
-from ..test_helpers.model_factories import (
+from inventory.tests.test_helpers.model_factories import (
     MotorcycleFactory,
     SalesProfileFactory,
-    PaymentFactory,
     SalesBookingFactory,
 )
+from payments.tests.test_helpers.model_factories import PaymentFactory
 
 
 class AjaxGetPaymentStatusTest(TestCase):

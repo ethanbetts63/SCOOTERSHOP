@@ -2,14 +2,10 @@ from django.test import TestCase
 from decimal import Decimal
 
 from refunds.forms.user_refund_request_form import RefundRequestForm
-from refunds.tests.test_helpers.model_factories import (
-    PaymentFactory,
-    SalesBookingFactory,
-    SalesProfileFactory,
-    ServiceBookingFactory,
-    ServiceProfileFactory,
-    UserFactory,
-)
+from payments.tests.test_helpers.model_factories import PaymentFactory
+from inventory.tests.test_helpers.model_factories import SalesBookingFactory, SalesProfileFactory
+from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory
+from users.tests.test_helpers.model_factories import UserFactory
 
 
 class UserRefundRequestFormTests(TestCase):

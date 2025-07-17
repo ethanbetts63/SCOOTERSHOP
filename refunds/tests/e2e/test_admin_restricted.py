@@ -1,10 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from payments.tests.test_helpers.model_factories import (
-    UserFactory,
-    RefundRequestFactory,
-    RefundSettingsFactory,
-)
+from users.tests.test_helpers.model_factories import UserFactory
+from refunds.tests.test_helpers.model_factories import RefundRequestFactory, RefundSettingsFactory
 
 class PaymentsAdminViewsTestCase(TestCase):
     def setUp(self):

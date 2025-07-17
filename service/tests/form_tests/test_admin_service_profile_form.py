@@ -5,7 +5,8 @@ from django.contrib.auth import get_user_model
 from service.forms import AdminServiceProfileForm
 
 
-from ..test_helpers.model_factories import UserFactory, ServiceProfileFactory
+from users.tests.test_helpers.model_factories import UserFactory
+from service.tests.test_helpers.model_factories import ServiceProfileFactory
 
 User = get_user_model()
 

@@ -4,12 +4,12 @@ from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.conf import settings
 from inventory.models import TempSalesBooking, SalesBooking
-from ..test_helpers.model_factories import (
+from inventory.tests.test_helpers.model_factories import (
     InventorySettingsFactory,
     MotorcycleFactory,
-    UserFactory,
     SalesTermsFactory,
 )
+from users.tests.test_helpers.model_factories import UserFactory
 
 @override_settings(ADMIN_EMAIL="ethan.betts.dev@gmail.com")
 class TestEnquiryWithAppointmentFlow(TestCase):

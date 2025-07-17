@@ -2,7 +2,8 @@ import json
 from django.test import TestCase, RequestFactory
 from django.urls import reverse
 from inventory.ajax.ajax_get_sales_bookings_json import get_sales_bookings_json
-from inventory.tests.test_helpers.model_factories import SalesBookingFactory, UserFactory
+from inventory.tests.test_helpers.model_factories import SalesBookingFactory
+from users.tests.test_helpers.model_factories import UserFactory
 
 class GetSalesBookingsJsonTest(TestCase):
     def setUp(self):

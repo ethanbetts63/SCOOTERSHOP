@@ -2,7 +2,7 @@ import json
 from django.test import TestCase, Client
 from django.urls import reverse
 from inventory.models import Motorcycle, MotorcycleCondition
-from ..test_helpers.model_factories import MotorcycleFactory
+from inventory.tests.test_helpers.model_factories import MotorcycleFactory
 
 class AjaxGetMotorcycleListTest(TestCase):
 
