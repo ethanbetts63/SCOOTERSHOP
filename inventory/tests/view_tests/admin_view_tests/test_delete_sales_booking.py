@@ -6,7 +6,7 @@ from unittest import mock
 from inventory.models import SalesBooking
 
 
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
 from inventory.tests.test_helpers.model_factories import (
     SalesBookingFactory,
     MotorcycleFactory,
@@ -17,14 +17,10 @@ class SalesBookingDeleteViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
-        cls.admin_user = UserFactory(
+        cls.admin_user = SuperUserFactory(
             username="admin",
             email="admin@example.com",
-            is_staff=True,
-            is_superuser=True,
         )
-        cls.admin_user.set_password("adminpassword")
-        cls.admin_user.save()
 
         cls.non_admin_user = UserFactory(
             username="user",
@@ -36,7 +32,7 @@ class SalesBookingDeleteViewTest(TestCase):
         cls.non_admin_user.save()
 
     def setUp(self):
-        self.client.login(username="admin", password="adminpassword")
+        self.client.login(username="admin", password="password123")
 
     def test_delete_booking_sets_reserved_motorcycle_to_for_sale(self):
         reserved_motorcycle = MotorcycleFactory(status="reserved", is_available=False)

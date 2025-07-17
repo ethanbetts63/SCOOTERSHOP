@@ -6,7 +6,7 @@ from unittest import mock
 from inventory.models import Motorcycle
 
 
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
 from inventory.tests.test_helpers.model_factories import MotorcycleFactory
 
 
@@ -14,14 +14,10 @@ class MotorcycleDeleteViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
-        cls.admin_user = UserFactory(
+        cls.admin_user = SuperUserFactory(
             username="admin",
             email="admin@example.com",
-            is_staff=True,
-            is_superuser=True,
         )
-        cls.admin_user.set_password("adminpassword")
-        cls.admin_user.save()
 
         cls.non_admin_user = UserFactory(
             username="user",
@@ -41,7 +37,7 @@ class MotorcycleDeleteViewTest(TestCase):
         )
 
     def test_delete_motorcycle_as_admin_success(self):
-        self.client.login(username="admin", password="adminpassword")
+        self.client.login(username="admin", password="password123")
 
         self.assertTrue(
             Motorcycle.objects.filter(pk=self.motorcycle_to_delete.pk).exists()
@@ -66,7 +62,7 @@ class MotorcycleDeleteViewTest(TestCase):
         )
 
     def test_delete_motorcycle_as_admin_not_found(self):
-        self.client.login(username="admin", password="adminpassword")
+        self.client.login(username="admin", password="password123")
         non_existent_pk = self.motorcycle_to_delete.pk + 999
         url = reverse(
             "inventory:admin_motorcycle_delete", kwargs={"pk": non_existent_pk}
@@ -82,7 +78,7 @@ class MotorcycleDeleteViewTest(TestCase):
     def test_delete_motorcycle_as_admin_failure(self, mock_motorcycle_delete):
         mock_motorcycle_delete.side_effect = Exception("Database error occurred!")
 
-        self.client.login(username="admin", password="adminpassword")
+        self.client.login(username="admin", password="password123")
 
         response = self.client.post(self.delete_url, follow=True)
 
