@@ -2,6 +2,7 @@ from django.test import TestCase
 from decimal import Decimal
 from django.apps import apps
 from refunds.forms.admin_refund_request_form import AdminRefundRequestForm
+from refunds.tests.test_helpers.model_factories import RefundRequestFactory
 
 from payments.tests.test_helpers.model_factories import PaymentFactory
 from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory

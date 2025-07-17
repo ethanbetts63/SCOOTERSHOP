@@ -1,10 +1,8 @@
 from django.test import TestCase
 from decimal import Decimal
+from django.apps import apps
 from refunds.utils.create_refund_request import create_refund_request
-from payments.models import Payment
-from refunds.models import RefundRequest
-from service.models import ServiceBooking, ServiceProfile
-from inventory.models import SalesBooking, SalesProfile
+from refunds.tests.test_helpers.model_factories import RefundRequestFactory
 from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
 from service.tests.test_helpers.model_factories import (
     ServiceBookingFactory,
@@ -16,15 +14,22 @@ from inventory.tests.test_helpers.model_factories import (
 )
 from payments.tests.test_helpers.model_factories import PaymentFactory
 
+Payment = apps.get_model('payments', 'Payment')
+RefundRequest = apps.get_model('refunds', 'RefundRequest')
+ServiceBooking = apps.get_model('service', 'ServiceBooking')
+ServiceProfile = apps.get_model('service', 'ServiceProfile')
+SalesBooking = apps.get_model('inventory', 'SalesBooking')
+SalesProfile = apps.get_model('inventory', 'SalesProfile')
+
 
 class CreateRefundRequestTest(TestCase):
     def setUp(self):
-        Payment.objects.all().delete()
-        RefundRequest.objects.all().delete()
-        ServiceBooking.objects.all().delete()
-        SalesBooking.objects.all().delete()
-        ServiceProfile.objects.all().delete()
-        SalesProfile.objects.all().delete()
+        PaymentFactory.reset_sequence()
+        RefundRequestFactory.reset_sequence()
+        ServiceBookingFactory.reset_sequence()
+        SalesBookingFactory.reset_sequence()
+        ServiceProfileFactory.reset_sequence()
+        SalesProfileFactory.reset_sequence()
 
         self.user = UserFactory(email="testuser@example.com")
         self.admin_user = SuperUserFactory(email="admin@example.com")

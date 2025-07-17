@@ -1,11 +1,8 @@
 from django.test import TestCase
 from django.urls import reverse
 from inventory.models import FeaturedMotorcycle
-from inventory.tests.test_helpers.model_factories import (
-    FeaturedMotorcycleFactory,
-    UserFactory,
-    StaffUserFactory,
-)
+from users.tests.test_helpers.model_factories import StaffUserFactory
+from inventory.tests.test_helpers.model_factories import FeaturedMotorcycleFactory
 from django.contrib.messages import get_messages
 
 

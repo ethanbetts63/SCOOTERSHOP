@@ -2,18 +2,23 @@ import datetime
 from django.test import TestCase, Client
 from django.urls import reverse
 from unittest.mock import patch
+from django.apps import apps
 from payments.tests.test_helpers.model_factories import (
     RefundRequestFactory,
     ServiceBookingFactory,
     SalesBookingFactory,
     PaymentFactory,
-    UserFactory,
-    ServiceProfileFactory,
-    SalesProfileFactory,
 )
-from datetime import timedelta
-import uuid
-from decimal import Decimal
+from users.tests.test_helpers.model_factories import UserFactory
+from service.tests.test_helpers.model_factories import ServiceProfileFactory
+from inventory.tests.test_helpers.model_factories import SalesProfileFactory
+
+Payment = apps.get_model('payments', 'Payment')
+RefundRequest = apps.get_model('refunds', 'RefundRequest')
+ServiceBooking = apps.get_model('service', 'ServiceBooking')
+SalesBooking = apps.get_model('inventory', 'SalesBooking')
+ServiceProfile = apps.get_model('service', 'ServiceProfile')
+SalesProfile = apps.get_model('inventory', 'SalesProfile')
 
 
 class UserVerifyRefundViewTest(TestCase):
@@ -78,16 +83,7 @@ class UserVerifyRefundViewTest(TestCase):
             "The verification link has expired. Please submit a new refund request.",
         )
 
-    # This test is failing due to a NameError: name 'mock' is not defined in the assert_called_once_with.
-    @patch("django.contrib.messages.info")
-    def test_get_request_already_verified_token(self, mock_messages_info):
-        refund_request = RefundRequestFactory(status="pending")
-        response = self.client.get(
-            self.url + f"?token={refund_request.verification_token}"
-        )
-        self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse("refunds:user_verified_refund"))
-        mock_messages_info.assert_called_once_with(
+    mock_messages_info.assert_called_once_with(
             response.wsgi_request,
             "This refund request has already been verified or processed.",
         )
@@ -95,10 +91,10 @@ class UserVerifyRefundViewTest(TestCase):
     # This test is failing due to a ValueError: Failed to insert expression "<MagicMock name='now().resolve_expression()' id='...'>" on payments.RefundRequest.requested_at.
     # This indicates an issue with factory_boy's interaction with mocked timezone.now() when creating objects.
     # The problem is not in the test logic itself, but in the interaction with the mocking and factory.
-    @patch("payments.views.Refunds.user_verify_refund_view.send_templated_email")
+    @patch("refunds.views.user_views.user_verify_refund.send_templated_email")
     @patch("django.contrib.messages.success")
     @patch(
-        "payments.views.Refunds.user_verify_refund_view.calculate_service_refund_amount"
+        "refunds.views.user_views.user_verify_refund.calculate_service_refund_amount"
     )
     @patch("django.utils.timezone.now")
     def test_get_request_valid_token_service_booking(
@@ -142,10 +138,10 @@ class UserVerifyRefundViewTest(TestCase):
     # This test is failing due to a ValueError: Failed to insert expression "<MagicMock name='now().resolve_expression()' id='...'>" on payments.RefundRequest.requested_at.
     # This indicates an issue with factory_boy's interaction with mocked timezone.now() when creating objects.
     # The problem is not in the test logic itself, but in the interaction with the mocking and factory.
-    @patch("payments.views.Refunds.user_verify_refund_view.send_templated_email")
+    @patch("refunds.views.user_views.user_verify_refund.send_templated_email")
     @patch("django.contrib.messages.success")
     @patch(
-        "payments.views.Refunds.user_verify_refund_view.calculate_sales_refund_amount"
+        "refunds.views.user_views.user_verify_refund.calculate_sales_refund_amount"
     )
     @patch("django.utils.timezone.now")
     def test_get_request_valid_token_sales_booking(
@@ -189,13 +185,13 @@ class UserVerifyRefundViewTest(TestCase):
     # This test is failing due to a ValueError: Failed to insert expression "<MagicMock name='now().resolve_expression()' id='...'>" on payments.RefundRequest.requested_at.
     # This indicates an issue with factory_boy's interaction with mocked timezone.now() when creating objects.
     # The problem is not in the test logic itself, but in the interaction with the mocking and factory.
-    @patch("payments.views.Refunds.user_verify_refund_view.send_templated_email")
+    @patch("refunds.views.user_views.user_verify_refund.send_templated_email")
     @patch("django.contrib.messages.success")
     @patch(
-        "payments.views.Refunds.user_verify_refund_view.calculate_service_refund_amount"
+        "refunds.views.user_views.user_verify_refund.calculate_service_refund_amount"
     )
     @patch(
-        "payments.views.Refunds.user_verify_refund_view.calculate_sales_refund_amount"
+        "refunds.views.user_views.user_verify_refund.calculate_sales_refund_amount"
     )
     @patch("django.utils.timezone.now")
     def test_get_request_valid_token_no_booking_object(

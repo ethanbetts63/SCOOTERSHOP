@@ -1,14 +1,9 @@
 from django.test import TestCase
 from django.urls import reverse
 from unittest.mock import patch, MagicMock
-from inventory.tests.test_helpers.model_factories import (
-    FeaturedMotorcycleFactory,
-    MotorcycleFactory,
-    UserFactory,
-    StaffUserFactory,
-)
+from users.tests.test_helpers.model_factories import StaffUserFactory
+from inventory.tests.test_helpers.model_factories import MotorcycleFactory, FeaturedMotorcycleFactory
 from django.contrib.messages import get_messages
-
 
 class FeaturedMotorcycleCreateUpdateViewTest(TestCase):
     def setUp(self):

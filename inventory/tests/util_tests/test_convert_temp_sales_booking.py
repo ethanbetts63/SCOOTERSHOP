@@ -123,7 +123,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         self.assertFalse(TempSalesBooking.objects.filter(pk=temp_booking.pk).exists())
 
     def test_conversion_no_inventory_settings(self):
-        InventorySettings.objects.all().delete()
+        InventorySettingsFactory()._meta.model.objects.all().delete()
         self.assertFalse(InventorySettings.objects.exists())
 
         temp_booking = TempSalesBookingFactory(
