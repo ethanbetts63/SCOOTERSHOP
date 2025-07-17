@@ -1,69 +1,32 @@
 
-{% load static %}
+{% extends 'email_layout.html' %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Refund Has Been Processed</title>
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .header img { max-width: 150px; }
-        .content { margin-bottom: 20px; }
-        .highlight { background-color: #e6ffe6; padding: 10px; border-left: 5px solid #4CAF50; margin-bottom: 15px; } /* Green highlight for success */
-        .footer { text-align: center; font-size: 0.9em; color: #777; border-top: 1px solid #eee; padding-top: 15px; margin-top: 20px; }
-        .link { color: #007bff; text-decoration: none; }
-        .link:hover { text-decoration: underline; }
-        .section-title {
-            background-color: #e9ecef;
-            padding: 10px;
-            margin-top: 20px;
-            margin-bottom: 10px;
-            border-left: 5px solid #007bff; /* Blue for sections */
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <img src="{% static 'images/logo_scootershop_tight_crop.png' %}" alt="Scootershop Logo">
-            <h2>Your Refund Has Been Processed</h2>
-        </div>
+{% block title %}
+Your Refund Has Been Processed
+{% endblock %}
 
-        <div class="content">
-            <p>Hi {% if driver_profile and driver_profile.name %}{{ driver_profile.name }}{% elif service_profile and service_profile.name %}{{ service_profile.name }}{% elif sales_profile and sales_profile.name %}{{ sales_profile.name }}{% else %}customer name VARIABLE DID NOT LOAD{% endif %},</p>
+{% block content %}
+<p>Hi {% if driver_profile and driver_profile.name %}{{ driver_profile.name }}{% elif service_profile and service_profile.name %}{{ service_profile.name }}{% elif sales_profile and sales_profile.name %}{{ sales_profile.name }}{% else %}customer name VARIABLE DID NOT LOAD{% endif %},</p>
 
-            <p>This email confirms that your refund request for booking <strong>{% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}</strong> has been processed.</p>
+<p>This email confirms that your refund request for booking <strong>{% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}</strong> has been processed.</p>
 
-            <div class="highlight">
-                <p>A refund of <strong>{% if refunded_amount %}{{ refunded_amount }}{% else %}refunded_amount VARIABLE DID NOT LOAD{% endif %} AUD</strong> has been issued to your original payment method.</p>
-            </div>
+<div class="highlight">
+    <p>A refund of <strong>{% if refunded_amount %}{{ refunded_amount }}{% else %}refunded_amount VARIABLE DID NOT LOAD{% endif %} AUD</strong> has been issued to your original payment method.</p>
+</div>
 
-            
-            {% if admin_message_from_refund %}
-            <div class="section-title">Message from Our Team</div>
-            <p style="white-space: pre-wrap;">{{ admin_message_from_refund }}</p>
-            {% endif %}
 
-            {% if refund_policy_link %}
-            <p>You can review our refund policy here: <a href="{{ refund_policy_link }}" class="link">Refund Policy</a>.</p>
-            {% endif %}
+{% if admin_message_from_refund %}
+<div class="section-title">Message from Our Team</div>
+<p style="white-space: pre-wrap;">{{ admin_message_from_refund }}</p>
+{% endif %}
 
-            <p>If you have any questions, please do not hesitate to contact us at <a href="mailto:{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}">{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}</a>.</p>
+{% if refund_policy_link %}
+<p>You can review our refund policy here: <a href="{{ refund_policy_link }}" class="link">Refund Policy</a>.</p>
+{% endif %}
 
-            <p>Thank you for your patience.</p>
-            <p>Sincerely,</p>
-            <p>The Scootershop Team</p>
-        </div>
+<p>If you have any questions, please do not hesitate to contact us at <a href="mailto:{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}">{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}</a>.</p>
 
-        <div class="footer">
-            <p>This is an automated email. Please do not reply directly to this message.</p>
-            <p>&copy; {% now "Y" %} Scootershop Australia. All rights reserved.</p>
-        </div>
-    </div>
-</body>
-</html>
+<p>Thank you for your patience.</p>
+<p>Sincerely,</p>
+<p>The Scootershop Team</p>
+{% endblock %}
