@@ -1,14 +1,14 @@
 from django.test import TestCase
 from django.urls import reverse
 from service.models import Servicefaq
-from users.tests.test_helpers.model_factories import staff_factory
+from users.tests.test_helpers.model_factories import StaffUserFactory
 from service.tests.test_helpers.model_factories import ServicefaqFactory
 from django.contrib.messages import get_messages
 
 
 class ServicefaqDeleteViewTest(TestCase):
     def setUp(self):
-        self.admin_user = staff_factory()
+        self.admin_user = StaffUserFactory()
         self.client.force_login(self.admin_user)
         self.service_faq = ServicefaqFactory(question="Test Service FAQ Question")
 

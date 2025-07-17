@@ -4,12 +4,12 @@ from django.urls import reverse
 from unittest.mock import patch, ANY
 from refunds.forms.admin_reject_refund_form import AdminRejectRefundForm
 from payments.tests.test_helpers.model_factories import (
-    UserFactory,
     RefundRequestFactory,
     ServiceBookingFactory,
     SalesBookingFactory,
     SalesProfileFactory,
 )
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 from django.utils import timezone
 from django.conf import settings
 

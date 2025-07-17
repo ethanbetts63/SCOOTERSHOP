@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.utils import timezone
 from service.models import CustomerMotorcycle
-from users.tests.test_helpers.model_factories import staff_factory, SuperUserFactory, UserFactory
+from users.tests.test_helpers.model_factories import StaffUserFactory, SuperUserFactory, UserFactory
 from service.tests.test_helpers.model_factories import (
     ServiceProfileFactory,
     CustomerMotorcycleFactory,
@@ -12,7 +12,7 @@ from service.tests.test_helpers.model_factories import (
 class CustomerMotorcycleManagementViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.staff_user = staff_factory(
+        cls.staff_user = StaffUserFactory(
             username="staff_user_moto"
         )
         cls.superuser = SuperUserFactory(

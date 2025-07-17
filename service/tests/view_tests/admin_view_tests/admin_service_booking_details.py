@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.utils import timezone
-from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
+from users.tests.test_helpers.model_factories import StaffUserFactory, SuperUserFactory
 from service.tests.test_helpers.model_factories import (
     ServiceBookingFactory,
     ServiceTypeFactory,
@@ -11,8 +11,8 @@ from service.tests.test_helpers.model_factories import (
 class AdminServiceBookingDetailViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.staff_user = UserFactory(
-            username="staff_user_detail", is_staff=True, is_superuser=False
+        cls.staff_user = StaffUserFactory(
+            username="staff_user_detail"
         )
         cls.superuser = SuperUserFactory(
             username="superuser_detail"

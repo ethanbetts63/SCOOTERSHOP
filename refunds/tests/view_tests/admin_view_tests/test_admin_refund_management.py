@@ -7,11 +7,11 @@ from datetime import timedelta
 
 from refunds.models import RefundRequest
 from payments.tests.test_helpers.model_factories import (
-    UserFactory,
     RefundRequestFactory,
     SalesBookingFactory,
     SalesProfileFactory,
 )
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 
 
 class AdminRefundManagementTest(TestCase):

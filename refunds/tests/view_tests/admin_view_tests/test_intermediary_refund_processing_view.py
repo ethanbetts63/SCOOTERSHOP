@@ -2,8 +2,8 @@ from django.test import TestCase
 from django.urls import reverse
 from payments.tests.test_helpers.model_factories import (
     RefundRequestFactory,
-    UserFactory,
 )
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 
 
 class IntermediaryRefundProcessingViewTest(TestCase):

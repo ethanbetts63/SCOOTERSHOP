@@ -1,14 +1,14 @@
 from django.test import TestCase
 from django.urls import reverse
 from service.models import ServiceBooking
-from users.tests.test_helpers.model_factories import staff_factory
+from users.tests.test_helpers.model_factories import StaffUserFactory
 from service.tests.test_helpers.model_factories import ServiceBookingFactory
 from django.contrib.messages import get_messages
 
 
 class AdminServiceBookingDeleteViewTest(TestCase):
     def setUp(self):
-        self.admin_user = staff_factory()
+        self.admin_user = StaffUserFactory()
         self.client.force_login(self.admin_user)
         self.service_booking = ServiceBookingFactory(
             service_booking_reference="SBK-TEST"

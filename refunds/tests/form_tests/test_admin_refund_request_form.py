@@ -4,7 +4,7 @@ from refunds.forms.admin_refund_request_form import AdminRefundRequestForm
 from refunds.models.RefundRequest import RefundRequest
 
 from payments.tests.test_helpers.model_factories import PaymentFactory
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 from inventory.tests.test_helpers.model_factories import (
     SalesBookingFactory,
     SalesProfileFactory,
@@ -20,9 +20,7 @@ from service.tests.test_helpers.model_factories import (
 
 class AdminRefundRequestFormTests(TestCase):
     def setUp(self):
-        self.admin_user = UserFactory(
-            username="admin", email="admin@example.com", is_staff=True
-        )
+        self.admin_user = StaffUserFactory(username="admin", email="admin@example.com")
         self.sales_profile = SalesProfileFactory(user=self.admin_user)
         self.service_profile = ServiceProfileFactory(user=self.admin_user)
         self.motorcycle_gen = MotorcycleFactory()

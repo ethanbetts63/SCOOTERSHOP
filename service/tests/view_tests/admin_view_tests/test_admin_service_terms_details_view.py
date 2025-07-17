@@ -1,12 +1,12 @@
 from django.test import TestCase
 from django.urls import reverse
-from users.tests.test_helpers.model_factories import staff_factory
+from users.tests.test_helpers.model_factories import StaffUserFactory
 from service.tests.test_helpers.model_factories import ServiceTermsFactory
 
 
 class ServiceTermsDetailsViewTest(TestCase):
     def setUp(self):
-        self.admin_user = staff_factory()
+        self.admin_user = StaffUserFactory()
         self.client.force_login(self.admin_user)
         self.service_terms = ServiceTermsFactory(
             version_number=1, content="Test Content"

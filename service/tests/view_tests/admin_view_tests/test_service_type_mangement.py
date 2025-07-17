@@ -1,12 +1,12 @@
 from django.test import TestCase
 from django.urls import reverse
 from service.tests.test_helpers.model_factories import ServiceTypeFactory
-from users.tests.test_helpers.model_factories import staff_factory
+from users.tests.test_helpers.model_factories import StaffUserFactory
 
 
 class ServiceTypeManagementViewTest(TestCase):
     def setUp(self):
-        self.admin_user = staff_factory()
+        self.admin_user = StaffUserFactory()
         self.client.force_login(self.admin_user)
         self.service_type1 = ServiceTypeFactory(name="Oil Change")
         self.service_type2 = ServiceTypeFactory(name="Tyre Replacement")

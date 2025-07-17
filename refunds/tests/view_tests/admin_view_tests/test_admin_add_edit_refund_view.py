@@ -4,12 +4,12 @@ from unittest.mock import patch
 from refunds.models import RefundRequest
 from refunds.forms.admin_refund_request_form import AdminRefundRequestForm
 from payments.tests.test_helpers.model_factories import (
-    UserFactory,
     RefundRequestFactory,
     ServiceBookingFactory,
     SalesBookingFactory,
     PaymentFactory,
 )
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 from decimal import Decimal
 
 

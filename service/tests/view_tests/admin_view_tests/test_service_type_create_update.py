@@ -2,13 +2,13 @@ from django.test import TestCase
 from django.urls import reverse
 from service.models import ServiceType
 from service.tests.test_helpers.model_factories import ServiceTypeFactory
-from users.tests.test_helpers.model_factories import staff_factory
+from users.tests.test_helpers.model_factories import StaffUserFactory
 from django.contrib.messages import get_messages
 
 
 class ServiceTypeCreateUpdateViewTest(TestCase):
     def setUp(self):
-        self.admin_user = staff_factory()
+        self.admin_user = StaffUserFactory()
         self.client.force_login(self.admin_user)
 
     def test_create_service_type_get(self):

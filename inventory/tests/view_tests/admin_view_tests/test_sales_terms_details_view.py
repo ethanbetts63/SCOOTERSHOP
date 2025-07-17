@@ -6,7 +6,7 @@ from users.tests.test_helpers.model_factories import UserFactory, StaffUserFacto
 
 class SalesTermsDetailsViewTest(TestCase):
     def self.admin_user = StaffUserFactory()
-        self.admin_user = UserFactory(is_staff=True)
+        self.admin_user = StaffUserFactory()
         self.client.force_login(self.admin_user)
         self.sales_terms = SalesTermsFactory(version_number=1, content="Test Content")
 

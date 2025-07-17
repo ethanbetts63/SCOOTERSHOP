@@ -5,15 +5,15 @@ from django.contrib import messages
 
 from service.models import ServiceProfile
 from service.forms import AdminServiceProfileForm
-from users.tests.test_helpers.model_factories import staff_factory, SuperUserFactory
+from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
 from service.tests.test_helpers.model_factories import ServiceProfileFactory
 
 
 class ServiceProfileCreateUpdateViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.staff_user = UserFactory(
-            username="staff_user", is_staff=True, is_superuser=False
+        cls.staff_user = StaffUserFactory(
+            username="staff_user"
         )
         cls.superuser = SuperUserFactory(
             username="superuser"

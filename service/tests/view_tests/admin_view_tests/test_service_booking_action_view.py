@@ -5,12 +5,12 @@ from unittest.mock import patch
 from service.tests.test_helpers.model_factories import (
     ServiceBookingFactory,
 )
-from users.tests.test_helpers.model_factories import staff_factory
+from users.tests.test_helpers.model_factories import StaffUserFactory
 
 
 class ServiceBookingActionViewTest(TestCase):
     def setUp(self):
-        self.admin_user = staff_factory()
+        self.admin_user = StaffUserFactory()
         self.client.force_login(self.admin_user)
         self.service_booking = ServiceBookingFactory()
 

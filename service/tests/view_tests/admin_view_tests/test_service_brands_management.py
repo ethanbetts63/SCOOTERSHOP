@@ -2,13 +2,13 @@ from django.test import TestCase
 from django.urls import reverse
 from service.models import ServiceBrand
 from service.tests.test_helpers.model_factories import ServiceBrandFactory
-from users.tests.test_helpers.model_factories import staff_factory
+from users.tests.test_helpers.model_factories import StaffUserFactory
 from django.contrib.messages import get_messages
 
 
 class ServiceBrandManagementViewTest(TestCase):
     def setUp(self):
-        self.admin_user = staff_factory()
+        self.admin_user = StaffUserFactory()
         self.client.force_login(self.admin_user)
         self.brand1 = ServiceBrandFactory(name="Brand A")
         self.brand2 = ServiceBrandFactory(name="Brand B")

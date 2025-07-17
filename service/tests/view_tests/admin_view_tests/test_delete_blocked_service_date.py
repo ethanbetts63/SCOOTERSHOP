@@ -1,14 +1,14 @@
 from django.test import TestCase
 from django.urls import reverse
 from service.models import BlockedServiceDate
-from users.tests.test_helpers.model_factories import staff_factory
+from users.tests.test_helpers.model_factories import StaffUserFactory
 from service.tests.test_helpers.model_factories import BlockedServiceDateFactory
 from django.contrib.messages import get_messages
 
 
 class BlockedServiceDateDeleteViewTest(TestCase):
     def setUp(self):
-        self.admin_user = staff_factory()
+        self.admin_user = StaffUserFactory()
         self.client.force_login(self.admin_user)
         self.blocked_date = BlockedServiceDateFactory()
 

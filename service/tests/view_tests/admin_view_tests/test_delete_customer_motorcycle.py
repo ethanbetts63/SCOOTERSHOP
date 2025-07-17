@@ -1,14 +1,14 @@
 from django.test import TestCase
 from django.urls import reverse
 from service.models import CustomerMotorcycle
-from users.tests.test_helpers.model_factories import staff_factory
+from users.tests.test_helpers.model_factories import StaffUserFactory
 from service.tests.test_helpers.model_factories import CustomerMotorcycleFactory
 from django.contrib.messages import get_messages
 
 
 class CustomerMotorcycleDeleteViewTest(TestCase):
     def setUp(self):
-        self.admin_user = staff_factory()
+        self.admin_user = StaffUserFactory()
         self.client.force_login(self.admin_user)
         self.customer_motorcycle = CustomerMotorcycleFactory(
             year=2020, brand="Honda", model="CBR"

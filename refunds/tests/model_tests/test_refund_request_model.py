@@ -10,7 +10,7 @@ from service.tests.test_helpers.model_factories import (
     ServiceTypeFactory,
 )
 from payments.tests.test_helpers.model_factories import PaymentFactory
-from users.tests.test_helpers.model_factories import UserFactory
+from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 from inventory.tests.test_helpers.model_factories import (
     MotorcycleConditionFactory,
     MotorcycleFactory,
@@ -30,7 +30,7 @@ class RefundRequestModelTest(TestCase):
 
         cls.motorcycle = MotorcycleFactory.create()
         cls.service_profile = ServiceProfileFactory.create(name="Service Customer")
-        cls.user = UserFactory.create(username="teststaff", is_staff=True)
+        cls.user = StaffUserFactory.create(username="teststaff")
 
         cls.service_type = ServiceTypeFactory.create()
         cls.customer_motorcycle = CustomerMotorcycleFactory.create(
