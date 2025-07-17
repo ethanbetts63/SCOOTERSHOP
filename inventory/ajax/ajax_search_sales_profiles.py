@@ -12,7 +12,6 @@ def search_sales_profiles_ajax(request):
     profiles_data = []
 
     if search_term:
-
         search_query = (
             Q(name__icontains=search_term)
             | Q(email__icontains=search_term)

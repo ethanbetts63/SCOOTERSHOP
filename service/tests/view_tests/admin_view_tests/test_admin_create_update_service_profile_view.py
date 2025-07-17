@@ -10,10 +10,8 @@ from service.tests.test_helpers.model_factories import ServiceProfileFactory
 
 
 class ServiceProfileCreateUpdateViewTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         cls.staff_user = UserFactory(
             username="staff_user", is_staff=True, is_superuser=False
         )
@@ -35,14 +33,12 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
         )
 
     def setUp(self):
-
         self.client = Client()
 
         self.session = self.client.session
         self.session.save()
 
     def test_view_redirects_anonymous_user(self):
-
         response = self.client.get(self.create_url)
         self.assertRedirects(
             response, reverse("users:login") + f"?next={self.create_url}"
@@ -64,7 +60,6 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
         self.client.login(username="adminuser", password="testpassword")
 
     def test_view_grants_access_to_superuser(self):
-
         self.client.force_login(self.superuser)
         response = self.client.get(self.create_url)
         self.assertEqual(response.status_code, 200)
@@ -73,12 +68,13 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_get_request_create_new_profile(self):
-
         self.client.force_login(self.staff_user)
         response = self.client.get(self.create_url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "service/admin_service_profile_create_update.html")
+        self.assertTemplateUsed(
+            response, "service/admin_service_profile_create_update.html"
+        )
         self.assertIsInstance(response.context["form"], AdminServiceProfileForm)
         self.assertFalse(response.context["is_edit_mode"])
         self.assertIsNone(response.context["current_profile"])
@@ -86,12 +82,13 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
         self.assertFalse(response.context["form"].is_bound)
 
     def test_get_request_update_existing_profile(self):
-
         self.client.force_login(self.staff_user)
         response = self.client.get(self.update_url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "service/admin_service_profile_create_update.html")
+        self.assertTemplateUsed(
+            response, "service/admin_service_profile_create_update.html"
+        )
         self.assertIsInstance(response.context["form"], AdminServiceProfileForm)
         self.assertTrue(response.context["is_edit_mode"])
         self.assertEqual(response.context["current_profile"], self.existing_profile)
@@ -101,7 +98,6 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
         self.assertFalse(response.context["form"].is_bound)
 
     def test_get_request_update_non_existent_profile(self):
-
         self.client.force_login(self.staff_user)
         non_existent_pk = self.existing_profile.pk + 9999
         non_existent_url = reverse(
@@ -111,7 +107,6 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_post_request_create_new_profile_valid(self):
-
         self.client.force_login(self.staff_user)
         initial_profile_count = ServiceProfile.objects.count()
         new_user = UserFactory(
@@ -145,7 +140,6 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
         self.assertEqual(messages_list[0].level, messages.SUCCESS)
 
     def test_post_request_create_new_profile_invalid(self):
-
         self.client.force_login(self.staff_user)
         initial_profile_count = ServiceProfile.objects.count()
 
@@ -164,7 +158,9 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
 
         self.assertEqual(ServiceProfile.objects.count(), initial_profile_count)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "service/admin_service_profile_create_update.html")
+        self.assertTemplateUsed(
+            response, "service/admin_service_profile_create_update.html"
+        )
         self.assertIn("form", response.context)
         self.assertFalse(response.context["form"].is_valid())
         self.assertIn("name", response.context["form"].errors)
@@ -175,7 +171,6 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
         self.assertEqual(messages_list[0].level, messages.ERROR)
 
     def test_post_request_update_existing_profile_valid(self):
-
         self.client.force_login(self.staff_user)
         original_name = self.existing_profile.name
         updated_name = "Updated Existing Profile Name"
@@ -206,7 +201,6 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
         self.assertEqual(messages_list[0].level, messages.SUCCESS)
 
     def test_post_request_update_existing_profile_invalid(self):
-
         self.client.force_login(self.staff_user)
         original_name = self.existing_profile.name
 
@@ -226,7 +220,9 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
         response = self.client.post(self.update_url, data)
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "service/admin_service_profile_create_update.html")
+        self.assertTemplateUsed(
+            response, "service/admin_service_profile_create_update.html"
+        )
         self.assertIn("form", response.context)
         self.assertFalse(response.context["form"].is_valid())
         self.assertIn("user", response.context["form"].errors)
@@ -244,7 +240,6 @@ class ServiceProfileCreateUpdateViewTest(TestCase):
         self.assertEqual(self.existing_profile.name, original_name)
 
     def test_post_request_update_non_existent_profile(self):
-
         self.client.force_login(self.staff_user)
         non_existent_pk = self.existing_profile.pk + 9999
         non_existent_url = reverse(

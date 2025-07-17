@@ -8,13 +8,14 @@ from service.ajax.ajax_get_customer_motorcycle_details import (
 )
 
 
-
 from users.tests.test_helpers.model_factories import StaffUserFactory
-from service.tests.test_helpers.model_factories import ServiceProfileFactory, CustomerMotorcycleFactory
+from service.tests.test_helpers.model_factories import (
+    ServiceProfileFactory,
+    CustomerMotorcycleFactory,
+)
 
 
 class AjaxGetCustomerMotorcycleDetailsTest(TestCase):
-
     def setUp(self):
         self.factory = RequestFactory()
         self.service_profile = ServiceProfileFactory()
@@ -81,7 +82,7 @@ class AjaxGetCustomerMotorcycleDetailsTest(TestCase):
         request = self.factory.post(url)
         # FIX 3: Manually attach the user to the request
         request.user = self.staff_user
-        
+
         response = get_motorcycle_details_ajax(
             request, motorcycle_id=self.motorcycle.pk
         )

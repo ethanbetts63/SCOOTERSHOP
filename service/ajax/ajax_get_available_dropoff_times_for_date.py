@@ -8,7 +8,6 @@ from service.utils.get_available_service_dropoff_times import (
 
 @require_GET
 def get_available_dropoff_times_for_date(request):
-
     selected_date_str = request.GET.get("date")
 
     if not selected_date_str:
@@ -17,7 +16,6 @@ def get_available_dropoff_times_for_date(request):
     try:
         selected_date = datetime.datetime.strptime(selected_date_str, "%Y-%m-%d").date()
     except ValueError:
-
         return JsonResponse(
             {"error": "Invalid date format. Use YYYY-MM-DD."}, status=400
         )

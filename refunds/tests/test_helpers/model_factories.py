@@ -3,8 +3,10 @@ from payments.tests.test_helpers.model_factories import PaymentFactory
 from refunds.models import RefundRequest, RefundSettings, RefundTerms
 from django.utils import timezone
 from faker import Faker
+
 fake = Faker()
 import uuid
+
 
 class RefundSettingsFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -19,6 +21,7 @@ class RefundSettingsFactory(factory.django.DjangoModelFactory):
     full_payment_partial_refund_days = 5
     full_payment_no_refund_percentage = 2
     full_payment_partial_refund_percentage = 60
+
 
 class RefundRequestFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -68,6 +71,7 @@ class RefundRequestFactory(factory.django.DjangoModelFactory):
     request_email = factory.Faker("email")
     verification_token = factory.LazyFunction(uuid.uuid4)
     token_created_at = factory.LazyFunction(timezone.now)
+
 
 class RefundTermsFactory(factory.django.DjangoModelFactory):
     class Meta:

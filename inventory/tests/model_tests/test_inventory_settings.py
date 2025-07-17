@@ -9,16 +9,13 @@ from inventory.tests.test_helpers.model_factories import InventorySettingsFactor
 
 
 class InventorySettingsModelTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         InventorySettings.objects.all().delete()
 
         cls.settings = InventorySettingsFactory()
 
     def test_inventory_settings_creation(self):
-
         self.assertIsInstance(self.settings, InventorySettings)
         self.assertIsNotNone(self.settings.pk)
 
@@ -32,7 +29,6 @@ class InventorySettingsModelTest(TestCase):
             new_settings_attempt.save()
 
     def test_enable_depositless_viewing_field(self):
-
         field = self.settings._meta.get_field("enable_depositless_viewing")
         self.assertIsInstance(self.settings.enable_depositless_viewing, bool)
         self.assertTrue(field.default)
@@ -42,7 +38,6 @@ class InventorySettingsModelTest(TestCase):
         )
 
     def test_enable_reservation_by_deposit_field(self):
-
         field = self.settings._meta.get_field("enable_reservation_by_deposit")
         self.assertIsInstance(self.settings.enable_reservation_by_deposit, bool)
         self.assertTrue(field.default)
@@ -52,7 +47,6 @@ class InventorySettingsModelTest(TestCase):
         )
 
     def test_deposit_amount_field(self):
-
         field = self.settings._meta.get_field("deposit_amount")
         self.assertIsInstance(self.settings.deposit_amount, Decimal)
         self.assertEqual(field.max_digits, 10)
@@ -72,7 +66,6 @@ class InventorySettingsModelTest(TestCase):
         self.assertIn("deposit_amount", cm.exception.message_dict)
 
     def test_deposit_lifespan_days_field(self):
-
         field = self.settings._meta.get_field("deposit_lifespan_days")
         self.assertIsInstance(self.settings.deposit_lifespan_days, int)
         self.assertEqual(field.default, 5)
@@ -90,7 +83,6 @@ class InventorySettingsModelTest(TestCase):
         self.assertIn("deposit_lifespan_days", cm.exception.message_dict)
 
     def test_sales_booking_open_days_field(self):
-
         field = self.settings._meta.get_field("sales_booking_open_days")
         self.assertIsInstance(self.settings.sales_booking_open_days, str)
         self.assertEqual(field.max_length, 255)
@@ -101,7 +93,6 @@ class InventorySettingsModelTest(TestCase):
         )
 
     def test_sales_appointment_time_fields(self):
-
         start_field = self.settings._meta.get_field("sales_appointment_start_time")
         end_field = self.settings._meta.get_field("sales_appointment_end_time")
 
@@ -138,7 +129,6 @@ class InventorySettingsModelTest(TestCase):
         self.assertIn("sales_appointment_end_time", cm.exception.message_dict)
 
     def test_sales_appointment_spacing_mins_field(self):
-
         field = self.settings._meta.get_field("sales_appointment_spacing_mins")
         self.assertIsInstance(self.settings.sales_appointment_spacing_mins, int)
         self.assertEqual(field.default, 30)
@@ -164,7 +154,6 @@ class InventorySettingsModelTest(TestCase):
         self.assertIn("sales_appointment_spacing_mins", cm.exception.message_dict)
 
     def test_max_advance_booking_days_field(self):
-
         field = self.settings._meta.get_field("max_advance_booking_days")
         self.assertIsInstance(self.settings.max_advance_booking_days, int)
         self.assertEqual(field.default, 90)
@@ -182,7 +171,6 @@ class InventorySettingsModelTest(TestCase):
         self.assertIn("max_advance_booking_days", cm.exception.message_dict)
 
     def test_min_advance_booking_hours_field(self):
-
         field = self.settings._meta.get_field("min_advance_booking_hours")
         self.assertIsInstance(self.settings.min_advance_booking_hours, int)
         self.assertEqual(field.default, 24)
@@ -200,7 +188,6 @@ class InventorySettingsModelTest(TestCase):
         self.assertIn("min_advance_booking_hours", cm.exception.message_dict)
 
     def test_currency_fields(self):
-
         code_field = self.settings._meta.get_field("currency_code")
         symbol_field = self.settings._meta.get_field("currency_symbol")
 
@@ -220,25 +207,21 @@ class InventorySettingsModelTest(TestCase):
         )
 
     def test_timestamps(self):
-
         self.assertIsNotNone(self.settings.created_at)
         self.assertIsNotNone(self.settings.updated_at)
         self.assertIsInstance(self.settings.created_at, datetime.datetime)
         self.assertIsInstance(self.settings.updated_at, datetime.datetime)
 
     def test_str_method(self):
-
         self.assertEqual(str(self.settings), "Inventory Settings")
 
     def test_verbose_names_meta(self):
-
         self.assertEqual(InventorySettings._meta.verbose_name, "Inventory Settings")
         self.assertEqual(
             InventorySettings._meta.verbose_name_plural, "Inventory Settings"
         )
 
     def test_enable_sales_new_bikes_field(self):
-
         field = self.settings._meta.get_field("enable_sales_new_bikes")
         self.assertIsInstance(self.settings.enable_sales_new_bikes, bool)
         self.assertTrue(field.default)
@@ -248,7 +231,6 @@ class InventorySettingsModelTest(TestCase):
         )
 
     def test_enable_sales_used_bikes_field(self):
-
         field = self.settings._meta.get_field("enable_sales_used_bikes")
         self.assertIsInstance(self.settings.enable_sales_used_bikes, bool)
         self.assertTrue(field.default)
@@ -258,7 +240,6 @@ class InventorySettingsModelTest(TestCase):
         )
 
     def test_require_drivers_license_field(self):
-
         field = self.settings._meta.get_field("require_drivers_license")
         self.assertIsInstance(self.settings.require_drivers_license, bool)
         self.assertFalse(field.default)
@@ -267,7 +248,6 @@ class InventorySettingsModelTest(TestCase):
         )
 
     def test_require_address_info_field(self):
-
         field = self.settings._meta.get_field("require_address_info")
         self.assertIsInstance(self.settings.require_address_info, bool)
         self.assertFalse(field.default)

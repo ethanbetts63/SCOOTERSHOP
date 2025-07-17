@@ -11,10 +11,8 @@ from inventory.tests.test_helpers.model_factories import (
 
 
 class GetAvailableAppointmentTimesForDateAjaxTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         cls.client = Client()
 
         cls.inventory_settings = InventorySettingsFactory(
@@ -30,7 +28,6 @@ class GetAvailableAppointmentTimesForDateAjaxTest(TestCase):
         cls.ajax_url = reverse("inventory:ajax_get_appointment_times")
 
     def test_missing_date_parameter(self):
-
         response = self.client.get(self.ajax_url)
         self.assertEqual(response.status_code, 400)
         self.assertJSONEqual(
@@ -38,7 +35,6 @@ class GetAvailableAppointmentTimesForDateAjaxTest(TestCase):
         )
 
     def test_invalid_date_format(self):
-
         response = self.client.get(f"{self.ajax_url}?selected_date=2025/06/24")
         self.assertEqual(response.status_code, 400)
 
@@ -47,7 +43,6 @@ class GetAvailableAppointmentTimesForDateAjaxTest(TestCase):
         )
 
     def test_no_inventory_settings(self):
-
         InventorySettings.objects.all().delete()
         response = self.client.get(f"{self.ajax_url}?selected_date=2025-06-24")
         self.assertEqual(response.status_code, 500)
@@ -63,7 +58,6 @@ class GetAvailableAppointmentTimesForDateAjaxTest(TestCase):
         )
 
     def test_get_available_times_no_bookings(self):
-
         test_date = datetime.date.today() + datetime.timedelta(days=1)
         response = self.client.get(
             f"{self.ajax_url}?selected_date={test_date.strftime('%Y-%m-%d')}"
@@ -95,7 +89,6 @@ class GetAvailableAppointmentTimesForDateAjaxTest(TestCase):
         self.assertEqual(data["available_times"], expected_times)
 
     def test_get_available_times_with_existing_bookings(self):
-
         test_date = datetime.date.today() + datetime.timedelta(days=2)
 
         SalesBookingFactory(
@@ -155,7 +148,6 @@ class GetAvailableAppointmentTimesForDateAjaxTest(TestCase):
         self.assertEqual(data["available_times"], expected_available_times)
 
     def test_get_available_times_min_advance_booking_hours(self):
-
         self.inventory_settings.min_advance_booking_hours = 48
         self.inventory_settings.save()
 

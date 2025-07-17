@@ -8,7 +8,6 @@ from ..decorators import admin_required
 @require_GET
 @admin_required
 def search_service_bookings_ajax(request):
-
     search_term = request.GET.get("query", "").strip()
     bookings_data = []
 
@@ -16,7 +15,6 @@ def search_service_bookings_ajax(request):
         return JsonResponse({"error": "Permission denied"}, status=403)
 
     if search_term:
-
         search_query = (
             Q(service_booking_reference__icontains=search_term)
             | Q(customer_notes__icontains=search_term)
@@ -44,7 +42,6 @@ def search_service_bookings_ajax(request):
         for booking in queryset[:20]:
             customer_name = "N/A"
             if booking.service_profile:
-
                 customer_name = booking.service_profile.name
 
             motorcycle_info = "N/A"

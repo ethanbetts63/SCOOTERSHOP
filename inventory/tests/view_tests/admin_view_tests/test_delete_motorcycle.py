@@ -6,13 +6,11 @@ from unittest import mock
 from inventory.models import Motorcycle
 
 
-
 from users.tests.test_helpers.model_factories import UserFactory
 from inventory.tests.test_helpers.model_factories import MotorcycleFactory
 
 
 class MotorcycleDeleteViewTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
@@ -110,7 +108,7 @@ class MotorcycleDeleteViewTest(TestCase):
         response = self.client.post(self.delete_url, follow=True)
 
         self.assertRedirects(
-            response, f'{reverse("users:login")}?next={self.delete_url}'
+            response, f"{reverse('users:login')}?next={self.delete_url}"
         )
 
         self.assertTrue(
@@ -134,7 +132,7 @@ class MotorcycleDeleteViewTest(TestCase):
         response = self.client.post(self.delete_url, follow=True)
 
         self.assertRedirects(
-            response, f'{reverse("users:login")}?next={self.delete_url}'
+            response, f"{reverse('users:login')}?next={self.delete_url}"
         )
 
         self.assertTrue(

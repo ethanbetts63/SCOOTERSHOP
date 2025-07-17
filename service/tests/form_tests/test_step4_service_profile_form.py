@@ -6,10 +6,8 @@ from service.tests.test_helpers.model_factories import ServiceProfileFactory
 
 
 class ServiceBookingUserFormTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         cls.valid_service_profile_data = {
             "name": "John Doe",
             "email": "john.doe@example.com",
@@ -23,7 +21,6 @@ class ServiceBookingUserFormTest(TestCase):
         }
 
     def test_form_valid_data(self):
-
         form = ServiceBookingUserForm(data=self.valid_service_profile_data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
 
@@ -41,7 +38,6 @@ class ServiceBookingUserFormTest(TestCase):
         self.assertEqual(cleaned_data["country"], "AU")
 
     def test_form_invalid_data_missing_required_fields(self):
-
         required_fields = [
             "name",
             "email",
@@ -62,7 +58,6 @@ class ServiceBookingUserFormTest(TestCase):
                 self.assertIn("This field is required.", form.errors[field])
 
     def test_form_invalid_email_format(self):
-
         data = self.valid_service_profile_data.copy()
         data["email"] = "invalid-email"
         form = ServiceBookingUserForm(data=data)
@@ -77,7 +72,6 @@ class ServiceBookingUserFormTest(TestCase):
         self.assertIn("Enter a valid email address.", form.errors["email"])
 
     def test_form_invalid_phone_number_format(self):
-
         data = self.valid_service_profile_data.copy()
 
         expected_error_message = "Phone number must contain only digits, spaces, hyphens, and an optional leading '+'. Example: '+61412345678' or '0412 345 678'."
@@ -102,7 +96,6 @@ class ServiceBookingUserFormTest(TestCase):
         self.assertEqual(form.cleaned_data["phone_number"], "0412 345-678")
 
     def test_form_with_existing_service_profile(self):
-
         existing_profile = ServiceProfileFactory(
             name="Jane Doe",
             email="jane.doe@example.com",
@@ -145,7 +138,6 @@ class ServiceBookingUserFormTest(TestCase):
         self.assertEqual(updated_profile.pk, existing_profile.pk)
 
     def test_form_optional_fields(self):
-
         data = self.valid_service_profile_data.copy()
         data["address_line_2"] = ""
         data["state"] = ""

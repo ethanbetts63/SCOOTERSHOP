@@ -11,7 +11,6 @@ from service.ajax.ajax_search_service_profiles import search_customer_profiles_a
 
 
 class AjaxSearchCustomerProfilesTest(TestCase):
-
     def setUp(self):
         self.factory = RequestFactory()
         # FIX 2: Create a staff user to attach to requests
@@ -149,6 +148,6 @@ class AjaxSearchCustomerProfilesTest(TestCase):
         request = self.factory.post(url)
         # FIX 3: Manually attach the user to the request
         request.user = self.staff_user
-        
+
         response = search_customer_profiles_ajax(request)
         self.assertEqual(response.status_code, 405)

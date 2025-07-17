@@ -2,6 +2,7 @@ import factory
 import datetime
 import uuid
 from faker import Faker
+
 fake = Faker()
 from inventory.models import (
     BlockedSalesDate,
@@ -30,6 +31,7 @@ from inventory.models.sales_booking import (
 )
 from users.tests.test_helpers.model_factories import UserFactory
 from payments.tests.test_helpers.model_factories import PaymentFactory
+
 
 class MotorcycleConditionFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -89,14 +91,12 @@ class MotorcycleFactory(factory.django.DjangoModelFactory):
     def conditions(obj, create, extracted, **kwargs):
         if not create:
             return
-        
+
         if extracted:
             for condition_name in extracted:
                 condition, _ = MotorcycleCondition.objects.get_or_create(
                     name=condition_name,
-                    defaults={
-                        "display_name": condition_name.replace("_", " ").title()
-                    },
+                    defaults={"display_name": condition_name.replace("_", " ").title()},
                 )
                 obj.conditions.add(condition)
 
@@ -197,7 +197,7 @@ class TempSalesBookingFactory(factory.django.DjangoModelFactory):
     booking_status = factory.Faker(
         "random_element", elements=[choice[0] for choice in TEMP_BOOKING_STATUS_CHOICES]
     )
-    
+
 
 class SalesBookingFactory(factory.django.DjangoModelFactory):
     class Meta:

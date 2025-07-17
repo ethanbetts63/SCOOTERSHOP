@@ -1,7 +1,11 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from users.tests.test_helpers.model_factories import UserFactory
-from refunds.tests.test_helpers.model_factories import RefundRequestFactory, RefundSettingsFactory
+from refunds.tests.test_helpers.model_factories import (
+    RefundRequestFactory,
+    RefundSettingsFactory,
+)
+
 
 class PaymentsAdminViewsTestCase(TestCase):
     def setUp(self):
@@ -9,14 +13,18 @@ class PaymentsAdminViewsTestCase(TestCase):
         self.login_url = reverse("users:login")
         self.regular_user = UserFactory(password="password123")
         self.staff_user = UserFactory(is_staff=True, password="password123")
-        self.admin_user = UserFactory(is_staff=True, is_superuser=True, password="password123")
+        self.admin_user = UserFactory(
+            is_staff=True, is_superuser=True, password="password123"
+        )
         self.refund_request = RefundRequestFactory()
-        RefundSettingsFactory() 
+        RefundSettingsFactory()
 
     def _assert_redirects_to_login(self, url):
         self.client.login(username=self.regular_user.username, password="password123")
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 302, f"URL {url} did not redirect for regular user.")
+        self.assertEqual(
+            response.status_code, 302, f"URL {url} did not redirect for regular user."
+        )
         self.assertIn(self.login_url, response.url)
         self.client.logout()
 
@@ -52,7 +60,7 @@ class PaymentsAdminViewsTestCase(TestCase):
 
     def test_process_refund_permissions(self):
         url = reverse("refunds:process_refund", args=[self.refund_request.pk])
-        self._assert_redirects_to_login(url) 
+        self._assert_redirects_to_login(url)
         self.client.login(username=self.staff_user.username, password="password123")
         response = self.client.post(url)
         self.assertEqual(response.status_code, 302)
@@ -80,4 +88,3 @@ class PaymentsAdminViewsTestCase(TestCase):
         self._assert_redirects_to_login(url)
         self._assert_staff_access_allowed(url)
         self._assert_superuser_access_allowed(url)
-

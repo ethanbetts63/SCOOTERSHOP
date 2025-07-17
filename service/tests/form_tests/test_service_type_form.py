@@ -5,12 +5,10 @@ from service.forms import AdminServiceTypeForm
 from service.models import ServiceType
 
 
-
 from service.tests.test_helpers.model_factories import ServiceTypeFactory
 
 
 class AdminServiceTypeFormTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.service_type_instance = ServiceTypeFactory(

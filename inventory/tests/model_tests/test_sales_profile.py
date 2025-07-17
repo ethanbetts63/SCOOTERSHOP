@@ -11,9 +11,7 @@ from users.tests.test_helpers.model_factories import UserFactory
 from inventory.tests.test_helpers.model_factories import SalesProfileFactory
 
 
-
 class SalesProfileModelTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.user = UserFactory()

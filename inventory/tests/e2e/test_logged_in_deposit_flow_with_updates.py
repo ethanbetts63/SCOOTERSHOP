@@ -5,12 +5,17 @@ from unittest import skipIf
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.conf import settings
-from inventory.models import  SalesBooking
+from inventory.models import SalesBooking
 from inventory.models import TempSalesBooking, SalesBooking
 from payments.models import Payment
-from inventory.tests.test_helpers.model_factories import InventorySettingsFactory, MotorcycleFactory, SalesTermsFactory
+from inventory.tests.test_helpers.model_factories import (
+    InventorySettingsFactory,
+    MotorcycleFactory,
+    SalesTermsFactory,
+)
 from users.tests.test_helpers.model_factories import UserFactory
 from payments.webhook_handlers.sales_handlers import handle_sales_booking_succeeded
+
 
 @skipIf(not settings.STRIPE_SECRET_KEY, "Stripe API key not configured in settings")
 class TestLoggedInDepositFlowWithUpdates(TestCase):
@@ -79,7 +84,9 @@ class TestLoggedInDepositFlowWithUpdates(TestCase):
         self.client.post(step2_url, updated_appointment_data)
 
         self.client.get(step3_url)
-        temp_booking = TempSalesBooking.objects.get(session_uuid=self.client.session["temp_sales_booking_uuid"])
+        temp_booking = TempSalesBooking.objects.get(
+            session_uuid=self.client.session["temp_sales_booking_uuid"]
+        )
         payment_obj = Payment.objects.get(temp_sales_booking=temp_booking)
         payment_obj.refresh_from_db()
         payment_intent_id = payment_obj.stripe_payment_intent_id
@@ -103,7 +110,7 @@ class TestLoggedInDepositFlowWithUpdates(TestCase):
 
         self.assertEqual(final_booking.sales_profile.name, "Thorough Tester Updated")
         self.assertEqual(final_booking.sales_profile.phone_number, "555-4321")
-        
+
         self.assertEqual(final_booking.appointment_date, datetime.date(2025, 9, 20))
         self.assertEqual(final_booking.appointment_time, datetime.time(9, 0))
 

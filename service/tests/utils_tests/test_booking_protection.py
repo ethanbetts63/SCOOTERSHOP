@@ -25,9 +25,7 @@ class BookingProtectionUtilTests(TestCase):
         self.middleware.MessageMiddleware(lambda r: None).process_request(self.request)
 
     def test_set_recent_booking_flag_stores_timestamp(self):
-
         with patch("django.utils.timezone.now") as mock_now:
-
             test_time = datetime.datetime(
                 2025, 1, 1, 10, 0, 0, tzinfo=datetime.timezone.utc
             )
@@ -41,16 +39,13 @@ class BookingProtectionUtilTests(TestCase):
             )
 
     def test_check_and_manage_recent_booking_flag_no_flag(self):
-
         self.assertNotIn("last_booking_successful_timestamp", self.request.session)
         response = check_and_manage_recent_booking_flag(self.request)
         self.assertIsNone(response)
         self.assertFalse(list(get_messages(self.request)))
 
     def test_check_and_manage_recent_booking_flag_within_cooling_period(self):
-
         with patch("django.utils.timezone.now") as mock_now:
-
             initial_time = datetime.datetime(
                 2025, 1, 1, 10, 0, 0, tzinfo=datetime.timezone.utc
             )
@@ -77,9 +72,7 @@ class BookingProtectionUtilTests(TestCase):
             )
 
     def test_check_and_manage_recent_booking_flag_after_cooling_period(self):
-
         with patch("django.utils.timezone.now") as mock_now:
-
             initial_time = datetime.datetime(
                 2025, 1, 1, 10, 0, 0, tzinfo=datetime.timezone.utc
             )
@@ -96,7 +89,6 @@ class BookingProtectionUtilTests(TestCase):
             self.assertFalse(list(get_messages(self.request)))
 
     def test_check_and_manage_recent_booking_flag_malformed_timestamp(self):
-
         self.request.session["last_booking_successful_timestamp"] = (
             "not-a-valid-timestamp"
         )

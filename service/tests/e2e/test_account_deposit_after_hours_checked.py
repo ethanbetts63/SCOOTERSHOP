@@ -16,8 +16,14 @@ from dashboard.models import SiteSettings
 from payments.models import Payment
 from payments.webhook_handlers.service_handlers import handle_service_booking_succeeded
 from users.tests.test_helpers.model_factories import UserFactory
-from service.tests.test_helpers.model_factories import ServiceProfileFactory, ServiceTypeFactory, ServiceSettingsFactory, ServiceTermsFactory, CustomerMotorcycleFactory, ServiceBrandFactory
-
+from service.tests.test_helpers.model_factories import (
+    ServiceProfileFactory,
+    ServiceTypeFactory,
+    ServiceSettingsFactory,
+    ServiceTermsFactory,
+    CustomerMotorcycleFactory,
+    ServiceBrandFactory,
+)
 
 
 SEND_BOOKINGS_TO_MECHANICDESK = False
@@ -49,7 +55,9 @@ class TestAfterHoursDepositPaymentFlow(TestCase):
             enable_after_hours_dropoff=True,
         )
         self.service_type = ServiceTypeFactory(
-            name="After Hours Test Service", base_price=Decimal("600.00"), is_active=True
+            name="After Hours Test Service",
+            base_price=Decimal("600.00"),
+            is_active=True,
         )
         self.user = UserFactory(username="afterhoursuser")
 
@@ -90,9 +98,7 @@ class TestAfterHoursDepositPaymentFlow(TestCase):
             },
             follow=True,
         )
-        self.client.post(
-            step2_url, {"selected_motorcycle": self.motorcycle.id}
-        )
+        self.client.post(step2_url, {"selected_motorcycle": self.motorcycle.id})
 
         # --- Step 4: Profile Confirmation ---
         profile_data = {
@@ -106,8 +112,8 @@ class TestAfterHoursDepositPaymentFlow(TestCase):
         # ** This is the critical change for the test **
         step5_data = {
             "dropoff_date": valid_future_date.strftime("%Y-%m-%d"),
-            "after_hours_drop_off_choice": "on", # Check the after-hours box
-            "dropoff_time": "", # Ensure time is empty as per form logic
+            "after_hours_drop_off_choice": "on",  # Check the after-hours box
+            "dropoff_time": "",  # Ensure time is empty as per form logic
             "payment_method": "online_deposit",
             "service_terms_accepted": "on",
         }

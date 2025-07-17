@@ -6,13 +6,11 @@ from unittest import mock
 from inventory.models import BlockedSalesDate
 
 
-
 from users.tests.test_helpers.model_factories import UserFactory
 from inventory.tests.test_helpers.model_factories import BlockedSalesDateFactory
 
 
 class BlockedSalesDateDeleteViewTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
@@ -108,7 +106,7 @@ class BlockedSalesDateDeleteViewTest(TestCase):
         response = self.client.post(self.delete_url, follow=True)
 
         self.assertRedirects(
-            response, f'{reverse("users:login")}?next={self.delete_url}'
+            response, f"{reverse('users:login')}?next={self.delete_url}"
         )
         self.assertTrue(
             BlockedSalesDate.objects.filter(pk=self.blocked_date_to_delete.pk).exists()
@@ -131,7 +129,7 @@ class BlockedSalesDateDeleteViewTest(TestCase):
         response = self.client.post(self.delete_url, follow=True)
 
         self.assertRedirects(
-            response, f'{reverse("users:login")}?next={self.delete_url}'
+            response, f"{reverse('users:login')}?next={self.delete_url}"
         )
         self.assertTrue(
             BlockedSalesDate.objects.filter(pk=self.blocked_date_to_delete.pk).exists()

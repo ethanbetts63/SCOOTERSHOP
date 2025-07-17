@@ -12,13 +12,10 @@ from payments.tests.test_helpers.model_factories import WebhookEventFactory
 
 
 class WebhookEventModelTest(TestCase):
-
     def setUp(self):
-
         WebhookEvent.objects.all().delete()
 
     def test_create_basic_webhook_event(self):
-
         stripe_event_id = "evt_test_12345"
         event_type = "payment_intent.succeeded"
 
@@ -33,7 +30,6 @@ class WebhookEventModelTest(TestCase):
         self.assertIsNone(event.payload)
 
     def test_stripe_event_id_uniqueness(self):
-
         stripe_event_id = "evt_unique_id_1"
         event_type = "charge.succeeded"
 
@@ -47,7 +43,6 @@ class WebhookEventModelTest(TestCase):
             )
 
     def test_auto_now_add_for_received_at(self):
-
         event = WebhookEventFactory.create(
             stripe_event_id="evt_time_test", event_type="invoice.paid"
         )
@@ -57,7 +52,6 @@ class WebhookEventModelTest(TestCase):
         self.assertLess(time_difference, datetime.timedelta(seconds=5))
 
     def test_payload_json_field(self):
-
         payload_data = {
             "id": "pi_xyz",
             "object": "payment_intent",
@@ -90,7 +84,6 @@ class WebhookEventModelTest(TestCase):
         self.assertEqual(event.payload, expected_updated_payload)
 
     def test_str_method(self):
-
         stripe_event_id = "evt_str_method_test"
         event_type = "customer.updated"
 
@@ -104,7 +97,6 @@ class WebhookEventModelTest(TestCase):
         self.assertEqual(str(event), expected_str)
 
     def test_ordering_by_received_at(self):
-
         event1 = WebhookEventFactory.create(
             stripe_event_id="evt_order_1", event_type="type1"
         )
@@ -121,7 +113,6 @@ class WebhookEventModelTest(TestCase):
         self.assertEqual(list(all_events), [event3, event2, event1])
 
     def test_max_length_constraints(self):
-
         long_id = "a" * 101
         long_type = "b" * 101
 

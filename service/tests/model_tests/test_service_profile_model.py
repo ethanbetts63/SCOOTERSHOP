@@ -14,19 +14,15 @@ User = settings.AUTH_USER_MODEL
 
 
 class ServiceProfileModelTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         cls.service_profile = ServiceProfileFactory()
 
     def test_service_profile_creation(self):
-
         self.assertIsInstance(self.service_profile, ServiceProfile)
         self.assertIsNotNone(self.service_profile.pk)
 
     def test_user_relationship(self):
-
         profile = self.service_profile
         self.assertIsNotNone(profile.user)
         self.assertIsInstance(profile.user, UserFactory._meta.model)
@@ -45,7 +41,6 @@ class ServiceProfileModelTest(TestCase):
         self.assertIsNone(profile_no_user.user)
 
     def test_contact_information_fields(self):
-
         profile = self.service_profile
         self.assertEqual(profile._meta.get_field("name").max_length, 100)
         self.assertFalse(profile._meta.get_field("name").blank)
@@ -63,7 +58,6 @@ class ServiceProfileModelTest(TestCase):
         self.assertIsInstance(profile.phone_number, str)
 
     def test_address_information_fields(self):
-
         profile = self.service_profile
         self.assertEqual(profile._meta.get_field("address_line_1").max_length, 100)
         self.assertFalse(profile._meta.get_field("address_line_1").blank)
@@ -94,7 +88,6 @@ class ServiceProfileModelTest(TestCase):
         self.assertIsInstance(profile.country, str)
 
     def test_timestamps(self):
-
         profile = self.service_profile
         self.assertIsInstance(profile.created_at, datetime)
         self.assertIsInstance(profile.updated_at, datetime)
@@ -106,7 +99,6 @@ class ServiceProfileModelTest(TestCase):
         self.assertGreater(profile.updated_at, old_updated_at)
 
     def test_clean_method_phone_number_validation(self):
-
         profile = ServiceProfileFactory()
 
         profile.phone_number = "0412345678"
@@ -129,7 +121,6 @@ class ServiceProfileModelTest(TestCase):
             profile.full_clean()
 
     def test_clean_method_email_user_email_discrepancy(self):
-
         user = UserFactory(email="user@example.com")
 
         profile = ServiceProfileFactory(user=user, email="profile@example.com")
@@ -150,7 +141,6 @@ class ServiceProfileModelTest(TestCase):
             )
 
     def test_str_method(self):
-
         profile_with_user = self.service_profile
         expected_str_with_user = f"Profile for {profile_with_user.user.get_username()} ({profile_with_user.name})"
         self.assertEqual(str(profile_with_user), expected_str_with_user)
@@ -171,7 +161,6 @@ class ServiceProfileModelTest(TestCase):
         self.assertEqual(str(profile_no_user), expected_str_no_user)
 
     def test_meta_options(self):
-
         self.assertEqual(ServiceProfile._meta.verbose_name, "Service Customer Profile")
         self.assertEqual(
             ServiceProfile._meta.verbose_name_plural, "Service Customer Profiles"

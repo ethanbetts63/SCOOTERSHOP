@@ -9,15 +9,12 @@ from service.utils.admin_create_service_booking import admin_create_service_book
 
 
 class AdminServiceBookingCreateUpdateView(AdminRequiredMixin, View):
-
     template_name = "service/admin_service_booking_create_update.html"
 
     def test_func(self):
-
         return self.request.user.is_staff or self.request.user.is_superuser
 
     def get_context_data(self, **kwargs):
-
         context = {
             "ajax_search_customer_url": reverse_lazy(
                 "service:admin_api_search_customer"
@@ -32,9 +29,7 @@ class AdminServiceBookingCreateUpdateView(AdminRequiredMixin, View):
         return context
 
     def get(self, request, pk=None, *args, **kwargs):
-
         if pk:
-
             booking = get_object_or_404(ServiceBooking, pk=pk)
             booking_details_form = AdminBookingDetailsForm(instance=booking)
             selected_profile = booking.service_profile
@@ -46,7 +41,6 @@ class AdminServiceBookingCreateUpdateView(AdminRequiredMixin, View):
                 instance=booking,
             )
         else:
-
             booking_details_form = AdminBookingDetailsForm()
             context = self.get_context_data(
                 booking_details_form=booking_details_form,
@@ -57,16 +51,13 @@ class AdminServiceBookingCreateUpdateView(AdminRequiredMixin, View):
         return render(request, self.template_name, context)
 
     def post(self, request, pk=None, *args, **kwargs):
-
         booking_instance = None
         if pk:
-
             booking_instance = get_object_or_404(ServiceBooking, pk=pk)
 
             service_profile = booking_instance.service_profile
             customer_motorcycle = booking_instance.customer_motorcycle
         else:
-
             selected_profile_id = request.POST.get("selected_profile_id")
             selected_motorcycle_id = request.POST.get("selected_motorcycle_id")
 

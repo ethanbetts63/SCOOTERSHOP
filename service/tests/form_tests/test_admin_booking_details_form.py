@@ -7,11 +7,10 @@ from unittest.mock import patch
 from service.forms import AdminBookingDetailsForm
 from service.tests.test_helpers.model_factories import ServiceTypeFactory
 
-class AdminBookingDetailsFormTest(TestCase):
 
+class AdminBookingDetailsFormTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-
         cls.service_type = ServiceTypeFactory()
 
         cls.booking_status_choices = [
@@ -40,13 +39,11 @@ class AdminBookingDetailsFormTest(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-
         cls._patch_booking_status.stop()
         cls._patch_payment_status.stop()
         super().tearDownClass()
 
     def test_valid_form_submission(self):
-
         today = date.today()
         future_date = today + timedelta(days=5)
 
@@ -73,20 +70,18 @@ class AdminBookingDetailsFormTest(TestCase):
         self.assertEqual(form.get_warnings(), [])
 
     def test_required_fields(self):
-
         form_data = {}
         form = AdminBookingDetailsForm(data=form_data)
         self.assertFalse(form.is_valid())
         self.assertIn("service_type", form.errors)
         self.assertIn("service_date", form.errors)
         self.assertIn("dropoff_date", form.errors)
-        
+
         self.assertIn("booking_status", form.errors)
         self.assertIn("payment_status", form.errors)
         self.assertIn("estimated_pickup_date", form.errors)
 
     def test_dropoff_date_after_service_date_warning(self):
-
         today = date.today()
         service_date = today + timedelta(days=2)
         dropoff_date = today + timedelta(days=5)
@@ -110,7 +105,6 @@ class AdminBookingDetailsFormTest(TestCase):
 
     @patch("service.forms.date")
     def test_service_date_in_past_warning(self, mock_date):
-
         mock_date.today.return_value = date(2025, 1, 15)
         past_service_date = date(2025, 1, 10)
 
@@ -133,7 +127,6 @@ class AdminBookingDetailsFormTest(TestCase):
 
     @patch("service.forms.date")
     def test_dropoff_date_in_past_warning(self, mock_date):
-
         mock_date.today.return_value = date(2025, 1, 15)
         past_dropoff_date = date(2025, 1, 10)
         future_service_date = date(2025, 1, 20)
@@ -156,7 +149,6 @@ class AdminBookingDetailsFormTest(TestCase):
         self.assertIn("Warning: Drop-off date is in the past.", form.get_warnings())
 
     def test_optional_fields_can_be_blank(self):
-
         today = date.today()
         future_date = today + timedelta(days=5)
         current_time = (

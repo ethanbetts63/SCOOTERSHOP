@@ -43,9 +43,11 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
                 payment_obj=payment_obj,
             )
         except OSError as e:
-            logger.error(f"Webhook Error: OSError converting temp service booking for payment {payment_obj.id}. Error: {e}")
+            logger.error(
+                f"Webhook Error: OSError converting temp service booking for payment {payment_obj.id}. Error: {e}"
+            )
             raise
-        
+
         if payment_obj.status != payment_intent_data["status"]:
             payment_obj.status = payment_intent_data["status"]
             payment_obj.save()
@@ -53,7 +55,6 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
         service_profile = service_booking.service_profile
         user_email = service_profile.email
         site_settings = SiteSettings.get_settings()
-        
 
         if user_email:
             send_templated_email(
@@ -86,7 +87,7 @@ def handle_service_booking_succeeded(payment_obj: Payment, payment_intent_data: 
                 booking=service_booking,
                 profile=service_profile,
             )
-    
+
     except TempServiceBooking.DoesNotExist as e:
         logger.warning(
             f"Webhook Info: TempServiceBooking not found for payment {payment_obj.id}, possibly already processed. Error: {e}"

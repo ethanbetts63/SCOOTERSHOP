@@ -33,10 +33,10 @@ def search_motorcycles_ajax(request):
 
         # Apply condition filter, checking both the simple and M2M fields
         if condition in ["new", "used", "demo"]:
-            condition_filter = Q(condition=condition) | Q(conditions__name__iexact=condition)
+            condition_filter = Q(condition=condition) | Q(
+                conditions__name__iexact=condition
+            )
             queryset = queryset.filter(condition_filter)
-
-        
 
         # Order and limit the results
         queryset = queryset.distinct().order_by("brand", "model", "year")[:20]

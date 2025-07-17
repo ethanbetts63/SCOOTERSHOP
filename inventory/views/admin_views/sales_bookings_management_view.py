@@ -11,7 +11,12 @@ class SalesBookingsManagementView(AdminRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        queryset = super().get_queryset().select_related('motorcycle', 'sales_profile').order_by("-created_at")
+        queryset = (
+            super()
+            .get_queryset()
+            .select_related("motorcycle", "sales_profile")
+            .order_by("-created_at")
+        )
         search_term = self.request.GET.get("q", "").strip()
 
         if search_term:

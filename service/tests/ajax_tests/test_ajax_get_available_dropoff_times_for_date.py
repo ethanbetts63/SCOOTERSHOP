@@ -8,10 +8,13 @@ from service.ajax.ajax_get_available_dropoff_times_for_date import (
     get_available_dropoff_times_for_date,
 )
 
+
 class AjaxGetAvailableDropoffTimesForDateTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
-        self.user = User.objects.create_user(username='testuser', password='password', is_staff=True)
+        self.user = User.objects.create_user(
+            username="testuser", password="password", is_staff=True
+        )
 
     @patch(
         "service.ajax.ajax_get_available_dropoff_times_for_date.get_available_dropoff_times"
@@ -52,7 +55,7 @@ class AjaxGetAvailableDropoffTimesForDateTest(TestCase):
 
         test_date = datetime.date(2025, 6, 20)
         request = self.factory.get(
-            f'/ajax/available-times/?date={test_date.strftime("%Y-%m-%d")}'
+            f"/ajax/available-times/?date={test_date.strftime('%Y-%m-%d')}"
         )
         request.user = self.user
         response = get_available_dropoff_times_for_date(request)
@@ -74,7 +77,7 @@ class AjaxGetAvailableDropoffTimesForDateTest(TestCase):
 
         test_date = datetime.date(2025, 6, 21)
         request = self.factory.get(
-            f'/ajax/available-times/?date={test_date.strftime("%Y-%m-%d")}'
+            f"/ajax/available-times/?date={test_date.strftime('%Y-%m-%d')}"
         )
         request.user = self.user
         response = get_available_dropoff_times_for_date(request)
@@ -98,7 +101,7 @@ class AjaxGetAvailableDropoffTimesForDateTest(TestCase):
     def test_only_get_requests_allowed(self, mock_get_available_dropoff_times):
         test_date = datetime.date(2025, 6, 22)
         request = self.factory.post(
-            f'/ajax/available-times/?date={test_date.strftime("%Y-%m-%d")}'
+            f"/ajax/available-times/?date={test_date.strftime('%Y-%m-%d')}"
         )
         request.user = self.user
         response = get_available_dropoff_times_for_date(request)

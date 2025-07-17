@@ -5,7 +5,6 @@ from datetime import time
 
 
 class InventorySettings(models.Model):
-
     enable_depositless_viewing = models.BooleanField(
         default=True,
         help_text="Allow customers to submit an appointment request for a motorcycle viewing without requiring a deposit.",
@@ -107,7 +106,6 @@ class InventorySettings(models.Model):
         return "Inventory Settings"
 
     def clean(self):
-
         super().clean()
         errors = {}
 
@@ -156,7 +154,6 @@ class InventorySettings(models.Model):
             raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
-
         self.full_clean()
 
         if not self.pk and InventorySettings.objects.exists():

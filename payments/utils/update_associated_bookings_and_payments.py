@@ -9,7 +9,6 @@ def update_associated_bookings_and_payments(
     total_refunded_amount: Decimal,
 ):
     if booking_obj:
-
         booking_obj.amount_paid = max(
             Decimal("0.00"), payment_obj.amount - total_refunded_amount
         )
@@ -21,7 +20,6 @@ def update_associated_bookings_and_payments(
         elif booking_obj.amount_paid < payment_obj.amount:
             booking_obj.payment_status = "partially_refunded"
         else:
-
             booking_obj.payment_status = "paid"
 
         if booking_type_str == "service_booking":
@@ -31,7 +29,6 @@ def update_associated_bookings_and_payments(
             ):
                 booking_obj.booking_status = "DECLINED_REFUNDED"
         elif booking_type_str == "sales_booking":
-
             if (
                 booking_obj.payment_status == "refunded"
                 and booking_obj.booking_status
@@ -42,10 +39,8 @@ def update_associated_bookings_and_payments(
                 booking_obj.payment_status == "refunded"
                 and booking_obj.booking_status in ["cancelled", "declined", "no_show"]
             ):
-
                 booking_obj.booking_status = "declined_refunded"
             elif booking_obj.payment_status == "partially_refunded":
-
                 pass
 
         booking_obj.save()

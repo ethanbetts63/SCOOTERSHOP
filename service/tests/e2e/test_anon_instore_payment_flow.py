@@ -10,7 +10,12 @@ from service.models import (
     ServiceBooking,
 )
 from dashboard.models import SiteSettings
-from service.tests.test_helpers.model_factories import ServiceTypeFactory, ServiceSettingsFactory, ServiceTermsFactory, ServiceBrandFactory
+from service.tests.test_helpers.model_factories import (
+    ServiceTypeFactory,
+    ServiceSettingsFactory,
+    ServiceTermsFactory,
+    ServiceBrandFactory,
+)
 
 
 SEND_BOOKINGS_TO_MECHANICDESK = False
@@ -18,7 +23,6 @@ SEND_BOOKINGS_TO_MECHANICDESK = False
 
 @override_settings(ADMIN_EMAIL="admin@example.com")
 class TestAnonymousInStorePaymentFlow(TestCase):
-
     def setUp(self):
         self.client = Client()
         SiteSettings.objects.create(enable_service_booking=True)
@@ -55,7 +59,7 @@ class TestAnonymousInStorePaymentFlow(TestCase):
         self.assertRedirects(
             response,
             step3_url
-            + f'?temp_booking_uuid={self.client.session["temp_service_booking_uuid"]}',
+            + f"?temp_booking_uuid={self.client.session['temp_service_booking_uuid']}",
         )
 
         motorcycle_data = {
@@ -158,7 +162,7 @@ class TestAnonymousInStorePaymentFlow(TestCase):
         self.assertRedirects(
             response,
             step3_url
-            + f'?temp_booking_uuid={self.client.session["temp_service_booking_uuid"]}',
+            + f"?temp_booking_uuid={self.client.session['temp_service_booking_uuid']}",
         )
         messages = list(response.context["messages"])
         self.assertEqual(len(messages), 1)

@@ -9,7 +9,7 @@ from .views.user_views import (
     step4_confirmation_view,
     user_motorcycle_details_view,
     SalesTermsView,
-    SalesEnquiryView
+    SalesEnquiryView,
 )
 
 from .views.admin_views import (
@@ -266,7 +266,6 @@ urlpatterns = [
         SalesTermsDetailsView.as_view(),
         name="terms_and_conditions_detail",
     ),
-
     # Admin Featured Motorcycles
     path(
         "admin/featured-motorcycles/",

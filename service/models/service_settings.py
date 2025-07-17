@@ -58,7 +58,6 @@ class ServiceSettings(models.Model):
         help_text="Instructions for customers on how to use the after-hours drop-off (e.g., key box location, how to secure the vehicle).",
     )
 
-    
     DEPOSIT_CALC_CHOICES = [
         ("FLAT_FEE", "Flat Fee"),
         ("PERCENTAGE", "Percentage of Booking Total"),
@@ -74,7 +73,7 @@ class ServiceSettings(models.Model):
         decimal_places=2,
         default=Decimal("50.00"),
         help_text="Flat fee amount for deposit if 'Flat Fee' method is chosen.",
-        validators=[MinValueValidator(Decimal('1.00'))]
+        validators=[MinValueValidator(Decimal("1.00"))],
     )
     deposit_percentage = models.DecimalField(
         max_digits=5,
@@ -102,7 +101,9 @@ class ServiceSettings(models.Model):
         max_length=5, default="$", help_text="Currency symbol (e.g., $)."
     )
 
-    enable_estimated_pickup_date = models.BooleanField(default=False, verbose_name="Enable Estimated Pick-up Date")
+    enable_estimated_pickup_date = models.BooleanField(
+        default=False, verbose_name="Enable Estimated Pick-up Date"
+    )
 
     def __str__(self):
         return "Service Settings"

@@ -3,7 +3,6 @@ import uuid
 
 
 class TempServiceBooking(models.Model):
-
     PAYMENT_METHOD_CHOICES = [
         ("online_full", "Full Payment Online"),
         ("online_deposit", "Deposit Payment Online"),
@@ -66,8 +65,7 @@ class TempServiceBooking(models.Model):
     )
 
     after_hours_drop_off = models.BooleanField(
-        default=False,
-        help_text="Stores the user's choice for after-hours drop-off."
+        default=False, help_text="Stores the user's choice for after-hours drop-off."
     )
 
     customer_notes = models.TextField(
@@ -91,11 +89,10 @@ class TempServiceBooking(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-
         profile_name = (
             self.service_profile.name if self.service_profile else "Anonymous"
         )
-        return f"Temp Booking { self.session_uuid}  for {profile_name} on {self.dropoff_date}"
+        return f"Temp Booking {self.session_uuid}  for {profile_name} on {self.dropoff_date}"
 
     class Meta:
         verbose_name = "Temporary Service Booking"

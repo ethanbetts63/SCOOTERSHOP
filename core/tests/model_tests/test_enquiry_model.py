@@ -5,7 +5,6 @@ from core.tests.test_helpers.model_factories import EnquiryFactory
 
 
 class EnquiryModelTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.enquiry = EnquiryFactory()

@@ -77,7 +77,6 @@ class Step3CustomerMotorcycleView(View):
             context = {
                 "form": form,
                 "temp_booking": self.temp_booking,
-
                 "step": 3,
                 "total_steps": 7,
             }

@@ -17,11 +17,17 @@ from service.models import (
     CustomerMotorcycle,
 )
 from users.tests.test_helpers.model_factories import UserFactory
-from service.tests.test_helpers.model_factories import TempServiceBookingFactory, ServiceProfileFactory, ServiceTypeFactory, ServiceSettingsFactory, CustomerMotorcycleFactory, BlockedServiceDateFactory
+from service.tests.test_helpers.model_factories import (
+    TempServiceBookingFactory,
+    ServiceProfileFactory,
+    ServiceTypeFactory,
+    ServiceSettingsFactory,
+    CustomerMotorcycleFactory,
+    BlockedServiceDateFactory,
+)
 
 
 class Step1ServiceDetailsViewTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.factory = RequestFactory()
@@ -371,7 +377,6 @@ class Step1ServiceDetailsViewTest(TestCase):
             "service.views.user_views.step1_service_details_view.TempServiceBooking.objects.create",
             side_effect=Exception("Database error!"),
         ):
-
             self.request.session = {}
             self.request.user = Mock(is_authenticated=False)
 

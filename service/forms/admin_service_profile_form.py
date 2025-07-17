@@ -6,7 +6,6 @@ User = get_user_model()
 
 
 class AdminServiceProfileForm(forms.ModelForm):
-
     user = forms.ModelChoiceField(
         queryset=User.objects.all().order_by("username"),
         required=False,
@@ -54,26 +53,21 @@ class AdminServiceProfileForm(forms.ModelForm):
         }
 
     def clean_user(self):
-
         user = self.cleaned_data.get("user")
 
         if user:
-
             existing_profile_for_user = ServiceProfile.objects.filter(user=user).first()
 
             if existing_profile_for_user:
-
                 if self.instance and existing_profile_for_user.pk == self.instance.pk:
                     pass
                 else:
-
                     raise forms.ValidationError(
                         f"This user ({user.username}) is already linked to another Service Profile."
                     )
         return user
 
     def clean(self):
-
         cleaned_data = super().clean()
         user = cleaned_data.get("user")
         name = cleaned_data.get("name")

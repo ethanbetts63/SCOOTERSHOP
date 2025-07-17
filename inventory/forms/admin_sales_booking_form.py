@@ -7,7 +7,6 @@ from decimal import Decimal
 
 
 class AdminSalesBookingForm(forms.ModelForm):
-
     selected_profile_id = forms.IntegerField(
         required=True, widget=forms.HiddenInput(), label=_("Selected Sales Profile ID")
     )
@@ -206,7 +205,6 @@ class AdminSalesBookingForm(forms.ModelForm):
 
             else:
                 if motorcycle.status in ["reserved", "sold"]:
-
                     if not (
                         instance_motorcycle and instance_motorcycle.pk == motorcycle.pk
                     ):
@@ -225,5 +223,4 @@ class AdminSalesBookingForm(forms.ModelForm):
         return cleaned_data
 
     def get_warnings(self):
-
         return getattr(self, "_warnings", [])

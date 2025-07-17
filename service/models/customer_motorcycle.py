@@ -4,7 +4,6 @@ from django.core.exceptions import ValidationError
 
 
 class CustomerMotorcycle(models.Model):
-
     service_profile = models.ForeignKey(
         "service.ServiceProfile",
         on_delete=models.CASCADE,

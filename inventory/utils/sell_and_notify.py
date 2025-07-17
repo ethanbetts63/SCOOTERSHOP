@@ -2,11 +2,12 @@ from inventory.models import SalesBooking
 from mailer.utils.send_templated_email import send_templated_email
 from django.conf import settings
 
+
 def sell_and_notify(motorcycle):
     motorcycle.status = "sold"
     motorcycle.save()
     bookings_to_notify = SalesBooking.objects.filter(
-        motorcycle=motorcycle, payment_status='unpaid'
+        motorcycle=motorcycle, payment_status="unpaid"
     )
 
     for booking in bookings_to_notify:
@@ -33,6 +34,6 @@ def sell_and_notify(motorcycle):
                 profile=booking.sales_profile,
             )
             if success:
-                pass        
+                pass
         except Exception as e:
             pass

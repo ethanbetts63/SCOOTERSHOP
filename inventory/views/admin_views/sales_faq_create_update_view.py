@@ -8,12 +8,10 @@ from inventory.models import Salesfaq
 
 
 class SalesfaqCreateUpdateView(AdminRequiredMixin, View):
-
     template_name = "inventory/admin_sales_faq_create_update.html"
     form_class = AdminSalesfaqForm
 
     def get(self, request, pk=None, *args, **kwargs):
-
         if pk:
             instance = get_object_or_404(Salesfaq, pk=pk)
             form = self.form_class(instance=instance)
@@ -29,7 +27,6 @@ class SalesfaqCreateUpdateView(AdminRequiredMixin, View):
         return render(request, self.template_name, context)
 
     def post(self, request, pk=None, *args, **kwargs):
-
         if pk:
             instance = get_object_or_404(Salesfaq, pk=pk)
             form = self.form_class(request.POST, instance=instance)

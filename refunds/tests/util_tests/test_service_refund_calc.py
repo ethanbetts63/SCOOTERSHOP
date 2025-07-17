@@ -8,8 +8,8 @@ from service.models import ServiceBooking
 from service.tests.test_helpers.model_factories import ServiceBookingFactory
 from refunds.tests.test_helpers.model_factories import RefundSettingsFactory
 
-class ServiceRefundCalcTest(TestCase):
 
+class ServiceRefundCalcTest(TestCase):
     def setUp(self):
         RefundSettings.objects.all().delete()
         ServiceBooking.objects.all().delete()
@@ -26,7 +26,7 @@ class ServiceRefundCalcTest(TestCase):
         settings = RefundSettingsFactory(
             deposit_full_refund_days=7,
             deposit_partial_refund_days=3,
-            deposit_no_refund_days=1
+            deposit_no_refund_days=1,
         )
         # Drop-off 8 days from now, cancellation is now
         dropoff_date = timezone.now().date() + timedelta(days=8)
@@ -34,9 +34,9 @@ class ServiceRefundCalcTest(TestCase):
             dropoff_date=dropoff_date,
             dropoff_time=time(9, 0),
             amount_paid=Decimal("100.00"),
-            payment_method="online_deposit"
+            payment_method="online_deposit",
         )
-        
+
         result = calculate_service_refund_amount(booking)
 
         self.assertEqual(result["entitled_amount"], Decimal("100.00"))
@@ -47,7 +47,7 @@ class ServiceRefundCalcTest(TestCase):
             deposit_full_refund_days=7,
             deposit_partial_refund_days=3,
             deposit_no_refund_days=1,
-            deposit_partial_refund_percentage=Decimal("50.00")
+            deposit_partial_refund_percentage=Decimal("50.00"),
         )
         # Drop-off 5 days from now, cancellation is now
         dropoff_date = timezone.now().date() + timedelta(days=5)
@@ -55,9 +55,9 @@ class ServiceRefundCalcTest(TestCase):
             dropoff_date=dropoff_date,
             dropoff_time=time(9, 0),
             amount_paid=Decimal("100.00"),
-            payment_method="online_deposit"
+            payment_method="online_deposit",
         )
-        
+
         result = calculate_service_refund_amount(booking)
 
         self.assertEqual(result["entitled_amount"], Decimal("50.00"))
@@ -68,7 +68,7 @@ class ServiceRefundCalcTest(TestCase):
         settings = RefundSettingsFactory(
             deposit_full_refund_days=7,
             deposit_partial_refund_days=3,
-            deposit_no_refund_days=1
+            deposit_no_refund_days=1,
         )
         # Drop-off 0 days from now (today), cancellation is now
         dropoff_date = timezone.now().date()
@@ -76,9 +76,9 @@ class ServiceRefundCalcTest(TestCase):
             dropoff_date=dropoff_date,
             dropoff_time=time(9, 0),
             amount_paid=Decimal("100.00"),
-            payment_method="online_deposit"
+            payment_method="online_deposit",
         )
-        
+
         result = calculate_service_refund_amount(booking)
 
         self.assertEqual(result["entitled_amount"], Decimal("0.00"))
@@ -88,7 +88,7 @@ class ServiceRefundCalcTest(TestCase):
         settings = RefundSettingsFactory(
             full_payment_full_refund_days=7,
             full_payment_partial_refund_days=3,
-            full_payment_no_refund_percentage=1
+            full_payment_no_refund_percentage=1,
         )
         # Drop-off 8 days from now, cancellation is now
         dropoff_date = timezone.now().date() + timedelta(days=8)
@@ -96,9 +96,9 @@ class ServiceRefundCalcTest(TestCase):
             dropoff_date=dropoff_date,
             dropoff_time=time(9, 0),
             amount_paid=Decimal("200.00"),
-            payment_method="online_full"
+            payment_method="online_full",
         )
-        
+
         result = calculate_service_refund_amount(booking)
 
         self.assertEqual(result["entitled_amount"], Decimal("200.00"))
@@ -109,7 +109,7 @@ class ServiceRefundCalcTest(TestCase):
             full_payment_full_refund_days=7,
             full_payment_partial_refund_days=3,
             full_payment_no_refund_percentage=1,
-            full_payment_partial_refund_percentage=Decimal("75.00")
+            full_payment_partial_refund_percentage=Decimal("75.00"),
         )
         # Drop-off 5 days from now, cancellation is now
         dropoff_date = timezone.now().date() + timedelta(days=5)
@@ -117,12 +117,12 @@ class ServiceRefundCalcTest(TestCase):
             dropoff_date=dropoff_date,
             dropoff_time=time(9, 0),
             amount_paid=Decimal("200.00"),
-            payment_method="online_full"
+            payment_method="online_full",
         )
-        
+
         result = calculate_service_refund_amount(booking)
 
-        self.assertEqual(result["entitled_amount"], Decimal("150.00")) # 75% of 200
+        self.assertEqual(result["entitled_amount"], Decimal("150.00"))  # 75% of 200
         self.assertIn("Partial Payment Refund", result["policy_applied"])
         self.assertIn("75.00%", result["policy_applied"])
 
@@ -130,7 +130,7 @@ class ServiceRefundCalcTest(TestCase):
         settings = RefundSettingsFactory(
             full_payment_full_refund_days=7,
             full_payment_partial_refund_days=3,
-            full_payment_no_refund_percentage=1
+            full_payment_no_refund_percentage=1,
         )
         # Drop-off 0 days from now (today), cancellation is now
         dropoff_date = timezone.now().date()
@@ -138,9 +138,9 @@ class ServiceRefundCalcTest(TestCase):
             dropoff_date=dropoff_date,
             dropoff_time=time(9, 0),
             amount_paid=Decimal("200.00"),
-            payment_method="online_full"
+            payment_method="online_full",
         )
-        
+
         result = calculate_service_refund_amount(booking)
 
         self.assertEqual(result["entitled_amount"], Decimal("0.00"))
@@ -151,7 +151,7 @@ class ServiceRefundCalcTest(TestCase):
             deposit_full_refund_days=7,
             deposit_partial_refund_days=3,
             deposit_no_refund_days=1,
-            deposit_partial_refund_percentage=Decimal("50.00")
+            deposit_partial_refund_percentage=Decimal("50.00"),
         )
         # Booking drop-off is 10 days from now
         booking_dropoff_date = timezone.now().date() + timedelta(days=10)
@@ -159,14 +159,16 @@ class ServiceRefundCalcTest(TestCase):
             dropoff_date=booking_dropoff_date,
             dropoff_time=time(9, 0),
             amount_paid=Decimal("100.00"),
-            payment_method="online_deposit"
+            payment_method="online_deposit",
         )
-        
+
         # Simulate cancellation 5 days before drop-off
         cancellation_datetime = timezone.make_aware(
             datetime.combine(booking_dropoff_date - timedelta(days=5), time(8, 0))
         )
-        result = calculate_service_refund_amount(booking, cancellation_datetime=cancellation_datetime)
+        result = calculate_service_refund_amount(
+            booking, cancellation_datetime=cancellation_datetime
+        )
 
         # This should fall into partial refund based on the 5-day difference
         self.assertEqual(result["entitled_amount"], Decimal("50.00"))
@@ -176,7 +178,7 @@ class ServiceRefundCalcTest(TestCase):
         settings = RefundSettingsFactory(
             full_payment_full_refund_days=1,
             full_payment_partial_refund_days=1,
-            full_payment_no_refund_percentage=1
+            full_payment_no_refund_percentage=1,
         )
         # Drop-off 2 days from now, cancellation is now
         dropoff_date = timezone.now().date() + timedelta(days=2)
@@ -184,9 +186,9 @@ class ServiceRefundCalcTest(TestCase):
             dropoff_date=dropoff_date,
             dropoff_time=time(9, 0),
             amount_paid=Decimal("50.00"),
-            payment_method="online_full"
+            payment_method="online_full",
         )
-        
+
         result = calculate_service_refund_amount(booking)
         self.assertEqual(result["entitled_amount"], Decimal("50.00"))
 
@@ -194,7 +196,7 @@ class ServiceRefundCalcTest(TestCase):
         settings = RefundSettingsFactory(
             full_payment_full_refund_days=7,
             full_payment_partial_refund_days=3,
-            full_payment_no_refund_percentage=1
+            full_payment_no_refund_percentage=1,
         )
         # Drop-off 0 days from now, cancellation is now
         dropoff_date = timezone.now().date()
@@ -202,9 +204,9 @@ class ServiceRefundCalcTest(TestCase):
             dropoff_date=dropoff_date,
             dropoff_time=time(9, 0),
             amount_paid=Decimal("100.00"),
-            payment_method="online_full"
+            payment_method="online_full",
         )
-        
+
         result = calculate_service_refund_amount(booking)
         self.assertEqual(result["entitled_amount"], Decimal("0.00"))
 
@@ -213,7 +215,7 @@ class ServiceRefundCalcTest(TestCase):
             deposit_full_refund_days=7,
             deposit_partial_refund_days=3,
             deposit_no_refund_days=1,
-            deposit_partial_refund_percentage=Decimal("33.33")
+            deposit_partial_refund_percentage=Decimal("33.33"),
         )
         # Drop-off 5 days from now, cancellation is now
         dropoff_date = timezone.now().date() + timedelta(days=5)
@@ -221,28 +223,30 @@ class ServiceRefundCalcTest(TestCase):
             dropoff_date=dropoff_date,
             dropoff_time=time(9, 0),
             amount_paid=Decimal("100.00"),
-            payment_method="online_deposit"
+            payment_method="online_deposit",
         )
-        
+
         result = calculate_service_refund_amount(booking)
         self.assertEqual(result["entitled_amount"], Decimal("33.33"))
-        self.assertEqual(result["entitled_amount"].as_tuple().exponent, -2) # Check for 2 decimal places
+        self.assertEqual(
+            result["entitled_amount"].as_tuple().exponent, -2
+        )  # Check for 2 decimal places
 
     def test_booking_amount_paid_is_none(self):
         settings = RefundSettingsFactory(
             deposit_full_refund_days=7,
             deposit_partial_refund_days=3,
             deposit_no_refund_days=1,
-            deposit_partial_refund_percentage=Decimal("50.00")
+            deposit_partial_refund_percentage=Decimal("50.00"),
         )
         dropoff_date = timezone.now().date() + timedelta(days=5)
         booking = ServiceBookingFactory(
             dropoff_date=dropoff_date,
             dropoff_time=time(9, 0),
-            amount_paid=Decimal("0.00"), # Pass Decimal("0.00") instead of None
-            payment_method="online_deposit"
+            amount_paid=Decimal("0.00"),  # Pass Decimal("0.00") instead of None
+            payment_method="online_deposit",
         )
-        
+
         result = calculate_service_refund_amount(booking)
         self.assertEqual(result["entitled_amount"], Decimal("0.00"))
         self.assertIn("Partial Deposit Refund", result["policy_applied"])

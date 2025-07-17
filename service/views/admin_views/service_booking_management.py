@@ -7,8 +7,8 @@ from service.models import ServiceBooking
 
 from django.db.models import Q
 
-class ServiceBookingManagementView(AdminRequiredMixin, View):
 
+class ServiceBookingManagementView(AdminRequiredMixin, View):
     template_name = "service/service_booking_management.html"
 
     def get(self, request, *args, **kwargs):

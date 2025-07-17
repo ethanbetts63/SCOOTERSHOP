@@ -3,9 +3,7 @@ from django.forms import inlineformset_factory
 from inventory.models import Motorcycle, MotorcycleImage
 
 
-
 class MotorcycleImageForm(forms.ModelForm):
-
     class Meta:
         model = MotorcycleImage
         fields = [

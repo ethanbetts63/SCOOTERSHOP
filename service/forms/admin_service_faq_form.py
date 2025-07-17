@@ -3,7 +3,6 @@ from service.models import Servicefaq
 
 
 class AdminServicefaqForm(forms.ModelForm):
-
     class Meta:
         model = Servicefaq
         fields = [

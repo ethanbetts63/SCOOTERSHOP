@@ -2,21 +2,30 @@ from django.test import TestCase
 from mailer.models.EmailLog_model import EmailLog
 from mailer.tests.test_helpers.model_factories import EmailLogFactory
 from users.tests.test_helpers.model_factories import UserFactory
-from service.tests.test_helpers.model_factories import ServiceProfileFactory, ServiceBookingFactory
-from inventory.tests.test_helpers.model_factories import SalesProfileFactory, SalesBookingFactory
+from service.tests.test_helpers.model_factories import (
+    ServiceProfileFactory,
+    ServiceBookingFactory,
+)
+from inventory.tests.test_helpers.model_factories import (
+    SalesProfileFactory,
+    SalesBookingFactory,
+)
 
 
 class EmailLogModelTest(TestCase):
-
     def test_email_log_creation(self):
         email_log = EmailLogFactory()
         self.assertIsInstance(email_log, EmailLog)
         self.assertIsNotNone(email_log.pk)
-        self.assertIn(email_log.status, ['SENT', 'FAILED', 'PENDING'])
+        self.assertIn(email_log.status, ["SENT", "FAILED", "PENDING"])
 
     def test_email_log_str_representation(self):
-        email_log = EmailLogFactory(subject="Test Subject", recipient="test@example.com", status="SENT")
-        self.assertEqual(str(email_log), "Email to test@example.com - Subject: 'Test Subject' (SENT)")
+        email_log = EmailLogFactory(
+            subject="Test Subject", recipient="test@example.com", status="SENT"
+        )
+        self.assertEqual(
+            str(email_log), "Email to test@example.com - Subject: 'Test Subject' (SENT)"
+        )
 
     def test_email_log_with_user(self):
         user = UserFactory()
@@ -49,6 +58,8 @@ class EmailLogModelTest(TestCase):
             self.assertEqual(email_log.status, status_choice)
 
     def test_email_log_error_message(self):
-        email_log = EmailLogFactory(status="FAILED", error_message="SMTP Connection Error")
+        email_log = EmailLogFactory(
+            status="FAILED", error_message="SMTP Connection Error"
+        )
         self.assertEqual(email_log.status, "FAILED")
         self.assertEqual(email_log.error_message, "SMTP Connection Error")

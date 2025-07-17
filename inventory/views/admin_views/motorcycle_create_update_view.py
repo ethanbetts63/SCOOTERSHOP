@@ -30,7 +30,6 @@ class MotorcycleCreateUpdateView(AdminRequiredMixin, UpdateView):
             )
 
         if self.request.POST:
-
             context["image_formset"] = MotorcycleImageFormSet(
                 self.request.POST, self.request.FILES, instance=self.object
             )

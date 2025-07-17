@@ -29,8 +29,8 @@ class MotorcycleForm(forms.ModelForm):
             "engine_number",
         ]
         widgets = {
-            'conditions': forms.CheckboxSelectMultiple,
-            'rego_exp': forms.DateInput(attrs={'type': 'date'}),
+            "conditions": forms.CheckboxSelectMultiple,
+            "rego_exp": forms.DateInput(attrs={"type": "date"}),
         }
 
     def __init__(self, *args, **kwargs):

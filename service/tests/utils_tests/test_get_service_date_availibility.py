@@ -10,7 +10,14 @@ from service.utils.get_service_date_availibility import get_service_date_availab
 from service.models import ServiceSettings, BlockedServiceDate, ServiceBooking
 
 
-from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory, ServiceTypeFactory, ServiceSettingsFactory, CustomerMotorcycleFactory, BlockedServiceDateFactory
+from service.tests.test_helpers.model_factories import (
+    ServiceBookingFactory,
+    ServiceProfileFactory,
+    ServiceTypeFactory,
+    ServiceSettingsFactory,
+    CustomerMotorcycleFactory,
+    BlockedServiceDateFactory,
+)
 
 from faker import Faker
 
@@ -18,10 +25,8 @@ fake = Faker()
 
 
 class GetServiceDateAvailabilityTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         cls.fixed_now = datetime.datetime(
             2025, 6, 15, 10, 0, 0, tzinfo=datetime.timezone.utc
         )
@@ -49,13 +54,11 @@ class GetServiceDateAvailabilityTest(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-
         cls.patcher_now.stop()
         cls.patcher_localtime.stop()
         super().tearDownClass()
 
     def setUp(self):
-
         self.service_settings.booking_advance_notice = 1
         self.service_settings.max_visible_slots_per_day = 3
         self.service_settings.booking_open_days = "Mon,Tue,Wed,Thu,Fri,Sat,Sun"
@@ -65,7 +68,6 @@ class GetServiceDateAvailabilityTest(TestCase):
         ServiceBooking.objects.all().delete()
 
     def test_min_date_with_advance_notice(self):
-
         self.service_settings.booking_advance_notice = 1
         self.service_settings.save()
         min_date, _ = get_service_date_availability()
@@ -85,7 +87,6 @@ class GetServiceDateAvailabilityTest(TestCase):
         self.assertEqual(min_date, expected_min_date)
 
     def test_blocked_service_dates(self):
-
         BlockedServiceDateFactory(
             start_date=datetime.date(2025, 6, 20), end_date=datetime.date(2025, 6, 20)
         )
@@ -102,7 +103,6 @@ class GetServiceDateAvailabilityTest(TestCase):
         self.assertIn({"from": "2025-06-25", "to": "2025-06-27"}, disabled_dates)
 
     def test_non_booking_open_days(self):
-
         self.service_settings.booking_open_days = "Mon,Tue"
         self.service_settings.booking_advance_notice = 0
         self.service_settings.save()
@@ -127,7 +127,6 @@ class GetServiceDateAvailabilityTest(TestCase):
         self.assertIn("2025-06-22", disabled_dates)
 
     def test_max_visible_slots_capacity(self):
-
         self.service_settings.max_visible_slots_per_day = 1
         self.service_settings.booking_advance_notice = 0
         self.service_settings.save()
@@ -168,7 +167,6 @@ class GetServiceDateAvailabilityTest(TestCase):
         self.assertIn(str(tomorrow), disabled_dates)
 
     def test_combined_rules(self):
-
         self.service_settings.booking_advance_notice = 0
         self.service_settings.max_visible_slots_per_day = 1
         self.service_settings.booking_open_days = "Mon"
@@ -192,7 +190,6 @@ class GetServiceDateAvailabilityTest(TestCase):
         self.assertNotIn("2025-06-23", disabled_dates)
 
     def test_no_service_settings(self):
-
         ServiceSettings.objects.all().delete()
 
         BlockedServiceDateFactory(
@@ -213,7 +210,6 @@ class GetServiceDateAvailabilityTest(TestCase):
         self.assertIn(expected_blocked, disabled_dates)
 
     def test_empty_booking_open_days(self):
-
         self.service_settings.booking_open_days = "INVALID"
         self.service_settings.booking_advance_notice = 0
         self.service_settings.save()
@@ -235,7 +231,6 @@ class GetServiceDateAvailabilityTest(TestCase):
             self.assertIn(str(expected_date), disabled_dates)
 
     def test_no_max_visible_slots_per_day_set(self):
-
         self.service_settings.max_visible_slots_per_day = 99999
         self.service_settings.booking_advance_notice = 0
         self.service_settings.save()
@@ -259,7 +254,6 @@ class GetServiceDateAvailabilityTest(TestCase):
         self.assertNotIn(str(today), disabled_dates)
 
     def test_booking_status_filter(self):
-
         self.service_settings.max_visible_slots_per_day = 1
         self.service_settings.booking_advance_notice = 0
         self.service_settings.save()

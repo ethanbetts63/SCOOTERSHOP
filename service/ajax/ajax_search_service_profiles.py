@@ -8,12 +8,10 @@ from ..decorators import admin_required
 @require_GET
 @admin_required
 def search_customer_profiles_ajax(request):
-
     search_term = request.GET.get("query", "").strip()
     profiles_data = []
 
     if search_term:
-
         queryset = (
             ServiceProfile.objects.filter(
                 Q(name__icontains=search_term)

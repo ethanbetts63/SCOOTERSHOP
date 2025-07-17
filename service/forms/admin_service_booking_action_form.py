@@ -2,6 +2,7 @@ from service.models import ServiceBooking
 from django import forms
 from decimal import Decimal
 
+
 class ServiceBookingActionForm(forms.Form):
     message = forms.CharField(
         widget=forms.Textarea(
@@ -63,7 +64,6 @@ class ServiceBookingActionForm(forms.Form):
                         "refund_amount", "Refund amount must be greater than zero."
                     )
                 else:
-
                     try:
                         booking = ServiceBooking.objects.get(pk=service_booking_id)
                         if booking.payment and refund_amount > booking.payment.amount:
@@ -78,10 +78,8 @@ class ServiceBookingActionForm(forms.Form):
                             )
 
                     except ServiceBooking.DoesNotExist:
-
                         self.add_error(None, "Service booking not found.")
             elif refund_amount is not None:
-
                 self.add_error(
                     "initiate_refund",
                     "Please check 'Initiate Refund for Deposit' to specify a refund amount.",

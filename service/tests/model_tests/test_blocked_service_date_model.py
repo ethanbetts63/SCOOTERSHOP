@@ -9,7 +9,6 @@ from service.tests.test_helpers.model_factories import BlockedServiceDateFactory
 
 
 class BlockedServiceDateModelTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         BlockedServiceDate.objects.all().delete()

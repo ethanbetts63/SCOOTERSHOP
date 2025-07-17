@@ -37,12 +37,12 @@ class InventorySettingsViewTest(TestCase):
 
     def test_view_redirects_for_anonymous_user(self):
         response = self.client.get(self.url)
-        self.assertRedirects(response, f'{reverse("users:login")}?next={self.url}')
+        self.assertRedirects(response, f"{reverse('users:login')}?next={self.url}")
 
     def test_view_redirects_for_non_admin_user(self):
         self.client.login(username="testuser", password="password123")
         response = self.client.get(self.url)
-        self.assertRedirects(response, f'{reverse("users:login")}?next={self.url}')
+        self.assertRedirects(response, f"{reverse('users:login')}?next={self.url}")
 
     def test_get_view_as_admin(self):
         self.client.login(username="adminuser", password="adminpass123")

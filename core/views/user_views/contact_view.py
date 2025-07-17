@@ -6,6 +6,7 @@ from django.contrib import messages
 from core.forms.enquiry_form import EnquiryForm
 from mailer.utils import send_templated_email
 
+
 class ContactView(TemplateView):
     template_name = "core/information/contact.html"
 
@@ -33,7 +34,11 @@ class ContactView(TemplateView):
                 recipient_list=[enquiry.email],
                 subject="Enquiry Received - Scooter Shop",
                 template_name="user_general_enquiry_notification.html",
-                context={"enquiry": enquiry, "SITE_DOMAIN": settings.SITE_DOMAIN, "SITE_SCHEME": settings.SITE_SCHEME},
+                context={
+                    "enquiry": enquiry,
+                    "SITE_DOMAIN": settings.SITE_DOMAIN,
+                    "SITE_SCHEME": settings.SITE_SCHEME,
+                },
                 booking=enquiry,
                 profile=enquiry,
             )
@@ -43,7 +48,11 @@ class ContactView(TemplateView):
                 recipient_list=[settings.ADMIN_EMAIL],
                 subject="New Enquiry - Scooter Shop",
                 template_name="admin_general_enquiry_notification.html",
-                context={"enquiry": enquiry, "SITE_DOMAIN": settings.SITE_DOMAIN, "SITE_SCHEME": settings.SITE_SCHEME},
+                context={
+                    "enquiry": enquiry,
+                    "SITE_DOMAIN": settings.SITE_DOMAIN,
+                    "SITE_SCHEME": settings.SITE_SCHEME,
+                },
                 booking=enquiry,
                 profile=enquiry,
             )
@@ -56,5 +65,5 @@ class ContactView(TemplateView):
                 "There was an error with your submission. Please correct the errors below.",
             )
             context = self.get_context_data(**kwargs)
-            context['form'] = form
+            context["form"] = form
             return self.render_to_response(context)

@@ -4,14 +4,15 @@ from datetime import date
 
 from service.forms import AdminCustomerMotorcycleForm
 from service.models import CustomerMotorcycle
-from service.tests.test_helpers.model_factories import ServiceProfileFactory, CustomerMotorcycleFactory
+from service.tests.test_helpers.model_factories import (
+    ServiceProfileFactory,
+    CustomerMotorcycleFactory,
+)
 
 
 class AdminCustomerMotorcycleFormTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         cls.service_profile = ServiceProfileFactory(name="Test Service Profile")
         cls.valid_motorcycle_data = {
             "brand": "Honda",
@@ -27,7 +28,6 @@ class AdminCustomerMotorcycleFormTest(TestCase):
         }
 
     def test_form_valid_data_create(self):
-
         data = self.valid_motorcycle_data.copy()
         form = AdminCustomerMotorcycleForm(data=data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors.as_json()}")
@@ -38,7 +38,6 @@ class AdminCustomerMotorcycleFormTest(TestCase):
         self.assertEqual(motorcycle.service_profile, self.service_profile)
 
     def test_form_valid_data_create_without_service_profile(self):
-
         data = self.valid_motorcycle_data.copy()
         data["service_profile"] = ""
         form = AdminCustomerMotorcycleForm(data=data)
@@ -48,7 +47,6 @@ class AdminCustomerMotorcycleFormTest(TestCase):
         self.assertIsNone(motorcycle.service_profile)
 
     def test_form_valid_data_update(self):
-
         existing_motorcycle = CustomerMotorcycleFactory(
             service_profile=self.service_profile
         )
@@ -63,7 +61,6 @@ class AdminCustomerMotorcycleFormTest(TestCase):
         self.assertEqual(motorcycle.brand, "Yamaha")
 
     def test_missing_required_fields(self):
-
         required_fields = [
             "brand",
             "model",
@@ -102,7 +99,6 @@ class AdminCustomerMotorcycleFormTest(TestCase):
                 self.assertIn(expected_error_message, form.errors[field])
 
     def test_motorcycle_year_validation(self):
-
         current_year = date.today().year
 
         data_future_year = self.valid_motorcycle_data.copy()
@@ -139,7 +135,6 @@ class AdminCustomerMotorcycleFormTest(TestCase):
         )
 
     def test_vin_number_length_validation(self):
-
         data_short_vin = self.valid_motorcycle_data.copy()
         data_short_vin["vin_number"] = "SHORTVIN"
         form = AdminCustomerMotorcycleForm(data=data_short_vin)
@@ -171,7 +166,6 @@ class AdminCustomerMotorcycleFormTest(TestCase):
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors.as_json()}")
 
     def test_odometer_negative_validation(self):
-
         data_negative_odometer = self.valid_motorcycle_data.copy()
         data_negative_odometer["odometer"] = -100
         form = AdminCustomerMotorcycleForm(data=data_negative_odometer)
@@ -183,7 +177,6 @@ class AdminCustomerMotorcycleFormTest(TestCase):
         )
 
     def test_transmission_choices(self):
-
         data_invalid_transmission = self.valid_motorcycle_data.copy()
         data_invalid_transmission["transmission"] = "INVALID_TYPE"
         form = AdminCustomerMotorcycleForm(data=data_invalid_transmission)
@@ -195,7 +188,6 @@ class AdminCustomerMotorcycleFormTest(TestCase):
         )
 
     def test_service_profile_queryset(self):
-
         profile_a = ServiceProfileFactory(name="Profile A", email="a@example.com")
         profile_b = ServiceProfileFactory(name="Profile B", email="b@example.com")
         profile_c = ServiceProfileFactory(name="Profile C", email="c@example.com")

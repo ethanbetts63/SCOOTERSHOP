@@ -1,6 +1,7 @@
 import factory
 from dashboard.models import SiteSettings
 
+
 class SiteSettingsFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = SiteSettings

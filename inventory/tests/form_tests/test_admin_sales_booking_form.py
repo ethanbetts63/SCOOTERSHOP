@@ -4,14 +4,16 @@ from datetime import date, timedelta, time
 from decimal import Decimal
 from inventory.forms.admin_sales_booking_form import AdminSalesBookingForm
 
-from inventory.tests.test_helpers.model_factories import SalesBookingFactory, SalesProfileFactory, MotorcycleFactory
+from inventory.tests.test_helpers.model_factories import (
+    SalesBookingFactory,
+    SalesProfileFactory,
+    MotorcycleFactory,
+)
 
 
 class AdminSalesBookingFormTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         cls.inventory_settings = InventorySettingsFactory(
             deposit_amount=Decimal("100.00")
         )
@@ -29,7 +31,6 @@ class AdminSalesBookingFormTest(TestCase):
         }
 
     def test_form_is_valid_with_complete_and_correct_data(self):
-
         form_data = {
             "selected_profile_id": self.sales_profile.pk,
             "selected_motorcycle_id": self.motorcycle_available.pk,
@@ -48,7 +49,6 @@ class AdminSalesBookingFormTest(TestCase):
         )
 
     def test_form_is_invalid_if_profile_id_is_missing(self):
-
         form_data = {
             "selected_motorcycle_id": self.motorcycle_available.pk,
             "booking_status": "pending_confirmation",
@@ -61,7 +61,6 @@ class AdminSalesBookingFormTest(TestCase):
         )
 
     def test_form_is_invalid_if_profile_id_does_not_exist(self):
-
         form_data = {
             "selected_profile_id": 99999,
             "selected_motorcycle_id": self.motorcycle_available.pk,
@@ -76,7 +75,6 @@ class AdminSalesBookingFormTest(TestCase):
         )
 
     def test_form_is_invalid_if_motorcycle_id_is_missing(self):
-
         form_data = {
             "selected_profile_id": self.sales_profile.pk,
             "booking_status": "pending_confirmation",
@@ -89,7 +87,6 @@ class AdminSalesBookingFormTest(TestCase):
         )
 
     def test_form_is_invalid_if_motorcycle_id_does_not_exist(self):
-
         form_data = {
             "selected_profile_id": self.sales_profile.pk,
             "selected_motorcycle_id": 99999,
@@ -104,7 +101,6 @@ class AdminSalesBookingFormTest(TestCase):
         )
 
     def test_warning_is_generated_for_past_appointment_date(self):
-
         form_data = {
             **self.base_valid_data,
             "selected_profile_id": self.sales_profile.pk,
@@ -119,7 +115,6 @@ class AdminSalesBookingFormTest(TestCase):
         self.assertIn("Warning: Appointment date is in the past.", form.get_warnings())
 
     def test_warning_is_generated_for_past_appointment_time_on_today(self):
-
         past_time = (timezone.localtime(timezone.now()) - timedelta(hours=1)).time()
         form_data = {
             **self.base_valid_data,
@@ -133,10 +128,8 @@ class AdminSalesBookingFormTest(TestCase):
             form.is_valid(),
             f"Form should have been valid but had errors: {form.errors.as_json()}",
         )
-        
 
     def test_warning_for_confirmed_booking_with_unpaid_status(self):
-
         form_data = {
             "selected_profile_id": self.sales_profile.pk,
             "selected_motorcycle_id": self.motorcycle_available.pk,
@@ -156,7 +149,6 @@ class AdminSalesBookingFormTest(TestCase):
         )
 
     def test_warning_for_confirmed_booking_with_insufficient_deposit(self):
-
         insufficient_amount = self.inventory_settings.deposit_amount - Decimal("10.00")
         form_data = {
             "selected_profile_id": self.sales_profile.pk,
@@ -179,7 +171,6 @@ class AdminSalesBookingFormTest(TestCase):
         self.assertIn(expected_warning, form.get_warnings())
 
     def test_warning_for_used_motorcycle_that_is_already_reserved(self):
-
         reserved_bike = MotorcycleFactory(condition="used", status="reserved")
         form_data = {
             **self.base_valid_data,
@@ -256,10 +247,7 @@ class AdminSalesBookingFormTest(TestCase):
         )
         self.assertIn(expected_warning, form.get_warnings())
 
-    
-
     def test_form_initializes_correctly_from_instance(self):
-
         booking_instance = SalesBookingFactory(
             sales_profile=self.sales_profile, motorcycle=self.motorcycle_available
         )

@@ -4,6 +4,7 @@ from payments.models import Payment
 
 from refunds.models import RefundRequest
 
+
 def send_refund_notifications(
     payment_obj: Payment,
     booking_obj,
@@ -52,7 +53,9 @@ def send_refund_notifications(
         else None
     )
 
-    if user_email and refund_request: # Only send user email if refund_request is present
+    if (
+        user_email and refund_request
+    ):  # Only send user email if refund_request is present
         email_context = {
             "refund_request": refund_request,
             "refunded_amount": extracted_data["refunded_amount_decimal"],
@@ -79,7 +82,7 @@ def send_refund_notifications(
             ),
         )
 
-    if getattr(settings, 'ADMIN_EMAIL', None):
+    if getattr(settings, "ADMIN_EMAIL", None):
         admin_email_context = {
             "refund_request": refund_request,
             "refunded_amount": extracted_data["refunded_amount_decimal"],

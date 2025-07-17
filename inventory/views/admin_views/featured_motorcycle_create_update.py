@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404, redirect
 from inventory.models import FeaturedMotorcycle
 from inventory.forms.admin_featured_motorcycle_form import FeaturedMotorcycleForm
 
+
 class FeaturedMotorcycleCreateUpdateView(AdminRequiredMixin, UpdateView):
     model = FeaturedMotorcycle
     form_class = FeaturedMotorcycleForm
@@ -28,9 +29,9 @@ class FeaturedMotorcycleCreateUpdateView(AdminRequiredMixin, UpdateView):
         Sets the 'category' from the URL parameter if present.
         """
         initial = super().get_initial()
-        category = self.request.GET.get('category')
+        category = self.request.GET.get("category")
         if category:
-            initial['category'] = category
+            initial["category"] = category
         return initial
 
     def get_context_data(self, **kwargs):
@@ -41,25 +42,28 @@ class FeaturedMotorcycleCreateUpdateView(AdminRequiredMixin, UpdateView):
         self.object = self.get_object()
 
         # Determine the motorcycle condition ('new' or 'used')
-        motorcycle_condition = self.request.GET.get('category')
+        motorcycle_condition = self.request.GET.get("category")
         if self.object:
             motorcycle_condition = self.object.category
-        
+
         context["title"] = (
             f"Edit Featured {motorcycle_condition.title()} Motorcycle"
             if self.object
             else f"Add New Featured {motorcycle_condition.title()} Motorcycle"
         )
         context["motorcycle_condition"] = motorcycle_condition
-        
+
         # Pass the currently selected motorcycle if editing
         if self.object:
             context["selected_motorcycle"] = self.object.motorcycle
 
         # URLs for AJAX calls in the template
-        context["ajax_search_motorcycles_url"] = reverse("inventory:admin_api_search_motorcycles")
-        context["ajax_get_motorcycle_details_url"] = reverse("inventory:admin_api_get_motorcycle_details", kwargs={'pk': 0}).replace('0', '')
-
+        context["ajax_search_motorcycles_url"] = reverse(
+            "inventory:admin_api_search_motorcycles"
+        )
+        context["ajax_get_motorcycle_details_url"] = reverse(
+            "inventory:admin_api_get_motorcycle_details", kwargs={"pk": 0}
+        ).replace("0", "")
 
         return context
 

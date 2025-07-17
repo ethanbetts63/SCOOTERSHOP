@@ -6,7 +6,6 @@ from inventory.models import InventorySettings, BlockedSalesDate
 def get_sales_appointment_date_info(
     inventory_settings: InventorySettings, is_deposit_flow: bool = False
 ):
-
     if not inventory_settings:
         return timezone.localdate(), timezone.localdate() + timedelta(days=90), []
 
@@ -52,7 +51,13 @@ def get_sales_appointment_date_info(
 
     open_days_str = inventory_settings.sales_booking_open_days
     open_days_map = {
-        "Mon": 0, "Tue": 1, "Wed": 2, "Thu": 3, "Fri": 4, "Sat": 5, "Sun": 6
+        "Mon": 0,
+        "Tue": 1,
+        "Wed": 2,
+        "Thu": 3,
+        "Fri": 4,
+        "Sat": 5,
+        "Sun": 6,
     }
     allowed_weekdays_indices = {
         open_days_map[d.strip()]

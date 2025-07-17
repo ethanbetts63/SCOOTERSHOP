@@ -1,12 +1,21 @@
 from django.db import models
 
+
 class GoogleMyBusinessAccount(models.Model):
     """
     Stores credentials and tokens for a single Google My Business account connection.
     This model follows a singleton pattern to ensure only one GMB account can be linked.
     """
-    account_id = models.CharField(max_length=255, blank=True, null=True, help_text="Your GMB Account ID.")
-    location_id = models.CharField(max_length=255, blank=True, null=True, help_text="The ID of the specific business location.")
+
+    account_id = models.CharField(
+        max_length=255, blank=True, null=True, help_text="Your GMB Account ID."
+    )
+    location_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="The ID of the specific business location.",
+    )
     access_token = models.TextField(blank=True, null=True)
     refresh_token = models.TextField(blank=True, null=True)
     token_expiry = models.DateTimeField(blank=True, null=True)

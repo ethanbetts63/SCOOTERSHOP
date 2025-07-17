@@ -3,7 +3,6 @@ from django.core.exceptions import ValidationError
 
 
 class BlockedServiceDate(models.Model):
-
     start_date = models.DateField(help_text="The start date of the blocked period.")
     end_date = models.DateField(
         help_text="The end date of the blocked period (inclusive)."
@@ -22,7 +21,6 @@ class BlockedServiceDate(models.Model):
             return f"Blocked: {self.start_date.strftime('%Y-%m-%d')} to {self.end_date.strftime('%Y-%m-%d')}"
 
     def clean(self):
-
         super().clean()
         if self.start_date and self.end_date and self.end_date < self.start_date:
             raise ValidationError(

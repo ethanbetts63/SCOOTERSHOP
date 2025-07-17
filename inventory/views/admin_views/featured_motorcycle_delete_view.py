@@ -4,6 +4,7 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from inventory.models import FeaturedMotorcycle
 
+
 class FeaturedMotorcycleDeleteView(AdminRequiredMixin, DeleteView):
     model = FeaturedMotorcycle
     success_url = reverse_lazy("inventory:featured_motorcycles")

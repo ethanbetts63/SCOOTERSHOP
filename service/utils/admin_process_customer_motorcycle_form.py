@@ -5,13 +5,11 @@ from service.models import CustomerMotorcycle
 def admin_process_customer_motorcycle_form(
     request_post_data, request_files, profile_instance, motorcycle_id=None
 ):
-
     instance = None
     if motorcycle_id:
         try:
             instance = CustomerMotorcycle.objects.get(pk=motorcycle_id)
         except CustomerMotorcycle.DoesNotExist:
-
             form = AdminCustomerMotorcycleForm(
                 request_post_data, request_files, instance=None
             )

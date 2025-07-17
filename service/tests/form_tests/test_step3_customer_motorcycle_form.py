@@ -2,7 +2,11 @@ from django.test import TestCase
 from service.forms import CustomerMotorcycleForm
 
 
-from service.tests.test_helpers.model_factories import ServiceProfileFactory, CustomerMotorcycleFactory, ServiceBrandFactory
+from service.tests.test_helpers.model_factories import (
+    ServiceProfileFactory,
+    CustomerMotorcycleFactory,
+    ServiceBrandFactory,
+)
 
 from service.models import CustomerMotorcycle, ServiceSettings
 import datetime
@@ -10,10 +14,8 @@ import random
 
 
 class CustomerMotorcycleFormTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         cls.service_profile = ServiceProfileFactory()
         ServiceSettings.objects.get_or_create(pk=1)
 
@@ -59,7 +61,6 @@ class CustomerMotorcycleFormTest(TestCase):
         self.assertEqual(motorcycle.service_profile, self.service_profile)
 
     def test_form_valid_data_new_motorcycle_other_brand_provided(self):
-
         data = self._get_valid_data(
             brand_name="Other",
             include_other_brand_name=True,
@@ -118,7 +119,6 @@ class CustomerMotorcycleFormTest(TestCase):
         self.assertEqual(form.initial.get("other_brand_name", ""), "")
 
     def test_form_initialization_with_instance_other_brand(self):
-
         custom_brand_name = "MyPreviouslyEnteredOtherBrand"
         existing_motorcycle = CustomerMotorcycleFactory(
             service_profile=self.service_profile,

@@ -1,9 +1,12 @@
 from django import forms
-from service.models import ServiceTerms 
+from service.models import ServiceTerms
+
+
 class AdminServiceTermsForm(forms.ModelForm):
     """
     Form for creating and updating ServiceTerms instances in the admin interface.
     """
+
     class Meta:
         model = ServiceTerms
         fields = [

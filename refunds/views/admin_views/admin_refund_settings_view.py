@@ -8,7 +8,6 @@ from refunds.forms.refund_settings_form import RefundSettingsForm
 
 
 class AdminRefundSettingsView(AdminRequiredMixin, UpdateView):
-
     model = RefundSettings
     form_class = RefundSettingsForm
     template_name = "refunds/admin_refund_settings.html"
@@ -16,12 +15,10 @@ class AdminRefundSettingsView(AdminRequiredMixin, UpdateView):
     success_url = reverse_lazy("refunds:admin_refund_settings")
 
     def get_object(self, queryset=None):
-
         obj, created = RefundSettings.objects.get_or_create(pk=1)
         return obj
 
     def form_valid(self, form):
-
         try:
             response = super().form_valid(form)
             messages.success(
@@ -29,12 +26,10 @@ class AdminRefundSettingsView(AdminRequiredMixin, UpdateView):
             )
             return response
         except ValidationError as e:
-
             form.add_error(None, e)
             return self.form_invalid(form)
 
     def form_invalid(self, form):
-
         messages.error(
             self.request,
             "There was an error updating refund policy settings. Please correct the errors below.",
@@ -42,7 +37,6 @@ class AdminRefundSettingsView(AdminRequiredMixin, UpdateView):
         return super().form_invalid(form)
 
     def post(self, request, *args, **kwargs):
-
         if "refund_policy_settings_submit" in request.POST:
             self.object = self.get_object()
             form = self.get_form()

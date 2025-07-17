@@ -2,11 +2,11 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from unittest.mock import patch
 import datetime
-from users.tests.test_helpers.model_factories import StaffUserFactory 
+from users.tests.test_helpers.model_factories import StaffUserFactory
 from service.tests.test_helpers.model_factories import ServiceTypeFactory
 
-class AjaxGetEstimatedPickupDateTest(TestCase):
 
+class AjaxGetEstimatedPickupDateTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.url = reverse("service:admin_api_get_estimated_pickup_date")

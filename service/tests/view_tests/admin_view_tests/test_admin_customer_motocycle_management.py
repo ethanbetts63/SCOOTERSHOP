@@ -3,11 +3,13 @@ from django.urls import reverse
 from django.utils import timezone
 from service.models import CustomerMotorcycle
 from users.tests.test_helpers.model_factories import UserFactory
-from service.tests.test_helpers.model_factories import ServiceProfileFactory, CustomerMotorcycleFactory
+from service.tests.test_helpers.model_factories import (
+    ServiceProfileFactory,
+    CustomerMotorcycleFactory,
+)
 
 
 class CustomerMotorcycleManagementViewTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.staff_user = UserFactory(
@@ -165,7 +167,6 @@ class CustomerMotorcycleManagementViewTest(TestCase):
 
         self.assertEqual(len(motorcycles_in_context), 2)
 
-
     def test_get_request_search_by_service_profile_email(self):
         self.client.force_login(self.staff_user)
         search_term = "jane@example.com"
@@ -185,7 +186,6 @@ class CustomerMotorcycleManagementViewTest(TestCase):
         self.assertEqual(response.context["search_term"], search_term)
 
     def test_get_request_pagination(self):
-
         for i in range(7):
             CustomerMotorcycleFactory(
                 created_at=timezone.now() - timezone.timedelta(days=i + 40)

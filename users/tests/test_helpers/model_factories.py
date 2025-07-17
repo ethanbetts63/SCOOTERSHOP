@@ -1,8 +1,10 @@
 import factory
 from faker import Faker
 from django.contrib.auth import get_user_model
+
 fake = Faker()
 User = get_user_model()
+
 
 class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -24,7 +26,7 @@ class UserFactory(factory.django.DjangoModelFactory):
     post_code = factory.Faker("postcode")
     country = factory.Faker("country_code")
 
+
 class StaffUserFactory(UserFactory):
     is_staff = True
-    password = factory.PostGenerationMethodCall('set_password', 'password123')
-
+    password = factory.PostGenerationMethodCall("set_password", "password123")

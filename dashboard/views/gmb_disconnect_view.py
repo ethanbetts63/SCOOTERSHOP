@@ -9,6 +9,7 @@ class GoogleMyBusinessDisconnectView(AdminRequiredMixin, View):
     """
     Disconnects the GMB account by clearing the stored credentials.
     """
+
     def post(self, request, *args, **kwargs):
         gmb_account = GoogleMyBusinessAccount.load()
         gmb_account.account_id = None
@@ -18,4 +19,4 @@ class GoogleMyBusinessDisconnectView(AdminRequiredMixin, View):
         gmb_account.token_expiry = None
         gmb_account.save()
         messages.success(request, "Successfully disconnected from Google My Business.")
-        return redirect('dashboard:gmb_settings')
+        return redirect("dashboard:gmb_settings")

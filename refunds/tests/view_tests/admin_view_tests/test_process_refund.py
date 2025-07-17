@@ -15,6 +15,7 @@ from payments.tests.test_helpers.model_factories import (
 
 settings.STRIPE_SECRET_KEY = "sk_test_dummykey"
 
+
 class ProcessRefundViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -105,7 +106,9 @@ class ProcessRefundViewTests(TestCase):
 
     def test_refund_invalid_amount_rejection(self):
         # FIX: Set an approvable status to get past the first check
-        refund_request = RefundRequestFactory(status="pending", amount_to_refund=Decimal("0.00"))
+        refund_request = RefundRequestFactory(
+            status="pending", amount_to_refund=Decimal("0.00")
+        )
         url = reverse("refunds:process_refund", kwargs={"pk": refund_request.pk})
         response = self.client.post(url)
         self.assertEqual(response.status_code, 302)
@@ -124,7 +127,9 @@ class ProcessRefundViewTests(TestCase):
 
     @patch("payments.views.Refunds.process_refund.stripe.Refund.create")
     def test_generic_exception_during_refund_creation(self, mock_stripe_refund_create):
-        mock_stripe_refund_create.side_effect = ValueError("Something went wrong internally")
+        mock_stripe_refund_create.side_effect = ValueError(
+            "Something went wrong internally"
+        )
         refund_request = RefundRequestFactory(status="reviewed_pending_approval")
         url = reverse("refunds:process_refund", kwargs={"pk": refund_request.pk})
         response = self.client.post(url)

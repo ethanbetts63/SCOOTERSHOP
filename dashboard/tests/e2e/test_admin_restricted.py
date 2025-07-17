@@ -2,16 +2,14 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from dashboard.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
 
+
 class DashboardAdminViewsRedirectTestCase(TestCase):
     def setUp(self):
         self.client = Client()
         self.login_url = reverse("users:login")
         self.regular_user = UserFactory(password="password123")
         self.staff_user = StaffUserFactory(password="password123")
-        self.admin_user = StaffUserFactory(
-            is_superuser=True,
-            password="password123"
-        )
+        self.admin_user = StaffUserFactory(is_superuser=True, password="password123")
 
     def _assert_redirects_to_login(self, url, user):
         self.client.login(username=user.username, password="password123")
@@ -56,7 +54,7 @@ class DashboardAdminViewsRedirectTestCase(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.client.logout()
-    
+
     # --- Superuser Test (Should be allowed access) ---
 
     def test_superuser_can_access_dashboard_pages(self):

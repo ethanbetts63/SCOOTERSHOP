@@ -115,16 +115,27 @@ class Step5PaymentDropoffAndTermsView(View):
         if form.is_valid():
             active_terms = ServiceTerms.objects.filter(is_active=True).first()
             if not active_terms:
-                messages.error(request, "No active service terms found. Please contact an administrator.")
+                messages.error(
+                    request,
+                    "No active service terms found. Please contact an administrator.",
+                )
                 return redirect(reverse("service:service"))
 
             self.temp_booking.dropoff_date = form.cleaned_data["dropoff_date"]
             self.temp_booking.dropoff_time = form.cleaned_data.get("dropoff_time")
             self.temp_booking.payment_method = form.cleaned_data["payment_method"]
-            self.temp_booking.after_hours_drop_off = form.cleaned_data.get("after_hours_drop_off_choice", False)
+            self.temp_booking.after_hours_drop_off = form.cleaned_data.get(
+                "after_hours_drop_off_choice", False
+            )
             self.temp_booking.service_terms_version = active_terms
             self.temp_booking.save(
-                update_fields=["dropoff_date", "dropoff_time", "payment_method", "service_terms_version", "after_hours_drop_off"]
+                update_fields=[
+                    "dropoff_date",
+                    "dropoff_time",
+                    "payment_method",
+                    "service_terms_version",
+                    "after_hours_drop_off",
+                ]
             )
 
             self.temp_booking.calculated_total = calculate_service_total(

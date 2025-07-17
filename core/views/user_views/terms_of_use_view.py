@@ -1,6 +1,7 @@
 from django.views.generic import TemplateView
 from dashboard.models import SiteSettings
 
+
 class TermsOfUseView(TemplateView):
     template_name = "core/information/terms.html"
 

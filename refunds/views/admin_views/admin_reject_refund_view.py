@@ -13,11 +13,9 @@ from inventory.models import SalesProfile
 
 
 class AdminRejectRefundView(AdminRequiredMixin, View):
-
     template_name = "refunds/admin_reject_refund_form.html"
 
     def get(self, request, pk, *args, **kwargs):
-
         refund_request = get_object_or_404(RefundRequest, pk=pk)
 
         booking_reference = "N/A"
@@ -36,7 +34,6 @@ class AdminRejectRefundView(AdminRequiredMixin, View):
         return render(request, self.template_name, context)
 
     def post(self, request, pk, *args, **kwargs):
-
         refund_request_instance = get_object_or_404(RefundRequest, pk=pk)
         form = AdminRejectRefundForm(request.POST, instance=refund_request_instance)
 

@@ -7,10 +7,8 @@ from users.tests.test_helpers.model_factories import UserFactory
 
 
 class AjaxSearchSalesProfilesTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         cls.factory = RequestFactory()
         cls.staff_user = UserFactory(is_staff=True)
         cls.non_staff_user = UserFactory(is_staff=False)
@@ -33,7 +31,6 @@ class AjaxSearchSalesProfilesTest(TestCase):
         )
 
     def _get_response(self, user, query_params={}):
-
         request = self.factory.get(
             reverse("inventory:admin_api_search_sales_profiles"), query_params
         )
@@ -43,10 +40,12 @@ class AjaxSearchSalesProfilesTest(TestCase):
     def test_view_requires_staff_user(self):
         response = self._get_response(self.non_staff_user, {"query": "John"})
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(json.loads(response.content), {"status": "error", "message": "Admin access required."})
+        self.assertEqual(
+            json.loads(response.content),
+            {"status": "error", "message": "Admin access required."},
+        )
 
     def test_search_returns_correct_json_structure(self):
-
         response = self._get_response(self.staff_user, {"query": "Johnathan"})
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
@@ -89,7 +88,6 @@ class AjaxSearchSalesProfilesTest(TestCase):
         self.assertEqual(len(data["profiles"]), 0)
 
     def test_search_returns_distinct_results(self):
-
         SalesProfileFactory(name="Xavier Jones", email="x.jones@example.com")
 
         response = self._get_response(self.staff_user, {"query": "Jones"})

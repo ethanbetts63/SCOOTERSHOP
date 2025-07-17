@@ -24,12 +24,13 @@ class SalesTermsCreateView(AdminRequiredMixin, View):
 
         if form.is_valid():
             terms_version = form.save(commit=False)
-        
+
             terms_version.is_active = True
             terms_version.save()
-            
+
             messages.success(
-                request, f"New Terms & Conditions Version {terms_version.version_number} created successfully and set as active."
+                request,
+                f"New Terms & Conditions Version {terms_version.version_number} created successfully and set as active.",
             )
             return redirect(reverse("inventory:terms_and_conditions_management"))
         else:

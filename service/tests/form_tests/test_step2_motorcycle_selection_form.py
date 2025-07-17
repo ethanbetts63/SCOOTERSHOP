@@ -4,17 +4,15 @@ from django.test import TestCase
 from service.forms import MotorcycleSelectionForm, ADD_NEW_MOTORCYCLE_OPTION
 
 
-
-
-from service.tests.test_helpers.model_factories import ServiceProfileFactory, CustomerMotorcycleFactory
-
+from service.tests.test_helpers.model_factories import (
+    ServiceProfileFactory,
+    CustomerMotorcycleFactory,
+)
 
 
 class MotorcycleSelectionFormTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         cls.service_profile_with_bikes = ServiceProfileFactory()
         cls.motorcycle1 = CustomerMotorcycleFactory(
             service_profile=cls.service_profile_with_bikes,
@@ -38,7 +36,6 @@ class MotorcycleSelectionFormTest(TestCase):
         cls.service_profile_no_bikes = ServiceProfileFactory()
 
     def test_form_initialization_with_motorcycles(self):
-
         form = MotorcycleSelectionForm(service_profile=self.service_profile_with_bikes)
         choices = form.fields["selected_motorcycle"].choices
 
@@ -66,7 +63,6 @@ class MotorcycleSelectionFormTest(TestCase):
         self.assertIsNone(form.fields["selected_motorcycle"].initial)
 
     def test_form_initialization_without_motorcycles(self):
-
         form = MotorcycleSelectionForm(service_profile=self.service_profile_no_bikes)
         choices = form.fields["selected_motorcycle"].choices
 
@@ -80,7 +76,6 @@ class MotorcycleSelectionFormTest(TestCase):
         )
 
     def test_form_valid_data_select_existing_motorcycle(self):
-
         form = MotorcycleSelectionForm(
             service_profile=self.service_profile_with_bikes,
             data={"selected_motorcycle": str(self.motorcycle1.pk)},
@@ -91,7 +86,6 @@ class MotorcycleSelectionFormTest(TestCase):
         )
 
     def test_form_valid_data_select_add_new(self):
-
         form = MotorcycleSelectionForm(
             service_profile=self.service_profile_with_bikes,
             data={"selected_motorcycle": ADD_NEW_MOTORCYCLE_OPTION},
@@ -102,7 +96,6 @@ class MotorcycleSelectionFormTest(TestCase):
         )
 
     def test_form_invalid_data_missing_selection(self):
-
         form = MotorcycleSelectionForm(
             service_profile=self.service_profile_with_bikes,
             data={"selected_motorcycle": ""},
@@ -112,7 +105,6 @@ class MotorcycleSelectionFormTest(TestCase):
         self.assertIn("This field is required.", form.errors["selected_motorcycle"])
 
     def test_form_invalid_data_non_existent_motorcycle_id_format(self):
-
         form = MotorcycleSelectionForm(
             service_profile=self.service_profile_with_bikes,
             data={"selected_motorcycle": "not-an-id"},
@@ -126,7 +118,6 @@ class MotorcycleSelectionFormTest(TestCase):
         )
 
     def test_form_invalid_data_unowned_motorcycle_id(self):
-
         unowned_motorcycle = CustomerMotorcycleFactory(
             brand="Kawasaki",
             model="Ninja",

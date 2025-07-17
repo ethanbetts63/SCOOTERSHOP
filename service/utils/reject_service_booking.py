@@ -5,6 +5,7 @@ from mailer.utils import send_templated_email
 from refunds.utils.create_refund_request import create_refund_request
 from dashboard.models import SiteSettings
 
+
 def reject_service_booking(
     service_booking_id, requesting_user=None, form_data=None, send_notification=True
 ):
@@ -14,7 +15,9 @@ def reject_service_booking(
 
     try:
         with transaction.atomic():
-            booking = ServiceBooking.objects.select_for_update().get(id=service_booking_id)
+            booking = ServiceBooking.objects.select_for_update().get(
+                id=service_booking_id
+            )
 
             original_booking_status = booking.booking_status
 
@@ -86,16 +89,16 @@ def reject_service_booking(
                     "customer_motorcycle": booking.customer_motorcycle,
                     "admin_message": message,
                     "action_type": "rejection",
-                    "refund_request_pending": (False if not refund_request_created else True),
+                    "refund_request_pending": (
+                        False if not refund_request_created else True
+                    ),
                     "refund_amount_requested": refund_amount_initiated,
                     "SITE_DOMAIN": settings.SITE_DOMAIN,
                     "SITE_SCHEME": settings.SITE_SCHEME,
                     "site_settings": site_settings,
                 }
 
-                customer_email_subject = (
-                    f"Update Regarding Your Service Booking {booking.service_booking_reference}"
-                )
+                customer_email_subject = f"Update Regarding Your Service Booking {booking.service_booking_reference}"
                 customer_email_template = "user_service_booking_rejected.html"
                 send_templated_email(
                     recipient_list=[booking.service_profile.email],
@@ -106,9 +109,7 @@ def reject_service_booking(
                     booking=booking,
                 )
 
-                admin_email_subject = (
-                    f"ADMIN: Service Booking {booking.service_booking_reference} Rejected"
-                )
+                admin_email_subject = f"ADMIN: Service Booking {booking.service_booking_reference} Rejected"
                 admin_email_template = "admin_service_booking_rejected.html"
                 send_templated_email(
                     recipient_list=[settings.DEFAULT_FROM_EMAIL],

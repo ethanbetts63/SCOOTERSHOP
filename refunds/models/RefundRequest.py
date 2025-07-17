@@ -149,7 +149,6 @@ class RefundRequest(models.Model):
         return f"Refund Request for {booking_ref} - Status: {self.status}"
 
     def save(self, *args, **kwargs):
-
         if not self.verification_token:
             self.verification_token = uuid.uuid4()
         super().save(*args, **kwargs)

@@ -13,7 +13,6 @@ from service.utils.calculate_estimated_pickup_date import (
 @require_GET
 @admin_required
 def get_estimated_pickup_date_ajax(request):
-
     service_type_id = request.GET.get("service_type_id")
     service_date_str = request.GET.get("service_date")
 
@@ -23,19 +22,15 @@ def get_estimated_pickup_date_ajax(request):
         )
 
     try:
-
         service_type = ServiceType.objects.get(pk=service_type_id)
         service_date = datetime.datetime.strptime(service_date_str, "%Y-%m-%d").date()
     except ServiceType.DoesNotExist:
-
         return JsonResponse({"error": "ServiceType not found"}, status=404)
     except ValueError:
-
         return JsonResponse(
             {"error": "Invalid date format. ExpectedYYYY-MM-DD."}, status=400
         )
     except Exception as e:
-
         return JsonResponse(
             {"error": f"An unexpected error occurred: {str(e)}"}, status=500
         )
@@ -58,7 +53,6 @@ def get_estimated_pickup_date_ajax(request):
             {"estimated_pickup_date": calculated_date.strftime("%Y-%m-%d")}
         )
     else:
-
         return JsonResponse(
             {"error": "Could not calculate estimated pickup date"}, status=500
         )

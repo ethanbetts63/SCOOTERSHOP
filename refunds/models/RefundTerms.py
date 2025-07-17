@@ -35,17 +35,22 @@ DEFAULT_REFUND_POLICY_CONTENT = """
 - **Outcome:** The payment is non-refundable.
 """
 
+
 class RefundTerms(models.Model):
     # Deposit Refund Settings
     deposit_full_refund_days = models.PositiveIntegerField(default=14)
     deposit_partial_refund_days = models.PositiveIntegerField(default=7)
-    deposit_partial_refund_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=50.00)
+    deposit_partial_refund_percentage = models.DecimalField(
+        max_digits=5, decimal_places=2, default=50.00
+    )
     deposit_no_refund_days = models.PositiveIntegerField(default=2)
 
     # Full Payment Refund Settings
     full_payment_full_refund_days = models.PositiveIntegerField(default=14)
     full_payment_partial_refund_days = models.PositiveIntegerField(default=7)
-    full_payment_partial_refund_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=50.00)
+    full_payment_partial_refund_percentage = models.DecimalField(
+        max_digits=5, decimal_places=2, default=50.00
+    )
     full_payment_no_refund_days = models.PositiveIntegerField(default=2)
 
     # Versioned Policy Text
@@ -57,23 +62,34 @@ class RefundTerms(models.Model):
     class Meta:
         verbose_name = "Refund Policy"
         verbose_name_plural = "Refund Policies"
-        ordering = ['-version_number']
+        ordering = ["-version_number"]
 
     def __str__(self):
-        status = 'Active' if self.is_active else 'Archived'
+        status = "Active" if self.is_active else "Archived"
         return f"v{self.version_number} - Created: {self.created_at.strftime('%d %b %Y')} ({status})"
 
     def save(self, *args, **kwargs):
         if not self.pk and not self.version_number:
-            last_version = RefundTerms.objects.all().order_by('version_number').last()
-            self.version_number = (last_version.version_number + 1) if last_version else 1
+            last_version = RefundTerms.objects.all().order_by("version_number").last()
+            self.version_number = (
+                (last_version.version_number + 1) if last_version else 1
+            )
 
         if self.is_active:
             with transaction.atomic():
-                RefundTerms.objects.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
-        
+                RefundTerms.objects.filter(is_active=True).exclude(pk=self.pk).update(
+                    is_active=False
+                )
+
         super().save(*args, **kwargs)
 
     def clean(self):
-        if not self.is_active and not RefundTerms.objects.filter(is_active=True).exclude(pk=self.pk).exists():
-             raise ValidationError("You cannot deactivate the only active refund policy version. Please activate another version first.")
+        if (
+            not self.is_active
+            and not RefundTerms.objects.filter(is_active=True)
+            .exclude(pk=self.pk)
+            .exists()
+        ):
+            raise ValidationError(
+                "You cannot deactivate the only active refund policy version. Please activate another version first."
+            )

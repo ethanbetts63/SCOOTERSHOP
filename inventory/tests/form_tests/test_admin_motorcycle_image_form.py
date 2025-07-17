@@ -5,7 +5,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 
 class MotorcycleImageFormTest(TestCase):
-
     def test_form_fields_and_widgets(self):
         form = MotorcycleImageForm()
         expected_fields = ["image"]

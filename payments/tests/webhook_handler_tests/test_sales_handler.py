@@ -183,7 +183,6 @@ class SalesWebhookHandlerTest(TestCase):
                 self.assertEqual(mock_send_email.call_count, 0)
 
     def test_handle_sales_booking_succeeded_new_bike_decrements_quantity(self):
-
         new_motorcycle = MotorcycleFactory(
             price=Decimal("15000.00"),
             status="for_sale",
@@ -230,7 +229,6 @@ class SalesWebhookHandlerTest(TestCase):
             self.assertEqual(sales_booking.payment_status, "deposit_paid")
 
     def test_handle_sales_booking_succeeded_new_bike_quantity_to_zero(self):
-
         new_motorcycle = MotorcycleFactory(
             price=Decimal("12000.00"),
             status="for_sale",

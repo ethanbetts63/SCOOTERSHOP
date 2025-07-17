@@ -7,6 +7,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def confirm_sales_booking(sales_booking_id, message=None, send_notification=True):
     try:
         with transaction.atomic():

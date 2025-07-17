@@ -8,11 +8,11 @@ import uuid
 from refunds.forms.user_refund_request_form import RefundRequestForm
 from mailer.utils import send_templated_email
 
+
 class UserRefundRequestView(View):
     template_name = "refunds/user_refund_request.html"
 
     def get(self, request, *args, **kwargs):
-
         form = RefundRequestForm()
         context = {
             "form": form,
@@ -22,7 +22,6 @@ class UserRefundRequestView(View):
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
-
         form = RefundRequestForm(request.POST)
 
         if form.is_valid():

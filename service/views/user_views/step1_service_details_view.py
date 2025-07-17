@@ -1,5 +1,6 @@
 import uuid
 import logging
+
 logger = logging.getLogger(__name__)
 import datetime
 from django.shortcuts import redirect
@@ -16,11 +17,11 @@ from service.models import (
 )
 from service.utils.booking_protection import check_and_manage_recent_booking_flag
 
+
 class Step1ServiceDetailsView(View):
     template_name = "service/step1_service_details_include.html"
 
     def post(self, request, *args, **kwargs):
-
         redirect_response = check_and_manage_recent_booking_flag(request)
         if redirect_response:
             return redirect_response
@@ -134,7 +135,6 @@ class Step1ServiceDetailsView(View):
                         "Service details updated. Please choose your motorcycle.",
                     )
                 else:
-
                     temp_booking = TempServiceBooking.objects.create(
                         session_uuid=uuid.uuid4(),
                         service_type=service_type,
@@ -151,13 +151,11 @@ class Step1ServiceDetailsView(View):
                     )
 
                 if request.user.is_authenticated and customer_motorcycles_exist:
-
                     redirect_url = (
                         reverse("service:service_book_step2")
                         + f"?temp_booking_uuid={temp_booking.session_uuid}"
                     )
                 else:
-
                     redirect_url = (
                         reverse("service:service_book_step3")
                         + f"?temp_booking_uuid={temp_booking.session_uuid}"
@@ -176,7 +174,6 @@ class Step1ServiceDetailsView(View):
                 return redirect("core:index")
 
         else:
-
             for field, error_list in form.errors.items():
                 for error in error_list:
                     messages.error(request, f"Error in {field}: {error}")

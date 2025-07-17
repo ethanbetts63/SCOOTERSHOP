@@ -18,6 +18,7 @@ BOOKING_STATUS_CHOICES = [
     ("enquired", "Enquired"),
 ]
 
+
 class SalesBooking(models.Model):
     motorcycle = models.ForeignKey(
         "inventory.Motorcycle",
@@ -96,11 +97,11 @@ class SalesBooking(models.Model):
 
     sales_terms_version = models.ForeignKey(
         "inventory.SalesTerms",
-        on_delete=models.PROTECT, 
-        related_name="sales_bookings", 
-        null=True, 
+        on_delete=models.PROTECT,
+        related_name="sales_bookings",
+        null=True,
         blank=True,
-        help_text="The specific version of the T&Cs the user agreed to."
+        help_text="The specific version of the T&Cs the user agreed to.",
     )
 
     created_at = models.DateTimeField(

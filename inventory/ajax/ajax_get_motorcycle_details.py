@@ -11,7 +11,6 @@ def get_motorcycle_details_ajax(request, pk):
     try:
         motorcycle = get_object_or_404(Motorcycle, pk=pk)
     except Exception as e:
-
         return JsonResponse(
             {"error": f"Motorcycle not found or invalid ID: {e}"}, status=404
         )

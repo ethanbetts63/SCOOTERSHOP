@@ -7,7 +7,7 @@ from service.models import ServiceSettings, TempServiceBooking
 from service.forms import ServiceDetailsForm
 from service.utils import get_service_date_availability
 from django.views.decorators.http import require_http_methods
-from inventory.utils import get_featured_motorcycles # --- Import the utility ---
+from inventory.utils import get_featured_motorcycles  # --- Import the utility ---
 
 
 @require_http_methods(["GET"])
@@ -69,8 +69,8 @@ def index(request):
 
     min_date_for_flatpickr, disabled_dates_json = get_service_date_availability()
 
-    featured_new_items = get_featured_motorcycles('new')
-    featured_used_items = get_featured_motorcycles('used')
+    featured_new_items = get_featured_motorcycles("new")
+    featured_used_items = get_featured_motorcycles("used")
 
     context = {
         "reviews": five_star_reviews,

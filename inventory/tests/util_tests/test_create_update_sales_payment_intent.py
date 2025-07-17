@@ -10,9 +10,12 @@ from inventory.utils.create_update_sales_payment_intent import (
 
 from payments.models import Payment
 
-from inventory.tests.test_helpers.model_factories import TempSalesBookingFactory, SalesProfileFactory, MotorcycleFactory
+from inventory.tests.test_helpers.model_factories import (
+    TempSalesBookingFactory,
+    SalesProfileFactory,
+    MotorcycleFactory,
+)
 from payments.tests.test_helpers.model_factories import PaymentFactory
-
 
 
 class CreateUpdateSalesPaymentIntentTest(TestCase):

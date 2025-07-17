@@ -7,17 +7,21 @@ import uuid
 from service.forms.step4_service_profile_form import ServiceBookingUserForm
 from service.models import TempServiceBooking, ServiceProfile, CustomerMotorcycle
 from users.tests.test_helpers.model_factories import UserFactory
-from service.tests.test_helpers.model_factories import TempServiceBookingFactory, ServiceProfileFactory, ServiceTypeFactory, ServiceSettingsFactory, CustomerMotorcycleFactory
+from service.tests.test_helpers.model_factories import (
+    TempServiceBookingFactory,
+    ServiceProfileFactory,
+    ServiceTypeFactory,
+    ServiceSettingsFactory,
+    CustomerMotorcycleFactory,
+)
 
 
 User = get_user_model()
 
 
 class Step4ServiceProfileViewTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         cls.factory = RequestFactory()
         cls.user_password = "testpassword123"
         cls.user = UserFactory(password=cls.user_password)
@@ -30,7 +34,6 @@ class Step4ServiceProfileViewTest(TestCase):
         cls.base_url = reverse("service:service_book_step4")
 
     def setUp(self):
-
         TempServiceBooking.objects.all().delete()
         ServiceProfile.objects.all().delete()
         CustomerMotorcycle.objects.all().delete()
@@ -119,7 +122,6 @@ class Step4ServiceProfileViewTest(TestCase):
         )
 
     def test_dispatch_valid_temp_booking_proceeds(self):
-
         response = self.client.get(self.base_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "service/step4_service_profile.html")

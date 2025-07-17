@@ -12,19 +12,19 @@ from service.ajax.ajax_get_service_booking_details import (
 )
 
 
-
-
 from users.tests.test_helpers.model_factories import UserFactory
-from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory, ServiceTypeFactory, CustomerMotorcycleFactory
+from service.tests.test_helpers.model_factories import (
+    ServiceBookingFactory,
+    ServiceProfileFactory,
+    ServiceTypeFactory,
+    CustomerMotorcycleFactory,
+)
 from payments.tests.test_helpers.model_factories import PaymentFactory
 from refunds.tests.test_helpers.model_factories import RefundSettingsFactory
 
 
-
 class AjaxGetServiceBookingDetailsTest(TestCase):
-
     def setUp(self):
-
         self.factory = RequestFactory()
 
         self.staff_user = UserFactory(
@@ -53,7 +53,6 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
         self.refund_settings = RefundSettingsFactory()
 
     def test_get_service_booking_details_success(self):
-
         url = reverse(
             "service:admin_api_get_service_booking_details",
             args=[self.service_booking.pk],
@@ -148,7 +147,6 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
         self.assertIsInstance(content["refund_calculation_details"], str)
 
     def test_get_service_booking_details_not_found(self):
-
         invalid_pk = self.service_booking.pk + 100
 
         url = reverse(
@@ -166,7 +164,6 @@ class AjaxGetServiceBookingDetailsTest(TestCase):
         self.assertEqual(content["error"], "Service Booking not found")
 
     def test_only_get_requests_allowed(self):
-
         url = reverse(
             "service:admin_api_get_service_booking_details",
             args=[self.service_booking.pk],

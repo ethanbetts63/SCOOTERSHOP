@@ -18,7 +18,12 @@ from payments.models import Payment
 from payments.webhook_handlers.service_handlers import handle_service_booking_succeeded
 
 
-from service.tests.test_helpers.model_factories import ServiceTypeFactory, ServiceSettingsFactory, ServiceTermsFactory, ServiceBrandFactory
+from service.tests.test_helpers.model_factories import (
+    ServiceTypeFactory,
+    ServiceSettingsFactory,
+    ServiceTermsFactory,
+    ServiceBrandFactory,
+)
 
 
 SEND_BOOKINGS_TO_MECHANICDESK = False
@@ -27,7 +32,6 @@ SEND_BOOKINGS_TO_MECHANICDESK = False
 @skipIf(not settings.STRIPE_SECRET_KEY, "Stripe API key not configured in settings")
 @override_settings(ADMIN_EMAIL="admin@example.com")
 class TestAnonymousFullOnlinePaymentFlow(TestCase):
-
     def setUp(self):
         self.client = Client()
         SiteSettings.objects.create(enable_service_booking=True)
@@ -210,7 +214,7 @@ class TestAnonymousFullOnlinePaymentFlow(TestCase):
         self.assertRedirects(
             response,
             step3_url
-            + f'?temp_booking_uuid={self.client.session["temp_service_booking_uuid"]}',
+            + f"?temp_booking_uuid={self.client.session['temp_service_booking_uuid']}",
         )
 
         messages = list(response.context["messages"])

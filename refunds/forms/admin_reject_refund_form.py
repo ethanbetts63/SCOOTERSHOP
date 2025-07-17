@@ -3,7 +3,6 @@ from refunds.models import RefundRequest
 
 
 class AdminRejectRefundForm(forms.ModelForm):
-
     send_rejection_email = forms.BooleanField(
         label="Send automated rejection email to user",
         required=False,

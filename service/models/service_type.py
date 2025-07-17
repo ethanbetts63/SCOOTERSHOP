@@ -19,7 +19,6 @@ class ServiceType(models.Model):
     )
 
     class Meta:
-
         verbose_name = "Service Type"
 
         verbose_name_plural = "Service Types"

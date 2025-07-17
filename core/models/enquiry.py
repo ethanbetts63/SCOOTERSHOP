@@ -7,7 +7,9 @@ class Enquiry(models.Model):
     email = models.EmailField()
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     message = models.TextField()
-    motorcycle = models.ForeignKey(Motorcycle, on_delete=models.SET_NULL, null=True, blank=True)
+    motorcycle = models.ForeignKey(
+        Motorcycle, on_delete=models.SET_NULL, null=True, blank=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

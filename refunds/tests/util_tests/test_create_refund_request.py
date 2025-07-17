@@ -6,9 +6,16 @@ from refunds.models import RefundRequest
 from service.models import ServiceBooking, ServiceProfile
 from inventory.models import SalesBooking, SalesProfile
 from users.tests.test_helpers.model_factories import UserFactory
-from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory
-from inventory.tests.test_helpers.model_factories import SalesBookingFactory, SalesProfileFactory
+from service.tests.test_helpers.model_factories import (
+    ServiceBookingFactory,
+    ServiceProfileFactory,
+)
+from inventory.tests.test_helpers.model_factories import (
+    SalesBookingFactory,
+    SalesProfileFactory,
+)
 from payments.tests.test_helpers.model_factories import PaymentFactory
+
 
 class CreateRefundRequestTest(TestCase):
     def setUp(self):
@@ -20,9 +27,15 @@ class CreateRefundRequestTest(TestCase):
         SalesProfile.objects.all().delete()
 
         self.user = UserFactory(email="testuser@example.com")
-        self.admin_user = UserFactory(email="admin@example.com", is_staff=True, is_superuser=True)
-        self.service_profile = ServiceProfileFactory(user=self.user, email="service@example.com")
-        self.sales_profile = SalesProfileFactory(user=self.user, email="sales@example.com")
+        self.admin_user = UserFactory(
+            email="admin@example.com", is_staff=True, is_superuser=True
+        )
+        self.service_profile = ServiceProfileFactory(
+            user=self.user, email="service@example.com"
+        )
+        self.sales_profile = SalesProfileFactory(
+            user=self.user, email="sales@example.com"
+        )
         self.payment = PaymentFactory(amount=Decimal("100.00"))
 
     def test_create_refund_request_service_booking(self):
@@ -118,7 +131,9 @@ class CreateRefundRequestTest(TestCase):
         self.assertTrue(refund_request.is_admin_initiated)
 
     def test_create_refund_request_no_user_email_from_service_profile(self):
-        service_profile_no_user = ServiceProfileFactory(user=None, email="profileonly@example.com")
+        service_profile_no_user = ServiceProfileFactory(
+            user=None, email="profileonly@example.com"
+        )
         booking = ServiceBookingFactory(service_profile=service_profile_no_user)
         refund_request = create_refund_request(
             amount_to_refund=Decimal("10.00"),
@@ -133,7 +148,9 @@ class CreateRefundRequestTest(TestCase):
         self.assertEqual(refund_request.request_email, "profileonly@example.com")
 
     def test_create_refund_request_no_user_email_from_sales_profile(self):
-        sales_profile_no_user = SalesProfileFactory(user=None, email="salesprofileonly@example.com")
+        sales_profile_no_user = SalesProfileFactory(
+            user=None, email="salesprofileonly@example.com"
+        )
         booking = SalesBookingFactory(sales_profile=sales_profile_no_user)
         refund_request = create_refund_request(
             amount_to_refund=Decimal("10.00"),
@@ -148,7 +165,9 @@ class CreateRefundRequestTest(TestCase):
         self.assertEqual(refund_request.request_email, "salesprofileonly@example.com")
 
     def test_create_refund_request_no_email_available(self):
-        service_profile_no_email = ServiceProfileFactory(user=None, email="noemail@example.com") # Provide a default email
+        service_profile_no_email = ServiceProfileFactory(
+            user=None, email="noemail@example.com"
+        )  # Provide a default email
         booking = ServiceBookingFactory(service_profile=service_profile_no_email)
         refund_request = create_refund_request(
             amount_to_refund=Decimal("10.00"),
@@ -181,7 +200,7 @@ class CreateRefundRequestTest(TestCase):
             requesting_user=self.admin_user,
             service_profile=self.service_profile,
             is_admin_initiated=True,
-            initial_status="pending", # Should not set processed_at
+            initial_status="pending",  # Should not set processed_at
         )
         self.assertIsNotNone(refund_request)
         self.assertIsNone(refund_request.processed_at)
@@ -196,7 +215,7 @@ class CreateRefundRequestTest(TestCase):
             requesting_user=self.admin_user,
             service_profile=self.service_profile,
             is_admin_initiated=True,
-            initial_status="unverified", # Should not set processed_at
+            initial_status="unverified",  # Should not set processed_at
         )
         self.assertIsNotNone(refund_request)
         self.assertIsNone(refund_request.processed_at)

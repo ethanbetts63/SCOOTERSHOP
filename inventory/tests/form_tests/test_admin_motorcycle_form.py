@@ -1,11 +1,13 @@
 from django.test import TestCase
 import datetime
 from inventory.forms.admin_motorcycle_form import MotorcycleForm
-from inventory.tests.test_helpers.model_factories import MotorcycleConditionFactory, MotorcycleFactory
+from inventory.tests.test_helpers.model_factories import (
+    MotorcycleConditionFactory,
+    MotorcycleFactory,
+)
 
 
 class MotorcycleFormTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.condition_new = MotorcycleConditionFactory(name="new", display_name="New")
@@ -272,8 +274,6 @@ class MotorcycleFormTest(TestCase):
             instance_available.is_available, "Motorcycle should be saved as available."
         )
         self.assertEqual(instance_available.status, "for_sale")
-
-        
 
     def test_form_saves_status_correctly(self):
         base_data = {

@@ -8,7 +8,6 @@ from core.models import Enquiry
 
 
 class ContactViewTest(TestCase):
-
     def setUp(self):
         self.client = Client()
         self.url = reverse("core:contact")
@@ -37,7 +36,9 @@ class ContactViewTest(TestCase):
         self.mock_admin_email = patch_admin_email.start()
         self.addCleanup(patch_admin_email.stop)
 
-        patch_send_email = patch("core.views.user_views.contact_view.send_templated_email")
+        patch_send_email = patch(
+            "core.views.user_views.contact_view.send_templated_email"
+        )
         self.mock_send_email = patch_send_email.start()
         self.addCleanup(patch_send_email.stop)
 
@@ -71,7 +72,11 @@ class ContactViewTest(TestCase):
             recipient_list=[enquiry.email],
             subject="Enquiry Received - Scooter Shop",
             template_name="user_general_enquiry_notification.html",
-            context={"enquiry": enquiry, 'SITE_DOMAIN': '127.0.0.1:8000', 'SITE_SCHEME': 'http'},
+            context={
+                "enquiry": enquiry,
+                "SITE_DOMAIN": "127.0.0.1:8000",
+                "SITE_SCHEME": "http",
+            },
             booking=enquiry,
             profile=enquiry,
         )
@@ -79,11 +84,17 @@ class ContactViewTest(TestCase):
             recipient_list=["admin@example.com"],
             subject="New Enquiry - Scooter Shop",
             template_name="admin_general_enquiry_notification.html",
-            context={"enquiry": enquiry, 'SITE_DOMAIN': '127.0.0.1:8000', 'SITE_SCHEME': 'http'},
+            context={
+                "enquiry": enquiry,
+                "SITE_DOMAIN": "127.0.0.1:8000",
+                "SITE_SCHEME": "http",
+            },
             booking=enquiry,
             profile=enquiry,
         )
-        self.mock_send_email.assert_has_calls([customer_call, admin_call], any_order=True)
+        self.mock_send_email.assert_has_calls(
+            [customer_call, admin_call], any_order=True
+        )
 
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)

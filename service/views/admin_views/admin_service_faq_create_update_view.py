@@ -8,12 +8,10 @@ from service.models import Servicefaq
 
 
 class ServicefaqCreateUpdateView(AdminRequiredMixin, View):
-
     template_name = "service/admin_service_faq_create_update.html"
     form_class = AdminServicefaqForm
 
     def get(self, request, pk=None, *args, **kwargs):
-
         if pk:
             instance = get_object_or_404(Servicefaq, pk=pk)
             form = self.form_class(instance=instance)
@@ -27,7 +25,6 @@ class ServicefaqCreateUpdateView(AdminRequiredMixin, View):
         return render(request, self.template_name, context)
 
     def post(self, request, pk=None, *args, **kwargs):
-
         if pk:
             instance = get_object_or_404(Servicefaq, pk=pk)
             form = self.form_class(request.POST, instance=instance)

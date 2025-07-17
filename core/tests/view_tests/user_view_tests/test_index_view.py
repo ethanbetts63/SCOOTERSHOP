@@ -9,7 +9,6 @@ from datetime import date
 
 
 class IndexViewTest(TestCase):
-
     def setUp(self):
         self.client = Client()
         self.url = reverse("core:index")

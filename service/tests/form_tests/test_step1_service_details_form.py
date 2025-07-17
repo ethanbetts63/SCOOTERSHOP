@@ -5,17 +5,13 @@ from datetime import date, timedelta
 from service.forms import ServiceDetailsForm
 
 
-
-
 from service.tests.test_helpers.model_factories import ServiceTypeFactory
 from service.models import ServiceType
 
 
 class ServiceDetailsFormTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         cls.active_service_type_1 = ServiceTypeFactory(
             name="Oil Change", is_active=True
         )
@@ -32,7 +28,6 @@ class ServiceDetailsFormTest(TestCase):
         }
 
     def test_form_valid_data(self):
-
         form = ServiceDetailsForm(data=self.valid_data)
 
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
@@ -42,7 +37,6 @@ class ServiceDetailsFormTest(TestCase):
         )
 
     def test_form_invalid_data_missing_fields(self):
-
         data = self.valid_data.copy()
         data["service_type"] = ""
         form = ServiceDetailsForm(data=data)
@@ -60,7 +54,6 @@ class ServiceDetailsFormTest(TestCase):
         self.assertIn("This field is required.", form.errors["service_date"])
 
     def test_service_type_queryset(self):
-
         form = ServiceDetailsForm()
 
         queryset = form.fields["service_type"].queryset
@@ -75,7 +68,6 @@ class ServiceDetailsFormTest(TestCase):
         )
 
     def test_service_date_past_date_validation(self):
-
         past_date = date.today() - timedelta(days=1)
         data = self.valid_data.copy()
         data["service_date"] = past_date

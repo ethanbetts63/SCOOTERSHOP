@@ -7,12 +7,10 @@ import re
 try:
     from users.models import User
 except ImportError:
-
     User = settings.AUTH_USER_MODEL
 
 
 class ServiceProfile(models.Model):
-
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
@@ -60,10 +58,8 @@ class ServiceProfile(models.Model):
         return f"Profile for {self.name} ({self.email})"
 
     def clean(self):
-
         super().clean()
         if self.phone_number:
-
             cleaned_phone_number = self.phone_number.replace(" ", "").replace("-", "")
             if not re.fullmatch(r"^\+?\d+$", cleaned_phone_number):
                 raise ValidationError(

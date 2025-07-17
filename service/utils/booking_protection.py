@@ -6,12 +6,10 @@ from django.contrib import messages
 
 
 def set_recent_booking_flag(request):
-
     request.session["last_booking_successful_timestamp"] = timezone.now().isoformat()
 
 
 def check_and_manage_recent_booking_flag(request):
-
     last_booking_timestamp_str = request.session.get(
         "last_booking_successful_timestamp"
     )

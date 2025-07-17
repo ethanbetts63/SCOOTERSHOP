@@ -11,8 +11,14 @@ from service.models import (
 )
 from dashboard.models import SiteSettings
 from users.tests.test_helpers.model_factories import UserFactory
-from service.tests.test_helpers.model_factories import ServiceProfileFactory, ServiceTypeFactory, ServiceSettingsFactory, ServiceTermsFactory, CustomerMotorcycleFactory, ServiceBrandFactory
-
+from service.tests.test_helpers.model_factories import (
+    ServiceProfileFactory,
+    ServiceTypeFactory,
+    ServiceSettingsFactory,
+    ServiceTermsFactory,
+    CustomerMotorcycleFactory,
+    ServiceBrandFactory,
+)
 
 
 SEND_BOOKINGS_TO_MECHANICDESK = False
@@ -20,7 +26,6 @@ SEND_BOOKINGS_TO_MECHANICDESK = False
 
 @override_settings(ADMIN_EMAIL="admin@example.com")
 class TestLoggedInUserInStorePaymentFlow(TestCase):
-
     def setUp(self):
         self.client = Client()
         SiteSettings.objects.create(enable_service_booking=True)
@@ -69,7 +74,7 @@ class TestLoggedInUserInStorePaymentFlow(TestCase):
         self.assertRedirects(
             response,
             step2_url
-            + f'?temp_booking_uuid={self.client.session["temp_service_booking_uuid"]}',
+            + f"?temp_booking_uuid={self.client.session['temp_service_booking_uuid']}",
         )
 
         step2_data = {"selected_motorcycle": self.motorcycle.id}

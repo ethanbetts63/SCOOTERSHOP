@@ -5,13 +5,21 @@ from django.utils import timezone
 import datetime
 
 from refunds.tests.test_helpers.model_factories import RefundRequestFactory
-from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory, ServiceTypeFactory
+from service.tests.test_helpers.model_factories import (
+    ServiceBookingFactory,
+    ServiceProfileFactory,
+    ServiceTypeFactory,
+)
 from payments.tests.test_helpers.model_factories import PaymentFactory
 from users.tests.test_helpers.model_factories import UserFactory
-from inventory.tests.test_helpers.model_factories import MotorcycleConditionFactory, MotorcycleFactory, CustomerMotorcycleFactory
+from inventory.tests.test_helpers.model_factories import (
+    MotorcycleConditionFactory,
+    MotorcycleFactory,
+    CustomerMotorcycleFactory,
+)
 
 
-from refunds.models import RefundRequest 
+from refunds.models import RefundRequest
 from payments.models import Payment
 from service.models import ServiceBooking, ServiceProfile
 from django.contrib.auth import get_user_model
@@ -20,10 +28,8 @@ User = get_user_model()
 
 
 class RefundRequestModelTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         MotorcycleConditionFactory.create(name="used", display_name="Used")
 
         cls.motorcycle = MotorcycleFactory.create()
@@ -50,7 +56,6 @@ class RefundRequestModelTest(TestCase):
         )
 
     def test_create_basic_refund_request(self):
-
         RefundRequest.objects.all().delete()
 
         refund_request = RefundRequestFactory.create(
@@ -81,7 +86,6 @@ class RefundRequestModelTest(TestCase):
         self.assertIsNotNone(refund_request.token_created_at)
 
     def test_str_method_service_booking(self):
-
         refund_request = RefundRequestFactory.create(
             service_booking=self.service_booking, status="rejected"
         )
@@ -89,7 +93,6 @@ class RefundRequestModelTest(TestCase):
         self.assertEqual(str(refund_request), expected_str)
 
     def test_str_method_no_booking(self):
-
         refund_request = RefundRequestFactory.create(
             service_booking=None, status="pending"
         )
@@ -97,7 +100,6 @@ class RefundRequestModelTest(TestCase):
         self.assertEqual(str(refund_request), expected_str)
 
     def test_save_method_verification_token_generation(self):
-
         refund_request = RefundRequestFactory.build(
             payment=self.payment_for_service,
             service_profile=self.service_profile,
@@ -115,7 +117,6 @@ class RefundRequestModelTest(TestCase):
         self.assertEqual(refund_request.verification_token, original_token)
 
     def test_relationships(self):
-
         refund_request = RefundRequestFactory.create(
             service_booking=self.service_booking,
             payment=self.payment_for_service,
@@ -137,7 +138,6 @@ class RefundRequestModelTest(TestCase):
         self.assertIn(refund_request, self.user.processed_refund_requests.all())
 
     def test_on_delete_service_booking_set_null(self):
-
         refund_request = RefundRequestFactory.create(
             service_booking=self.service_booking
         )
@@ -150,7 +150,6 @@ class RefundRequestModelTest(TestCase):
         self.assertTrue(RefundRequest.objects.filter(id=refund_request.id).exists())
 
     def test_on_delete_payment_set_null(self):
-
         refund_request = RefundRequestFactory.create(payment=self.payment_for_service)
         payment_id = self.payment_for_service.id
         self.payment_for_service.delete()
@@ -160,7 +159,6 @@ class RefundRequestModelTest(TestCase):
         self.assertTrue(RefundRequest.objects.filter(id=refund_request.id).exists())
 
     def test_on_delete_service_profile_set_null(self):
-
         refund_request = RefundRequestFactory.create(
             service_profile=self.service_profile
         )
@@ -172,7 +170,6 @@ class RefundRequestModelTest(TestCase):
         self.assertTrue(RefundRequest.objects.filter(id=refund_request.id).exists())
 
     def test_on_delete_processed_by_set_null(self):
-
         refund_request = RefundRequestFactory.create(processed_by=self.user)
         user_id = self.user.id
         self.user.delete()
@@ -182,7 +179,6 @@ class RefundRequestModelTest(TestCase):
         self.assertTrue(RefundRequest.objects.filter(id=refund_request.id).exists())
 
     def test_status_choices_and_default(self):
-
         refund_request_default = RefundRequest.objects.create(
             payment=self.payment_for_service,
             amount_to_refund=Decimal("10.00"),
@@ -215,7 +211,6 @@ class RefundRequestModelTest(TestCase):
             refund_request_invalid.full_clean()
 
     def test_amount_to_refund_decimal_field(self):
-
         amount = Decimal("12345.67")
         refund_request = RefundRequestFactory.create(amount_to_refund=amount)
         self.assertEqual(refund_request.amount_to_refund, amount)
@@ -231,7 +226,6 @@ class RefundRequestModelTest(TestCase):
         self.assertIsNone(refund_request_null.amount_to_refund)
 
     def test_reason_and_rejection_reason_fields(self):
-
         reason_text = "The customer changed their mind about the booking."
         rejection_text = "Refund denied as per 24-hour cancellation policy."
         refund_request = RefundRequestFactory.create(
@@ -249,7 +243,6 @@ class RefundRequestModelTest(TestCase):
         self.assertIsNone(refund_request_null_rejection.rejection_reason)
 
     def test_timestamps(self):
-
         refund_request = RefundRequestFactory.create(processed_at=None)
         self.assertIsNotNone(refund_request.requested_at)
         self.assertIsNone(refund_request.processed_at)
@@ -266,7 +259,6 @@ class RefundRequestModelTest(TestCase):
         )
 
     def test_is_admin_initiated_field(self):
-
         refund_request_admin = RefundRequestFactory.create(is_admin_initiated=True)
         self.assertTrue(refund_request_admin.is_admin_initiated)
 
@@ -282,7 +274,6 @@ class RefundRequestModelTest(TestCase):
         self.assertFalse(refund_request_default.is_admin_initiated)
 
     def test_refund_calculation_details_json_field(self):
-
         details_data = {
             "policy_version": "2.0",
             "original_amount": "500.00",
@@ -312,7 +303,6 @@ class RefundRequestModelTest(TestCase):
         self.assertEqual(refund_request_default_json.refund_calculation_details, {})
 
     def test_request_email_field(self):
-
         email = "user.refund@example.com"
         refund_request = RefundRequestFactory.create(request_email=email)
         self.assertEqual(refund_request.request_email, email)
@@ -334,7 +324,6 @@ class RefundRequestModelTest(TestCase):
             refund_request_invalid_email.full_clean()
 
     def test_verification_token_and_token_created_at(self):
-
         explicit_token = uuid.uuid4()
         explicit_time = timezone.now() - datetime.timedelta(days=1)
         refund_request = RefundRequestFactory.create(
@@ -366,7 +355,6 @@ class RefundRequestModelTest(TestCase):
         )
 
     def test_staff_notes_field(self):
-
         notes = "Followed up with customer; refund processed on 2023-01-15."
         refund_request = RefundRequestFactory.create(staff_notes=notes)
         self.assertEqual(refund_request.staff_notes, notes)
@@ -375,7 +363,6 @@ class RefundRequestModelTest(TestCase):
         self.assertEqual(refund_request_blank.staff_notes, "")
 
     def test_stripe_refund_id_field(self):
-
         stripe_id = "re_123abcDEFgHIJKLmnopqrsTUV"
         refund_request = RefundRequestFactory.create(stripe_refund_id=stripe_id)
         self.assertEqual(refund_request.stripe_refund_id, stripe_id)

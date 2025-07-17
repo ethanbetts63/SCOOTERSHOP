@@ -4,20 +4,21 @@ import json
 from datetime import date, time, timedelta
 
 
-
 from users.tests.test_helpers.model_factories import UserFactory
-from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory, ServiceTypeFactory, CustomerMotorcycleFactory
+from service.tests.test_helpers.model_factories import (
+    ServiceBookingFactory,
+    ServiceProfileFactory,
+    ServiceTypeFactory,
+    CustomerMotorcycleFactory,
+)
 from payments.tests.test_helpers.model_factories import PaymentFactory
-
 
 
 from service.ajax.ajax_search_service_bookings import search_service_bookings_ajax
 
 
 class AjaxSearchServiceBookingsTest(TestCase):
-
     def setUp(self):
-
         self.factory = RequestFactory()
 
         self.staff_user = UserFactory(
@@ -138,7 +139,6 @@ class AjaxSearchServiceBookingsTest(TestCase):
         )
 
     def _make_request(self, query_term, user=None):
-
         url = reverse("service:admin_api_search_bookings")
         if query_term:
             url += f"?query={query_term}"
@@ -150,7 +150,6 @@ class AjaxSearchServiceBookingsTest(TestCase):
         return search_service_bookings_ajax(request)
 
     def test_search_by_booking_reference(self):
-
         response = self._make_request(query_term="ABCDEF01")
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -168,7 +167,6 @@ class AjaxSearchServiceBookingsTest(TestCase):
         )
 
     def test_search_by_customer_name(self):
-
         response = self._make_request(query_term="John Doe")
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -182,7 +180,6 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertEqual(content["bookings"][0]["customer_name"], self.profile2.name)
 
     def test_search_by_customer_email(self):
-
         response = self._make_request(query_term="jane.smith@example.com")
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -190,7 +187,6 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertEqual(content["bookings"][0]["customer_name"], self.profile2.name)
 
     def test_search_by_motorcycle_brand_model_year(self):
-
         response = self._make_request(query_term="Honda")
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -216,7 +212,6 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertIn("Suzuki", content["bookings"][0]["motorcycle_info"])
 
     def test_search_by_rego(self):
-
         response = self._make_request(query_term="AW004")
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -224,7 +219,6 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertEqual(content["bookings"][0]["customer_name"], self.profile4.name)
 
     def test_search_by_service_type_name_description(self):
-
         response = self._make_request(query_term="Oil Change")
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -245,7 +239,6 @@ class AjaxSearchServiceBookingsTest(TestCase):
         )
 
     def test_search_by_booking_status(self):
-
         response = self._make_request(query_term="confirmed")
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -258,7 +251,6 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertEqual(len(content["bookings"]), 2)
 
     def test_search_by_customer_notes(self):
-
         response = self._make_request(query_term="synthetic oil")
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -268,7 +260,6 @@ class AjaxSearchServiceBookingsTest(TestCase):
         )
 
     def test_search_multiple_matches_and_ordering(self):
-
         response = self._make_request(query_term="pending")
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -282,7 +273,6 @@ class AjaxSearchServiceBookingsTest(TestCase):
         )
 
     def test_search_no_matches(self):
-
         response = self._make_request(query_term="NonExistentBookingTerm")
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -290,7 +280,6 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertEqual(content["bookings"], [])
 
     def test_search_empty_query(self):
-
         response = self._make_request(query_term="")
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -298,7 +287,6 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertEqual(content["bookings"], [])
 
     def test_search_no_query_parameter(self):
-
         url = reverse("service:admin_api_search_bookings")
         request = self.factory.get(url)
         request.user = self.staff_user
@@ -311,7 +299,6 @@ class AjaxSearchServiceBookingsTest(TestCase):
         self.assertEqual(content["bookings"], [])
 
     def test_only_get_requests_allowed(self):
-
         url = reverse("service:admin_api_search_bookings")
         request = self.factory.post(url)
         request.user = self.staff_user

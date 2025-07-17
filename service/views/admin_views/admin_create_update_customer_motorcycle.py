@@ -8,23 +8,18 @@ from service.models import CustomerMotorcycle
 
 
 class CustomerMotorcycleCreateUpdateView(AdminRequiredMixin, View):
-
     template_name = "service/admin_customer_motorcycle_create_update.html"
     form_class = AdminCustomerMotorcycleForm
 
     def test_func(self):
-
         return self.request.user.is_staff or self.request.user.is_superuser
 
     def get(self, request, pk=None, *args, **kwargs):
-
         instance = None
         if pk:
-
             instance = get_object_or_404(CustomerMotorcycle, pk=pk)
             form = self.form_class(instance=instance)
         else:
-
             form = self.form_class()
 
         context = {
@@ -35,14 +30,12 @@ class CustomerMotorcycleCreateUpdateView(AdminRequiredMixin, View):
         return render(request, self.template_name, context)
 
     def post(self, request, pk=None, *args, **kwargs):
-
         instance = None
         if pk:
             instance = get_object_or_404(CustomerMotorcycle, pk=pk)
 
             form = self.form_class(request.POST, request.FILES, instance=instance)
         else:
-
             form = self.form_class(request.POST, request.FILES)
 
         if form.is_valid():

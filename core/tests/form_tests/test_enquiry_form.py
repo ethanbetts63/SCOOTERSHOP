@@ -3,7 +3,6 @@ from core.forms.enquiry_form import EnquiryForm
 
 
 class EnquiryFormTest(TestCase):
-
     def test_form_valid_data(self):
         data = {
             "name": "John Doe",

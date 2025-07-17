@@ -1,6 +1,7 @@
 from django import forms
 from refunds.models import RefundTerms
 
+
 class AdminRefundTermsForm(forms.ModelForm):
     class Meta:
         model = RefundTerms

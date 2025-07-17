@@ -51,7 +51,6 @@ class GetPaymentStatusView(View):
 
         except SalesBooking.DoesNotExist:
             try:
-
                 Payment.objects.get(stripe_payment_intent_id=payment_intent_id)
                 return JsonResponse(
                     {
@@ -60,7 +59,6 @@ class GetPaymentStatusView(View):
                     }
                 )
             except Payment.DoesNotExist:
-
                 return JsonResponse(
                     {
                         "status": "error",
@@ -69,7 +67,6 @@ class GetPaymentStatusView(View):
                     status=500,
                 )
         except Exception as e:
-
             return JsonResponse(
                 {
                     "status": "error",

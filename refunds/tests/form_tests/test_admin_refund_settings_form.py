@@ -6,9 +6,7 @@ from refunds.models import RefundSettings
 
 
 class RefundSettingsFormTests(TestCase):
-
     def _get_valid_form_data(self):
-
         return {
             "full_payment_full_refund_days": 7,
             "full_payment_partial_refund_days": 3,
@@ -21,7 +19,6 @@ class RefundSettingsFormTests(TestCase):
         }
 
     def setUp(self):
-
         self.refund_settings, created = RefundSettings.objects.get_or_create(
             pk=1, defaults=self._get_valid_form_data()
         )
@@ -30,7 +27,6 @@ class RefundSettingsFormTests(TestCase):
             self.refund_settings.save()
 
     def test_form_valid_data(self):
-
         data = self._get_valid_form_data()
         data.update(
             {
@@ -50,9 +46,7 @@ class RefundSettingsFormTests(TestCase):
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
 
         updated_settings = form.save()
-        self.assertEqual(
-            updated_settings.full_payment_full_refund_days, 10
-        )
+        self.assertEqual(updated_settings.full_payment_full_refund_days, 10)
         self.assertEqual(
             updated_settings.full_payment_partial_refund_percentage,
             Decimal("75.00"),
@@ -61,14 +55,11 @@ class RefundSettingsFormTests(TestCase):
         self.assertEqual(RefundSettings.objects.count(), 1)
 
     def test_form_invalid_percentage_fields(self):
-
         data = self._get_valid_form_data()
         data["full_payment_partial_refund_percentage"] = Decimal("101.00")
         form = RefundSettingsForm(instance=self.refund_settings, data=data)
         self.assertFalse(form.is_valid())
-        self.assertIn(
-            "full_payment_partial_refund_percentage", form.errors
-        )
+        self.assertIn("full_payment_partial_refund_percentage", form.errors)
         self.assertIn(
             "Ensure full payment partial refund percentage is between 0.00% and 100.00%.",
             form.errors["full_payment_partial_refund_percentage"],
@@ -79,7 +70,6 @@ class RefundSettingsFormTests(TestCase):
         self.assertFalse(form.is_valid())
 
     def test_form_invalid_full_payment_days_thresholds(self):
-
         data = self._get_valid_form_data()
         data.update(
             {
@@ -113,7 +103,6 @@ class RefundSettingsFormTests(TestCase):
         )
 
     def test_form_invalid_deposit_days_thresholds(self):
-
         data = self._get_valid_form_data()
         data.update(
             {
@@ -146,7 +135,6 @@ class RefundSettingsFormTests(TestCase):
         )
 
     def test_form_no_new_instance_creation(self):
-
         data = self._get_valid_form_data()
         form = RefundSettingsForm(data=data)
 
@@ -163,13 +151,10 @@ class RefundSettingsFormTests(TestCase):
         self.assertEqual(RefundSettings.objects.count(), 1)
 
     def test_form_initial_data_for_existing_instance(self):
-
         initial_percentage = Decimal("45.00")
         initial_enable_refund = False
 
-        self.refund_settings.full_payment_partial_refund_percentage = (
-            initial_percentage
-        )
+        self.refund_settings.full_payment_partial_refund_percentage = initial_percentage
 
         self.refund_settings.sales_enable_deposit_refund = initial_enable_refund
         self.refund_settings.save()
@@ -181,7 +166,6 @@ class RefundSettingsFormTests(TestCase):
         )
 
     def test_sales_refund_settings_validation(self):
-
         data = self._get_valid_form_data()
         form = RefundSettingsForm(instance=self.refund_settings, data=data)
         self.assertTrue(
@@ -190,13 +174,13 @@ class RefundSettingsFormTests(TestCase):
         )
 
         data_invalid_hours = self._get_valid_form_data()
-        data_invalid_hours.update({
-            "full_payment_full_refund_days": 5,
-            "full_payment_partial_refund_days": 10,
-        })
+        data_invalid_hours.update(
+            {
+                "full_payment_full_refund_days": 5,
+                "full_payment_partial_refund_days": 10,
+            }
+        )
         form_invalid_hours = RefundSettingsForm(
             instance=self.refund_settings, data=data_invalid_hours
         )
         self.assertFalse(form_invalid_hours.is_valid())
-
-

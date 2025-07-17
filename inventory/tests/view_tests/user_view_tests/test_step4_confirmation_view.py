@@ -8,10 +8,9 @@ from inventory.tests.test_helpers.model_factories import (
     MotorcycleFactory,
 )
 
+
 class Step4ConfirmationViewTest(TestCase):
-
     def setUp(self):
-
         self.motorcycle = MotorcycleFactory(price=Decimal("10000.00"))
         self.sales_booking = SalesBookingFactory(
             motorcycle=self.motorcycle,
@@ -21,7 +20,6 @@ class Step4ConfirmationViewTest(TestCase):
         self.base_url = reverse("inventory:step4_confirmation")
 
     def test_confirmation_view_with_valid_session_reference(self):
-
         session = self.client.session
         session["current_sales_booking_reference"] = (
             self.sales_booking.sales_booking_reference
@@ -41,7 +39,6 @@ class Step4ConfirmationViewTest(TestCase):
         self.assertNotIn("temp_sales_booking_uuid", self.client.session)
 
     def test_confirmation_view_with_valid_payment_intent_id(self):
-
         url = f"{self.base_url}?payment_intent_id={self.sales_booking.stripe_payment_intent_id}"
         response = self.client.get(url)
 
@@ -57,7 +54,6 @@ class Step4ConfirmationViewTest(TestCase):
         )
 
     def test_confirmation_view_in_processing_state(self):
-
         payment_intent_id = "pi_processing_456"
         PaymentFactory(stripe_payment_intent_id=payment_intent_id)
 
@@ -71,7 +67,6 @@ class Step4ConfirmationViewTest(TestCase):
         self.assertNotIn("sales_booking", response.context)
 
     def test_confirmation_view_no_booking_or_payment_found_redirects(self):
-
         url = f"{self.base_url}?payment_intent_id=pi_does_not_exist_789"
         response = self.client.get(url)
 
@@ -86,7 +81,6 @@ class Step4ConfirmationViewTest(TestCase):
         )
 
     def test_confirmation_view_no_session_or_params_redirects(self):
-
         response = self.client.get(self.base_url)
 
         self.assertEqual(response.status_code, 302)
@@ -100,7 +94,6 @@ class Step4ConfirmationViewTest(TestCase):
         )
 
     def test_confirmation_view_with_invalid_session_reference(self):
-
         session = self.client.session
         session["current_sales_booking_reference"] = "INVALID-REF-123"
         session.save()

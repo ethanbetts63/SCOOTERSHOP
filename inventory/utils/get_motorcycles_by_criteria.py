@@ -14,19 +14,15 @@ def get_motorcycles_by_criteria(
     engine_max_cc=None,
     order=None,
 ):
-
     queryset = Motorcycle.objects.all()
 
     if condition_slug == "new":
-
         queryset = queryset.filter(conditions__name="new").distinct()
     elif condition_slug == "used":
-
         queryset = queryset.filter(
             Q(conditions__name="used") | Q(conditions__name="demo")
         ).distinct()
     elif condition_slug and condition_slug != "all":
-
         queryset = queryset.filter(conditions__name=condition_slug).distinct()
 
     if brand:
@@ -58,7 +54,6 @@ def get_motorcycles_by_criteria(
     elif order == "age_old_to_new":
         queryset = queryset.order_by("year", "date_posted")
     else:
-
         queryset = queryset.order_by("-date_posted")
 
     return queryset

@@ -8,6 +8,7 @@ from django.utils import timezone
 from datetime import timedelta
 from mailer.utils.send_all_test_emails import send_all_test_emails
 
+
 class EmailManagementView(AdminRequiredMixin, ListView):
     model = EmailLog
     template_name = "admin_email_management_view.html"
@@ -17,7 +18,7 @@ class EmailManagementView(AdminRequiredMixin, ListView):
     def get_queryset(self):
         three_months_ago = timezone.now() - timedelta(days=90)
         EmailLog.objects.filter(timestamp__lt=three_months_ago).delete()
-        
+
         admin_email = settings.ADMIN_EMAIL
         queryset = EmailLog.objects.all()
         if admin_email:
@@ -28,6 +29,7 @@ class EmailManagementView(AdminRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["page_title"] = "Email Management"
         return context
+
 
 class TestEmailView(AdminRequiredMixin, View):
     def post(self, request, *args, **kwargs):

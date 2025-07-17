@@ -2,8 +2,13 @@ from decimal import Decimal
 from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from inventory.models import TempSalesBooking, SalesBooking
-from inventory.tests.test_helpers.model_factories import InventorySettingsFactory, MotorcycleFactory, SalesTermsFactory
+from inventory.tests.test_helpers.model_factories import (
+    InventorySettingsFactory,
+    MotorcycleFactory,
+    SalesTermsFactory,
+)
 from users.tests.test_helpers.model_factories import UserFactory
+
 
 @override_settings(ADMIN_EMAIL="ethan.betts.dev@gmail.com")
 class TestEnquiryWithAppointmentFlow(TestCase):

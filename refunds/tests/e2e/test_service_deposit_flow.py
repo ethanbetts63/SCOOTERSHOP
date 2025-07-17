@@ -12,7 +12,14 @@ from service.models import ServiceBooking
 from payments.models import Payment
 from refunds.models import RefundRequest
 from payments.webhook_handlers.refund_handlers import handle_booking_refunded
-from service.tests.test_helpers.model_factories import ServiceSettingsFactory, ServiceTypeFactory, ServiceProfileFactory, CustomerMotorcycleFactory, ServiceBrandFactory, ServiceTermsFactory
+from service.tests.test_helpers.model_factories import (
+    ServiceSettingsFactory,
+    ServiceTypeFactory,
+    ServiceProfileFactory,
+    CustomerMotorcycleFactory,
+    ServiceBrandFactory,
+    ServiceTermsFactory,
+)
 from users.tests.test_helpers.model_factories import UserFactory
 from dashboard.tests.test_helpers.model_factories import SiteSettingsFactory
 
@@ -20,7 +27,6 @@ from dashboard.tests.test_helpers.model_factories import SiteSettingsFactory
 @skipIf(not settings.STRIPE_SECRET_KEY, "Stripe API key not configured in settings")
 @override_settings(ADMIN_EMAIL="admin@example.com")
 class TestServiceDepositRefundFlow(TestCase):
-
     def setUp(self):
         self.client = Client()
         SiteSettingsFactory()
@@ -36,11 +42,16 @@ class TestServiceDepositRefundFlow(TestCase):
             currency_code="AUD",
         )
         self.service_type = ServiceTypeFactory(
-            name="Service Deposit Refund Test", base_price=Decimal("500.00"), is_active=True
+            name="Service Deposit Refund Test",
+            base_price=Decimal("500.00"),
+            is_active=True,
         )
         self.user = UserFactory(username="refunduser")
         self.service_profile = ServiceProfileFactory(
-            user=self.user, name="Refund Test User", email="refund@user.com", country="AU"
+            user=self.user,
+            name="Refund Test User",
+            email="refund@user.com",
+            country="AU",
         )
         self.motorcycle = CustomerMotorcycleFactory(
             service_profile=self.service_profile, brand="Yamaha", model="MT-07"
@@ -57,17 +68,17 @@ class TestServiceDepositRefundFlow(TestCase):
         # This is a simplified version of the booking flow
         # to create a booking with a payment object.
         payment = Payment.objects.create(
-            service_booking=None, # Initially null
+            service_booking=None,  # Initially null
             amount=self.deposit_amount,
-            status='succeeded',
-            currency='aud',
+            status="succeeded",
+            currency="aud",
         )
-        
+
         intent = stripe.PaymentIntent.create(
             amount=int(self.deposit_amount * 100),
-            currency='aud',
-            payment_method_types=['card'],
-            payment_method='pm_card_visa',
+            currency="aud",
+            payment_method_types=["card"],
+            payment_method="pm_card_visa",
             confirm=True,
         )
         payment.stripe_payment_intent_id = intent.id
@@ -108,13 +119,13 @@ class TestServiceDepositRefundFlow(TestCase):
             refund = stripe.Refund.create(
                 payment_intent=payment_intent_id,
                 amount=int(self.deposit_amount * 100),
-                reason='requested_by_customer',
+                reason="requested_by_customer",
             )
         except stripe.error.StripeError as e:
             self.fail(f"Stripe API call failed during test: {e}")
 
         # 3. Simulate the Stripe webhook for charge.refunded
-        
+
         # Retrieve the charge associated with the payment intent
         payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
         charge_id = payment_intent.latest_charge
@@ -136,13 +147,13 @@ class TestServiceDepositRefundFlow(TestCase):
                     "refunds": {
                         "object": "list",
                         "data": [refund.to_dict()],
-                    }
+                    },
                 }
-            }
+            },
         }
-        
+
         # 4. Call the webhook handler directly
-        handle_booking_refunded(payment, event_payload['data']['object'])
+        handle_booking_refunded(payment, event_payload["data"]["object"])
 
         # 5. Assertions
         self.booking.refresh_from_db()

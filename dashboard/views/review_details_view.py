@@ -2,6 +2,7 @@ from django.views.generic import DetailView
 from inventory.mixins import AdminRequiredMixin
 from dashboard.models import Review
 
+
 class ReviewDetailsView(AdminRequiredMixin, DetailView):
     model = Review
     template_name = "dashboard/review_details.html"

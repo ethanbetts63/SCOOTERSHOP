@@ -1,8 +1,8 @@
 from django.test import TestCase
 from inventory.templatetags.youtube import get_youtube_id
 
-class GetYoutubeIdFilterTest(TestCase):
 
+class GetYoutubeIdFilterTest(TestCase):
     def test_standard_watch_url(self):
         url = "http://www.youtube.com/watch?v=dQw4w9WgXcQ"
         self.assertEqual(get_youtube_id(url), "dQw4w9WgXcQ")

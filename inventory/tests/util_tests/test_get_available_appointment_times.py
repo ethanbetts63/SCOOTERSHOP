@@ -6,12 +6,15 @@ from inventory.utils.get_available_appointment_times import (
     get_available_appointment_times,
 )
 
-from inventory.tests.test_helpers.model_factories import SalesBookingFactory, InventorySettingsFactory
+from inventory.tests.test_helpers.model_factories import (
+    SalesBookingFactory,
+    InventorySettingsFactory,
+)
+
 
 class GetAvailableAppointmentTimesUtilTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-
         cls.inventory_settings = InventorySettingsFactory(
             sales_appointment_start_time=time(9, 0),
             sales_appointment_end_time=time(17, 0),
@@ -26,7 +29,6 @@ class GetAvailableAppointmentTimesUtilTest(TestCase):
         self.assertEqual(available_times, [])
 
     def test_basic_time_slot_generation(self):
-
         future_date = self.today + timedelta(days=7)
         available_times = get_available_appointment_times(
             future_date, self.inventory_settings
@@ -54,7 +56,6 @@ class GetAvailableAppointmentTimesUtilTest(TestCase):
         self.assertEqual(available_times, expected_times)
 
     def test_excludes_times_too_soon_for_today(self):
-
         settings_today = InventorySettingsFactory(
             sales_appointment_start_time=time(9, 0),
             sales_appointment_end_time=time(17, 0),
@@ -80,7 +81,6 @@ class GetAvailableAppointmentTimesUtilTest(TestCase):
             self.assertGreater(test_datetime, earliest_valid_datetime)
 
     def test_excludes_single_booked_slot(self):
-
         selected_date = self.today + timedelta(days=1)
         booked_time = time(10, 0)
         SalesBookingFactory(

@@ -3,7 +3,6 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 
 
-
 from users.tests.test_helpers.model_factories import UserFactory
 from inventory.tests.test_helpers.model_factories import SalesProfileFactory
 
@@ -34,12 +33,12 @@ class SalesProfileDetailsViewTest(TestCase):
 
     def test_view_redirects_for_anonymous_user(self):
         response = self.client.get(self.url)
-        self.assertRedirects(response, f'{reverse("users:login")}?next={self.url}')
+        self.assertRedirects(response, f"{reverse('users:login')}?next={self.url}")
 
     def test_view_redirects_for_non_admin_user(self):
         self.client.login(username="testuser", password="password123")
         response = self.client.get(self.url)
-        self.assertRedirects(response, f'{reverse("users:login")}?next={self.url}')
+        self.assertRedirects(response, f"{reverse('users:login')}?next={self.url}")
 
     def test_view_accessible_for_admin_user(self):
         self.client.login(username="adminuser", password="adminpass123")

@@ -81,8 +81,12 @@ class Step7ConfirmationView(View):
                 "customer_name": service_booking.service_profile.name,
                 "is_processing": False,
                 "settings": settings,
-                "after_hours_drop_off_instructions": settings.after_hours_drop_off_instructions if settings else "",
-                "enable_estimated_pickup_date": settings.enable_estimated_pickup_date if settings else False,
+                "after_hours_drop_off_instructions": (
+                    settings.after_hours_drop_off_instructions if settings else ""
+                ),
+                "enable_estimated_pickup_date": (
+                    settings.enable_estimated_pickup_date if settings else False
+                ),
             }
             return render(request, "service/step7_confirmation.html", context)
 

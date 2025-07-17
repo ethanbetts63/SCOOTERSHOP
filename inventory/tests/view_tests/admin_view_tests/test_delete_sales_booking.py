@@ -7,12 +7,13 @@ from inventory.models import SalesBooking
 
 
 from users.tests.test_helpers.model_factories import UserFactory
-from inventory.tests.test_helpers.model_factories import SalesBookingFactory, MotorcycleFactory
-
+from inventory.tests.test_helpers.model_factories import (
+    SalesBookingFactory,
+    MotorcycleFactory,
+)
 
 
 class SalesBookingDeleteViewTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
@@ -35,11 +36,9 @@ class SalesBookingDeleteViewTest(TestCase):
         cls.non_admin_user.save()
 
     def setUp(self):
-
         self.client.login(username="admin", password="adminpassword")
 
     def test_delete_booking_sets_reserved_motorcycle_to_for_sale(self):
-
         reserved_motorcycle = MotorcycleFactory(status="reserved", is_available=False)
         sales_booking = SalesBookingFactory(motorcycle=reserved_motorcycle)
         delete_url = reverse(
@@ -65,7 +64,6 @@ class SalesBookingDeleteViewTest(TestCase):
         self.assertEqual(str(messages_list[0]), expected_message)
 
     def test_delete_booking_for_non_reserved_motorcycle(self):
-
         available_motorcycle = MotorcycleFactory(status="for_sale")
         sales_booking = SalesBookingFactory(motorcycle=available_motorcycle)
         delete_url = reverse(
@@ -123,7 +121,7 @@ class SalesBookingDeleteViewTest(TestCase):
 
         response = self.client.post(delete_url, follow=True)
 
-        self.assertRedirects(response, f'{reverse("users:login")}?next={delete_url}')
+        self.assertRedirects(response, f"{reverse('users:login')}?next={delete_url}")
         self.assertEqual(SalesBooking.objects.count(), initial_count)
 
     def test_delete_sales_booking_unauthenticated(self):
@@ -137,5 +135,5 @@ class SalesBookingDeleteViewTest(TestCase):
 
         response = self.client.post(delete_url, follow=True)
 
-        self.assertRedirects(response, f'{reverse("users:login")}?next={delete_url}')
+        self.assertRedirects(response, f"{reverse('users:login')}?next={delete_url}")
         self.assertEqual(SalesBooking.objects.count(), initial_count)

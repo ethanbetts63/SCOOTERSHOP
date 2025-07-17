@@ -8,15 +8,15 @@ from django.db import models
 from service.models import CustomerMotorcycle
 
 
-
-from service.tests.test_helpers.model_factories import ServiceProfileFactory, CustomerMotorcycleFactory
+from service.tests.test_helpers.model_factories import (
+    ServiceProfileFactory,
+    CustomerMotorcycleFactory,
+)
 
 
 class CustomerMotorcycleModelTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         cls.customer_motorcycle = CustomerMotorcycleFactory(
             brand="Honda",
             model="CBR600RR",
@@ -28,20 +28,15 @@ class CustomerMotorcycleModelTest(TestCase):
         )
 
     def test_customer_motorcycle_creation(self):
-
         self.assertIsNotNone(self.customer_motorcycle)
         self.assertIsInstance(self.customer_motorcycle, CustomerMotorcycle)
         self.assertEqual(CustomerMotorcycle.objects.count(), 1)
 
     def test_str_method(self):
-
-        expected_str = (
-            f"{self.customer_motorcycle.year} {self.customer_motorcycle.brand} {self.customer_motorcycle.model}"
-        )
+        expected_str = f"{self.customer_motorcycle.year} {self.customer_motorcycle.brand} {self.customer_motorcycle.model}"
         self.assertEqual(str(self.customer_motorcycle), expected_str)
 
     def test_field_attributes(self):
-
         motorcycle = self.customer_motorcycle
 
         field = motorcycle._meta.get_field("service_profile")
@@ -107,7 +102,6 @@ class CustomerMotorcycleModelTest(TestCase):
         self.assertTrue(field.auto_now)
 
     def test_clean_method_required_fields(self):
-
         service_profile = ServiceProfileFactory()
 
         motorcycle = CustomerMotorcycleFactory.build(
@@ -242,7 +236,6 @@ class CustomerMotorcycleModelTest(TestCase):
             )
 
     def test_clean_method_year_validation(self):
-
         service_profile = ServiceProfileFactory()
         current_year = date.today().year
 
@@ -315,7 +308,6 @@ class CustomerMotorcycleModelTest(TestCase):
             )
 
     def test_clean_method_vin_number_validation(self):
-
         service_profile = ServiceProfileFactory()
 
         motorcycle = CustomerMotorcycleFactory.build(
@@ -394,7 +386,6 @@ class CustomerMotorcycleModelTest(TestCase):
             )
 
     def test_clean_method_odometer_validation(self):
-
         service_profile = ServiceProfileFactory()
 
         motorcycle = CustomerMotorcycleFactory.build(
@@ -452,7 +443,6 @@ class CustomerMotorcycleModelTest(TestCase):
             )
 
     def test_vin_number_unique_constraint_non_null(self):
-
         existing_motorcycle = CustomerMotorcycleFactory(
             vin_number="UNIQUEVIN123456789",
             brand="Honda",
@@ -478,7 +468,6 @@ class CustomerMotorcycleModelTest(TestCase):
         self.assertIn("unique constraint failed", str(cm.exception).lower())
 
     def test_vin_number_unique_constraint_null_values(self):
-
         CustomerMotorcycleFactory(
             vin_number=None,
             brand="Honda",
@@ -502,7 +491,6 @@ class CustomerMotorcycleModelTest(TestCase):
         self.assertEqual(CustomerMotorcycle.objects.filter(vin_number=None).count(), 2)
 
     def test_timestamps_auto_now_add_and_auto_now(self):
-
         motorcycle = CustomerMotorcycleFactory(
             brand="Suzuki",
             model="GSX-R",

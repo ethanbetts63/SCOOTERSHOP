@@ -13,21 +13,17 @@ from service.models import ServiceProfile
 
 
 class ServiceProfileManagementView(AdminRequiredMixin, View):
-
     template_name = "service/admin_service_profile_management.html"
     form_class = AdminServiceProfileForm
     paginate_by = 10
 
     def test_func(self):
-
         return self.request.user.is_staff or self.request.user.is_superuser
 
     def get_profiles_for_display(self):
-
         return ServiceProfile.objects.all().order_by("-created_at")
 
     def get_context_data(self, **kwargs):
-
         context = {}
 
         pk = kwargs.get("pk")
@@ -48,10 +44,8 @@ class ServiceProfileManagementView(AdminRequiredMixin, View):
         try:
             profiles_page = paginator.page(page)
         except PageNotAnInteger:
-
             profiles_page = paginator.page(1)
         except EmptyPage:
-
             profiles_page = paginator.page(paginator.num_pages)
 
         context.update(
@@ -68,12 +62,10 @@ class ServiceProfileManagementView(AdminRequiredMixin, View):
         return context
 
     def get(self, request, pk=None, *args, **kwargs):
-
         context = self.get_context_data(pk=pk)
         return render(request, self.template_name, context)
 
     def post(self, request, pk=None, *args, **kwargs):
-
         instance = None
         if pk:
             instance = get_object_or_404(ServiceProfile, pk=pk)

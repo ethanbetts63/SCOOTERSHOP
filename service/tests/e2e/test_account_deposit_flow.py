@@ -17,8 +17,14 @@ from dashboard.models import SiteSettings
 from payments.models import Payment
 from payments.webhook_handlers.service_handlers import handle_service_booking_succeeded
 from users.tests.test_helpers.model_factories import UserFactory
-from service.tests.test_helpers.model_factories import ServiceProfileFactory, ServiceTypeFactory, ServiceSettingsFactory, ServiceTermsFactory, CustomerMotorcycleFactory, ServiceBrandFactory
-
+from service.tests.test_helpers.model_factories import (
+    ServiceProfileFactory,
+    ServiceTypeFactory,
+    ServiceSettingsFactory,
+    ServiceTermsFactory,
+    CustomerMotorcycleFactory,
+    ServiceBrandFactory,
+)
 
 
 SEND_BOOKINGS_TO_MECHANICDESK = False
@@ -27,7 +33,6 @@ SEND_BOOKINGS_TO_MECHANICDESK = False
 @skipIf(not settings.STRIPE_SECRET_KEY, "Stripe API key not configured in settings")
 @override_settings(ADMIN_EMAIL="admin@example.com")
 class TestLoggedInDepositPaymentFlow(TestCase):
-
     def setUp(self):
         self.client = Client()
         SiteSettings.objects.create()
@@ -209,7 +214,7 @@ class TestLoggedInDepositPaymentFlow(TestCase):
         self.assertRedirects(
             response,
             step2_url
-            + f'?temp_booking_uuid={self.client.session["temp_service_booking_uuid"]}',
+            + f"?temp_booking_uuid={self.client.session['temp_service_booking_uuid']}",
         )
         messages = list(response.context["messages"])
         self.assertEqual(len(messages), 1)

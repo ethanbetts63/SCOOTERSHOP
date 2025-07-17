@@ -6,7 +6,6 @@ from users.tests.test_helpers.model_factories import UserFactory
 
 
 class PrivacyPolicyViewTest(TestCase):
-
     def setUp(self):
         self.client = Client()
         self.url = reverse("core:privacy")

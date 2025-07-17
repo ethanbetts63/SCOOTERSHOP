@@ -11,7 +11,6 @@ from inventory.tests.test_helpers.model_factories import SalesBookingFactory
 
 
 class GetBookingFromPaymentTest(TestCase):
-
     def setUp(self):
         # Clean up database before each test
         Payment.objects.all().delete()
@@ -49,7 +48,9 @@ class GetBookingFromPaymentTest(TestCase):
         # but we test the current logic's behavior.
         service_booking = ServiceBookingFactory()
         sales_booking = SalesBookingFactory()
-        payment = PaymentFactory(service_booking=service_booking, sales_booking=sales_booking)
+        payment = PaymentFactory(
+            service_booking=service_booking, sales_booking=sales_booking
+        )
 
         booking, booking_type = get_booking_from_payment(payment)
 

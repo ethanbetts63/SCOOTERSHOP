@@ -13,15 +13,17 @@ from service.forms import MotorcycleSelectionForm, ADD_NEW_MOTORCYCLE_OPTION
 
 from service.models import TempServiceBooking, CustomerMotorcycle
 from users.tests.test_helpers.model_factories import UserFactory
-from service.tests.test_helpers.model_factories import TempServiceBookingFactory, ServiceProfileFactory, ServiceTypeFactory, CustomerMotorcycleFactory
-
+from service.tests.test_helpers.model_factories import (
+    TempServiceBookingFactory,
+    ServiceProfileFactory,
+    ServiceTypeFactory,
+    CustomerMotorcycleFactory,
+)
 
 
 class Step2MotorcycleSelectionViewTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         cls.factory = RequestFactory()
         cls.user = UserFactory()
         cls.service_profile = ServiceProfileFactory(user=cls.user)
@@ -29,7 +31,6 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         cls.base_url = reverse("service:service_book_step2")
 
     def setUp(self):
-
         TempServiceBooking.objects.all().delete()
         CustomerMotorcycle.objects.all().delete()
 
@@ -51,7 +52,6 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         )
 
     def test_dispatch_no_temp_booking_uuid_in_session(self):
-
         request = self.factory.get(self.base_url)
         request.session = {}
         request.user = self.user
@@ -60,7 +60,6 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         self.assertEqual(response.url, reverse("service:service"))
 
     def test_dispatch_invalid_temp_booking_uuid_in_session(self):
-
         request = self.factory.get(self.base_url)
 
         request.session = {"temp_service_booking_uuid": str(uuid.uuid4())}
@@ -72,7 +71,6 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         self.assertNotIn("temp_service_booking_uuid", request.session)
 
     def test_dispatch_temp_booking_missing_service_profile(self):
-
         self.temp_booking.service_profile = None
         self.temp_booking.save()
         request = self.factory.get(self.base_url)
@@ -87,7 +85,6 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         self.assertEqual(response.url, reverse("service:service_book_step3"))
 
     def test_dispatch_no_motorcycles_redirects_to_step3(self):
-
         CustomerMotorcycle.objects.all().delete()
         request = self.factory.get(self.base_url)
 
@@ -101,7 +98,6 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         self.assertEqual(response.url, reverse("service:service_book_step3"))
 
     def test_get_renders_form_with_motorcycles(self):
-
         CustomerMotorcycleFactory(service_profile=self.service_profile)
 
         response = self.client.get(self.base_url)
@@ -124,7 +120,6 @@ class Step2MotorcycleSelectionViewTest(TestCase):
     def test_post_select_new_motorcycle_redirects_to_step3(
         self, MockMotorcycleSelectionForm
     ):
-
         mock_form_instance = MockMotorcycleSelectionForm.return_value
         mock_form_instance.is_valid.return_value = True
         mock_form_instance.cleaned_data = {
@@ -148,7 +143,6 @@ class Step2MotorcycleSelectionViewTest(TestCase):
     def test_post_select_existing_motorcycle_redirects_to_step4(
         self, MockMotorcycleSelectionForm
     ):
-
         mock_form_instance = MockMotorcycleSelectionForm.return_value
         mock_form_instance.is_valid.return_value = True
         mock_form_instance.cleaned_data = {
@@ -173,7 +167,6 @@ class Step2MotorcycleSelectionViewTest(TestCase):
     def test_post_invalid_motorcycle_selection_renders_form_with_error(
         self, MockMotorcycleSelectionForm
     ):
-
         mock_form_instance = MockMotorcycleSelectionForm.return_value
         mock_form_instance.is_valid.return_value = True
         mock_form_instance.cleaned_data = {"selected_motorcycle": "9999"}
@@ -207,7 +200,6 @@ class Step2MotorcycleSelectionViewTest(TestCase):
     def test_post_form_not_valid_renders_form_with_errors(
         self, MockMotorcycleSelectionForm
     ):
-
         mock_form_instance = MockMotorcycleSelectionForm.return_value
         mock_form_instance.is_valid.return_value = False
 
@@ -229,7 +221,6 @@ class Step2MotorcycleSelectionViewTest(TestCase):
         MockMotorcycleSelectionForm.assert_called_once()
 
     def test_post_authenticated_user_without_motorcycles_still_redirects_to_step3(self):
-
         CustomerMotorcycle.objects.all().delete()
 
         response = self.client.post(

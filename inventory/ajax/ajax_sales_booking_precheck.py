@@ -22,8 +22,6 @@ def sales_booking_precheck_ajax(request):
         for field, errors in form.errors.items():
             errors_dict[field] = [str(e) for e in errors]
 
-        
-
         response_data["errors"] = errors_dict
 
     return JsonResponse(response_data)

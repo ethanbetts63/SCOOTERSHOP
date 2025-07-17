@@ -14,7 +14,6 @@ from service.tests.test_helpers.model_factories import (
 
 
 class CalculateEstimatedPickupDateTest(TestCase):
-
     def setUp(self):
         self.service_type_2_days = ServiceTypeFactory(estimated_duration=2)
         self.service_type_5_days = ServiceTypeFactory(estimated_duration=5)

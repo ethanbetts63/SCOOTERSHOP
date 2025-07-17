@@ -29,7 +29,7 @@ class PaymentOptionForm(forms.Form):
         label="Opt for After-Hours Drop-Off",
         required=False,
         widget=forms.CheckboxInput,
-        help_text="Select this if you intend to use our 24/7 key drop-off box."
+        help_text="Select this if you intend to use our 24/7 key drop-off box.",
     )
 
     def __init__(self, *args, **kwargs):
@@ -37,9 +37,7 @@ class PaymentOptionForm(forms.Form):
         self.temp_booking = kwargs.pop("temp_booking")
         super().__init__(*args, **kwargs)
         payment_choices = []
-        if (
-            self.service_settings.enable_online_deposit
-        ):
+        if self.service_settings.enable_online_deposit:
             deposit_display = "Pay Deposit Online"
             if (
                 self.service_settings.deposit_calc_method == "FLAT_FEE"
@@ -64,17 +62,23 @@ class PaymentOptionForm(forms.Form):
             self.fields["payment_method"].initial = payment_choices[0][0]
 
         if not self.service_settings.enable_after_hours_dropoff:
-            del self.fields['after_hours_drop_off_choice']
+            del self.fields["after_hours_drop_off_choice"]
 
     def clean(self):
         cleaned_data = super().clean()
-        after_hours_drop_off = cleaned_data.get('after_hours_drop_off_choice')
-        dropoff_time = cleaned_data.get('dropoff_time')
+        after_hours_drop_off = cleaned_data.get("after_hours_drop_off_choice")
+        dropoff_time = cleaned_data.get("dropoff_time")
 
         if not after_hours_drop_off and not dropoff_time:
-            self.add_error('dropoff_time', 'This field is required if you are not using the after-hours drop-off.')
+            self.add_error(
+                "dropoff_time",
+                "This field is required if you are not using the after-hours drop-off.",
+            )
 
         if after_hours_drop_off and dropoff_time:
-            self.add_error('dropoff_time', 'Please do not select a time if you are using the after-hours drop-off.')
-        
+            self.add_error(
+                "dropoff_time",
+                "Please do not select a time if you are using the after-hours drop-off.",
+            )
+
         return cleaned_data

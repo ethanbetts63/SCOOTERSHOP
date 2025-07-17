@@ -10,18 +10,20 @@ from refunds.models import RefundSettings
 from service.utils.convert_temp_service_booking import convert_temp_service_booking
 
 
-
-
-from service.tests.test_helpers.model_factories import TempServiceBookingFactory, ServiceProfileFactory, ServiceTypeFactory, ServiceSettingsFactory, CustomerMotorcycleFactory
+from service.tests.test_helpers.model_factories import (
+    TempServiceBookingFactory,
+    ServiceProfileFactory,
+    ServiceTypeFactory,
+    ServiceSettingsFactory,
+    CustomerMotorcycleFactory,
+)
 from payments.tests.test_helpers.model_factories import PaymentFactory
 from refunds.tests.test_helpers.model_factories import RefundSettingsFactory
 
 
 class ConvertTempServiceBookingTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         cls.service_settings = ServiceSettingsFactory(currency_code="AUD")
         cls.service_type = ServiceTypeFactory()
         cls.service_profile = ServiceProfileFactory()
@@ -32,7 +34,6 @@ class ConvertTempServiceBookingTest(TestCase):
         cls.refund_policy_settings = RefundSettingsFactory()
 
     def setUp(self):
-
         TempServiceBooking.objects.all().delete()
         ServiceBooking.objects.all().delete()
         Payment.objects.all().delete()
@@ -43,7 +44,6 @@ class ConvertTempServiceBookingTest(TestCase):
         self.refund_policy_settings = RefundSettingsFactory()
 
     def test_successful_conversion_without_payment_object(self):
-
         temp_booking = TempServiceBookingFactory(
             service_type=self.service_type,
             service_profile=self.service_profile,
@@ -77,7 +77,6 @@ class ConvertTempServiceBookingTest(TestCase):
         self.assertEqual(service_booking.payment_method, "in_store_full")
 
     def test_successful_conversion_with_existing_payment_object(self):
-
         existing_payment = PaymentFactory(
             amount=Decimal("50.00"),
             currency="USD",
@@ -121,14 +120,11 @@ class ConvertTempServiceBookingTest(TestCase):
         self.assertEqual(updated_payment.service_customer_profile, self.service_profile)
         self.assertIsNone(updated_payment.temp_service_booking)
 
-    
-
     @patch(
         "service.models.ServiceBooking.objects.create",
         side_effect=Exception("Database error!"),
     )
     def test_exception_during_service_booking_creation(self, mock_create):
-
         temp_booking = TempServiceBookingFactory(
             service_type=self.service_type,
             service_profile=self.service_profile,
@@ -155,7 +151,6 @@ class ConvertTempServiceBookingTest(TestCase):
         self.assertTrue(TempServiceBooking.objects.filter(pk=temp_booking.pk).exists())
 
     def test_temp_service_booking_deleted_on_successful_conversion(self):
-
         temp_booking = TempServiceBookingFactory(
             service_type=self.service_type,
             service_profile=self.service_profile,
@@ -181,7 +176,6 @@ class ConvertTempServiceBookingTest(TestCase):
 
     @patch("service.utils.convert_temp_service_booking.send_booking_to_mechanicdesk")
     def test_conversion_calls_mechanicdesk_sender(self, mock_mechanicdesk_sender):
-
         temp_booking = TempServiceBookingFactory(
             service_type=self.service_type,
             service_profile=self.service_profile,

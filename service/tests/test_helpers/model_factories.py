@@ -3,6 +3,7 @@ import datetime
 import uuid
 from decimal import Decimal
 from faker import Faker
+
 fake = Faker()
 from service.models import (
     BlockedServiceDate,
@@ -21,6 +22,7 @@ from service.utils.calculate_estimated_pickup_date import (
 )
 from users.tests.test_helpers.model_factories import UserFactory
 from payments.tests.test_helpers.model_factories import PaymentFactory
+
 
 class ServiceBrandFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -119,7 +121,7 @@ class ServiceSettingsFactory(factory.django.DjangoModelFactory):
 
     enable_after_hours_dropoff = False
     after_hours_dropoff_disclaimer = factory.Faker("paragraph", nb_sentences=3)
-    enable_online_deposit = True,
+    enable_online_deposit = (True,)
     deposit_calc_method = "FLAT_FEE"
     deposit_flat_fee_amount = Decimal("1.00")
     deposit_percentage = Decimal("0.00")
@@ -176,6 +178,7 @@ class TempServiceBookingFactory(factory.django.DjangoModelFactory):
         elements=[choice[0] for choice in TempServiceBooking.PAYMENT_METHOD_CHOICES],
     )
 
+
 class ServiceBookingFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ServiceBooking
@@ -223,6 +226,7 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
     )
     customer_notes = factory.Faker("paragraph")
 
+
 class ServicefaqFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Servicefaq
@@ -244,4 +248,3 @@ class ServiceTermsFactory(factory.django.DjangoModelFactory):
     content = factory.Faker("paragraph")
     version_number = factory.Sequence(lambda n: n + 1)
     is_active = True
-

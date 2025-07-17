@@ -12,8 +12,8 @@ class SalesTermsManagementView(AdminRequiredMixin, ListView):
 
     def get_queryset(self):
         return SalesTerms.objects.annotate(
-            booking_count=Count('sales_bookings')
-        ).order_by('-version_number')
+            booking_count=Count("sales_bookings")
+        ).order_by("-version_number")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

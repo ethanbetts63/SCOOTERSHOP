@@ -2,8 +2,10 @@ import factory
 import uuid
 from django.utils import timezone
 from faker import Faker
+
 fake = Faker()
 from payments.models import Payment, WebhookEvent
+
 
 class PaymentFactory(factory.django.DjangoModelFactory):
     class Meta:

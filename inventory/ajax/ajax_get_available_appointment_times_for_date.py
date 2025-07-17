@@ -10,7 +10,6 @@ from inventory.utils.get_available_appointment_times import (
 
 @require_GET
 def get_available_appointment_times_for_date(request):
-
     selected_date_str = request.GET.get("selected_date")
 
     if not selected_date_str:
@@ -36,13 +35,11 @@ def get_available_appointment_times_for_date(request):
     formatted_times = []
     for time_str in available_times_raw:
         try:
-
             time_obj = datetime.datetime.strptime(time_str, "%H:%M").time()
             formatted_times.append(
                 {"value": time_str, "display": time_obj.strftime("%I:%M %p")}
             )
         except ValueError:
-
             formatted_times.append({"value": time_str, "display": time_str})
 
     return JsonResponse({"available_times": formatted_times})

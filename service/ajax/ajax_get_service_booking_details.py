@@ -11,7 +11,6 @@ from ..decorators import admin_required
 @require_GET
 @admin_required
 def get_service_booking_details_json(request, pk):
-
     try:
         service_booking = get_object_or_404(ServiceBooking, pk=pk)
 
@@ -120,20 +119,22 @@ def get_service_booking_details_json(request, pk):
             "customer_notes": (
                 service_booking.customer_notes if service_booking.customer_notes else ""
             ),
-            "service_terms_details": {
-                "pk": (
-                    service_booking.service_terms_version.pk
-                    if service_booking.service_terms_version
-                    else None
-                ),
-                "version_number": (
-                    service_booking.service_terms_version.version_number
-                    if service_booking.service_terms_version
-                    else "N/A"
-                ),
-            }
-            if service_booking.service_terms_version
-            else None,
+            "service_terms_details": (
+                {
+                    "pk": (
+                        service_booking.service_terms_version.pk
+                        if service_booking.service_terms_version
+                        else None
+                    ),
+                    "version_number": (
+                        service_booking.service_terms_version.version_number
+                        if service_booking.service_terms_version
+                        else "N/A"
+                    ),
+                }
+                if service_booking.service_terms_version
+                else None
+            ),
             "entitled_refund_amount": float(
                 refund_calculation_results["entitled_amount"]
             ),

@@ -134,7 +134,10 @@ class Step2BookingDetailsView(View):
             with transaction.atomic():
                 active_terms = SalesTerms.objects.filter(is_active=True).first()
                 if not active_terms:
-                    messages.error(request, "No active sales terms found. Please contact an administrator.")
+                    messages.error(
+                        request,
+                        "No active sales terms found. Please contact an administrator.",
+                    )
                     return redirect(reverse("core:index"))
 
                 customer_notes = form.cleaned_data.get("customer_notes")
@@ -147,7 +150,7 @@ class Step2BookingDetailsView(View):
                 temp_booking.appointment_time = appointment_time
                 temp_booking.terms_accepted = terms_accepted
                 temp_booking.sales_terms_version = active_terms
-                temp_booking.request_viewing = True # Always true for this flow
+                temp_booking.request_viewing = True  # Always true for this flow
                 temp_booking.save()
 
                 if temp_booking.deposit_required_for_flow:

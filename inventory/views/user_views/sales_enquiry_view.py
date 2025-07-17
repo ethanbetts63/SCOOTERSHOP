@@ -6,11 +6,16 @@ from mailer.utils import send_templated_email
 from django.conf import settings
 from django.contrib import messages
 
+
 class SalesEnquiryView(View):
     def get(self, request, motorcycle_id):
         motorcycle = Motorcycle.objects.get(id=motorcycle_id)
-        form = SalesEnquiryForm(initial={'motorcycle': motorcycle})
-        return render(request, 'inventory/sales_enquiry.html', {'form': form, 'motorcycle': motorcycle})
+        form = SalesEnquiryForm(initial={"motorcycle": motorcycle})
+        return render(
+            request,
+            "inventory/sales_enquiry.html",
+            {"form": form, "motorcycle": motorcycle},
+        )
 
     def post(self, request, motorcycle_id):
         motorcycle = Motorcycle.objects.get(id=motorcycle_id)
@@ -25,7 +30,11 @@ class SalesEnquiryView(View):
                 recipient_list=[enquiry.email],
                 subject="Enquiry Received - Scooter Shop",
                 template_name="user_general_enquiry_notification.html",
-                context={'enquiry': enquiry, "SITE_DOMAIN": settings.SITE_DOMAIN, "SITE_SCHEME": settings.SITE_SCHEME},
+                context={
+                    "enquiry": enquiry,
+                    "SITE_DOMAIN": settings.SITE_DOMAIN,
+                    "SITE_SCHEME": settings.SITE_SCHEME,
+                },
                 booking=enquiry,
                 profile=enquiry,
             )
@@ -35,11 +44,19 @@ class SalesEnquiryView(View):
                 recipient_list=[settings.ADMIN_EMAIL],
                 subject="New Enquiry - Scooter Shop",
                 template_name="admin_general_enquiry_notification.html",
-                context={'enquiry': enquiry, "SITE_DOMAIN": settings.SITE_DOMAIN, "SITE_SCHEME": settings.SITE_SCHEME},
+                context={
+                    "enquiry": enquiry,
+                    "SITE_DOMAIN": settings.SITE_DOMAIN,
+                    "SITE_SCHEME": settings.SITE_SCHEME,
+                },
                 booking=enquiry,
                 profile=enquiry,
             )
 
             messages.success(request, "Your enquiry has been sent successfully!")
-            return redirect('inventory:motorcycle-detail', pk=motorcycle_id)
-        return render(request, 'inventory/sales_enquiry.html', {'form': form, 'motorcycle': motorcycle})
+            return redirect("inventory:motorcycle-detail", pk=motorcycle_id)
+        return render(
+            request,
+            "inventory/sales_enquiry.html",
+            {"form": form, "motorcycle": motorcycle},
+        )

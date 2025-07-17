@@ -4,6 +4,7 @@ import datetime
 from unittest.mock import patch
 
 from service.models import BlockedServiceDate, ServiceBooking
+
 # FIX 1: Import the StaffUserFactory
 
 
@@ -25,7 +26,6 @@ fake = Faker()
 
 
 class AjaxGetServiceDateAvailabilityTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.fixed_now = datetime.datetime(

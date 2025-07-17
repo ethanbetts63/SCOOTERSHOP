@@ -3,6 +3,7 @@ from payments.models import Payment
 
 from refunds.models import RefundRequest
 
+
 def process_refund_request_entry(
     payment_obj: Payment, booking_obj, booking_type_str: str, extracted_data: dict
 ):
@@ -26,7 +27,6 @@ def process_refund_request_entry(
     )
 
     if not refund_request:
-
         refund_request = RefundRequest.objects.create(
             payment=payment_obj,
             service_booking=(
@@ -43,7 +43,6 @@ def process_refund_request_entry(
             staff_notes="Refund processed automatically via Stripe webhook (initial creation).",
         )
     else:
-
         refund_request.stripe_refund_id = (
             stripe_refund_id if stripe_refund_id else refund_request.stripe_refund_id
         )

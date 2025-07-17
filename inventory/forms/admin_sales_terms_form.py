@@ -1,6 +1,7 @@
 from django import forms
 from inventory.models import SalesTerms
 
+
 class AdminSalesTermsForm(forms.ModelForm):
     class Meta:
         model = SalesTerms
@@ -22,4 +23,3 @@ class AdminSalesTermsForm(forms.ModelForm):
         help_texts = {
             "content": "This text will be displayed to customers during the booking process. Saving this form will create a new, active version and archive the previous one.",
         }
-

@@ -9,8 +9,8 @@ from service.ajax.ajax_admin_booking_precheck import admin_booking_precheck_ajax
 from users.tests.test_helpers.model_factories import StaffUserFactory
 from service.tests.test_helpers.model_factories import ServiceTypeFactory
 
-class AjaxAdminBookingPrecheckTest(TestCase):
 
+class AjaxAdminBookingPrecheckTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.service_type = ServiceTypeFactory()
@@ -102,7 +102,7 @@ class AjaxAdminBookingPrecheckTest(TestCase):
         request = self.factory.get(url)
         # FIX: Manually attach the user to the request
         request.user = self.staff_user
-        
+
         response = admin_booking_precheck_ajax(request)
         # The @require_POST decorator runs before the @admin_required decorator
         self.assertEqual(response.status_code, 405)

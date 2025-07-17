@@ -19,7 +19,6 @@ class SalesBookingCreateUpdateView(AdminRequiredMixin, View):
 
             form = self.form_class(instance=instance)
         else:
-
             form = self.form_class()
 
         context = {
@@ -39,7 +38,6 @@ class SalesBookingCreateUpdateView(AdminRequiredMixin, View):
             form = self.form_class(request.POST)
 
         if form.is_valid():
-
             sales_booking = form.save(commit=False)
 
             sales_booking.sales_profile = form.cleaned_data["sales_profile"]

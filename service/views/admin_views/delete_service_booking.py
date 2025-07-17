@@ -7,20 +7,16 @@ from service.models import ServiceBooking
 
 
 class AdminServiceBookingDeleteView(AdminRequiredMixin, View):
-
     template_name = "service/admin_service_booking_delete.html"
 
     def test_func(self):
-
         return self.request.user.is_staff or self.request.user.is_superuser
 
     def get(self, request, pk, *args, **kwargs):
-
         booking = get_object_or_404(ServiceBooking, pk=pk)
         return render(request, self.template_name, {"booking": booking})
 
     def post(self, request, pk, *args, **kwargs):
-
         booking = get_object_or_404(ServiceBooking, pk=pk)
         booking_ref = booking.service_booking_reference
         try:

@@ -3,7 +3,6 @@ from service.models import ServiceProfile
 
 
 def admin_process_service_profile_form(request_post_data, profile_id=None):
-
     instance = None
     if profile_id:
         try:

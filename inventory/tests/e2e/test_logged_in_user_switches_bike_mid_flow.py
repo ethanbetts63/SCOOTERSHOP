@@ -9,7 +9,11 @@ from django.conf import settings
 
 from inventory.models import TempSalesBooking, SalesBooking
 from payments.models import Payment
-from inventory.tests.test_helpers.model_factories import InventorySettingsFactory, MotorcycleFactory, SalesTermsFactory
+from inventory.tests.test_helpers.model_factories import (
+    InventorySettingsFactory,
+    MotorcycleFactory,
+    SalesTermsFactory,
+)
 from users.tests.test_helpers.model_factories import UserFactory
 from payments.webhook_handlers.sales_handlers import handle_sales_booking_succeeded
 
@@ -73,7 +77,7 @@ class TestLoggedInUserSwitchesBikeMidFlow(TestCase):
         )
         self.client.post(initiate_url_2, {"deposit_required_for_flow": "true"})
 
-        response = self.client.get(step1_url) 
+        response = self.client.get(step1_url)
         self.assertContains(response, "Thorough Tester Updated")
         self.client.post(step1_url, updated_profile_data)
 

@@ -3,6 +3,7 @@ from django.db.models import Count
 from service.models import ServiceTerms
 from service.mixins import AdminRequiredMixin
 
+
 class ServiceTermsManagementView(AdminRequiredMixin, ListView):
     model = ServiceTerms
     template_name = "service/admin_service_terms_management.html"
@@ -11,8 +12,8 @@ class ServiceTermsManagementView(AdminRequiredMixin, ListView):
 
     def get_queryset(self):
         return ServiceTerms.objects.annotate(
-            booking_count=Count('service_bookings')
-        ).order_by('-version_number')
+            booking_count=Count("service_bookings")
+        ).order_by("-version_number")
 
     def get_context_data(self, **kwargs):
         """

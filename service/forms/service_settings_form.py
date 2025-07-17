@@ -159,7 +159,9 @@ class ServiceBookingSettingsForm(forms.ModelForm):
         ):
             self.add_error(
                 "deposit_flat_fee_amount",
-                _("If deposit is enabled as a flat fee, the amount must be at least 1.00."),
+                _(
+                    "If deposit is enabled as a flat fee, the amount must be at least 1.00."
+                ),
             )
 
         enable_after_hours_dropoff = cleaned_data.get("enable_after_hours_dropoff")

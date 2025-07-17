@@ -7,7 +7,7 @@ class ServiceBrand(models.Model):
         unique=True,
         help_text="Name of the service brand (e.g., 'Yamaha', 'Vespa').",
     )
-    
+
     last_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):

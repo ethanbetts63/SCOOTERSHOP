@@ -6,7 +6,6 @@ from core.tests.test_helpers.model_factories import EnquiryFactory
 
 
 class EnquiryManagementViewTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.staff_user = UserFactory(is_staff=True)

@@ -51,7 +51,6 @@ class RefundRequestForm(forms.ModelForm):
 
         if booking_reference and email:
             try:
-
                 if not booking_object and re.match(
                     r"^(SERVICE|SVC)-\w+", booking_reference, re.IGNORECASE
                 ):

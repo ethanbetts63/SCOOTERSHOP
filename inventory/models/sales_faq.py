@@ -2,7 +2,6 @@ from django.db import models
 
 
 class Salesfaq(models.Model):
-
     BOOKING_STEP_CHOICES = [
         ("step1", "Step 1: Your Details"),
         ("step2", "Step 2: Booking Details & Appointment"),

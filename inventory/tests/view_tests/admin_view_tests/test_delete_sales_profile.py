@@ -6,12 +6,11 @@ from unittest import mock
 from inventory.models import SalesProfile
 
 
-
 from users.tests.test_helpers.model_factories import UserFactory
 from inventory.tests.test_helpers.model_factories import SalesProfileFactory
 
-class SalesProfileDeleteViewTest(TestCase):
 
+class SalesProfileDeleteViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
@@ -103,7 +102,7 @@ class SalesProfileDeleteViewTest(TestCase):
         response = self.client.post(self.delete_url, follow=True)
 
         self.assertRedirects(
-            response, f'{reverse("users:login")}?next={self.delete_url}'
+            response, f"{reverse('users:login')}?next={self.delete_url}"
         )
         self.assertTrue(
             SalesProfile.objects.filter(pk=self.sales_profile_to_delete.pk).exists()
@@ -126,7 +125,7 @@ class SalesProfileDeleteViewTest(TestCase):
         response = self.client.post(self.delete_url, follow=True)
 
         self.assertRedirects(
-            response, f'{reverse("users:login")}?next={self.delete_url}'
+            response, f"{reverse('users:login')}?next={self.delete_url}"
         )
         self.assertTrue(
             SalesProfile.objects.filter(pk=self.sales_profile_to_delete.pk).exists()

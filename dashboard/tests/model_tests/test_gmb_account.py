@@ -12,12 +12,13 @@ class GoogleMyBusinessAccountFactory(factory.Factory):
     location_id = factory.Sequence(lambda n: f"locations/{n}")
     access_token = factory.Faker("sha256")
     refresh_token = factory.Faker("sha256")
-    token_expiry = factory.LazyFunction(lambda: timezone.now() + timezone.timedelta(hours=1))
+    token_expiry = factory.LazyFunction(
+        lambda: timezone.now() + timezone.timedelta(hours=1)
+    )
     last_synced = factory.LazyFunction(timezone.now)
 
 
 class GoogleMyBusinessAccountModelTest(TestCase):
-
     def setUp(self):
         # Ensure a clean state for each test by deleting any existing instance
         # and then loading the singleton to ensure it's ready for modification.
@@ -30,7 +31,9 @@ class GoogleMyBusinessAccountModelTest(TestCase):
         account1.account_id = "initial_account_id"
         account1.save()
         self.assertEqual(GoogleMyBusinessAccount.objects.count(), 1)
-        self.assertEqual(GoogleMyBusinessAccount.load().account_id, "initial_account_id")
+        self.assertEqual(
+            GoogleMyBusinessAccount.load().account_id, "initial_account_id"
+        )
 
         # Try to get another instance using load(), it should return the existing one
         account2 = GoogleMyBusinessAccount.load()
@@ -38,7 +41,9 @@ class GoogleMyBusinessAccountModelTest(TestCase):
         account2.save()
         self.assertEqual(GoogleMyBusinessAccount.objects.count(), 1)
         self.assertEqual(account2.pk, account1.pk)
-        self.assertEqual(GoogleMyBusinessAccount.load().account_id, "updated_account_id")
+        self.assertEqual(
+            GoogleMyBusinessAccount.load().account_id, "updated_account_id"
+        )
 
         # Verify that direct creation attempts also respect the singleton (by updating pk=1)
         # This test case is tricky because the model's save method forces pk=1.
@@ -48,11 +53,13 @@ class GoogleMyBusinessAccountModelTest(TestCase):
             location_id="another_location_id",
             access_token="abc",
             refresh_token="def",
-            token_expiry=timezone.now()
+            token_expiry=timezone.now(),
         )
-        new_data.save() # This will update the existing singleton instance
+        new_data.save()  # This will update the existing singleton instance
         self.assertEqual(GoogleMyBusinessAccount.objects.count(), 1)
-        self.assertEqual(GoogleMyBusinessAccount.load().account_id, "another_account_id")
+        self.assertEqual(
+            GoogleMyBusinessAccount.load().account_id, "another_account_id"
+        )
 
     def test_google_my_business_account_load_method(self):
         # Test load when no instance exists (handled by setUp, but re-verify)

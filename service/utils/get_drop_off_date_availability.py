@@ -4,7 +4,6 @@ from service.models import BlockedServiceDate
 
 
 def get_drop_off_date_availability(temp_booking, service_settings):
-
     today = timezone.localdate(timezone.now())
     service_date = temp_booking.service_date
     max_advance_days = service_settings.max_advance_dropoff_days
@@ -56,14 +55,11 @@ def get_drop_off_date_availability(temp_booking, service_settings):
 
     current_date = calculated_min_dropoff_date
     while current_date <= calculated_max_dropoff_date:
-
         if current_date not in blocked_date_set:
-
             if not enable_after_hours_dropoff:
                 if current_date.weekday() in booking_open_weekdays:
                     available_dates.append(current_date.strftime("%Y-%m-%d"))
             else:
-
                 available_dates.append(current_date.strftime("%Y-%m-%d"))
 
         current_date += timedelta(days=1)

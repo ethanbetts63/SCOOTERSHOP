@@ -7,7 +7,6 @@ from refunds.models import RefundRequest
 
 
 class IntermediaryRefundProcessingView(AdminRequiredMixin, TemplateView):
-
     template_name = "refunds/intermediary_refund_processing.html"
 
     def get_context_data(self, **kwargs):
@@ -21,7 +20,6 @@ class IntermediaryRefundProcessingView(AdminRequiredMixin, TemplateView):
             return context
 
         try:
-
             RefundRequest.objects.filter(pk=refund_request_pk).exists()
             context["refund_request_pk"] = refund_request_pk
 

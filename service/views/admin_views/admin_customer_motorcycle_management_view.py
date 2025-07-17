@@ -5,18 +5,15 @@ from service.models import CustomerMotorcycle
 
 
 class CustomerMotorcycleManagementView(AdminRequiredMixin, ListView):
-
     model = CustomerMotorcycle
     template_name = "service/admin_customer_motorcycle_management.html"
     context_object_name = "motorcycles"
     paginate_by = 10
 
     def test_func(self):
-
         return self.request.user.is_staff or self.request.user.is_superuser
 
     def get_queryset(self):
-
         queryset = super().get_queryset().select_related("service_profile")
         search_term = self.request.GET.get("q", "").strip()
 
@@ -33,7 +30,6 @@ class CustomerMotorcycleManagementView(AdminRequiredMixin, ListView):
         return queryset.order_by("-created_at")
 
     def get_context_data(self, **kwargs):
-
         context = super().get_context_data(**kwargs)
         context["search_term"] = self.request.GET.get("q", "")
         return context

@@ -6,7 +6,13 @@ from unittest import mock
 import json
 from inventory.models import InventorySettings
 from inventory.forms.sales_booking_appointment_form import BookingAppointmentForm
-from inventory.tests.test_helpers.model_factories import TempSalesBookingFactory, SalesProfileFactory, MotorcycleFactory, InventorySettingsFactory, SalesTermsFactory
+from inventory.tests.test_helpers.model_factories import (
+    TempSalesBookingFactory,
+    SalesProfileFactory,
+    MotorcycleFactory,
+    InventorySettingsFactory,
+    SalesTermsFactory,
+)
 
 
 class Step2BookingDetailsViewTest(TestCase):

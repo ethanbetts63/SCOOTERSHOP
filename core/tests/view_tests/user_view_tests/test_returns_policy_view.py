@@ -4,8 +4,8 @@ from unittest.mock import patch, MagicMock
 from dashboard.models import SiteSettings
 from users.tests.test_helpers.model_factories import UserFactory
 
-class ReturnsPolicyViewTest(TestCase):
 
+class ReturnsPolicyViewTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.url = reverse("core:returns")

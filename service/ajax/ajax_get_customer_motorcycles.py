@@ -6,12 +6,9 @@ from django.views.decorators.http import require_GET
 
 @require_GET
 def get_customer_motorcycles_ajax(request, profile_id):
-
     try:
-
         service_profile = get_object_or_404(ServiceProfile, pk=profile_id)
     except Exception as e:
-
         return JsonResponse(
             {"error": f"ServiceProfile not found or invalid ID: {e}"}, status=404
         )

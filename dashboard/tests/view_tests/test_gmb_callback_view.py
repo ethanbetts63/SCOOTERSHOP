@@ -7,6 +7,7 @@ from django.utils import timezone
 
 User = get_user_model()
 
+
 # Mock settings for GMB client ID and secret
 @override_settings(
     GMB_CLIENT_ID="test_client_id",
@@ -14,23 +15,22 @@ User = get_user_model()
     SITE_BASE_URL="http://testserver",
 )
 class GoogleMyBusinessCallbackViewTest(TestCase):
-
     def setUp(self):
         GoogleMyBusinessAccount.objects.all().delete()
         self.client = self.client_class()
         self.admin_user = User.objects.create_user(
-            username='admin',
-            email='admin@example.com',
-            password='password',
+            username="admin",
+            email="admin@example.com",
+            password="password",
             is_staff=True,
-            is_superuser=True
+            is_superuser=True,
         )
-        self.client.login(username='admin', password='password')
+        self.client.login(username="admin", password="password")
 
-    @mock.patch('google_auth_oauthlib.flow.Flow.from_client_config')
+    @mock.patch("google_auth_oauthlib.flow.Flow.from_client_config")
     def test_successful_callback(self, mock_from_client_config):
         # Set a state in the session to simulate the auth flow initiation
-        self.client.session['gmb_oauth_state'] = "test_state"
+        self.client.session["gmb_oauth_state"] = "test_state"
         self.client.session.save()
 
         mock_flow_instance = mock.Mock()
@@ -38,19 +38,26 @@ class GoogleMyBusinessCallbackViewTest(TestCase):
         mock_flow_instance.credentials = mock.Mock()
         mock_flow_instance.credentials.token = "mock_access_token"
         mock_flow_instance.credentials.refresh_token = "mock_refresh_token"
-        mock_flow_instance.credentials.expiry = timezone.now() + timezone.timedelta(hours=1)
+        mock_flow_instance.credentials.expiry = timezone.now() + timezone.timedelta(
+            hours=1
+        )
         mock_from_client_config.return_value = mock_flow_instance
 
         # Simulate Google's redirect with a code and the correct state
-        response = self.client.get(reverse('dashboard:gmb_callback'), {'code': 'test_code', 'state': 'test_state'})
+        response = self.client.get(
+            reverse("dashboard:gmb_callback"),
+            {"code": "test_code", "state": "test_state"},
+        )
 
         # Assertions for successful flow
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('dashboard:gmb_settings'))
+        self.assertEqual(response.url, reverse("dashboard:gmb_settings"))
 
         messages = list(response.wsgi_request._messages)
         self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), "Successfully connected to Google My Business!")
+        self.assertEqual(
+            str(messages[0]), "Successfully connected to Google My Business!"
+        )
 
         # Verify that tokens were saved to the database
         gmb_account = GoogleMyBusinessAccount.load()
@@ -61,20 +68,23 @@ class GoogleMyBusinessCallbackViewTest(TestCase):
         # Verify fetch_token was called
         mock_flow_instance.fetch_token.assert_called_once()
 
-    @mock.patch('google_auth_oauthlib.flow.Flow.from_client_config')
+    @mock.patch("google_auth_oauthlib.flow.Flow.from_client_config")
     def test_token_fetching_failure(self, mock_from_client_config):
-        self.client.session['gmb_oauth_state'] = "test_state"
+        self.client.session["gmb_oauth_state"] = "test_state"
         self.client.session.save()
 
         mock_flow_instance = mock.Mock()
         mock_flow_instance.fetch_token.side_effect = Exception("Failed to get token")
         mock_from_client_config.return_value = mock_flow_instance
 
-        response = self.client.get(reverse('dashboard:gmb_callback'), {'code': 'test_code', 'state': 'test_state'})
+        response = self.client.get(
+            reverse("dashboard:gmb_callback"),
+            {"code": "test_code", "state": "test_state"},
+        )
 
         # Assertions for failure scenario
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('dashboard:gmb_settings'))
+        self.assertEqual(response.url, reverse("dashboard:gmb_settings"))
 
         messages = list(response.wsgi_request._messages)
         self.assertEqual(len(messages), 1)
@@ -85,10 +95,10 @@ class GoogleMyBusinessCallbackViewTest(TestCase):
         self.assertIsNone(gmb_account.access_token)
         self.assertIsNone(gmb_account.refresh_token)
 
-    @mock.patch('google_auth_oauthlib.flow.Flow.from_client_config')
+    @mock.patch("google_auth_oauthlib.flow.Flow.from_client_config")
     def test_state_mismatch(self, mock_from_client_config):
         # Set a different state in the session
-        self.client.session['gmb_oauth_state'] = "wrong_state"
+        self.client.session["gmb_oauth_state"] = "wrong_state"
         self.client.session.save()
 
         mock_flow_instance = mock.Mock()
@@ -96,28 +106,34 @@ class GoogleMyBusinessCallbackViewTest(TestCase):
         mock_flow_instance.fetch_token.side_effect = ValueError("State mismatch")
         mock_from_client_config.return_value = mock_flow_instance
 
-        response = self.client.get(reverse('dashboard:gmb_callback'), {'code': 'test_code', 'state': 'correct_state'})
+        response = self.client.get(
+            reverse("dashboard:gmb_callback"),
+            {"code": "test_code", "state": "correct_state"},
+        )
 
         # Assertions for state mismatch scenario
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('dashboard:gmb_settings'))
+        self.assertEqual(response.url, reverse("dashboard:gmb_settings"))
 
         messages = list(response.wsgi_request._messages)
         self.assertEqual(len(messages), 1)
         self.assertIn("Failed to fetch token", str(messages[0]))
 
-    @mock.patch('google_auth_oauthlib.flow.Flow.from_client_config')
+    @mock.patch("google_auth_oauthlib.flow.Flow.from_client_config")
     def test_missing_state_in_session(self, mock_from_client_config):
         # Do not set 'gmb_oauth_state' in session
         mock_flow_instance = mock.Mock()
         mock_flow_instance.fetch_token.side_effect = ValueError("State missing")
         mock_from_client_config.return_value = mock_flow_instance
 
-        response = self.client.get(reverse('dashboard:gmb_callback'), {'code': 'test_code', 'state': 'some_state'})
+        response = self.client.get(
+            reverse("dashboard:gmb_callback"),
+            {"code": "test_code", "state": "some_state"},
+        )
 
         # Assertions for missing state scenario
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('dashboard:gmb_settings'))
+        self.assertEqual(response.url, reverse("dashboard:gmb_settings"))
 
         messages = list(response.wsgi_request._messages)
         self.assertEqual(len(messages), 1)

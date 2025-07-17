@@ -15,7 +15,6 @@ from inventory.tests.test_helpers.model_factories import MotorcycleFactory
 
 
 class StripeWebhookViewTest(TestCase):
-
     def setUp(self):
         self.client = Client()
         self.webhook_url = reverse("payments:stripe_webhook")

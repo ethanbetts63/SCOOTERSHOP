@@ -2,14 +2,15 @@ from django.test import TestCase
 from decimal import Decimal
 import datetime
 from inventory.utils.get_motorcycles_by_criteria import get_motorcycles_by_criteria
-from inventory.tests.test_helpers.model_factories import MotorcycleConditionFactory, MotorcycleFactory
+from inventory.tests.test_helpers.model_factories import (
+    MotorcycleConditionFactory,
+    MotorcycleFactory,
+)
 
 
 class GetMotorcyclesByCriteriaTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         cls.condition_new = MotorcycleConditionFactory(name="new", display_name="New")
         cls.condition_used = MotorcycleConditionFactory(
             name="used", display_name="Used"
@@ -84,7 +85,6 @@ class GetMotorcyclesByCriteriaTest(TestCase):
         ]
 
     def test_get_motorcycles_no_filters(self):
-
         queryset = get_motorcycles_by_criteria()
         self.assertEqual(queryset.count(), 7)
         self.assertQuerySetEqual(
@@ -92,7 +92,6 @@ class GetMotorcyclesByCriteriaTest(TestCase):
         )
 
     def test_filter_by_new_condition_slug(self):
-
         queryset = get_motorcycles_by_criteria(condition_slug="new")
         self.assertEqual(queryset.count(), 3)
         self.assertIn(self.honda_new, queryset)
@@ -102,7 +101,6 @@ class GetMotorcyclesByCriteriaTest(TestCase):
         self.assertNotIn(self.yamaha_demo, queryset)
 
     def test_filter_by_used_condition_slug(self):
-
         queryset = get_motorcycles_by_criteria(condition_slug="used")
         self.assertEqual(queryset.count(), 4)
         self.assertIn(self.honda_used, queryset)
@@ -112,14 +110,12 @@ class GetMotorcyclesByCriteriaTest(TestCase):
         self.assertNotIn(self.honda_new, queryset)
 
     def test_filter_by_brand(self):
-
         queryset = get_motorcycles_by_criteria(brand="Honda")
         self.assertEqual(queryset.count(), 2)
         self.assertIn(self.honda_new, queryset)
         self.assertIn(self.honda_used, queryset)
 
     def test_filter_by_model_contains(self):
-
         queryset = get_motorcycles_by_criteria(model="R")
         self.assertEqual(queryset.count(), 4)
         self.assertIn(self.honda_new, queryset)
@@ -133,7 +129,6 @@ class GetMotorcyclesByCriteriaTest(TestCase):
         self.assertIn(self.kawasaki_used, queryset_ninja)
 
     def test_filter_by_year_range(self):
-
         queryset = get_motorcycles_by_criteria(year_min=2021, year_max=2022)
         self.assertEqual(queryset.count(), 3)
         self.assertIn(self.yamaha_new, queryset)
@@ -149,7 +144,6 @@ class GetMotorcyclesByCriteriaTest(TestCase):
         self.assertIn(self.suzuki_new, queryset_min_only)
 
     def test_filter_by_price_range(self):
-
         queryset = get_motorcycles_by_criteria(
             price_min=Decimal("9000.00"), price_max=Decimal("13000.00")
         )
@@ -168,7 +162,6 @@ class GetMotorcyclesByCriteriaTest(TestCase):
         self.assertIn(self.kawasaki_used, queryset_max_only)
 
     def test_filter_by_engine_size_range(self):
-
         queryset = get_motorcycles_by_criteria(engine_min_cc=700, engine_max_cc=1000)
 
         self.assertEqual(queryset.count(), 4)
@@ -180,7 +173,6 @@ class GetMotorcyclesByCriteriaTest(TestCase):
         self.assertNotIn(self.ducati_demo, queryset)
 
     def test_combined_filters(self):
-
         queryset = get_motorcycles_by_criteria(
             condition_slug="used",
             brand="Honda",
@@ -204,7 +196,6 @@ class GetMotorcyclesByCriteriaTest(TestCase):
         self.assertNotIn(self.suzuki_new, queryset_new_large_engine)
 
     def test_ordering_price_low_to_high(self):
-
         queryset = get_motorcycles_by_criteria(order="price_low_to_high")
 
         prices = [bike.price for bike in queryset if bike.price is not None]
@@ -212,14 +203,12 @@ class GetMotorcyclesByCriteriaTest(TestCase):
         self.assertEqual(prices, sorted_prices)
 
     def test_ordering_price_high_to_low(self):
-
         queryset = get_motorcycles_by_criteria(order="price_high_to_low")
         prices = [bike.price for bike in queryset if bike.price is not None]
         sorted_prices = sorted(prices, reverse=True)
         self.assertEqual(prices, sorted_prices)
 
     def test_ordering_age_new_to_old(self):
-
         queryset = get_motorcycles_by_criteria(order="age_new_to_old")
 
         years_and_dates = [(bike.year, bike.date_posted) for bike in queryset]
@@ -230,14 +219,12 @@ class GetMotorcyclesByCriteriaTest(TestCase):
         self.assertEqual(years_and_dates, expected_sorted)
 
     def test_ordering_age_old_to_new(self):
-
         queryset = get_motorcycles_by_criteria(order="age_old_to_new")
         years_and_dates = [(bike.year, bike.date_posted) for bike in queryset]
         expected_sorted = sorted(years_and_dates, key=lambda x: (x[0], x[1]))
         self.assertEqual(years_and_dates, expected_sorted)
 
     def test_ordering_default_date_posted(self):
-
         base_test_time = datetime.datetime(
             2024, 6, 1, 0, 0, 0, tzinfo=datetime.timezone.utc
         )
@@ -266,7 +253,6 @@ class GetMotorcyclesByCriteriaTest(TestCase):
         self.assertQuerySetEqual(queryset, expected_order, ordered=True)
 
     def test_no_results_found(self):
-
         queryset = get_motorcycles_by_criteria(brand="NonExistentBrand")
         self.assertEqual(queryset.count(), 0)
         self.assertQuerySetEqual(queryset, [])

@@ -7,13 +7,10 @@ from service.models import CustomerMotorcycle
 
 
 class CustomerMotorcycleDeleteView(AdminRequiredMixin, View):
-
     def test_func(self):
-
         return self.request.user.is_staff or self.request.user.is_superuser
 
     def post(self, request, pk, *args, **kwargs):
-
         motorcycle = get_object_or_404(CustomerMotorcycle, pk=pk)
         motorcycle_display_name = (
             f"{motorcycle.year} {motorcycle.brand} {motorcycle.model}"

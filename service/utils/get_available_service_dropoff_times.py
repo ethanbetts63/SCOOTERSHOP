@@ -58,10 +58,14 @@ def get_available_dropoff_times(selected_date):
             datetime.datetime.combine(selected_date, booking.dropoff_time),
             timezone.get_current_timezone(),
         )
-        
+
         # Define a buffer around the booked time to avoid back-to-back appointments
-        block_start_datetime = booked_time_dt - datetime.timedelta(minutes=spacing_minutes)
-        block_end_datetime = booked_time_dt + datetime.timedelta(minutes=spacing_minutes)
+        block_start_datetime = booked_time_dt - datetime.timedelta(
+            minutes=spacing_minutes
+        )
+        block_end_datetime = booked_time_dt + datetime.timedelta(
+            minutes=spacing_minutes
+        )
 
         slots_to_remove = set()
         for slot_str in available_slots_set:
@@ -72,7 +76,7 @@ def get_available_dropoff_times(selected_date):
             )
             if block_start_datetime <= slot_datetime <= block_end_datetime:
                 slots_to_remove.add(slot_str)
-        
+
         available_slots_set -= slots_to_remove
 
     # Preserve the original order of potential slots

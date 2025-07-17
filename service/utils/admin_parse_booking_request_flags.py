@@ -1,5 +1,4 @@
 def admin_parse_booking_request_flags(request_post_data):
-
     selected_profile_id = request_post_data.get("selected_profile_id")
     selected_motorcycle_id = request_post_data.get("selected_motorcycle_id")
     create_new_profile = request_post_data.get("create_new_profile") == "true"

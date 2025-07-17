@@ -6,7 +6,6 @@ from inventory.mixins import AdminRequiredMixin
 
 
 class ServicefaqDeleteView(AdminRequiredMixin, DeleteView):
-
     model = Servicefaq
     success_url = reverse_lazy("service:service_faq_management")
 
@@ -21,7 +20,6 @@ class ServicefaqDeleteView(AdminRequiredMixin, DeleteView):
         return context
 
     def form_valid(self, form):
-
         messages.success(
             self.request,
             f"The Service faq '{self.object.question[:50]}...' was deleted successfully.",

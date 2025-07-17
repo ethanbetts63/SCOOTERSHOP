@@ -2,7 +2,6 @@ from django.db import models
 import uuid
 
 
-
 class Payment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
@@ -130,7 +129,6 @@ class Payment(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-
         return f"Payment {self.id} - {self.amount} {self.currency} - {self.status}"
 
     def save(self, *args, **kwargs):

@@ -9,12 +9,10 @@ from service.forms import ServiceBrandForm
 
 
 class ServiceBrandManagementView(AdminRequiredMixin, View):
-
     template_name = "service/service_brands_management.html"
     form_class = ServiceBrandForm
 
     def get_context_data(self, form=None, edit_brand=None):
-
         service_brands = ServiceBrand.objects.all().order_by("name")
 
         if form is None:
@@ -29,7 +27,6 @@ class ServiceBrandManagementView(AdminRequiredMixin, View):
         return context
 
     def get(self, request, *args, **kwargs):
-
         edit_brand_pk = request.GET.get("edit_brand_pk")
         edit_brand = None
         if edit_brand_pk:
@@ -39,7 +36,6 @@ class ServiceBrandManagementView(AdminRequiredMixin, View):
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
-
         form = None
         edit_brand = None
 

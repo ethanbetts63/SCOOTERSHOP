@@ -2,6 +2,7 @@ from django.views.generic import TemplateView
 from django.shortcuts import redirect
 from dashboard.models import SiteSettings
 
+
 class SecurityPolicyView(TemplateView):
     template_name = "core/information/security.html"
 

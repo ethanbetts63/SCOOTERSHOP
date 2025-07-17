@@ -9,7 +9,6 @@ from service.models import ServiceBooking
 
 
 def get_service_date_availability():
-
     service_settings = ServiceSettings.objects.first()
 
     now_in_perth = timezone.localtime(timezone.now()).date()

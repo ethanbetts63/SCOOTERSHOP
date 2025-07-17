@@ -8,7 +8,10 @@ from django.conf import settings
 
 from inventory.models import TempSalesBooking, SalesBooking
 from payments.models import Payment
-from inventory.tests.test_helpers.model_factories import InventorySettingsFactory, MotorcycleFactory
+from inventory.tests.test_helpers.model_factories import (
+    InventorySettingsFactory,
+    MotorcycleFactory,
+)
 from users.tests.test_helpers.model_factories import UserFactory
 
 

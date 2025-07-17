@@ -88,7 +88,6 @@ class AdminBookingDetailsForm(forms.ModelForm):
         self.fields["service_type"].empty_label = _("Select Service Type")
 
     def clean(self):
-
         cleaned_data = super().clean()
         service_date = cleaned_data.get("service_date")
         dropoff_date = cleaned_data.get("dropoff_date")
@@ -120,5 +119,4 @@ class AdminBookingDetailsForm(forms.ModelForm):
         return cleaned_data
 
     def get_warnings(self):
-
         return getattr(self, "_warnings", [])

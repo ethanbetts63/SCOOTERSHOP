@@ -6,12 +6,9 @@ from inventory.models import Motorcycle
 from inventory.tests.test_helpers.model_factories import MotorcycleConditionFactory
 
 
-
 class MotorcycleListViewTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         cls.client = Client()
 
         cls.condition_new = MotorcycleConditionFactory(name="new", display_name="New")
@@ -55,7 +52,6 @@ class MotorcycleListViewTest(TestCase):
         self.assertContains(response, "No motorcycles match the current criteria.")
 
     def test_used_motorcycles_page_renders_empty_initially(self):
-
         response = self.client.get(reverse("inventory:used"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "inventory/motorcycle_list.html")

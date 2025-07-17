@@ -3,10 +3,13 @@ from django.urls import reverse
 from django.utils import timezone
 from service.models import ServiceBooking
 from users.tests.test_helpers.model_factories import UserFactory
-from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceTypeFactory
+from service.tests.test_helpers.model_factories import (
+    ServiceBookingFactory,
+    ServiceTypeFactory,
+)
+
 
 class ServiceBookingManagementViewTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.staff_user = UserFactory(
@@ -43,7 +46,6 @@ class ServiceBookingManagementViewTest(TestCase):
         cls.list_url = reverse("service:service_booking_management")
 
     def setUp(self):
-
         self.client = Client()
 
     def test_view_grants_access_to_staff_user(self):

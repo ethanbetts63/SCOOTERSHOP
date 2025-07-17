@@ -9,30 +9,24 @@ from service.models import ServiceProfile
 
 
 class ServiceProfileCreateUpdateView(AdminRequiredMixin, View):
-
     template_name = "service/admin_service_profile_create_update.html"
     form_class = AdminServiceProfileForm
 
     def test_func(self):
-
         return self.request.user.is_staff or self.request.user.is_superuser
 
     def get(self, request, pk=None, *args, **kwargs):
-
         instance = None
         if pk:
-
             instance = get_object_or_404(ServiceProfile, pk=pk)
             form = self.form_class(instance=instance)
         else:
-
             form = self.form_class()
 
         context = {"form": form, "is_edit_mode": bool(pk), "current_profile": instance}
         return render(request, self.template_name, context)
 
     def post(self, request, pk=None, *args, **kwargs):
-
         instance = None
         if pk:
             instance = get_object_or_404(ServiceProfile, pk=pk)

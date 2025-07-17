@@ -86,41 +86,44 @@ This business may assign or transfer its rights and obligations under these Term
 Contacting Us
 If you have a question, problem or complaint or need to contact us for any other reason in relation to your online Reservation or vehicle purchase, please contact us directly."""
 
+
 class SalesTerms(models.Model):
-    content = models.TextField(
-        default=DEFAULT_SALES_TERMS_CONTENT
-    )
-    version_number = models.PositiveIntegerField(
-        unique=True,
-        blank=True
-    )
-    is_active = models.BooleanField(
-        default=True
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
+    content = models.TextField(default=DEFAULT_SALES_TERMS_CONTENT)
+    version_number = models.PositiveIntegerField(unique=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Terms and Conditions"
         verbose_name_plural = "Terms and Conditions"
-        ordering = ['-version_number']
+        ordering = ["-version_number"]
 
     def __str__(self):
-        status = 'Active' if self.is_active else 'Archived'
+        status = "Active" if self.is_active else "Archived"
         return f"v{self.version_number} - Created: {self.created_at.strftime('%d %b %Y')} ({status})"
 
     def save(self, *args, **kwargs):
         if not self.pk and not self.version_number:
-            last_version = SalesTerms.objects.all().order_by('version_number').last()
-            self.version_number = (last_version.version_number + 1) if last_version else 1
+            last_version = SalesTerms.objects.all().order_by("version_number").last()
+            self.version_number = (
+                (last_version.version_number + 1) if last_version else 1
+            )
 
         if self.is_active:
             with transaction.atomic():
-                SalesTerms.objects.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
-        
+                SalesTerms.objects.filter(is_active=True).exclude(pk=self.pk).update(
+                    is_active=False
+                )
+
         super().save(*args, **kwargs)
 
     def clean(self):
-        if not self.is_active and not SalesTerms.objects.filter(is_active=True).exclude(pk=self.pk).exists():
-             raise ValidationError("You cannot deactivate the only active Terms and Conditions version. Please activate another version first.")
+        if (
+            not self.is_active
+            and not SalesTerms.objects.filter(is_active=True)
+            .exclude(pk=self.pk)
+            .exists()
+        ):
+            raise ValidationError(
+                "You cannot deactivate the only active Terms and Conditions version. Please activate another version first."
+            )

@@ -5,10 +5,12 @@ from django.contrib import messages
 from inventory.mixins import AdminRequiredMixin
 from dashboard.forms import ReviewForm
 
+
 class ReviewCreateUpdateView(AdminRequiredMixin, View):
     """
     View to handle creation of new reviews.
     """
+
     template_name = "dashboard/review_create_update.html"
     form_class = ReviewForm
 
@@ -29,7 +31,9 @@ class ReviewCreateUpdateView(AdminRequiredMixin, View):
 
         if form.is_valid():
             review = form.save()
-            messages.success(request, f"Review by '{review.author_name}' created successfully.")
+            messages.success(
+                request, f"Review by '{review.author_name}' created successfully."
+            )
             return redirect(reverse("dashboard:reviews_management"))
         else:
             messages.error(request, "Please correct the errors below.")

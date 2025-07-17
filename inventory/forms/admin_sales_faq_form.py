@@ -3,7 +3,6 @@ from inventory.models import Salesfaq
 
 
 class AdminSalesfaqForm(forms.ModelForm):
-
     class Meta:
         model = Salesfaq
         fields = [

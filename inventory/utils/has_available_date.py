@@ -1,8 +1,13 @@
 from datetime import timedelta
-from inventory.utils.get_sales_appointment_date_info import get_sales_appointment_date_info
+from inventory.utils.get_sales_appointment_date_info import (
+    get_sales_appointment_date_info,
+)
 from inventory.models import InventorySettings
 
-def _check_availability(inventory_settings: InventorySettings, is_deposit_flow: bool) -> bool:
+
+def _check_availability(
+    inventory_settings: InventorySettings, is_deposit_flow: bool
+) -> bool:
     """
     Internal helper function to check for available dates based on flow type.
     """
@@ -17,7 +22,7 @@ def _check_availability(inventory_settings: InventorySettings, is_deposit_flow: 
         return False
 
     blocked_dates_set = set(blocked_dates_str)
-    
+
     current_date = min_date
     while current_date <= max_date:
         if current_date.strftime("%Y-%m-%d") not in blocked_dates_set:
@@ -26,12 +31,14 @@ def _check_availability(inventory_settings: InventorySettings, is_deposit_flow: 
 
     return False
 
+
 def has_available_date_for_deposit_flow(inventory_settings: InventorySettings) -> bool:
     """
     Checks for available dates specifically for the 'Reserve with Deposit' flow.
     This respects the 'deposit_lifespan_days' setting.
     """
     return _check_availability(inventory_settings, is_deposit_flow=True)
+
 
 def has_available_date_for_viewing_flow(inventory_settings: InventorySettings) -> bool:
     """

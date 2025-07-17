@@ -6,7 +6,6 @@ from django.views.decorators.http import require_GET
 
 @require_GET
 def get_motorcycle_details_ajax(request, motorcycle_id):
-
     try:
         motorcycle = get_object_or_404(CustomerMotorcycle, pk=motorcycle_id)
     except Exception as e:

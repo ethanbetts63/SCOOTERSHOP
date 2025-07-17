@@ -7,7 +7,6 @@ from core.tests.test_helpers.model_factories import EnquiryFactory
 
 
 class EnquiryDeleteViewTest(TestCase):
-
     def setUp(self):
         self.client = Client()
         self.staff_user = UserFactory(is_staff=True)

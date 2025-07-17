@@ -12,14 +12,15 @@ from service.utils.get_available_service_dropoff_times import (
 from service.models import ServiceSettings, ServiceBooking
 
 
-from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceSettingsFactory
+from service.tests.test_helpers.model_factories import (
+    ServiceBookingFactory,
+    ServiceSettingsFactory,
+)
 
 
 class GetAvailableDropoffTimesTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         cls.fixed_now_utc = datetime.datetime(
             2025, 6, 15, 10, 0, 0, tzinfo=datetime.timezone.utc
         )
@@ -42,14 +43,12 @@ class GetAvailableDropoffTimesTest(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-
         cls.patcher_now.stop()
         cls.patcher_localdate.stop()
         timezone.deactivate()
         super().tearDownClass()
 
     def setUp(self):
-
         ServiceSettings.objects.all().delete()
         ServiceBooking.objects.all().delete()
 
@@ -62,13 +61,11 @@ class GetAvailableDropoffTimesTest(TestCase):
         )
 
     def test_no_service_settings(self):
-
         ServiceSettings.objects.all().delete()
         available_times = get_available_dropoff_times(self.fixed_local_date)
         self.assertEqual(available_times, [])
 
     def test_basic_slot_generation_today(self):
-
         with patch(
             "django.utils.timezone.now",
             return_value=datetime.datetime(
@@ -98,7 +95,6 @@ class GetAvailableDropoffTimesTest(TestCase):
             self.assertEqual(available_times, expected_times)
 
     def test_basic_slot_generation_future_date(self):
-
         future_date = self.fixed_local_date + datetime.timedelta(days=7)
         self.service_settings.drop_off_start_time = datetime.time(9, 0)
         self.service_settings.drop_off_end_time = datetime.time(17, 0)
@@ -120,7 +116,6 @@ class GetAvailableDropoffTimesTest(TestCase):
         self.assertEqual(available_times, expected_times)
 
     def test_slots_blocked_by_existing_bookings(self):
-
         test_date = self.fixed_local_date + datetime.timedelta(days=1)
         self.service_settings.drop_off_start_time = datetime.time(9, 0)
         self.service_settings.drop_off_end_time = datetime.time(12, 0)
@@ -136,7 +131,6 @@ class GetAvailableDropoffTimesTest(TestCase):
         self.assertEqual(available_times, expected_times)
 
     def test_slots_blocked_by_multiple_bookings(self):
-
         test_date = self.fixed_local_date + datetime.timedelta(days=1)
         self.service_settings.drop_off_start_time = datetime.time(9, 0)
         self.service_settings.drop_off_end_time = datetime.time(12, 0)
@@ -153,7 +147,6 @@ class GetAvailableDropoffTimesTest(TestCase):
         self.assertEqual(available_times, expected_times)
 
     def test_enable_after_hours_dropoff_true(self):
-
         self.service_settings.enable_after_hours_dropoff = True
         self.service_settings.drop_off_spacing_mins = 60
 
@@ -167,7 +160,6 @@ class GetAvailableDropoffTimesTest(TestCase):
         self.assertEqual(available_times, expected_times)
 
     def test_enable_after_hours_dropoff_true_with_booking(self):
-
         test_date = self.fixed_local_date + datetime.timedelta(days=1)
         self.service_settings.enable_after_hours_dropoff = True
         self.service_settings.drop_off_spacing_mins = 60
@@ -184,7 +176,6 @@ class GetAvailableDropoffTimesTest(TestCase):
         self.assertEqual(available_times, expected_times)
 
     def test_drop_off_spacing_mins_60(self):
-
         test_date = self.fixed_local_date + datetime.timedelta(days=1)
         self.service_settings.drop_off_start_time = datetime.time(9, 0)
         self.service_settings.drop_off_end_time = datetime.time(12, 0)
@@ -198,7 +189,6 @@ class GetAvailableDropoffTimesTest(TestCase):
         self.assertEqual(available_times, expected_times)
 
     def test_drop_off_spacing_mins_15(self):
-
         test_date = self.fixed_local_date + datetime.timedelta(days=1)
         self.service_settings.drop_off_start_time = datetime.time(9, 0)
         self.service_settings.drop_off_end_time = datetime.time(9, 45)
@@ -212,7 +202,6 @@ class GetAvailableDropoffTimesTest(TestCase):
         self.assertEqual(available_times, expected_times)
 
     def test_selected_date_in_past_no_after_hours(self):
-
         past_date = self.fixed_local_date - datetime.timedelta(days=7)
         self.service_settings.enable_after_hours_dropoff = False
         self.service_settings.save()
@@ -221,7 +210,6 @@ class GetAvailableDropoffTimesTest(TestCase):
         self.assertEqual(available_times, [])
 
     def test_current_time_boundary(self):
-
         with patch(
             "django.utils.timezone.now",
             return_value=datetime.datetime(
@@ -240,7 +228,6 @@ class GetAvailableDropoffTimesTest(TestCase):
             self.assertEqual(available_times, expected_times)
 
     def test_latest_same_day_dropoff_time_restriction(self):
-
         with patch(
             "django.utils.timezone.now",
             return_value=datetime.datetime(
@@ -258,7 +245,6 @@ class GetAvailableDropoffTimesTest(TestCase):
             self.assertEqual(available_times, expected_times)
 
     def test_full_day_blocked_by_booking(self):
-
         test_date = self.fixed_local_date + datetime.timedelta(days=1)
         self.service_settings.drop_off_start_time = datetime.time(9, 0)
         self.service_settings.drop_off_end_time = datetime.time(9, 30)
@@ -274,7 +260,6 @@ class GetAvailableDropoffTimesTest(TestCase):
         self.assertEqual(available_times, expected_times)
 
     def test_timezone_awareness(self):
-
         test_date = self.fixed_local_date + datetime.timedelta(days=1)
         self.service_settings.drop_off_start_time = datetime.time(9, 0)
         self.service_settings.drop_off_end_time = datetime.time(9, 30)

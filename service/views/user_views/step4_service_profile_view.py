@@ -95,7 +95,9 @@ class Step4ServiceProfileView(View):
 
         if form.is_valid():
             if request.user.is_authenticated:
-                service_profile, created = ServiceProfile.objects.get_or_create(user=request.user, defaults=form.cleaned_data)
+                service_profile, created = ServiceProfile.objects.get_or_create(
+                    user=request.user, defaults=form.cleaned_data
+                )
                 if not created:
                     # Update existing profile
                     for key, value in form.cleaned_data.items():

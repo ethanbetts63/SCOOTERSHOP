@@ -4,13 +4,15 @@ from django.contrib import messages
 from service.models import CustomerMotorcycle
 from service.forms import AdminCustomerMotorcycleForm
 from users.tests.test_helpers.model_factories import UserFactory
-from service.tests.test_helpers.model_factories import ServiceProfileFactory, CustomerMotorcycleFactory
+from service.tests.test_helpers.model_factories import (
+    ServiceProfileFactory,
+    CustomerMotorcycleFactory,
+)
+
 
 class CustomerMotorcycleCreateUpdateViewTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         cls.staff_user = UserFactory(
             username="staff_motorcycle_user", is_staff=True, is_superuser=False
         )
@@ -39,13 +41,11 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         )
 
     def setUp(self):
-
         self.client = Client()
         self.session = self.client.session
         self.session.save()
 
     def test_view_redirects_anonymous_user(self):
-
         response = self.client.get(self.create_url)
         self.assertRedirects(
             response, reverse("users:login") + f"?next={self.create_url}"
@@ -74,7 +74,6 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_view_grants_access_to_superuser(self):
-
         self.client.force_login(self.superuser)
         response = self.client.get(self.create_url)
         self.assertEqual(response.status_code, 200)
@@ -83,7 +82,6 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_get_request_create_new_motorcycle(self):
-
         self.client.force_login(self.staff_user)
         response = self.client.get(self.create_url)
 
@@ -97,7 +95,6 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         self.assertFalse(response.context["form"].is_bound)
 
     def test_get_request_update_existing_motorcycle(self):
-
         self.client.force_login(self.staff_user)
         response = self.client.get(self.update_url)
 
@@ -114,7 +111,6 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         self.assertFalse(response.context["form"].is_bound)
 
     def test_get_request_update_non_existent_motorcycle(self):
-
         self.client.force_login(self.staff_user)
         non_existent_pk = self.existing_motorcycle.pk + 9999
         non_existent_url = reverse(
@@ -124,7 +120,6 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_post_request_create_new_motorcycle_valid(self):
-
         self.client.force_login(self.staff_user)
         initial_count = CustomerMotorcycle.objects.count()
 
@@ -158,7 +153,6 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         self.assertEqual(messages_list[0].level, messages.SUCCESS)
 
     def test_post_request_create_new_motorcycle_invalid(self):
-
         self.client.force_login(self.staff_user)
         initial_count = CustomerMotorcycle.objects.count()
 
@@ -189,7 +183,6 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         self.assertEqual(messages_list[0].level, messages.ERROR)
 
     def test_post_request_update_existing_motorcycle_valid(self):
-
         self.client.force_login(self.staff_user)
         original_brand = self.existing_motorcycle.brand
         updated_brand = "UpdatedBrand"
@@ -221,7 +214,6 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         self.assertEqual(messages_list[0].level, messages.SUCCESS)
 
     def test_post_request_update_existing_motorcycle_invalid(self):
-
         self.client.force_login(self.staff_user)
         original_model = self.existing_motorcycle.model
 
@@ -254,7 +246,6 @@ class CustomerMotorcycleCreateUpdateViewTest(TestCase):
         self.assertEqual(self.existing_motorcycle.model, original_model)
 
     def test_post_request_update_non_existent_motorcycle(self):
-
         self.client.force_login(self.staff_user)
         non_existent_pk = self.existing_motorcycle.pk + 9999
         non_existent_url = reverse(

@@ -5,14 +5,21 @@ from refunds.models.RefundRequest import RefundRequest
 
 from payments.tests.test_helpers.model_factories import PaymentFactory
 from users.tests.test_helpers.model_factories import UserFactory
-from inventory.tests.test_helpers.model_factories import SalesBookingFactory, SalesProfileFactory, MotorcycleFactory
-from service.tests.test_helpers.model_factories import ServiceBookingFactory, ServiceProfileFactory, CustomerMotorcycleFactory, ServiceTypeFactory
+from inventory.tests.test_helpers.model_factories import (
+    SalesBookingFactory,
+    SalesProfileFactory,
+    MotorcycleFactory,
+)
+from service.tests.test_helpers.model_factories import (
+    ServiceBookingFactory,
+    ServiceProfileFactory,
+    CustomerMotorcycleFactory,
+    ServiceTypeFactory,
+)
 
 
 class AdminRefundRequestFormTests(TestCase):
-
     def setUp(self):
-
         self.admin_user = UserFactory(
             username="admin", email="admin@example.com", is_staff=True
         )
@@ -62,7 +69,6 @@ class AdminRefundRequestFormTests(TestCase):
         self.payment_deposit_sales.save()
 
     def test_form_valid_data_create_service(self):
-
         form_data = {
             "service_booking": self.service_booking_paid.pk,
             "reason": "Customer requested service refund.",
@@ -84,7 +90,6 @@ class AdminRefundRequestFormTests(TestCase):
         self.assertEqual(RefundRequest.objects.count(), 1)
 
     def test_form_valid_data_create_sales(self):
-
         form_data = {
             "sales_booking": self.sales_booking_deposit.pk,
             "reason": "Customer cancelled sale.",
@@ -106,7 +111,6 @@ class AdminRefundRequestFormTests(TestCase):
         self.assertEqual(RefundRequest.objects.count(), 1)
 
     def test_form_invalid_no_booking_selected(self):
-
         form_data = {
             "reason": "Test reason",
             "staff_notes": "Test notes",
@@ -120,7 +124,6 @@ class AdminRefundRequestFormTests(TestCase):
         )
 
     def test_form_invalid_multiple_bookings_selected(self):
-
         form_data = {
             "service_booking": self.service_booking_paid.pk,
             "sales_booking": self.sales_booking_deposit.pk,
@@ -137,13 +140,11 @@ class AdminRefundRequestFormTests(TestCase):
         )
 
     def test_form_initial_values_for_new_instance(self):
-
         form = AdminRefundRequestForm()
         self.assertIsNone(form.initial.get("is_admin_initiated"))
         self.assertIsNone(form.initial.get("status"))
 
     def test_form_edit_instance_service_booking(self):
-
         existing_refund_request = RefundRequest.objects.create(
             service_booking=self.service_booking_paid,
             payment=self.payment_succeeded_service,
@@ -174,7 +175,6 @@ class AdminRefundRequestFormTests(TestCase):
         self.assertEqual(RefundRequest.objects.count(), 1)
 
     def test_form_edit_instance_sales_booking(self):
-
         existing_refund_request = RefundRequest.objects.create(
             sales_booking=self.sales_booking_deposit,
             payment=self.payment_deposit_sales,

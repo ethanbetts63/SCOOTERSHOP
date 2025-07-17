@@ -2,6 +2,7 @@ from inventory.models import SalesBooking
 from django import forms
 from decimal import Decimal
 
+
 class SalesBookingActionForm(forms.Form):
     message = forms.CharField(
         widget=forms.Textarea(
@@ -63,7 +64,6 @@ class SalesBookingActionForm(forms.Form):
                         "refund_amount", "Refund amount must be greater than zero."
                     )
                 else:
-
                     try:
                         booking = SalesBooking.objects.get(pk=sales_booking_id)
                         if booking.payment and refund_amount > booking.payment.amount:
@@ -78,10 +78,8 @@ class SalesBookingActionForm(forms.Form):
                             )
 
                     except SalesBooking.DoesNotExist:
-
                         self.add_error(None, "Sales booking not found.")
             elif refund_amount is not None:
-
                 self.add_error(
                     "initiate_refund",
                     "Please check 'Initiate Refund for Deposit' to specify a refund amount.",

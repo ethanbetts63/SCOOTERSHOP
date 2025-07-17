@@ -27,8 +27,9 @@ class Step7StatusCheckView(View):
             elif service_booking.dropoff_time:
                 dropoff_datetime_str = f"{service_booking.dropoff_date.strftime('%d %b %Y')} at {service_booking.dropoff_time.strftime('%I:%M %p')}"
             else:
-                dropoff_datetime_str = f"{service_booking.dropoff_date.strftime('%d %b %Y')}"
-
+                dropoff_datetime_str = (
+                    f"{service_booking.dropoff_date.strftime('%d %b %Y')}"
+                )
 
             response_data = {
                 "status": "ready",
@@ -40,7 +41,7 @@ class Step7StatusCheckView(View):
                 "currency": service_booking.currency,
                 "service_type": service_booking.service_type.name,
                 "service_date": service_booking.service_date.strftime("%d %b %Y"),
-                "dropoff_datetime": dropoff_datetime_str, # Use the safely formatted string
+                "dropoff_datetime": dropoff_datetime_str,  # Use the safely formatted string
                 "motorcycle_details": f"{service_booking.customer_motorcycle.year} {service_booking.customer_motorcycle.brand} {service_booking.customer_motorcycle.model}",
                 "customer_name": service_booking.service_profile.name,
             }

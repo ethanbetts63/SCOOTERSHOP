@@ -1,22 +1,22 @@
 from django.urls import path
 from .views.user_views import (
-    UserRefundRequestView, 
-    UserConfirmationRefundRequestView, 
+    UserRefundRequestView,
+    UserConfirmationRefundRequestView,
     UserVerifiedRefundView,
-    UserVerifyRefundView, 
-    RefundTermsView
+    UserVerifyRefundView,
+    RefundTermsView,
 )
 
 from .views.admin_views import (
-    AdminRefundManagement, 
-    AdminAddEditRefundRequestView, 
-    ProcessRefundView, 
+    AdminRefundManagement,
+    AdminAddEditRefundRequestView,
+    ProcessRefundView,
     AdminRejectRefundView,
-    admin_refund_settings_view, 
+    admin_refund_settings_view,
     IntermediaryRefundProcessingView,
-    AdminRefundTermsManagementView, 
-    AdminRefundTermsCreateView, 
-    AdminRefundTermsDetailView
+    AdminRefundTermsManagementView,
+    AdminRefundTermsCreateView,
+    AdminRefundTermsDetailView,
 )
 
 app_name = "refunds"
@@ -77,8 +77,20 @@ urlpatterns = [
         IntermediaryRefundProcessingView.as_view(),
         name="initiate_refund_process",
     ),
-    path('dashboard/terms/refunds/', AdminRefundTermsManagementView.as_view(), name='refund_terms_management'),
-    path('dashboard/terms/refunds/create/', AdminRefundTermsCreateView.as_view(), name='refund_terms_create'),
-    path('dashboard/terms/refunds/<int:pk>/', AdminRefundTermsDetailView.as_view(), name='refund_terms_details'),
-    path('refund-policy/', RefundTermsView.as_view(), name='refund_policy'), 
+    path(
+        "dashboard/terms/refunds/",
+        AdminRefundTermsManagementView.as_view(),
+        name="refund_terms_management",
+    ),
+    path(
+        "dashboard/terms/refunds/create/",
+        AdminRefundTermsCreateView.as_view(),
+        name="refund_terms_create",
+    ),
+    path(
+        "dashboard/terms/refunds/<int:pk>/",
+        AdminRefundTermsDetailView.as_view(),
+        name="refund_terms_details",
+    ),
+    path("refund-policy/", RefundTermsView.as_view(), name="refund_policy"),
 ]

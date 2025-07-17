@@ -12,7 +12,6 @@ class AdminAddEditRefundRequestView(AdminRequiredMixin, View):
     template_name = "refunds/admin_refund_form.html"
 
     def get(self, request, pk=None, *args, **kwargs):
-
         refund_request = None
         booking_reference = "N/A"
 
@@ -38,15 +37,20 @@ class AdminAddEditRefundRequestView(AdminRequiredMixin, View):
             "title": title,
             "refund_request": refund_request,
             "booking_reference": booking_reference,
-            "service_booking_details_url": reverse("service:admin_api_get_service_booking_details", args=[0]),
-            "sales_booking_details_url": reverse("inventory:api_sales_booking_details", args=[0]),
-            "search_sales_bookings_url": reverse("inventory:admin_api_search_sales_bookings"),
+            "service_booking_details_url": reverse(
+                "service:admin_api_get_service_booking_details", args=[0]
+            ),
+            "sales_booking_details_url": reverse(
+                "inventory:api_sales_booking_details", args=[0]
+            ),
+            "search_sales_bookings_url": reverse(
+                "inventory:admin_api_search_sales_bookings"
+            ),
             "search_service_bookings_url": reverse("service:admin_api_search_bookings"),
         }
         return render(request, self.template_name, context)
 
     def post(self, request, pk=None, *args, **kwargs):
-
         refund_request_instance = None
         if pk:
             refund_request_instance = get_object_or_404(RefundRequest, pk=pk)
@@ -64,7 +68,6 @@ class AdminAddEditRefundRequestView(AdminRequiredMixin, View):
             refund_request_instance.is_admin_initiated = True
 
             if not pk:
-
                 refund_request_instance.status = "reviewed_pending_approval"
             elif refund_request_instance.status == "unverified":
                 refund_request_instance.status = "reviewed_pending_approval"

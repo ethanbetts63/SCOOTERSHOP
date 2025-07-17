@@ -20,7 +20,6 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 class Step3PaymentView(View):
-
     def get(self, request, *args, **kwargs):
         temp_booking_uuid = request.session.get("temp_sales_booking_uuid")
 
@@ -72,7 +71,7 @@ class Step3PaymentView(View):
             )
             redirect_url = (
                 reverse("inventory:step4_confirmation")
-                + f'?payment_intent_id={temp_booking.stripe_payment_intent_id if temp_booking.stripe_payment_intent_id else ""}'
+                + f"?payment_intent_id={temp_booking.stripe_payment_intent_id if temp_booking.stripe_payment_intent_id else ''}"
             )
             return redirect(redirect_url)
 
@@ -197,10 +196,14 @@ class Step3PaymentView(View):
                 )
 
         except stripe.error.StripeError as e:
-            logger.error(f"Step3 POST: Stripe error on payment intent retrieval. Error: {e}")
+            logger.error(
+                f"Step3 POST: Stripe error on payment intent retrieval. Error: {e}"
+            )
             return JsonResponse({"error": str(e)}, status=500)
         except Exception as e:
-            logger.error(f"Step3 POST: Internal server error on payment processing. Error: {e}")
+            logger.error(
+                f"Step3 POST: Internal server error on payment processing. Error: {e}"
+            )
             return JsonResponse(
                 {
                     "error": "An internal server error occurred during payment processing."

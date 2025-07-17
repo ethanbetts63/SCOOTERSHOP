@@ -109,7 +109,6 @@ class SalesProfileForm(forms.ModelForm):
                         {"placeholder": "Required"}
                     )
             else:
-
                 for field_name in [
                     "address_line_1",
                     "address_line_2",
@@ -132,7 +131,6 @@ class SalesProfileForm(forms.ModelForm):
                     )
                 self.fields["date_of_birth"].required = True
             else:
-
                 for field_name in [
                     "drivers_license_number",
                     "drivers_license_expiry",
@@ -154,7 +152,6 @@ class SalesProfileForm(forms.ModelForm):
                     "country",
                 ]
                 for field_name in required_address_fields:
-
                     if not cleaned_data.get(field_name):
                         self.add_error(
                             field_name,
@@ -167,7 +164,6 @@ class SalesProfileForm(forms.ModelForm):
                     "drivers_license_expiry",
                 ]
                 for field_name in required_dl_fields:
-
                     if not cleaned_data.get(field_name):
                         self.add_error(
                             field_name,

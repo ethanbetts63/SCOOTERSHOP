@@ -2,14 +2,14 @@ from django.test import TestCase
 from django.core.exceptions import ImproperlyConfigured
 from dashboard.models import SiteSettings
 
-class SiteSettingsModelTest(TestCase):
 
+class SiteSettingsModelTest(TestCase):
     def test_singleton_pattern(self):
         # Test that only one instance of SiteSettings can be created.
         SiteSettings.objects.all().delete()
         settings1 = SiteSettings.get_settings()
         self.assertIsNotNone(settings1)
-        
+
         with self.assertRaises(ImproperlyConfigured):
             SiteSettings.objects.create()
 
@@ -18,6 +18,6 @@ class SiteSettingsModelTest(TestCase):
         SiteSettings.objects.all().delete()
         settings = SiteSettings.get_settings()
         self.assertIsInstance(settings, SiteSettings)
-        
+
         settings2 = SiteSettings.get_settings()
         self.assertEqual(settings.pk, settings2.pk)

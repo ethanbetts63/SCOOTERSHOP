@@ -5,7 +5,6 @@ import datetime
 
 
 class RefundSettings(models.Model):
-
     full_payment_full_refund_days = models.PositiveIntegerField(
         default=7,
         help_text="Full refund if cancelled this many *full days* or more before the booking's start time (for full payments).",
@@ -44,9 +43,7 @@ class RefundSettings(models.Model):
         help_text="Minimal refund percentage applies to deposit if cancelled this many *full days* or more (but less than partial refund threshold) before the booking's start time.",
     )
 
-
     def generate_policy_text(self):
-
         effective_date = datetime.date.today().strftime("%B %d, %Y")
 
         return f"""
@@ -107,7 +104,6 @@ This Refund and Cancellation Policy ("Policy") governs the cancellation of servi
                 errors[field_name] = [
                     f"Ensure {field_name.replace('_', ' ')} is between 0.00% and 100.00%."
                 ]
-
 
         full_days_full_payment = self.full_payment_full_refund_days
         partial_days_full_payment = self.full_payment_partial_refund_days

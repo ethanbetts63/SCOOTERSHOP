@@ -10,13 +10,15 @@ from inventory.models.temp_sales_booking import (
     PAYMENT_STATUS_CHOICES,
 )
 
-from inventory.tests.test_helpers.model_factories import TempSalesBookingFactory, SalesProfileFactory, MotorcycleFactory
+from inventory.tests.test_helpers.model_factories import (
+    TempSalesBookingFactory,
+    SalesProfileFactory,
+    MotorcycleFactory,
+)
 from payments.tests.test_helpers.model_factories import PaymentFactory
 
 
-
 class TempSalesBookingModelTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.motorcycle = MotorcycleFactory()

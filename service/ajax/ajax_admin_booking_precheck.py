@@ -3,10 +3,10 @@ from django.views.decorators.http import require_POST
 from service.forms import AdminBookingDetailsForm
 from ..decorators import admin_required
 
+
 @require_POST
 @admin_required
 def admin_booking_precheck_ajax(request):
-
     admin_form = AdminBookingDetailsForm(request.POST)
     response_data = {"status": "success", "errors": {}, "warnings": []}
 

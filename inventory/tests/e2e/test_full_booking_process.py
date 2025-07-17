@@ -93,8 +93,6 @@
 #         )
 #         self.assertIn("last_sales_booking_timestamp", self.client.session)
 
-    
-
 
 # @skipIf(not settings.STRIPE_SECRET_KEY, "Stripe API key not configured in settings")
 # class TestDepositFlows(TestCase):
@@ -188,7 +186,7 @@
 
 #         self.assertEqual(final_booking.sales_profile.name, "Thorough Tester Updated")
 #         self.assertEqual(final_booking.sales_profile.phone_number, "555-4321")
-        
+
 #         self.assertEqual(final_booking.appointment_date, datetime.date(2025, 9, 20))
 #         self.assertEqual(final_booking.appointment_time, datetime.time(9, 0))
 
@@ -240,7 +238,7 @@
 #         )
 #         self.client.post(initiate_url_2, {"deposit_required_for_flow": "true"})
 
-#         response = self.client.get(step1_url) 
+#         response = self.client.get(step1_url)
 #         self.assertContains(response, "Thorough Tester Updated")
 #         self.client.post(step1_url, updated_profile_data)
 

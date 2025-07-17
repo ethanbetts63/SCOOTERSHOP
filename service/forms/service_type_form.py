@@ -3,7 +3,6 @@ from service.models import ServiceType
 
 
 class AdminServiceTypeForm(forms.ModelForm):
-
     class Meta:
         model = ServiceType
         fields = [

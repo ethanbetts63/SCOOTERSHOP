@@ -19,11 +19,8 @@ class ValidateAppointmentTimeUtilTest(TestCase):
             min_advance_booking_hours=2,
         )
 
-    
-
     @patch("django.utils.timezone.now")
     def test_time_on_today_but_just_valid(self, mock_now):
-
         fixed_now = datetime(
             2025, 6, 15, 10, 0, 0, tzinfo=timezone.get_current_timezone()
         )
@@ -45,7 +42,6 @@ class ValidateAppointmentTimeUtilTest(TestCase):
 
     @patch("django.utils.timezone.now")
     def test_valid_time_within_range(self, mock_now):
-
         mock_now.return_value = datetime(
             2025, 6, 15, 10, 0, 0, tzinfo=timezone.get_current_timezone()
         )
@@ -58,7 +54,6 @@ class ValidateAppointmentTimeUtilTest(TestCase):
 
     @patch("django.utils.timezone.now")
     def test_time_before_start_time(self, mock_now):
-
         mock_now.return_value = datetime(
             2025, 6, 15, 10, 0, 0, tzinfo=timezone.get_current_timezone()
         )
@@ -75,7 +70,6 @@ class ValidateAppointmentTimeUtilTest(TestCase):
 
     @patch("django.utils.timezone.now")
     def test_time_after_end_time(self, mock_now):
-
         mock_now.return_value = datetime(
             2025, 6, 15, 10, 0, 0, tzinfo=timezone.get_current_timezone()
         )
@@ -91,7 +85,6 @@ class ValidateAppointmentTimeUtilTest(TestCase):
         self.assertEqual(len(errors), 1)
 
     def test_no_inventory_settings(self):
-
         test_date = date.today()
         test_time = time(10, 0)
         errors = validate_appointment_time(test_date, test_time, None, [])
@@ -99,7 +92,6 @@ class ValidateAppointmentTimeUtilTest(TestCase):
 
     @patch("django.utils.timezone.now")
     def test_overlap_with_existing_booking(self, mock_now):
-
         mock_now.return_value = datetime(
             2025, 6, 15, 10, 0, 0, tzinfo=timezone.get_current_timezone()
         )
@@ -133,7 +125,6 @@ class ValidateAppointmentTimeUtilTest(TestCase):
 
     @patch("django.utils.timezone.now")
     def test_no_overlap_with_existing_booking(self, mock_now):
-
         mock_now.return_value = datetime(
             2025, 6, 15, 10, 0, 0, tzinfo=timezone.get_current_timezone()
         )
@@ -153,7 +144,6 @@ class ValidateAppointmentTimeUtilTest(TestCase):
 
     @patch("django.utils.timezone.now")
     def test_multiple_overlaps(self, mock_now):
-
         mock_now.return_value = datetime(
             2025, 6, 15, 10, 0, 0, tzinfo=timezone.get_current_timezone()
         )

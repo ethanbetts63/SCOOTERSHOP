@@ -327,10 +327,14 @@ class Step6PaymentView(View):
                 )
 
         except stripe.error.StripeError as e:
-            logger.error(f"Step6 POST: Stripe error on payment intent retrieval. Error: {e}")
+            logger.error(
+                f"Step6 POST: Stripe error on payment intent retrieval. Error: {e}"
+            )
             return JsonResponse({"error": str(e)}, status=500)
         except Exception as e:
-            logger.error(f"Step6 POST: Internal server error during payment processing. Error: {e}")
+            logger.error(
+                f"Step6 POST: Internal server error during payment processing. Error: {e}"
+            )
             return JsonResponse(
                 {
                     "error": "An internal server error occurred during payment processing."

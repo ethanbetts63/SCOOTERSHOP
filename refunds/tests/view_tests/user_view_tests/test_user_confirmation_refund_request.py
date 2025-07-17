@@ -3,14 +3,11 @@ from django.urls import reverse
 
 
 class UserConfirmationRefundRequestViewTests(TestCase):
-
     def setUp(self):
-
         self.client = Client()
         self.confirmation_url = reverse("refunds:user_confirmation_refund_request")
 
     def test_get_request_renders_correctly(self):
-
         response = self.client.get(self.confirmation_url)
 
         self.assertEqual(response.status_code, 200)
@@ -20,7 +17,6 @@ class UserConfirmationRefundRequestViewTests(TestCase):
         )
 
     def test_context_data_is_correct(self):
-
         response = self.client.get(self.confirmation_url)
 
         self.assertIn("page_title", response.context)
@@ -39,7 +35,6 @@ class UserConfirmationRefundRequestViewTests(TestCase):
         )
 
     def test_content_contains_expected_text(self):
-
         response = self.client.get(self.confirmation_url)
 
         content = response.content.decode("utf-8")

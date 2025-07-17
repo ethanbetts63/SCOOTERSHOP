@@ -28,14 +28,18 @@ def search_sales_bookings_ajax(request):
         )
 
         queryset = (
-            SalesBooking.objects.filter(search_query)
-            .distinct()
-            .order_by("-created_at")
+            SalesBooking.objects.filter(search_query).distinct().order_by("-created_at")
         )
 
         for booking in queryset[:20]:
-            customer_name = booking.sales_profile.name if booking.sales_profile else "N/A"
-            motorcycle_info = f"{booking.motorcycle.year} {booking.motorcycle.brand} {booking.motorcycle.model}" if booking.motorcycle else "N/A"
+            customer_name = (
+                booking.sales_profile.name if booking.sales_profile else "N/A"
+            )
+            motorcycle_info = (
+                f"{booking.motorcycle.year} {booking.motorcycle.brand} {booking.motorcycle.model}"
+                if booking.motorcycle
+                else "N/A"
+            )
 
             bookings_data.append(
                 {

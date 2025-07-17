@@ -9,17 +9,19 @@ from inventory.models import (
     InventorySettings,
 )
 from inventory.utils.convert_temp_sales_booking import convert_temp_sales_booking
-from inventory.tests.test_helpers.model_factories import TempSalesBookingFactory, SalesProfileFactory, MotorcycleFactory, InventorySettingsFactory
+from inventory.tests.test_helpers.model_factories import (
+    TempSalesBookingFactory,
+    SalesProfileFactory,
+    MotorcycleFactory,
+    InventorySettingsFactory,
+)
 from payments.tests.test_helpers.model_factories import PaymentFactory
 from refunds.tests.test_helpers.model_factories import RefundSettingsFactory
 
 
-
 class ConvertTempSalesBookingUtilTest(TestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         cls.inventory_settings = InventorySettingsFactory(
             currency_code="USD",
         )
@@ -30,14 +32,12 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         cls.sales_profile = SalesProfileFactory()
 
     def setUp(self):
-
         self.motorcycle.refresh_from_db()
         self.motorcycle.status = "for_sale"
         self.motorcycle.is_available = True
         self.motorcycle.save()
 
     def test_basic_conversion_unpaid(self):
-
         temp_booking = TempSalesBookingFactory(
             motorcycle=self.motorcycle,
             sales_profile=self.sales_profile,
@@ -80,7 +80,6 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         self.assertTrue(self.motorcycle.is_available)
 
     def test_conversion_with_payment_object(self):
-
         payment_obj = PaymentFactory(
             temp_sales_booking=None,
             amount=Decimal("0.00"),
@@ -123,10 +122,7 @@ class ConvertTempSalesBookingUtilTest(TestCase):
 
         self.assertFalse(TempSalesBooking.objects.filter(pk=temp_booking.pk).exists())
 
-    
-
     def test_conversion_no_inventory_settings(self):
-
         InventorySettings.objects.all().delete()
         self.assertFalse(InventorySettings.objects.exists())
 
@@ -146,7 +142,6 @@ class ConvertTempSalesBookingUtilTest(TestCase):
         self.inventory_settings = InventorySettingsFactory(pk=1)
 
     def test_conversion_handles_exception(self):
-
         temp_booking = TempSalesBookingFactory(
             motorcycle=self.motorcycle,
             sales_profile=self.sales_profile,

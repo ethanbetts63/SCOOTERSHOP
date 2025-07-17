@@ -43,7 +43,6 @@ class InventorySettingsForm(forms.ModelForm):
             "deposit_lifespan_days": forms.NumberInput(
                 attrs={"class": "form-control", "min": "0"}
             ),
-
             "enable_sales_new_bikes": forms.CheckboxInput(
                 attrs={"class": "form-check-input"}
             ),

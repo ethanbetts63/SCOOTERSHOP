@@ -59,5 +59,10 @@ class InventoryManagementView(AdminRequiredMixin, ListView):
         motorcycle_id = request.POST.get("motorcycle_id")
         motorcycle = get_object_or_404(Motorcycle, id=motorcycle_id)
         sell_and_notify(motorcycle)
-        messages.success(request, f"{motorcycle.title} has been marked as sold and notifications have been sent.")
-        return redirect(request.META.get("HTTP_REFERER", "inventory:inventory_management"))
+        messages.success(
+            request,
+            f"{motorcycle.title} has been marked as sold and notifications have been sent.",
+        )
+        return redirect(
+            request.META.get("HTTP_REFERER", "inventory:inventory_management")
+        )

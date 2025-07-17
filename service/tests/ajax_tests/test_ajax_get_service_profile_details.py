@@ -13,7 +13,6 @@ from service.ajax.ajax_get_service_profile_details import (
 
 
 class AjaxGetServiceProfileDetailsTest(TestCase):
-
     def setUp(self):
         self.factory = RequestFactory()
         self.user = UserFactory()

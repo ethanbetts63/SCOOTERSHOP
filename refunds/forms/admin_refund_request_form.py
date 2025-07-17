@@ -74,7 +74,7 @@ class AdminRefundRequestForm(forms.ModelForm):
         # If we are editing an existing instance, we need to populate the initial value
         # for our hidden sales_booking field.
         if self.instance and self.instance.pk and self.instance.sales_booking:
-            self.initial['sales_booking'] = self.instance.sales_booking.pk
+            self.initial["sales_booking"] = self.instance.sales_booking.pk
 
     def clean(self):
         cleaned_data = super().clean()
@@ -87,14 +87,18 @@ class AdminRefundRequestForm(forms.ModelForm):
         if sales_booking_id:
             try:
                 sales_booking = SalesBooking.objects.get(pk=sales_booking_id)
-                cleaned_data['sales_booking'] = sales_booking
+                cleaned_data["sales_booking"] = sales_booking
             except SalesBooking.DoesNotExist:
                 self.add_error("sales_booking", "Invalid Sales Booking selected.")
-        
+
         # Validation logic
-        selected_bookings = [b for b in [service_booking, sales_booking] if b is not None]
+        selected_bookings = [
+            b for b in [service_booking, sales_booking] if b is not None
+        ]
         if len(selected_bookings) > 1:
-            raise ValidationError("Please select only one type of booking (Service, or Sales).")
+            raise ValidationError(
+                "Please select only one type of booking (Service, or Sales)."
+            )
         if not selected_bookings:
             raise ValidationError("Please select a Service or Sales Booking.")
 
@@ -110,7 +114,10 @@ class AdminRefundRequestForm(forms.ModelForm):
 
         if service_booking:
             if not service_booking.payment:
-                self.add_error("service_booking", "Selected Service Booking does not have an associated payment record.")
+                self.add_error(
+                    "service_booking",
+                    "Selected Service Booking does not have an associated payment record.",
+                )
                 return cleaned_data
             self.instance.payment = service_booking.payment
             self.instance.service_booking = service_booking
@@ -119,7 +126,10 @@ class AdminRefundRequestForm(forms.ModelForm):
 
         elif sales_booking:
             if not sales_booking.payment:
-                self.add_error("sales_booking", "Selected Sales Booking does not have an associated payment record.")
+                self.add_error(
+                    "sales_booking",
+                    "Selected Sales Booking does not have an associated payment record.",
+                )
                 return cleaned_data
             self.instance.payment = sales_booking.payment
             self.instance.sales_booking = sales_booking
@@ -128,7 +138,9 @@ class AdminRefundRequestForm(forms.ModelForm):
 
         if selected_booking and amount_to_refund is not None:
             if amount_to_refund < 0:
-                self.add_error("amount_to_refund", "Amount to refund cannot be a negative value.")
+                self.add_error(
+                    "amount_to_refund", "Amount to refund cannot be a negative value."
+                )
             elif amount_to_refund > max_refund_amount:
                 self.add_error(
                     "amount_to_refund",

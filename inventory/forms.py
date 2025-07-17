@@ -46,21 +46,18 @@ class MotorcycleForm(forms.ModelForm):
         self.fields["transmission"].required = False
 
     def clean_brand(self):
-
         brand = self.cleaned_data.get("brand")
         if not brand:
             raise forms.ValidationError("Brand is required.")
         return brand.capitalize()
 
     def clean_model(self):
-
         model = self.cleaned_data.get("model")
         if not model:
             raise forms.ValidationError("Model is required.")
         return model.capitalize()
 
     def clean_year(self):
-
         year = self.cleaned_data.get("year")
         if not year:
             raise forms.ValidationError("Year is required.")
@@ -73,7 +70,6 @@ class MotorcycleForm(forms.ModelForm):
         return year
 
     def clean_engine_size(self):
-
         engine_size = self.cleaned_data.get("engine_size")
         if engine_size is None:
             raise forms.ValidationError("Engine size is required.")
@@ -82,7 +78,6 @@ class MotorcycleForm(forms.ModelForm):
         return engine_size
 
     def clean_odometer(self):
-
         odometer = self.cleaned_data.get("odometer")
 
         if odometer is not None and odometer < 0:
@@ -90,7 +85,6 @@ class MotorcycleForm(forms.ModelForm):
         return odometer
 
     def clean_rego(self):
-
         if self.cleaned_data.get("rego"):
             return self.cleaned_data["rego"].upper()
         return self.cleaned_data.get("rego")

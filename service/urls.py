@@ -103,7 +103,6 @@ urlpatterns = [
         admin_views.ServiceBookingActionView.as_view(),
         name="admin_service_booking_action",
     ),
-
     # Admin - Settings & Configuration
     path(
         "service-settings/",
@@ -185,7 +184,6 @@ urlpatterns = [
         admin_views.ServicefaqDeleteView.as_view(),
         name="service_faq_delete",
     ),
-
     # Admin - Profile & Motorcycle Management
     path(
         "admin/service-profiles/",
@@ -227,7 +225,6 @@ urlpatterns = [
         admin_views.CustomerMotorcycleDeleteView.as_view(),
         name="admin_delete_customer_motorcycle",
     ),
-
     # Admin - AJAX APIs
     path(
         "admin/api/search-customer/",
