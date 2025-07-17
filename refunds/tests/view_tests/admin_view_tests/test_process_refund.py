@@ -5,13 +5,11 @@ from django.conf import settings
 from unittest.mock import patch, MagicMock
 from decimal import Decimal
 
-from payments.tests.test_helpers.model_factories import (
-    RefundRequestFactory,
-    ServiceBookingFactory,
-    SalesBookingFactory,
-    PaymentFactory,
-    UserFactory,
-)
+from refunds.tests.test_helpers.model_factories import RefundRequestFactory
+from service.tests.test_helpers.model_factories import ServiceBookingFactory
+from inventory.tests.test_helpers.model_factories import SalesBookingFactory
+from payments.tests.test_helpers.model_factories import PaymentFactory
+from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
 
 settings.STRIPE_SECRET_KEY = "sk_test_dummykey"
 
@@ -20,13 +18,13 @@ class ProcessRefundViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
-        cls.admin_user = UserFactory(is_staff=True, is_superuser=True)
+        cls.admin_user = SuperUserFactory()
         cls.regular_user = UserFactory(is_staff=False, is_superuser=False)
 
     def setUp(self):
         self.client.force_login(self.admin_user)
 
-    @patch("payments.views.Refunds.process_refund.stripe.Refund.create")
+    @patch("refunds.views.admin_views.process_refund.stripe.Refund.create")
     def test_successful_service_booking_refund(self, mock_stripe_refund_create):
         mock_stripe_refund_create.return_value = MagicMock(
             id="re_mockedservice456", status="succeeded"
@@ -56,7 +54,7 @@ class ProcessRefundViewTests(TestCase):
         self.assertEqual(refund_request.status, "approved")
         self.assertEqual(refund_request.stripe_refund_id, "re_mockedservice456")
 
-    @patch("payments.views.Refunds.process_refund.stripe.Refund.create")
+    @patch("refunds.views.admin_views.process_refund.stripe.Refund.create")
     def test_successful_sales_booking_refund(self, mock_stripe_refund_create):
         mock_stripe_refund_create.return_value = MagicMock(
             id="re_mockedsales789", status="succeeded"
@@ -125,7 +123,7 @@ class ProcessRefundViewTests(TestCase):
         messages_list = list(messages.get_messages(response.wsgi_request))
         self.assertIn("no Stripe Payment Intent ID", str(messages_list[0]))
 
-    @patch("payments.views.Refunds.process_refund.stripe.Refund.create")
+    @patch("refunds.views.admin_views.process_refund.stripe.Refund.create")
     def test_generic_exception_during_refund_creation(self, mock_stripe_refund_create):
         mock_stripe_refund_create.side_effect = ValueError(
             "Something went wrong internally"

@@ -42,6 +42,7 @@ class SettingsBusinessInfoViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 302)  # Redirect on success
         updated_settings = SiteSettings.get_settings()
+        updated_settings.refresh_from_db()
         self.assertEqual(updated_settings.phone_number, "1111111111")
 
     def test_settings_business_info_view_post_invalid(self):

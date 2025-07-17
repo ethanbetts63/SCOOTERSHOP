@@ -6,7 +6,6 @@ from users.tests.test_helpers.model_factories import (
 )
 from dashboard.tests.test_helpers.model_factories import SiteSettingsFactory
 
-
 class SettingsVisibilityViewTest(TestCase):
     def setUp(self):
         self.client = Client()
@@ -34,7 +33,7 @@ class SettingsVisibilityViewTest(TestCase):
         response = self.client.post(
             reverse("dashboard:settings_visibility"), data=form_data
         )
-        self.assertEqual(response.status_code, 302)  # Redirect on success
+        self.assertEqual(response.status_code, 302)
         updated_settings = SiteSettings.get_settings()
         self.assertFalse(updated_settings.enable_service_booking)
 
@@ -42,7 +41,7 @@ class SettingsVisibilityViewTest(TestCase):
         self.client.login(username=self.staff_user.username, password="testpassword")
         form_data = {
             "enable_service_booking": "not-a-boolean"
-        }  # This will be treated as True by the form
+        }  
         response = self.client.post(
             reverse("dashboard:settings_visibility"), data=form_data
         )
