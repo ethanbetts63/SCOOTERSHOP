@@ -4,17 +4,41 @@
 Service Booking Update
 {% endblock %}
 
+{% block header_title %}
+Service Booking Declined
+{% endblock %}
+
 {% block content %}
-<h1>Update Regarding Your Service Booking</h1>
-<p>Dear {{ booking.service_profile.name }},</p>
-<p>We regret to inform you that your service booking with reference <strong>{{ booking.service_booking_reference }}</strong> has been declined.</p>
-{% if admin_message %}
-<p><strong>Message from Admin:</strong> {{ admin_message }}</p>
-{% endif %}
-{% if refund_request_pending %}
-<p>A refund for the amount of {{ refund_amount_requested }} is being processed and will be returned to your original payment method shortly.</p>
-{% endif %}
-<p>If you have any questions, please do not hesitate to contact us.</p>
-<p>Best regards,</p>
-<p>{{ site_settings.site_name }} Team</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">Dear {{ booking.service_profile.name }},</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">We regret to inform you that your service booking with reference <strong>{{ booking.service_booking_reference }}</strong> has been declined.</p>
+
+<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" style="margin-top: 20px; margin-bottom: 20px;">
+    <tr>
+        <td>
+            <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 540px; border-radius: 8px; background-color: #374151;">
+                <tr>
+                    <td style="padding: 20px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation">
+                            {% if admin_message %}
+                            <tr>
+                                <td valign="top" style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Message from Admin:</td>
+                                <td valign="top" style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ admin_message }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if refund_request_pending %}
+                            <tr>
+                                <td valign="top" style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Refund Information:</td>
+                                <td valign="top" style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">A refund for the amount of {{ refund_amount_requested }} is being processed and will be returned to your original payment method shortly.</td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-top: 24px;">If you have any questions, please do not hesitate to contact us.</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB;">Best regards,<br>{{ site_settings.site_name }} Team</p>
 {% endblock %}

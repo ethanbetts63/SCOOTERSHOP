@@ -1,24 +1,24 @@
-
 {% extends 'email_layout.html' %}
 
 {% block title %}
 Your Refund Request Was Not Verified
 {% endblock %}
 
+{% block header_title %}
+Refund Request Expired
+{% endblock %}
+
 {% block content %}
-<p>Hi {% if refund_request.driver_profile and refund_request.driver_profile.name %}{{ refund_request.driver_profile.name }}{% elif refund_request.service_profile and refund_request.service_profile.name %}{{ refund_request.service_profile.name }}{% else %}customer name VARIABLE DID NOT LOAD{% endif %},</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">Hi {% if refund_request.driver_profile and refund_request.driver_profile.name %}{{ refund_request.driver_profile.name }}{% elif refund_request.service_profile and refund_request.service_profile.name %}{{ refund_request.service_profile.name }}{% else %}Customer{% endif %},</p>
 
-<p>This is an automated notification regarding your recent refund request for booking <strong>{% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}</strong>.</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">This is an automated notification regarding your refund request for booking <strong>{% if booking_reference %}{{ booking_reference }}{% else %}(booking_reference missing){% endif %}</strong>.</p>
 
-<div class="highlight">
-    <p>We regret to inform you that your refund request was not verified within the required 24-hour time window. As a result, this request will not be processed further and has been automatically removed from our system.</p>
-</div>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">We regret to inform you that your refund request was not verified within the required 24-hour time window. As a result, this request will not be processed further and has been automatically removed from our system.</p>
 
-<p>If you still wish to request a refund, please submit a new refund request through our website. You will then receive an automated email requiring verification to ensure the request's legitimacy. Please ensure you complete this verification step within 24 hours of submitting the new request.</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-top: 24px;">If you still wish to request a refund, please submit a new refund request through our website. You will then receive an automated email requiring verification to ensure the request's legitimacy. Please ensure you complete this verification step within 24 hours of submitting the new request.</p>
 
-<p>If you have any questions, please do not hesitate to contact us at <a href="mailto:{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}">{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}</a>.</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-top: 24px;">If you have any questions, please do not hesitate to contact us at <a href="mailto:{% if admin_email %}{{ admin_email }}{% else %}#{% endif %}" style="color: #34D399; text-decoration: underline;">{% if admin_email %}{{ admin_email }}{% else %}(email missing){% endif %}</a>.</p>
 
-<p>Thank you for your understanding.</p>
-<p>Sincerely,</p>
-<p>The Scootershop Team</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-top: 24px;">Thank you for your understanding.</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB;">Sincerely,<br>The Allbikes and Vespa Warehouse Team</p>
 {% endblock %}

@@ -1,58 +1,78 @@
-
 {% extends "email_layout.html" %}
-{% load static %}
 
 {% block title %}Stripe Refund Processed{% endblock %}
 
+{% block header_title %}Stripe Refund Processed{% endblock %}
+
 {% block content %}
-    <div class="container">
-        <div class="header">
-            <img src="{% static 'images/logo_scootershop_tight_crop.png' %}" alt="Scootershop Logo">
-            <h2>Stripe Refund Processed</h2>
-        </div>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">Hi Admin,</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">A Stripe refund has been successfully processed for booking <strong>{{ booking_reference | default:'(missing)' }}</strong>.</p>
 
-        <div class="content">
-            <p>Hi Admin,</p>
+<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" style="margin-top: 20px; margin-bottom: 20px;">
+    <tr>
+        <td>
+            <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 540px; border-radius: 8px; background-color: #374151;">
+                <tr>
+                    <td style="padding: 20px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation">
+                             <tr>
+                                <td colspan="2" style="padding-bottom: 10px; font-family: Arial, sans-serif; font-size: 18px; color: #F9FAFB; font-weight: bold; border-bottom: 1px solid #4B5563;">Refund Details</td>
+                            </tr>
+                            <tr>
+                                <td width="40%" style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Booking Reference:</td>
+                                <td width="60%" style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ booking_reference | default:'(missing)' }}</td>
+                            </tr>
+                             <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Refund Amount:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ refunded_amount | default:'(missing)' }} AUD</td>
+                            </tr>
+                            {% if stripe_refund_id %}
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Stripe Refund ID:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ stripe_refund_id }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Payment ID:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ payment_id | default:'(missing)' }}</td>
+                            </tr>
+                             <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Payment Intent ID:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ payment_intent_id | default:'(missing)' }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Final Status:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ status | default:'(missing)' }}</td>
+                            </tr>
+                            {% if refund_request %}
+                            <tr>
+                                <td colspan="2" style="padding-top: 20px; padding-bottom: 10px; font-family: Arial, sans-serif; font-size: 18px; color: #F9FAFB; font-weight: bold; border-bottom: 1px solid #4B5563;">Original Request Details</td>
+                            </tr>
+                             <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Request ID:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ refund_request.pk | default:'(missing)' }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Request Status:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ refund_request.get_status_display | default:'(missing)' }}</td>
+                            </tr>
+                             <tr>
+                                <td valign="top" style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">User Reason:</td>
+                                <td valign="top" style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ refund_request_reason | default:'(none)'}}</td>
+                            </tr>
+                            <tr>
+                                <td valign="top" style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Staff Notes:</td>
+                                <td valign="top" style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ refund_request_staff_notes | default:'(none)' }}</td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
 
-            <p>A Stripe refund has been successfully processed for booking <strong>{% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}</strong>.</p>
-
-            <div class="info">
-                <p><strong>Booking Reference:</strong> {% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}</p>
-                <p><strong>Refund Amount:</strong> {% if refunded_amount %}{{ refunded_amount }}{% else %}refunded_amount VARIABLE DID NOT LOAD{% endif %} AUD</p>
-                {% if stripe_refund_id %}
-                <p><strong>Stripe Refund ID:</strong> {{ stripe_refund_id }}</p>
-                {% endif %}
-                <p><strong>Payment ID:</strong> {% if payment_id %}{{ payment_id }}{% else %}payment_id VARIABLE DID NOT LOAD{% endif %}</p>
-                <p><strong>Payment Intent ID:</strong> {% if payment_intent_id %}{{ payment_intent_id }}{% else %}payment_intent_id VARIABLE DID NOT LOAD{% endif %}</p>
-                {% if refund_request %}
-                <p><strong>Refund Request ID:</strong> {% if refund_request.pk %}{{ refund_request.pk }}{% else %}refund_request.pk VARIABLE DID NOT LOAD{% endif %}</p>
-                <p><strong>Refund Request Status:</strong> {% if refund_request.get_status_display %}{{ refund_request.get_status_display }}{% else %}refund_request.get_status_display VARIABLE DID NOT LOAD{% endif %}</p>
-                <p><strong>Refund Initiated By Admin:</strong> {% if refund_request.is_admin_initiated %}Yes{% else %}No{% endif %}</p>
-                {% endif %}
-                <p><strong>Final Refund Status:</strong> {% if status %}{{ status }}{% else %}status VARIABLE DID NOT LOAD{% endif %}</p>
-                <p><strong>Event Type:</strong> {% if event_type %}{{ event_type }}{% else %}event_type VARIABLE DID NOT LOAD{% endif %}</p>
-            </div>
-
-            
-            {% if refund_request_reason %}
-            <div class="section-title">Refund Request Reason</div>
-            <p style="white-space: pre-wrap;">{{ refund_request_reason }}</p>
-            {% endif %}
-
-            {% if refund_request_staff_notes %}
-            <div class="section-title">Internal Staff Notes</div>
-            <p style="white-space: pre-wrap;">{{ refund_request_staff_notes }}</p>
-            {% endif %}
-
-            <p>Please check the details in the dashboard if needed.</p>
-
-            <p>Sincerely,</p>
-            <p>The Scootershop System</p>
-        </div>
-
-        <div class="footer">
-            <p>This is an automated notification.</p>
-            <p>&copy; {% now "Y" %} Scootershop Australia. All rights reserved.</p>
-        </div>
-    </div>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-top: 24px;">Please check the dashboard for more details if needed.</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB;">Sincerely,<br>The System</p>
 {% endblock %}

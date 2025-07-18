@@ -1,109 +1,90 @@
 {% extends 'email_layout.html' %}
 
 {% block title %}
-Your Sales Booking Is Not Confirmed
+Your Sales Booking Is Not Yet Confirmed
+{% endblock %}
+
+{% block header_title %}
+Sales Booking Received
 {% endblock %}
 
 {% block content %}
-<p>Hi {% if sales_profile and sales_profile.name %}{{ sales_profile.name }}{% else %}there (sales_profile.name DID NOT LOAD){% endif %},</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">Hi {% if sales_profile and sales_profile.name %}{{ sales_profile.name }}{% else %}Customer{% endif %},</p>
 {% if is_deposit_confirmed %}
-<p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">
     Your deposit has been confirmed! 
     {% if booking.motorcycle.brand and booking.motorcycle.model %}
-        The bike ({{ booking.motorcycle.brand }} {{ booking.motorcycle.model }})
-        will be displayed as reserved on our website and will be reserved for you until your deposit expires or the sale is completed.
-    {% else %}
-        motorcycle.brand or motorcycle.model VARIABLE DID NOT LOAD
+        The bike ({{ booking.motorcycle.brand }} {{ booking.motorcycle.model }}) will be displayed as reserved on our website and will be held for you until your deposit expires or the sale is completed.
     {% endif %}
 </p>
 {% else %}
-<p>Thank you for your sales enquiry regarding the motorcycle. We have received your request.</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">Thank you for your sales enquiry regarding the motorcycle. We have received your request and will be in touch shortly.</p>
 {% endif %}
 
 {% if booking.appointment_date and booking.appointment_time %}
-<p>Your requested appointment date is <strong>{{ booking.appointment_date|date:"D, M d, Y" }} at {{ booking.appointment_time|time:"P" }}</strong>. Please note that this appointment is not yet confirmed.</p>
-<p>IMPORTANT: You will receive a separate confirmation email after our admin team has reviewed your booking details and confirmed the appointment. </p>
-{% else %}
-<p>Our admin team will get back to you as soon as possible to discuss your enquiry further and confirm and appointments. (booking.appointment_date or booking.appointment_time DID NOT LOAD)</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">Your requested appointment date is <strong>{{ booking.appointment_date|date:"D, M d, Y" }} at {{ booking.appointment_time|time:"P" }}</strong>. Please note that this appointment is not yet confirmed.</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;"><strong>Important:</strong> You will receive a separate confirmation email after our admin team has reviewed your booking details and confirmed the appointment.</p>
 {% endif %}
 
-<h2>Booking Details</h2>
-<table>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 16px;">Booking Details:</p>
+<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" style="margin-top: 20px; margin-bottom: 20px;">
     <tr>
-        <th>Booking Reference:</th>
-        <td><strong>{% if booking.sales_booking_reference %}{{ booking.sales_booking_reference }}{% else %}booking.sales_booking_reference VARIABLE DID NOT LOAD{% endif %}</strong></td>
-    </tr>
-    {% if booking.motorcycle %}
-    <tr>
-        <th>Motorcycle:</th>
         <td>
-            {% if booking.motorcycle.year %}{{ booking.motorcycle.year }}{% else %}year DID NOT LOAD, {% endif %}
-            {% if booking.motorcycle.brand %}{{ booking.motorcycle.brand }}{% else %}brand DID NOT LOAD, {% endif %}
-            {% if booking.motorcycle.model %}{{ booking.motorcycle.model }}{% else %}model DID NOT LOAD{% endif %}
+            <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 540px; border-radius: 8px; background-color: #374151;">
+                <tr>
+                    <td style="padding: 20px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation">
+                            <tr>
+                                <td width="40%" style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Booking Reference:</td>
+                                <td width="60%" style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;"><strong>{% if booking.sales_booking_reference %}{{ booking.sales_booking_reference }}{% else %}(missing){% endif %}</strong></td>
+                            </tr>
+                            {% if booking.motorcycle %}
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Motorcycle:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{% if booking.motorcycle.year %}{{ booking.motorcycle.year }}{% endif %} {% if booking.motorcycle.brand %}{{ booking.motorcycle.brand }}{% endif %} {% if booking.motorcycle.model %}{{ booking.motorcycle.model }}{% endif %}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Motorcycle Price:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{% if booking.motorcycle.price %}{{ booking.motorcycle.price|floatformat:2 }}{% endif %} {% if booking.currency %}{{ booking.currency }}{% endif %}</td>
+                            </tr>
+                            {% endif %}
+                            {% if booking.appointment_date %}
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Requested Date:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ booking.appointment_date|date:"D, M d, Y" }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Requested Time:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ booking.appointment_time|time:"P" }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if booking.amount_paid > 0 %}
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Amount Paid:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ booking.amount_paid|floatformat:2 }} {{ booking.currency }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Payment Status:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ booking.get_payment_status_display }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if booking.customer_notes %}
+                            <tr>
+                                <td valign="top" style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Your Notes:</td>
+                                <td valign="top" style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ booking.customer_notes }}</td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </td>
+                </tr>
+            </table>
         </td>
     </tr>
-    <tr>
-        <th>Motorcycle Price:</th>
-        <td>
-            {% if booking.motorcycle.price %}{{ booking.motorcycle.price|floatformat:2 }}{% else %}price DID NOT LOAD {% endif %}
-            {% if booking.currency %}{{ booking.currency }}{% else %}currency DID NOT LOAD{% endif %}
-        </td>
-    </tr>
-    {% else %}
-    <tr><td colspan="2">booking.motorcycle VARIABLE DID NOT LOAD</td></tr>
-    {% endif %}
-    
-    {% if booking.appointment_date %}
-    <tr>
-        <th>Requested Appointment Date:</th>
-        <td>{{ booking.appointment_date|date:"D, M d, Y" }}</td>
-    </tr>
-    <tr>
-        <th>Requested Appointment Time:</th>
-        <td>{{ booking.appointment_time|time:"P" }}</td>
-    </tr>
-    <tr>
-        <th>Request Type:</th>
-        <td>Viewing Enquiry</td>
-    </tr>
-    {% endif %}
-
-    {% if booking.amount_paid > 0 %}
-    <tr>
-        <th>Amount Paid:</th>
-        <td>
-            {{ booking.amount_paid|floatformat:2 }} {{ booking.currency }}
-        </td>
-    </tr>
-    <tr>
-        <th>Payment Status:</th>
-        <td>{{ booking.get_payment_status_display }}</td>
-    </tr>
-    {% endif %}
-    
-    {% if booking.customer_notes %}
-    <tr>
-        <th>Your Notes:</th>
-        <td>{{ booking.customer_notes }}</td>
-    </tr>
-    {% else %}
-    <tr>
-        <th>Your Notes:</th>
-        <td>(booking.customer_notes DID NOT LOAD OR NO NOTES PROVIDED)</td>
-    </tr>
-    {% endif %}
 </table>
 
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-top: 24px;">Best regards,<br>The Allbikes and Vespa Warehouse Team</p>
+
 {% if site_settings.enable_refunds and booking.amount_paid > 0 %}
-<div style="text-align: center; margin-top: 20px; border-top: 1px solid #dddddd; padding-top: 20px;">
-    <p>Need to request a refund for your deposit? <a href="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{% url 'refunds:user_refund_request' %}?booking_reference={{ booking.sales_booking_reference }}">Click here to submit a request</a>.</p>
-</div>
+<p style="font-family: Arial, sans-serif; font-size: 14px; line-height: 20px; color: #9CA3AF; margin-top: 24px; text-align: center;">Need to request a refund for your deposit? <a href="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{% url 'refunds:user_refund_request' %}?booking_reference={{ booking.sales_booking_reference }}" style="color: #34D399;">Click here to submit a request</a>.</p>
 {% endif %}
-
-<p>Best regards,</p>
-<p>The SCOOTER_SHOP Team</p>
-
-<p style="text-align: center;">
-    <a href="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{% url 'core:index' %}" class="button">Visit Our Website</a>
-</p>
 {% endblock %}

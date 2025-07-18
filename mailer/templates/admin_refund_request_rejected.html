@@ -1,113 +1,71 @@
-
 {% extends "email_layout.html" %}
 {% load static %}
 
 {% block title %}Refund Request Rejected Notification{% endblock %}
 
+{% block header_title %}Refund Request Rejected{% endblock %}
+
 {% block content %}
-    <div class="container">
-        <div class="header">
-            <img src="{% static 'images/logo_scootershop_tight_crop.png' %}" alt="Scootershop Logo">
-            <h2>Refund Request Rejected</h2>
-        </div>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">Dear Administrator,</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">This is to confirm that the refund request for booking <strong>{% if refund_request.service_booking %}{{ refund_request.service_booking.service_booking_reference }}{% elif refund_request.sales_booking %}{{ refund_request.sales_booking.sales_booking_reference }}{% else %}(missing){% endif %}</strong> has been marked as rejected.</p>
 
-        <div class="content">
-            <p>Dear Administrator,</p>
-            <p>This is to confirm that the refund request for booking <strong>
-                {% if refund_request.service_booking %}{{ refund_request.service_booking.service_booking_reference }}{% elif refund_request.sales_booking %}{{ refund_request.sales_booking.sales_booking_reference }}{% else %}booking reference VARIABLE DID NOT LOAD{% endif %}
-            </strong> has been marked as rejected.</p>
+<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" style="margin-top: 20px; margin-bottom: 20px;">
+    <tr>
+        <td>
+            <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 540px; border-radius: 8px; background-color: #374151;">
+                <tr>
+                    <td style="padding: 20px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation">
+                            <!-- Rejection Details -->
+                            <tr><td colspan="2" style="padding-bottom: 10px; font-family: Arial, sans-serif; font-size: 18px; color: #F9FAFB; font-weight: bold; border-bottom: 1px solid #4B5563;">Rejection Details</td></tr>
+                            <tr>
+                                <td width="40%" style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Request ID:</td>
+                                <td width="60%" style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ refund_request.pk | default:'(missing)' }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Booking Ref:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{% if refund_request.service_booking %}{{ refund_request.service_booking.service_booking_reference }}{% elif refund_request.sales_booking %}{{ refund_request.sales_booking.sales_booking_reference }}{% else %}(missing){% endif %}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Processed By:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ refund_request.processed_by.get_full_name|default:refund_request.processed_by.username }}</td>
+                            </tr>
+                             <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Processed At:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ refund_request.processed_at|date:"D, d M Y H:i" }}</td>
+                            </tr>
+                            
+                            <!-- Booking Details -->
+                            <tr><td colspan="2" style="padding-top: 20px; padding-bottom: 10px; font-family: Arial, sans-serif; font-size: 18px; color: #F9FAFB; font-weight: bold; border-bottom: 1px solid #4B5563;">Booking Details</td></tr>
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Motorcycle:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{% if refund_request.service_booking %}{{ refund_request.service_booking.customer_motorcycle.name|default:'(missing)' }}{% elif refund_request.sales_booking %}{{ refund_request.sales_booking.motorcycle.name|default:'(missing)' }}{% endif %}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Original Paid:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ refund_request.payment.amount|floatformat:2 }} {{ refund_request.payment.currency }}</td>
+                            </tr>
 
-            <div class="highlight">
-                <strong>Refund Request ID:</strong> {% if refund_request.pk %}{{ refund_request.pk }}{% else %}refund_request.pk VARIABLE DID NOT LOAD{% endif %}<br>
-                <strong>Booking Reference:</strong> 
-                {% if refund_request.service_booking %}{{ refund_request.service_booking.service_booking_reference }}{% elif refund_request.sales_booking %}{{ refund_request.sales_booking.sales_booking_reference }}{% else %}booking reference VARIABLE DID NOT LOAD{% endif %}<br>
-                <strong>Processed By:</strong> {% if refund_request.processed_by %}{{ refund_request.processed_by.get_full_name|default:refund_request.processed_by.username }}{% else %}refund_request.processed_by VARIABLE DID NOT LOAD{% endif %}<br>
-                <strong>Processed At:</strong> {% if refund_request.processed_at %}{{ refund_request.processed_at|date:"D, d M Y H:i" }}{% else %}refund_request.processed_at VARIABLE DID NOT LOAD{% endif %}
-            </div>
-
-            <h3>Booking Details:</h3>
-            <table class="details-table">
-                {% if refund_request.service_booking %}
-                <tr>
-                    <th>Motorcycle:</th>
-                    <td>{% if refund_request.service_booking.customer_motorcycle.name %}{{ refund_request.service_booking.customer_motorcycle.name }}{% else %}motorcycle name VARIABLE DID NOT LOAD{% endif %}</td>
-                </tr>
-                <tr>
-                    <th>Service Date:</th>
-                    <td>{% if refund_request.service_booking.service_date %}{{ refund_request.service_booking.service_date|date:"D, d M Y" }}{% else %}service_date VARIABLE DID NOT LOAD{% endif %}</td>
-                </tr>
-                <tr>
-                    <th>Drop-off:</th>
-                    <td>{% if refund_request.service_booking.dropoff_date %}{{ refund_request.service_booking.dropoff_date|date:"D, d M Y" }}{% else %}dropoff_date VARIABLE DID NOT LOAD{% endif %} at {% if refund_request.service_booking.dropoff_time %}{{ refund_request.service_booking.dropoff_time|time:"H:i" }}{% else %}dropoff_time VARIABLE DID NOT LOAD{% endif %}</td>
-                </tr>
-                <tr>
-                    <th>Original Total Paid:</th>
-                    <td>{% if refund_request.payment.amount %}{{ refund_request.payment.amount|floatformat:2 }}{% else %}payment amount VARIABLE DID NOT LOAD{% endif %} {% if refund_request.payment.currency %}{{ refund_request.payment.currency }}{% else %}currency VARIABLE DID NOT LOAD{% endif %}</td>
-                </tr>
-                <tr>
-                    <th>Current Booking Status:</th>
-                    <td>{% if refund_request.service_booking.get_status_display %}{{ refund_request.service_booking.get_status_display }}{% else %}booking status VARIABLE DID NOT LOAD{% endif %}</td>
-                </tr>
-                <tr>
-                    <th>Current Payment Status:</th>
-                    <td>{% if refund_request.service_booking.get_payment_status_display %}{{ refund_request.service_booking.get_payment_status_display }}{% else %}payment status VARIABLE DID NOT LOAD{% endif %}</td>
-                </tr>
-                {% elif refund_request.sales_booking %}
-                <tr>
-                    <th>Motorcycle:</th>
-                    <td>{% if refund_request.sales_booking.motorcycle.name %}{{ refund_request.sales_booking.motorcycle.name }}{% else %}motorcycle name VARIABLE DID NOT LOAD{% endif %}</td>
-                </tr>
-                <tr>
-                    <th>Appointment Date:</th>
-                    <td>{% if refund_request.sales_booking.appointment_date %}{{ refund_request.sales_booking.appointment_date|date:"D, d M Y" }}{% else %}appointment_date VARIABLE DID NOT LOAD{% endif %}</td>
-                </tr>
-                <tr>
-                    <th>Appointment Time:</th>
-                    <td>{% if refund_request.sales_booking.appointment_time %}{{ refund_request.sales_booking.appointment_time|time:"H:i" }}{% else %}appointment_time VARIABLE DID NOT LOAD{% endif %}</td>
-                </tr>
-                <tr>
-                    <th>Original Total Paid:</th>
-                    <td>{% if refund_request.payment.amount %}{{ refund_request.payment.amount|floatformat:2 }}{% else %}payment amount VARIABLE DID NOT LOAD{% endif %} {% if refund_request.payment.currency %}{{ refund_request.payment.currency }}{% else %}currency VARIABLE DID NOT LOAD{% endif %}</td>
-                </tr>
-                <tr>
-                    <th>Current Booking Status:</th>
-                    <td>{% if refund_request.sales_booking.get_booking_status_display %}{{ refund_request.sales_booking.get_booking_status_display }}{% else %}booking status VARIABLE DID NOT LOAD{% endif %}</td>
-                </tr>
-                <tr>
-                    <th>Current Payment Status:</th>
-                    <td>{% if refund_request.sales_booking.get_payment_status_display %}{{ refund_request.sales_booking.get_payment_status_display }}{% else %}payment status VARIABLE DID NOT LOAD{% endif %}</td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="2">No booking details available.</td>
-                </tr>
-                {% endif %}
-            </table>
-
-            <h3>Refund Request Details:</h3>
-            <table class="details-table">
-                <tr>
-                    <th>Reason Provided by User:</th>
-                    <td>{% if refund_request.reason %}{{ refund_request.reason }}{% else %}reason VARIABLE DID NOT LOAD{% endif %}</td>
-                </tr>
-                <tr>
-                    <th>Staff Notes:</th>
-                    <td>{% if refund_request.staff_notes %}{{ refund_request.staff_notes }}{% else %}staff_notes VARIABLE DID NOT LOAD{% endif %}</td>
-                </tr>
-                <tr>
-                    <th>Rejection Reason:</th>
-                    <td>{% if refund_request.rejection_reason %}{{ refund_request.rejection_reason }}{% else %}rejection_reason VARIABLE DID NOT LOAD{% endif %}</td>
+                            <!-- Request Details -->
+                            <tr><td colspan="2" style="padding-top: 20px; padding-bottom: 10px; font-family: Arial, sans-serif; font-size: 18px; color: #F9FAFB; font-weight: bold; border-bottom: 1px solid #4B5563;">Request Details</td></tr>
+                            <tr>
+                                <td valign="top" style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">User Reason:</td>
+                                <td valign="top" style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ refund_request.reason | default:'(none)' }}</td>
+                            </tr>
+                            <tr>
+                                <td valign="top" style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Staff Notes:</td>
+                                <td valign="top" style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ refund_request.staff_notes | default:'(none)' }}</td>
+                            </tr>
+                            <tr>
+                                <td valign="top" style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Rejection Reason:</td>
+                                <td valign="top" style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ refund_request.rejection_reason | default:'(none)' }}</td>
+                            </tr>
+                        </table>
+                    </td>
                 </tr>
             </table>
-
-            
-
-            <p>Thank you,</p>
-            <p>Scootershop Automated System</p>
-        </div>
-
-        <div class="footer">
-            <p>This is an automated notification. Please do not reply directly to this email.</p>
-        </div>
-    </div>
+        </td>
+    </tr>
+</table>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-top: 24px;">Thank you,<br>System</p>
 {% endblock %}

@@ -1,54 +1,54 @@
-
 {% extends "email_layout.html" %}
-{% load static %}
 
-{% block title %}Your Enquiry Has Been Received{% endblock %}
+{% block title %}ADMIN: New General Enquiry Received{% endblock %}
+
+{% block header_title %}New General Enquiry{% endblock %}
 
 {% block content %}
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-        <tr>
-            <td style="padding: 20px 0; text-align: center;">
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="container">
-                    <tr>
-                        <td class="header">
-                            <h1>Enquiry Received</h1>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="content">
-                            <p>Hi {% if enquiry.name %}{{ enquiry.name }}{% else %}enquiry.name VARIABLE DID NOT LOAD{% endif %},</p>
-                            <p>Thank you for your enquiry. We have received your message and will get back to you shortly.</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">Dear Administrator,</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">A new general enquiry has been submitted through the website contact form. Please find the details below:</p>
 
+<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" style="margin-top: 20px; margin-bottom: 20px;">
+    <tr>
+        <td>
+            <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 540px; border-radius: 8px; background-color: #374151;">
+                <tr>
+                    <td style="padding: 20px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation">
+                            <tr>
+                                <td colspan="2" style="padding-bottom: 10px; font-family: Arial, sans-serif; font-size: 18px; color: #F9FAFB; font-weight: bold; border-bottom: 1px solid #4B5563;">Enquiry Details</td>
+                            </tr>
+                            <tr>
+                                <td width="40%" style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Name:</td>
+                                <td width="60%" style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ enquiry.name | default:'(missing)' }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Email:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ enquiry.email | default:'(missing)' }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Phone:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ enquiry.phone_number | default:'(missing)' }}</td>
+                            </tr>
                             {% if enquiry.motorcycle %}
-                            <div class="message-box">
-                                <p><strong>Regarding Motorcycle:</strong></p>
-                                <p>{{ enquiry.motorcycle }}</p>
-                            </div>
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Motorcycle:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ enquiry.motorcycle }}</td>
+                            </tr>
                             {% endif %}
-
-                            {% if enquiry.message %}
-                            <div class="message-box">
-                                <p><strong>Your Message:</strong></p>
-                                <p><em>{{ enquiry.message }}</em></p>
-                            </div>
-                            {% endif %}
-                            
-                            <p>Best regards,</p>
-                            <p>The SCOOTER_SHOP Team</p>
-
-                            <p style="text-align: center;">
-                                <a href="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{% url 'core:index' %}" class="button">Visit Our Website</a>
-                            </p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="footer">
-                            <p>&copy; {% now "Y" %} SCOOTER_SHOP. All rights reserved.</p>
-                            <p>This is an automated email, please do not reply.</p>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Submitted At:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ enquiry.created_at|date:"D, M d, Y H:i" }}</td>
+                            </tr>
+                            <tr>
+                                <td valign="top" style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Message:</td>
+                                <td valign="top" style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB; white-space: pre-wrap;">{{ enquiry.message | default:'(no message)'}}</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
 {% endblock %}

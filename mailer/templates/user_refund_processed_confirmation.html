@@ -1,32 +1,45 @@
-
 {% extends 'email_layout.html' %}
 
 {% block title %}
 Your Refund Has Been Processed
 {% endblock %}
 
+{% block header_title %}
+Refund Processed
+{% endblock %}
+
 {% block content %}
-<p>Hi {% if driver_profile and driver_profile.name %}{{ driver_profile.name }}{% elif service_profile and service_profile.name %}{{ service_profile.name }}{% elif sales_profile and sales_profile.name %}{{ sales_profile.name }}{% else %}customer name VARIABLE DID NOT LOAD{% endif %},</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">Hi {% if driver_profile and driver_profile.name %}{{ driver_profile.name }}{% elif service_profile and service_profile.name %}{{ service_profile.name }}{% elif sales_profile and sales_profile.name %}{{ sales_profile.name }}{% else %}Customer{% endif %},</p>
 
-<p>This email confirms that your refund request for booking <strong>{% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}</strong> has been processed.</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">This email confirms that your refund request for booking <strong>{% if booking_reference %}{{ booking_reference }}{% else %}(missing){% endif %}</strong> has been processed.</p>
 
-<div class="highlight">
-    <p>A refund of <strong>{% if refunded_amount %}{{ refunded_amount }}{% else %}refunded_amount VARIABLE DID NOT LOAD{% endif %} AUD</strong> has been issued to your original payment method.</p>
-</div>
+<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" style="margin-top: 20px; margin-bottom: 20px;">
+    <tr>
+        <td>
+            <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 540px; border-radius: 8px; background-color: #374151;">
+                <tr>
+                    <td style="padding: 20px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation">
+                           <tr>
+                                <td width="40%" style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Refund Amount:</td>
+                                <td width="60%" style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;"><strong>{% if refunded_amount %}{{ refunded_amount }}{% else %}(missing){% endif %} AUD</strong></td>
+                            </tr>
+                            {% if admin_message_from_refund %}
+                            <tr>
+                                <td valign="top" style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Message from Team:</td>
+                                <td valign="top" style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB; white-space: pre-wrap;">{{ admin_message_from_refund }}</td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
 
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-top: 24px;">If you have any questions, please do not hesitate to contact us at <a href="mailto:{% if admin_email %}{{ admin_email }}{% else %}#{% endif %}" style="color: #34D399; text-decoration: underline;">{% if admin_email %}{{ admin_email }}{% else %}(email missing){% endif %}</a>.</p>
 
-{% if admin_message_from_refund %}
-<div class="section-title">Message from Our Team</div>
-<p style="white-space: pre-wrap;">{{ admin_message_from_refund }}</p>
-{% endif %}
-
-{% if refund_policy_link %}
-<p>You can review our refund policy here: <a href="{{ refund_policy_link }}" class="link">Refund Policy</a>.</p>
-{% endif %}
-
-<p>If you have any questions, please do not hesitate to contact us at <a href="mailto:{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}">{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}</a>.</p>
-
-<p>Thank you for your patience.</p>
-<p>Sincerely,</p>
-<p>The Scootershop Team</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-top: 24px;">Thank you for your patience.</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB;">Sincerely,<br>The Allbikes and Vespa Warehouse Team</p>
 {% endblock %}

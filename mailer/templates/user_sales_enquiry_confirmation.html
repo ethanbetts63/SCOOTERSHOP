@@ -1,29 +1,37 @@
-
 {% extends 'email_layout.html' %}
 
 {% block title %}
 Your Sales Enquiry Has Been Received
 {% endblock %}
 
+{% block header_title %}
+Sales Enquiry Received
+{% endblock %}
+
 {% block content %}
-<p>Hi {% if enquiry.name %}{{ enquiry.name }}{% else %}enquiry.name VARIABLE DID NOT LOAD{% endif %},</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">Hi {% if enquiry.name %}{{ enquiry.name }}{% else %}Customer{% endif %},</p>
 {% if enquiry.motorcycle %}
-<p>Thank you for your sales enquiry regarding the <strong>{% if enquiry.motorcycle.year %}{{ enquiry.motorcycle.year }}{% else %}motorcycle.year VARIABLE DID NOT LOAD{% endif %} {% if enquiry.motorcycle.brand %}{{ enquiry.motorcycle.brand }}{% else %}motorcycle.brand VARIABLE DID NOT LOAD{% endif %} {% if enquiry.motorcycle.model %}{{ enquiry.motorcycle.model }}{% else %}motorcycle.model VARIABLE DID NOT LOAD{% endif %}</strong>. We have received your message and a member of our team will get back to you as soon as possible.</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">Thank you for your sales enquiry regarding the <strong>{% if enquiry.motorcycle.year %}{{ enquiry.motorcycle.year }}{% endif %} {% if enquiry.motorcycle.brand %}{{ enquiry.motorcycle.brand }}{% endif %} {% if enquiry.motorcycle.model %}{{ enquiry.motorcycle.model }}{% endif %}</strong>. We have received your message and a member of our team will get back to you as soon as possible.</p>
 {% else %}
-<p>Thank you for your enquiry. We have received your message and a member of our team will get back to you as soon as possible.</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">Thank you for your enquiry. We have received your message and a member of our team will get back to you as soon as possible.</p>
 {% endif %}
 
 {% if enquiry.message %}
-<div class="message-box">
-    <p><strong>Your Message:</strong></p>
-    <p><em>{{ enquiry.message }}</em></p>
-</div>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 16px;">Your Message:</p>
+<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" style="margin-top: 20px; margin-bottom: 20px;">
+    <tr>
+        <td>
+            <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 540px; border-radius: 8px; background-color: #374151;">
+                <tr>
+                    <td style="padding: 20px;">
+                        <p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB; margin: 0;"><em>{{ enquiry.message }}</em></p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
 {% endif %}
 
-<p>Best regards,</p>
-<p>The SCOOTER_SHOP Team</p>
-
-<p style="text-align: center;">
-    <a href="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{% url 'core:index' %}" class="button">Visit Our Website</a>
-</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-top: 24px;">Best regards,<br>The Allbikes and Vespa Warehouse Team</p>
 {% endblock %}

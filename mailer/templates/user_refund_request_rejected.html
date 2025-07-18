@@ -1,26 +1,48 @@
-
 {% extends 'email_layout.html' %}
 
 {% block title %}
 Your Refund Request Has Been Rejected
 {% endblock %}
 
+{% block header_title %}
+Refund Request Rejected
+{% endblock %}
+
 {% block content %}
-<p>Dear {% if refund_request.driver_profile and refund_request.driver_profile.name %}{{ refund_request.driver_profile.name }}{% elif refund_request.service_profile and refund_request.service_profile.name %}{{ refund_request.service_profile.name }}{% else %}customer name VARIABLE DID NOT LOAD{% endif %},</p>
-<p>We regret to inform you that your refund request for booking <strong>{% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}</strong> has been rejected.</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">Dear {% if refund_request.driver_profile and refund_request.driver_profile.name %}{{ refund_request.driver_profile.name }}{% elif refund_request.service_profile and refund_request.service_profile.name %}{{ refund_request.service_profile.name }}{% else %}Customer{% endif %},</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">We regret to inform you that your refund request for booking <strong>{% if booking_reference %}{{ booking_reference }}{% else %}(booking_reference missing){% endif %}</strong> has been rejected.</p>
 
-<div class="highlight">
-    <strong>Booking Reference:</strong> {% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}<br>
-    {% if refund_request.rejection_reason %}
-        <strong>Reason for Rejection:</strong> {{ refund_request.rejection_reason }}
-    {% else %}
-        <strong>Reason for Rejection:</strong> No specific reason was provided. Please contact us for more details.
-    {% endif %}
-</div>
+<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" style="margin-top: 20px; margin-bottom: 20px;">
+    <tr>
+        <td>
+            <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 540px; border-radius: 8px; background-color: #374151;">
+                <tr>
+                    <td style="padding: 20px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation">
+                            <tr>
+                                <td width="40%" style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Booking Reference:</td>
+                                <td width="60%" style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{% if booking_reference %}{{ booking_reference }}{% else %}(missing){% endif %}</td>
+                            </tr>
+                            <tr>
+                                <td valign="top" style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Reason for Rejection:</td>
+                                <td valign="top" style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">
+                                    {% if refund_request.rejection_reason %}
+                                        {{ refund_request.rejection_reason }}
+                                    {% else %}
+                                        No specific reason was provided. Please contact us for more details.
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
 
-<p>If you have any questions regarding this decision, please refer to our <a href="{% if refund_policy_link %}{{ refund_policy_link }}{% else %}refund_policy_link VARIABLE DID NOT LOAD{% endif %}">Refund Policy</a> or contact us directly at <a href="mailto:{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}">{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}</a>.</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-top: 24px;">If you have any questions regarding this decision, please refer to our <a href="{% if refund_policy_link %}{{ refund_policy_link }}{% else %}#{% endif %}" style="color: #34D399; text-decoration: underline;">Refund Policy</a> or contact us directly at <a href="mailto:{% if admin_email %}{{ admin_email }}{% else %}#{% endif %}" style="color: #34D399; text-decoration: underline;">{% if admin_email %}{{ admin_email }}{% else %}(email missing){% endif %}</a>.</p>
 
-<p>Thank you for your understanding.</p>
-<p>Sincerely,</p>
-<p>The Scootershop Team</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-top: 24px;">Thank you for your understanding.</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB;">Sincerely,<br>The Allbikes and Vespa Warehouse Team</p>
 {% endblock %}

@@ -1,94 +1,87 @@
 {% extends 'email_layout.html' %}
 
 {% block title %}
-Your Service Booking Confirmation
+Your Service Booking Request
+{% endblock %}
+
+{% block header_title %}
+Service Booking Received
 {% endblock %}
 
 {% block content %}
-<p>Hi {% if booking.service_profile.name %}{{ booking.service_profile.name }}{% else %}booking.service_profile.name VARIABLE DID NOT LOAD{% endif %},</p>
-<p>Thank you for booking your motorcycle service with us! Your booking is now confirmed.</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">Hi {% if booking.service_profile.name %}{{ booking.service_profile.name }}{% else %}Customer{% endif %},</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">Thank you for booking your motorcycle service with us! We have received your request and will confirm your booking shortly.</p>
 
-<h2>Booking Details</h2>
-<table>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 16px;">Booking Details:</p>
+<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" style="margin-top: 20px; margin-bottom: 20px;">
     <tr>
-        <th>Booking Reference:</th>
-        <td><strong>{% if booking.service_booking_reference %}{{ booking.service_booking_reference }}{% else %}booking.service_booking_reference VARIABLE DID NOT LOAD{% endif %}</strong></td>
-    </tr>
-    <tr>
-        <th>Service Type:</th>
-        <td>{% if booking.service_type.name %}{{ booking.service_type.name }}{% else %}booking.service_type.name VARIABLE DID NOT LOAD{% endif %}</td>
-    </tr>
-    {% if booking.customer_motorcycle %}
-    <tr>
-        <th>Your Motorcycle:</th>
-        <td>{% if booking.customer_motorcycle.year %}{{ booking.customer_motorcycle.year }}{% else %}motorcycle.year VARIABLE DID NOT LOAD{% endif %} {% if booking.customer_motorcycle.brand %}{{ booking.customer_motorcycle.brand }}{% else %}motorcycle.brand VARIABLE DID NOT LOAD{% endif %} {% if booking.customer_motorcycle.model %}{{ booking.customer_motorcycle.model }}{% else %}motorcycle.model VARIABLE DID NOT LOAD{% endif %}</td>
-    </tr>
-    {% endif %}
-    <tr>
-        <th>Service Date:</th>
-        <td>{% if booking.service_date %}{{ booking.service_date|date:"D, M d, Y" }}{% else %}booking.service_date VARIABLE DID NOT LOAD{% endif %}</td>
-    </tr>
-    <tr>
-        <th>Drop-off Date/Time:</th>
         <td>
-            {% if booking.after_hours_drop_off %}
-                <strong>After-Hours Drop-Off</strong>
-            {% else %}
-                {% if booking.dropoff_date %}{{ booking.dropoff_date|date:"D, M d, Y" }}{% else %}booking.dropoff_date VARIABLE DID NOT LOAD{% endif %} at {% if booking.dropoff_time %}{{ booking.dropoff_time|time:"P" }}{% else %}booking.dropoff_time VARIABLE DID NOT LOAD{% endif %}
-            {% endif %}
+            <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 540px; border-radius: 8px; background-color: #374151;">
+                <tr>
+                    <td style="padding: 20px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation">
+                            <tr>
+                                <td width="40%" style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Booking Reference:</td>
+                                <td width="60%" style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;"><strong>{% if booking.service_booking_reference %}{{ booking.service_booking_reference }}{% else %}(missing){% endif %}</strong></td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Service Type:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{% if booking.service_type.name %}{{ booking.service_type.name }}{% else %}(missing){% endif %}</td>
+                            </tr>
+                            {% if booking.customer_motorcycle %}
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Your Motorcycle:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{% if booking.customer_motorcycle.year %}{{ booking.customer_motorcycle.year }}{% endif %} {% if booking.customer_motorcycle.brand %}{{ booking.customer_motorcycle.brand }}{% endif %} {% if booking.customer_motorcycle.model %}{{ booking.customer_motorcycle.model }}{% endif %}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Drop-off:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">
+                                    {% if booking.after_hours_drop_off %}
+                                        After-Hours Drop-Off
+                                    {% else %}
+                                        {% if booking.dropoff_date %}{{ booking.dropoff_date|date:"D, M d, Y" }}{% endif %} at {% if booking.dropoff_time %}{{ booking.dropoff_time|time:"P" }}{% endif %}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% if booking.after_hours_drop_off %}
+                            <tr>
+                                <td valign="top" style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">After-Hours Info:</td>
+                                <td valign="top" style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ after_hours_drop_off_instructions|linebreaksbr }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Total Cost:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;"><strong>{% if booking.calculated_total %}{{ booking.calculated_total|floatformat:2 }}{% endif %} {% if booking.currency %}{{ booking.currency }}{% endif %}</strong></td>
+                            </tr>
+                            {% if booking.amount_paid > 0 %}
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Amount Paid:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{% if booking.amount_paid %}{{ booking.amount_paid|floatformat:2 }}{% endif %} {% if booking.currency %}{{ booking.currency }}{% endif %}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Payment Status:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{% if booking.get_payment_status_display %}{{ booking.get_payment_status_display }}{% else %}(missing){% endif %}</td>
+                            </tr>
+                             {% if booking.customer_notes %}
+                            <tr>
+                                <td valign="top" style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Your Notes:</td>
+                                <td valign="top" style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ booking.customer_notes }}</td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </td>
+                </tr>
+            </table>
         </td>
     </tr>
-    {% if booking.after_hours_drop_off %}
-    <tr>
-        <th>After-Hours Instructions:</th>
-        <td>{{ after_hours_drop_off_instructions|linebreaksbr }}</td>
-    </tr>
-    {% endif %}
-    {% if service_settings.enable_estimated_pickup_date %}
-    {% if booking.estimated_pickup_date %}
-    <tr>
-        <th>Estimated Pick-up Date:</th>
-        <td>{{ booking.estimated_pickup_date|date:"D, M d, Y" }}</td>
-    </tr>
-    {% endif %}
-    {% endif %}
-    <tr>
-        <th>Total Cost:</th>
-        <td><strong>{% if booking.calculated_total %}{{ booking.calculated_total|floatformat:2 }}{% else %}booking.calculated_total VARIABLE DID NOT LOAD{% endif %} {% if booking.currency %}{{ booking.currency }}{% else %}booking.currency VARIABLE DID NOT LOAD{% endif %}</strong></td>
-    </tr>
-    {% if booking.amount_paid > 0 %}
-    <tr>
-        <th>Amount Paid:</th>
-        <td>{% if booking.amount_paid %}{{ booking.amount_paid|floatformat:2 }}{% else %}booking.amount_paid VARIABLE DID NOT LOAD{% endif %} {% if booking.currency %}{{ booking.currency }}{% else %}booking.currency VARIABLE DID NOT LOAD{% endif %}</td>
-    </tr>
-    {% endif %}
-    <tr>
-        <th>Payment Status:</th>
-        <td>{% if booking.get_payment_status_display %}{{ booking.get_payment_status_display }}{% else %}booking.get_payment_status_display VARIABLE DID NOT LOAD{% endif %}</td>
-    </tr>
-    <tr>
-        <th>Payment Method:</th>
-        <td>{% if booking.get_payment_method_display %}{{ booking.get_payment_method_display }}{% else %}booking.get_payment_method_display VARIABLE DID NOT LOAD{% endif %}</td>
-    </tr>
-    {% if booking.customer_notes %}
-    <tr>
-        <th>Your Notes:</th>
-        <td>{{ booking.customer_notes }}</td>
-    </tr>
-    {% endif %}
 </table>
 
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-top: 24px;">We look forward to seeing you!</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB;">Best regards,<br>The Allbikes and Vespa Warehouse Team</p>
+
 {% if site_settings.enable_refunds and booking.amount_paid > 0 %}
-<div style="text-align: center; margin-top: 20px; border-top: 1px solid #dddddd; padding-top: 20px;">
-    <p>Need to request a refund? <a href="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{% url 'refunds:user_refund_request' %}?booking_reference={{ booking.service_booking_reference }}">Click here to submit a request</a>.</p>
-</div>
+<p style="font-family: Arial, sans-serif; font-size: 14px; line-height: 20px; color: #9CA3AF; margin-top: 24px; text-align: center;">Need to request a refund? <a href="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{% url 'refunds:user_refund_request' %}?booking_reference={{ booking.service_booking_reference }}" style="color: #34D399;">Click here to submit a request</a>.</p>
 {% endif %}
-
-<p>We look forward to seeing you!</p>
-<p>Best regards,</p>
-<p>The SCOOTER_SHOP Team</p>
-
-<p style="text-align: center;">
-    <a href="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{% url 'core:index' %}" class="button">Visit Our Website</a>
-</p>
 {% endblock %}

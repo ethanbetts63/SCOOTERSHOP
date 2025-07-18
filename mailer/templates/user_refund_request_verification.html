@@ -1,62 +1,79 @@
-
 {% extends 'email_layout.html' %}
 
 {% block title %}
 Confirm Your Refund Request
 {% endblock %}
 
+{% block header_title %}
+Confirm Your Refund Request
+{% endblock %}
+
 {% block content %}
-<p>Hi {% if refund_request.service_profile and refund_request.service_profile.name %}{{ refund_request.service_profile.name }}{% elif refund_request.sales_profile and refund_request.sales_profile.name %}{{ refund_request.sales_profile.name }}{% elif refund_request.request_email %}{{ refund_request.request_email }}{% else %}customer name/email VARIABLE DID NOT LOAD{% endif %},</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">Hi {% if refund_request.service_profile and refund_request.service_profile.name %}{{ refund_request.service_profile.name }}{% elif refund_request.sales_profile and refund_request.sales_profile.name %}{{ refund_request.sales_profile.name }}{% elif refund_request.request_email %}{{ refund_request.request_email }}{% else %}Customer{% endif %},</p>
 
-<p>Thank you for submitting a refund request for your booking with reference <strong>{% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}</strong>.</p>
-<p>To finalize your request and allow our team to review it, please click the verification link below:</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">Thank you for submitting a refund request for your booking with reference <strong>{% if booking_reference %}{{ booking_reference }}{% else %}(booking_reference missing){% endif %}</strong>.</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 24px;">To finalize your request and allow our team to review it, please click the verification button below:</p>
 
-<div class="button-container">
-    <a href="{% if verification_link %}{{ verification_link }}{% else %}verification_link VARIABLE DID NOT LOAD{% endif %}" class="button">Confirm My Refund Request</a>
-</div>
-
-<p><strong>Important:</strong> This link is valid for a limited time (e.g., 24 hours). If the link expires, you may need to submit a new request.</p>
-
-<p>Here are the details of your request:</p>
-<table class="details-table">
+<table border="0" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom: 24px;">
     <tr>
-        <th>Booking Reference:</th>
-        <td>{% if booking_reference %}{{ booking_reference }}{% else %}booking_reference VARIABLE DID NOT LOAD{% endif %}</td>
+        <td align="center" bgcolor="#10B981" style="border-radius: 8px;">
+            <a href="{% if verification_link %}{{ verification_link }}{% else %}#{% endif %}" target="_blank" style="font-size: 16px; font-family: Arial, sans-serif; color: #ffffff; text-decoration: none; padding: 15px 25px; border-radius: 8px; display: inline-block;">Confirm My Refund Request</a>
+        </td>
     </tr>
-    {% if refund_request.service_booking %}
-    <tr>
-        <th>Service Date:</th>
-        <td>{% if refund_request.service_booking.dropoff_date %}{{ refund_request.service_booking.dropoff_date|date:"D, d M Y" }}{% else %}dropoff_date VARIABLE DID NOT LOAD{% endif %}</td>
-    </tr>
-    <tr>
-        <th>Service Type:</th>
-        <td>{% if refund_request.service_booking.service_type.name %}{{ refund_request.service_booking.service_type.name }}{% else %}service_type.name VARIABLE DID NOT LOAD{% endif %}</td>
-    </tr>
-    {% elif refund_request.sales_booking %}
-    <tr>
-        <th>Appointment Date:</th>
-        <td>{% if refund_request.sales_booking.appointment_date %}{{ refund_request.sales_booking.appointment_date|date:"D, d M Y" }}{% else %}appointment_date VARIABLE DID NOT LOAD{% endif %}</td>
-    </tr>
-    <tr>
-        <th>Motorcycle:</th>
-        <td>{% if refund_request.sales_booking.motorcycle.name %}{{ refund_request.sales_booking.motorcycle.name }}{% else %}motorcycle.name VARIABLE DID NOT LOAD{% endif %}</td>
-    </tr>
-    {% endif %}
-    <tr>
-        <th>Your Email:</th>
-        <td>{% if refund_request.request_email %}{{ refund_request.request_email }}{% else %}refund_request.request_email VARIABLE DID NOT LOAD{% endif %}</td>
-    </tr>
-    {% if refund_request.reason %}
-    <tr>
-        <th>Reason Provided:</th>
-        <td>{{ refund_request.reason }}</td>
-    </tr>
-    {% endif %}
 </table>
 
-<p>Once confirmed, your request will be reviewed by our team. We will notify you of the outcome via email.</p>
-<p>You can review our full refund policy <a href="{% if refund_policy_link %}{{ refund_policy_link }}{% else %}refund_policy_link VARIABLE DID NOT LOAD{% endif %}">here</a>.</p>
-<p>If you have any questions, please reply to this email or contact us at <a href="mailto:{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}">{% if admin_email %}{{ admin_email }}{% else %}admin_email VARIABLE DID NOT LOAD{% endif %}</a>.</p>
-<p>Thank you,</p>
-<p>The Scootershop Team</p>
+<p style="font-family: Arial, sans-serif; font-size: 14px; line-height: 20px; color: #9CA3AF; margin-bottom: 24px;"><strong>Important:</strong> This link is valid for a limited time. If the link expires, you may need to submit a new request.</p>
+
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-bottom: 16px;">Here are the details of your request:</p>
+<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" style="margin-top: 20px; margin-bottom: 20px;">
+    <tr>
+        <td>
+            <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 540px; border-radius: 8px; background-color: #374151;">
+                <tr>
+                    <td style="padding: 20px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation">
+                            <tr>
+                                <td width="40%" style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Booking Reference:</td>
+                                <td width="60%" style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{% if booking_reference %}{{ booking_reference }}{% else %}(missing){% endif %}</td>
+                            </tr>
+                            {% if refund_request.service_booking %}
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Service Date:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{% if refund_request.service_booking.dropoff_date %}{{ refund_request.service_booking.dropoff_date|date:"D, d M Y" }}{% else %}(missing){% endif %}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Service Type:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{% if refund_request.service_booking.service_type.name %}{{ refund_request.service_booking.service_type.name }}{% else %}(missing){% endif %}</td>
+                            </tr>
+                            {% elif refund_request.sales_booking %}
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Appointment Date:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{% if refund_request.sales_booking.appointment_date %}{{ refund_request.sales_booking.appointment_date|date:"D, d M Y" }}{% else %}(missing){% endif %}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Motorcycle:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{% if refund_request.sales_booking.motorcycle.name %}{{ refund_request.sales_booking.motorcycle.name }}{% else %}(missing){% endif %}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Your Email:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{% if refund_request.request_email %}{{ refund_request.request_email }}{% else %}(missing){% endif %}</td>
+                            </tr>
+                            {% if refund_request.reason %}
+                            <tr>
+                                <td valign="top" style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Reason Provided:</td>
+                                <td valign="top" style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ refund_request.reason }}</td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-top: 24px;">Once confirmed, your request will be reviewed by our team. We will notify you of the outcome via email.</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-top: 24px;">If you have any questions, please reply to this email or contact us at <a href="mailto:{% if admin_email %}{{ admin_email }}{% else %}#{% endif %}" style="color: #34D399; text-decoration: underline;">{% if admin_email %}{{ admin_email }}{% else %}(email missing){% endif %}</a>.</p>
+<p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; margin-top: 24px;">Thank you,<br>The Allbikes and Vespa Warehouse Team</p>
 {% endblock %}

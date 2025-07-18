@@ -181,11 +181,12 @@ class TempSalesBookingFactory(factory.django.DjangoModelFactory):
 
     motorcycle = factory.SubFactory(MotorcycleFactory)
     sales_profile = factory.SubFactory(SalesProfileFactory)
-    payment = factory.SubFactory(PaymentFactory)
+    # payment = factory.SubFactory(PaymentFactory) # Removed to allow default amount_paid
 
-    amount_paid = factory.LazyFunction(
-        lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True)
-    )
+    # amount_paid is handled by the model's default unless a payment is explicitly linked
+    # amount_paid = factory.LazyFunction(
+    #     lambda: fake.pydecimal(left_digits=2, right_digits=2, positive=True)
+    # )
     payment_status = factory.Faker(
         "random_element", elements=[choice[0] for choice in TEMP_PAYMENT_STATUS_CHOICES]
     )
