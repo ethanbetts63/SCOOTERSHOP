@@ -1,3 +1,4 @@
+import time
 from django.test import TestCase
 from django.db import IntegrityError
 from datetime import datetime
@@ -33,6 +34,7 @@ class ServiceBrandModelTest(TestCase):
         self.assertIsInstance(service_brand.last_updated, datetime)
 
         old_last_updated = service_brand.last_updated
+        time.sleep(0.01)
         service_brand.name = "Updated Name"
         service_brand.save()
         self.assertNotEqual(service_brand.last_updated, old_last_updated)

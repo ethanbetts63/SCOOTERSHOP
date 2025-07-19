@@ -29,7 +29,7 @@ class PaymentOptionForm(forms.Form):
         label="Opt for After-Hours Drop-Off",
         required=False,
         widget=forms.CheckboxInput,
-        help_text="Select this if you intend to use our 24/7 key drop-off box.",
+        help_text="Select this if you intend to use our outside of opening hours key drop-off box (instructions provided via email).",
     )
 
     def __init__(self, *args, **kwargs):
