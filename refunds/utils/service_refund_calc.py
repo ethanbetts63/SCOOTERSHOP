@@ -18,8 +18,9 @@ def calculate_service_refund_amount(
             "policy_applied": "N/A",
         }
 
+    dropoff_time = booking.dropoff_time or datetime.min.time()
     dropoff_datetime = timezone.make_aware(
-        datetime.combine(booking.dropoff_date, booking.dropoff_time)
+        datetime.combine(booking.dropoff_date, dropoff_time)
     )
     time_difference = dropoff_datetime - cancellation_datetime
     days_before_dropoff = time_difference.days

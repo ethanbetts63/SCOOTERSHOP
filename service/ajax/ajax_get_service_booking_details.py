@@ -12,20 +12,16 @@ from ..decorators import admin_required
 @require_GET
 @admin_required
 def get_service_booking_details_json(request, pk):
-    print(f"DEBUG: Attempting to fetch service booking details for pk={pk}")
     try:
         service_booking = get_object_or_404(ServiceBooking, pk=pk)
-        print(f"DEBUG: Successfully fetched service_booking object: {service_booking}")
 
         customer_name = "N/A"
         profile = service_booking.service_profile
-        print(f"DEBUG: Service profile: {profile}")
         if profile:
             if profile.user and profile.user.get_full_name():
                 customer_name = profile.user.get_full_name()
             elif profile.name:
                 customer_name = profile.name
-        print(f"DEBUG: Customer name: {customer_name}")
 
         payment_date = (
             service_booking.payment.created_at.strftime("%Y-%m-%d %H:%M")
@@ -37,7 +33,6 @@ def get_service_booking_details_json(request, pk):
             if service_booking.payment and service_booking.payment.amount is not None
             else "N/A"
         )
-        print(f"DEBUG: Payment details - Date: {payment_date}, Amount: {payment_amount}")
 
         motorcycle_details = {
             "year": (
@@ -56,7 +51,6 @@ def get_service_booking_details_json(request, pk):
                 else "N/A"
             ),
         }
-        print(f"DEBUG: Motorcycle details: {motorcycle_details}")
 
         service_type_details = {
             "name": (
@@ -76,7 +70,6 @@ def get_service_booking_details_json(request, pk):
                 else "N/A"
             ),
         }
-        print(f"DEBUG: Service type details: {service_type_details}")
 
         refund_status_for_booking = "No Refund Request Yet"
         latest_refund_request = (
@@ -86,14 +79,12 @@ def get_service_booking_details_json(request, pk):
         )
         if latest_refund_request:
             refund_status_for_booking = latest_refund_request.get_status_display()
-        print(f"DEBUG: Refund status: {refund_status_for_booking}")
 
         cancellation_datetime = timezone.now()
         refund_calculation_results = calculate_service_refund_amount(
             booking=service_booking,
             cancellation_datetime=cancellation_datetime,
         )
-        print(f"DEBUG: Refund calculation results: {refund_calculation_results}")
 
         booking_details = {
             "id": service_booking.id,
@@ -152,14 +143,10 @@ def get_service_booking_details_json(request, pk):
             ],
             "refund_request_status_for_booking": refund_status_for_booking,
         }
-        print(f"DEBUG: Final booking details dictionary: {booking_details}")
         return JsonResponse(booking_details)
     except Http404:
-        print(f"DEBUG: Service Booking with pk={pk} not found.")
         return JsonResponse({"error": "Service Booking not found"}, status=404)
     except Exception as e:
-        print(f"DEBUG: An unexpected error occurred in get_service_booking_details_json for pk={pk}: {str(e)}")
-        print(traceback.format_exc())
         return JsonResponse(
             {"error": f"An unexpected error occurred: {str(e)}"}, status=500
         )
