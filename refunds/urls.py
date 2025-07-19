@@ -19,6 +19,7 @@ from .views.admin_views import (
     AdminRefundTermsCreateView,
     AdminRefundTermsDetailView,
 )
+from .ajax import ajax_get_booking_details
 
 app_name = "refunds"
 
@@ -94,4 +95,5 @@ urlpatterns = [
         name="refund_terms_details",
     ),
     path("refund-policy/", RefundTermsView.as_view(), name="refund_policy"),
+    path("ajax/get-booking-details/", ajax_get_booking_details.get_booking_details_by_reference, name="ajax_get_booking_details_by_reference"),
 ]

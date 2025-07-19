@@ -158,6 +158,13 @@
                     <p class="text-xs text-gray-500 mt-1">{{ form.booking_reference.help_text }}</p>
                 </div>
 
+                <div id="booking-details-container" class="hidden mt-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Booking Details</h3>
+                    <div id="booking-details-content" class="selected-item-display"></div>
+                    <div id="loader" class="loader hidden"></div>
+                    <div id="error-message" class="error-message hidden"></div>
+                </div>
+
                 <div class="form-group">
                     <label for="{{ form.reason.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
                         {{ form.reason.label }}
@@ -191,7 +198,70 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // No JavaScript needed for this simplified create form.
+    const bookingReferenceInput = document.getElementById('{{ form.booking_reference.id_for_label }}');
+    const bookingDetailsContainer = document.getElementById('booking-details-container');
+    const bookingDetailsContent = document.getElementById('booking-details-content');
+    const amountToRefundInput = document.getElementById('{{ form.amount_to_refund.id_for_label }}');
+    const loader = document.getElementById('loader');
+    const errorMessage = document.getElementById('error-message');
+
+    let debounceTimeout;
+
+    bookingReferenceInput.addEventListener('input', function() {
+        clearTimeout(debounceTimeout);
+        debounceTimeout = setTimeout(() => {
+            const bookingReference = this.value.trim();
+            if (bookingReference) {
+                fetchBookingDetails(bookingReference);
+            }
+        }, 500);
+    });
+
+    function fetchBookingDetails(bookingReference) {
+        loader.classList.remove('hidden');
+        errorMessage.classList.add('hidden');
+        bookingDetailsContainer.classList.add('hidden');
+
+        fetch(`{% url 'refunds:ajax_get_booking_details_by_reference' %}?booking_reference=${bookingReference}`)
+            .then(response => response.json())
+            .then(data => {
+                loader.classList.add('hidden');
+                if (data.error) {
+                    errorMessage.textContent = data.error;
+                    errorMessage.classList.remove('hidden');
+                } else {
+                    bookingDetailsContainer.classList.remove('hidden');
+                    let detailsHtml = '';
+                    if (data.sales_booking_reference) {
+                        detailsHtml = `
+                            <p><strong>Booking Reference:</strong> ${data.sales_booking_reference}</p>
+                            <p><strong>Customer:</strong> ${data.customer_name}</p>
+                            <p><strong>Motorcycle:</strong> ${data.motorcycle_details.year} ${data.motorcycle_details.brand} ${data.motorcycle_details.model}</p>
+                            <p><strong>Payment Amount:</strong> ${data.payment_amount}</p>
+                            <p><strong>Calculated Refund Amount:</strong> ${data.entitled_refund_amount}</p>
+                            <p><strong>Refund Calculation Details:</strong> ${data.refund_calculation_details}</p>
+                        `;
+                    } else if (data.service_booking_reference) {
+                        detailsHtml = `
+                            <p><strong>Booking Reference:</strong> ${data.service_booking_reference}</p>
+                            <p><strong>Customer:</strong> ${data.customer_name}</p>
+                            <p><strong>Service Type:</strong> ${data.service_type_details.name}</p>
+                            <p><strong>Payment Amount:</strong> ${data.payment_amount}</p>
+                            <p><strong>Calculated Refund Amount:</strong> ${data.entitled_refund_amount}</p>
+                            <p><strong>Refund Calculation Details:</strong> ${data.refund_calculation_details}</p>
+                        `;
+                    }
+                    bookingDetailsContent.innerHTML = detailsHtml;
+                    amountToRefundInput.value = data.entitled_refund_amount;
+                }
+            })
+            .catch(error => {
+                loader.classList.add('hidden');
+                errorMessage.textContent = 'An unexpected error occurred.';
+                errorMessage.classList.remove('hidden');
+                console.error('Error fetching booking details:', error);
+            });
+    }
 });
 </script>
 {% endblock %}
