@@ -57,6 +57,7 @@ class AjaxGetAvailableDropoffTimesForDateTest(TestCase):
             f"/ajax/available-times/?date={test_date.strftime('%Y-%m-%d')}"
         )
         request.user = self.user
+        request.session = {}
         response = get_available_dropoff_times_for_date(request)
 
         self.assertEqual(response.status_code, 200)
@@ -65,7 +66,7 @@ class AjaxGetAvailableDropoffTimesForDateTest(TestCase):
         self.assertIn("available_times", content)
         self.assertEqual(content["available_times"], [])
 
-        mock_get_available_dropoff_times.assert_called_once_with(test_date)
+        mock_get_available_dropoff_times.assert_called_once_with(test_date, is_service_date=False)
 
     @patch("service.ajax.ajax_get_available_dropoff_times_for_date.TempServiceBooking.objects.get")
     @patch(

@@ -15,7 +15,10 @@ def get_available_dropoff_times(selected_date, is_service_date=False):
     end_time_obj = service_settings.drop_off_end_time
 
     # Adjust end time for same-day drop-offs if a specific latest time is set
-    if is_service_date:
+    if selected_date == today_local:
+        if service_settings.latest_same_day_dropoff_time < end_time_obj:
+            end_time_obj = service_settings.latest_same_day_dropoff_time
+    elif is_service_date:
         if service_settings.latest_same_day_dropoff_time < end_time_obj:
             end_time_obj = service_settings.latest_same_day_dropoff_time
 
