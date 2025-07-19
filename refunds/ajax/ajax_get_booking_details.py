@@ -6,7 +6,10 @@ from inventory.ajax.ajax_get_sales_booking_details import get_sales_booking_deta
 from service.ajax.ajax_get_service_booking_details import get_service_booking_details_json
 import re
 
+from refunds.decorators import admin_required
+
 @require_GET
+@admin_required
 def get_booking_details_by_reference(request):
     booking_reference = request.GET.get("booking_reference")
     if not booking_reference:

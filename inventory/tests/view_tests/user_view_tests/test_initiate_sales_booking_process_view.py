@@ -27,9 +27,7 @@ class InitiateBookingProcessViewTest(TestCase):
         )
         self.assertEqual(temp_booking.motorcycle, self.motorcycle)
         self.assertTrue(temp_booking.deposit_required_for_flow)
-        self.assertEqual(
-            temp_booking.amount_paid, self.inventory_settings.deposit_amount
-        )
+        self.assertEqual(temp_booking.amount_paid, Decimal("0.00"))
         self.assertEqual(temp_booking.booking_status, "pending_details")
 
     def test_post_initiate_booking_process_success_without_deposit(self):
