@@ -125,10 +125,6 @@ class Step2BookingDetailsView(View):
             )
             return redirect(reverse("core:index"))
 
-        print("--- DEBUG: VIEW POST ---")
-        print(f"request.POST: {request.POST}")
-        print(f"temp_booking.deposit_required_for_flow: {temp_booking.deposit_required_for_flow}")
-
         form = BookingAppointmentForm(
             request.POST,
             deposit_required_for_flow=temp_booking.deposit_required_for_flow,
@@ -136,10 +132,6 @@ class Step2BookingDetailsView(View):
         )
 
         is_form_valid = form.is_valid()
-        print(f"form.is_valid(): {is_form_valid}")
-        if not is_form_valid:
-            print(f"form.errors: {form.errors.as_json()}")
-        print("--- END DEBUG: VIEW POST ---")
 
         if is_form_valid:
             logger.info(f'Form is valid. Cleaned data: {form.cleaned_data}')
