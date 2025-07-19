@@ -1,5 +1,5 @@
 from django.urls import path
-from .views.admin_views import EmailManagementView, EmailDetailView, TestEmailView
+from .views.admin_views import EmailManagementView, EmailDetailView
 
 app_name = "mailer"
 
@@ -13,10 +13,5 @@ urlpatterns = [
         "dashboard/emails/<int:pk>/",
         EmailDetailView.as_view(),
         name="email_detail",
-    ),
-    path(
-        "dashboard/emails/test/",
-        TestEmailView.as_view(),
-        name="test_emails",
     ),
 ]
