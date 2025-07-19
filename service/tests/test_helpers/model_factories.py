@@ -121,7 +121,6 @@ class ServiceSettingsFactory(factory.django.DjangoModelFactory):
     latest_service_day_drop_off = datetime.time(10, 0)
 
     enable_after_hours_dropoff = False
-    after_hours_dropoff_disclaimer = factory.Faker("paragraph", nb_sentences=3)
     enable_online_deposit = (True,)
     deposit_calc_method = "FLAT_FEE"
     deposit_flat_fee_amount = Decimal("1.00")

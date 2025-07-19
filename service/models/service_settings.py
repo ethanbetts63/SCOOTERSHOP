@@ -54,10 +54,6 @@ class ServiceSettings(models.Model):
         default=False,
         help_text="Allow customers to drop off their motorcycle outside of standard opening hours (e.g., using a secure drop box).",
     )
-    after_hours_dropoff_disclaimer = models.TextField(
-        blank=True,
-        help_text="Important disclaimer text displayed to users when after-hours drop-off is selected, outlining risks/conditions.",
-    )
     after_hours_drop_off_instructions = models.TextField(
         blank=True,
         help_text="Instructions for customers on how to use the after-hours drop-off (e.g., key box location, how to secure the vehicle).",

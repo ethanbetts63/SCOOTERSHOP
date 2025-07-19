@@ -24,7 +24,6 @@ class ServiceBookingSettingsFormTest(TestCase):
             "latest_same_day_dropoff_time": time(12, 0),
             "latest_service_day_drop_off": time(10, 0),
             "enable_after_hours_dropoff": False,
-            "after_hours_dropoff_disclaimer": "Motorcycle drop-off outside of opening hours is at your own risk.",
             "deposit_calc_method": "FLAT_FEE",
             "deposit_flat_fee_amount": Decimal("25.00"),
             "deposit_percentage": Decimal("0.00"),
@@ -56,7 +55,6 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.service_settings.max_advance_dropoff_days = 10
         self.service_settings.latest_same_day_dropoff_time = time(13, 0)
         self.service_settings.enable_after_hours_dropoff = True
-        self.service_settings.after_hours_dropoff_disclaimer = "Test disclaimer."
 
         self.service_settings.save()
 
@@ -70,9 +68,7 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertEqual(form.initial["max_advance_dropoff_days"], 10)
         self.assertEqual(form.initial["latest_same_day_dropoff_time"], time(13, 0))
         self.assertEqual(form.initial["enable_after_hours_dropoff"], True)
-        self.assertEqual(
-            form.initial["after_hours_dropoff_disclaimer"], "Test disclaimer."
-        )
+
 
     def test_form_save_updates_instance(self):
         data = self.valid_data.copy()

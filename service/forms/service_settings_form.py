@@ -18,7 +18,6 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             "latest_same_day_dropoff_time",
             "latest_service_day_drop_off",
             "enable_after_hours_dropoff",
-            "after_hours_dropoff_disclaimer",
             "after_hours_drop_off_instructions",
             "deposit_calc_method",
             "deposit_flat_fee_amount",
@@ -60,9 +59,7 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             "enable_after_hours_dropoff": forms.CheckboxInput(
                 attrs={"class": "form-check-input"}
             ),
-            "after_hours_dropoff_disclaimer": forms.Textarea(
-                attrs={"class": "form-control", "rows": 3}
-            ),
+
             "after_hours_drop_off_instructions": forms.Textarea(
                 attrs={"class": "form-control", "rows": 3}
             ),
@@ -186,15 +183,9 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             )
 
         enable_after_hours_dropoff = cleaned_data.get("enable_after_hours_dropoff")
-        after_hours_disclaimer = cleaned_data.get("after_hours_dropoff_disclaimer")
         after_hours_instructions = cleaned_data.get("after_hours_drop_off_instructions")
 
         if enable_after_hours_dropoff:
-            if not after_hours_disclaimer:
-                self.add_error(
-                    "after_hours_dropoff_disclaimer",
-                    _("This field is required when after-hours drop-off is enabled."),
-                )
             if not after_hours_instructions:
                 self.add_error(
                     "after_hours_drop_off_instructions",
