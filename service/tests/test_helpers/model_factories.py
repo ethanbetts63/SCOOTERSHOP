@@ -118,7 +118,7 @@ class ServiceSettingsFactory(factory.django.DjangoModelFactory):
     drop_off_spacing_mins = 30
     max_advance_dropoff_days = 7
     latest_same_day_dropoff_time = datetime.time(12, 0)
-    latest_service_day_drop_off = datetime.time(10, 0)
+    
 
     enable_after_hours_dropoff = False
     enable_online_deposit = (True,)

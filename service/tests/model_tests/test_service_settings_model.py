@@ -45,7 +45,7 @@ class ServiceSettingsModelTest(TestCase):
         self.assertEqual(settings.drop_off_spacing_mins, 30)
         self.assertEqual(settings.max_advance_dropoff_days, 3)
         self.assertEqual(settings.latest_same_day_dropoff_time, time(12, 0))
-        self.assertEqual(settings.latest_service_day_drop_off, time(10, 0))
+        
         self.assertFalse(settings.enable_after_hours_dropoff)
         self.assertEqual(settings.deposit_calc_method, "FLAT_FEE")
         self.assertEqual(settings.deposit_flat_fee_amount, Decimal("50.00"))

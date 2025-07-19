@@ -45,10 +45,7 @@ class ServiceSettings(models.Model):
         help_text="The latest time a customer can drop off their motorcycle if the drop-off date is the same as the service date.",
     )
 
-    latest_service_day_drop_off = models.TimeField(
-        default=time(10, 0),
-        help_text="The latest time a customer can drop off their motorcycle if the drop-off date is the same as the service date.",
-    )
+    
 
     enable_after_hours_dropoff = models.BooleanField(
         default=False,

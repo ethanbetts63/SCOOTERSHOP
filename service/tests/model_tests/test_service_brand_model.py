@@ -1,4 +1,5 @@
 import time
+import time
 from django.test import TestCase
 from django.db import IntegrityError
 from datetime import datetime
@@ -52,3 +53,4 @@ class ServiceBrandModelTest(TestCase):
 
         with self.assertRaises(IntegrityError):
             ServiceBrand.objects.create(name=existing_name)
+
