@@ -50,7 +50,7 @@ def reject_sales_booking(
                         requesting_user=requesting_user,
                         sales_profile=booking.sales_profile,
                         is_admin_initiated=True,
-                        initial_status="approved",
+                        initial_status="reviewed_pending_approval",
                     )
 
                     if created_refund_req:
