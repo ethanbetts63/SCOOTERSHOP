@@ -16,7 +16,7 @@ class SiteSettingsFactory(factory.django.DjangoModelFactory):
     enable_returns_page = True
     enable_security_page = True
     enable_google_places_reviews = True
-    phone_number = "(08) 9433 4613"
+    
     email_address = "admin@scootershop.com.au"
     street_address = "Unit 2/95 Queen Victoria St"
     address_locality = "Fremantle"

@@ -14,13 +14,13 @@ class SettingsBusinessInfoViewTest(TestCase):
         self.site_settings = SiteSettingsFactory()
 
     def test_settings_business_info_view_get(self):
-        self.client.login(username=self.staff_user.username, password="testpassword")
+        self.client.login(username=self.staff_user.username, password="password123")
         response = self.client.get(reverse("dashboard:settings_business_info"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "dashboard/settings_business_info.html")
 
     def test_settings_business_info_view_post_valid(self):
-        self.client.login(username=self.staff_user.username, password="testpassword")
+        self.client.login(username=self.staff_user.username, password="password123")
         form_data = {
             "phone_number": "1111111111",
             "email_address": "new@example.com",
@@ -46,7 +46,7 @@ class SettingsBusinessInfoViewTest(TestCase):
         self.assertEqual(updated_settings.phone_number, "1111111111")
 
     def test_settings_business_info_view_post_invalid(self):
-        self.client.login(username=self.staff_user.username, password="testpassword")
+        self.client.login(username=self.staff_user.username, password="password123")
         form_data = {"email_address": "invalid-email"}  # Invalid data
         response = self.client.post(
             reverse("dashboard:settings_business_info"), data=form_data
