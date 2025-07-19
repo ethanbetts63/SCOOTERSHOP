@@ -22,6 +22,7 @@ class ServiceBookingSettingsFormTest(TestCase):
             "drop_off_spacing_mins": 30,
             "max_advance_dropoff_days": 7,
             "latest_same_day_dropoff_time": time(12, 0),
+            "latest_service_day_drop_off": time(10, 0),
             "enable_after_hours_dropoff": False,
             "after_hours_dropoff_disclaimer": "Motorcycle drop-off outside of opening hours is at your own risk.",
             "deposit_calc_method": "FLAT_FEE",
@@ -269,4 +270,17 @@ class ServiceBookingSettingsFormTest(TestCase):
         self.assertIn(
             f"Latest same-day drop-off time must be between {data['drop_off_start_time'].strftime('%H:%M')} and {data['drop_off_end_time'].strftime('%H:%M')}, inclusive.",
             form.errors["latest_same_day_dropoff_time"],
+        )
+
+    def test_latest_service_day_drop_off_time_invalid_before_start(self):
+        data = self.valid_data.copy()
+        data["drop_off_start_time"] = time(9, 0)
+        data["drop_off_end_time"] = time(17, 0)
+        data["latest_service_day_drop_off"] = time(8, 0)
+        form = ServiceBookingSettingsForm(data=data)
+        self.assertFalse(form.is_valid())
+        self.assertIn("latest_service_day_drop_off", form.errors)
+        self.assertIn(
+            f"Latest service day drop-off time must be between {data['drop_off_start_time'].strftime('%H:%M')} and {data['drop_off_end_time'].strftime('%H:%M')}, inclusive.",
+            form.errors["latest_service_day_drop_off"],
         )

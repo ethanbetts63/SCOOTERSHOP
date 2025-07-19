@@ -266,3 +266,10 @@ class GetAvailableDropoffTimesTest(TestCase):
 
         self.assertIsInstance(available_times, list)
         self.assertGreater(len(available_times), 0)
+
+    def test_is_service_date_restricts_time(self):
+        self.service_settings.latest_service_day_drop_off = datetime.time(10, 0)
+        self.service_settings.save()
+        future_date = self.fixed_local_date + datetime.timedelta(days=7)
+        available_times = get_available_dropoff_times(future_date, is_service_date=True)
+        self.assertEqual(available_times, ["09:00", "09:30", "10:00"])
