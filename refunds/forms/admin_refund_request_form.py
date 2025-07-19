@@ -21,6 +21,7 @@ class AdminRefundRequestForm(forms.ModelForm):
         max_length=50,
         label="Booking Reference",
         help_text="Enter the booking reference (e.g., SVC-XXXXX or SBK-XXXXX).",
+        required=False, # Make it not required at field level
     )
 
     status = forms.ChoiceField(

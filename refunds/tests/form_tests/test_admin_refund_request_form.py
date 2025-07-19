@@ -71,7 +71,7 @@ class AdminRefundRequestFormTests(TestCase):
 
     def test_form_valid_data_create_service(self):
         form_data = {
-            "service_booking": self.service_booking_paid.pk,
+            "booking_reference": self.service_booking_paid.service_booking_reference,
             "reason": "Customer requested service refund.",
             "amount_to_refund": "250.00",
         }
@@ -90,7 +90,7 @@ class AdminRefundRequestFormTests(TestCase):
 
     def test_form_valid_data_create_sales(self):
         form_data = {
-            "sales_booking": self.sales_booking_deposit.pk,
+            "booking_reference": self.sales_booking_deposit.sales_booking_reference,
             "reason": "Customer cancelled sale.",
             "amount_to_refund": "100.00",
         }
@@ -114,24 +114,9 @@ class AdminRefundRequestFormTests(TestCase):
         }
         form = AdminRefundRequestForm(data=form_data)
         self.assertFalse(form.is_valid())
-        self.assertIn("__all__", form.errors)
+        self.assertIn("booking_reference", form.errors)
         self.assertEqual(
-            form.errors["__all__"], ["Please select a Service or Sales Booking."]
-        )
-
-    def test_form_invalid_multiple_bookings_selected(self):
-        form_data = {
-            "service_booking": self.service_booking_paid.pk,
-            "sales_booking": self.sales_booking_deposit.pk,
-            "reason": "Test reason",
-            "amount_to_refund": "100.00",
-        }
-        form = AdminRefundRequestForm(data=form_data)
-        self.assertFalse(form.is_valid())
-        self.assertIn("__all__", form.errors)
-        self.assertEqual(
-            form.errors["__all__"],
-            ["Please select only one type of booking (Service, or Sales)."],
+            form.errors["booking_reference"], ["Booking reference is required."]
         )
 
     def test_form_initial_values_for_new_instance(self):
@@ -150,10 +135,16 @@ class AdminRefundRequestFormTests(TestCase):
             status="pending",
         )
 
+        # No form_data for booking_reference, it should be populated by initial
+        form = AdminRefundRequestForm(instance=existing_refund_request)
+        self.assertEqual(form.initial["booking_reference"], self.service_booking_paid.service_booking_reference)
+
+        # Now test with updated data
         form_data = {
-            "service_booking": self.service_booking_paid.pk,
+            "booking_reference": self.service_booking_paid.service_booking_reference, # Must be included in data for POST
             "reason": "Updated service reason",
             "amount_to_refund": "200.00",
+            "status": "pending", # Include status as it's a required field in the form
         }
         form = AdminRefundRequestForm(data=form_data, instance=existing_refund_request)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
@@ -177,10 +168,17 @@ class AdminRefundRequestFormTests(TestCase):
             status="pending",
         )
 
+        # No form_data for booking_reference, it should be populated by initial
+        form = AdminRefundRequestForm(instance=existing_refund_request)
+        self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
+        self.assertEqual(form.initial["booking_reference"], self.sales_booking_deposit.sales_booking_reference)
+
+        # Now test with updated data
         form_data = {
-            "sales_booking": self.sales_booking_deposit.pk,
+            "booking_reference": self.sales_booking_deposit.sales_booking_reference, # Must be included in data for POST
             "reason": "Updated sales reason",
             "amount_to_refund": "75.00",
+            "status": "pending", # Include status as it's a required field in the form
         }
         form = AdminRefundRequestForm(data=form_data, instance=existing_refund_request)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
