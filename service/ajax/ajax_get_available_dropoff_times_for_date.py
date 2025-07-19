@@ -32,7 +32,9 @@ def get_available_dropoff_times_for_date(request):
 
     is_service_date = selected_date == temp_booking.service_date
 
-    available_times = get_available_dropoff_times(selected_date, is_service_date)
+    available_times = get_available_dropoff_times(
+        selected_date, is_service_date=is_service_date
+    )
 
     formatted_times = [
         {"value": time_str, "text": time_str} for time_str in available_times

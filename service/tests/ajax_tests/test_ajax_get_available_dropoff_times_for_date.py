@@ -46,18 +46,21 @@ class AjaxGetAvailableDropoffTimesForDateTest(TestCase):
         self.assertEqual(content["error"], "Invalid date format. Use YYYY-MM-DD.")
         mock_get_available_dropoff_times.assert_not_called()
 
+    @patch("service.ajax.ajax_get_available_dropoff_times_for_date.TempServiceBooking.objects.get")
     @patch(
         "service.ajax.ajax_get_available_dropoff_times_for_date.get_available_dropoff_times"
     )
-    def test_valid_date_no_available_times(self, mock_get_available_dropoff_times):
+    def test_valid_date_no_available_times(self, mock_get_available_dropoff_times, mock_get_temp_booking):
         mock_get_available_dropoff_times.return_value = []
+        mock_temp_booking = mock_get_temp_booking.return_value
+        mock_temp_booking.service_date = datetime.date(2025, 6, 21)
 
         test_date = datetime.date(2025, 6, 20)
         request = self.factory.get(
             f"/ajax/available-times/?date={test_date.strftime('%Y-%m-%d')}"
         )
         request.user = self.user
-        request.session = {}
+        request.session = {"temp_service_booking_uuid": "some_uuid"}
         response = get_available_dropoff_times_for_date(request)
 
         self.assertEqual(response.status_code, 200)
