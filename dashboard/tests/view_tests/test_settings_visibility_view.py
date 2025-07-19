@@ -20,6 +20,13 @@ class SettingsVisibilityViewTest(TestCase):
 
     def test_settings_visibility_view_post_valid(self):
         self.client.login(username=self.staff_user.username, password="password123")
+
+        # Ensure the setting is True before attempting to set it to False
+        settings_instance = SiteSettings.get_settings()
+        settings_instance.enable_service_booking = True
+        settings_instance.save()
+        settings_instance.refresh_from_db() # Ensure it's reloaded after saving
+
         form_data = {
             "enable_service_booking": False,
             "enable_user_accounts": False,
@@ -35,6 +42,7 @@ class SettingsVisibilityViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 302)
         updated_settings = SiteSettings.get_settings()
+        updated_settings.refresh_from_db() # Reload to get the latest state from the database
         self.assertFalse(updated_settings.enable_service_booking)
 
     def test_settings_visibility_view_post_invalid(self):
