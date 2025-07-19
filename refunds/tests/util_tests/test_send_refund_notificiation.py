@@ -396,7 +396,6 @@ class SendRefundNotificationsTest(TestCase):
         args, kwargs = mock_send_templated_email.call_args_list[0]
         self.assertEqual(kwargs["context"]["refund_request"], None)
         self.assertEqual(kwargs["context"]["refund_request_reason"], "")
-        self.assertEqual(kwargs["context"]["refund_request_staff_notes"], "")
         self.assertEqual(
             kwargs["context"]["booking_reference"], booking.service_booking_reference
         )

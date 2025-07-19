@@ -101,18 +101,11 @@ class ProcessRefundView(AdminRequiredMixin, View):
             error_message = f"Stripe error initiating refund: {e.user_message or e}"
             messages.error(request, error_message)
             refund_request.status = "failed"
-            refund_request.staff_notes = (
-                (refund_request.staff_notes or "")
-                + f"\nStripe initiation failed: {e.user_message or e} at {timezone.now()}"
-            )
             refund_request.save()
             return redirect(admin_management_redirect_url)
         except Exception as e:
             error_message = f"An unexpected error occurred: {e}"
             messages.error(request, error_message)
             refund_request.status = "failed"
-            refund_request.staff_notes = (
-                refund_request.staff_notes or ""
-            ) + f"\nUnexpected error during initiation: {e} at {timezone.now()}"
             refund_request.save()
             return redirect(admin_management_redirect_url)

@@ -99,9 +99,6 @@ def send_refund_notifications(
             "booking_type": booking_type_str,
             "customer_name": customer_name,
             "refund_request_reason": refund_request.reason if refund_request else "",
-            "refund_request_staff_notes": (
-                refund_request.staff_notes if refund_request else ""
-            ),
             "SITE_DOMAIN": settings.SITE_DOMAIN,
             "SITE_SCHEME": settings.SITE_SCHEME,
         }

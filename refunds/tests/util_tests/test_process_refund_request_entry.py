@@ -51,7 +51,6 @@ class ProcessRefundRequestEntryTest(TestCase):
         self.assertEqual(refund_request.status, "partially_refunded")
         self.assertTrue(refund_request.is_admin_initiated)
         self.assertIsNotNone(refund_request.processed_at)
-        self.assertIn("initial creation", refund_request.staff_notes)
 
     def test_new_refund_request_creation_sales_booking(self):
         booking = SalesBookingFactory(amount_paid=Decimal("100.00"))
@@ -78,7 +77,6 @@ class ProcessRefundRequestEntryTest(TestCase):
         self.assertEqual(refund_request.status, "refunded")
         self.assertTrue(refund_request.is_admin_initiated)
         self.assertIsNotNone(refund_request.processed_at)
-        self.assertIn("initial creation", refund_request.staff_notes)
 
     def test_existing_refund_request_update_service_booking(self):
         booking = ServiceBookingFactory(amount_paid=Decimal("100.00"))
@@ -95,7 +93,6 @@ class ProcessRefundRequestEntryTest(TestCase):
             status="pending",
             amount_to_refund=Decimal("20.00"),
             stripe_refund_id="re_initial",
-            staff_notes="Initial notes.",
         )
 
         updated_extracted_data = {
@@ -119,8 +116,6 @@ class ProcessRefundRequestEntryTest(TestCase):
             updated_extracted_data["refunded_amount_decimal"],
         )
         self.assertEqual(refund_request.status, "refunded")  # Status updated
-        self.assertIn("updated existing request", refund_request.staff_notes)
-        self.assertIn("Initial notes.", refund_request.staff_notes)  # Notes appended
 
     def test_existing_refund_request_update_sales_booking(self):
         booking = SalesBookingFactory(amount_paid=Decimal("100.00"))
@@ -135,7 +130,6 @@ class ProcessRefundRequestEntryTest(TestCase):
             status="approved",
             amount_to_refund=Decimal("30.00"),
             stripe_refund_id="re_initial_sales",
-            staff_notes="Sales initial notes.",
         )
 
         updated_extracted_data = {
@@ -159,8 +153,6 @@ class ProcessRefundRequestEntryTest(TestCase):
             updated_extracted_data["refunded_amount_decimal"],
         )
         self.assertEqual(refund_request.status, "partially_refunded")
-        self.assertIn("updated existing request", refund_request.staff_notes)
-        self.assertIn("Sales initial notes.", refund_request.staff_notes)
 
     def test_status_setting_refunded(self):
         booking = ServiceBookingFactory(amount_paid=Decimal("100.00"))
@@ -189,29 +181,6 @@ class ProcessRefundRequestEntryTest(TestCase):
             payment, booking, "service_booking", self.extracted_data
         )
         self.assertTrue(refund_request.is_admin_initiated)
-
-    def test_staff_notes_appending_on_update(self):
-        booking = ServiceBookingFactory(amount_paid=Decimal("100.00"))
-        payment = PaymentFactory(service_booking=booking, amount=Decimal("100.00"))
-
-        initial_refund_request = RefundRequestFactory(
-            payment=payment,
-            service_booking=booking,
-            status="pending",
-            staff_notes="First note.",
-        )
-
-        updated_extracted_data = {
-            "stripe_refund_id": "re_updated",
-            "refunded_amount_decimal": Decimal("10.00"),
-        }
-
-        refund_request = process_refund_request_entry(
-            payment, booking, "service_booking", updated_extracted_data
-        )
-        self.assertIn("First note.", refund_request.staff_notes)
-        self.assertIn("updated existing request", refund_request.staff_notes)
-        self.assertGreater(len(refund_request.staff_notes), len("First note."))
 
     def test_no_matching_refund_request_status(self):
         booking = ServiceBookingFactory(amount_paid=Decimal("100.00"))

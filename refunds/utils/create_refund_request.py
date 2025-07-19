@@ -14,7 +14,6 @@ def create_refund_request(
     service_profile=None,
     sales_profile=None,
     is_admin_initiated=False,
-    staff_notes=None,
     initial_status="pending",
 ):
     try:
@@ -43,7 +42,6 @@ def create_refund_request(
                     else None
                 ),
                 is_admin_initiated=is_admin_initiated,
-                staff_notes=staff_notes if staff_notes is not None else "",
                 service_profile=service_profile,
                 sales_profile=sales_profile,
             )

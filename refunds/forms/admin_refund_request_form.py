@@ -7,18 +7,20 @@ from decimal import Decimal
 
 
 class AdminRefundRequestForm(forms.ModelForm):
-    service_booking = forms.ModelChoiceField(
-        queryset=ServiceBooking.objects.filter(
-            payment_status__in=["paid", "deposit_paid", "refunded"]
-        ).order_by("-created_at"),
-        label="Select Service Booking",
-        help_text="Choose a Service Booking (Paid, Deposit Paid, or Refunded status).",
-        required=False,
-    )
+    from django import forms
+from django.core.exceptions import ValidationError
+from refunds.models.RefundRequest import RefundRequest
+from service.models import ServiceBooking
+from inventory.models import SalesBooking
+from decimal import Decimal
+import re
 
-    sales_booking = forms.IntegerField(
-        required=False,
-        widget=forms.HiddenInput(),
+
+class AdminRefundRequestForm(forms.ModelForm):
+    booking_reference = forms.CharField(
+        max_length=50,
+        label="Booking Reference",
+        help_text="Enter the booking reference (e.g., SVC-XXXXX or SBK-XXXXX).",
     )
 
     status = forms.ChoiceField(
@@ -31,10 +33,8 @@ class AdminRefundRequestForm(forms.ModelForm):
     class Meta:
         model = RefundRequest
         fields = [
-            "service_booking",
-            "sales_booking",
+            "booking_reference",
             "reason",
-            "staff_notes",
             "amount_to_refund",
             "status",
         ]
@@ -43,12 +43,6 @@ class AdminRefundRequestForm(forms.ModelForm):
                 attrs={
                     "rows": 4,
                     "placeholder": "Optional: Reason for refund request (e.g., customer cancellation, service issue).",
-                }
-            ),
-            "staff_notes": forms.Textarea(
-                attrs={
-                    "rows": 4,
-                    "placeholder": "Internal notes regarding the refund processing.",
                 }
             ),
         }
@@ -64,95 +58,93 @@ class AdminRefundRequestForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields["reason"].required = False
-        self.fields["staff_notes"].required = False
         self.fields["amount_to_refund"].required = True
 
-        # If we are editing an existing instance, we need to populate the initial value
-        # for our hidden sales_booking field.
-        if self.instance and self.instance.pk and self.instance.sales_booking:
-            self.initial["sales_booking"] = self.instance.sales_booking.pk
+        # If editing an existing instance, populate booking_reference
+        if self.instance and self.instance.pk:
+            if self.instance.service_booking:
+                self.initial["booking_reference"] = self.instance.service_booking.service_booking_reference
+            elif self.instance.sales_booking:
+                self.initial["booking_reference"] = self.instance.sales_booking.sales_booking_reference
 
     def clean(self):
         cleaned_data = super().clean()
-        service_booking = cleaned_data.get("service_booking")
-        sales_booking_id = cleaned_data.get("sales_booking")
+        booking_reference = cleaned_data.get("booking_reference")
         amount_to_refund = cleaned_data.get("amount_to_refund")
 
-        print(f"DEBUG: In clean method - service_booking: {service_booking}, sales_booking_id: {sales_booking_id}")
+        booking_object = None
+        payment_object = None
+        booking_type = None
 
-        # Convert sales_booking_id to a model instance
-        sales_booking = None
-        if sales_booking_id:
-            try:
-                sales_booking = SalesBooking.objects.get(pk=sales_booking_id)
-                cleaned_data["sales_booking"] = sales_booking
-                print(f"DEBUG: Sales booking found: {sales_booking}")
-            except SalesBooking.DoesNotExist:
-                self.add_error("sales_booking", "Invalid Sales Booking selected.")
-                print(f"DEBUG: Sales booking with ID {sales_booking_id} not found.")
+        if booking_reference:
+            # Try to find service booking
+            if re.match(r"^(SERVICE|SVC)-\w+", booking_reference, re.IGNORECASE):
+                try:
+                    booking_object = ServiceBooking.objects.get(
+                        service_booking_reference__iexact=booking_reference
+                    )
+                    payment_object = booking_object.payment
+                    booking_type = "service"
+                except ServiceBooking.DoesNotExist:
+                    pass
 
-        # Validation logic
-        selected_bookings = [
-            b for b in [service_booking, sales_booking] if b is not None
-        ]
-        print(f"DEBUG: Selected bookings after processing: {selected_bookings}")
-        if len(selected_bookings) > 1:
-            raise ValidationError(
-                "Please select only one type of booking (Service, or Sales)."
-            )
-        if not selected_bookings:
-            raise ValidationError("Please select a Service or Sales Booking.")
+            # If not found, try to find sales booking
+            if not booking_object and re.match(r"^SBK-\w+", booking_reference, re.IGNORECASE):
+                try:
+                    booking_object = SalesBooking.objects.get(
+                        sales_booking_reference__iexact=booking_reference
+                    )
+                    payment_object = booking_object.payment
+                    booking_type = "sales"
+                except SalesBooking.DoesNotExist:
+                    pass
 
-        selected_booking = selected_bookings[0]
-        max_refund_amount = Decimal("0.00")
-
-        # Prepare instance for saving
-        self.instance.service_booking = None
-        self.instance.service_profile = None
-        self.instance.sales_booking = None
-        self.instance.sales_profile = None
-        self.instance.payment = None
-
-        if service_booking:
-            if not service_booking.payment:
+            if not booking_object:
                 self.add_error(
-                    "service_booking",
-                    "Selected Service Booking does not have an associated payment record.",
+                    "booking_reference",
+                    "No booking found with this reference number.",
                 )
-                return cleaned_data
-            self.instance.payment = service_booking.payment
-            self.instance.service_booking = service_booking
-            self.instance.service_profile = service_booking.service_profile
-            max_refund_amount = service_booking.payment.amount
+            elif not payment_object:
+                self.add_error(
+                    "booking_reference",
+                    "No payment record found for this booking.",
+                )
+            elif payment_object.status != "succeeded":
+                self.add_error(
+                    "booking_reference",
+                    "This booking's payment is not in a 'succeeded' status and is not eligible for a refund.",
+                )
+            else:
+                # Assign the found booking object to the instance
+                self.instance.service_booking = None
+                self.instance.sales_booking = None
+                self.instance.payment = payment_object
 
-        elif sales_booking:
-            if not sales_booking.payment:
-                self.add_error(
-                    "sales_booking",
-                    "Selected Sales Booking does not have an associated payment record.",
-                )
-                return cleaned_data
-            self.instance.payment = sales_booking.payment
-            self.instance.sales_booking = sales_booking
-            self.instance.sales_profile = sales_booking.sales_profile
-            max_refund_amount = sales_booking.payment.amount
+                if booking_type == "service":
+                    self.instance.service_booking = booking_object
+                    self.instance.service_profile = booking_object.service_profile
+                elif booking_type == "sales":
+                    self.instance.sales_booking = booking_object
+                    self.instance.sales_profile = booking_object.sales_profile
 
-        if selected_booking and amount_to_refund is not None:
-            if amount_to_refund < 0:
-                self.add_error(
-                    "amount_to_refund", "Amount to refund cannot be a negative value."
-                )
-            elif amount_to_refund > max_refund_amount:
-                self.add_error(
-                    "amount_to_refund",
-                    f"Amount to refund (${amount_to_refund}) cannot exceed the amount paid for this booking (${max_refund_amount}).",
-                )
+                max_refund_amount = payment_object.amount
+
+                if amount_to_refund is not None:
+                    if amount_to_refund < 0:
+                        self.add_error(
+                            "amount_to_refund", "Amount to refund cannot be a negative value."
+                        )
+                    elif amount_to_refund > max_refund_amount:
+                        self.add_error(
+                            "amount_to_refund",
+                            f"Amount to refund (${amount_to_refund}) cannot exceed the amount paid for this booking (${max_refund_amount}).",
+                        )
+        else:
+            self.add_error("booking_reference", "Booking reference is required.")
 
         return cleaned_data
 
     def save(self, commit=True):
-        # The clean method has already correctly assigned the sales_booking instance
-        # to self.instance.sales_booking, so super().save() will work correctly.
         refund_request = super().save(commit=False)
         if commit:
             refund_request.save()

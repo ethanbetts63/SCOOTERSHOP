@@ -50,8 +50,6 @@ def reject_sales_booking(
                         requesting_user=requesting_user,
                         sales_profile=booking.sales_profile,
                         is_admin_initiated=True,
-                        staff_notes=f"Admin rejected booking and initiated refund request for {booking.sales_booking_reference}. Amount: {refund_amount_value}"
-                        + (f" Admin message: {message}" if message else ""),
                         initial_status="approved",
                     )
 

@@ -11,10 +11,7 @@ def search_service_bookings_ajax(request):
     search_term = request.GET.get("query", "").strip()
     bookings_data = []
 
-    print(f"DEBUG: search_service_bookings_ajax - search_term: {search_term}")
-
     if not request.user.is_staff:
-        print("DEBUG: search_service_bookings_ajax - Permission denied (not staff)")
         return JsonResponse({"error": "Permission denied"}, status=403)
 
     if search_term:
@@ -41,9 +38,6 @@ def search_service_bookings_ajax(request):
             .distinct()
             .order_by("-dropoff_date")
         )
-        print(f"DEBUG: search_service_bookings_ajax - Queryset count: {queryset.count()}")
-        print(f"DEBUG: search_service_bookings_ajax - Queryset first 5: {list(queryset[:5])}")
-
 
         for booking in queryset[:20]:
             customer_name = "N/A"
@@ -71,7 +65,5 @@ def search_service_bookings_ajax(request):
                     "payment_status": booking.get_payment_status_display(),
                 }
             )
-        print(f"DEBUG: search_service_bookings_ajax - Bookings data length: {len(bookings_data)}")
-        print(f"DEBUG: search_service_bookings_ajax - Bookings data (first item): {bookings_data[0] if bookings_data else 'N/A'}")
 
     return JsonResponse({"bookings": bookings_data})

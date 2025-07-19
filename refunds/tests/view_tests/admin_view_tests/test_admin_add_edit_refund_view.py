@@ -72,7 +72,6 @@ class AdminAddEditRefundRequestViewTest(TestCase):
             "payment": self.payment.pk,
             "amount_to_refund": "50.00",
             "reason": "Test Reason",
-            "staff_notes": "Test Staff Notes",
             "status": "reviewed_pending_approval",
         }
         response = self.client.post(self.add_url, data=form_data)
@@ -91,7 +90,6 @@ class AdminAddEditRefundRequestViewTest(TestCase):
             "payment": self.payment.pk,
             "amount_to_refund": "50.00",
             "reason": "Test Reason",
-            "staff_notes": "Test Staff Notes",
             "status": "reviewed_pending_approval",
         }
         response = self.client.post(self.add_url, data=form_data)
@@ -122,7 +120,6 @@ class AdminAddEditRefundRequestViewTest(TestCase):
             "payment": self.payment.pk,
             "amount_to_refund": "20.00",
             "reason": "New Reason",
-            "staff_notes": "New Staff Notes",
             "status": "approved",
         }
         response = self.client.post(edit_url, data=form_data)
@@ -153,7 +150,6 @@ class AdminAddEditRefundRequestViewTest(TestCase):
             "payment": self.payment.pk,
             "amount_to_refund": "20.00",
             "reason": "New Reason",
-            "staff_notes": "New Staff Notes",
             "status": "refunded",
         }
         response = self.client.post(edit_url, data=form_data)

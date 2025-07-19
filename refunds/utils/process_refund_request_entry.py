@@ -40,7 +40,6 @@ def process_refund_request_entry(
             ),
             is_admin_initiated=True,
             processed_at=timezone.now(),
-            staff_notes="Refund processed automatically via Stripe webhook (initial creation).",
         )
     else:
         refund_request.stripe_refund_id = (
@@ -51,10 +50,6 @@ def process_refund_request_entry(
             "refunded" if payment_obj.status == "refunded" else "partially_refunded"
         )
         refund_request.processed_at = timezone.now()
-        refund_request.staff_notes = (
-            (refund_request.staff_notes or "")
-            + "\nRefund processed automatically via Stripe webhook (updated existing request)."
-        )
         refund_request.save()
 
     return refund_request

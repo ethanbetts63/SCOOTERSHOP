@@ -99,7 +99,6 @@ class CreateRefundRequestTest(TestCase):
             requesting_user=self.admin_user,
             service_profile=self.service_profile,
             is_admin_initiated=True,
-            staff_notes="Internal notes for admin action",
             initial_status="approved",
         )
 
@@ -110,7 +109,6 @@ class CreateRefundRequestTest(TestCase):
         self.assertEqual(refund_request.processed_by, self.admin_user)
         self.assertIsNotNone(refund_request.processed_at)
         self.assertTrue(refund_request.is_admin_initiated)
-        self.assertEqual(refund_request.staff_notes, "Internal notes for admin action")
 
     def test_create_refund_request_admin_initiated_pending_approval(self):
         booking = SalesBookingFactory(sales_profile=self.sales_profile)

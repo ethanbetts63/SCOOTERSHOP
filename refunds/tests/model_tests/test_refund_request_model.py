@@ -356,14 +356,6 @@ class RefundRequestModelTest(TestCase):
             delta=datetime.timedelta(seconds=1),
         )
 
-    def test_staff_notes_field(self):
-        notes = "Followed up with customer; refund processed on 2023-01-15."
-        refund_request = RefundRequestFactory.create(staff_notes=notes)
-        self.assertEqual(refund_request.staff_notes, notes)
-
-        refund_request_blank = RefundRequestFactory.create(staff_notes="")
-        self.assertEqual(refund_request_blank.staff_notes, "")
-
     def test_stripe_refund_id_field(self):
         stripe_id = "re_123abcDEFgHIJKLmnopqrsTUV"
         refund_request = RefundRequestFactory.create(stripe_refund_id=stripe_id)

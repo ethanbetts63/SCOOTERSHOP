@@ -55,7 +55,6 @@ class RefundRequestFactory(factory.django.DjangoModelFactory):
     )
     processed_by = None
     processed_at = None
-    staff_notes = factory.Faker("paragraph")
     stripe_refund_id = factory.Sequence(lambda n: f"re_{uuid.uuid4().hex[:24]}_{n}")
     is_admin_initiated = factory.Faker("boolean")
     refund_calculation_details = factory.LazyFunction(

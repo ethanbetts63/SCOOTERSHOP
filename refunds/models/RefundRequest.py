@@ -99,10 +99,6 @@ class RefundRequest(models.Model):
         blank=True,
         help_text="Timestamp when the request was processed by staff.",
     )
-    staff_notes = models.TextField(
-        blank=True,
-        help_text="Internal notes from staff regarding the processing of this request.",
-    )
     stripe_refund_id = models.CharField(
         max_length=255,
         blank=True,

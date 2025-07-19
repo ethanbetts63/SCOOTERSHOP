@@ -73,7 +73,6 @@ class AdminRefundRequestFormTests(TestCase):
         form_data = {
             "service_booking": self.service_booking_paid.pk,
             "reason": "Customer requested service refund.",
-            "staff_notes": "Service refund processed.",
             "amount_to_refund": "250.00",
         }
         form = AdminRefundRequestForm(data=form_data)
@@ -85,7 +84,6 @@ class AdminRefundRequestFormTests(TestCase):
         self.assertEqual(refund_request.payment, self.payment_succeeded_service)
         self.assertEqual(refund_request.service_profile, self.service_profile)
         self.assertEqual(refund_request.reason, "Customer requested service refund.")
-        self.assertEqual(refund_request.staff_notes, "Service refund processed.")
         self.assertEqual(refund_request.amount_to_refund, Decimal("250.00"))
         self.assertIsNotNone(refund_request.requested_at)
         self.assertEqual(RefundRequest.objects.count(), 1)
@@ -94,7 +92,6 @@ class AdminRefundRequestFormTests(TestCase):
         form_data = {
             "sales_booking": self.sales_booking_deposit.pk,
             "reason": "Customer cancelled sale.",
-            "staff_notes": "Sales deposit refund initiated.",
             "amount_to_refund": "100.00",
         }
         form = AdminRefundRequestForm(data=form_data)
@@ -106,7 +103,6 @@ class AdminRefundRequestFormTests(TestCase):
         self.assertEqual(refund_request.payment, self.payment_deposit_sales)
         self.assertEqual(refund_request.sales_profile, self.sales_profile)
         self.assertEqual(refund_request.reason, "Customer cancelled sale.")
-        self.assertEqual(refund_request.staff_notes, "Sales deposit refund initiated.")
         self.assertEqual(refund_request.amount_to_refund, Decimal("100.00"))
         self.assertIsNotNone(refund_request.requested_at)
         self.assertEqual(RefundRequest.objects.count(), 1)
@@ -114,7 +110,6 @@ class AdminRefundRequestFormTests(TestCase):
     def test_form_invalid_no_booking_selected(self):
         form_data = {
             "reason": "Test reason",
-            "staff_notes": "Test notes",
             "amount_to_refund": "100.00",
         }
         form = AdminRefundRequestForm(data=form_data)
@@ -129,7 +124,6 @@ class AdminRefundRequestFormTests(TestCase):
             "service_booking": self.service_booking_paid.pk,
             "sales_booking": self.sales_booking_deposit.pk,
             "reason": "Test reason",
-            "staff_notes": "Test notes",
             "amount_to_refund": "100.00",
         }
         form = AdminRefundRequestForm(data=form_data)
@@ -151,7 +145,6 @@ class AdminRefundRequestFormTests(TestCase):
             payment=self.payment_succeeded_service,
             service_profile=self.service_profile,
             reason="Original service reason",
-            staff_notes="Original service notes",
             amount_to_refund=Decimal("150.00"),
             is_admin_initiated=True,
             status="pending",
@@ -160,7 +153,6 @@ class AdminRefundRequestFormTests(TestCase):
         form_data = {
             "service_booking": self.service_booking_paid.pk,
             "reason": "Updated service reason",
-            "staff_notes": "Updated service notes.",
             "amount_to_refund": "200.00",
         }
         form = AdminRefundRequestForm(data=form_data, instance=existing_refund_request)
@@ -169,7 +161,6 @@ class AdminRefundRequestFormTests(TestCase):
         updated_refund_request = form.save()
         self.assertEqual(updated_refund_request.pk, existing_refund_request.pk)
         self.assertEqual(updated_refund_request.reason, "Updated service reason")
-        self.assertEqual(updated_refund_request.staff_notes, "Updated service notes.")
         self.assertEqual(updated_refund_request.amount_to_refund, Decimal("200.00"))
         self.assertEqual(updated_refund_request.status, "pending")
         self.assertTrue(updated_refund_request.is_admin_initiated)
@@ -181,7 +172,6 @@ class AdminRefundRequestFormTests(TestCase):
             payment=self.payment_deposit_sales,
             sales_profile=self.sales_profile,
             reason="Original sales reason",
-            staff_notes="Original sales notes",
             amount_to_refund=Decimal("50.00"),
             is_admin_initiated=True,
             status="pending",
@@ -190,7 +180,6 @@ class AdminRefundRequestFormTests(TestCase):
         form_data = {
             "sales_booking": self.sales_booking_deposit.pk,
             "reason": "Updated sales reason",
-            "staff_notes": "Updated sales notes.",
             "amount_to_refund": "75.00",
         }
         form = AdminRefundRequestForm(data=form_data, instance=existing_refund_request)
@@ -199,7 +188,6 @@ class AdminRefundRequestFormTests(TestCase):
         updated_refund_request = form.save()
         self.assertEqual(updated_refund_request.pk, existing_refund_request.pk)
         self.assertEqual(updated_refund_request.reason, "Updated sales reason")
-        self.assertEqual(updated_refund_request.staff_notes, "Updated sales notes.")
         self.assertEqual(updated_refund_request.amount_to_refund, Decimal("75.00"))
         self.assertEqual(updated_refund_request.status, "pending")
         self.assertTrue(updated_refund_request.is_admin_initiated)

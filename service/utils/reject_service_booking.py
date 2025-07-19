@@ -52,8 +52,6 @@ def reject_service_booking(
                         requesting_user=requesting_user,
                         service_profile=booking.service_profile,
                         is_admin_initiated=True,
-                        staff_notes=f"Admin rejected booking and initiated refund request for {booking.service_booking_reference}. Amount: {refund_amount_value}"
-                        + (f" Admin message: {message}" if message else ""),
                         initial_status="reviewed_pending_approval",
                     )
 
