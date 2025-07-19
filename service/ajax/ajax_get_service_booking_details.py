@@ -1,4 +1,3 @@
-import traceback
 from django.http import JsonResponse, Http404
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET
@@ -150,3 +149,4 @@ def get_service_booking_details_json(request, pk):
         return JsonResponse(
             {"error": f"An unexpected error occurred: {str(e)}"}, status=500
         )
+
