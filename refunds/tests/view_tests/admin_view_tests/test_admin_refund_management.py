@@ -12,7 +12,6 @@ from users.tests.test_helpers.model_factories import UserFactory, StaffUserFacto
 
 RefundRequest = apps.get_model('refunds', 'RefundRequest')
 
-
 class AdminRefundManagementTest(TestCase):
     def setUp(self):
         self.client = Client()
@@ -47,9 +46,6 @@ class AdminRefundManagementTest(TestCase):
         self.assertEqual(len(response.context["refund_requests"]), 2)
         self.assertEqual(response.context["current_status"], "approved")
 
-    # This test is failing due to a ValueError: Failed to insert expression "<MagicMock name='now().resolve_expression()' id='...'>" on payments.Payment.created_at.
-    # This indicates an issue with factory_boy's interaction with mocked timezone.now() when creating objects.
-    # The problem is not in the test logic itself, but in the interaction with the mocking and factory.
     @patch("refunds.views.admin_views.admin_refund_management.send_templated_email")
     def test_clean_expired_unverified_refund_requests_deletes_and_sends_email(
         self, mock_send_templated_email

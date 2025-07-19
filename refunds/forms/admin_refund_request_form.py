@@ -1,20 +1,8 @@
 from django import forms
-from django.core.exceptions import ValidationError
 from refunds.models.RefundRequest import RefundRequest
 from service.models import ServiceBooking
 from inventory.models import SalesBooking
-from decimal import Decimal
-
-
-class AdminRefundRequestForm(forms.ModelForm):
-    from django import forms
-from django.core.exceptions import ValidationError
-from refunds.models.RefundRequest import RefundRequest
-from service.models import ServiceBooking
-from inventory.models import SalesBooking
-from decimal import Decimal
 import re
-
 
 class AdminRefundRequestForm(forms.ModelForm):
     booking_reference = forms.CharField(
