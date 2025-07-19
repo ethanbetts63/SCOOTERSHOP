@@ -2,16 +2,10 @@ from django.test import TestCase
 from django.utils import timezone
 import datetime
 from unittest.mock import patch
-
-
 from service.utils.get_available_service_dropoff_times import (
     get_available_dropoff_times,
 )
-
-
 from service.models import ServiceSettings, ServiceBooking
-
-
 from service.tests.test_helpers.model_factories import (
     ServiceBookingFactory,
     ServiceSettingsFactory,

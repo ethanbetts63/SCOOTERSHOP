@@ -3,11 +3,7 @@ from django.utils import timezone
 from service.models import ServiceSettings, ServiceBooking
 
 
-def get_available_dropoff_times(selected_date):
-    """
-    Calculates available drop-off time slots for a given date based on service settings,
-    excluding times that are already booked or in the past for same-day bookings.
-    """
+def get_available_dropoff_times(selected_date, is_service_date=False):
     service_settings = ServiceSettings.objects.first()
     if not service_settings:
         return []
@@ -19,9 +15,9 @@ def get_available_dropoff_times(selected_date):
     end_time_obj = service_settings.drop_off_end_time
 
     # Adjust end time for same-day drop-offs if a specific latest time is set
-    if selected_date <= today_local:
-        if service_settings.latest_same_day_dropoff_time < end_time_obj:
-            end_time_obj = service_settings.latest_same_day_dropoff_time
+    if is_service_date:
+        if service_settings.latest_service_day_drop_off < end_time_obj:
+            end_time_obj = service_settings.latest_service_day_drop_off
 
     spacing_minutes = service_settings.drop_off_spacing_mins
     potential_slots = []

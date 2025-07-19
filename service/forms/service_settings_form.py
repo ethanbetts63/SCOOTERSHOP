@@ -16,6 +16,7 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             "drop_off_spacing_mins",
             "max_advance_dropoff_days",
             "latest_same_day_dropoff_time",
+            "latest_service_day_drop_off",
             "enable_after_hours_dropoff",
             "after_hours_dropoff_disclaimer",
             "after_hours_drop_off_instructions",
@@ -51,6 +52,9 @@ class ServiceBookingSettingsForm(forms.ModelForm):
                 attrs={"class": "form-control", "min": "0"}
             ),
             "latest_same_day_dropoff_time": forms.TimeInput(
+                attrs={"class": "form-control", "type": "time"}
+            ),
+            "latest_service_day_drop_off": forms.TimeInput(
                 attrs={"class": "form-control", "type": "time"}
             ),
             "enable_after_hours_dropoff": forms.CheckboxInput(
@@ -93,6 +97,7 @@ class ServiceBookingSettingsForm(forms.ModelForm):
         start_time = cleaned_data.get("drop_off_start_time")
         end_time = cleaned_data.get("drop_off_end_time")
         latest_same_day_dropoff = cleaned_data.get("latest_same_day_dropoff_time")
+        latest_service_day_drop_off = cleaned_data.get("latest_service_day_drop_off")
 
         if start_time and end_time and start_time >= end_time:
             self.add_error(
@@ -135,6 +140,22 @@ class ServiceBookingSettingsForm(forms.ModelForm):
                 "latest_same_day_dropoff_time",
                 _(
                     f"Latest same-day drop-off time must be between {start_time.strftime('%H:%M')} and {end_time.strftime('%H:%M')}, inclusive."
+                ),
+            )
+
+        if (
+            latest_service_day_drop_off
+            and start_time
+            and end_time
+            and (
+                latest_service_day_drop_off < start_time
+                or latest_service_day_drop_off > end_time
+            )
+        ):
+            self.add_error(
+                "latest_service_day_drop_off",
+                _(
+                    f"Latest service day drop-off time must be between {start_time.strftime('%H:%M')} and {end_time.strftime('%H:%M')}, inclusive."
                 ),
             )
 
