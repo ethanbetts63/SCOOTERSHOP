@@ -12,7 +12,7 @@ class AdminCreateRefundRequestViewTest(TestCase):
         self.client = Client()
         self.admin_user = UserFactory(is_staff=True, is_superuser=True)
         self.client.force_login(self.admin_user)
-        self.create_url = reverse("refunds:admin_create_refund_request")
+        self.create_url = reverse("refunds:add_refund_request")
 
     def test_get_create_refund_request_view(self):
         response = self.client.get(self.create_url)
@@ -21,9 +21,9 @@ class AdminCreateRefundRequestViewTest(TestCase):
         self.assertIn("form", response.context)
 
     def test_create_refund_request_for_service_booking_successfully(self):
-        service_booking = ServiceBookingFactory()
+        service_booking = ServiceBookingFactory(payment__status='succeeded')
         form_data = {
-            "service_booking": service_booking.id,
+            "booking_reference": service_booking.service_booking_reference,
             "reason": "Test reason",
             "amount_to_refund": "100.00",
             "request_email": "test@example.com",
@@ -32,12 +32,12 @@ class AdminCreateRefundRequestViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), f"Refund Request for booking '{service_booking.service_booking_reference}' created successfully! Current Status: Reviewed Pending Approval")
+        self.assertEqual(str(messages[0]), f"Refund Request for booking '{service_booking.service_booking_reference}' created successfully! Current Status: Reviewed - Pending Approval")
 
     def test_create_refund_request_for_sales_booking_successfully(self):
-        sales_booking = SalesBookingFactory()
+        sales_booking = SalesBookingFactory(payment__status='succeeded')
         form_data = {
-            "sales_booking": sales_booking.id,
+            "booking_reference": sales_booking.sales_booking_reference,
             "reason": "Test reason",
             "amount_to_refund": "200.00",
             "request_email": "test2@example.com",
@@ -46,7 +46,7 @@ class AdminCreateRefundRequestViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), f"Refund Request for booking '{sales_booking.sales_booking_reference}' created successfully! Current Status: Reviewed Pending Approval")
+        self.assertEqual(str(messages[0]), f"Refund Request for booking '{sales_booking.sales_booking_reference}' created successfully! Current Status: Reviewed - Pending Approval")
 
     def test_create_refund_request_invalid_form(self):
         form_data = {"reason": ""}  # Invalid data
