@@ -69,6 +69,16 @@ In the event of any inconsistency between these Terms and terms and conditions c
 This business may assign or transfer its rights and obligations under these Terms to another organisation, but this will not affect your rights or This business's obligations under this Agreement or these Terms.
 Contacting Us
 If you have a question, problem or complaint or need to contact us for any other reason, please contact the Dealer.
+
+`After-Hours Vehicle Drop-Off & Limitation of Liability
+
+a. General: The after-hours drop-off service (the "Service") is provided as a convenience to the Customer. Use of the Service constitutes the Customer's express agreement to the terms outlined in this clause.
+
+b. No Assumption of Liability: Allbikes and Vespa Warehouse assumes no custody, care, control, or liability whatsoever for any vehicle left by a Customer on or near its premises outside of stated business hours.
+
+c. Commencement of Bailment: The legal bailment, and therefore Allbikes and Vespa Warehouse's assumption of responsibility for the Customer's vehicle, shall commence only at the point in time when Allbikes and Vespa Warehouse personnel have (i) retrieved the keys from the key drop location, and (ii) physically moved the vehicle into our secure workshop during regular business hours.
+
+d. Release of Claims: The Customer hereby releases and holds harmless Allbikes and Vespa Warehouse, its employees, and agents from any and all claims, damages, and losses arising from theft, vandalism, fire, weather-related damage, or any other cause of loss to their motorcycle prior to the formal commencement of bailment as defined in c.
 """
     )
     version_number = models.PositiveIntegerField(unique=True, blank=True)
