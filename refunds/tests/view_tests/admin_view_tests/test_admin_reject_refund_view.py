@@ -3,13 +3,11 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from unittest.mock import patch, ANY
 from refunds.forms.admin_reject_refund_form import AdminRejectRefundForm
-from payments.tests.test_helpers.model_factories import (
-    RefundRequestFactory,
-    ServiceBookingFactory,
-    SalesBookingFactory,
-    SalesProfileFactory,
-)
-from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory
+from users.tests.test_helpers.model_factories import StaffUserFactory
+from inventory.tests.test_helpers.model_factories import SalesBookingFactory, SalesProfileFactory
+from service.tests.test_helpers.model_factories import ServiceBookingFactory
+from refunds.tests.test_helpers.model_factories import RefundRequestFactory
+from users.tests.test_helpers.model_factories import StaffUserFactory
 from django.utils import timezone
 from django.conf import settings
 

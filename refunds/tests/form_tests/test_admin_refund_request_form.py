@@ -170,7 +170,6 @@ class AdminRefundRequestFormTests(TestCase):
 
         # No form_data for booking_reference, it should be populated by initial
         form = AdminRefundRequestForm(instance=existing_refund_request)
-        self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors}")
         self.assertEqual(form.initial["booking_reference"], self.sales_booking_deposit.sales_booking_reference)
 
         # Now test with updated data
