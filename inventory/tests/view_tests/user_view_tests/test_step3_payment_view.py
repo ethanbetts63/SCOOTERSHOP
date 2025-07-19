@@ -158,8 +158,8 @@ class Step3PaymentViewTest(TestCase):
         "inventory.views.user_views.step3_payment_view.create_or_update_sales_payment_intent"
     )
     def test_get_invalid_amount_redirects(self, mock_create_update):
-        self.temp_booking.amount_paid = Decimal("0.00")
-        self.temp_booking.save()
+        self.inventory_settings.deposit_amount = Decimal("0.00")
+        self.inventory_settings.save()
 
         response = self.client.get(self.base_url)
         self.assertRedirects(

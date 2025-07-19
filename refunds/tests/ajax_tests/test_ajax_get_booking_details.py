@@ -54,4 +54,4 @@ class AjaxGetBookingDetailsTest(TestCase):
     def test_unauthenticated_access(self):
         self.client.logout()
         response = self.client.get(self.url, {'booking_reference': self.service_booking.service_booking_reference})
-        self.assertEqual(response.status_code, 302) # Should redirect to login
+        self.assertEqual(response.status_code, 401) # Should return 401 Unauthorized
