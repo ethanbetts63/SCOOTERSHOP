@@ -7,7 +7,6 @@ from decimal import Decimal
 
 
 class AdminRefundRequestForm(forms.ModelForm):
-    # Service booking remains a dropdown as it's simpler.
     service_booking = forms.ModelChoiceField(
         queryset=ServiceBooking.objects.filter(
             payment_status__in=["paid", "deposit_paid", "refunded"]
@@ -17,8 +16,6 @@ class AdminRefundRequestForm(forms.ModelForm):
         required=False,
     )
 
-    # Sales booking is now an IntegerField with a hidden widget.
-    # The template's JavaScript will populate this hidden field with the selected booking's ID.
     sales_booking = forms.IntegerField(
         required=False,
         widget=forms.HiddenInput(),
@@ -33,7 +30,6 @@ class AdminRefundRequestForm(forms.ModelForm):
 
     class Meta:
         model = RefundRequest
-        # Note: 'sales_booking' is still here so Django knows to process it.
         fields = [
             "service_booking",
             "sales_booking",
@@ -82,19 +78,24 @@ class AdminRefundRequestForm(forms.ModelForm):
         sales_booking_id = cleaned_data.get("sales_booking")
         amount_to_refund = cleaned_data.get("amount_to_refund")
 
+        print(f"DEBUG: In clean method - service_booking: {service_booking}, sales_booking_id: {sales_booking_id}")
+
         # Convert sales_booking_id to a model instance
         sales_booking = None
         if sales_booking_id:
             try:
                 sales_booking = SalesBooking.objects.get(pk=sales_booking_id)
                 cleaned_data["sales_booking"] = sales_booking
+                print(f"DEBUG: Sales booking found: {sales_booking}")
             except SalesBooking.DoesNotExist:
                 self.add_error("sales_booking", "Invalid Sales Booking selected.")
+                print(f"DEBUG: Sales booking with ID {sales_booking_id} not found.")
 
         # Validation logic
         selected_bookings = [
             b for b in [service_booking, sales_booking] if b is not None
         ]
+        print(f"DEBUG: Selected bookings after processing: {selected_bookings}")
         if len(selected_bookings) > 1:
             raise ValidationError(
                 "Please select only one type of booking (Service, or Sales)."

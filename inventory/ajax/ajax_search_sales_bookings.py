@@ -11,6 +11,8 @@ def search_sales_bookings_ajax(request):
     search_term = request.GET.get("query", "").strip()
     bookings_data = []
 
+    print(f"DEBUG: search_sales_bookings_ajax - search_term: {search_term}")
+
     if search_term:
         search_query = (
             Q(sales_booking_reference__icontains=search_term)
@@ -30,6 +32,8 @@ def search_sales_bookings_ajax(request):
         queryset = (
             SalesBooking.objects.filter(search_query).distinct().order_by("-created_at")
         )
+        print(f"DEBUG: search_sales_bookings_ajax - Queryset count: {queryset.count()}")
+        print(f"DEBUG: search_sales_bookings_ajax - Queryset first 5: {list(queryset[:5])}")
 
         for booking in queryset[:20]:
             customer_name = (
@@ -51,5 +55,7 @@ def search_sales_bookings_ajax(request):
                     "payment_status": booking.get_payment_status_display(),
                 }
             )
+        print(f"DEBUG: search_sales_bookings_ajax - Bookings data length: {len(bookings_data)}")
+        print(f"DEBUG: search_sales_bookings_ajax - Bookings data (first item): {bookings_data[0] if bookings_data else 'N/A'}")
 
     return JsonResponse({"bookings": bookings_data})

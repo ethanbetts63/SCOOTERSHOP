@@ -9,7 +9,8 @@ from .views.user_views import (
 
 from .views.admin_views import (
     AdminRefundManagement,
-    AdminAddEditRefundRequestView,
+    AdminCreateRefundRequestView,
+    AdminEditRefundRequestView,
     ProcessRefundView,
     AdminRejectRefundView,
     admin_refund_settings_view,
@@ -49,12 +50,12 @@ urlpatterns = [
     ),
     path(
         "settings/refunds/add/",
-        AdminAddEditRefundRequestView.as_view(),
+        AdminCreateRefundRequestView.as_view(),
         name="add_refund_request",
     ),
     path(
         "settings/refunds/edit/<int:pk>/",
-        AdminAddEditRefundRequestView.as_view(),
+        AdminEditRefundRequestView.as_view(),
         name="edit_refund_request",
     ),
     path(
