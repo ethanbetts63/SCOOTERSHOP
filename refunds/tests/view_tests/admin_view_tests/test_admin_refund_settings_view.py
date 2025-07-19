@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
-from payments.tests.test_helpers.model_factories import (
+from refunds.tests.test_helpers.model_factories import (
     RefundSettingsFactory,
 )
 from users.tests.test_helpers.model_factories import UserFactory, StaffUserFactory

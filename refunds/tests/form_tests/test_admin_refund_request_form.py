@@ -116,7 +116,7 @@ class AdminRefundRequestFormTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn("booking_reference", form.errors)
         self.assertEqual(
-            form.errors["booking_reference"], ["Booking reference is required."]
+            form.errors["booking_reference"], ["This field is required."]
         )
 
     def test_form_initial_values_for_new_instance(self):

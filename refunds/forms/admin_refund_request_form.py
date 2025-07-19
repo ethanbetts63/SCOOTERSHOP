@@ -21,7 +21,6 @@ class AdminRefundRequestForm(forms.ModelForm):
         max_length=50,
         label="Booking Reference",
         help_text="Enter the booking reference (e.g., SVC-XXXXX or SBK-XXXXX).",
-        required=False, # Make it not required at field level
     )
 
     status = forms.ChoiceField(
@@ -68,16 +67,22 @@ class AdminRefundRequestForm(forms.ModelForm):
             elif self.instance.sales_booking:
                 self.initial["booking_reference"] = self.instance.sales_booking.sales_booking_reference
 
+    def clean_booking_reference(self):
+        booking_reference = self.cleaned_data.get("booking_reference")
+        if not booking_reference:
+            raise forms.ValidationError("Booking reference is required.")
+        return booking_reference
+
     def clean(self):
         cleaned_data = super().clean()
-        booking_reference = cleaned_data.get("booking_reference")
+        booking_reference = cleaned_data.get("booking_reference") # This will now be populated if clean_booking_reference passed
         amount_to_refund = cleaned_data.get("amount_to_refund")
 
         booking_object = None
         payment_object = None
         booking_type = None
 
-        if booking_reference:
+        if booking_reference: # Only proceed if booking_reference is present
             # Try to find service booking
             if re.match(r"^(SERVICE|SVC)-\w+", booking_reference, re.IGNORECASE):
                 try:
@@ -140,8 +145,7 @@ class AdminRefundRequestForm(forms.ModelForm):
                             "amount_to_refund",
                             f"Amount to refund (${amount_to_refund}) cannot exceed the amount paid for this booking (${max_refund_amount}).",
                         )
-        else:
-            self.add_error("booking_reference", "Booking reference is required.")
+        # No else block here, as clean_booking_reference handles the required check
 
         return cleaned_data
 
