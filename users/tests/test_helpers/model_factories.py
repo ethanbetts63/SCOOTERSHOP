@@ -19,14 +19,6 @@ class UserFactory(factory.django.DjangoModelFactory):
     is_staff = False
     is_superuser = False
 
-    phone_number = factory.Faker("phone_number")
-    address_line_1 = factory.Faker("street_address")
-    address_line_2 = factory.Faker("secondary_address")
-    city = factory.Faker("city")
-    state = factory.Faker("state_abbr")
-    post_code = factory.Faker("postcode")
-    country = factory.Faker("country_code")
-
 
 class StaffUserFactory(UserFactory):
     is_staff = True

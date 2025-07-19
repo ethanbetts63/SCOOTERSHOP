@@ -93,6 +93,7 @@ class Step2BookingDetailsView(View):
 
     def post(self, request, *args, **kwargs):
         temp_booking_uuid = request.session.get("temp_sales_booking_uuid")
+        logger.info(f"Step2 POST: Received request for temp_booking_uuid: {temp_booking_uuid}")
 
         if not temp_booking_uuid:
             messages.error(
@@ -124,13 +125,24 @@ class Step2BookingDetailsView(View):
             )
             return redirect(reverse("core:index"))
 
+        print("--- DEBUG: VIEW POST ---")
+        print(f"request.POST: {request.POST}")
+        print(f"temp_booking.deposit_required_for_flow: {temp_booking.deposit_required_for_flow}")
+
         form = BookingAppointmentForm(
             request.POST,
             deposit_required_for_flow=temp_booking.deposit_required_for_flow,
             inventory_settings=inventory_settings,
         )
 
-        if form.is_valid():
+        is_form_valid = form.is_valid()
+        print(f"form.is_valid(): {is_form_valid}")
+        if not is_form_valid:
+            print(f"form.errors: {form.errors.as_json()}")
+        print("--- END DEBUG: VIEW POST ---")
+
+        if is_form_valid:
+            logger.info(f'Form is valid. Cleaned data: {form.cleaned_data}')
             with transaction.atomic():
                 active_terms = SalesTerms.objects.filter(is_active=True).first()
                 if not active_terms:
@@ -154,6 +166,7 @@ class Step2BookingDetailsView(View):
                 temp_booking.save()
 
                 if temp_booking.deposit_required_for_flow:
+                    logger.info(f'Deposit required for flow: {temp_booking.deposit_required_for_flow}')
                     messages.success(
                         request, "Booking details saved. Proceed to payment."
                     )
@@ -236,5 +249,6 @@ class Step2BookingDetailsView(View):
                 "sales_faqs": get_faqs_for_step("step2"),
                 "faq_title": "Booking & Appointment Questions",
             }
+            logger.info("Form is invalid. Displaying errors.")
             messages.error(request, "Please correct the errors below.")
             return render(request, self.template_name, context)

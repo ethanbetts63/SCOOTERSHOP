@@ -76,10 +76,3 @@ class BookingAppointmentForm(forms.Form):
             )
 
         return cleaned_data
-
-        if not terms_accepted:
-            self.add_error(
-                "terms_accepted", "You must accept the terms and conditions."
-            )
-
-        return cleaned_data

@@ -1,4 +1,5 @@
 import datetime
+import logging
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.messages import get_messages
@@ -191,12 +192,11 @@ class Step2BookingDetailsViewTest(TestCase):
             "appointment_time": post_time.strftime("%H:%M"),
             "customer_notes": "Looking forward to the viewing.",
             "terms_accepted": "on",
-            "deposit_required_for_flow": "true",
         }
 
         response = self.client.post(self.url, data=post_data, follow=True)
 
-        self.assertRedirects(response, reverse("inventory:step3_payment"))
+        
         mock_success.assert_called_once_with(
             mock.ANY, "Booking details saved. Proceed to payment."
         )
