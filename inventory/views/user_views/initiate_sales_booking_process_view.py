@@ -39,12 +39,7 @@ class InitiateBookingProcessView(View):
                 deposit_required_for_flow=deposit_required_for_flow,
                 booking_status="pending_details",
             )
-
-            if deposit_required_for_flow:
-                temp_booking.amount_paid = inventory_settings.deposit_amount
-            else:
-                temp_booking.amount_paid = Decimal("0.00")
-
+            temp_booking.amount_paid = Decimal("0.00")
             temp_booking.save()
 
         request.session["temp_sales_booking_uuid"] = str(temp_booking.session_uuid)

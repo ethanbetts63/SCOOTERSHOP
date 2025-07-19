@@ -1,5 +1,6 @@
 import datetime
 import logging
+from decimal import Decimal
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.messages import get_messages
@@ -25,10 +26,13 @@ class Step2BookingDetailsViewTest(TestCase):
         cls.inventory_settings = InventorySettingsFactory(
             enable_viewing_for_enquiry=True,
             enable_reservation_by_deposit=True,
+            deposit_amount=Decimal("100.00"),
         )
         cls.sales_terms = SalesTermsFactory(is_active=True)
 
-        cls.motorcycle = MotorcycleFactory(status="for_sale")
+        cls.motorcycle = MotorcycleFactory(
+            status="for_sale", price=Decimal("4999.99")
+        )
         cls.sales_profile = SalesProfileFactory()
 
     def _create_temp_booking_in_session(self, client, **kwargs):

@@ -89,7 +89,7 @@ class Step3PaymentView(View):
 
         currency = inventory_settings.currency_code
 
-        amount_to_pay = temp_booking.amount_paid
+        amount_to_pay = inventory_settings.deposit_amount
 
         if amount_to_pay is None or amount_to_pay <= 0:
             messages.error(
