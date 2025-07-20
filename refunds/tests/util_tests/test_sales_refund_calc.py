@@ -3,6 +3,7 @@ from decimal import Decimal
 from datetime import timedelta
 from django.utils import timezone
 from refunds.utils.sales_refund_calc import calculate_sales_refund_amount
+from refunds.models import RefundSettings
 from refunds.tests.test_helpers.model_factories import RefundSettingsFactory
 from inventory.tests.test_helpers.model_factories import SalesBookingFactory
 
@@ -11,7 +12,8 @@ class SalesRefundCalcTest(TestCase):
         self.refund_settings = RefundSettingsFactory()
 
     def test_no_refund_settings_configured(self):
-        booking = SalesBookingFactory(created_at=timezone.now(), amount_paid=Decimal("100.00"))
+        RefundSettings.objects.all().delete()
+        booking = SalesBookingFactory(amount_paid=Decimal("100.00"))
         result = calculate_sales_refund_amount(booking)
 
         self.assertEqual(result["entitled_amount"], Decimal("0.00"))
