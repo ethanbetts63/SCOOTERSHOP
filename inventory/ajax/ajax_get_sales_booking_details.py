@@ -107,8 +107,8 @@ def get_sales_booking_details_json(request, pk):
             ),
             "refund_calculation_details": refund_calculation_results["details"],
             "refund_policy_applied": refund_calculation_results["policy_applied"],
-            "time_since_booking_creation_hours": float(
-                refund_calculation_results["time_since_booking_creation_hours"]
+            "days_since_booking": float(
+                refund_calculation_results["days_since_booking"]
             ),
             "refund_request_status_for_booking": refund_status_for_booking,
         }

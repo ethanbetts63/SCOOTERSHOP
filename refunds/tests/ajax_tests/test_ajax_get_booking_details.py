@@ -5,6 +5,7 @@ from django.urls import reverse
 from users.tests.test_helpers.model_factories import UserFactory
 from service.tests.test_helpers.model_factories import ServiceBookingFactory
 from inventory.tests.test_helpers.model_factories import SalesBookingFactory
+from refunds.tests.test_helpers.model_factories import RefundSettingsFactory
 
 class AjaxGetBookingDetailsTest(TestCase):
     def setUp(self):
@@ -12,6 +13,7 @@ class AjaxGetBookingDetailsTest(TestCase):
         self.admin_user = UserFactory(is_staff=True, is_superuser=True)
         self.client.force_login(self.admin_user)
 
+        self.refund_settings = RefundSettingsFactory()
         self.service_booking = ServiceBookingFactory(payment__status='succeeded')
         self.sales_booking = SalesBookingFactory(payment__status='succeeded')
 
