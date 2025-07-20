@@ -23,8 +23,8 @@ class SalesRefundCalcTest(TestCase):
         self.refund_settings.deposit_partial_refund_days = 3
         self.refund_settings.deposit_no_refund_days = 1
         self.refund_settings.save()
-        booking_created_at = timezone.now() - timedelta(days=8)  # 8 days ago
-        booking = SalesBookingFactory(created_at=booking_created_at, amount_paid=Decimal("100.00"))
+        booking_appointment_date = (timezone.now() + timedelta(days=8)).date()
+        booking = SalesBookingFactory(appointment_date=booking_appointment_date, amount_paid=Decimal("100.00"))
 
         result = calculate_sales_refund_amount(booking)
 
@@ -37,8 +37,8 @@ class SalesRefundCalcTest(TestCase):
         self.refund_settings.deposit_no_refund_days = 1
         self.refund_settings.deposit_partial_refund_percentage = Decimal("50.00")
         self.refund_settings.save()
-        booking_created_at = timezone.now() - timedelta(days=5)  # 5 days ago
-        booking = SalesBookingFactory(created_at=booking_created_at, amount_paid=Decimal("100.00"))
+        booking_appointment_date = (timezone.now() + timedelta(days=5)).date()
+        booking = SalesBookingFactory(appointment_date=booking_appointment_date, amount_paid=Decimal("100.00"))
 
         result = calculate_sales_refund_amount(booking)
 
@@ -51,8 +51,8 @@ class SalesRefundCalcTest(TestCase):
         self.refund_settings.deposit_partial_refund_days = 3
         self.refund_settings.deposit_no_refund_days = 1
         self.refund_settings.save()
-        booking_created_at = timezone.now() - timedelta(days=0)  # Less than 1 day ago
-        booking = SalesBookingFactory(created_at=booking_created_at, amount_paid=Decimal("100.00"))
+        booking_appointment_date = (timezone.now() + timedelta(days=0)).date()
+        booking = SalesBookingFactory(appointment_date=booking_appointment_date, amount_paid=Decimal("100.00"))
 
         result = calculate_sales_refund_amount(booking)
 
@@ -64,16 +64,14 @@ class SalesRefundCalcTest(TestCase):
         self.refund_settings.deposit_partial_refund_days = 3
         self.refund_settings.deposit_no_refund_days = 1
         self.refund_settings.save()
-        booking_created_at = timezone.now() - timedelta(days=10)  # 10 days ago
-        booking = SalesBookingFactory(created_at=booking_created_at, amount_paid=Decimal("100.00"))
+        booking_appointment_date = (timezone.now() + timedelta(days=10)).date()
+        booking = SalesBookingFactory(appointment_date=booking_appointment_date, amount_paid=Decimal("100.00"))
 
-        # Calculate refund as if cancelled 5 days after booking
-        cancellation_datetime = booking_created_at + timedelta(days=5)
+        cancellation_datetime = timezone.now() + timedelta(days=5)
         result = calculate_sales_refund_amount(
             booking, cancellation_datetime=cancellation_datetime
         )
 
-        # This should fall into partial refund based on the 5-day difference
         self.assertEqual(result["entitled_amount"], Decimal("50.00"))
         self.assertIn("Partial Refund", result["policy_applied"])
 
@@ -82,8 +80,8 @@ class SalesRefundCalcTest(TestCase):
         self.refund_settings.deposit_partial_refund_days = 3
         self.refund_settings.deposit_no_refund_days = 1
         self.refund_settings.save()
-        booking_created_at = timezone.now() - timedelta(days=10)  # 10 days ago
-        booking = SalesBookingFactory(created_at=booking_created_at, amount_paid=Decimal("50.00"))
+        booking_appointment_date = (timezone.now() + timedelta(days=10)).date()
+        booking = SalesBookingFactory(appointment_date=booking_appointment_date, amount_paid=Decimal("50.00"))
 
         result = calculate_sales_refund_amount(booking)
         self.assertEqual(result["entitled_amount"], Decimal("50.00"))
@@ -93,8 +91,8 @@ class SalesRefundCalcTest(TestCase):
         self.refund_settings.deposit_partial_refund_days = 3
         self.refund_settings.deposit_no_refund_days = 1
         self.refund_settings.save()
-        booking_created_at = timezone.now() - timedelta(days=1)  # 1 day ago
-        booking = SalesBookingFactory(created_at=booking_created_at, amount_paid=Decimal("100.00"))
+        booking_appointment_date = (timezone.now() + timedelta(days=1)).date()
+        booking = SalesBookingFactory(appointment_date=booking_appointment_date, amount_paid=Decimal("100.00"))
 
         result = calculate_sales_refund_amount(booking)
         self.assertEqual(result["entitled_amount"], Decimal("0.00"))
@@ -105,9 +103,9 @@ class SalesRefundCalcTest(TestCase):
         self.refund_settings.deposit_no_refund_days = 1
         self.refund_settings.deposit_partial_refund_percentage = Decimal("33.33")
         self.refund_settings.save()
-        booking_created_at = timezone.now() - timedelta(days=5)
+        booking_appointment_date = (timezone.now() + timedelta(days=5)).date()
         booking = SalesBookingFactory(
-            created_at=booking_created_at, amount_paid=Decimal("100.00")
+            appointment_date=booking_appointment_date, amount_paid=Decimal("100.00")
         )
 
         result = calculate_sales_refund_amount(booking)
