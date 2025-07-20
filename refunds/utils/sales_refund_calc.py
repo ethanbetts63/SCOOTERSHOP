@@ -4,14 +4,9 @@ from django.utils import timezone
 from refunds.models import RefundSettings
 
 
-import logging
-
-logger = logging.getLogger(__name__)
-
 def calculate_sales_refund_amount(
     booking, cancellation_datetime: datetime = None
 ) -> dict:
-    logger.info(f"Calculating refund for booking: {booking.sales_booking_reference}")
     if not cancellation_datetime:
         cancellation_datetime = timezone.now()
 

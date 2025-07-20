@@ -4,24 +4,20 @@ from django.utils import timezone
 from refunds.models import RefundSettings
 
 
-import logging
+from decimal import Decimal
+from datetime import datetime
+from django.utils import timezone
+from refunds.models import RefundSettings
 
-logger = logging.getLogger(__name__)
-
-import logging
-
-logger = logging.getLogger(__name__)
 
 def calculate_service_refund_amount(
     booking, cancellation_datetime: datetime = None
 ) -> dict:
-    logger.info(f"Calculating refund for booking: {booking.service_booking_reference}")
     if not cancellation_datetime:
         cancellation_datetime = timezone.now()
 
     refund_settings = RefundSettings.objects.first()
     if not refund_settings:
-        logger.error("Refund settings not configured.")
         return {
             "entitled_amount": Decimal("0.00"),
             "details": "Refund settings not configured.",
@@ -34,10 +30,8 @@ def calculate_service_refund_amount(
     )
     time_difference = dropoff_datetime - cancellation_datetime
     days_before_dropoff = time_difference.days
-    logger.info(f"Days before dropoff: {days_before_dropoff}")
 
     total_paid = booking.amount_paid or Decimal("0.00")
-    logger.info(f"Total paid: {total_paid}")
     entitled_amount = Decimal("0.00")
     policy_applied = "No Refund"
 
