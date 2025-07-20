@@ -34,7 +34,7 @@
             <div class="flex flex-col md:flex-row gap-4 h-full">
                 <div class="md:w-48 flex-shrink-0 flex items-center justify-center bg-gray-900 rounded-lg p-2">
                     {% if service_type.image %}
-                    <img src="{{ service_type.image.url }}" alt="{{ service_type.name }}" class="w-full h-auto object-contain max-h-32 md:max-h-full">
+                    <img src="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{{ service_type.image.url }}" alt="{{ service_type.name }}" class="w-full h-auto object-contain max-h-32 md:max-h-full">
                     {% endif %}
                 </div>
                 <div class="bg-white rounded-lg p-6 flex-grow flex flex-col">
