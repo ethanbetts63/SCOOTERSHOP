@@ -5,7 +5,6 @@ from service.models import ServiceBooking
 from inventory.ajax.ajax_get_sales_booking_details import get_sales_booking_details_json
 from service.ajax.ajax_get_service_booking_details import get_service_booking_details_json
 import re
-
 from refunds.decorators import admin_required
 
 @require_GET

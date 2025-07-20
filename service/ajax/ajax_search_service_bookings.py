@@ -10,10 +10,7 @@ from ..decorators import admin_required
 def search_service_bookings_ajax(request):
     search_term = request.GET.get("query", "").strip()
     bookings_data = []
-
-    if not request.user.is_staff:
-        return JsonResponse({"error": "Permission denied"}, status=403)
-
+    
     if search_term:
         search_query = (
             Q(service_booking_reference__icontains=search_term)

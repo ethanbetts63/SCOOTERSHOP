@@ -1,8 +1,8 @@
 from django.http import JsonResponse, Http404
 from django.shortcuts import get_object_or_404
-from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_GET
 from django.utils import timezone
+from inventory.decorators import admin_required
 
 from inventory.models import SalesBooking
 from refunds.models import RefundRequest
@@ -10,11 +10,8 @@ from refunds.utils.sales_refund_calc import calculate_sales_refund_amount
 
 
 @require_GET
-@login_required
+@admin_required
 def get_sales_booking_details_json(request, pk):
-    if not request.user.is_staff:
-        return JsonResponse({"error": "Permission denied"}, status=403)
-
     try:
         sales_booking = get_object_or_404(SalesBooking, pk=pk)
 
