@@ -44,7 +44,7 @@ class AjaxGetSalesBookingDetailsTest(TestCase):
             "entitled_amount": Decimal("100.00"),
             "details": "Full refund due.",
             "policy_applied": "Full Refund Policy",
-            "time_since_booking_creation_hours": 10.0,
+            "days_until_booking": 10.0,
         }
 
         user = UserFactory(
@@ -111,7 +111,7 @@ class AjaxGetSalesBookingDetailsTest(TestCase):
             "entitled_amount": Decimal("50.00"),
             "details": "Partial refund.",
             "policy_applied": "Partial Refund Policy",
-            "time_since_booking_creation_hours": 24.0,
+            "days_until_booking": 24.0,
         }
 
         sales_profile = SalesProfileFactory(
@@ -141,7 +141,7 @@ class AjaxGetSalesBookingDetailsTest(TestCase):
             "entitled_amount": Decimal("0.00"),
             "details": "No refund.",
             "policy_applied": "No Refund Policy",
-            "time_since_booking_creation_hours": 72.0,
+            "days_until_booking": 72.0,
         }
 
         sales_booking = SalesBookingFactory()
@@ -169,7 +169,7 @@ class AjaxGetSalesBookingDetailsTest(TestCase):
             "entitled_amount": Decimal("0.00"),
             "details": "No refund.",
             "policy_applied": "No Refund Policy",
-            "time_since_booking_creation_hours": 0.0,
+            "days_until_booking": 0.0,
         }
 
         sales_booking = SalesBookingFactory(payment=None)
@@ -191,7 +191,7 @@ class AjaxGetSalesBookingDetailsTest(TestCase):
             "entitled_amount": Decimal("0.00"),
             "details": "No refund.",
             "policy_applied": "No Refund Policy",
-            "time_since_booking_creation_hours": 0.0,
+            "days_until_booking": 0.0,
         }
         sales_booking = SalesBookingFactory(
             appointment_date=None,

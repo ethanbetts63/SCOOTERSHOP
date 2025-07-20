@@ -89,26 +89,16 @@ def get_sales_booking_details_json(request, pk):
             "payment_amount": payment_amount,
             "booking_status": sales_booking.get_booking_status_display(),
             "payment_status": sales_booking.get_payment_status_display(),
-            "customer_notes": (
-                sales_booking.customer_notes if sales_booking.customer_notes else ""
-            ),
-            "appointment_date": (
-                sales_booking.appointment_date.strftime("%Y-%m-%d")
-                if sales_booking.appointment_date
-                else "N/A"
-            ),
-            "appointment_time": (
-                sales_booking.appointment_time.strftime("%H:%M")
-                if sales_booking.appointment_time
-                else "N/A"
-            ),
+            "customer_notes": sales_booking.customer_notes or "",
+            "appointment_date": sales_booking.appointment_date.strftime("%Y-%m-%d") if sales_booking.appointment_date else "N/A",
+            "appointment_time": sales_booking.appointment_time.strftime("%H:%M") if sales_booking.appointment_time else "N/A",
             "entitled_refund_amount": float(
                 refund_calculation_results["entitled_amount"]
             ),
             "refund_calculation_details": refund_calculation_results["details"],
             "refund_policy_applied": refund_calculation_results["policy_applied"],
-            "days_since_booking": float(
-                refund_calculation_results["days_since_booking"]
+            "time_since_booking_creation_hours": float(
+                refund_calculation_results.get("days_until_booking", 0)
             ),
             "refund_request_status_for_booking": refund_status_for_booking,
         }
