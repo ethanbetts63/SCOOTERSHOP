@@ -95,7 +95,7 @@ class AjaxGetSalesBookingDetailsTest(TestCase):
         )
         self.assertEqual(json_response["refund_policy_applied"], "Full Refund Policy")
         self.assertAlmostEqual(
-            json_response["time_since_booking_creation_hours"], 10.0, places=5
+            json_response["days_until_booking"], 10.0, places=5
         )
         self.assertEqual(
             json_response["refund_request_status_for_booking"], "No Refund Request Yet"

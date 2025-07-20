@@ -17,7 +17,7 @@ def calculate_sales_refund_amount(
             "entitled_amount": Decimal("0.00"),
             "details": "Refund settings not configured.",
             "policy_applied": "N/A",
-            "time_since_booking_creation_hours": 0,
+            "days_until_booking": 0,
         }
 
     if booking.appointment_date:
