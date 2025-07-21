@@ -1,10 +1,8 @@
 import datetime
 from django.utils import timezone
 import json
-
+from django.db import models
 from service.models import ServiceSettings, BlockedServiceDate
-
-
 from service.models import ServiceBooking
 
 

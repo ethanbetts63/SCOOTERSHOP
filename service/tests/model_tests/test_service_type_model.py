@@ -1,8 +1,6 @@
 from django.test import TestCase
 from decimal import Decimal
 from service.models import ServiceType
-
-
 from service.tests.test_helpers.model_factories import ServiceTypeFactory
 
 
