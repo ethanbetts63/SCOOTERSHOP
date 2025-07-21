@@ -75,7 +75,6 @@
     }
 </style>
 
-
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
@@ -86,24 +85,18 @@
 
         const minDateFlatpickr = serviceDatePickerInput.getAttribute('data-min-date-flatpickr');
         
-        let serviceDatePicker;
-
-        function initializeDatePicker(disabledDates = []) {
-            if (serviceDatePicker) {
-                serviceDatePicker.destroy();
-            }
-            serviceDatePicker = flatpickr(serviceDatePickerInput, {
-                dateFormat: "Y-m-d",
-                minDate: minDateFlatpickr,
-                altInput: true,
-                altFormat: "F j, Y",
-                disable: disabledDates,
-            });
-        }
+        // Initialize flatpickr once on DOMContentLoaded
+        const serviceDatePicker = flatpickr(serviceDatePickerInput, {
+            dateFormat: "Y-m-d",
+            minDate: minDateFlatpickr,
+            altInput: true,
+            altFormat: "F j, Y",
+            disable: [], // Start with no disabled dates, will be fetched dynamically
+        });
 
         function fetchAndSetDisabledDates(serviceTypeId) {
             if (!serviceTypeId) {
-                initializeDatePicker([]);
+                serviceDatePicker.set('disable', []); // Clear disabled dates
                 serviceDatePicker.clear();
                 serviceDatePickerInput.disabled = true;
                 return;
@@ -118,13 +111,16 @@
                     } catch (e) {
                         console.error("Error parsing disabled dates JSON:", e);
                     }
-                    initializeDatePicker(disabledDates);
+                    serviceDatePicker.set('disable', disabledDates); // Update existing instance
                     serviceDatePickerInput.disabled = false;
-                    serviceDatePicker.open();
+                    // Only open if it's not already open and a date isn't pre-selected
+                    if (!serviceDatePicker.isOpen && !serviceDatePickerInput.value) {
+                        serviceDatePicker.open();
+                    }
                 })
                 .catch(error => {
                     console.error('Error fetching disabled dates:', error);
-                    initializeDatePicker([]); 
+                    serviceDatePicker.set('disable', []); // Fallback to no disabled dates on error
                 });
         }
 
@@ -142,14 +138,13 @@
                     fetchAndSetDisabledDates(initialServiceTypePk);
                 }
             } else {
-                initializeDatePicker([]);
-                serviceDatePickerInput.disabled = true;
+                serviceDatePickerInput.disabled = true; // Disable if no initial service type
             }
             
             if (initialServiceDate) {
-                setTimeout(() => {
-                    if(serviceDatePicker) serviceDatePicker.setDate(initialServiceDate, false);
-                }, 500);
+                // Set date after potential AJAX call, ensuring flatpickr is ready
+                // A small delay might still be needed if the fetch is very slow, but set() is more robust
+                serviceDatePicker.setDate(initialServiceDate, false);
             }
         }
 
