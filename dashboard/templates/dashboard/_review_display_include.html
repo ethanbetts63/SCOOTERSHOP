@@ -36,5 +36,12 @@
             </div>
             {% endfor %}
         </div>
+        {% if settings.google_business_page_link %}
+        <div class="text-center mt-8">
+            <a href="{{ settings.google_business_page_link }}" target="_blank" rel="noopener noreferrer" class="text-green-400 hover:text-green-300 text-lg font-semibold">
+                Want to see more reviews? Click here!
+            </a>
+        </div>
+        {% endif %}
     </div>
 </div>

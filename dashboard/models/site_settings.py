@@ -59,7 +59,7 @@ class SiteSettings(models.Model):
         default=False, help_text="Enable a site-wide announcement banner."
     )
     banner_text = models.CharField(
-        max_length=255, blank=True, default="", help_text="The text to display in the banner."
+        max_length=255, blank=True, default="Formerly known as Scootershop Fremantle. Same expert, new location!", help_text="The text to display in the banner."
     )
 
     phone_number = models.CharField(

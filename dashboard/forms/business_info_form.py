@@ -116,3 +116,4 @@ class BusinessInfoForm(forms.ModelForm):
                     "placeholder": "Your announcement banner text here...",
                 }
             ),
+        }

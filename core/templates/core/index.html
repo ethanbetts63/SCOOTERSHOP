@@ -17,6 +17,11 @@
 {% endblock %}
 
 {% block content %}
+    {% if settings.enable_banner and settings.banner_text %}
+    <div class="bg-blue-500 text-white text-center py-2">
+        {{ settings.banner_text }}
+    </div>
+    {% endif %}
     <div class="container mx-auto px-4 mt-2">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div class="w-full">
@@ -62,7 +67,7 @@
     {% endif %}
 
     {% if settings.enable_google_places_reviews and reviews %}
-        <div class="my-5 py-5">
+        <div class="my-3 py-5">
             {% include 'dashboard/_review_display_include.html' %}
         </div>
     {% endif %}
