@@ -20,6 +20,7 @@ class BusinessInfoForm(forms.ModelForm):
             "opening_hours_saturday",
             "opening_hours_sunday",
             "google_places_place_id",
+            "google_business_page_link",
             "youtube_link",
             "instagram_link",
             "facebook_link",
@@ -82,6 +83,12 @@ class BusinessInfoForm(forms.ModelForm):
                 attrs={"class": "form-control", "placeholder": "Closed"}
             ),
             "google_places_place_id": forms.TextInput(attrs={"class": "form-control"}),
+            "google_business_page_link": forms.URLInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "https://g.page/your-business",
+                }
+            ),
             "youtube_link": forms.URLInput(
                 attrs={
                     "class": "form-control",
