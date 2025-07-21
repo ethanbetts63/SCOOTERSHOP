@@ -105,12 +105,7 @@
                         {{ form.slots_required.label }}
                     </label>
                     {{ form.slots_required }}
-                    {% if form.slots_required.help_text %}
-                    <p class="helptext">{{ form.slots_required.help_text }}</p>
-                    {% endif %}
-                    {% if form.slots_required.errors %}
-                    {{ form.slots_required.errors }}
-                    {% endif %}
+                    <p class="helptext">How many slots (out of {{ daily_service_slots }} total daily slots) this service consumes.</p>
                 </div>
             </div>
             <div class="form-group">
