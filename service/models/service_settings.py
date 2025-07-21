@@ -104,6 +104,10 @@ class ServiceSettings(models.Model):
         default=False, verbose_name="Enable Estimated Pick-up Date"
     )
 
+    accepted_brands_description = models.TextField(
+        blank=True,
+        help_text="Description for the brands we work on.",
+    )
     show_invalid_brands = models.BooleanField(
         default=False,
         help_text="Show brands that we don't work on.",

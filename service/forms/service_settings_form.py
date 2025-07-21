@@ -16,7 +16,6 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             "drop_off_spacing_mins",
             "max_advance_dropoff_days",
             "latest_same_day_dropoff_time",
-            
             "enable_after_hours_dropoff",
             "after_hours_drop_off_instructions",
             "deposit_calc_method",

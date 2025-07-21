@@ -13,7 +13,8 @@ class ServiceBrandManagementView(AdminRequiredMixin, View):
     form_class = ServiceBrandForm
 
     def get_context_data(self, form=None, edit_brand=None):
-        service_brands = ServiceBrand.objects.all().order_by("name")
+        accepted_brands = ServiceBrand.objects.filter(is_accepted=True).order_by("name")
+        unaccepted_brands = ServiceBrand.objects.filter(is_accepted=False).order_by("name")
 
         if form is None:
             form = self.form_class(instance=edit_brand)
@@ -21,7 +22,8 @@ class ServiceBrandManagementView(AdminRequiredMixin, View):
         context = {
             "form": form,
             "edit_brand": edit_brand,
-            "service_brands": service_brands,
+            "accepted_brands": accepted_brands,
+            "unaccepted_brands": unaccepted_brands,
             "page_title": "Manage Service Brands",
         }
         return context
