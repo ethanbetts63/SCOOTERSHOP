@@ -4,8 +4,7 @@ from django.urls import reverse
 from django.contrib import messages
 from service.mixins import AdminRequiredMixin
 
-from service.forms import AdminServiceTypeForm
-from service.models import ServiceType
+from service.models import ServiceType, ServiceSettings
 
 
 class ServiceTypeCreateUpdateView(AdminRequiredMixin, View):
@@ -23,10 +22,14 @@ class ServiceTypeCreateUpdateView(AdminRequiredMixin, View):
         else:
             form = self.form_class()
 
+        service_settings = ServiceSettings.objects.first()
+        daily_service_slots = service_settings.daily_service_slots if service_settings else 0
+
         context = {
             "form": form,
             "is_edit_mode": bool(pk),
             "current_service_type": instance,
+            "daily_service_slots": daily_service_slots,
         }
         return render(request, self.template_name, context)
 
@@ -34,9 +37,9 @@ class ServiceTypeCreateUpdateView(AdminRequiredMixin, View):
         instance = None
         if pk:
             instance = get_object_or_404(ServiceType, pk=pk)
-            form = self.form_class(request.POST, request.FILES, instance=instance)
+            form = self.form_class(request.POST, request.FILES, instance=instance, daily_service_slots=daily_service_slots)
         else:
-            form = self.form_class(request.POST, request.FILES)
+            form = self.form_class(request.POST, request.FILES, daily_service_slots=daily_service_slots)
 
         if form.is_valid():
             service_type = form.save()
@@ -52,9 +55,12 @@ class ServiceTypeCreateUpdateView(AdminRequiredMixin, View):
             return redirect(reverse("service:service_types_management"))
         else:
             messages.error(request, "Please correct the errors below.")
+            service_settings = ServiceSettings.objects.first()
+            daily_service_slots = service_settings.daily_service_slots if service_settings else 0
             context = {
                 "form": form,
                 "is_edit_mode": bool(pk),
                 "current_service_type": instance,
+                "daily_service_slots": daily_service_slots,
             }
             return render(request, self.template_name, context)

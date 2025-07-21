@@ -4,6 +4,14 @@ from django.core.exceptions import ValidationError
 
 
 class AdminServiceTypeForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        daily_service_slots = kwargs.pop('daily_service_slots', None)
+        super().__init__(*args, **kwargs)
+        if daily_service_slots is not None:
+            self.fields['slots_required'].help_text = f"How many slots (out of {daily_service_slots} total daily slots) this service consumes."
+        else:
+            self.fields['slots_required'].help_text = "How many slots this service consumes."
+
     class Meta:
         model = ServiceType
         fields = [
