@@ -93,8 +93,8 @@ class AjaxGetServiceTypeAvailabilityTest(TestCase):
 
     def test_no_service_type_id_provided(self):
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 500) # Or appropriate error code/handling
+        self.assertEqual(response.status_code, 400)
 
     def test_invalid_service_type_id(self):
         response = self.client.get(self.url, {'service_type_id': 99999})
-        self.assertEqual(response.status_code, 500) # Or appropriate error code/handling
+        self.assertEqual(response.status_code, 404)

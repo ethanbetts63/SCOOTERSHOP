@@ -4,6 +4,13 @@ from service.utils.get_service_date_availibility import get_service_date_availab
 
 def get_service_type_availability_ajax(request):
     service_type_id = request.GET.get("service_type_id")
-    service_type = ServiceType.objects.get(id=service_type_id)
-    min_date, disabled_dates_json = get_service_date_availability(service_type)
-    return JsonResponse({"disabled_dates": disabled_dates_json})
+    if not service_type_id:
+        return JsonResponse({"error": "service_type_id is required"}, status=400)
+    try:
+        service_type = ServiceType.objects.get(id=service_type_id)
+        min_date, disabled_dates_json = get_service_date_availability(service_type)
+        return JsonResponse({"disabled_dates": disabled_dates_json})
+    except ServiceType.DoesNotExist:
+        return JsonResponse({"error": "ServiceType not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
