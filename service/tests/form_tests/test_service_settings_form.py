@@ -15,7 +15,7 @@ class ServiceBookingSettingsFormTest(TestCase):
 
         cls.valid_data = {
             "booking_advance_notice": 1,
-            "max_visible_slots_per_day": 6,
+            "daily_service_slots": 8,
             "booking_open_days": "Mon,Tue,Wed,Thu,Fri",
             "drop_off_start_time": time(9, 0),
             "drop_off_end_time": time(17, 0),
