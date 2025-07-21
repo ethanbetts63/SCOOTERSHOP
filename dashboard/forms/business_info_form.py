@@ -109,4 +109,10 @@ class BusinessInfoForm(forms.ModelForm):
                     "placeholder": "https://facebook.com/your-page",
                 }
             ),
-        }
+            "enable_banner": forms.CheckboxInput(attrs={"class": "form-checkbox"}),
+            "banner_text": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Your announcement banner text here...",
+                }
+            ),

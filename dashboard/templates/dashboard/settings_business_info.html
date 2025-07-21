@@ -123,6 +123,19 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Banner Settings Section -->
+            <div class="pt-6">
+                <h3 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Banner Settings</h3>
+                <div class="space-y-4">
+                    <div class="form-group">
+                        <label for="{{ form.enable_banner.id_for_label }}" class="block text-sm font-medium text-gray-700">Enable Banner</label>
+                        {{ form.enable_banner }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.banner_text.id_for_label }}" class="block text-sm font-medium text-gray-700">Banner Text</label>
+                        {{ form.banner_text }}
+                    </div>
         </form>
     </div>
 </div>
