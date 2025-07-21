@@ -1,13 +1,7 @@
-# You may need to create this file: dashboard/forms.py
 from django import forms
 from dashboard.models import Review
 
-
 class ReviewForm(forms.ModelForm):
-    """
-    Form for admin to create and update Review instances.
-    """
-
     class Meta:
         model = Review
         fields = [
