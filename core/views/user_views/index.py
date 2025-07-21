@@ -1,48 +1,16 @@
 from django.shortcuts import render
 from django.conf import settings
-import requests
-import sys
-from dashboard.models import SiteSettings
+from django.views.decorators.http import require_http_methods
 from service.models import ServiceSettings, TempServiceBooking
 from service.forms import ServiceDetailsForm
 from service.utils import get_service_date_availability
-from django.views.decorators.http import require_http_methods
-from inventory.utils import get_featured_motorcycles  
-
+from inventory.utils import get_featured_motorcycles
+from dashboard.utils import get_reviews  # Import the new utility function
 
 @require_http_methods(["GET"])
 def index(request):
-    site_settings = SiteSettings.get_settings()
     service_settings = ServiceSettings.objects.first()
-    place_id = site_settings.google_places_place_id
-    api_key = settings.GOOGLE_API_KEY
-    places_api_url = f"https://maps.googleapis.com/maps/api/place/details/json?place_id={place_id}&fields=reviews&key={api_key}"
-
-    if site_settings.enable_google_places_reviews and place_id and api_key:
-        try:
-            response = requests.get(places_api_url)
-            response.raise_for_status()
-            data = response.json()
-
-            if (
-                data.get("status") == "OK"
-                and "result" in data
-                and "reviews" in data["result"]
-            ):
-                all_reviews = data["result"]["reviews"]
-                five_star_reviews = [
-                    review for review in all_reviews if review.get("rating") == 5
-                ]
-                five_star_reviews.sort(key=lambda x: x.get("time", 0), reverse=True)
-            else:
-                pass
-        except requests.exceptions.RequestException:
-            pass
-        except Exception:
-            pass
-
     service_form = ServiceDetailsForm()
-
     temp_service_booking = None
     temp_service_booking_uuid = request.session.get("temp_booking_uuid")
 
@@ -66,10 +34,9 @@ def index(request):
 
     featured_new_items = get_featured_motorcycles("new")
     featured_used_items = get_featured_motorcycles("used")
-
+    reviews = get_reviews()  
     context = {
-        "reviews": five_star_reviews,
-        "google_api_key": settings.GOOGLE_API_KEY,
+        "reviews": reviews,
         "form": service_form,
         "service_settings": service_settings,
         "blocked_service_dates_json": disabled_dates_json,
@@ -77,6 +44,7 @@ def index(request):
         "temp_service_booking": temp_service_booking,
         "featured_new_items": featured_new_items,
         "featured_used_items": featured_used_items,
+        "google_api_key": settings.GOOGLE_API_KEY, # Retained for the map include
     }
 
     return render(request, "core/index.html", context)
