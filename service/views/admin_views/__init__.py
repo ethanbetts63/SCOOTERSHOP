@@ -13,10 +13,10 @@ from .delete_service_booking import *
 from .delete_service_profile import *
 from .delete_service_type import *
 from .admin_service_booking_management import *
-from .service_settings_view import *
-from .service_brands_management import *
-from .service_type_mangement import *
-from .service_type_create_update import *
+from .admin_service_settings_view import *
+from .admin_service_brands_management import *
+from .admin_service_type_mangement import *
+from .admin_service_type_create_update import *
 from .admin_service_booking_create_update import *
 from .admin_service_faq_create_update_view import *
 from .admin_service_faq_management_view import *

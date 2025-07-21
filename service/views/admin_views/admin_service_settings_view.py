@@ -3,7 +3,6 @@ from django.urls import reverse_lazy
 from django.views.generic import UpdateView
 from django.contrib import messages
 from django.forms import ValidationError
-
 from service.models import ServiceSettings
 from service.forms import ServiceBookingSettingsForm
 
