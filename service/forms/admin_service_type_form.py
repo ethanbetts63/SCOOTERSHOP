@@ -25,6 +25,7 @@ class AdminServiceTypeForm(forms.ModelForm):
             ),
             "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "image": forms.FileInput(attrs={"class": "form-control-file"}),
+            "slots_required": forms.NumberInput(attrs={"class": "form-control", "min": "1"}),
         }
         labels = {
             "name": "Service Name",

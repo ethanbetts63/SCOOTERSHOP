@@ -8,7 +8,7 @@ from service.models import ServiceSettings, BlockedServiceDate
 from service.models import ServiceBooking
 
 
-def get_service_date_availability():
+def get_service_date_availability(service_type=None):
     service_settings = ServiceSettings.objects.first()
 
     now_in_perth = timezone.localtime(timezone.now()).date()
@@ -50,13 +50,16 @@ def get_service_date_availability():
                 disabled_dates_for_flatpickr.append(str(current_check_date))
                 continue
 
-        if service_settings and service_settings.max_visible_slots_per_day is not None:
-            booked_slots_count = ServiceBooking.objects.filter(
+        if service_settings and service_settings.daily_service_slots is not None:
+            booked_slots = ServiceBooking.objects.filter(
                 dropoff_date=current_check_date,
                 booking_status__in=["pending", "confirmed", "in_progress"],
-            ).count()
+            ).aggregate(models.Sum('service_type__slots_required'))['service_type__slots_required__sum'] or 0
 
-            if booked_slots_count >= service_settings.max_visible_slots_per_day:
+            if service_type:
+                if booked_slots + service_type.slots_required > service_settings.daily_service_slots:
+                    disabled_dates_for_flatpickr.append(str(current_check_date))
+            elif booked_slots >= service_settings.daily_service_slots:
                 disabled_dates_for_flatpickr.append(str(current_check_date))
 
     disabled_dates_json = json.dumps(disabled_dates_for_flatpickr)

@@ -5,7 +5,7 @@ from service.views import (
 )
 from service.ajax import (
     ajax_get_available_dropoff_times_for_date,
-    ajax_get_available_service_dates,
+    ajax_get_service_type_availability,
     ajax_get_customer_motorcycle_details,
     ajax_get_customer_motorcycles,
     ajax_get_service_profile_details,
@@ -247,11 +247,6 @@ urlpatterns = [
         name="admin_api_get_motorcycle_details",
     ),
     path(
-        "admin/api/service-date-availability/",
-        ajax_get_available_service_dates.get_service_date_availability_ajax,
-        name="admin_api_service_date_availability",
-    ),
-    path(
         "admin/api/dropoff-time-availability/",
         ajax_get_available_dropoff_times_for_date.get_available_dropoff_times_for_date,
         name="admin_api_dropoff_time_availability",
@@ -280,5 +275,10 @@ urlpatterns = [
         "admin/api/get-estimated-pickup-date/",
         ajax_get_estimated_pickup_date.get_estimated_pickup_date_ajax,
         name="admin_api_get_estimated_pickup_date",
+    ),
+    path(
+        "api/get-service-type-availability/",
+        ajax_get_service_type_availability.get_service_type_availability_ajax,
+        name="get_service_type_availability",
     ),
 ]

@@ -17,6 +17,10 @@ class ServiceType(models.Model):
         blank=True,
         help_text="Icon image for this service type",
     )
+    slots_required = models.IntegerField(
+        default=1,
+        help_text="How many slots this service consumes."
+    )
 
     class Meta:
         verbose_name = "Service Type"

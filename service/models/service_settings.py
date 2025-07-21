@@ -10,9 +10,9 @@ class ServiceSettings(models.Model):
         default=2,
         help_text="Minimum number of days notice required for a booking (e.g., 1 for next day).",
     )
-    max_visible_slots_per_day = models.IntegerField(
-        default=1,
-        help_text="Maximum number of booking slots to show per day in the calendar.",
+    daily_service_slots = models.IntegerField(
+        default=8,
+        help_text="Total workshop capacity for a given day.",
     )
 
     booking_open_days = models.CharField(

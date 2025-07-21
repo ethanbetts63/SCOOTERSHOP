@@ -79,42 +79,57 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-<script>
+'''<script>
     document.addEventListener('DOMContentLoaded', function() {
         const serviceTypeSelect = document.getElementById('id_service_type');
         const serviceDatePickerInput = document.getElementById('id_service_date');
 
         const minDateFlatpickr = serviceDatePickerInput.getAttribute('data-min-date-flatpickr');
-        const blockedDatesRaw = "{{ blocked_service_dates_json|escapejs }}";
-        let blockedDates = [];
-        try {
-            blockedDates = JSON.parse(blockedDatesRaw || '[]');
-        } catch (e) {
-            console.error("Error parsing blocked dates JSON:", e);
+        
+        let serviceDatePicker;
+
+        function initializeDatePicker(disabledDates = []) {
+            if (serviceDatePicker) {
+                serviceDatePicker.destroy();
+            }
+            serviceDatePicker = flatpickr(serviceDatePickerInput, {
+                dateFormat: "Y-m-d",
+                minDate: minDateFlatpickr,
+                altInput: true,
+                altFormat: "F j, Y",
+                disable: disabledDates,
+            });
         }
 
-        const serviceDatePicker = flatpickr(serviceDatePickerInput, {
-            dateFormat: "Y-m-d",
-            minDate: minDateFlatpickr,
-            altInput: true,
-            altFormat: "F j, Y",
-            disable: blockedDates,
-            onChange: function(selectedDates, dateStr, instance) {
+        function fetchAndSetDisabledDates(serviceTypeId) {
+            if (!serviceTypeId) {
+                initializeDatePicker([]);
+                serviceDatePicker.clear();
+                serviceDatePickerInput.disabled = true;
+                return;
             }
-        });
 
-        function resetDateField() {
-            serviceDatePicker.clear();
-            serviceDatePickerInput.disabled = true;
+            fetch(`/service/api/get-service-type-availability/?service_type_id=${serviceTypeId}`)
+                .then(response => response.json())
+                .then(data => {
+                    let disabledDates = [];
+                    try {
+                        disabledDates = JSON.parse(data.disabled_dates || '[]');
+                    } catch (e) {
+                        console.error("Error parsing disabled dates JSON:", e);
+                    }
+                    initializeDatePicker(disabledDates);
+                    serviceDatePickerInput.disabled = false;
+                    serviceDatePicker.open();
+                })
+                .catch(error => {
+                    console.error('Error fetching disabled dates:', error);
+                    initializeDatePicker([]); 
+                });
         }
 
         serviceTypeSelect.addEventListener('change', function() {
-            if (this.value) {
-                serviceDatePickerInput.disabled = false;
-                serviceDatePicker.open();
-            } else {
-                resetDateField();
-            }
+            fetchAndSetDisabledDates(this.value);
         });
 
         function initializeFormState() {
@@ -124,19 +139,20 @@
             if (initialServiceTypePk && serviceTypeSelect) {
                 if ([...serviceTypeSelect.options].some(opt => opt.value === initialServiceTypePk)) {
                     serviceTypeSelect.value = initialServiceTypePk;
-                }
-            }
-            
-            if (serviceTypeSelect.value) {
-                serviceDatePickerInput.disabled = false;
-                if (initialServiceDate) {
-                    serviceDatePicker.setDate(initialServiceDate, false);
+                    fetchAndSetDisabledDates(initialServiceTypePk);
                 }
             } else {
-                resetDateField(); 
+                initializeDatePicker([]);
+                serviceDatePickerInput.disabled = true;
+            }
+            
+            if (initialServiceDate) {
+                setTimeout(() => {
+                    if(serviceDatePicker) serviceDatePicker.setDate(initialServiceDate, false);
+                }, 500);
             }
         }
 
         initializeFormState();
     });
-</script>
+</script>''

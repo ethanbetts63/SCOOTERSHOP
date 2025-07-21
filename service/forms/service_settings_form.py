@@ -9,7 +9,7 @@ class ServiceBookingSettingsForm(forms.ModelForm):
         model = ServiceSettings
         fields = [
             "booking_advance_notice",
-            "max_visible_slots_per_day",
+            "daily_service_slots",
             "booking_open_days",
             "drop_off_start_time",
             "drop_off_end_time",
@@ -32,7 +32,7 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             "booking_advance_notice": forms.NumberInput(
                 attrs={"class": "form-control", "min": "0"}
             ),
-            "max_visible_slots_per_day": forms.NumberInput(
+            "daily_service_slots": forms.NumberInput(
                 attrs={"class": "form-control", "min": "1"}
             ),
             "booking_open_days": forms.TextInput(
