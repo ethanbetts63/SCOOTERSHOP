@@ -36,6 +36,9 @@ class ServiceTypeCreateUpdateView(AdminRequiredMixin, View):
 
     def post(self, request, pk=None, *args, **kwargs):
         instance = None
+        service_settings = ServiceSettings.objects.first()
+        daily_service_slots = service_settings.daily_service_slots if service_settings else 0
+
         if pk:
             instance = get_object_or_404(ServiceType, pk=pk)
             form = self.form_class(request.POST, request.FILES, instance=instance, daily_service_slots=daily_service_slots)
@@ -56,8 +59,6 @@ class ServiceTypeCreateUpdateView(AdminRequiredMixin, View):
             return redirect(reverse("service:service_types_management"))
         else:
             messages.error(request, "Please correct the errors below.")
-            service_settings = ServiceSettings.objects.first()
-            daily_service_slots = service_settings.daily_service_slots if service_settings else 0
             context = {
                 "form": form,
                 "is_edit_mode": bool(pk),
