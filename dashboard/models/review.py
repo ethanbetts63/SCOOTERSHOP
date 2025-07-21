@@ -3,10 +3,6 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class Review(models.Model):
-    """
-    A review selected by an admin to be displayed on the website.
-    This allows for manual creation or curation of reviews.
-    """
 
     author_name = models.CharField(
         max_length=255, help_text="The name of the person who wrote the review."
