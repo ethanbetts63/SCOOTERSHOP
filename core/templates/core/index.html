@@ -61,8 +61,10 @@
         </div>
     {% endif %}
 
-    {% if reviews %}
-        {% include 'dashboard/_review_display_include.html' %}
+    {% if settings.enable_google_places_reviews and reviews %}
+        <div class="my-5 py-5">
+            {% include 'dashboard/_review_display_include.html' %}
+        </div>
     {% endif %}
 
     <div class="container mx-auto px-4 pt-8 pb-16">
