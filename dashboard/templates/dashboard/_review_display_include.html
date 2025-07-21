@@ -1,9 +1,23 @@
+<style>
+    /* Custom utility to hide scrollbars for a cleaner look */
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
+</style>
+
 <div class="bg-gray-900 pt-8 pb-8">
-    <div class="container mx-auto px-4">
-        <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-12">What are customers saying?</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div class="container mx-auto">
+        <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-12 px-4">What are customers saying?</h2>
+        
+        <!-- Horizontally scrollable container -->
+        <div class="flex overflow-x-auto space-x-8 pb-4 no-scrollbar px-4">
             {% for review in reviews %}
-            <div class="bg-gray-800 rounded-lg p-6 flex flex-col shadow-lg hover:shadow-cyan-500/50 transition-shadow duration-300 ease-in-out">
+            <!-- Review Card with fixed width and no shrinking -->
+            <div class="flex-shrink-0 w-80 md:w-96 bg-gray-800 rounded-lg p-6 flex flex-col shadow-lg hover:shadow-cyan-500/50 transition-shadow duration-300 ease-in-out">
                 <div class="flex items-center mb-4">
                     {% if review.profile_photo_url %}
                         <img src="{{ review.profile_photo_url }}" alt="Photo of {{ review.author_name }}" class="w-12 h-12 rounded-full mr-4 object-cover bg-gray-700">
@@ -12,7 +26,7 @@
                             <span class="text-white font-bold text-xl">{{ review.author_name|first }}</span>
                         </div>
                     {% endif %}
-                    <div class="flex-grow">
+                    <div class="flex-grow min-w-0">
                         <p class="font-semibold text-white truncate">{{ review.author_name }}</p>
                         <div class="flex items-center">
                             {% for i in "12345" %}
@@ -36,8 +50,9 @@
             </div>
             {% endfor %}
         </div>
+        
         {% if settings.google_business_page_link %}
-        <div class="text-center mt-8">
+        <div class="text-center mt-8 px-4">
             <a href="{{ settings.google_business_page_link }}" target="_blank" rel="noopener noreferrer" class="text-green-400 hover:text-green-300 text-lg font-semibold">
                 Want to see more reviews? Click here!
             </a>
