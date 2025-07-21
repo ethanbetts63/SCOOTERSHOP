@@ -110,7 +110,7 @@
                     ` : '';
 
                     let estimatedPickupDateHTML = '';
-                    if ({{ enable_estimated_pickup_date|yesno:"true,false" }} && booking.estimated_pickup_date) {
+                    if ('{{ enable_estimated_pickup_date|yesno:"true,false" }}' && booking.estimated_pickup_date) {
                         estimatedPickupDateHTML = `
                             <tr class="py-2">
                                 <td class="font-medium text-gray-700 py-2">Estimated Pick-up Date:</td>
