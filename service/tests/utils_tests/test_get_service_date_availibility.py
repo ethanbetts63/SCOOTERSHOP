@@ -42,7 +42,7 @@ class GetServiceDateAvailabilityTest(TestCase):
 
         cls.service_settings = ServiceSettingsFactory(
             booking_advance_notice=1,
-            max_visible_slots_per_day=3,
+            daily_service_slots=3,
             booking_open_days="Mon,Tue,Wed,Thu,Fri,Sat,Sun",
         )
 
@@ -60,7 +60,7 @@ class GetServiceDateAvailabilityTest(TestCase):
 
     def setUp(self):
         self.service_settings.booking_advance_notice = 1
-        self.service_settings.max_visible_slots_per_day = 3
+        self.service_settings.daily_service_slots = 3
         self.service_settings.booking_open_days = "Mon,Tue,Wed,Thu,Fri,Sat,Sun"
         self.service_settings.save()
 
@@ -126,8 +126,8 @@ class GetServiceDateAvailabilityTest(TestCase):
 
         self.assertIn("2025-06-22", disabled_dates)
 
-    def test_max_visible_slots_capacity(self):
-        self.service_settings.max_visible_slots_per_day = 1
+    def test_daily_service_slots_capacity(self):
+        self.service_settings.daily_service_slots = 1
         self.service_settings.booking_advance_notice = 0
         self.service_settings.save()
 
@@ -168,7 +168,7 @@ class GetServiceDateAvailabilityTest(TestCase):
 
     def test_combined_rules(self):
         self.service_settings.booking_advance_notice = 0
-        self.service_settings.max_visible_slots_per_day = 1
+        self.service_settings.daily_service_slots = 1
         self.service_settings.booking_open_days = "Mon"
         self.service_settings.save()
 
@@ -230,10 +230,28 @@ class GetServiceDateAvailabilityTest(TestCase):
             expected_date = self.fixed_local_date + datetime.timedelta(days=i)
             self.assertIn(str(expected_date), disabled_dates)
 
-    def test_no_max_visible_slots_per_day_set(self):
-        self.service_settings.max_visible_slots_per_day = 99999
+    def test_no_daily_service_slots_set(self):
+        self.service_settings.daily_service_slots = 99999
         self.service_settings.booking_advance_notice = 0
         self.service_settings.save()
+
+        today = self.fixed_local_date
+
+        for _ in range(10):
+            ServiceBookingFactory(
+                service_profile=self.service_profile,
+                service_type=self.service_type,
+                customer_motorcycle=self.customer_motorcycle,
+                dropoff_date=today,
+                service_date=today,
+                dropoff_time=datetime.time(9, 0, 0),
+                booking_status="confirmed",
+            )
+
+        min_date, disabled_dates_json = get_service_date_availability()
+        disabled_dates = json.loads(disabled_dates_json)
+
+        self.assertNotIn(str(today), disabled_dates)
 
         today = self.fixed_local_date
 
