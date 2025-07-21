@@ -1,19 +1,13 @@
-
-<div class="bg-gray-900 py-16">
+<div class="bg-gray-900 pt-8 pb-16">
     <div class="container mx-auto px-4">
         <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-12">What Our Customers Say</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {% for review in reviews %}
             <div class="bg-gray-800 rounded-lg p-6 flex flex-col shadow-lg hover:shadow-cyan-500/50 transition-shadow duration-300 ease-in-out">
                 <div class="flex items-center mb-4">
-                    {% comment %} Display profile photo or a fallback initial with a cycling color. {% endcomment %}
                     {% if review.profile_photo_url %}
                         <img src="{{ review.profile_photo_url }}" alt="Photo of {{ review.author_name }}" class="w-12 h-12 rounded-full mr-4 object-cover bg-gray-700">
                     {% else %}
-                        {% comment %}
-                        The 'cycle' tag below will loop through the provided CSS classes for each review,
-                        giving each fallback avatar a different background color.
-                        {% endcomment %}
                         <div class="w-12 h-12 rounded-full mr-4 {% cycle 'bg-red-500' 'bg-blue-500' 'bg-green-500' 'bg-yellow-500' 'bg-indigo-500' 'bg-purple-500' %} flex items-center justify-center flex-shrink-0">
                             <span class="text-white font-bold text-xl">{{ review.author_name|first }}</span>
                         </div>
@@ -21,11 +15,6 @@
                     <div class="flex-grow">
                         <p class="font-semibold text-white truncate">{{ review.author_name }}</p>
                         <div class="flex items-center">
-                            {% comment %}
-                            Generate 5 stars, filling them in based on the review's rating.
-                            The loop iterates 5 times, and on each iteration, it checks if the current
-                            loop counter is less than or equal to the review's rating.
-                            {% endcomment %}
                             {% for i in "12345" %}
                                 {% if forloop.counter <= review.rating %}
                                     <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">

@@ -81,6 +81,12 @@ class SiteSettings(models.Model):
         help_text="Google Places Place ID for the storefront location",
         default="ChIJy_zrHmGhMioRisz6mis0SpQ",
     )
+    google_business_page_link = models.URLField(
+        max_length=500,
+        blank=True,
+        null=True,
+        help_text="Optional URL to the Google Business page.",
+    )
     youtube_link = models.CharField(max_length=255, blank=True, null=True)
     instagram_link = models.CharField(max_length=255, blank=True, null=True)
     facebook_link = models.CharField(max_length=255, blank=True, null=True)
