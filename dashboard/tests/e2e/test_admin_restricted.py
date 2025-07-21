@@ -18,8 +18,6 @@ class DashboardAdminViewsRedirectTestCase(TestCase):
         self.assertIn(self.login_url, response.url)
         self.client.logout()
 
-    # --- Regular User Tests (Should be redirected) ---
-
     def test_dashboard_index_redirects_regular_user(self):
         url = reverse("dashboard:dashboard_index")
         self._assert_redirects_to_login(url, self.regular_user)
@@ -31,8 +29,6 @@ class DashboardAdminViewsRedirectTestCase(TestCase):
     def test_settings_visibility_redirects_regular_user(self):
         url = reverse("dashboard:settings_visibility")
         self._assert_redirects_to_login(url, self.regular_user)
-
-    # --- Staff User Tests (Should be allowed access) ---
 
     def test_dashboard_index_allows_staff_user(self):
         self.client.login(username=self.staff_user.username, password="password123")
@@ -54,8 +50,6 @@ class DashboardAdminViewsRedirectTestCase(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.client.logout()
-
-    # --- Superuser Test (Should be allowed access) ---
 
     def test_superuser_can_access_dashboard_pages(self):
         self.client.login(username=self.admin_user.username, password="password123")
