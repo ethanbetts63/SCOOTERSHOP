@@ -21,16 +21,19 @@ def search_sales_profiles_ajax(request):
             | Q(country__icontains=search_term)
         )
 
-        queryset = SalesProfile.objects.filter(search_query).distinct().order_by("name")
+        queryset = SalesProfile.objects.filter(search_query).order_by("name")
 
+        seen_profiles = set()
         for profile in queryset[:20]:
-            profiles_data.append(
-                {
-                    "id": profile.pk,
-                    "name": profile.name,
-                    "email": profile.email,
-                    "phone_number": profile.phone_number,
-                }
-            )
+            if profile.pk not in seen_profiles:
+                profiles_data.append(
+                    {
+                        "id": profile.pk,
+                        "name": profile.name,
+                        "email": profile.email,
+                        "phone_number": profile.phone_number,
+                    }
+                )
+                seen_profiles.add(profile.pk)
 
     return JsonResponse({"profiles": profiles_data})
