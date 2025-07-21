@@ -119,27 +119,25 @@
 </div>
 
 <div class="container mx-auto px-4 pt-8 pb-12">
+    {% if accepted_brands %}
     <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-12">Brands We Love to Work On</h2>
     <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {% for brand in service_brands %}
-            {% if brand.is_accepted %}
-                <div class="bg-gray-900 rounded-lg p-4 flex justify-center items-center">
-                    <p class="text-white text-center font-semibold">{{ brand.name }}</p>
-                </div>
-            {% endif %}
+        {% for brand in accepted_brands %}
+            <div class="bg-gray-900 rounded-lg p-4 flex justify-center items-center">
+                <p class="text-white text-center font-semibold">{{ brand.name }}</p>
+            </div>
         {% endfor %}
     </div>
-    {% if service_settings.show_invalid_brands %}
+    {% endif %}
+    {% if service_settings.show_invalid_brands and unaccepted_brands %}
         <div class="mt-12">
             <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-12">Brands We Don't Work On</h2>
             <p class="text-gray-300 text-center mb-8">{{ service_settings.invalid_brands_description }}</p>
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {% for brand in service_brands %}
-                    {% if not brand.is_accepted %}
-                        <div class="bg-gray-900 rounded-lg p-4 flex justify-center items-center">
-                            <p class="text-white text-center font-semibold">{{ brand.name }}</p>
-                        </div>
-                    {% endif %}
+                {% for brand in unaccepted_brands %}
+                    <div class="bg-gray-900 rounded-lg p-4 flex justify-center items-center">
+                        <p class="text-white text-center font-semibold">{{ brand.name }}</p>
+                    </div>
                 {% endfor %}
             </div>
         </div>

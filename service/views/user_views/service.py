@@ -33,9 +33,11 @@ def service(request):
         messages.warning(request, "Could not load service faqs.")
 
     try:
-        service_brands = ServiceBrand.objects.all()
+        accepted_brands = ServiceBrand.objects.filter(is_accepted=True)
+        unaccepted_brands = ServiceBrand.objects.filter(is_accepted=False)
     except Exception:
-        service_brands = []
+        accepted_brands = []
+        unaccepted_brands = []
         messages.warning(request, "Could not load service brands.")
 
     service_form = ServiceDetailsForm()
@@ -64,7 +66,8 @@ def service(request):
     context = {
         "service_types": service_types,
         "service_faqs": service_faqs,
-        "service_brands": service_brands,
+        "accepted_brands": accepted_brands,
+        "unaccepted_brands": unaccepted_brands,
         "form": service_form,
         "service_settings": service_settings,
         "blocked_service_dates_json": disabled_dates_json,
