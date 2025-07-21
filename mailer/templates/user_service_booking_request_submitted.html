@@ -28,6 +28,17 @@ Service Booking Received
                                 <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Service Type:</td>
                                 <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{% if booking.service_type.name %}{{ booking.service_type.name }}{% else %}(missing){% endif %}</td>
                             </tr>
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Estimated Duration:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">
+                                    {% if booking.service_type.estimated_duration == 0 %}
+                                        Same day
+                                    {% else %}
+                                        {{ booking.service_type.estimated_duration }} day{{ booking.service_type.estimated_duration|pluralize }}
+                                    {% endif %}
+                                    <br><small style="font-size: 12px; color: #9CA3AF;">Admin will provide a more accurate expected pickup time after reviewing your service details.</small>
+                                </td>
+                            </tr>
                             {% if booking.customer_motorcycle %}
                             <tr>
                                 <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Your Motorcycle:</td>

@@ -31,6 +31,17 @@ class ServiceBookingActionForm(forms.Form):
         help_text="Hidden field for the Service Booking ID.",
     )
 
+    estimated_pickup_date = forms.DateField(
+        widget=forms.DateInput(attrs={"type": "date"}),
+        required=False,
+        help_text="Estimated pickup date for the service.",
+    )
+    estimated_pickup_time = forms.TimeField(
+        widget=forms.TimeInput(attrs={"type": "time"}),
+        required=False,
+        help_text="Estimated pickup time for the service.",
+    )
+
     initiate_refund = forms.BooleanField(
         required=False,
         label="Initiate Refund for Deposit",

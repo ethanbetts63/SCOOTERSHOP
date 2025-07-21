@@ -87,6 +87,15 @@ class ServiceBookingActionView(AdminRequiredMixin, FormView):
         action = form.cleaned_data["action"]
 
         if action == "confirm":
+            booking = ServiceBooking.objects.get(pk=service_booking_id)
+            booking.estimated_pickup_date = form.cleaned_data.get(
+                "estimated_pickup_date"
+            )
+            booking.estimated_pickup_time = form.cleaned_data.get(
+                "estimated_pickup_time"
+            )
+            booking.save()
+
             result = confirm_service_booking(
                 service_booking_id=service_booking_id,
                 message=form.cleaned_data.get("message"),

@@ -98,6 +98,9 @@ class ServiceBooking(models.Model):
     estimated_pickup_date = models.DateField(
         blank=True, null=True, help_text="Estimated pickup date set by admin."
     )
+    estimated_pickup_time = models.TimeField(
+        blank=True, null=True, help_text="Estimated pickup time set by admin."
+    )
 
     after_hours_drop_off = models.BooleanField(
         default=False,

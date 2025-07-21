@@ -40,6 +40,14 @@
                 <div class="bg-white rounded-lg p-6 flex-grow flex flex-col">
                     <h3 class="text-xl font-bold text-gray-900 mb-2">{{ service_type.name }}</h3>
                     <p class="text-gray-600 mb-4 flex-grow">{{ service_type.description }}</p>
+                    <p class="text-gray-600 mb-4">
+                        <strong>Estimated duration:</strong>
+                        {% if service_type.estimated_duration == 0 %}
+                            Same day
+                        {% else %}
+                            {{ service_type.estimated_duration }} day{{ service_type.estimated_duration|pluralize }}
+                        {% endif %}
+                    </p>
                     {% if service_type.base_price %}
                     <p class="text-gray-800 font-semibold mt-auto text-lg">Starting from ${{ service_type.base_price }}</p>
                     {% endif %}

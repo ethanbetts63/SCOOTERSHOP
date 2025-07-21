@@ -35,6 +35,12 @@ Service Booking Confirmed
                                 <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Drop-off Time:</td>
                                 <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ booking.dropoff_time }}</td>
                             </tr>
+                            {% if booking.estimated_pickup_date and booking.estimated_pickup_time %}
+                            <tr>
+                                <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Estimated Pick-up:</td>
+                                <td style="padding: 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #F9FAFB;">{{ booking.estimated_pickup_date|date:"D, M d, Y" }} at {{ booking.estimated_pickup_time|time:"P" }}</td>
+                            </tr>
+                            {% endif %}
                             {% if booking.customer_motorcycle %}
                             <tr>
                                 <td style="padding: 10px 10px 10px 0; font-family: Arial, sans-serif; font-size: 16px; line-height: 24px; color: #D1D5DB; font-weight: bold;">Your Motorcycle:</td>
