@@ -254,7 +254,7 @@ class GetServiceDateAvailabilityTest(TestCase):
         self.assertNotIn(str(today), disabled_dates)
 
     def test_booking_status_filter(self):
-        self.service_settings.max_visible_slots_per_day = 1
+        self.service_settings.daily_service_slots = 1
         self.service_settings.booking_advance_notice = 0
         self.service_settings.save()
 
