@@ -3,7 +3,6 @@ from django.views import View
 from django.urls import reverse
 from django.contrib import messages
 from service.mixins import AdminRequiredMixin
-
 from service.forms import AdminServiceTypeForm
 from service.models import ServiceType, ServiceSettings
 

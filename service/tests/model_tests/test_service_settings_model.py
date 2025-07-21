@@ -24,7 +24,7 @@ class ServiceSettingsModelTest(TestCase):
         with self.assertRaises(ValidationError) as cm:
             ServiceSettings(
                 booking_advance_notice=3,
-                max_visible_slots_per_day=5,
+                daily_service_slots=5,
             ).save()
         self.assertIn("Only one instance of ServiceSettings can be created", str(cm.exception))
         self.assertEqual(ServiceSettings.objects.count(), 1)
@@ -57,9 +57,8 @@ class ServiceSettingsModelTest(TestCase):
         self.assertIsInstance(settings.enable_estimated_pickup_date, bool)
 
     def test_clean_method_daily_service_slots(self):
-        settings = ServiceSettingsFactory(
-            daily_service_slots=0
-        )
+        settings = self.settings
+        settings.daily_service_slots = 0
         with self.assertRaises(ValidationError) as cm:
             settings.full_clean()
         self.assertIn("daily_service_slots", cm.exception.message_dict)

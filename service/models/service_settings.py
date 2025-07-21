@@ -13,6 +13,7 @@ class ServiceSettings(models.Model):
     daily_service_slots = models.IntegerField(
         default=8,
         help_text="Total workshop capacity for a given day.",
+        validators=[MinValueValidator(1)],
     )
 
     booking_open_days = models.CharField(
