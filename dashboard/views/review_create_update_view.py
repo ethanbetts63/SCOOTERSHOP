@@ -5,12 +5,7 @@ from django.contrib import messages
 from inventory.mixins import AdminRequiredMixin
 from dashboard.forms import ReviewForm
 
-
 class ReviewCreateUpdateView(AdminRequiredMixin, View):
-    """
-    View to handle creation of new reviews.
-    """
-
     template_name = "dashboard/review_create_update.html"
     form_class = ReviewForm
 

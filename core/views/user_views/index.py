@@ -7,21 +7,16 @@ from service.models import ServiceSettings, TempServiceBooking
 from service.forms import ServiceDetailsForm
 from service.utils import get_service_date_availability
 from django.views.decorators.http import require_http_methods
-from inventory.utils import get_featured_motorcycles  # --- Import the utility ---
+from inventory.utils import get_featured_motorcycles  
 
 
 @require_http_methods(["GET"])
 def index(request):
     site_settings = SiteSettings.get_settings()
     service_settings = ServiceSettings.objects.first()
-
     place_id = site_settings.google_places_place_id
     api_key = settings.GOOGLE_API_KEY
-    is_testing = "test" in sys.argv or "manage.py" in sys.argv
     places_api_url = f"https://maps.googleapis.com/maps/api/place/details/json?place_id={place_id}&fields=reviews&key={api_key}"
-
-    all_reviews = []
-    five_star_reviews = []
 
     if site_settings.enable_google_places_reviews and place_id and api_key:
         try:

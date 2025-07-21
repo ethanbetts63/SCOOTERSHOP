@@ -1,12 +1,14 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from dashboard.models import Review
-from dashboard.tests.test_helpers.model_factories import ReviewFactory
+from dashboard.tests.test_helpers.model_factories import ReviewFactory, UserFactory
 
 
 class ReviewAddViewTest(TestCase):
     def setUp(self):
         self.client = Client()
+        self.user = UserFactory.create()
+        self.client.login(username=self.user.username, password='default_password')
 
     def test_add_review(self):
         self.assertEqual(Review.objects.count(), 0)
