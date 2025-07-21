@@ -22,6 +22,8 @@ class ServiceBookingActionFormTest(TestCase):
                 "action": "confirm",
                 "message": "Booking confirmed successfully.",
                 "send_notification": True,
+                "estimated_pickup_date": "2025-12-25",
+                "estimated_pickup_time": "12:00",
             }
         )
         self.assertTrue(form.is_valid(), form.errors)

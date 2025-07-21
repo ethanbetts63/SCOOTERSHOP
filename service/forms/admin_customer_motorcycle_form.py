@@ -24,7 +24,6 @@ class AdminCustomerMotorcycleForm(forms.ModelForm):
             "engine_size",
             "vin_number",
             "engine_number",
-            "image",
         ]
         widgets = {
             "brand": forms.TextInput(attrs={"class": "form-control"}),
@@ -48,7 +47,6 @@ class AdminCustomerMotorcycleForm(forms.ModelForm):
             "engine_size": "Engine Size",
             "vin_number": "VIN Number (Optional)",
             "engine_number": "Engine Number (Optional)",
-            "image": "Motorcycle Image (Optional)",
         }
 
     def clean(self):

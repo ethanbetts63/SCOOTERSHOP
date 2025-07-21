@@ -213,6 +213,8 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
     )
     dropoff_date = factory.LazyAttribute(lambda o: o.service_date)
     dropoff_time = factory.Faker("time_object")
+    estimated_pickup_date = factory.LazyAttribute(lambda o: o.dropoff_date + datetime.timedelta(days=o.service_type.estimated_duration))
+    estimated_pickup_time = factory.Faker("time_object")
 
     @factory.post_generation
     def calculate_estimated_pickup(obj, create, extracted, **kwargs):

@@ -68,6 +68,8 @@ class ServiceBookingActionViewTest(TestCase):
             "action": "confirm",
             "send_notification": True,
             "message": "Test confirmation message",
+            "estimated_pickup_date": "2025-12-25",
+            "estimated_pickup_time": "12:00",
         }
         response = self.client.post(
             reverse(
@@ -82,6 +84,10 @@ class ServiceBookingActionViewTest(TestCase):
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), "Booking confirmed.")
+
+        self.service_booking.refresh_from_db()
+        self.assertEqual(str(self.service_booking.estimated_pickup_date), "2025-12-25")
+        self.assertEqual(str(self.service_booking.estimated_pickup_time), "12:00:00")
 
     @patch(
         "service.views.admin_views.admin_service_booking_action_view.reject_service_booking"

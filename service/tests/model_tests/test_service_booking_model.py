@@ -148,6 +148,15 @@ class ServiceBookingModelTest(TestCase):
             booking.estimated_pickup_date, (datetime.date, type(None))
         )
 
+        field = booking._meta.get_field("estimated_pickup_time")
+        self.assertIsInstance(field, models.TimeField)
+        self.assertTrue(field.null)
+        self.assertTrue(field.blank)
+
+        self.assertIsInstance(
+            booking.estimated_pickup_time, (datetime.time, type(None))
+        )
+
         field = booking._meta.get_field("booking_status")
         self.assertIsInstance(field, models.CharField)
         self.assertEqual(field.max_length, 30)
