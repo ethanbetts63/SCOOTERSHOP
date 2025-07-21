@@ -8,6 +8,11 @@ class ServiceBrand(models.Model):
         help_text="Name of the service brand (e.g., 'Yamaha', 'Vespa').",
     )
 
+    is_accepted = models.BooleanField(
+        default=True,
+        help_text="Is this a brand we work on?",
+    )
+
     last_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):

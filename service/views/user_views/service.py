@@ -1,7 +1,12 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-
-from service.models import ServiceType, TempServiceBooking, ServiceSettings, Servicefaq
+from service.models import (
+    ServiceType,
+    TempServiceBooking,
+    ServiceSettings,
+    Servicefaq,
+    ServiceBrand,
+)
 from dashboard.models import SiteSettings
 from service.forms import ServiceDetailsForm
 from service.utils import get_service_date_availability
@@ -26,6 +31,12 @@ def service(request):
     except Exception:
         service_faqs = []
         messages.warning(request, "Could not load service faqs.")
+
+    try:
+        service_brands = ServiceBrand.objects.all()
+    except Exception:
+        service_brands = []
+        messages.warning(request, "Could not load service brands.")
 
     service_form = ServiceDetailsForm()
 
@@ -53,6 +64,7 @@ def service(request):
     context = {
         "service_types": service_types,
         "service_faqs": service_faqs,
+        "service_brands": service_brands,
         "form": service_form,
         "service_settings": service_settings,
         "blocked_service_dates_json": disabled_dates_json,

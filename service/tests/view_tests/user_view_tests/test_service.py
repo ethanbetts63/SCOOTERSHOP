@@ -6,8 +6,8 @@ from service.tests.test_helpers.model_factories import (
     TempServiceBookingFactory,
     ServiceSettingsFactory,
     ServicefaqFactory,
-    SiteSettingsFactory,
 )
+from dashboard.tests.test_helpers.model_factories import SiteSettingsFactory
 from django.contrib.messages import get_messages
 import datetime
 

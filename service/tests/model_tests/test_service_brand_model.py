@@ -3,10 +3,7 @@ import time
 from django.test import TestCase
 from django.db import IntegrityError
 from datetime import datetime
-
 from service.models import ServiceBrand
-
-
 from service.tests.test_helpers.model_factories import ServiceBrandFactory
 
 

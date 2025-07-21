@@ -24,7 +24,7 @@ class CustomerMotorcycleForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         brand_names = [
-            brand.name for brand in ServiceBrand.objects.all().order_by("name")
+            brand.name for brand in ServiceBrand.objects.filter(is_accepted=True).order_by("name")
         ]
 
         brand_choices = [("", _("-- Select Brand --"))] + [
