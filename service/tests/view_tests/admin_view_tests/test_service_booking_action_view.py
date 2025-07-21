@@ -59,7 +59,7 @@ class ServiceBookingActionViewTest(TestCase):
         self.assertRedirects(response, reverse("service:service_booking_management"))
 
     @patch(
-        "service.views.admin_views.service_booking_action_view.confirm_service_booking"
+        "service.views.admin_views.admin_service_booking_action_view.confirm_service_booking"
     )
     def test_post_confirm_action_success(self, mock_confirm):
         mock_confirm.return_value = {"success": True, "message": "Booking confirmed."}
@@ -84,7 +84,7 @@ class ServiceBookingActionViewTest(TestCase):
         self.assertEqual(str(messages[0]), "Booking confirmed.")
 
     @patch(
-        "service.views.admin_views.service_booking_action_view.reject_service_booking"
+        "service.views.admin_views.admin_service_booking_action_view.reject_service_booking"
     )
     def test_post_reject_action_success(self, mock_reject):
         mock_reject.return_value = {"success": True, "message": "Booking rejected."}
@@ -109,7 +109,7 @@ class ServiceBookingActionViewTest(TestCase):
         self.assertEqual(str(messages[0]), "Booking rejected.")
 
     @patch(
-        "service.views.admin_views.service_booking_action_view.reject_service_booking"
+        "service.views.admin_views.admin_service_booking_action_view.reject_service_booking"
     )
     def test_post_reject_action_with_refund_success(self, mock_reject):
         # Create a service booking with deposit paid
