@@ -110,7 +110,7 @@ class ServiceSettingsFactory(factory.django.DjangoModelFactory):
         django_get_or_create = ("pk",)
 
     booking_advance_notice = 1
-    max_visible_slots_per_day = 6
+    daily_service_slots = 8
     booking_open_days = "Mon,Tue,Wed,Thu,Fri"
     drop_off_start_time = datetime.time(9, 0)
     drop_off_end_time = datetime.time(17, 0)

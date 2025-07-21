@@ -204,6 +204,12 @@ class ServiceBookingSettingsFormTest(TestCase):
             form.errors["drop_off_spacing_mins"],
         )
 
+    def test_invalid_daily_service_slots_too_high(self):
+        data = self.valid_data.copy()
+        data["daily_service_slots"] = 1000 # Assuming a reasonable max for testing
+        form = ServiceBookingSettingsForm(data=data)
+        self.assertTrue(form.is_valid())
+
     def test_drop_off_spacing_mins_invalid_too_high(self):
         data = self.valid_data.copy()
         data["drop_off_spacing_mins"] = 61

@@ -68,6 +68,16 @@ class ServiceTypeModelTest(TestCase):
         )
         self.assertEqual(new_service_type.is_active, True)
 
+    def test_slots_required_field(self):
+        service_type = self.service_type
+        self.assertIsInstance(service_type.slots_required, int)
+        self.assertEqual(service_type._meta.get_field("slots_required").default, 1)
+        self.assertGreaterEqual(service_type.slots_required, 1)
+        self.assertEqual(
+            service_type._meta.get_field("slots_required").help_text,
+            "How many slots this service consumes.",
+        )
+
     def test_str_method(self):
         service_type = self.service_type
         self.assertEqual(str(service_type), service_type.name)

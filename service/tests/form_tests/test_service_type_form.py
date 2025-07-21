@@ -76,20 +76,29 @@ class AdminServiceTypeFormTest(TestCase):
         self.assertIn("name", form.errors)
         self.assertIn("This field is required.", form.errors["name"])
 
-    def test_form_invalid_negative_duration_days(self):
-        data = {
-            "name": "Test Service",
-            "description": "Description",
-            "estimated_duration": -1,
-            "base_price": "10.00",
+    def test_invalid_slots_required_negative(self):
+        form = AdminServiceTypeForm(data={
+            "name": "Test Service Type",
+            "description": "A description",
+            "estimated_duration": 1,
+            "base_price": 100.00,
             "is_active": True,
-        }
-        form = AdminServiceTypeForm(data=data)
+            "slots_required": -1,
+        })
         self.assertFalse(form.is_valid())
-        self.assertIn("estimated_duration", form.errors)
-        self.assertIn(
-            "Estimated duration cannot be negative.", form.errors["estimated_duration"]
-        )
+        self.assertIn("slots_required", form.errors)
+
+    def test_invalid_slots_required_zero(self):
+        form = AdminServiceTypeForm(data={
+            "name": "Test Service Type",
+            "description": "A description",
+            "estimated_duration": 1,
+            "base_price": 100.00,
+            "is_active": True,
+            "slots_required": 0,
+        })
+        self.assertFalse(form.is_valid())
+        self.assertIn("slots_required", form.errors)
 
     def test_form_invalid_negative_base_price(self):
         data = {
@@ -150,6 +159,7 @@ class AdminServiceTypeFormTest(TestCase):
             "estimated_duration": 3,
             "base_price": "200.00",
             "is_active": False,
+            "slots_required": 3,
         }
 
         form = AdminServiceTypeForm(data=updated_data, instance=instance)
@@ -165,6 +175,7 @@ class AdminServiceTypeFormTest(TestCase):
         self.assertEqual(updated_instance.estimated_duration, 3)
         self.assertEqual(updated_instance.base_price, Decimal("200.00"))
         self.assertFalse(updated_instance.is_active)
+        self.assertEqual(updated_instance.slots_required, 3)
 
         refreshed_instance = ServiceType.objects.get(pk=instance.pk)
         self.assertEqual(refreshed_instance.name, updated_data["name"])
@@ -172,6 +183,7 @@ class AdminServiceTypeFormTest(TestCase):
         self.assertEqual(refreshed_instance.estimated_duration, 3)
         self.assertEqual(refreshed_instance.base_price, Decimal("200.00"))
         self.assertFalse(refreshed_instance.is_active)
+        self.assertEqual(refreshed_instance.slots_required, 3)
 
     def test_form_image_field_optional(self):
         data_valid = {

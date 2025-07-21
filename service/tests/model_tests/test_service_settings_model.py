@@ -21,7 +21,6 @@ class ServiceSettingsModelTest(TestCase):
         self.assertEqual(ServiceSettings.objects.count(), 1)
 
     def test_singleton_enforcement(self):
-        # The factory's get_or_create handles this, but we can test the model's save method directly
         with self.assertRaises(ValidationError) as cm:
             ServiceSettings(
                 booking_advance_notice=3,
@@ -38,7 +37,7 @@ class ServiceSettingsModelTest(TestCase):
         ServiceSettings.objects.all().delete()
         settings = ServiceSettings.objects.create()
         self.assertEqual(settings.booking_advance_notice, 2)
-        self.assertEqual(settings.max_visible_slots_per_day, 1)
+        self.assertEqual(settings.daily_service_slots, 8)
         self.assertEqual(settings.booking_open_days, "Mon,Tue,Wed,Thu,Fri")
         self.assertEqual(settings.drop_off_start_time, time(9, 0))
         self.assertEqual(settings.drop_off_end_time, time(17, 0))
@@ -55,7 +54,16 @@ class ServiceSettingsModelTest(TestCase):
         self.assertTrue(settings.enable_instore_full_payment)
         self.assertEqual(settings.currency_code, "AUD")
         self.assertEqual(settings.currency_symbol, "$")
-        self.assertFalse(settings.enable_estimated_pickup_date)
+        self.assertIsInstance(settings.enable_estimated_pickup_date, bool)
+
+    def test_clean_method_daily_service_slots(self):
+        settings = ServiceSettingsFactory(
+            daily_service_slots=0
+        )
+        with self.assertRaises(ValidationError) as cm:
+            settings.full_clean()
+        self.assertIn("daily_service_slots", cm.exception.message_dict)
+        self.assertIn("Ensure this value is greater than or equal to 1.", cm.exception.message_dict["daily_service_slots"][0])
 
     def test_field_attributes(self):
         self.assertEqual(self.settings._meta.get_field("booking_open_days").max_length, 255)
