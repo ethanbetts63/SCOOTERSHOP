@@ -3,7 +3,6 @@ import datetime
 import uuid
 from decimal import Decimal
 from faker import Faker
-
 fake = Faker()
 from service.models import (
     BlockedServiceDate,

@@ -3,13 +3,8 @@ from django.db import models, IntegrityError
 from decimal import Decimal
 import datetime
 from faker import Faker
-
 fake = Faker()
-
-
 from service.models import ServiceBooking
-
-
 from service.tests.test_helpers.model_factories import (
     ServiceBookingFactory,
     ServiceProfileFactory,
