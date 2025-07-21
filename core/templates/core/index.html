@@ -67,13 +67,13 @@
     {% endif %}
 
     {% if settings.enable_google_places_reviews and reviews %}
-        <div class="my-3 py-5">
+        <div class="my-0 py-4">
             {% include 'dashboard/_review_display_include.html' %}
         </div>
     {% endif %}
 
-    <div class="container mx-auto px-4 pt-8 pb-16">
-        <div class="space-y-16">
+    <div class="container mx-auto px-4 pt-4 pb-16">
+        <div class="space-y-14">
             <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-2">Our Trusted Brands</h2>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
@@ -124,7 +124,7 @@
 {% endblock %}
 
 {% block map %}
-    <div class="container mx-auto px-4 my-8">
+    <div class="container mx-auto px-4 my-0">
         <h2 class="text-3xl font-bold tracking-tight text-white text-center mb-8">Where To Find Us (By Appointment)</h2>
         {% include "core/includes/map.html" %}
     </div>

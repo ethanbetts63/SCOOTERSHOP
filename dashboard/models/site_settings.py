@@ -63,22 +63,22 @@ class SiteSettings(models.Model):
     )
 
     phone_number = models.CharField(
-        max_length=20, blank=True, null=True, default="(08) 9433 4613"
+        max_length=20, blank=True, null=True, default="94334613"
     )
     email_address = models.EmailField(
         blank=True, null=True, default="admin@scootershop.com.au"
     )
 
     street_address = models.CharField(
-        max_length=255, blank=True, null=True, default="Unit 2/95 Queen Victoria St"
+        max_length=255, blank=True, null=True, default="Unit 5 / 6 Cleveland Street"
     )
     address_locality = models.CharField(
-        max_length=100, blank=True, null=True, default="Fremantle"
+        max_length=100, blank=True, null=True, default="Dianella"
     )
     address_region = models.CharField(
         max_length=100, blank=True, null=True, default="WA"
     )
-    postal_code = models.CharField(max_length=20, blank=True, null=True, default="6160")
+    postal_code = models.CharField(max_length=20, blank=True, null=True, default="6059")
 
     google_places_place_id = models.CharField(
         max_length=255,
@@ -86,6 +86,15 @@ class SiteSettings(models.Model):
         null=True,
         help_text="Google Places Place ID for the storefront location",
         default="ChIJy_zrHmGhMioRisz6mis0SpQ",
+    )
+    mrb_number = models.CharField(
+        max_length=20, blank=True, null=True, default="MRB5092", help_text="Motor Vehicle Repairer's Business number."
+    )
+    abn_number = models.CharField(
+        max_length=20, blank=True, null=True, default="46157594161", help_text="Australian Business Number."
+    )
+    md_number = models.CharField(
+        max_length=20, blank=True, null=True, default="28276", help_text="Motor Dealer's number."
     )
     google_business_page_link = models.URLField(
         max_length=500,
