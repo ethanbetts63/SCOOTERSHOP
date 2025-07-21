@@ -2,13 +2,9 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib import messages
 from unittest import mock
-
 from inventory.models import SalesProfile
-
-
 from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
 from inventory.tests.test_helpers.model_factories import SalesProfileFactory
-
 
 class SalesProfileDeleteViewTest(TestCase):
     @classmethod
@@ -18,7 +14,6 @@ class SalesProfileDeleteViewTest(TestCase):
             username="admin",
             email="admin@example.com",
         )
-
         cls.non_admin_user = UserFactory(
             username="user",
             email="user@example.com",
@@ -50,7 +45,6 @@ class SalesProfileDeleteViewTest(TestCase):
         self.assertFalse(
             SalesProfile.objects.filter(pk=self.sales_profile_to_delete.pk).exists()
         )
-
         messages_list = list(messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages_list), 1)
         self.assertEqual(
@@ -82,7 +76,6 @@ class SalesProfileDeleteViewTest(TestCase):
         self.assertTrue(
             SalesProfile.objects.filter(pk=self.sales_profile_to_delete.pk).exists()
         )
-
         messages_list = list(messages.get_messages(response.wsgi_request))
         self.assertEqual(len(messages_list), 1)
         self.assertIn("Error deleting sales profile", str(messages_list[0]))

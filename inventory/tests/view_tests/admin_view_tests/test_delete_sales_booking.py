@@ -2,16 +2,12 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib import messages
 from unittest import mock
-
 from inventory.models import SalesBooking
-
-
 from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
 from inventory.tests.test_helpers.model_factories import (
     SalesBookingFactory,
     MotorcycleFactory,
 )
-
 
 class SalesBookingDeleteViewTest(TestCase):
     @classmethod

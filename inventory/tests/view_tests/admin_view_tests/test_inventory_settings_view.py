@@ -1,31 +1,21 @@
 import datetime
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.contrib.auth import get_user_model
-
 from inventory.models import InventorySettings
-
-
 from users.tests.test_helpers.model_factories import UserFactory, SuperUserFactory
 from inventory.tests.test_helpers.model_factories import InventorySettingsFactory
-
-
-
 
 class InventorySettingsViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.client = Client()
         cls.url = reverse("inventory:inventory_settings")
-
         cls.user = UserFactory(username="testuser", is_staff=False, is_superuser=False)
         cls.user.set_password("password123")
         cls.user.save()
-
         cls.admin_user = SuperUserFactory(
             username="adminuser",
         )
-
         cls.settings = InventorySettingsFactory(
             deposit_amount=150.00,
             require_drivers_license=False,
