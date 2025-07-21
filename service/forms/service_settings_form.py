@@ -26,6 +26,9 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             "enable_instore_full_payment",
             "currency_code",
             "currency_symbol",
+            "show_invalid_brands",
+            "accepted_brands_description",
+            "invalid_brands_description",
         ]
         widgets = {
             "booking_advance_notice": forms.NumberInput(
@@ -83,6 +86,15 @@ class ServiceBookingSettingsForm(forms.ModelForm):
             ),
             "currency_code": forms.TextInput(attrs={"class": "form-control"}),
             "currency_symbol": forms.TextInput(attrs={"class": "form-control"}),
+            "show_invalid_brands": forms.CheckboxInput(
+                attrs={"class": "form-check-input"}
+            ),
+            "accepted_brands_description": forms.Textarea(
+                attrs={"class": "form-control", "rows": 3}
+            ),
+            "invalid_brands_description": forms.Textarea(
+                attrs={"class": "form-control", "rows": 3}
+            ),
         }
 
     def clean(self):
