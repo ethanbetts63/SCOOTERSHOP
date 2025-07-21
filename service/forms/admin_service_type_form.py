@@ -13,6 +13,7 @@ class AdminServiceTypeForm(forms.ModelForm):
             "base_price",
             "is_active",
             "image",
+            "slots_required"
         ]
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control"}),
