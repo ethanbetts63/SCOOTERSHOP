@@ -62,3 +62,10 @@ class AdminServiceTypeForm(forms.ModelForm):
             if base_price < 0:
                 raise ValidationError("Base price cannot be negative.")
         return base_price
+
+    def clean_slots_required(self):
+        slots_required = self.cleaned_data.get("slots_required")
+        if slots_required is not None:
+            if slots_required <= 0:
+                raise ValidationError("Slots required must be a positive number.")
+        return slots_required
