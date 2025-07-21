@@ -1,5 +1,7 @@
 import factory
-from dashboard.models import SiteSettings
+import factory.fuzzy
+from factory.faker import Faker
+from dashboard.models import SiteSettings, Review
 
 
 class SiteSettingsFactory(factory.django.DjangoModelFactory):
@@ -15,7 +17,6 @@ class SiteSettingsFactory(factory.django.DjangoModelFactory):
     enable_privacy_policy_page = True
     enable_returns_page = True
     enable_security_page = True
-    enable_google_places_reviews = True
     phone_number = "(08) 9433 4613"
     email_address = "admin@scootershop.com.au"
     street_address = "Unit 2/95 Queen Victoria St"
@@ -30,3 +31,15 @@ class SiteSettingsFactory(factory.django.DjangoModelFactory):
     opening_hours_friday = "10:30am to 5:00pm"
     opening_hours_saturday = "10:30am to 1:00pm (By Appointment only)"
     opening_hours_sunday = "Closed"
+
+
+class ReviewFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Review
+
+    author_name = Faker('name')
+    rating = factory.fuzzy.FuzzyInteger(1, 5)
+    text = Faker('text')
+    profile_photo_url = factory.Faker('image_url')
+    display_order = factory.Sequence(lambda n: n)
+    is_active = True
