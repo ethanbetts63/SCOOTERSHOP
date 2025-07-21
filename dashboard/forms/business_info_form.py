@@ -24,6 +24,8 @@ class BusinessInfoForm(forms.ModelForm):
             "youtube_link",
             "instagram_link",
             "facebook_link",
+            "enable_banner",
+            "banner_text",
         ]
         widgets = {
             "phone_number": forms.TextInput(attrs={"class": "form-control"}),

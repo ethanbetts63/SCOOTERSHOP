@@ -55,6 +55,12 @@ class SiteSettings(models.Model):
     enable_motorcycle_mover = models.BooleanField(
         default=True, help_text="Enable the motorcycle mover section."
     )
+    enable_banner = models.BooleanField(
+        default=False, help_text="Enable a site-wide announcement banner."
+    )
+    banner_text = models.CharField(
+        max_length=255, blank=True, default="", help_text="The text to display in the banner."
+    )
 
     phone_number = models.CharField(
         max_length=20, blank=True, null=True, default="(08) 9433 4613"
