@@ -1,3 +1,4 @@
+
 <div class="bg-gray-900 py-16">
     <div class="container mx-auto px-4">
         <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-12">What Our Customers Say</h2>
@@ -5,11 +6,15 @@
             {% for review in reviews %}
             <div class="bg-gray-800 rounded-lg p-6 flex flex-col shadow-lg hover:shadow-cyan-500/50 transition-shadow duration-300 ease-in-out">
                 <div class="flex items-center mb-4">
-                    {% comment %} Display profile photo or a fallback initial. {% endcomment %}
+                    {% comment %} Display profile photo or a fallback initial with a cycling color. {% endcomment %}
                     {% if review.profile_photo_url %}
                         <img src="{{ review.profile_photo_url }}" alt="Photo of {{ review.author_name }}" class="w-12 h-12 rounded-full mr-4 object-cover bg-gray-700">
                     {% else %}
-                        <div class="w-12 h-12 rounded-full mr-4 bg-green-600 flex items-center justify-center flex-shrink-0">
+                        {% comment %}
+                        The 'cycle' tag below will loop through the provided CSS classes for each review,
+                        giving each fallback avatar a different background color.
+                        {% endcomment %}
+                        <div class="w-12 h-12 rounded-full mr-4 {% cycle 'bg-red-500' 'bg-blue-500' 'bg-green-500' 'bg-yellow-500' 'bg-indigo-500' 'bg-purple-500' %} flex items-center justify-center flex-shrink-0">
                             <span class="text-white font-bold text-xl">{{ review.author_name|first }}</span>
                         </div>
                     {% endif %}
