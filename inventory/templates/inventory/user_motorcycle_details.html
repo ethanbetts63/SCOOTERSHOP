@@ -66,7 +66,7 @@
                 <!-- Main Image Container -->
                 <div id="main-image-container" class="media-item w-full relative bg-gray-100 rounded-xl overflow-hidden shadow-md">
                     <img id="main-bike-image"
-                         src="{% if motorcycle.image %}{{ motorcycle.image.url }}{% elif motorcycle.images.all %}{{ motorcycle.images.first.image.url }}{% else %}https://placehold.co/800x600/e2e8f0/333?text=No+Image{% endif %}"
+                         src="{% if motorcycle.image %}{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{{ motorcycle.image.url }}{% elif motorcycle.images.all %}{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{{ motorcycle.images.first.image.url }}{% else %}https://placehold.co/800x600/e2e8f0/333?text=No+Image{% endif %}"
                          alt="{{ motorcycle.title }}"
                          class="w-full h-96 object-cover rounded-xl transition-opacity duration-300 ease-in-out">
                 </div>
@@ -85,19 +85,19 @@
                     {% endif %}
                     
                     {% if motorcycle.image %}
-                        <img src="{{ motorcycle.image.url }}"
+                        <img src="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{{ motorcycle.image.url }}"
                              alt="{{ motorcycle.title }} - Main Image"
                              class="thumbnail w-24 h-16 object-cover rounded-lg cursor-pointer border-2 border-transparent hover:border-green-500 transition-all duration-200"
                              data-media-type="image"
-                             data-image-url="{{ motorcycle.image.url }}">
+                             data-image-url="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{{ motorcycle.image.url }}">
                     {% endif %}
 
                     {% for img in motorcycle.images.all %}
-                        <img src="{{ img.image.url }}"
+                        <img src="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{{ img.image.url }}"
                              alt="{{ motorcycle.title }} - Image {{ forloop.counter }}"
                              class="thumbnail w-24 h-16 object-cover rounded-lg cursor-pointer border-2 border-transparent hover:border-green-500 transition-all duration-200"
                              data-media-type="image"
-                             data-image-url="{{ img.image.url }}">
+                             data-image-url="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{{ img.image.url }}">
                     {% endfor %}
                 </div>
             </div>

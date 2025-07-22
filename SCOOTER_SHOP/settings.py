@@ -13,7 +13,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SITE_DOMAIN = os.getenv("SITE_DOMAIN", "127.0.0.1:8000")
 SITE_SCHEME = os.getenv("SITE_SCHEME", "http")
 
-
 SECRET_KEY = "django-insecure-w0&@r2_2x%j*$jy12&hb_g6qgt%ppkdx**+%!l@gf8v*%91v7z"
 
 DEBUG = os.getenv("DEBUG", "False") == "True"
@@ -22,7 +21,7 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     "ethanbetts.pythonanywhere.com",
-    "www.allbikesvespawharehouse.com.au",
+    "www.allbikesvespawarehouse.com.au",
 ]
 
 INSTALLED_APPS = [
@@ -92,14 +91,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "SCOOTER_SHOP.wsgi.application"
 
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
-
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -116,15 +113,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "Australia/Perth"
 
 USE_I18N = True
-
 USE_TZ = True
-
 
 STATIC_URL = "/static/"
 

@@ -155,7 +155,7 @@
             {% if motorcycle.image %}
             <div class="detail-item md:col-span-2">
                 <div class="detail-label">Motorcycle Image:</div>
-                <img src="{{ motorcycle.image.url }}" alt="{{ motorcycle.title }}" class="mt-2 max-w-sm h-auto rounded-md shadow-sm">
+                <img src="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{{ motorcycle.image.url }}" alt="{{ motorcycle.title }}" class="mt-2 max-w-sm h-auto rounded-md shadow-sm">
             </div>
             {% endif %}
         </div>
