@@ -2,7 +2,7 @@
 {% load static %}
 {% load youtube %}
 
-{% block title %}{{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }} for Sale Perth | Allbikes and Vespa Warehouse{% endblock %}
+{% block title %}{% if motorcycle.year %}{{ motorcycle.year }} {% endif %}{{ motorcycle.brand }} {{ motorcycle.model }} for Sale Perth | Allbikes and Vespa Warehouse{% endblock %}
 {% block meta_description %}Check out this {{ motorcycle.get_conditions_display|lower }} {{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }} for sale at Allbikes and Vespa Warehouse in Perth. {{ motorcycle.description|truncatewords:20 }}{% endblock %}
 {% block meta_keywords %}{{ motorcycle.brand }} {{ motorcycle.model }}, {{ motorcycle.year }} scooter, {{ motorcycle.get_conditions_display|lower }} scooter for sale, scooter perth, {{ motorcycle.brand }} for sale{% endblock %}
 
@@ -32,7 +32,7 @@
     {% if motorcycle %}
     <div class="bg-white rounded-2xl shadow-xl p-6 lg:p-10 mb-10">
         <div class="text-center mb-8 pb-4 border-b border-gray-200">
-            <h1 class="text-4xl lg:text-5xl font-extrabold text-gray-800 tracking-tight mb-2">{{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }}</h1>
+            <h1 class="text-4xl lg:text-5xl font-extrabold text-gray-800 tracking-tight mb-2">{% if motorcycle.year %}{{ motorcycle.year }} {% endif %}{{ motorcycle.brand }} {{ motorcycle.model }}</h1>
             
             <div class="mt-4">
                 {% if motorcycle.status == 'sold' %}
@@ -115,11 +115,13 @@
 
                 <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-3">Specifications</h2>
                 <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-lg text-gray-700">
+                    {% if motorcycle.year %}
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-calendar-alt text-green-600"></i>
                         <dt class="font-semibold">Year:</dt>
                         <dd>{{ motorcycle.year }}</dd>
                     </div>
+                    {% endif %}
                     
                     {% if 'New' not in motorcycle.get_conditions_display %}
                     <div class="flex items-center space-x-2">
