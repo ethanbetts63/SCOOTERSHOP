@@ -17,11 +17,7 @@
 {% endblock %}
 
 {% block content %}
-    {% if settings.enable_banner and settings.banner_text %}
-    <div class="bg-blue-500 text-white text-center py-2">
-        {{ settings.banner_text }}
-    </div>
-    {% endif %}
+
     <div class="container mx-auto px-4 mt-2">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div class="w-full">
@@ -67,18 +63,18 @@
     {% endif %}
 
     {% if settings.enable_google_places_reviews and reviews %}
-        <div class="my-0 py-6">
+        <div class="my-0 pt-6 pb-0">
             {% include 'dashboard/_review_display_include.html' %}
         </div>
     {% endif %}
 
-        {% if settings.enable_frank %}
-    <div class="container mx-auto my-0">
+    {% if settings.enable_frank %}
+    <div class="container mx-auto pt-0 pb-0">
         {% include 'core/includes/why_choose_us.html' %}
     </div>
     {% endif %}
 
-    <div class="container mx-auto px-4 pt-4 pb-16">
+    <div class="container mx-auto px-4 pt-0 pb-4">
         <div class="space-y-14">
             <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-2">Our Trusted Brands</h2>
 
@@ -123,9 +119,11 @@
         </div>
     </div>
 
-    {% if settings.enable_motorcycle_mover %}
-        {% include 'core/includes/motorcycle_mover.html' %}
-    {% endif %}
+    <div class="pt-0 pb-0">
+        {% if settings.enable_motorcycle_mover %}
+            {% include 'core/includes/motorcycle_mover.html' %}
+        {% endif %}
+    </div>
 
 {% endblock %}
 

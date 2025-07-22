@@ -141,6 +141,11 @@
                 </div>
             </div>
         </nav>
+        {% if settings.enable_banner and settings.banner_text %}
+        <div class="bg-blue-500 text-white text-center py-2">
+            {{ settings.banner_text }}
+        </div>
+    {% endif %}
         {% load breadcrumb_tags %} 
         <div class="max-w-7xl mx-auto px-4 py-1">
             {% get_breadcrumbs as breadcrumb_data %}

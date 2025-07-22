@@ -1,20 +1,17 @@
 <style>
-    /* Custom utility to hide scrollbars for a cleaner look */
     .no-scrollbar::-webkit-scrollbar {
         display: none;
     }
     .no-scrollbar {
-        -ms-overflow-style: none;  /* IE and Edge */
-        scrollbar-width: none;  /* Firefox */
+        -ms-overflow-style: none; 
+        scrollbar-width: none; 
     }
 </style>
 
 <div class="bg-gray-900 pt-8 pb-8">
-    <div class="container mx-auto">
-        <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-12 px-4">What are customers saying?</h2>
-        
+    <div class="container mx-auto">        
         <!-- Horizontally scrollable container -->
-        <div class="flex overflow-x-auto space-x-8 pb-4 no-scrollbar px-4">
+        <div class="flex overflow-x-auto space-x-8 pb-0 no-scrollbar px-4">
             {% for review in reviews %}
             <!-- Review Card with fixed width and no shrinking -->
             <div class="flex-shrink-0 w-80 md:w-96 bg-gray-800 rounded-lg p-6 flex flex-col shadow-lg hover:shadow-cyan-500/50 transition-shadow duration-300 ease-in-out">
