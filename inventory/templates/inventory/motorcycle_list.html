@@ -338,7 +338,14 @@ document.addEventListener('DOMContentLoaded', function() {
             tile.querySelector('.motorcycle-price').textContent = priceText;
 
             tile.querySelector('.motorcycle-condition').textContent = bike.condition_display;
-            tile.querySelector('.motorcycle-year').textContent = bike.year;
+            const yearElement = tile.querySelector('.motorcycle-year');
+            if (bike.year) {
+                yearElement.textContent = bike.year;
+            } else if (bike.condition_display && bike.condition_display.includes('New')) {
+                yearElement.textContent = 'NEW';
+            } else {
+                yearElement.textContent = 'N/A';
+            }
 
             const middleLabel = tile.querySelector('.motorcycle-middle-label');
             const middleValue = tile.querySelector('.motorcycle-middle-value');
