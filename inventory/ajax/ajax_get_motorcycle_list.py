@@ -2,24 +2,31 @@ from django.http import JsonResponse
 from django.db.models import Q
 from inventory.models import Motorcycle
 from django.core.paginator import Paginator
+import logging
 
+logger = logging.getLogger(__name__)
 
 def get_motorcycle_list(request):
+    logger.debug(f"AJAX: get_motorcycle_list called with GET params: {request.GET}")
+
     # Base queryset
     motorcycles = Motorcycle.objects.filter(is_available=True)
 
     # Condition filtering
     condition_slug = request.GET.get("condition_slug", "all")
+    logger.debug(f"AJAX: Filtering by condition_slug: {condition_slug}")
     if condition_slug in ["new", "used", "demo"]:
         condition_filter = Q(condition=condition_slug) | Q(
             conditions__name__iexact=condition_slug
         )
         motorcycles = motorcycles.filter(condition_filter).distinct()
+    logger.debug(f"AJAX: Motorcycles count after condition filter: {motorcycles.count()}")
 
     # Brand filtering
     brand = request.GET.get("brand")
     if brand:
         motorcycles = motorcycles.filter(brand__iexact=brand)
+    logger.debug(f"AJAX: Motorcycles count after brand filter: {motorcycles.count()}")
 
     # Year filtering
     year_min = request.GET.get("year_min")
@@ -28,6 +35,7 @@ def get_motorcycle_list(request):
         motorcycles = motorcycles.filter(year__gte=year_min)
     if year_max:
         motorcycles = motorcycles.filter(year__lte=year_max)
+    logger.debug(f"AJAX: Motorcycles count after year filter: {motorcycles.count()}")
 
     # Price filtering
     price_min = request.GET.get("price_min")
@@ -36,6 +44,7 @@ def get_motorcycle_list(request):
         motorcycles = motorcycles.filter(price__gte=price_min)
     if price_max:
         motorcycles = motorcycles.filter(price__lte=price_max)
+    logger.debug(f"AJAX: Motorcycles count after price filter: {motorcycles.count()}")
 
     # Engine size filtering
     engine_min_cc = request.GET.get("engine_min_cc")
@@ -44,6 +53,7 @@ def get_motorcycle_list(request):
         motorcycles = motorcycles.filter(engine_size__gte=engine_min_cc)
     if engine_max_cc:
         motorcycles = motorcycles.filter(engine_size__lte=engine_max_cc)
+    logger.debug(f"AJAX: Motorcycles count after engine size filter: {motorcycles.count()}")
 
     # Sorting
     sort_order = request.GET.get("order")
@@ -57,11 +67,13 @@ def get_motorcycle_list(request):
         motorcycles = motorcycles.order_by("year")
     else:
         motorcycles = motorcycles.order_by("-date_posted")
+    logger.debug(f"AJAX: Motorcycles count after sorting: {motorcycles.count()}")
 
     # Pagination
     page_number = request.GET.get("page", 1)
     paginator = Paginator(motorcycles, 9)  # 9 motorcycles per page
     page_obj = paginator.get_page(page_number)
+    logger.debug(f"AJAX: Page object created. Number: {page_obj.number}, Num Pages: {page_obj.paginator.num_pages}")
 
     motorcycle_data = []
     for bike in page_obj:
@@ -84,9 +96,10 @@ def get_motorcycle_list(request):
                 "condition_name": bike.condition,
             }
         )
+    logger.debug(f"AJAX: Prepared {len(motorcycle_data)} motorcycles for response.")
 
-    return JsonResponse(
-        {
+    try:
+        response_data = {
             "motorcycles": motorcycle_data,
             "page_obj": {
                 "number": page_obj.number,
@@ -101,4 +114,8 @@ def get_motorcycle_list(request):
                 ),
             },
         }
-    )
+        logger.debug("AJAX: Returning JsonResponse.")
+        return JsonResponse(response_data)
+    except Exception as e:
+        logger.error(f"AJAX: Error creating JsonResponse: {e}", exc_info=True)
+        return JsonResponse({"error": "Internal server error during response creation"}, status=500)
