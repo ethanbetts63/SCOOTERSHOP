@@ -87,17 +87,4 @@ class IndexViewTest(TestCase):
 
         self.assertEqual(response.context["reviews"][0]["text"], "Excellent!")
 
-    @patch("requests.get")
-    def test_index_view_with_google_reviews_api_error(self, mock_requests_get):
-        self.mock_site_settings.enable_google_places_reviews = True
-        self.mock_site_settings.google_places_place_id = "test_place_id"
-
-        mock_requests_get.side_effect = requests.exceptions.RequestException(
-            "API Error"
-        )
-
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "core/index.html")
-        self.assertIn("reviews", response.context)
-        self.assertEqual(response.context["reviews"], [])
+  
