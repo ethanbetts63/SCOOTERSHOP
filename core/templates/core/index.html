@@ -50,18 +50,6 @@
         </div>
     </div>
 
-    {% if featured_new_items %}
-        <div class="container mx-auto my-5 py-5">
-            {% include 'inventory/_featured_include.html' with featured_items=featured_new_items section_title="Featured New Motorcycles" category="new" %}
-        </div>
-    {% endif %}
-
-    {% if featured_used_items %}
-        <div class="container mx-auto my-5 py-5">
-            {% include 'inventory/_featured_include.html' with featured_items=featured_used_items section_title="Featured Used Motorcycles" category="used" %}
-        </div>
-    {% endif %}
-
     {% if settings.enable_google_places_reviews and reviews %}
         <div class="my-0 pt-6 pb-0">
             {% include 'dashboard/_review_display_include.html' %}
@@ -118,6 +106,19 @@
 
         </div>
     </div>
+
+    
+    {% if featured_new_items %}
+        <div class="container mx-auto my-5 py-5">
+            {% include 'inventory/_featured_include.html' with featured_items=featured_new_items section_title="Featured New Motorcycles" category="new" %}
+        </div>
+    {% endif %}
+
+    {% if featured_used_items %}
+        <div class="container mx-auto my-5 py-5">
+            {% include 'inventory/_featured_include.html' with featured_items=featured_used_items section_title="Featured Used Motorcycles" category="used" %}
+        </div>
+    {% endif %}
 
     <div class="pt-0 pb-0">
         {% if settings.enable_motorcycle_mover %}
