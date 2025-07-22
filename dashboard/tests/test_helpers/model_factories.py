@@ -34,9 +34,9 @@ class SiteSettingsFactory(factory.django.DjangoModelFactory):
     opening_hours_friday = "10:30am to 5:00pm"
     opening_hours_saturday = "10:30am to 1:00pm (By Appointment only)"
     opening_hours_sunday = "Closed"
-    enable_motorcycle_mover=True,
-    enable_frank=True,
-    enable_banner=True,
+    enable_motorcycle_mover=True
+    enable_frank=True
+    enable_banner=True
     banner_text = ""
 
 

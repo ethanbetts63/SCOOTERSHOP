@@ -152,19 +152,20 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Correctly select checkboxes using the ID of the generated <ul>
         const conditionsCheckboxes = document.querySelectorAll('#id_conditions input[type="checkbox"]');
         const quantityFieldContainer = document.getElementById('quantity-field-container');
         const quantityInputField = document.getElementById('id_quantity');
+        const stockNumberField = document.querySelector('label[for="id_stock_number"]').parentElement;
+        const regoField = document.querySelector('label[for="id_rego"]').parentElement;
+        const regoExpField = document.querySelector('label[for="id_rego_exp"]').parentElement;
 
-        function toggleQuantityField() {
+        function toggleFields() {
             let isNewSelected = false;
             conditionsCheckboxes.forEach(checkbox => {
-                // Check the label text associated with the checkbox
                 if (checkbox.checked) {
                     const label = document.querySelector(`label[for="${checkbox.id}"]`);
                     if (label && label.textContent.trim().toLowerCase() === 'new') {
-                         isNewSelected = true;
+                        isNewSelected = true;
                     }
                 }
             });
@@ -174,17 +175,23 @@
                 if (quantityInputField.value === '' || parseInt(quantityInputField.value) < 1) {
                     quantityInputField.value = '1';
                 }
+                stockNumberField.style.display = 'none';
+                regoField.style.display = 'none';
+                regoExpField.style.display = 'none';
             } else {
                 quantityFieldContainer.style.display = 'none';
+                stockNumberField.style.display = 'flex';
+                regoField.style.display = 'flex';
+                regoExpField.style.display = 'flex';
             }
         }
 
         conditionsCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', toggleQuantityField);
+            checkbox.addEventListener('change', toggleFields);
         });
 
         // Initial check on page load
-        toggleQuantityField();
+        toggleFields();
     });
 </script>
 {% endblock %}

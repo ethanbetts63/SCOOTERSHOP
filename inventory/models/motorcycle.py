@@ -25,7 +25,7 @@ class Motorcycle(models.Model):
     title = models.CharField(max_length=200)
     brand = models.CharField(max_length=100)
     model = models.CharField(max_length=100)
-    year = models.IntegerField()
+    year = models.IntegerField(null=True, blank=True)
     price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
