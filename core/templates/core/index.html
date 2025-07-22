@@ -72,8 +72,11 @@
         </div>
     {% endif %}
 
-    {% comment %} The new "Why Choose Us" section is included here. {% endcomment %}
-    {% include 'core/includes/why_choose_us.html' %}
+        {% if site_settings.enable_frank %}
+    <div class="container mx-auto my-0">
+        {% include 'core/includes/why_choose_us.html' %}
+    </div>
+    {% endif %}
 
     <div class="container mx-auto px-4 pt-4 pb-16">
         <div class="space-y-14">

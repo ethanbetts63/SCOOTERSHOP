@@ -55,6 +55,7 @@ class SiteSettings(models.Model):
     enable_motorcycle_mover = models.BooleanField(
         default=True, help_text="Enable the motorcycle mover section."
     )
+    enable_frank = models.BooleanField(default=True)
     enable_banner = models.BooleanField(
         default=False, help_text="Enable a site-wide announcement banner."
     )

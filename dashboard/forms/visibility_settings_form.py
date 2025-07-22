@@ -23,6 +23,8 @@ class VisibilitySettingsForm(forms.ModelForm):
             "enable_faq_service",
             "enable_faq_sales",
             "enable_motorcycle_mover",
+            "enable_frank",
+            "enable_banner",
         ]
         widgets = {
             "enable_sales_new": forms.CheckboxInput(
