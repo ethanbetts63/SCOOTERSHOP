@@ -67,12 +67,12 @@
     {% endif %}
 
     {% if settings.enable_google_places_reviews and reviews %}
-        <div class="my-0 py-4">
+        <div class="my-0 py-6">
             {% include 'dashboard/_review_display_include.html' %}
         </div>
     {% endif %}
 
-        {% if site_settings.enable_frank %}
+        {% if settings.enable_frank %}
     <div class="container mx-auto my-0">
         {% include 'core/includes/why_choose_us.html' %}
     </div>
