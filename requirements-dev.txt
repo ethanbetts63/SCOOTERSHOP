@@ -1,0 +1,6 @@
+-r requirements.txt
+coverage==7.8.0
+factory_boy==3.3.3
+Faker==37.3.0
+python_minifier==2.11.3
+ruff==0.12.1
