@@ -120,9 +120,27 @@
                         <small class="block text-gray-500 form-text">Allow users to access the refunds request page.</small>
                     </div>
                 </div>
-                {{ form.enable_motorcycle_mover|as_crispy_field }}
-        {{ form.enable_frank|as_crispy_field }}
-        {{ form.enable_banner|as_crispy_field }}
+                <div class="form-check">
+                    {{ form.enable_motorcycle_mover }}
+                    <div>
+                        <label class="form-check-label" for="{{ form.enable_motorcycle_mover.id_for_label }}">Enable Motorcycle Mover</label>
+                        <small class="block text-gray-500 form-text">Enable the motorcycle mover section.</small>
+                    </div>
+                </div>
+                <div class="form-check">
+                    {{ form.enable_frank }}
+                    <div>
+                        <label class="form-check-label" for="{{ form.enable_frank.id_for_label }}">Enable "Why Choose Us" Section</label>
+                        <small class="block text-gray-500 form-text">Enable the 'Why Choose Us' section on the homepage.</small>
+                    </div>
+                </div>
+                <div class="form-check">
+                    {{ form.enable_banner }}
+                    <div>
+                        <label class="form-check-label" for="{{ form.enable_banner.id_for_label }}">Enable Banner</label>
+                        <small class="block text-gray-500 form-text">Enable a site-wide announcement banner.</small>
+                    </div>
+                </div>
             </div>
 
             <div class="space-y-4 pt-6">
