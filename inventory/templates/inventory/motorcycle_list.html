@@ -266,8 +266,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            renderMotorcycles(data.motorcycles);
-            renderPagination(data.page_obj);
+            if (data && data.motorcycles && data.page_obj) {
+                renderMotorcycles(data.motorcycles);
+                renderPagination(data.page_obj);
+            } else {
+                console.error('Invalid data structure received:', data);
+                motorcycleGrid.innerHTML = '<p class="text-red-500 col-span-full text-center py-12">Failed to load motorcycles due to unexpected data. Please try again later.</p>';
+            }
         } catch (error) {
             console.error('Error fetching motorcycles:', error);
             motorcycleGrid.innerHTML = '<p class="text-red-500 col-span-full text-center py-12">Failed to load motorcycles. Please try again later.</p>';
