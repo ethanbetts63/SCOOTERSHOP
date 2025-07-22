@@ -16,10 +16,7 @@ def get_motorcycle_list(request):
     condition_slug = request.GET.get("condition_slug", "all")
     logger.debug(f"AJAX: Filtering by condition_slug: {condition_slug}")
     if condition_slug in ["new", "used", "demo"]:
-        condition_filter = Q(condition=condition_slug) | Q(
-            conditions__name__iexact=condition_slug
-        )
-        motorcycles = motorcycles.filter(condition_filter).distinct()
+        motorcycles = motorcycles.filter(condition=condition_slug)
     logger.debug(f"AJAX: Motorcycles count after condition filter: {motorcycles.count()}")
 
     # Brand filtering
