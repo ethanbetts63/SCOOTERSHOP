@@ -143,7 +143,7 @@
                     {% if is_edit_mode and current_service_type.image %}
                     <div class="mb-2">
                         <p class="text-sm text-gray-500">Current Image:</p>
-                        <img src="{{ current_service_type.image.url }}" alt="{{ current_service_type.name }}" class="w-20 h-20 object-cover rounded-md border border-gray-200">
+                        <img src="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{{ current_service_type.image.url }}" alt="{{ current_service_type.name }}" class="w-20 h-20 object-cover rounded-md border border-gray-200">
                     </div>
                     {% endif %}
                     {{ form.image }}

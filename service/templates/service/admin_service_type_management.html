@@ -108,7 +108,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 table-cell-padding">
                                 {% if service_type.image %}
-                                    <img src="{{ service_type.image.url }}" alt="{{ service_type.name }} image" class="service-type-image">
+                                    <img src="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{{ service_type.image.url }}" alt="{{ service_type.name }} image" class="service-type-image">
                                 {% else %}
                                     <span class="text-gray-400">No Image</span>
                                 {% endif %}

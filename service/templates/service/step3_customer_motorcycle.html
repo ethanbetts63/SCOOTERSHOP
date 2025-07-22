@@ -97,7 +97,7 @@
                             {% if form.instance.image %}
                                 <div class="mt-4">
                                     <p class="block text-sm font-medium text-gray-700">Current Image:</p>
-                                    <img src="{{ form.instance.image.url }}" alt="Current Motorcycle Image" class="mt-2 rounded-lg border border-gray-200" style="max-width: 150px; height: auto;">
+                                    <img src="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{{ form.instance.image.url }}" alt="Current Motorcycle Image" class="mt-2 rounded-lg border border-gray-200" style="max-width: 150px; height: auto;">
                                 </div>
                             {% endif %}
                         </div>
