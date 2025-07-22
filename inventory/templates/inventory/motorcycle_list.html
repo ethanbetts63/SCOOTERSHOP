@@ -384,7 +384,7 @@ document.addEventListener('DOMContentLoaded', function() {
             html += `<a href="#" data-page="${pageObj.previous_page_number}" class="pagination-link rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 shadow-sm">Previous</a>`;
         }
 
-        html += `<span class="page-current px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg shadow-md">Page ${pageObj.number} of ${pageObj.paginator.num_pages}</span>`;
+                html += `<span class="page-current px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg shadow-md">Page ${pageObj.number} of ${pageObj.num_pages}</span>`;
         
         if (pageObj.has_next) {
             html += `<a href="#" data-page="${pageObj.next_page_number}" class="pagination-link rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 shadow-sm">Next</a>`;
