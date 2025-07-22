@@ -3,61 +3,92 @@
 <div class="container mx-auto px-4 pt-16 pb-16">
     <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-12">Why Choose Allbikes & Vespa Warehouse?</h2>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center bg-gray-900 p-8 rounded-lg shadow-lg">
-        <div class="flex flex-col justify-center">
-            <h3 class="text-2xl font-bold text-white mb-6">The Difference is Frank.</h3>
+    <div class="bg-gray-900 p-8 rounded-lg shadow-lg">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-start">
             
-            <p class="text-gray-300 mb-6">
-                Frank has intentionally moved away from the high-volume retail model. He put 'Warehouse' in our name for a reason: expect a dedicated workshop, not a flashy showroom and a pretty secretary. By keeping overheads low, we can deliver a high quality service at a fair price. Our workshop is built on a simple principle: do one job at a time, and do it perfectly. 
-            </p>
+            <!-- Left Column: Description & Photo -->
+            <div class="flex flex-col">
+                <h3 class="text-2xl font-bold text-white mb-6">The Difference is Frank.</h3>
+            
+                <p class="text-gray-300 mb-8">
+                    Frank has intentionally moved away from the high-volume retail model. He put 'Warehouse' in our name for a reason: expect a dedicated workshop, not a flashy showroom and a pretty secretary. By keeping overheads low, we can deliver a high quality service at a fair price. Our workshop is built on a simple principle: do one job at a time, and do it perfectly. 
+                </p>
 
-            <div class="space-y-4">
-                <div>
-                    <h4 class="font-semibold text-lg text-white">Who works on your bike?</h4>
-                    <p class="text-green-400 flex items-center mt-1">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <span class="font-bold">Us:&nbsp;</span> Frank. A master mechanic with 20+ years of experience.
-                    </p>
-                    <p class="text-red-400 flex items-center mt-1">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <span class="font-bold">Them:&nbsp;</span> Often a junior mechanic or an apprentice.
-                    </p>
-                </div>
-
-                 <div>
-                    <h4 class="font-semibold text-lg text-white mt-4">How is the work done?</h4>
-                    <p class="text-green-400 flex items-center mt-1">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <span class="font-bold">Us:&nbsp;</span> Meticulously, with zero distractions from a retail floor.
-                    </p>
-                    <p class="text-red-400 flex items-center mt-1">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <span class="font-bold">Them:&nbsp;</span> Rushed to meet quotas, with constant interruptions.
-                    </p>
-                </div>
-
-                 <div>
-                    <h4 class="font-semibold text-lg text-white mt-4">What's the bottom line?</h4>
-                    <p class="text-green-400 flex items-center mt-1">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <span class="font-bold">Us:&nbsp;</span> Lasting repairs you can trust, from an expert you can talk to.
-                    </p>
-                    <p class="text-red-400 flex items-center mt-1">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <span class="font-bold">Them:&nbsp;</span> Inconsistent quality and you're just another job number.
-                    </p>
+                <div class="w-full max-w-sm mx-auto rounded-2xl overflow-hidden shadow-lg max-h-96">
+                    <img 
+                        src="{% static 'images/headshot1.jpg' %}" 
+                        alt="Frank Ingram, Owner and Master Mechanic at Allbikes and Vespa Warehouse" 
+                        class="w-full h-full object-cover object-center"
+                        onerror="this.onerror=null;this.src='https://placehold.co/600x800/374151/FFFFFF?text=Image+Not+Found';"
+                    >
                 </div>
             </div>
 
-        </div>
+            <!-- Right Column: Us vs. Them Comparison -->
+            <div class="flex flex-col justify-center">
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="font-semibold text-lg text-white">Who works on your bike?</h4>
+                        <p class="text-green-400 flex items-center mt-1">
+                            <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span class="font-bold">Us:&nbsp;</span> Frank. A master mechanic with 20+ years of experience.
+                        </p>
+                        <p class="text-red-400 flex items-center mt-1">
+                            <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span class="font-bold">Them:&nbsp;</span> Often a junior mechanic or an apprentice.
+                        </p>
+                    </div>
 
-        <div class="w-full h-64 lg:h-full rounded-2xl overflow-hidden shadow-lg">
-            <img 
-                src="{% static 'images/headshot.jpg' %}" 
-                alt="Frank Ingram, Owner and Master Mechanic at Allbikes and Vespa Warehouse" 
-                class="w-full h-full object-cover object-center"
-                onerror="this.onerror=null;this.src='https://placehold.co/600x800/374151/FFFFFF?text=Image+Not+Found';"
-            >
+                    <div>
+                        <h4 class="font-semibold text-lg text-white">What are you paying for?</h4>
+                        <p class="text-green-400 flex items-center mt-1">
+                            <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span class="font-bold">Us:&nbsp;</span> The highest quality labour and parts, period.
+                        </p>
+                        <p class="text-red-400 flex items-center mt-1">
+                            <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span class="font-bold">Them:&nbsp;</span> The mechanic, salesperson, showroom rent, and marketing.
+                        </p>
+                    </div>
+    
+                    <div>
+                        <h4 class="font-semibold text-lg text-white">How is the work done?</h4>
+                        <p class="text-green-400 flex items-center mt-1">
+                            <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span class="font-bold">Us:&nbsp;</span> Meticulously, with zero distractions from a retail floor.
+                        </p>
+                        <p class="text-red-400 flex items-center mt-1">
+                            <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span class="font-bold">Them:&nbsp;</span> Rushed to meet quotas, with constant interruptions.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-semibold text-lg text-white">What kind of advice do you get?</h4>
+                        <p class="text-green-400 flex items-center mt-1">
+                            <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span class="font-bold">Us:&nbsp;</span> Honest recommendations based on experience, not sales targets.
+                        </p>
+                        <p class="text-red-400 flex items-center mt-1">
+                            <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span class="font-bold">Them:&nbsp;</span> Upsells and advice aimed at moving the most expensive stock.
+                        </p>
+                    </div>
+    
+                    <div>
+                        <h4 class="font-semibold text-lg text-white">What's the bottom line?</h4>
+                        <p class="text-green-400 flex items-center mt-1">
+                            <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span class="font-bold">Us:&nbsp;</span> Lasting repairs you can trust, from an expert you can talk to.
+                        </p>
+                        <p class="text-red-400 flex items-center mt-1">
+                            <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span class="font-bold">Them:&nbsp;</span> Inconsistent quality where you're just another job number.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
