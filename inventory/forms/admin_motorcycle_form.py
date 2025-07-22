@@ -27,6 +27,7 @@ class MotorcycleForm(forms.ModelForm):
             "stock_number",
             "vin_number",
             "engine_number",
+            "range",
         ]
         widgets = {
             "conditions": forms.CheckboxSelectMultiple,
@@ -44,6 +45,7 @@ class MotorcycleForm(forms.ModelForm):
         self.fields["transmission"].required = True
         self.fields["rego"].required = False
         self.fields["rego_exp"].required = False
+        self.fields["stock_number"].required = False
         self.fields["brand"].required = True
         self.fields["model"].required = True
         self.fields["vin_number"].required = False
@@ -52,7 +54,7 @@ class MotorcycleForm(forms.ModelForm):
         self.fields["quantity"].required = False
         self.fields["youtube_link"].required = False
         self.fields["year"].required = False
-        self.fields["stock_number"].required = False
+        self.fields["range"].required = False
 
     def clean(self):
         cleaned_data = super().clean()

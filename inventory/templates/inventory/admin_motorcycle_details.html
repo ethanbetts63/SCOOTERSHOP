@@ -112,6 +112,12 @@
                 <div class="detail-label">Engine Size:</div>
                 <div class="detail-value">{{ motorcycle.engine_size }} cc</div>
             </div>
+            {% if motorcycle.range %}
+            <div class="detail-item">
+                <div class="detail-label">Range:</div>
+                <div class="detail-value">{{ motorcycle.range }} km</div>
+            </div>
+            {% endif %}
             <div class="detail-item">
                 <div class="detail-label">Seats:</div>
                 <div class="detail-value">{{ motorcycle.seats|default:"N/A" }}</div>

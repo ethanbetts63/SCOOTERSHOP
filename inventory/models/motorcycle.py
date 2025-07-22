@@ -61,7 +61,8 @@ class Motorcycle(models.Model):
         help_text="The sales status of the motorcycle.",
     )
     odometer = models.IntegerField(default=0)
-    engine_size = models.IntegerField(help_text="Engine size in cubic centimeters (cc)")
+    engine_size = models.IntegerField(null=True, blank=True, help_text="Engine size in cubic centimeters (cc)")
+    range = models.IntegerField(null=True, blank=True, help_text="Range in kilometers (if applicable)")
 
     seats = models.IntegerField(
         help_text="Number of seats on the motorcycle", null=True, blank=True

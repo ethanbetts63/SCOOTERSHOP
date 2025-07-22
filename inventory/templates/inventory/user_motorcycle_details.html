@@ -136,6 +136,13 @@
                         <dt class="font-semibold">Engine Size:</dt>
                         <dd>{{ motorcycle.engine_size }} cc</dd>
                     </div>
+                    {% if motorcycle.range %}
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-route text-green-600"></i>
+                        <dt class="font-semibold">Range:</dt>
+                        <dd>{{ motorcycle.range }} km</dd>
+                    </div>
+                    {% endif %}
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-cogs text-green-600"></i>
                         <dt class="font-semibold">Transmission:</dt>
