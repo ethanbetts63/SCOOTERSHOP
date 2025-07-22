@@ -34,7 +34,6 @@ class MotorcycleForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        instance = kwargs.get("instance")
         super().__init__(*args, **kwargs)
 
         self.fields["status"].required = True
@@ -53,54 +52,22 @@ class MotorcycleForm(forms.ModelForm):
         self.fields["quantity"].required = False
         self.fields["youtube_link"].required = False
         self.fields["year"].required = False
-
-        # Dynamically set required attribute for stock_number
-        if self.data.get('conditions') or self.instance.pk:
-            if self.data.get('conditions'):
-                condition_ids = self.data.getlist('conditions')
-                # This is a bit of a hack, we should ideally get the condition by name
-                # but this will work for now
-                from inventory.models import MotorcycleCondition
-                conditions = MotorcycleCondition.objects.filter(pk__in=condition_ids)
-                condition_names = [c.name.lower() for c in conditions]
-            else:
-                condition_names = [c.name.lower() for c in self.instance.conditions.all()]
-
-            if 'new' in condition_names:
-                self.fields["stock_number"].required = False
-            else:
-                self.fields["stock_number"].required = True
-        else:
-            self.fields["stock_number"].required = True
+        self.fields["stock_number"].required = False
 
     def clean(self):
         cleaned_data = super().clean()
-
         brand = cleaned_data.get("brand")
         model = cleaned_data.get("model")
         year = cleaned_data.get("year")
         rego = cleaned_data.get("rego")
         conditions = cleaned_data.get("conditions")
         quantity = cleaned_data.get("quantity")
-        stock_number = cleaned_data.get("stock_number")
 
         if brand:
             cleaned_data["brand"] = brand.capitalize()
 
         if model:
             cleaned_data["model"] = model.capitalize()
-            
-        if conditions:
-            condition_names = [c.name.lower() for c in conditions]
-            is_used = "used" in condition_names
-            is_demo = "demo" in condition_names
-            is_new = "new" in condition_names
-
-            if (is_used or is_demo) and not year:
-                self.add_error("year", "Year is required for used or demo motorcycles.")
-            
-            if not is_new and not stock_number:
-                self.add_error("stock_number", "Stock number is required for used or demo motorcycles.")
 
         if year is not None:
             current_year = datetime.date.today().year
