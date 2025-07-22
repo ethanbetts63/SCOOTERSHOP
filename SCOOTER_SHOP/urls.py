@@ -1,8 +1,9 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, reverse_lazy
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.sitemaps.views import sitemap
+from django.views.generic.base import RedirectView
 
 from core.sitemaps import CoreSitemap
 from inventory.sitemaps import InventorySitemap, MotorcycleSitemap
@@ -32,6 +33,13 @@ urlpatterns = [
         {"sitemaps": sitemaps},
         name="django.contrib.sitemaps.views.sitemap",
     ),
+    # 301 Redirects
+    path('showroom/', RedirectView.as_view(url=reverse_lazy('inventory:used'), permanent=True)),
+    path('shop-online/', RedirectView.as_view(url=reverse_lazy('core:index'), permanent=True)),
+    path('about-us/', RedirectView.as_view(url=reverse_lazy('core:contact'), permanent=True)),
+    path('contact-us/', RedirectView.as_view(url=reverse_lazy('core:contact'), permanent=True)),
+    path('segway-electric-scooters/', RedirectView.as_view(url=reverse_lazy('inventory:new'), permanent=True)),
+    path('workshop/', RedirectView.as_view(url=reverse_lazy('service:service'), permanent=True)),
 ]
 
 if settings.DEBUG:
