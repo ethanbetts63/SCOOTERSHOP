@@ -111,7 +111,7 @@
             {% if sales_profile.drivers_license_image %}
             <div class="detail-item md:col-span-2">
                 <div class="detail-label">License Image:</div>
-                <img src="{{ sales_profile.drivers_license_image.url }}" alt="Driver's License" class="mt-2 max-w-sm h-auto rounded-md shadow-sm">
+                <img src="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{{ sales_profile.drivers_license_image.url }}" alt="Driver's License" class="mt-2 max-w-sm h-auto rounded-md shadow-sm">
             </div>
             {% endif %}
         </div>

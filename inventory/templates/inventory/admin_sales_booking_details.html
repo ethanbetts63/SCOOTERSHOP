@@ -156,7 +156,7 @@
              {% if sales_booking.motorcycle.image %}
                 <div class="detail-item md:col-span-2">
                     <div class="detail-label">Motorcycle Image:</div>
-                    <img src="{{ sales_booking.motorcycle.image.url }}" alt="{{ sales_booking.motorcycle.title }}" class="mt-2 max-w-xs h-auto rounded-md shadow-sm">
+                    <img src="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{{ sales_booking.motorcycle.image.url }}" alt="{{ sales_booking.motorcycle.title }}" class="mt-2 max-w-xs h-auto rounded-md shadow-sm">
                 </div>
             {% endif %}
         </div>
@@ -208,7 +208,7 @@
             {% if sales_booking.sales_profile.drivers_license_image %}
                 <div class="detail-item md:col-span-2">
                     <div class="detail-label">Driver's License Image:</div>
-                    <img src="{{ sales_booking.sales_profile.drivers_license_image.url }}" alt="Driver's License" class="mt-2 max-w-xs h-auto rounded-md shadow-sm">
+                    <img src="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{{ sales_booking.sales_profile.drivers_license_image.url }}" alt="Driver's License" class="mt-2 max-w-xs h-auto rounded-md shadow-sm">
                 </div>
             {% endif %}
             <div class="detail-item">

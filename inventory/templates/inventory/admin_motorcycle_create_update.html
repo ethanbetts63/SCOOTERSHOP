@@ -114,7 +114,7 @@
                         <div class="relative group p-2 border border-gray-200 rounded-md shadow-sm">
                             {{ form.id }}
                             {% if form.instance.image %}
-                                <img src="{{ form.instance.image.url }}" alt="Motorcycle Image" class="w-full h-32 object-cover rounded-md mb-2">
+                                <img src="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{{ form.instance.image.url }}" alt="Motorcycle Image" class="w-full h-32 object-cover rounded-md mb-2">
                                 <div class="absolute top-1 right-1 bg-white/70 p-1 rounded-full opacity-50 group-hover:opacity-100 transition-opacity">
                                     <label class="delete-checkbox flex items-center space-x-2 text-gray-600 hover:text-red-600 cursor-pointer" title="Mark for deletion">
                                         {{ form.DELETE }}
