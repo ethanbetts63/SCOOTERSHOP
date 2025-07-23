@@ -1,25 +1,19 @@
 from django import forms
-from django.forms import inlineformset_factory
 from inventory.models import Motorcycle, MotorcycleImage
-
 
 class MotorcycleImageForm(forms.ModelForm):
     class Meta:
         model = MotorcycleImage
-        fields = [
-            "image",
-        ]
-        widgets = {
-            "image": forms.FileInput(
-                attrs={"class": "form-input mt-1 block w-full text-gray-900"}
-            )
-        }
+        fields = ['image']
 
+    def __init__(self, *args, **kwargs):
+        super(MotorcycleImageForm, self).__init__(*args, **kwargs)
+        self.fields['image'].required = False
 
-MotorcycleImageFormSet = inlineformset_factory(
+MotorcycleImageFormSet = forms.inlineformset_factory(
     Motorcycle,
     MotorcycleImage,
     form=MotorcycleImageForm,
     extra=0,
-    can_delete=True,
+    can_delete=True
 )

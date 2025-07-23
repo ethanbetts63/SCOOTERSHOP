@@ -53,8 +53,11 @@ class MotorcycleCreateUpdateView(AdminRequiredMixin, UpdateView):
 
         if form.is_valid() and image_formset.is_valid():
             self.object = form.save()
+            
+            # Save the image_formset to handle deletions
             image_formset.save()
 
+            # Handle new image uploads
             for image_file in request.FILES.getlist("additional_images"):
                 MotorcycleImage.objects.create(motorcycle=self.object, image=image_file)
 
