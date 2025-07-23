@@ -349,9 +349,5 @@ urlpatterns = [
         ajax_search_sales_bookings.search_sales_bookings_ajax,
         name="admin_api_search_sales_bookings",
     ),
-    path(
-        "api/colors/",
-        color_api.color_list_api,
-        name="api_color_list",
-    ),
+    
 ]
