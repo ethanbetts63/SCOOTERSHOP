@@ -18,7 +18,7 @@ class MotorcycleForm(forms.ModelForm):
             "engine_size",
             "seats",
             "transmission",
-            "color",
+            "colors",
             "description",
             "image",
             "youtube_link",
@@ -34,6 +34,7 @@ class MotorcycleForm(forms.ModelForm):
         ]
         widgets = {
             "conditions": forms.CheckboxSelectMultiple,
+            "colors": forms.CheckboxSelectMultiple,
             "rego_exp": forms.DateInput(attrs={"type": "date"}),
         }
 
