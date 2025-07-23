@@ -166,6 +166,17 @@
                         <dd>{{ motorcycle.stock_number }}</dd>
                     </div>
                     {% endif %}
+                    {% if motorcycle.colors.all %}
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-palette text-green-600"></i>
+                        <dt class="font-semibold">Colors:</dt>
+                        <dd>
+                            {% for color in motorcycle.colors.all %}
+                                {{ color.name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </dd>
+                    </div>
+                    {% endif %}
                     {% if motorcycle.description %}
                     <div class="md:col-span-2 mt-4">
                         <h3 class="text-xl font-bold text-gray-800 mb-2">Description:</h3>
