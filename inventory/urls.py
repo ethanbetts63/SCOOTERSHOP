@@ -38,7 +38,8 @@ from .views.admin_views import (
     SalesTermsManagementView,
     SalesTermsCreateView,
     SalesTermsDetailsView,
-    color_api,
+    color_management_view,
+    delete_color,
 )
 
 from .ajax import (
@@ -287,6 +288,17 @@ urlpatterns = [
         "admin/featured-motorcycles/<int:pk>/delete/",
         featured_motorcycle_delete_view.FeaturedMotorcycleDeleteView.as_view(),
         name="delete_featured_motorcycle",
+    ),
+    # Admin Colors
+    path(
+        "admin/colors/",
+        color_management_view.ColorManagementView.as_view(),
+        name="color_management",
+    ),
+    path(
+        "admin/colors/<int:pk>/delete/",
+        delete_color.ColorDeleteView.as_view(),
+        name="delete_color",
     ),
     # --- AJAX URLs ---
     path(
