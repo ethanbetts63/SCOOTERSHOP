@@ -51,10 +51,14 @@ class MotorcycleForm(forms.ModelForm):
         self.fields["vin_number"].required = False
         self.fields["engine_number"].required = False
         self.fields["image"].required = False
+        self.fields["image"].help_text = "You can upload images of various file types but please convert to webp. Just google png or jpg to webp and convert your images. webp is much smaller but maintains the same quality so the website will be much faster."
         self.fields["quantity"].required = False
         self.fields["youtube_link"].required = False
         self.fields["year"].required = False
         self.fields["range"].required = False
+        self.fields["warranty_years"].required = False
+        self.fields["special_text"].required = False
+        self.fields["colors"].required = False
 
     def clean(self):
         cleaned_data = super().clean()

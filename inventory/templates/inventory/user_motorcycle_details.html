@@ -104,6 +104,9 @@
 
             <div class="flex flex-col justify-center">
                 <div class="mb-6 text-center lg:text-left">
+                    {% if motorcycle.special_text %}
+                        <p class="text-xl font-semibold text-blue-600 mb-2">{{ motorcycle.special_text }}</p>
+                    {% endif %}
                     <p class="text-4xl lg:text-5xl font-extrabold text-green-600">
                         {% if motorcycle.price %}
                             ${{ motorcycle.price|floatformat:2 }}

@@ -96,6 +96,12 @@ class Motorcycle(models.Model):
     )
     stock_number = models.CharField(max_length=50, unique=True, null=True, blank=True)
     colors = models.ManyToManyField('inventory.Color', blank=True)
+    warranty_years = models.IntegerField(
+        null=True, blank=True, help_text="Number of years the warranty is valid for"
+    )
+    special_text = models.CharField(
+        max_length=25, null=True, blank=True, help_text="Special text to display on the motorcycle card"
+    )
 
     def __str__(self):
         return f"{self.year} {self.brand} {self.model}"
