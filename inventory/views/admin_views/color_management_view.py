@@ -27,6 +27,8 @@ class ColorManagementView(AdminRequiredMixin, View):
         return context
 
     def get(self, request, *args, **kwargs):
+        if not Color.objects.exists():
+            self.create_initial_colors()
         edit_color_pk = request.GET.get("edit_color_pk")
         edit_color = None
         if edit_color_pk:
@@ -34,6 +36,14 @@ class ColorManagementView(AdminRequiredMixin, View):
 
         context = self.get_context_data(edit_color=edit_color)
         return render(request, self.template_name, context)
+
+    def create_initial_colors(self):
+        initial_colors = [
+            "Black", "White", "Silver", "Gray", "Red",
+            "Blue", "Green", "Yellow", "Orange", "Brown"
+        ]
+        for color_name in initial_colors:
+            Color.objects.get_or_create(name=color_name)
 
     def post(self, request, *args, **kwargs):
         form = None
