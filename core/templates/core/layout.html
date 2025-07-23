@@ -208,6 +208,11 @@
                             {% if settings.enable_refunds or user.is_staff %}<li><a href="{% url 'refunds:user_refund_request' %}" class="text-base text-gray-300 hover:text-white">Refunds</a></li>{% endif %}
                             {% if settings.enable_contact_page or user.is_staff %}<li><a href="{% url 'core:contact' %}" class="text-base text-gray-300 hover:text-white">Contact Us</a></li>{% endif %}
                             {% if user.is_authenticated and user.is_staff %}<li><a href="{% url 'dashboard:dashboard_index' %}" class="text-base text-gray-300 hover:text-white">Dashboard</a></li>{% endif %}
+                            {% if user.is_authenticated %}
+                                <li><a href="{% url 'users:logout' %}" class="text-base text-gray-300 hover:text-white">Logout</a></li>
+                            {% else %}
+                                <li><a href="{% url 'users:login' %}" class="text-base text-gray-300 hover:text-white">Login/Register</a></li>
+                            {% endif %}
                         </ul>
                     </div>
                     <div class="space-y-4">

@@ -106,7 +106,7 @@
                 <div class="mb-6 text-center lg:text-left">
                     <p class="text-4xl lg:text-5xl font-extrabold text-green-600">
                         {% if motorcycle.price %}
-                            {{ inventory_settings.currency_symbol }}{{ motorcycle.price|floatformat:2 }}
+                            ${{ motorcycle.price|floatformat:2 }}
                         {% else %}
                             Price on request
                         {% endif %}

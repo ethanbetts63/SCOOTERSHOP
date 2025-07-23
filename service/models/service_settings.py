@@ -106,7 +106,7 @@ class ServiceSettings(models.Model):
 
     accepted_brands_description = models.TextField(
         blank=True,
-        default="We proudly service the brands listed below. We focus on these manufacturers because we believe in their quality, reliability, and engineering. It's a pleasure to work on vehicles that are built to last, and we have a particular specialisation in their middle to higher-end scooter models. Their superior construction allows us to perform durable, high-quality repairs that stand the test of time.\n\nIs your brand not on this list or the one below? Feel free to get in touch. While we will take it under consideration, the primary obstacle is often the lack of availability for reliable, quality parts.",
+        default="We proudly service the brands listed below. We focus on these manufacturers because we believe in their quality, reliability, and engineering. It's a pleasure to work on vehicles that are built to last, and so we have a particular specialisation in middle to higher-end scooter models. Their superior construction allows us to perform durable, high-quality repairs that stand the test of time.\n\nIs your brand not on this list or the one below? Feel free to get in touch. While we will take it under consideration, the primary obstacle is often the lack of availability for reliable, quality parts.",
         help_text="Description for the brands we work on.",
     )
     show_invalid_brands = models.BooleanField(
