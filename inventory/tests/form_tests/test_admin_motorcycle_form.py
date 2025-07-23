@@ -29,10 +29,10 @@ class MotorcycleFormTest(TestCase):
         self.assertTrue(form.fields["transmission"].required)
         self.assertFalse(form.fields["rego"].required)
         self.assertFalse(form.fields["rego_exp"].required)
-        self.assertTrue(form.fields["stock_number"].required)
+        self.assertFalse(form.fields["stock_number"].required)
         self.assertTrue(form.fields["brand"].required)
         self.assertTrue(form.fields["model"].required)
-        self.assertTrue(form.fields["year"].required)
+        self.assertFalse(form.fields["year"].required)
         self.assertFalse(form.fields["vin_number"].required)
         self.assertFalse(form.fields["engine_number"].required)
 

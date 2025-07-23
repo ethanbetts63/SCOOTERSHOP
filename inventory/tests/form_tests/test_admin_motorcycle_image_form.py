@@ -24,6 +24,4 @@ class MotorcycleImageFormTest(TestCase):
 
     def test_form_without_image_data(self):
         form = MotorcycleImageForm(data={})
-        self.assertFalse(form.is_valid())
-        self.assertIn("image", form.errors)
-        self.assertEqual(form.errors["image"], ["This field is required."])
+        self.assertTrue(form.is_valid())

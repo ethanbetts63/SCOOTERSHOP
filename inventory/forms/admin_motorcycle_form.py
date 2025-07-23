@@ -1,6 +1,6 @@
 from django import forms
 import datetime
-from inventory.models import Motorcycle, Color
+from inventory.models import Motorcycle
 
 
 class MotorcycleForm(forms.ModelForm):
@@ -28,6 +28,9 @@ class MotorcycleForm(forms.ModelForm):
             "vin_number",
             "engine_number",
             "range",
+            "warranty_years",
+            "special_text",
+            "colors",
         ]
         widgets = {
             "conditions": forms.CheckboxSelectMultiple,
@@ -59,6 +62,7 @@ class MotorcycleForm(forms.ModelForm):
         self.fields["warranty_years"].required = False
         self.fields["special_text"].required = False
         self.fields["colors"].required = False
+        self.fields["colors"].help_text = "help text for now"
 
     def clean(self):
         cleaned_data = super().clean()
