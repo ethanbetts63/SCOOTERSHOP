@@ -95,6 +95,7 @@ class Motorcycle(models.Model):
         help_text="Registration expiration date", null=True, blank=True
     )
     stock_number = models.CharField(max_length=50, unique=True, null=True, blank=True)
+    colors = models.ManyToManyField('inventory.Color', blank=True)
 
     def __str__(self):
         return f"{self.year} {self.brand} {self.model}"

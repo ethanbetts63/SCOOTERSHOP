@@ -3,6 +3,7 @@
 
 {% block extra_css %}
 {{ block.super }}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
     /* General styles for form inputs to ensure consistent borders and readability */
     form input[type="text"],
@@ -193,5 +194,36 @@
         // Initial check on page load
         toggleFields();
     });
+</script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#id_colors').select2({
+        tags: true,
+        tokenSeparators: [ ',' ],
+        ajax: {
+            url: '{% url "inventory:api_color_list" %}',
+            dataType: 'json',
+            delay: 250,
+            data: function (params) {
+                return {
+                    q: params.term // search term
+                };
+            },
+            processResults: function (data) {
+                return {
+                    results: $.map(data, function (item) {
+                        return {
+                            text: item.name,
+                            id: item.name
+                        }
+                    })
+                };
+            },
+            cache: true
+        }
+    });
+});
 </script>
 {% endblock %}

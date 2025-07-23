@@ -9,3 +9,4 @@ from .temp_sales_booking import *
 from .sales_faq import *
 from .featured_motorcycle import *
 from .sales_terms import *
+from .color import *

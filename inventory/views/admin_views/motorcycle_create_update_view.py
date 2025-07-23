@@ -2,7 +2,7 @@ from django.views.generic import UpdateView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
-from inventory.models import Motorcycle, MotorcycleCondition, MotorcycleImage
+from inventory.models import Motorcycle, MotorcycleCondition, MotorcycleImage, Color
 from inventory.forms.admin_motorcycle_form import MotorcycleForm
 from inventory.forms.admin_motorcycle_image_form import MotorcycleImageFormSet
 from inventory.mixins import AdminRequiredMixin
@@ -52,7 +52,16 @@ class MotorcycleCreateUpdateView(AdminRequiredMixin, UpdateView):
         )
 
         if form.is_valid() and image_formset.is_valid():
-            self.object = form.save()
+            self.object = form.save(commit=False)
+            self.object.save()
+
+            color_tags = self.request.POST.getlist('colors')
+            self.object.colors.clear()
+            for color_name in color_tags:
+                color, created = Color.objects.get_or_create(name=color_name.strip().capitalize())
+                self.object.colors.add(color)
+
+            form.save_m2m() # Save the many-to-many relationships
             
             # Save the image_formset to handle deletions
             image_formset.save()

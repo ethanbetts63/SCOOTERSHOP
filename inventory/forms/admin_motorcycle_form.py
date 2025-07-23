@@ -28,6 +28,7 @@ class MotorcycleForm(forms.ModelForm):
             "vin_number",
             "engine_number",
             "range",
+            "colors",
         ]
         widgets = {
             "conditions": forms.CheckboxSelectMultiple,
