@@ -7,29 +7,19 @@ import logging
 logger = logging.getLogger(__name__)
 
 def get_motorcycle_list(request):
-    print(f"AJAX: get_motorcycle_list called with GET params: {request.GET}")
     logger.debug(f"AJAX: get_motorcycle_list called with GET params: {request.GET}")
-
-    # Base queryset
     motorcycles = Motorcycle.objects.filter(is_available=True)
-
-    # Condition filtering
     condition_slug = request.GET.get("condition_slug", "all")
-    print(f"AJAX: Filtering by condition_slug: {condition_slug}")
     logger.debug(f"AJAX: Filtering by condition_slug: {condition_slug}")
     if condition_slug in ["new", "used", "demo"]:
         condition_filter = Q(condition=condition_slug) | Q(
             conditions__name__iexact=condition_slug
         )
         motorcycles = motorcycles.filter(condition_filter).distinct()
-    print(f"AJAX: Motorcycles count after condition filter: {motorcycles.count()}")
     logger.debug(f"AJAX: Motorcycles count after condition filter: {motorcycles.count()}")
-
-    # Brand filtering
     brand = request.GET.get("brand")
     if brand:
         motorcycles = motorcycles.filter(brand__iexact=brand)
-    print(f"AJAX: Motorcycles count after brand filter: {motorcycles.count()}")
     logger.debug(f"AJAX: Motorcycles count after brand filter: {motorcycles.count()}")
 
     # Year filtering
@@ -39,7 +29,6 @@ def get_motorcycle_list(request):
         motorcycles = motorcycles.filter(year__gte=year_min)
     if year_max:
         motorcycles = motorcycles.filter(year__lte=year_max)
-    print(f"AJAX: Motorcycles count after year filter: {motorcycles.count()}")
     logger.debug(f"AJAX: Motorcycles count after year filter: {motorcycles.count()}")
 
     # Price filtering
@@ -49,7 +38,6 @@ def get_motorcycle_list(request):
         motorcycles = motorcycles.filter(price__gte=price_min)
     if price_max:
         motorcycles = motorcycles.filter(price__lte=price_max)
-    print(f"AJAX: Motorcycles count after price filter: {motorcycles.count()}")
     logger.debug(f"AJAX: Motorcycles count after price filter: {motorcycles.count()}")
 
     # Engine size filtering
@@ -59,7 +47,6 @@ def get_motorcycle_list(request):
         motorcycles = motorcycles.filter(engine_size__gte=engine_min_cc)
     if engine_max_cc:
         motorcycles = motorcycles.filter(engine_size__lte=engine_max_cc)
-    print(f"AJAX: Motorcycles count after engine size filter: {motorcycles.count()}")
     logger.debug(f"AJAX: Motorcycles count after engine size filter: {motorcycles.count()}")
 
     # Sorting
@@ -74,14 +61,12 @@ def get_motorcycle_list(request):
         motorcycles = motorcycles.order_by("year")
     else:
         motorcycles = motorcycles.order_by("-date_posted")
-    print(f"AJAX: Motorcycles count after sorting: {motorcycles.count()}")
     logger.debug(f"AJAX: Motorcycles count after sorting: {motorcycles.count()}")
 
     # Pagination
     page_number = request.GET.get("page", 1)
     paginator = Paginator(motorcycles, 9)  # 9 motorcycles per page
     page_obj = paginator.get_page(page_number)
-    print(f"AJAX: Page object created. Number: {page_obj.number}, Num Pages: {page_obj.paginator.num_pages}")
     logger.debug(f"AJAX: Page object created. Number: {page_obj.number}, Num Pages: {page_obj.paginator.num_pages}")
 
     motorcycle_data = []
@@ -107,7 +92,6 @@ def get_motorcycle_list(request):
                 "special_text": bike.special_text,
             }
         )
-    print(f"AJAX: Prepared {len(motorcycle_data)} motorcycles for response.")
     logger.debug(f"AJAX: Prepared {len(motorcycle_data)} motorcycles for response.")
 
     try:
@@ -126,10 +110,8 @@ def get_motorcycle_list(request):
                 ),
             },
         }
-        print(f"AJAX: Returning JsonResponse: {response_data}")
         logger.debug("AJAX: Returning JsonResponse.")
         return JsonResponse(response_data)
     except Exception as e:
-        print(f"AJAX: Error creating JsonResponse: {e}")
         logger.error(f"AJAX: Error creating JsonResponse: {e}", exc_info=True)
         return JsonResponse({"error": "Internal server error during response creation"}, status=500)

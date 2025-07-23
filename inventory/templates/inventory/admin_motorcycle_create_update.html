@@ -111,6 +111,10 @@
                         {% endfor %}
                     </div>
                 {% endfor %}
+                <div class="flex flex-col">
+                    <label for="id_colors" class="block text-gray-800 text-sm font-bold mb-1">Colors:</label>
+                    <select class="form-control" name="colors" id="id_colors" multiple="multiple"></select>
+                </div>
             </div>
         </div>
 
@@ -250,7 +254,7 @@ $(document).ready(function() {
     });
 
     // Pre-populate Select2 with existing colors
-    var initialColors = {{ initial_colors|safe }};
+    var initialColors = '{{ initial_colors|safe }}';
     var $colorsSelect = $('#id_colors');
     $.each(initialColors, function(index, colorName) {
         // Check if the option already exists (for existing colors from DB)

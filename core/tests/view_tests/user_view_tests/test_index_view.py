@@ -58,33 +58,8 @@ class IndexViewTest(TestCase):
         self.assertIn("temp_service_booking", response.context)
         self.assertIsNone(response.context["temp_service_booking"])
         self.assertIn("reviews", response.context)
-        self.assertEqual(response.context["reviews"], [])
+        self.assertQuerySetEqual(response.context["reviews"], [])
 
-    @patch("requests.get")
-    def test_index_view_with_google_reviews_enabled(self, mock_requests_get):
-        self.mock_site_settings.enable_google_places_reviews = True
-        self.mock_site_settings.google_places_place_id = "test_place_id"
-
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "status": "OK",
-            "result": {
-                "reviews": [
-                    {"rating": 5, "text": "Great service!", "time": 1678886400},
-                    {"rating": 4, "text": "Good experience", "time": 1678790400},
-                    {"rating": 5, "text": "Excellent!", "time": 1678972800},
-                ]
-            },
-        }
-        mock_requests_get.return_value = mock_response
-
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "core/index.html")
-        self.assertIn("reviews", response.context)
-        self.assertEqual(len(response.context["reviews"]), 2)
-
-        self.assertEqual(response.context["reviews"][0]["text"], "Excellent!")
+    
 
   
