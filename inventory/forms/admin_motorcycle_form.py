@@ -18,6 +18,7 @@ class MotorcycleForm(forms.ModelForm):
             "engine_size",
             "seats",
             "transmission",
+            "color",
             "description",
             "image",
             "youtube_link",
