@@ -131,11 +131,13 @@
                     </div>
                     {% endif %}
 
+                    {% if motorcycle.engine_size %}
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-cogs text-green-600"></i>
                         <dt class="font-semibold">Engine Size:</dt>
                         <dd>{{ motorcycle.engine_size }} cc</dd>
                     </div>
+                    {% endif %}
                     {% if motorcycle.range %}
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-route text-green-600"></i>
@@ -143,25 +145,33 @@
                         <dd>{{ motorcycle.range }} km</dd>
                     </div>
                     {% endif %}
+                    {% if motorcycle.transmission %}
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-cogs text-green-600"></i>
                         <dt class="font-semibold">Transmission:</dt>
                         <dd>{{ motorcycle.get_transmission_display }}</dd>
                     </div>
+                    {% endif %}
+                    {% if motorcycle.seats %}
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-chair text-green-600"></i>
                         <dt class="font-semibold">Seats:</dt>
-                        <dd>{{ motorcycle.seats|default:"N/A" }}</dd>
+                        <dd>{{ motorcycle.seats }}</dd>
                     </div>
+                    {% endif %}
+                    {% if motorcycle.stock_number %}
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-barcode text-green-600"></i>
                         <dt class="font-semibold">Stock #:</dt>
-                        <dd>{{ motorcycle.stock_number|default:"N/A" }}</dd>
+                        <dd>{{ motorcycle.stock_number }}</dd>
                     </div>
+                    {% endif %}
+                    {% if motorcycle.description %}
                     <div class="md:col-span-2 mt-4">
                         <h3 class="text-xl font-bold text-gray-800 mb-2">Description:</h3>
-                        <p class="text-gray-700 leading-relaxed">{{ motorcycle.description|default:"No description available." }}</p>
+                        <p class="text-gray-700 leading-relaxed">{{ motorcycle.description }}</p>
                     </div>
+                    {% endif %}
                 </dl>
             </div>
         </div>
