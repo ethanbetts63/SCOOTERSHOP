@@ -2,7 +2,7 @@ from django.views.generic import UpdateView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
-from inventory.models import Motorcycle, MotorcycleCondition, MotorcycleImage, Color
+from inventory.models import Motorcycle, MotorcycleCondition, MotorcycleImage
 from inventory.forms.admin_motorcycle_form import MotorcycleForm
 from inventory.forms.admin_motorcycle_image_form import MotorcycleImageFormSet
 from inventory.mixins import AdminRequiredMixin
@@ -41,7 +41,6 @@ class MotorcycleCreateUpdateView(AdminRequiredMixin, UpdateView):
             if self.object
             else "Add New Motorcycle"
         )
-        context['initial_colors'] = list(self.object.colors.values_list('name', flat=True)) if self.object else []
         return context
 
     def post(self, request, *args, **kwargs):
@@ -54,18 +53,8 @@ class MotorcycleCreateUpdateView(AdminRequiredMixin, UpdateView):
 
         if form.is_valid() and image_formset.is_valid():
             self.object = form.save()
-            
-            # Handle colors separately
-            color_names = request.POST.getlist('colors')
-            self.object.colors.clear() # Clear existing colors
-            for color_name in color_names:
-                color, created = Color.objects.get_or_create(name=color_name.strip().capitalize())
-                self.object.colors.add(color)
-
-            # Save the image_formset to handle deletions
             image_formset.save()
 
-            # Handle new image uploads
             for image_file in request.FILES.getlist("additional_images"):
                 MotorcycleImage.objects.create(motorcycle=self.object, image=image_file)
 
