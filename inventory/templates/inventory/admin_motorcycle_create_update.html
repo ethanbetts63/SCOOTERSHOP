@@ -100,6 +100,10 @@
                         {% endfor %}
                     </div>
                 {% endfor %}
+                <div class="flex flex-col">
+                    <label for="id_colors" class="block text-gray-800 text-sm font-bold mb-1">Colors:</label>
+                    <select class="form-control" name="colors" id="id_colors" multiple="multiple"></select>
+                </div>
             </div>
         </div>
 
@@ -202,6 +206,19 @@ $(document).ready(function() {
     $('#id_colors').select2({
         tags: true,
         tokenSeparators: [ ',' ],
+        createTag: function (params) {
+            var term = $.trim(params.term);
+
+            if (term === '') {
+                return null;
+            }
+
+            return {
+                id: term,
+                text: term,
+                newTag: true // add additional parameters
+            }
+        },
         ajax: {
             url: '{% url "inventory:api_color_list" %}',
             dataType: 'json',
@@ -222,6 +239,18 @@ $(document).ready(function() {
                 };
             },
             cache: true
+        }
+    });
+
+    // Pre-populate Select2 with existing colors
+    var initialColors = {{ initial_colors|safe }};
+    var $colorsSelect = $('#id_colors');
+    $.each(initialColors, function(index, colorName) {
+        // Check if the option already exists (for existing colors from DB)
+        if ($colorsSelect.find('option[value="' + colorName + '"]').length === 0) {
+            // If not, create a new option element
+            var newOption = new Option(colorName, colorName, true, true);
+            $colorsSelect.append(newOption).trigger('change');
         }
     });
 });

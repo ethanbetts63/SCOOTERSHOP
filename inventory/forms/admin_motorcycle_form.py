@@ -1,6 +1,6 @@
 from django import forms
 import datetime
-from inventory.models import Motorcycle
+from inventory.models import Motorcycle, Color
 
 
 class MotorcycleForm(forms.ModelForm):
@@ -28,7 +28,6 @@ class MotorcycleForm(forms.ModelForm):
             "vin_number",
             "engine_number",
             "range",
-            "colors",
         ]
         widgets = {
             "conditions": forms.CheckboxSelectMultiple,
@@ -131,4 +130,5 @@ class MotorcycleForm(forms.ModelForm):
         if commit:
             instance.save()
             self.save_m2m()
+
         return instance

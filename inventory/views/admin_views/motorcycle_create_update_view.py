@@ -41,6 +41,7 @@ class MotorcycleCreateUpdateView(AdminRequiredMixin, UpdateView):
             if self.object
             else "Add New Motorcycle"
         )
+        context['initial_colors'] = list(self.object.colors.values_list('name', flat=True)) if self.object else []
         return context
 
     def post(self, request, *args, **kwargs):
@@ -52,17 +53,15 @@ class MotorcycleCreateUpdateView(AdminRequiredMixin, UpdateView):
         )
 
         if form.is_valid() and image_formset.is_valid():
-            self.object = form.save(commit=False)
-            self.object.save()
-
-            color_tags = self.request.POST.getlist('colors')
-            self.object.colors.clear()
-            for color_name in color_tags:
+            self.object = form.save()
+            
+            # Handle colors separately
+            color_names = request.POST.getlist('colors')
+            self.object.colors.clear() # Clear existing colors
+            for color_name in color_names:
                 color, created = Color.objects.get_or_create(name=color_name.strip().capitalize())
                 self.object.colors.add(color)
 
-            form.save_m2m() # Save the many-to-many relationships
-            
             # Save the image_formset to handle deletions
             image_formset.save()
 

@@ -142,6 +142,16 @@
                 <div class="detail-label">Stock Number:</div>
                 <div class="detail-value">{{ motorcycle.stock_number|default:"N/A" }}</div>
             </div>
+            <div class="detail-item">
+                <div class="detail-label">Colors:</div>
+                <div class="detail-value">
+                    {% for color in motorcycle.colors.all %}
+                        {{ color.name }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        N/A
+                    {% endfor %}
+                </div>
+            </div>
             {% if motorcycle.youtube_link %}
             <div class="detail-item md:col-span-2">
                 <div class="detail-label">YouTube Link:</div>
