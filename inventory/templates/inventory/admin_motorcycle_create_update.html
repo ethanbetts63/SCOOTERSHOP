@@ -102,6 +102,10 @@
                         
                         {{ field }}
                         
+                        {% if field.name == 'color' %}
+                            <p class="text-gray-700 text-xs italic mt-1">If the color you are looking for is not in the list, you can add it <a href="{% url 'inventory:color_management' %}" class="text-blue-500 hover:underline">here</a>.</p>
+                        {% endif %}
+
                         {% if field.help_text %}
                             <p class="text-gray-700 text-xs italic mt-1">{{ field.help_text }}</p>
                         {% endif %}
