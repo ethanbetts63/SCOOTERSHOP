@@ -247,6 +247,22 @@
                 </div>
             {% endif %}
         </div>
+        {% if settings.display_phone_number and settings.phone_number or settings.display_mobile_phone_number and settings.mobile_phone %}
+        <div class="mt-6 text-center">
+            <p class="text-lg text-gray-700">
+                Alternatively, call us on:
+                {% if settings.display_phone_number and settings.phone_number %}
+                    <a href="tel:{{ settings.phone_number }}" class="font-medium text-blue-600 hover:text-blue-500">{{ settings.phone_number }}</a>
+                {% endif %}
+                {% if settings.display_phone_number and settings.phone_number and settings.display_mobile_phone_number and settings.mobile_phone %}
+                    or
+                {% endif %}
+                {% if settings.display_mobile_phone_number and settings.mobile_phone %}
+                    <a href="tel:{{ settings.mobile_phone }}" class="font-medium text-blue-600 hover:text-blue-500">{{ settings.mobile_phone }}</a>
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
     </div>
     {% endif %}
 
