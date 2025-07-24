@@ -3,13 +3,9 @@ from datetime import date
 import datetime
 from django.db import models
 from django.db.models.fields.files import FieldFile
-
 from inventory.models import SalesProfile
-
-
 from users.tests.test_helpers.model_factories import UserFactory
 from inventory.tests.test_helpers.model_factories import SalesProfileFactory
-
 
 class SalesProfileModelTest(TestCase):
     @classmethod
