@@ -231,6 +231,7 @@
                         <h3 class="text-sm font-semibold text-gray-400 tracking-wider uppercase">Contact Info</h3>
                         <ul class="space-y-2 text-base text-gray-300">
                             {% if settings.display_phone_number and settings.phone_number %}<li>Phone: {{ settings.phone_number }}</li>{% endif %}
+                            {% if settings.display_mobile_phone_number and settings.mobile_phone %}<li>Mobile: {{ settings.mobile_phone }}</li>{% endif %}
                             {% if settings.email_address %}<li>Email: {{ settings.email_address }}</li>{% endif %}
                             {% if settings.display_address and settings.street_address %}<li>Address: {{ settings.street_address }}<br>{{ settings.address_locality }}, {{ settings.address_region }} {{ settings.postal_code }}</li>{% endif %}
                             {% if settings.display_opening_hours %}

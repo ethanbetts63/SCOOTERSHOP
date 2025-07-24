@@ -37,6 +37,9 @@ class SiteSettings(models.Model):
     display_phone_number = models.BooleanField(
         default=False, help_text="Display the phone number on the website."
     )
+    display_mobile_phone_number = models.BooleanField(
+        default=False, help_text="Display the mobile phone number on the website."
+    )
     display_address = models.BooleanField(
         default=True, help_text="Display the storefront address on the website."
     )
@@ -64,7 +67,10 @@ class SiteSettings(models.Model):
     )
 
     phone_number = models.CharField(
-        max_length=20, blank=True, null=True, default="94334613"
+        max_length=20, blank=True, null=True, default="94334613", help_text="shop phone"
+    )
+    mobile_phone = models.CharField(
+        max_length=20, blank=True, null=True, help_text="mobile phone"
     )
     email_address = models.EmailField(
         blank=True, null=True, default="admin@scootershop.com.au"

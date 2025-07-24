@@ -7,6 +7,7 @@ class BusinessInfoForm(forms.ModelForm):
         model = SiteSettings
         fields = [
             "phone_number",
+            "mobile_phone",
             "email_address",
             "street_address",
             "address_locality",

@@ -1,0 +1,52 @@
+{% extends 'core/layout.html' %}
+
+{% block title %}Contact Us | Allbikes & Vespa Warehouse{% endblock %}
+{% block meta_description %}Contact Allbikes & Vespa Warehouse for all your scooter, moped, and motorcycle needs in Perth. Reach out for sales, servicing, and support.{% endblock %}
+
+{% block content %}
+<div class="bg-gray-800 text-white py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-lg mx-auto">
+        <h1 class="text-4xl font-bold text-center mb-6">Contact Us</h1>
+        <p class="text-lg text-center mb-8">We'd love to hear from you. Drop us a line below.</p>
+
+        <form method="post" class="bg-gray-900 p-8 rounded-lg shadow-lg">
+            {% csrf_token %}
+            <div class="mb-6">
+                <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium mb-2">{{ form.name.label }}</label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                    <p class="text-red-500 text-xs mt-1">{{ form.name.errors|first }}</p>
+                {% endif %}
+            </div>
+
+            <div class="mb-6">
+                <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium mb-2">{{ form.email.label }}</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <p class="text-red-500 text-xs mt-1">{{ form.email.errors|first }}</p>
+                {% endif %}
+            </div>
+
+            <div class="mb-6">
+                <label for="{{ form.phone.id_for_label }}" class="block text-sm font-medium mb-2">{{ form.phone.label }}</label>
+                {{ form.phone }}
+                {% if form.phone.errors %}
+                    <p class="text-red-500 text-xs mt-1">{{ form.phone.errors|first }}</p>
+                {% endif %}
+            </div>
+
+            <div class="mb-6">
+                <label for="{{ form.message.id_for_label }}" class="block text-sm font-medium mb-2">{{ form.message.label }}</label>
+                {{ form.message }}
+                {% if form.message.errors %}
+                    <p class="text-red-500 text-xs mt-1">{{ form.message.errors|first }}</p>
+                {% endif %}
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out">Send Message</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
