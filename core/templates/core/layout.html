@@ -78,10 +78,10 @@
                         </div>
                         <div class="hidden lg:flex items-baseline space-x-4 ml-10">
                             {% if settings.enable_sales_new or user.is_staff %}
-                                <a href="{% url 'inventory:new' %}" class="px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">New Bikes</a>
+                                <a href="{% url 'inventory:new' %}" class="px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">New Motorcycles and Scooters</a>
                             {% endif %}
                             {% if settings.enable_sales_used or user.is_staff %}
-                                <a href="{% url 'inventory:used' %}" class="px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Used Bikes</a>
+                                <a href="{% url 'inventory:used' %}" class="px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Used Motorcycles and Scooters</a>
                             {% endif %}
                             {% if settings.enable_service_booking or user.is_staff %}
                                 <a href="{% url 'service:service' %}" class="px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Service Booking</a>
@@ -120,10 +120,10 @@
             <div id="mobile-menu" class="lg:hidden hidden">
                 <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
                     {% if settings.enable_sales_new or user.is_staff %}
-                        <a href="{% url 'inventory:new' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">New Bikes</a>
+                        <a href="{% url 'inventory:new' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">New Motorcycles and Scooters</a>
                     {% endif %}
                     {% if settings.enable_sales_used or user.is_staff %}
-                        <a href="{% url 'inventory:used' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Used Bikes</a>
+                        <a href="{% url 'inventory:used' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Used Motorcycles and Scooters</a>
                     {% endif %}
                     {% if settings.enable_service_booking or user.is_staff %}
                         <a href="{% url 'service:service' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Service Booking</a>
@@ -203,8 +203,8 @@
                     <div class="space-y-4">
                         <h3 class="text-sm font-semibold text-gray-400 tracking-wider uppercase">Quick Links</h3>
                         <ul class="space-y-2">
-                            {% if settings.enable_sales_new or user.is_staff %}<li><a href="{% url 'inventory:new' %}" class="text-base text-gray-300 hover:text-white">New Bikes</a></li>{% endif %}
-                            {% if settings.enable_sales_used or user.is_staff %}<li><a href="{% url 'inventory:used' %}" class="text-base text-gray-300 hover:text-white">Used Bikes</a></li>{% endif %}
+                            {% if settings.enable_sales_new or user.is_staff %}<li><a href="{% url 'inventory:new' %}" class="text-base text-gray-300 hover:text-white">New Motorcycles and Scooters</a></li>{% endif %}
+                            {% if settings.enable_sales_used or user.is_staff %}<li><a href="{% url 'inventory:used' %}" class="text-base text-gray-300 hover:text-white">Used Motorcycles and Scooters</a></li>{% endif %}
                             {% if settings.enable_refunds or user.is_staff %}<li><a href="{% url 'refunds:user_refund_request' %}" class="text-base text-gray-300 hover:text-white">Refunds</a></li>{% endif %}
                             {% if settings.enable_contact_page or user.is_staff %}<li><a href="{% url 'core:contact' %}" class="text-base text-gray-300 hover:text-white">Contact Us</a></li>{% endif %}
                             {% if user.is_authenticated and user.is_staff %}<li><a href="{% url 'dashboard:dashboard_index' %}" class="text-base text-gray-300 hover:text-white">Dashboard</a></li>{% endif %}
