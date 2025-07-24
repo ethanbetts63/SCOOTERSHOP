@@ -17,7 +17,10 @@ class SiteSettingsFactory(factory.django.DjangoModelFactory):
     enable_privacy_policy_page = True
     enable_returns_page = True
     enable_security_page = True
+    display_phone_number = True
+    display_mobile_phone_number = True
     phone_number = "94334613"
+    mobile_phone = "0477700005"
     email_address = "admin@scootershop.com.au"
     street_address = "Unit 5 / 6 Cleveland Street"
     address_locality = "Dianella"
