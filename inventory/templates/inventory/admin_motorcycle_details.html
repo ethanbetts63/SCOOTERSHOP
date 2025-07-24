@@ -68,90 +68,142 @@
 
         <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Motorcycle Information</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% if motorcycle.title %}
             <div class="detail-item">
                 <div class="detail-label">Title:</div>
                 <div class="detail-value">{{ motorcycle.title }}</div>
             </div>
+            {% endif %}
+            {% if motorcycle.brand %}
             <div class="detail-item">
                 <div class="detail-label">Brand:</div>
                 <div class="detail-value">{{ motorcycle.brand }}</div>
             </div>
+            {% endif %}
+            {% if motorcycle.model %}
             <div class="detail-item">
                 <div class="detail-label">Model:</div>
                 <div class="detail-value">{{ motorcycle.model }}</div>
             </div>
+            {% endif %}
+            {% if motorcycle.year %}
             <div class="detail-item">
                 <div class="detail-label">Year:</div>
                 <div class="detail-value">{{ motorcycle.year }}</div>
             </div>
+            {% endif %}
+            {% if motorcycle.price %}
             <div class="detail-item">
                 <div class="detail-label">Price:</div>
-                <div class="detail-value">${{ motorcycle.price|floatformat:2|default:"N/A" }}</div>
+                <div class="detail-value">${{ motorcycle.price|floatformat:2 }}</div>
             </div>
+            {% endif %}
+            {% if motorcycle.vin_number %}
             <div class="detail-item">
                 <div class="detail-label">VIN Number:</div>
-                <div class="detail-value">{{ motorcycle.vin_number|default:"N/A" }}</div>
+                <div class="detail-value">{{ motorcycle.vin_number }}</div>
             </div>
+            {% endif %}
+            {% if motorcycle.engine_number %}
             <div class="detail-item">
                 <div class="detail-label">Engine Number:</div>
-                <div class="detail-value">{{ motorcycle.engine_number|default:"N/A" }}</div>
+                <div class="detail-value">{{ motorcycle.engine_number }}</div>
             </div>
-            <div class="detail-item">
-                <div class="detail-label">Condition:</div>
-                <div class="detail-value">{{ motorcycle.get_conditions_display }}</div>
-            </div>
+            {% endif %}
+            {% with conditions=motorcycle.get_conditions_display %}
+                {% if conditions and conditions != "N/A" %}
+                <div class="detail-item">
+                    <div class="detail-label">Condition:</div>
+                    <div class="detail-value">{{ conditions }}</div>
+                </div>
+                {% endif %}
+            {% endwith %}
+            {% if motorcycle.status %}
             <div class="detail-item">
                 <div class="detail-label">Status:</div>
                 <div class="detail-value">{{ motorcycle.get_status_display }}</div>
             </div>
+            {% endif %}
+            {% if motorcycle.odometer is not None and motorcycle.odometer > 0 %}
             <div class="detail-item">
                 <div class="detail-label">Odometer:</div>
                 <div class="detail-value">{{ motorcycle.odometer }} km</div>
             </div>
+            {% endif %}
+            {% if motorcycle.engine_size %}
             <div class="detail-item">
                 <div class="detail-label">Engine Size:</div>
                 <div class="detail-value">{{ motorcycle.engine_size }} cc</div>
             </div>
+            {% endif %}
             {% if motorcycle.range %}
             <div class="detail-item">
                 <div class="detail-label">Range:</div>
                 <div class="detail-value">{{ motorcycle.range }} km</div>
             </div>
             {% endif %}
+            {% if motorcycle.seats %}
             <div class="detail-item">
                 <div class="detail-label">Seats:</div>
-                <div class="detail-value">{{ motorcycle.seats|default:"N/A" }}</div>
+                <div class="detail-value">{{ motorcycle.seats }}</div>
             </div>
+            {% endif %}
+            {% if motorcycle.transmission %}
             <div class="detail-item">
                 <div class="detail-label">Transmission:</div>
-                <div class="detail-value">{{ motorcycle.get_transmission_display|default:"N/A" }}</div>
+                <div class="detail-value">{{ motorcycle.get_transmission_display }}</div>
             </div>
+            {% endif %}
             <div class="detail-item">
                 <div class="detail-label">Is Available:</div>
                 <div class="detail-value">{{ motorcycle.is_available|yesno:"Yes,No" }}</div>
             </div>
+            {% if motorcycle.rego %}
             <div class="detail-item">
                 <div class="detail-label">Registration Number:</div>
-                <div class="detail-value">{{ motorcycle.rego|default:"N/A" }}</div>
+                <div class="detail-value">{{ motorcycle.rego }}</div>
             </div>
+            {% endif %}
+            {% if motorcycle.rego_exp %}
             <div class="detail-item">
                 <div class="detail-label">Registration Expiry:</div>
-                <div class="detail-value">{{ motorcycle.rego_exp|date:"M d, Y"|default:"N/A" }}</div>
+                <div class="detail-value">{{ motorcycle.rego_exp|date:"M d, Y" }}</div>
             </div>
+            {% endif %}
+            {% if motorcycle.stock_number %}
             <div class="detail-item">
                 <div class="detail-label">Stock Number:</div>
-                <div class="detail-value">{{ motorcycle.stock_number|default:"N/A" }}</div>
+                <div class="detail-value">{{ motorcycle.stock_number }}</div>
             </div>
+            {% endif %}
+            {% if motorcycle.colors.all %}
             <div class="detail-item">
                 <div class="detail-label">Colors:</div>
                 <div class="detail-value">
                     {% for color in motorcycle.colors.all %}
                         {{ color.name }}{% if not forloop.last %}, {% endif %}
-                    {% empty %}
-                        N/A
                     {% endfor %}
                 </div>
             </div>
+            {% endif %}
+            {% if motorcycle.quantity is not None %}
+            <div class="detail-item">
+                <div class="detail-label">Quantity:</div>
+                <div class="detail-value">{{ motorcycle.quantity }}</div>
+            </div>
+            {% endif %}
+            {% if motorcycle.warranty_years %}
+            <div class="detail-item">
+                <div class="detail-label">Warranty:</div>
+                <div class="detail-value">{{ motorcycle.warranty_years }} years</div>
+            </div>
+            {% endif %}
+            {% if motorcycle.special_text %}
+            <div class="detail-item">
+                <div class="detail-label">Special Offer:</div>
+                <div class="detail-value">{{ motorcycle.special_text }}</div>
+            </div>
+            {% endif %}
             {% if motorcycle.youtube_link %}
             <div class="detail-item md:col-span-2">
                 <div class="detail-label">YouTube Link:</div>
@@ -160,14 +212,18 @@
                 </div>
             </div>
             {% endif %}
+            {% if motorcycle.description %}
             <div class="detail-item md:col-span-2">
                 <div class="detail-label">Description:</div>
-                <div class="detail-value">{{ motorcycle.description|linebreaksbr|default:"N/A" }}</div>
+                <div class="detail-value">{{ motorcycle.description|linebreaksbr }}</div>
             </div>
+            {% endif %}
+            {% if motorcycle.date_posted %}
             <div class="detail-item md:col-span-2">
                 <div class="detail-label">Date Posted:</div>
                 <div class="detail-value">{{ motorcycle.date_posted|date:"M d, Y H:i" }}</div>
             </div>
+            {% endif %}
             {% if motorcycle.image %}
             <div class="detail-item md:col-span-2">
                 <div class="detail-label">Motorcycle Image:</div>
