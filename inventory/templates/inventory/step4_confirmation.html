@@ -113,7 +113,7 @@
                         {% endif %}
                     {% else %} 
                         <p class="text-lg font-semibold mb-2">Thank you for your enquiry!</p>
-                        <p class="text-base">We have received your request regarding the motorcycle ({{ sales_booking.motorcycle.year }} {{ sales_booking.motorcycle.brand }} {{ sales_booking.motorcycle.model }}).</p>
+                        <p class="text-base">We have received your request regarding the motorcycle ({% if sales_booking.motorcycle.year %}{{ sales_booking.motorcycle.year }} {% endif %}{{ sales_booking.motorcycle.brand }} {{ sales_booking.motorcycle.model }}).</p>
                         {% if sales_booking.appointment_date %}
                         <p class="text-base mt-2">You requested an appointment on <strong>{{ sales_booking.appointment_date|date:"D, M d, Y" }} at {{ sales_booking.appointment_time|time:"P" }}</strong>. Our admin team will contact you to confirm the appointment details.</p>
                         {% else %}
@@ -137,7 +137,7 @@
                             </tr>
                             <tr class="py-2">
                                 <td class="font-medium text-gray-700 py-2">Motorcycle:</td>
-                                <td class="text-gray-900 py-2">{{ sales_booking.motorcycle.year }} {{ sales_booking.motorcycle.brand }} {{ sales_booking.motorcycle.model }}</td>
+                                <td class="text-gray-900 py-2">{% if sales_booking.motorcycle.year %}{{ sales_booking.motorcycle.year }} {% endif %}{{ sales_booking.motorcycle.brand }} {{ sales_booking.motorcycle.model }}</td>
                             </tr>
                             <tr class="py-2">
                                 <td class="font-medium text-gray-700 py-2">Payment Status:</td>
