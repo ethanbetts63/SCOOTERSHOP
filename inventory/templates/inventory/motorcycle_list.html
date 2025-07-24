@@ -356,7 +356,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             let priceText = 'Price on request';
             if (bike.price) {
-                priceText = `${parseFloat(bike.price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                priceText = `$${parseFloat(bike.price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             }
             tile.querySelector('.motorcycle-price').textContent = priceText;
 
