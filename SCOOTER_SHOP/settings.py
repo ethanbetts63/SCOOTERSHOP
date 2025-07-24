@@ -9,6 +9,7 @@ load_dotenv()
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
 BASE_DIR = Path(__file__).resolve().parent.parent
+STRIPE_PUBLISHABLE_KEY = "pk_test_51RRCzbPH0oVkn2F1ZCB43p08cHzPiROnrVDvRbggNjvm4WAsDHhNy8gzd00qhxCItqk5Y8yhtRi9BJSIlt8dr8x100D0oG7sKC"
 
 SITE_DOMAIN = os.getenv("SITE_DOMAIN", "127.0.0.1:8000")
 SITE_SCHEME = os.getenv("SITE_SCHEME", "http")
@@ -145,11 +146,7 @@ SESSION_COOKIE_AGE = 10000
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_SAVE_EVERY_REQUEST = True
 
-STRIPE_PUBLISHABLE_KEY = "pk_test_51RRCzbPH0oVkn2F1ZCB43p08cHzPiROnrVDvRbggNjvm4WAsDHhNy8gzd00qhxCItqk5Y8yhtRi9BJSIlt8dr8x100D0oG7sKC"
-
-
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-
 DEFAULT_FROM_EMAIL = "ethan.betts.dev@gmail.com"
 LOGIN_URL = "users:login"
 ADMIN_EMAIL = "ethan.betts.dev@gmail.com"
@@ -159,6 +156,5 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "ethan.betts.dev@gmail.com"
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-
 
 MECHANICDESK_BOOKING_TOKEN = os.getenv("MECHANICDESK_BOOKING_TOKEN")
