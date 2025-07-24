@@ -7,6 +7,7 @@ from django.views.generic.base import RedirectView
 from core.sitemaps import CoreSitemap
 from inventory.sitemaps import InventorySitemap, MotorcycleSitemap
 from service.sitemaps import ServiceSitemap
+from django.http import HttpResponse
 
 sitemaps = {
     "core": CoreSitemap,
@@ -14,6 +15,12 @@ sitemaps = {
     "motorcycles": MotorcycleSitemap,
     "service": ServiceSitemap,
 }
+
+def sitemap_view(request):
+    try:
+        return sitemap(request, sitemaps)
+    except Exception as e:
+        return HttpResponse(f"Error generating sitemap: {e}", content_type="text/plain")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -27,8 +34,7 @@ urlpatterns = [
     path("mailer/", include("mailer.urls", namespace="mailer")),
     path(
         "sitemap.xml",
-        sitemap,
-        {"sitemaps": sitemaps},
+        sitemap_view,
         name="django.contrib.sitemaps.views.sitemap",
     ),
     # 301 Redirects
