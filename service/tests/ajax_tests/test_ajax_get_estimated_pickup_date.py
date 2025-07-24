@@ -15,8 +15,8 @@ class AjaxGetEstimatedPickupDateTest(TestCase):
         self.staff_user = StaffUserFactory()
         self.client.force_login(self.staff_user)
 
-        self.service_type = ServiceTypeFactory(estimated_duration=3)
-        self.service_type_zero_duration = ServiceTypeFactory(estimated_duration=0)
+        self.service_type = ServiceTypeFactory(estimated_duration_days=3)
+        self.service_type_zero_duration = ServiceTypeFactory(estimated_duration_days=0)
         self.test_service_date = datetime.date(2025, 10, 20)
 
     def test_valid_request(self):
@@ -30,7 +30,7 @@ class AjaxGetEstimatedPickupDateTest(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         expected_pickup_date = self.test_service_date + datetime.timedelta(
-            days=self.service_type.estimated_duration
+            days=self.service_type.estimated_duration_days
         )
         self.assertEqual(
             data["estimated_pickup_date"], expected_pickup_date.strftime("%Y-%m-%d")

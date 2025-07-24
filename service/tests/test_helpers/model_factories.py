@@ -37,7 +37,8 @@ class ServiceTypeFactory(factory.django.DjangoModelFactory):
 
     name = factory.Sequence(lambda n: f"Service Type {n}")
     description = factory.Faker("paragraph")
-    estimated_duration = factory.Faker("random_int", min=1, max=30)
+    estimated_duration_days = factory.Faker("random_int", min=1, max=30)
+    estimated_duration_hours = factory.Faker("random_int", min=1, max=23)
     base_price = factory.LazyFunction(
         lambda: fake.pydecimal(left_digits=3, right_digits=2, positive=True)
     )
@@ -213,7 +214,7 @@ class ServiceBookingFactory(factory.django.DjangoModelFactory):
     )
     dropoff_date = factory.LazyAttribute(lambda o: o.service_date)
     dropoff_time = factory.Faker("time_object")
-    estimated_pickup_date = factory.LazyAttribute(lambda o: o.dropoff_date + datetime.timedelta(days=o.service_type.estimated_duration))
+    estimated_pickup_date = factory.LazyAttribute(lambda o: o.dropoff_date + datetime.timedelta(days=o.service_type.estimated_duration_days))
     estimated_pickup_time = factory.Faker("time_object")
 
     @factory.post_generation

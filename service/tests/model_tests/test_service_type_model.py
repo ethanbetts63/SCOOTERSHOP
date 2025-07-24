@@ -24,14 +24,14 @@ class ServiceTypeModelTest(TestCase):
         self.assertIsInstance(service_type.description, str)
         self.assertIsNotNone(service_type.description)
 
-    def test_estimated_duration_field(self):
+    def test_estimated_duration_days_field(self):
         service_type = self.service_type
 
-        self.assertIsInstance(service_type.estimated_duration, int)
-        self.assertIsNotNone(service_type.estimated_duration)
+        self.assertIsInstance(service_type.estimated_duration_days, int)
+        self.assertIsNotNone(service_type.estimated_duration_days)
 
         self.assertEqual(
-            service_type._meta.get_field("estimated_duration").help_text,
+            service_type._meta.get_field("estimated_duration_days").help_text,
             "Estimated number of days to complete this service",
         )
 
@@ -45,7 +45,7 @@ class ServiceTypeModelTest(TestCase):
         new_service_type = ServiceType.objects.create(
             name="New Service",
             description="A new service description",
-            estimated_duration=1,
+            estimated_duration_days=1,
         )
         self.assertEqual(new_service_type.base_price, Decimal("0.00"))
 
@@ -61,7 +61,7 @@ class ServiceTypeModelTest(TestCase):
         new_service_type = ServiceType.objects.create(
             name="Another Service",
             description="Another service description",
-            estimated_duration=2,
+            estimated_duration_days=2,
             base_price=Decimal("50.00"),
         )
         self.assertEqual(new_service_type.is_active, True)

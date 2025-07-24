@@ -27,7 +27,7 @@ class ServiceTypeResource(resources.ModelResource):
             "id",
             "name",
             "base_price",
-            "estimated_duration",
+            "estimated_duration_days",
             "is_active",
         )
         export_order = fields
@@ -124,7 +124,7 @@ class ServiceBookingResource(resources.ModelResource):
 @admin.register(ServiceType)
 class ServiceTypeAdmin(ImportExportModelAdmin):
     resource_class = ServiceTypeResource
-    list_display = ("name", "base_price", "estimated_duration", "is_active")
+    list_display = ("name", "base_price", "estimated_duration_days", "is_active")
     list_filter = ("is_active",)
     search_fields = ("name",)
 

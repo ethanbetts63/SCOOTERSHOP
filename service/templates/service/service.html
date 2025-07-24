@@ -42,10 +42,10 @@
                     <p class="text-gray-600 mb-4 flex-grow">{{ service_type.description }}</p>
                     <p class="text-gray-600 mb-4">
                         <strong>Estimated duration:</strong>
-                        {% if service_type.estimated_duration == 0 %}
+                        {% if service_type.estimated_duration_days == 0 %}
                             Same day
                         {% else %}
-                            {{ service_type.estimated_duration }} day{{ service_type.estimated_duration|pluralize }}
+                            {{ service_type.estimated_duration_days }} day{{ service_type.estimated_duration_days|pluralize }}
                         {% endif %}
                     </p>
                     {% if service_type.base_price %}

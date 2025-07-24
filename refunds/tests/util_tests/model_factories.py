@@ -20,7 +20,7 @@ class ServiceTypeFactory(factory.django.DjangoModelFactory):
 
     name = factory.Faker("word")
     description = factory.Faker("text")
-    estimated_duration = factory.Faker("random_int", min=1, max=5)
+    estimated_duration_days = factory.Faker("random_int", min=1, max=5)
     base_price = factory.Faker(
         "pydecimal", left_digits=3, right_digits=2, positive=True
     )

@@ -185,10 +185,10 @@
                         <tr class="py-2">
                             <td class="font-medium text-gray-700 py-2">Estimated Duration:</td>
                             <td class="text-gray-900 py-2">
-                                {% if service_booking.service_type.estimated_duration == 0 %}
+                                {% if service_booking.service_type.estimated_duration_days == 0 %}
                                     Same day
                                 {% else %}
-                                    {{ service_booking.service_type.estimated_duration }} day{{ service_booking.service_type.estimated_duration|pluralize }}
+                                    {{ service_booking.service_type.estimated_duration_days }} day{{ service_booking.service_type.estimated_duration_days|pluralize }}
                                 {% endif %}
                                 <p class="text-sm text-gray-500 mt-1">Admin will provide a more accurate expected pickup time after reviewing your service details.</p>
                             </td>

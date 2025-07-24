@@ -15,9 +15,9 @@ from service.tests.test_helpers.model_factories import (
 
 class CalculateEstimatedPickupDateTest(TestCase):
     def setUp(self):
-        self.service_type_2_days = ServiceTypeFactory(estimated_duration=2)
-        self.service_type_5_days = ServiceTypeFactory(estimated_duration=5)
-        self.service_type_0_days = ServiceTypeFactory(estimated_duration=0)
+        self.service_type_2_days = ServiceTypeFactory(estimated_duration_days=2)
+        self.service_type_5_days = ServiceTypeFactory(estimated_duration_days=5)
+        self.service_type_0_days = ServiceTypeFactory(estimated_duration_days=0)
 
         self.fixed_service_date = datetime.date(2025, 6, 15)
 
@@ -53,7 +53,7 @@ class CalculateEstimatedPickupDateTest(TestCase):
 
             mock_save.assert_called_once_with(update_fields=["estimated_pickup_date"])
 
-    def test_zero_estimated_duration(self):
+    def test_zero_estimated_duration_days(self):
         temp_booking = TempServiceBookingFactory(
             service_date=self.fixed_service_date, service_type=self.service_type_0_days
         )
@@ -116,7 +116,7 @@ class CalculateEstimatedPickupDateTest(TestCase):
             mock_booking_instance.save.assert_not_called()
 
     def test_factory_post_generation_for_temp_service_booking(self):
-        service_type_3_days = ServiceTypeFactory(estimated_duration=3)
+        service_type_3_days = ServiceTypeFactory(estimated_duration_days=3)
         temp_booking = TempServiceBookingFactory(
             service_date=self.fixed_service_date, service_type=service_type_3_days
         )
@@ -126,7 +126,7 @@ class CalculateEstimatedPickupDateTest(TestCase):
         self.assertEqual(temp_booking.estimated_pickup_date, expected_date)
 
     def test_factory_post_generation_for_service_booking(self):
-        service_type_1_day = ServiceTypeFactory(estimated_duration=1)
+        service_type_1_day = ServiceTypeFactory(estimated_duration_days=1)
         service_booking = ServiceBookingFactory(
             service_date=self.fixed_service_date, service_type=service_type_1_day
         )

@@ -8,7 +8,8 @@ class AdminServiceTypeForm(forms.ModelForm):
         fields = [
             "name",
             "description",
-            "estimated_duration",
+            "estimated_duration_days",
+            "estimated_duration_hours",
             "base_price",
             "is_active",
             "image",
@@ -16,7 +17,7 @@ class AdminServiceTypeForm(forms.ModelForm):
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control"}),
             "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
-            "estimated_duration": forms.NumberInput(
+            "estimated_duration_days": forms.NumberInput(
                 attrs={"class": "form-control", "placeholder": "e.g., 3", "min": 0}
             ),
             "base_price": forms.NumberInput(
@@ -28,7 +29,7 @@ class AdminServiceTypeForm(forms.ModelForm):
         labels = {
             "name": "Service Name",
             "description": "Service Description",
-            "estimated_duration": "Estimated Duration (Days)",
+            "estimated_duration_days": "Estimated Duration (Days)",
             "base_price": "Base Price",
             "is_active": "Is Active?",
             "image": "Service Icon/Image",

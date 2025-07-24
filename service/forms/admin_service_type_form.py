@@ -17,7 +17,7 @@ class AdminServiceTypeForm(forms.ModelForm):
         fields = [
             "name",
             "description",
-            "estimated_duration",
+            "estimated_duration_days",
             "base_price",
             "is_active",
             "image",
@@ -26,7 +26,7 @@ class AdminServiceTypeForm(forms.ModelForm):
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control"}),
             "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
-            "estimated_duration": forms.TextInput(
+            "estimated_duration_days": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "(e.g. 1)"}
             ),
             "base_price": forms.NumberInput(
@@ -39,22 +39,22 @@ class AdminServiceTypeForm(forms.ModelForm):
         labels = {
             "name": "Service Name",
             "description": "Service Description",
-            "estimated_duration": "Estimated Duration",
+            "estimated_duration_days": "Estimated Duration",
             "base_price": "Base Price",
             "is_active": "Is Active?",
             "image": "Service Icon/Image",
         }
 
-    def clean_estimated_duration(self):
-        estimated_duration = self.cleaned_data.get("estimated_duration")
-        if estimated_duration:
+    def clean_estimated_duration_days(self):
+        estimated_duration_days = self.cleaned_data.get("estimated_duration_days")
+        if estimated_duration_days:
             try:
-                duration_value = float(estimated_duration)
+                duration_value = float(estimated_duration_days)
                 if duration_value < 0:
                     raise ValidationError("Estimated duration cannot be negative.")
             except ValueError:
                 raise ValidationError("Estimated duration must be a valid number.")
-        return estimated_duration
+        return estimated_duration_days
 
     def clean_base_price(self):
         base_price = self.cleaned_data.get("base_price")
