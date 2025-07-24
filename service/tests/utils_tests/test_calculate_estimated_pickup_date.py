@@ -18,6 +18,7 @@ class CalculateEstimatedPickupDateTest(TestCase):
         self.service_type_2_days = ServiceTypeFactory(estimated_duration_days=2)
         self.service_type_5_days = ServiceTypeFactory(estimated_duration_days=5)
         self.service_type_0_days = ServiceTypeFactory(estimated_duration_days=0)
+        self.service_type_none_days = ServiceTypeFactory(estimated_duration_days=None)
 
         self.fixed_service_date = datetime.date(2025, 6, 15)
 
