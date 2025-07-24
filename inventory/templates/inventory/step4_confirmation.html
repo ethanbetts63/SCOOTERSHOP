@@ -104,7 +104,7 @@
                     {% if sales_booking.payment_status == 'deposit_paid' %}
                         <p class="text-lg font-bold">Your deposit is confirmed and your appointment is requested!</p>
                         <p class="text-base mt-1">Please note: Your requested appointment is not yet final.</p>
-                        <p class="text-base mt-2">Your motorcycle ({{ sales_booking.motorcycle.year }} {{ sales_booking.motorcycle.brand }} {{ sales_booking.motorcycle.model }}) has been marked as reserved.</p>
+                        <p class="text-base mt-2">Your motorcycle ({% if sales_booking.motorcycle.year %}{{ sales_booking.motorcycle.year }} {% endif %}{{ sales_booking.motorcycle.brand }} {{ sales_booking.motorcycle.model }}) has been marked as reserved.</p>
                         {% if sales_booking.appointment_date %}
                         <p class="text-base mt-2">Your requested appointment is for <strong>{{ sales_booking.appointment_date|date:"D, M d, Y" }} at {{ sales_booking.appointment_time|time:"P" }}</strong>.</p>
                         <p class="text-base mt-1">You will receive a separate confirmation email after our admin team has reviewed and confirmed your appointment time.</p>
