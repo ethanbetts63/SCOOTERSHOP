@@ -3,4 +3,4 @@ Disallow: /dashboard/
 Disallow: /admin/
 Disallow: /payments/
 
-Sitemap: https://www.allbikesvespawharehouse.com.au/sitemap.xml
+Sitemap: {{ SITE_SCHEME }}://{{ SITE_DOMAIN }}/sitemap.xml
