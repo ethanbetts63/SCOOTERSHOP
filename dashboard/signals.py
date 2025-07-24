@@ -1,12 +1,10 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-
 from inventory.models import SalesBooking
 from service.models import ServiceBooking
 from core.models import Enquiry
 from refunds.models import RefundRequest, RefundSettings
-
-from .models import Notification
+from dashboard.models import Notification
 
 
 @receiver(post_save, sender=SalesBooking)

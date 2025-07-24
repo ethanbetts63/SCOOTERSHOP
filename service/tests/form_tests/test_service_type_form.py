@@ -36,7 +36,7 @@ class AdminServiceTypeFormTest(TestCase):
         self.assertEqual(
             cleaned_data["description"], "Comprehensive check-up and minor adjustments."
         )
-        self.assertEqual(cleaned_data["estimated_duration_days"], "1")
+        self.assertEqual(cleaned_data["estimated_duration_days"], 1)
         self.assertEqual(cleaned_data["estimated_duration_hours"], 4)
         self.assertEqual(cleaned_data["base_price"], Decimal("120.50"))
         self.assertTrue(cleaned_data["is_active"])
@@ -54,7 +54,7 @@ class AdminServiceTypeFormTest(TestCase):
         }
         form = AdminServiceTypeForm(data=data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors.as_data()}")
-        self.assertEqual(form.cleaned_data["estimated_duration_days"], "5")
+        self.assertEqual(form.cleaned_data["estimated_duration_days"], 5)
 
     def test_form_valid_data_duration_only_hours(self):
         data = {
