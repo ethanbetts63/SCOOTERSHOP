@@ -134,7 +134,6 @@ class Step2BookingDetailsView(View):
         is_form_valid = form.is_valid()
 
         if is_form_valid:
-            logger.info(f'Form is valid. Cleaned data: {form.cleaned_data}')
             with transaction.atomic():
                 active_terms = SalesTerms.objects.filter(is_active=True).first()
                 if not active_terms:

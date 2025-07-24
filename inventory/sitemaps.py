@@ -34,4 +34,4 @@ class MotorcycleSitemap(sitemaps.Sitemap):
             return None
 
     def lastmod(self, obj):
-        return obj.updated_at
+        return obj.date_posted
