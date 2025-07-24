@@ -16,9 +16,12 @@ def calculate_estimated_pickup_date(booking_instance):
 
     estimated_duration_days = booking_instance.service_type.estimated_duration_days
 
-    estimated_pickup_date = booking_instance.service_date + timedelta(
-        days=estimated_duration_days
-    )
+    if not estimated_duration_days:
+        estimated_pickup_date = booking_instance.service_date
+    else:
+        estimated_pickup_date = booking_instance.service_date + timedelta(
+            days=estimated_duration_days
+        )
 
     booking_instance.estimated_pickup_date = estimated_pickup_date
 
