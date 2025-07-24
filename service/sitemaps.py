@@ -1,6 +1,6 @@
 from django.contrib import sitemaps
 from django.urls import reverse
-from .models import ServiceType
+from service.models import ServiceType
 
 
 class ServiceSitemap(sitemaps.Sitemap):
