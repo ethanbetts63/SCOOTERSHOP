@@ -18,6 +18,7 @@ class AdminServiceTypeForm(forms.ModelForm):
             "name",
             "description",
             "estimated_duration_days",
+            "estimated_duration_hours",
             "base_price",
             "is_active",
             "image",
@@ -28,6 +29,9 @@ class AdminServiceTypeForm(forms.ModelForm):
             "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
             "estimated_duration_days": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "(e.g. 1)"}
+            ),
+            "estimated_duration_hours": forms.NumberInput(
+                attrs={"class": "form-control", "placeholder": "e.g., 2", "min": 1, "max": 23}
             ),
             "base_price": forms.NumberInput(
                 attrs={"class": "form-control", "step": "0.01", "min": "0"}
@@ -40,6 +44,7 @@ class AdminServiceTypeForm(forms.ModelForm):
             "name": "Service Name",
             "description": "Service Description",
             "estimated_duration_days": "Estimated Duration",
+            "estimated_duration_hours": "Estimated Duration (Hours)",
             "base_price": "Base Price",
             "is_active": "Is Active?",
             "image": "Service Icon/Image",
