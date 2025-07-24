@@ -95,7 +95,20 @@
                 <div class="space-y-4">
                     <p>Have some questions? Want to report a problem with this website? Or absolutely anything else?</p>
                     <p>We're passionate about scooters and would love to help you out. As Perth's only dedicated scooter shop, our friendly team has the expertise to guide you through every step of your scooter journey.</p>
-                    <p>For sales enquires the best thing is to use the enquiry button located at the bottom of each bike's page. For service booking please visit the service page.</p>
+                    <p>For sales enquires the best thing is to use the enquiry button located at the bottom of each bike's page. For service booking please visit the service page.
+                        {% if settings.display_phone_number and settings.phone_number or settings.display_mobile_phone_number and settings.mobile_phone %}
+                            Or call us on
+                            {% if settings.display_phone_number and settings.phone_number %}
+                                <a href="tel:{{ settings.phone_number }}" class="hover:text-white">{{ settings.phone_number }}</a>
+                            {% endif %}
+                            {% if settings.display_phone_number and settings.phone_number and settings.display_mobile_phone_number and settings.mobile_phone %}
+                                or
+                            {% endif %}
+                            {% if settings.display_mobile_phone_number and settings.mobile_phone %}
+                                <a href="tel:{{ settings.mobile_phone }}" class="hover:text-white">{{ settings.mobile_phone }}</a>
+                            {% endif %}
+                        {% endif %}
+                    </p>
                 </div>
             </div>
             
