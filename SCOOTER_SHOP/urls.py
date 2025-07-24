@@ -6,14 +6,13 @@ from django.contrib.sitemaps.views import sitemap
 from django.views.generic.base import RedirectView
 from core.sitemaps import CoreSitemap
 from inventory.sitemaps import InventorySitemap, MotorcycleSitemap
-from service.sitemaps import ServiceSitemap, ServiceTypeSitemap
+from service.sitemaps import ServiceSitemap
 
 sitemaps = {
     "core": CoreSitemap,
     "inventory": InventorySitemap,
     "motorcycles": MotorcycleSitemap,
     "service": ServiceSitemap,
-    "servicetypes": ServiceTypeSitemap,
 }
 
 urlpatterns = [
