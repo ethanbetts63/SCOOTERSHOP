@@ -4,10 +4,6 @@ from django.db import models
 
 
 class Notification(models.Model):
-    """
-    A notification for an admin-facing event.
-    """
-
     CONTENT_TYPE_CHOICES = (
         models.Q(app_label="inventory", model="salesbooking")
         | models.Q(app_label="service", model="servicebooking")

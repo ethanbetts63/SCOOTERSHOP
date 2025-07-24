@@ -106,7 +106,7 @@ class AdminServiceTypeFormTest(TestCase):
         }
         form = AdminServiceTypeForm(data=data)
         self.assertTrue(form.is_valid(), f"Form is not valid: {form.errors.as_data()}")
-        self.assertEqual(form.cleaned_data["estimated_duration_days"], "0")
+        self.assertEqual(form.cleaned_data["estimated_duration_days"], 0)
 
     def test_form_invalid_missing_name(self):
         data = {
