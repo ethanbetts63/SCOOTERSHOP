@@ -10,11 +10,28 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-2 pt-4 pb-8">
-    <div class="text-center mb-10">
-        <h1 class="text-4xl font-extrabold text-white tracking-tight">Contact Us</h1>
-        <p class="text-lg text-gray-300 mt-2">We'd love to hear from you. Drop us a line below.</p>
+<div class="container mx-auto px-2 pt-0 pb-2">
+    <div class="text-center mb-4">
+    <h1 class="text-4xl font-extrabold text-white tracking-tight">Contact Us</h1>
+    <p class="text-lg text-gray-300 mt-2">We'd love to hear from you. Drop us a line below.</p>
+</div>
+
+<div class="text-center mb-6 mt-0">
+    <div class="inline-block bg-gray-900 rounded-lg p-4 shadow-lg">
+        <p class="text-lg text-gray-300">
+            <span class="font-semibold text-white">Call us: </span>
+            {% if settings.display_phone_number and settings.phone_number %}
+                <a href="tel:{{ settings.phone_number }}" class="hover:text-white">{{ settings.phone_number }}</a>
+            {% endif %}
+            {% if settings.display_phone_number and settings.phone_number and settings.display_mobile_phone_number and settings.mobile_phone %}
+                <span class="mx-2 text-gray-500">|</span>
+            {% endif %}
+            {% if settings.display_mobile_phone_number and settings.mobile_phone %}
+                <a href="tel:{{ settings.mobile_phone }}" class="hover:text-white">{{ settings.mobile_phone }}</a>
+            {% endif %}
+        </p>
     </div>
+</div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
         

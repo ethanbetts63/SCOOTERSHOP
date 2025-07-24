@@ -18,6 +18,7 @@ class VisibilitySettingsForm(forms.ModelForm):
             "enable_refunds",
             "enable_google_places_reviews",
             "display_phone_number",
+            "display_mobile_phone_number",
             "display_address",
             "display_opening_hours",
             "enable_faq_service",

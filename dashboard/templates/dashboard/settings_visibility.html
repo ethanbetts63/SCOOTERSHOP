@@ -153,6 +153,13 @@
                     </div>
                 </div>
                 <div class="form-check">
+                    {{ form.display_mobile_phone_number }}
+                    <div>
+                        <label class="form-check-label" for="{{ form.display_mobile_phone_number.id_for_label }}">Display Mobile Phone Number</label>
+                        <small class="block text-gray-500 form-text">Show the business mobile phone number in the site header and footer.</small>
+                    </div>
+                </div>
+                <div class="form-check">
                     {{ form.display_address }}
                     <div>
                         <label class="form-check-label" for="{{ form.display_address.id_for_label }}">Display Address</label>

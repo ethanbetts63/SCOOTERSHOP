@@ -70,7 +70,7 @@ class SiteSettings(models.Model):
         max_length=20, blank=True, null=True, default="94334613", help_text="shop phone"
     )
     mobile_phone = models.CharField(
-        max_length=20, blank=True, null=True, help_text="mobile phone"
+        max_length=20, blank=True, null=True, help_text="mobile phone", default="0477700005"
     )
     email_address = models.EmailField(
         blank=True, null=True, default="admin@scootershop.com.au"
