@@ -11,10 +11,9 @@ from service.sitemaps import ServiceSitemap
 sitemaps = {
     "core": CoreSitemap,
     "inventory": InventorySitemap,
-    
+    "motorcycles": MotorcycleSitemap,
+    "service": ServiceSitemap,
 }
-# "motorcycles": MotorcycleSitemap,
-# "service": ServiceSitemap,
 
 urlpatterns = [
     path("admin/", admin.site.urls),
