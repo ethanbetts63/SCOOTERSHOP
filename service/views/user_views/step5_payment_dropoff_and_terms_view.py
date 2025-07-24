@@ -204,7 +204,7 @@ class Step5PaymentDropoffAndTermsView(View):
                         admin_email_sent = send_templated_email(
                             recipient_list=[admin_email],
                             subject=f"NEW SERVICE BOOKING: {final_service_booking.service_booking_reference} (In-Store Payment)",
-                            template_name="admin_service_booking_confirmation.html",
+                            template_name="admin_service_booking_request_submitted.html",
                             context={
                                 "booking": final_service_booking,
                                 "profile": final_service_booking.service_profile,
