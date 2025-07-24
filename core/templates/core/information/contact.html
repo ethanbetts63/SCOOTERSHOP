@@ -17,6 +17,7 @@
 </div>
 
 <div class="text-center mb-6 mt-0">
+    {% if settings.display_phone_number and settings.phone_number or settings.display_mobile_phone_number and settings.mobile_phone %}
     <div class="inline-block bg-gray-900 rounded-lg p-4 shadow-lg">
         <p class="text-lg text-gray-300">
             <span class="font-semibold text-white">Call us: </span>
@@ -31,6 +32,7 @@
             {% endif %}
         </p>
     </div>
+    {% endif %}
 </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">

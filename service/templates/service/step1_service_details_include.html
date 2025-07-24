@@ -51,6 +51,7 @@
                         Check out our options here.
                     </a>
                 </p>
+                {% if settings.display_phone_number and settings.phone_number or settings.display_mobile_phone_number and settings.mobile_phone %}
                 <p class="text-sm text-gray-600 mt-2">
                     Or call us on 
                     {% if settings.display_phone_number and settings.phone_number %}
@@ -63,6 +64,7 @@
                         <a href="tel:{{ settings.mobile_phone }}" class="font-medium text-blue-600 hover:text-blue-500">{{ settings.mobile_phone }}</a>
                     {% endif %}
                 </p>
+                {% endif %}
             </div>
         </div>
     </div>
