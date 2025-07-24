@@ -1,3 +1,5 @@
+# SCOOTER_SHOP/urls.py
+
 from django.contrib import admin
 from django.urls import path, include, reverse_lazy
 from django.conf import settings
@@ -7,7 +9,6 @@ from django.views.generic.base import RedirectView
 from core.sitemaps import CoreSitemap
 from inventory.sitemaps import InventorySitemap, MotorcycleSitemap
 from service.sitemaps import ServiceSitemap
-from django.http import HttpResponse
 
 sitemaps = {
     "core": CoreSitemap,
@@ -16,27 +17,22 @@ sitemaps = {
     "service": ServiceSitemap,
 }
 
-def sitemap_view(request):
-    try:
-        return sitemap(request, sitemaps)
-    except Exception as e:
-        return HttpResponse(f"Error generating sitemap: {e}", content_type="text/plain")
-
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path(
+        "sitemap.xml",
+        sitemap,
+        {"sitemaps": sitemaps},
+        name="django.contrib.sitemaps.views.sitemap",
+    ),
     path("accounts/", include("users.urls", namespace="users")),
     path("inventory/", include("inventory.urls", namespace="inventory")),
     path("service/", include("service.urls", namespace="service")),
     path("dashboard/", include("dashboard.urls", namespace="dashboard")),
-    path("", include("core.urls", namespace="core")),
     path("payments/", include("payments.urls", namespace="payments")),
     path("refunds/", include("refunds.urls", namespace="refunds")),
     path("mailer/", include("mailer.urls", namespace="mailer")),
-    path(
-        "sitemap.xml",
-        sitemap_view,
-        name="django.contrib.sitemaps.views.sitemap",
-    ),
+    
     # 301 Redirects
     path('showroom/', RedirectView.as_view(url=reverse_lazy('inventory:used'), permanent=True)),
     path('shop-online/', RedirectView.as_view(url=reverse_lazy('core:index'), permanent=True)),
@@ -44,6 +40,9 @@ urlpatterns = [
     path('contact-us/', RedirectView.as_view(url=reverse_lazy('core:contact'), permanent=True)),
     path('segway-electric-scooters/', RedirectView.as_view(url=reverse_lazy('inventory:new'), permanent=True)),
     path('workshop/', RedirectView.as_view(url=reverse_lazy('service:service'), permanent=True)),
+
+    # The catch-all pattern should be last
+    path("", include("core.urls", namespace="core")),
 ]
 
 if settings.DEBUG:
