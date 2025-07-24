@@ -1,7 +1,8 @@
 import factory
 import factory.fuzzy
 from factory.faker import Faker
-from dashboard.models import SiteSettings, Review
+from django.contrib.contenttypes.models import ContentType
+from dashboard.models import SiteSettings, Review, Notification
 
 
 class SiteSettingsFactory(factory.django.DjangoModelFactory):
@@ -53,3 +54,25 @@ class ReviewFactory(factory.django.DjangoModelFactory):
     profile_photo_url = factory.Faker('image_url')
     display_order = factory.Sequence(lambda n: n)
     is_active = True
+
+
+class NotificationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Notification
+
+    message = Faker("sentence")
+    is_cleared = False
+
+    content_object = None
+
+    @factory.lazy_attribute
+    def content_type(self):
+        if self.content_object:
+            return ContentType.objects.get_for_model(self.content_object)
+        return None
+
+    @factory.lazy_attribute
+    def object_id(self):
+        if self.content_object:
+            return self.content_object.pk
+        return None
