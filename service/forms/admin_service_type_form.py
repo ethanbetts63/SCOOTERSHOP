@@ -27,8 +27,8 @@ class AdminServiceTypeForm(forms.ModelForm):
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control"}),
             "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
-            "estimated_duration_days": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "(e.g. 1)"}
+            "estimated_duration_days": forms.NumberInput(
+                attrs={"class": "form-control", "placeholder": "(e.g. 1)", "min": "0"}
             ),
             "estimated_duration_hours": forms.NumberInput(
                 attrs={"class": "form-control", "placeholder": "e.g., 2", "min": 1, "max": 23}
@@ -49,6 +49,13 @@ class AdminServiceTypeForm(forms.ModelForm):
             "is_active": "Is Active?",
             "image": "Service Icon/Image",
         }
+
+    def clean_estimated_duration_hours(self):
+        hours = self.cleaned_data.get("estimated_duration_hours")
+        if hours is not None:
+            if not 1 <= hours <= 23:
+                raise ValidationError("Ensure this value is between 1 and 23.")
+        return hours
 
     def clean_estimated_duration_days(self):
         estimated_duration_days = self.cleaned_data.get("estimated_duration_days")

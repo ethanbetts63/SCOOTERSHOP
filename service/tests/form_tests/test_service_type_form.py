@@ -168,7 +168,7 @@ class AdminServiceTypeFormTest(TestCase):
         self.assertEqual(form.initial["name"], instance.name)
         self.assertEqual(form.initial["description"], instance.description)
         self.assertEqual(
-            form.initial["estimated_duration_days"], str(instance.estimated_duration_days)
+            form.initial["estimated_duration_days"], instance.estimated_duration_days
         )
         self.assertEqual(
             form.initial["estimated_duration_hours"], instance.estimated_duration_hours
