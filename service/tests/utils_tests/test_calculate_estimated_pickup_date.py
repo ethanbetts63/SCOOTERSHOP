@@ -67,6 +67,20 @@ class CalculateEstimatedPickupDateTest(TestCase):
             self.assertEqual(temp_booking.estimated_pickup_date, expected_date)
             mock_save.assert_called_once_with(update_fields=["estimated_pickup_date"])
 
+    def test_none_estimated_duration_days(self):
+        temp_booking = TempServiceBookingFactory(
+            service_date=self.fixed_service_date, service_type=self.service_type_none_days
+        )
+
+        with patch.object(temp_booking, "save") as mock_save:
+            calculated_date = calculate_estimated_pickup_date(temp_booking)
+
+            expected_date = self.fixed_service_date
+
+            self.assertEqual(calculated_date, expected_date)
+            self.assertEqual(temp_booking.estimated_pickup_date, expected_date)
+            mock_save.assert_called_once_with(update_fields=["estimated_pickup_date"])
+
     def test_no_service_type_attribute(self):
         mock_booking_instance = MagicMock()
         del mock_booking_instance.service_type
