@@ -6,7 +6,7 @@
         
         <div class="flex flex-col md:col-span-2">
             <strong class="text-sm font-semibold text-gray-500 uppercase">Motorcycle:</strong>
-            <p class="text-lg text-gray-800">{{ temp_booking.motorcycle.year }} {{ temp_booking.motorcycle.brand }} {{ temp_booking.motorcycle.model }}</p>
+            <p class="text-lg text-gray-800">{% if temp_booking.motorcycle.year %}{{ temp_booking.motorcycle.year }} {% endif %}{{ temp_booking.motorcycle.brand }} {{ temp_booking.motorcycle.model }}</p>
         </div>
 
         {% if temp_booking.sales_profile %}
