@@ -46,7 +46,7 @@ class MotorcycleListViewTest(TestCase):
         self.assertEqual(set(response.context["unique_makes"]), expected_new_makes)
 
         self.assertEqual(response.context["current_condition_slug"], "new")
-        self.assertEqual(response.context["page_title"], "New Motorcycles")
+        self.assertEqual(response.context["page_title"], "New Motorcycles and Scooters")
         self.assertIsInstance(response.context["years"], list)
         self.assertGreater(len(response.context["years"]), 0)
         self.assertContains(response, "No motorcycles match the current criteria.")
