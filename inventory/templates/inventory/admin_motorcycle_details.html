@@ -204,6 +204,10 @@
                 <div class="detail-value">{{ motorcycle.special_text }}</div>
             </div>
             {% endif %}
+            <div class="detail-item">
+                <div class="detail-label">On Special:</div>
+                <div class="detail-value">{{ motorcycle.on_special|yesno:"Yes,No" }}</div>
+            </div>
             {% if motorcycle.youtube_link %}
             <div class="detail-item md:col-span-2">
                 <div class="detail-label">YouTube Link:</div>

@@ -13,6 +13,7 @@ class MotorcycleForm(forms.ModelForm):
             "model",
             "year",
             "price",
+            "on_special",
             "quantity",
             "odometer",
             "engine_size",

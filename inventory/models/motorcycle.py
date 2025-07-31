@@ -102,6 +102,7 @@ class Motorcycle(models.Model):
     special_text = models.CharField(
         max_length=25, null=True, blank=True, help_text="Special text to display on the motorcycle card"
     )
+    on_special = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.year} {self.brand} {self.model}"
