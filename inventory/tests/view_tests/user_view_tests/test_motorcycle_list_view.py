@@ -68,7 +68,7 @@ class MotorcycleListViewTest(TestCase):
         self.assertEqual(set(response.context["unique_makes"]), expected_used_makes)
 
         self.assertEqual(response.context["current_condition_slug"], "used")
-        self.assertEqual(response.context["page_title"], "Used Motorcycles")
+        self.assertEqual(response.context["page_title"], "Used Motorcycles and Scooters")
         self.assertContains(response, "No motorcycles match the current criteria.")
 
     def test_no_motorcycles_found_display_initial_load(self):
