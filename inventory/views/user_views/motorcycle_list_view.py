@@ -34,11 +34,12 @@ class MotorcycleListView(ListView):
 
         context["unique_makes"] = sorted(list(unique_makes))
         context["current_condition_slug"] = condition_slug
-        context["page_title"] = (
-            f"{condition_slug.replace('-', ' ').title()} Motorcycles"
-            if condition_slug
-            else "All Motorcycles"
-        )
+        if condition_slug == "new":
+            context["page_title"] = "New Motorcycles and Scooters"
+        elif condition_slug == "used":
+            context["page_title"] = "Used Motorcycles and Scooters"
+        else:
+            context["page_title"] = "All Motorcycles"
 
         current_year = datetime.date.today().year
         context["years"] = list(range(2000, current_year + 1))
