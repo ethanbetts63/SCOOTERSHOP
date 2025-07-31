@@ -88,6 +88,7 @@ class MotorcycleFactory(factory.django.DjangoModelFactory):
     is_available = True
     warranty_years = factory.Faker("random_int", min=0, max=5)
     special_text = factory.Faker("text", max_nb_chars=25)
+    on_special = False
 
     @factory.post_generation
     def conditions(obj, create, extracted, **kwargs):
