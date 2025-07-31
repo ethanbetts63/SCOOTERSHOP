@@ -347,8 +347,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             const warrantyTextElement = tile.querySelector('.motorcycle-warranty-text');
-            if (bike.warranty_years) {
-                warrantyTextElement.textContent = `${bike.warranty_years} Year Manufacturer Warranty`;
+            if (bike.warranty_months) {
+                let warrantyText = `${bike.warranty_months} Month`;
+                if (bike.condition_display && bike.condition_display.includes('New')) {
+                    warrantyText += ' Manufacturer';
+                }
+                warrantyText += ' Warranty';
+                warrantyTextElement.textContent = warrantyText;
                 warrantyTextElement.classList.remove('hidden');
             } else {
                 warrantyTextElement.classList.add('hidden');

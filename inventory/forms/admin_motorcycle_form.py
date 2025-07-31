@@ -30,7 +30,7 @@ class MotorcycleForm(forms.ModelForm):
             "vin_number",
             "engine_number",
             "range",
-            "warranty_years",
+            "warranty_months",
             "special_text",
         ]
         widgets = {
@@ -63,7 +63,7 @@ class MotorcycleForm(forms.ModelForm):
         self.fields["youtube_link"].required = False
         self.fields["year"].required = False
         self.fields["range"].required = False
-        self.fields["warranty_years"].required = False
+        self.fields["warranty_months"].required = False
         self.fields["special_text"].required = False
 
     def clean(self):

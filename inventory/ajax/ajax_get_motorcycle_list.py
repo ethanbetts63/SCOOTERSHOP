@@ -88,7 +88,7 @@ def get_motorcycle_list(request):
                 "status": bike.status,
                 "quantity": bike.quantity,
                 "condition_name": bike.condition,
-                "warranty_years": bike.warranty_years,
+                "warranty_months": bike.warranty_months,
                 "special_text": bike.special_text,
                 "on_special": bike.on_special,
             }

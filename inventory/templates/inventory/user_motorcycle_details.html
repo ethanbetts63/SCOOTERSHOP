@@ -183,11 +183,11 @@
                         </dd>
                     </div>
                     {% endif %}
-                    {% if motorcycle.warranty_years %}
+                    {% if motorcycle.warranty_months %}
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-shield-alt text-green-600"></i>
                         <dt class="font-semibold">Manufacturer Warranty:</dt>
-                        <dd>{{ motorcycle.warranty_years }} Year{% if motorcycle.warranty_years > 1 %}s{% endif %}</dd>
+                        <dd>{{ motorcycle.warranty_months }} Month{% if motorcycle.warranty_months > 1 %}s{% endif %}</dd>
                     </div>
                     {% endif %}
                     {% if motorcycle.description %}
