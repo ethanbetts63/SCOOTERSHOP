@@ -354,11 +354,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 warrantyTextElement.classList.add('hidden');
             }
             
-            let priceText = 'Price on request';
+            const priceElement = tile.querySelector('.motorcycle-price');
             if (bike.price) {
-                priceText = `$${parseFloat(bike.price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                priceElement.textContent = `$${parseFloat(bike.price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                if (bike.on_special) {
+                    priceElement.classList.remove('text-green-600');
+                    priceElement.classList.add('text-red-600');
+                    const priceReducedText = document.createElement('p');
+                    priceReducedText.textContent = 'Price Reduced';
+                    priceReducedText.className = 'text-red-600 text-sm';
+                    priceElement.parentNode.insertBefore(priceReducedText, priceElement.nextSibling);
+                } else {
+                    priceElement.classList.add('text-green-600');
+                    priceElement.classList.remove('text-red-600');
+                }
+            } else {
+                priceElement.textContent = 'Price on request';
             }
-            tile.querySelector('.motorcycle-price').textContent = priceText;
 
             tile.querySelector('.motorcycle-condition').textContent = bike.condition_display;
             const yearElement = tile.querySelector('.motorcycle-year');

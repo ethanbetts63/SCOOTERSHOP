@@ -90,6 +90,7 @@ def get_motorcycle_list(request):
                 "condition_name": bike.condition,
                 "warranty_years": bike.warranty_years,
                 "special_text": bike.special_text,
+                "on_special": bike.on_special,
             }
         )
     logger.debug(f"AJAX: Prepared {len(motorcycle_data)} motorcycles for response.")
