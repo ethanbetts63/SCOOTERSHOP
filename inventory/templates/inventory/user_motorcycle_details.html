@@ -107,13 +107,16 @@
                     {% if motorcycle.special_text %}
                         <p class="text-xl font-semibold text-blue-600 mb-2">{{ motorcycle.special_text }}</p>
                     {% endif %}
-                    <p class="text-4xl lg:text-5xl font-extrabold text-green-600">
+                    <p class="text-4xl lg:text-5xl font-extrabold {% if motorcycle.on_special %}text-red-600{% else %}text-green-600{% endif %}">
                         {% if motorcycle.price %}
                             ${{ motorcycle.price|floatformat:2 }}
                         {% else %}
                             Price on request
                         {% endif %}
                     </p>
+                    {% if motorcycle.on_special %}
+                        <p class="text-red-600 text-lg">Price Reduced</p>
+                    {% endif %}
                 </div>
 
                 <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-3">Specifications</h2>
