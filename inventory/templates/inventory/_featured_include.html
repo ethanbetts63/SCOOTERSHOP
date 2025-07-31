@@ -29,13 +29,16 @@
                         </div>
                         <div class="p-3">
                             <h4 class="text-md font-bold text-gray-800 truncate group-hover:text-green-600 transition-colors">{{ featured.motorcycle.title }}</h4>
-                            <p class="text-lg font-extrabold text-green-600 my-1">
+                            <p class="text-lg font-extrabold {% if featured.motorcycle.on_special %}text-red-600{% else %}text-green-600{% endif %} my-1">
                                 {% if featured.motorcycle.price %}
                                     ${{ featured.motorcycle.price|floatformat:2 }}
                                 {% else %}
                                     Price on request
                                 {% endif %}
                             </p>
+                            {% if featured.motorcycle.on_special %}
+                                <p class="text-red-600 text-sm -mt-1">Price Reduced</p>
+                            {% endif %}
                         </div>
                     </a>
                 </div>
