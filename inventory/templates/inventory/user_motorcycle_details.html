@@ -3,8 +3,8 @@
 {% load youtube %}
 
 {% block title %}{% if motorcycle.year %}{{ motorcycle.year }} {% endif %}{{ motorcycle.brand }} {{ motorcycle.model }} for Sale Perth | Allbikes and Vespa Warehouse{% endblock %}
-{% block meta_description %}Check out this {{ motorcycle.get_conditions_display|lower }} {{ motorcycle.year }} {{ motorcycle.brand }} {{ motorcycle.model }} for sale at Allbikes and Vespa Warehouse in Perth. {{ motorcycle.description|truncatewords:20 }}{% endblock %}
-{% block meta_keywords %}{{ motorcycle.brand }} {{ motorcycle.model }}, {{ motorcycle.year }} scooter, {{ motorcycle.get_conditions_display|lower }} scooter for sale, scooter perth, {{ motorcycle.brand }} for sale{% endblock %}
+{% block meta_description %}See this {{ motorcycle.get_conditions_display|lower }} {{ motorcycle.brand }} for sale in Perth. A great {{ motorcycle.get_conditions_display|lower }} {{ motorcycle.model }} for sale, this {{ motorcycle.year }} model is available at Allbikes and Vespa Warehouse. {{ motorcycle.description|truncatewords:15 }}{% endblock %}
+{% block meta_keywords %}{{ motorcycle.brand }} {{ motorcycle.model }}, {{ motorcycle.year }} scooter, {{ motorcycle.get_conditions_display|lower }} scooter for sale, scooter perth, {{ motorcycle.brand }} for sale, {{ motorcycle.get_conditions_display|lower }} {{ motorcycle.brand }} for sale perth, {{ motorcycle.get_conditions_display|lower }} {{ motorcycle.model }} for sale perth{% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'core/css/map_styles.css' %}">
