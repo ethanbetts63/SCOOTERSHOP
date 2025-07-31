@@ -177,3 +177,17 @@ class AjaxGetMotorcycleListTest(TestCase):
             len(data["motorcycles"]), 5
         )  # 4 from setUpTestData + 10 here = 14 total. 9 on page 1, 5 on page 2
         self.assertFalse(data["page_obj"]["has_next"])
+
+    def test_on_special_in_response(self):
+        """Test that the on_special field is in the AJAX response."""
+        MotorcycleFactory(on_special=True, title="Special Bike")
+        response = self.client.get(reverse("inventory:ajax-get-motorcycle-list"))
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        special_bike_data = None
+        for bike in data["motorcycles"]:
+            if bike["title"] == "Special Bike":
+                special_bike_data = bike
+                break
+        self.assertIsNotNone(special_bike_data)
+        self.assertTrue(special_bike_data["on_special"])

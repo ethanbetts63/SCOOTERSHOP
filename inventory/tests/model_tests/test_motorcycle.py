@@ -215,3 +215,11 @@ class MotorcycleModelTest(TestCase):
     def test_verbose_names_meta(self):
         self.assertEqual(Motorcycle._meta.verbose_name, "motorcycle")
         self.assertEqual(Motorcycle._meta.verbose_name_plural, "motorcycles")
+
+    def test_on_special_field(self):
+        """Test the on_special field defaults to False."""
+        motorcycle = MotorcycleFactory()
+        self.assertIsInstance(motorcycle.on_special, bool)
+        self.assertFalse(motorcycle.on_special)
+        field = motorcycle._meta.get_field("on_special")
+        self.assertEqual(field.default, False)

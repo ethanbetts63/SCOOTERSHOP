@@ -303,3 +303,31 @@ class MotorcycleFormTest(TestCase):
         self.assertTrue(form_reserved.is_valid(), form_reserved.errors.as_json())
         instance_reserved = form_reserved.save()
         self.assertEqual(instance_reserved.status, "reserved")
+
+    def test_form_saves_on_special_correctly(self):
+        """Test that the on_special field is saved correctly."""
+        data = {
+            "status": "for_sale",
+            "conditions": [self.condition_new.pk],
+            "brand": "Kawasaki",
+            "model": "Ninja 400",
+            "year": 2022,
+            "price": 8000.00,
+            "odometer": 1500,
+            "engine_size": 400,
+            "seats": 2,
+            "transmission": "manual",
+            "description": "A fantastic sportbike.",
+            "is_available": True,
+            "rego": "XYZ789",
+            "rego_exp": "2025-12-31",
+            "stock_number": "KWI002",
+            "vin_number": "VINTEST1234",
+            "engine_number": "ENG4567",
+            "quantity": 1,
+            "on_special": True,
+        }
+        form = MotorcycleForm(data=data)
+        self.assertTrue(form.is_valid(), form.errors.as_json())
+        motorcycle = form.save()
+        self.assertTrue(motorcycle.on_special)
