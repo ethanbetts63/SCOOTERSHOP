@@ -33,12 +33,12 @@ class ServiceBookingActionForm(forms.Form):
 
     estimated_pickup_date = forms.DateField(
         widget=forms.DateInput(attrs={"type": "date"}),
-        required=False,
+        required=True,
         help_text="Estimated pickup date for the service.",
     )
     estimated_pickup_time = forms.TimeField(
         widget=forms.TimeInput(attrs={"type": "time"}),
-        required=False,
+        required=True,
         help_text="Estimated pickup time for the service.",
     )
 
