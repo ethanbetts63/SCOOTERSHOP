@@ -8,6 +8,7 @@
         <meta name="google-site-verification" content="y0OCkEubLoSKMzbRzRFp3ueR5dNCsPxjiQrT9mfHmCk" />        <meta name="description" content="{% block meta_description %}Allbikes and Vespa Warehouse in Perth: Your one-stop shop for new & used scooters, mopeds, motorcycles, servicing, repairs, parts, and accessories.{% endblock %}">
         <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo5.webp' %}">
         <title>{% block title %}Allbikes & Vespa Warehouse Perth | New & Used Scooters, Mopeds, Motorcycles & Servicing{% endblock %}</title>
+        {% block canonical_url %}{% endblock %}
         {% load static %}
         <link rel="icon" href="{{ SITE_SCHEME }}://{{ SITE_DOMAIN }}{% static 'images/favicon.webp' %}" type="image/png">
         <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
