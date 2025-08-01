@@ -60,6 +60,8 @@ class PaymentOptionForm(forms.Form):
         self.fields["payment_method"].choices = payment_choices
         if len(payment_choices) == 1:
             self.fields["payment_method"].initial = payment_choices[0][0]
+            self.fields["payment_method"].required = False
+            self.fields["payment_method"].widget = forms.HiddenInput()
 
         if not self.service_settings.enable_after_hours_dropoff:
             del self.fields["after_hours_drop_off_choice"]
@@ -80,5 +82,10 @@ class PaymentOptionForm(forms.Form):
                 "dropoff_time",
                 "Please do not select a time if you are using the after-hours drop-off.",
             )
+
+        # FIX: Manually set payment method if only one option is available
+        payment_choices = self.fields["payment_method"].choices
+        if len(payment_choices) == 1:
+            cleaned_data["payment_method"] = payment_choices[0][0]
 
         return cleaned_data
