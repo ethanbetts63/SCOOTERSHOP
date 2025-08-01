@@ -44,6 +44,9 @@ def login_view(request):
 
 
 def logout_view(request):
+    if 'temp_service_booking_uuid' in request.session:
+        del request.session['temp_service_booking_uuid']
+
     logout(request)
     return HttpResponseRedirect(reverse("core:index"))
 
