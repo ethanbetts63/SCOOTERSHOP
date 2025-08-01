@@ -133,13 +133,15 @@ def get_service_booking_details_json(request, pk):
                 else None
             ),
             "entitled_refund_amount": float(
-                refund_calculation_results["entitled_amount"]
+                refund_calculation_results.get("entitled_amount", 0)
             ),
-            "refund_calculation_details": refund_calculation_results["details"],
-            "refund_policy_applied": refund_calculation_results["policy_applied"],
-            "refund_days_before_dropoff": refund_calculation_results[
-                "days_before_dropoff"
-            ],
+            "refund_calculation_details": refund_calculation_results.get("details", ""),
+            "refund_policy_applied": refund_calculation_results.get(
+                "policy_applied", ""
+            ),
+            "refund_days_before_dropoff": refund_calculation_results.get(
+                "days_before_dropoff", ""
+            ),
             "refund_request_status_for_booking": refund_status_for_booking,
         }
         return JsonResponse(booking_details)
