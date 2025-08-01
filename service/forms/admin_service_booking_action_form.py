@@ -34,12 +34,12 @@ class ServiceBookingActionForm(forms.Form):
     estimated_pickup_date = forms.DateField(
         widget=forms.DateInput(attrs={"type": "date"}),
         required=False,
-        help_text="Estimated pickup date for the service.",
+        help_text="Estimated pickup date for the service. Click the little calender symbol to the right.",
     )
     estimated_pickup_time = forms.TimeField(
         widget=forms.TimeInput(attrs={"type": "time"}),
         required=False,
-        help_text="Estimated pickup time for the service.",
+        help_text="Estimated pickup time for the service. Click the little clock symbol to the right.",
     )
 
     initiate_refund = forms.BooleanField(
@@ -101,5 +101,19 @@ class ServiceBookingActionForm(forms.Form):
                     "initiate_refund",
                     "Please check 'Initiate Refund for Deposit' to specify a refund amount.",
                 )
+
+        if action == "confirm":
+            estimated_pickup_date = cleaned_data.get("estimated_pickup_date")
+            service_booking_id = cleaned_data.get("service_booking_id")
+            if estimated_pickup_date and service_booking_id:
+                try:
+                    booking = ServiceBooking.objects.get(pk=service_booking_id)
+                    if estimated_pickup_date < booking.dropoff_date:
+                        self.add_error(
+                            "estimated_pickup_date",
+                            "Estimated pickup date cannot be before the drop-off date.",
+                        )
+                except ServiceBooking.DoesNotExist:
+                    pass  # This case is already handled elsewhere
 
         return cleaned_data
