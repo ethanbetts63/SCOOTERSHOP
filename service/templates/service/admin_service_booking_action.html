@@ -32,6 +32,9 @@
                         <strong>Customer:</strong> {{ booking.service_profile.name }} 
                         (<a href="mailto:{{ booking.service_profile.email }}" class="text-blue-600 hover:underline">{{ booking.service_profile.email }}</a>)
                     </p>
+                    <p><strong>Service Type:</strong> {{ booking.service_type.name }}</p>
+                    <p><strong>Service Date:</strong> {{ booking.service_date|date:"D, M d, Y" }}</p>
+                    <p><strong>Drop-off:</strong> {{ booking.dropoff_date|date:"D, M d, Y" }} at {{ booking.dropoff_time|time:"P" }}</p>
                     <p>
                         <strong>Current Status:</strong> 
                         <span class="font-semibold px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-xs">{{ booking.get_booking_status_display }}</span>
