@@ -127,6 +127,7 @@ class Step5PaymentDropoffAndTermsView(View):
             self.temp_booking.after_hours_drop_off = form.cleaned_data.get(
                 "after_hours_drop_off_choice", False
             )
+            self.temp_booking.customer_notes = form.cleaned_data.get("customer_notes")
             self.temp_booking.service_terms_version = active_terms
             self.temp_booking.save(
                 update_fields=[
@@ -135,6 +136,7 @@ class Step5PaymentDropoffAndTermsView(View):
                     "payment_method",
                     "service_terms_version",
                     "after_hours_drop_off",
+                    "customer_notes",
                 ]
             )
 

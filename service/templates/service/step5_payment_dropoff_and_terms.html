@@ -81,6 +81,12 @@
                             {{ form.dropoff_time }}
                             {% for error in form.dropoff_time.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
                         </div>
+
+                        <div>
+                            <label for="{{ form.customer_notes.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.customer_notes.label }}</label>
+                            {{ form.customer_notes }}
+                            {% for error in form.customer_notes.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
+                        </div>
                     </div>
                 </fieldset>
             </div>
@@ -146,6 +152,11 @@ document.addEventListener('DOMContentLoaded', function() {
         timeSelect.classList.add(...standardClasses, 'disabled:bg-gray-100', 'disabled:text-gray-500');
         timeSelect.disabled = true;
         timeSelect.innerHTML = `<option value="">Select a date first</option>`;
+    }
+
+    const customerNotesTextarea = document.getElementById('{{ form.customer_notes.id_for_label }}');
+    if (customerNotesTextarea) {
+        customerNotesTextarea.classList.add(...standardClasses);
     }
 
     document.querySelectorAll('input[type="radio"]').forEach(el => el.classList.add('h-4', 'w-4', 'text-green-600', 'border-gray-300', 'focus:ring-green-500'));

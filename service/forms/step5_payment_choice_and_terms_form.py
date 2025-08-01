@@ -14,6 +14,16 @@ class PaymentOptionForm(forms.Form):
     dropoff_time = forms.TimeField(
         label="Preferred Drop-off Time", widget=forms.Select, required=False
     )
+    customer_notes = forms.CharField(
+        label="Do you have any additional notes for the mechanic?",
+        required=False,
+        widget=forms.Textarea(
+            attrs={
+                "rows": 4,
+                "placeholder": "e.g. The scooter is making a funny noise when I...",
+            }
+        ),
+    )
     payment_method = forms.ChoiceField(
         label="How would you like to pay?",
         choices=[],
