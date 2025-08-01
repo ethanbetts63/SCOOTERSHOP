@@ -185,7 +185,9 @@
                         <tr class="py-2">
                             <td class="font-medium text-gray-700 py-2">Estimated Duration:</td>
                             <td class="text-gray-900 py-2">
-                                {% if service_booking.service_type.estimated_duration_days == 0 %}
+                                {% if service_booking.service_type.estimated_duration_hours %}
+                                    {{ service_booking.service_type.estimated_duration_hours }} hour{{ service_booking.service_type.estimated_duration_hours|pluralize }}
+                                {% elif service_booking.service_type.estimated_duration_days == 0 %}
                                     Same day
                                 {% else %}
                                     {{ service_booking.service_type.estimated_duration_days }} day{{ service_booking.service_type.estimated_duration_days|pluralize }}
