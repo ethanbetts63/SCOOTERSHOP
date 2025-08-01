@@ -33,12 +33,12 @@ class ServiceBookingActionForm(forms.Form):
 
     estimated_pickup_date = forms.DateField(
         widget=forms.DateInput(attrs={"type": "date"}),
-        required=True,
+        required=False,
         help_text="Estimated pickup date for the service.",
     )
     estimated_pickup_time = forms.TimeField(
         widget=forms.TimeInput(attrs={"type": "time"}),
-        required=True,
+        required=False,
         help_text="Estimated pickup time for the service.",
     )
 
@@ -62,6 +62,12 @@ class ServiceBookingActionForm(forms.Form):
         initiate_refund = cleaned_data.get("initiate_refund")
         refund_amount = cleaned_data.get("refund_amount")
         service_booking_id = cleaned_data.get("service_booking_id")
+
+        if action == "confirm":
+            if not cleaned_data.get("estimated_pickup_date"):
+                self.add_error("estimated_pickup_date", "This field is required.")
+            if not cleaned_data.get("estimated_pickup_time"):
+                self.add_error("estimated_pickup_time", "This field is required.")
 
         if action == "reject":
             if initiate_refund:
