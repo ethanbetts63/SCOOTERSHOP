@@ -27,7 +27,7 @@
                     {{ action_display }} Booking: <span class="font-medium text-blue-600">{{ booking.service_booking_reference }}</span>
                 </h2>
                 <div class="space-y-2 text-sm text-gray-600">
-                    <p><strong>Motorcycle:</strong> {{ booking.customer_motorcycle.year }} {{ booking.customer_motorcycle.brand }} {{ booking.customer_motorcycle.model }}</p>
+                    <p><strong>Motorcycle:</strong> {{ booking.customer_motorcycle.year }} {{ booking.customer_motorcycle.brand }} {{ booking.customer_motorcycle.model }} ({{ booking.customer_motorcycle.odometer }}km)</p>
                     <p>
                         <strong>Customer:</strong> {{ booking.service_profile.name }} 
                         (<a href="mailto:{{ booking.service_profile.email }}" class="text-blue-600 hover:underline">{{ booking.service_profile.email }}</a>)
@@ -40,6 +40,12 @@
                     <p>
                         <strong>Payment Status:</strong> 
                         <span class="font-semibold px-2 py-1 bg-green-100 text-green-800 rounded-md text-xs">{{ booking.get_payment_status_display }}</span>
+                    </p>
+                    {% endif %}
+                    {% if booking.customer_notes %}
+                    <p>
+                        <strong>Customer Notes:</strong>
+                        <span class="font-semibold px-2 py-1 bg-yellow-100 text-yellow-800 rounded-md text-xs">{{ booking.customer_notes }}</span>
                     </p>
                     {% endif %}
                 </div>
