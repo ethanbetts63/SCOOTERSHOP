@@ -179,12 +179,23 @@ class Step2BookingDetailsViewTest(TestCase):
 
         self.inventory_settings = InventorySettingsFactory(pk=1)
 
+    @mock.patch(
+        "inventory.views.user_views.step3_payment_view.create_or_update_sales_payment_intent"
+    )
     @mock.patch("inventory.utils.convert_temp_sales_booking.convert_temp_sales_booking")
     @mock.patch("django.contrib.messages.success")
     @mock.patch("django.contrib.messages.error")
     def test_post_valid_data_deposit_required(
-        self, mock_error, mock_success, mock_convert_temp_sales_booking
+        self,
+        mock_error,
+        mock_success,
+        mock_convert_temp_sales_booking,
+        mock_create_payment_intent,
     ):
+        mock_intent = mock.Mock()
+        mock_intent.client_secret = "test_client_secret"
+        mock_payment_obj = mock.Mock()
+        mock_create_payment_intent.return_value = (mock_intent, mock_payment_obj)
         temp_booking = self._create_temp_booking_in_session(
             self.client, deposit_required_for_flow=True
         )
@@ -200,7 +211,6 @@ class Step2BookingDetailsViewTest(TestCase):
 
         response = self.client.post(self.url, data=post_data, follow=True)
 
-        
         mock_success.assert_called_once_with(
             mock.ANY, "Booking details saved. Proceed to payment."
         )
@@ -210,8 +220,13 @@ class Step2BookingDetailsViewTest(TestCase):
         temp_booking.refresh_from_db()
         self.assertEqual(temp_booking.appointment_date, post_date)
         self.assertEqual(temp_booking.appointment_time, post_time)
-        self.assertEqual(temp_booking.customer_notes, "Looking forward to the viewing.")
+        self.assertEqual(
+            temp_booking.customer_notes, "Looking forward to the viewing."
+        )
         self.assertTrue(temp_booking.terms_accepted)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "inventory/step3_payment.html")
 
     @mock.patch("django.contrib.messages.success")
     @mock.patch("django.contrib.messages.error")
