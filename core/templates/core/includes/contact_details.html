@@ -1,0 +1,26 @@
+<div class="text-center mb-2 mt-0">
+    {% if settings.display_phone_number and settings.phone_number or settings.display_mobile_phone_number and settings.mobile_phone or settings.push_address %}
+    <div class="inline-block bg-gray-900 rounded-lg p-4 shadow-lg">
+        {% if settings.display_phone_number and settings.phone_number or settings.display_mobile_phone_number and settings.mobile_phone %}
+        <p class="text-lg text-gray-300">
+            <span class="font-semibold text-white">Call us: </span>
+            {% if settings.display_phone_number and settings.phone_number %}
+                <a href="tel:{{ settings.phone_number }}" class="hover:text-white">{{ settings.phone_number }}</a>
+            {% endif %}
+            {% if settings.display_phone_number and settings.phone_number and settings.display_mobile_phone_number and settings.mobile_phone %}
+                <span class="mx-2 text-gray-500">|</span>
+            {% endif %}
+            {% if settings.display_mobile_phone_number and settings.mobile_phone %}
+                <a href="tel:{{ settings.mobile_phone }}" class="hover:text-white">{{ settings.mobile_phone }}</a>
+            {% endif %}
+        </p>
+        {% endif %}
+        {% if settings.push_address %}
+        <p class="text-lg text-gray-300 {% if settings.display_phone_number and settings.phone_number or settings.display_mobile_phone_number and settings.mobile_phone %}mt-2{% endif %}">
+            <span class="font-semibold text-white">Our Address: </span>
+            {{ settings.street_address }}, {{ settings.address_locality }}, {{ settings.postal_code }}.
+        </p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
