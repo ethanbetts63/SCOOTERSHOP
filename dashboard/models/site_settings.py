@@ -46,6 +46,9 @@ class SiteSettings(models.Model):
     display_opening_hours = models.BooleanField(
         default=True, help_text="Display the opening hours on the website."
     )
+    push_address = models.BooleanField(
+        default=True, help_text="Push the address details down the page."
+    )
     enable_faq_service = models.BooleanField(
         default=True, help_text="Enable the faq section for services."
     )

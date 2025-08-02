@@ -21,6 +21,7 @@ class VisibilitySettingsForm(forms.ModelForm):
             "display_mobile_phone_number",
             "display_address",
             "display_opening_hours",
+            "push_address",
             "enable_faq_service",
             "enable_faq_sales",
             "enable_motorcycle_mover",

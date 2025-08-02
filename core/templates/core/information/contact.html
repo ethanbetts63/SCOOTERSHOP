@@ -17,8 +17,9 @@
 </div>
 
 <div class="text-center mb-6 mt-0">
-    {% if settings.display_phone_number and settings.phone_number or settings.display_mobile_phone_number and settings.mobile_phone %}
+    {% if (settings.display_phone_number and settings.phone_number) or (settings.display_mobile_phone_number and settings.mobile_phone) or settings.push_address %}
     <div class="inline-block bg-gray-900 rounded-lg p-4 shadow-lg">
+        {% if settings.display_phone_number and settings.phone_number or settings.display_mobile_phone_number and settings.mobile_phone %}
         <p class="text-lg text-gray-300">
             <span class="font-semibold text-white">Call us: </span>
             {% if settings.display_phone_number and settings.phone_number %}
@@ -31,6 +32,13 @@
                 <a href="tel:{{ settings.mobile_phone }}" class="hover:text-white">{{ settings.mobile_phone }}</a>
             {% endif %}
         </p>
+        {% endif %}
+        {% if settings.push_address %}
+        <p class="text-lg text-gray-300 {% if (settings.display_phone_number and settings.phone_number) or (settings.display_mobile_phone_number and settings.mobile_phone) %}mt-2{% endif %}">
+            <span class="font-semibold text-white">Our Address: </span>
+            {{ settings.street_address }}, {{ settings.address_locality }}, {{ settings.postal_code }}.
+        </p>
+        {% endif %}
     </div>
     {% endif %}
 </div>
@@ -97,7 +105,9 @@
                 <div class="space-y-4">
                     <p>Have some questions? Want to report a problem with this website? Or absolutely anything else?</p>
                     <p>We're passionate about scooters and would love to help you out. As Perth's only dedicated scooter shop, our friendly team has the expertise to guide you through every step of your scooter journey.</p>
+                    {% if not settings.push_address %}
                     <p>Our address is Unit 5 / 6 Cleveland Street Dianella, 6059.</p>
+                    {% endif %}
                     <p>For sales enquires the best thing is to use the enquiry button located at the bottom of each bike's page. For service booking please visit the service page.
                         {% if settings.display_phone_number and settings.phone_number or settings.display_mobile_phone_number and settings.mobile_phone %}
                             Or call us on

@@ -173,6 +173,13 @@
                         <small class="block text-gray-500 form-text">Show the business opening hours in the site footer.</small>
                     </div>
                 </div>
+                <div class="form-check">
+                    {{ form.push_address }}
+                    <div>
+                        <label class="form-check-label" for="{{ form.push_address.id_for_label }}">Push Address</label>
+                        <small class="block text-gray-500 form-text">Push the address details down the page.</small>
+                    </div>
+                </div>
                  <div class="form-check">
                     {{ form.enable_map_display }}
                     <div>

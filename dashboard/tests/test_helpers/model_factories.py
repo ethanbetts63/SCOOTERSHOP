@@ -20,6 +20,7 @@ class SiteSettingsFactory(factory.django.DjangoModelFactory):
     enable_security_page = True
     display_phone_number = True
     display_mobile_phone_number = True
+    push_address = True
     phone_number = "94334613"
     mobile_phone = "0477700005"
     email_address = "admin@scootershop.com.au"
