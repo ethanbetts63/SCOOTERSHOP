@@ -17,7 +17,7 @@
 </div>
 
 <div class="text-center mb-6 mt-0">
-    {% if (settings.display_phone_number and settings.phone_number) or (settings.display_mobile_phone_number and settings.mobile_phone) or settings.push_address %}
+    {% if settings.display_phone_number and settings.phone_number or settings.display_mobile_phone_number and settings.mobile_phone or settings.push_address %}
     <div class="inline-block bg-gray-900 rounded-lg p-4 shadow-lg">
         {% if settings.display_phone_number and settings.phone_number or settings.display_mobile_phone_number and settings.mobile_phone %}
         <p class="text-lg text-gray-300">
@@ -34,7 +34,7 @@
         </p>
         {% endif %}
         {% if settings.push_address %}
-        <p class="text-lg text-gray-300 {% if (settings.display_phone_number and settings.phone_number) or (settings.display_mobile_phone_number and settings.mobile_phone) %}mt-2{% endif %}">
+        <p class="text-lg text-gray-300 {% if settings.display_phone_number and settings.phone_number or settings.display_mobile_phone_number and settings.mobile_phone %}mt-2{% endif %}">
             <span class="font-semibold text-white">Our Address: </span>
             {{ settings.street_address }}, {{ settings.address_locality }}, {{ settings.postal_code }}.
         </p>
