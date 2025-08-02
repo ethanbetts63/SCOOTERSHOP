@@ -149,7 +149,7 @@ SESSION_SAVE_EVERY_REQUEST = True
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 DEFAULT_FROM_EMAIL = "ethan.betts.dev@gmail.com"
 LOGIN_URL = "users:login"
-ADMIN_EMAIL = "ethan.betts.dev@gmail.com"
+ADMIN_EMAIL = "admin@scootershop.com.au"
 
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
