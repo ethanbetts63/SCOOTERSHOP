@@ -49,6 +49,11 @@
                             {{ service_type.estimated_duration_days }} day{{ service_type.estimated_duration_days|pluralize }}
                         {% endif %}
                     </p>
+                    {% elif service_type.estimated_duration_hours is not None %}
+                    <p class="text-gray-600 mb-4">
+                        <strong>Estimated duration:</strong>
+                        {{ service_type.estimated_duration_hours }} hour{{ service_type.estimated_duration_hours|pluralize }}
+                    </p>
                     {% endif %}
                     {% if service_type.base_price %}
                     <p class="text-gray-800 font-semibold mt-auto text-lg">Starting from ${{ service_type.base_price }}</p>
