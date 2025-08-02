@@ -147,7 +147,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_SAVE_EVERY_REQUEST = True
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-DEFAULT_FROM_EMAIL = "ethan.betts.dev@gmail.com"
+DEFAULT_FROM_EMAIL = "admin@scootershop.com.au"
 LOGIN_URL = "users:login"
 ADMIN_EMAIL = "admin@scootershop.com.au"
 
