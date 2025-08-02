@@ -154,7 +154,7 @@ ADMIN_EMAIL = "admin@scootershop.com.au"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "ethan.betts.dev@gmail.com"
+EMAIL_HOST_USER = "admin@scootershop.com.au"
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
 MECHANICDESK_BOOKING_TOKEN = os.getenv("MECHANICDESK_BOOKING_TOKEN")
