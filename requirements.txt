@@ -2,7 +2,7 @@ asgiref==3.8.1
 certifi==2025.4.26
 charset-normalizer==3.4.2
 diff-match-patch==20241021
-Django==5.2
+Django==5.2.9
 django-import-export==4.3.8
 idna==3.10
 oauthlib==3.3.1
