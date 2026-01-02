@@ -1,0 +1,10 @@
+[
+{
+  "model": "inventory.motorcycleimage",
+  "pk": 4,
+  "fields": {
+    "motorcycle": 1,
+    "image": "motorcycles/additional/1908.webp"
+  }
+}
+]
