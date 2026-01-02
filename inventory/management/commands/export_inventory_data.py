@@ -3,9 +3,10 @@ from django.core.management.base import BaseCommand
 from django.core.management import call_command
 
 class Command(BaseCommand):
-    help = 'Exports MotorcycleImage and MotorcycleCondition models to separate JSON files.'
+    help = 'Exports Motorcycle, MotorcycleImage, and MotorcycleCondition models to separate JSON files.'
 
     MODELS_TO_EXPORT = [
+        'inventory.Motorcycle',
         'inventory.MotorcycleImage',
         'inventory.MotorcycleCondition',
     ]
