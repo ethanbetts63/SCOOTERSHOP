@@ -9,6 +9,7 @@ class Command(BaseCommand):
         'inventory.Motorcycle',
         'inventory.MotorcycleImage',
         'inventory.MotorcycleCondition',
+        'dashboard.Review',
     ]
     OUTPUT_DIR = 'scooter_shop_archive'
 
